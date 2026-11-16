@@ -6,6 +6,101 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IndexSubscriptionPage
+
+Qualified name: <code>Meridian.Wpf.Views.IndexSubscriptionPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/IndexSubscriptionPage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/IndexSubscriptionPage.xaml.cs#L11).
+
+Index subscription page for subscribing to index constituents (S&amp;P 500, Nasdaq 100, Dow 30, sector ETFs) for bulk symbol management.
+
+```csharp
+public partial class IndexSubscriptionPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IndexSubscriptionPage();</code> | [src/Meridian.Wpf/Views/IndexSubscriptionPage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/IndexSubscriptionPage.xaml.cs#L15) |  |
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:22](../../../../src/Meridian.Wpf/Views/Pages.cs#L22).
+
+```csharp
+public partial class IndexSubscriptionPage : Page
+```
+
+## InstitutionalCommandPaletteControl
+
+Qualified name: <code>Meridian.Wpf.Views.InstitutionalCommandPaletteControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/InstitutionalCommandPaletteControl.xaml.cs:11](../../../../src/Meridian.Wpf/Views/InstitutionalCommandPaletteControl.xaml.cs#L11).
+
+Displays searchable shell commands and handles keyboard selection and activation.
+
+```csharp
+public partial class InstitutionalCommandPaletteControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public InstitutionalCommandPaletteControl();</code> | [src/Meridian.Wpf/Views/InstitutionalCommandPaletteControl.xaml.cs:13](../../../../src/Meridian.Wpf/Views/InstitutionalCommandPaletteControl.xaml.cs#L13) |  |
+| <code>public void FocusInput();</code> | [src/Meridian.Wpf/Views/InstitutionalCommandPaletteControl.xaml.cs:18](../../../../src/Meridian.Wpf/Views/InstitutionalCommandPaletteControl.xaml.cs#L18) |  |
+| <code>public bool TryHandleDirectionalKey(Key key);</code> | [src/Meridian.Wpf/Views/InstitutionalCommandPaletteControl.xaml.cs:24](../../../../src/Meridian.Wpf/Views/InstitutionalCommandPaletteControl.xaml.cs#L24) |  |
+
+## InstitutionalShellFrameControl
+
+Qualified name: <code>Meridian.Wpf.Views.InstitutionalShellFrameControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/InstitutionalShellFrameControl.cs:10](../../../../src/Meridian.Wpf/Views/InstitutionalShellFrameControl.cs#L10).
+
+Exposes the shell posture used to style the desktop frame.
+
+```csharp
+public class InstitutionalShellFrameControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly DependencyProperty ShellPostureProperty = DependencyProperty.Register(nameof(ShellPosture), typeof(ShellPosture), typeof(InstitutionalShellFrameControl), new PropertyMetadata(ShellPosture.Workbench));</code> | [src/Meridian.Wpf/Views/InstitutionalShellFrameControl.cs:12](../../../../src/Meridian.Wpf/Views/InstitutionalShellFrameControl.cs#L12) |  |
+| <code>public ShellPosture ShellPosture { get; set; }</code> | [src/Meridian.Wpf/Views/InstitutionalShellFrameControl.cs:19](../../../../src/Meridian.Wpf/Views/InstitutionalShellFrameControl.cs#L19) |  |
+
+## IntercompanyAgreementsControl
+
+Qualified name: <code>Meridian.Wpf.Views.IntercompanyAgreementsControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/IntercompanyAgreementsControl.xaml.cs:5](../../../../src/Meridian.Wpf/Views/IntercompanyAgreementsControl.xaml.cs#L5).
+
+```csharp
+public partial class IntercompanyAgreementsControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyAgreementsControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/IntercompanyAgreementsControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/IntercompanyAgreementsControl.xaml.cs#L7) |  |
+
+## IntercompanyCounterpartProposalsControl
+
+Qualified name: <code>Meridian.Wpf.Views.IntercompanyCounterpartProposalsControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/IntercompanyCounterpartProposalsControl.xaml.cs:5](../../../../src/Meridian.Wpf/Views/IntercompanyCounterpartProposalsControl.xaml.cs#L5).
+
+```csharp
+public partial class IntercompanyCounterpartProposalsControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyCounterpartProposalsControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/IntercompanyCounterpartProposalsControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/IntercompanyCounterpartProposalsControl.xaml.cs#L7) |  |
+
 ## IssueDisplayItem
 
 Qualified name: <code>Meridian.Wpf.Views.IssueDisplayItem</code>. Kind: `class`.
@@ -162,9 +257,10 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public MainPage(MainPageViewModel viewModel, IShellNavigationCoordinator? shellNavigationCoordinator = null);</code> | [src/Meridian.Wpf/Views/MainPage.xaml.cs:27](../../../../src/Meridian.Wpf/Views/MainPage.xaml.cs#L27) |  |
-| <code>public void ShowCommandPaletteOverlay();</code> | [src/Meridian.Wpf/Views/MainPage.xaml.cs:149](../../../../src/Meridian.Wpf/Views/MainPage.xaml.cs#L149) |  |
-| <code>public Task WaitForShellReadyAsync();</code> | [src/Meridian.Wpf/Views/MainPage.xaml.cs:155](../../../../src/Meridian.Wpf/Views/MainPage.xaml.cs#L155) |  |
-| <code>public bool NavigateToLaunchPage(string pageTag);</code> | [src/Meridian.Wpf/Views/MainPage.xaml.cs:165](../../../../src/Meridian.Wpf/Views/MainPage.xaml.cs#L165) |  |
+| <code>public void ShowCommandPaletteOverlay();</code> | [src/Meridian.Wpf/Views/MainPage.xaml.cs:151](../../../../src/Meridian.Wpf/Views/MainPage.xaml.cs#L151) |  |
+| <code>public void RefreshCurrentPage();</code> | [src/Meridian.Wpf/Views/MainPage.xaml.cs:158](../../../../src/Meridian.Wpf/Views/MainPage.xaml.cs#L158) | Runs the shell refresh, exactly as the toolbar Refresh button does. |
+| <code>public Task WaitForShellReadyAsync();</code> | [src/Meridian.Wpf/Views/MainPage.xaml.cs:166](../../../../src/Meridian.Wpf/Views/MainPage.xaml.cs#L166) |  |
+| <code>public bool NavigateToLaunchPage(string pageTag);</code> | [src/Meridian.Wpf/Views/MainPage.xaml.cs:176](../../../../src/Meridian.Wpf/Views/MainPage.xaml.cs#L176) |  |
 
 ## MeridianDockingManager
 
@@ -186,10 +282,11 @@ Declared public members:
 | <code>public MeridianDockingManager();</code> | [src/Meridian.Wpf/Views/MeridianDockingManager.xaml.cs:53](../../../../src/Meridian.Wpf/Views/MeridianDockingManager.xaml.cs#L53) |  |
 | <code>public void LoadPage(string title, FrameworkElement content);</code> | [src/Meridian.Wpf/Views/MeridianDockingManager.xaml.cs:66](../../../../src/Meridian.Wpf/Views/MeridianDockingManager.xaml.cs#L66) | Adds a new document pane containing content with the specified title, or activates an existing one with that title. |
 | <code>public void LoadPage(string pageKey, string title, FrameworkElement content, PaneDropAction action);</code> | [src/Meridian.Wpf/Views/MeridianDockingManager.xaml.cs:75](../../../../src/Meridian.Wpf/Views/MeridianDockingManager.xaml.cs#L75) | Adds or activates a workstation page using the richer dock action surface used by the workstation shell pages. |
-| <code>public void ClearAllPanes();</code> | [src/Meridian.Wpf/Views/MeridianDockingManager.xaml.cs:147](../../../../src/Meridian.Wpf/Views/MeridianDockingManager.xaml.cs#L147) |  |
-| <code>public string? SaveLayout();</code> | [src/Meridian.Wpf/Views/MeridianDockingManager.xaml.cs:164](../../../../src/Meridian.Wpf/Views/MeridianDockingManager.xaml.cs#L164) | Serialises the current dock layout to an XML string suitable for persistence. Returns null if serialisation fails. |
-| <code>public void LoadLayout(string? layoutXml);</code> | [src/Meridian.Wpf/Views/MeridianDockingManager.xaml.cs:183](../../../../src/Meridian.Wpf/Views/MeridianDockingManager.xaml.cs#L183) | Restores a dock layout from a previously serialised XML string. No-ops gracefully if layoutXml is null or empty. |
-| <code>public WorkstationLayoutState CaptureLayoutState(string layoutId, string displayName);</code> | [src/Meridian.Wpf/Views/MeridianDockingManager.xaml.cs:207](../../../../src/Meridian.Wpf/Views/MeridianDockingManager.xaml.cs#L207) | Captures the current workstation docking state into the shared persistence model. |
+| <code>public IReadOnlyList&lt;object?&gt; GetOpenPageContents() =&gt; …;</code> | [src/Meridian.Wpf/Views/MeridianDockingManager.xaml.cs:151](../../../../src/Meridian.Wpf/Views/MeridianDockingManager.xaml.cs#L151) | Gets the content of every open docked or floating pane, so the workspace shell can reload its panes in place when the shell Refresh control is used. |
+| <code>public void ClearAllPanes();</code> | [src/Meridian.Wpf/Views/MeridianDockingManager.xaml.cs:156](../../../../src/Meridian.Wpf/Views/MeridianDockingManager.xaml.cs#L156) |  |
+| <code>public string? SaveLayout();</code> | [src/Meridian.Wpf/Views/MeridianDockingManager.xaml.cs:173](../../../../src/Meridian.Wpf/Views/MeridianDockingManager.xaml.cs#L173) | Serialises the current dock layout to an XML string suitable for persistence. Returns null if serialisation fails. |
+| <code>public void LoadLayout(string? layoutXml);</code> | [src/Meridian.Wpf/Views/MeridianDockingManager.xaml.cs:192](../../../../src/Meridian.Wpf/Views/MeridianDockingManager.xaml.cs#L192) | Restores a dock layout from a previously serialised XML string. No-ops gracefully if layoutXml is null or empty. |
+| <code>public WorkstationLayoutState CaptureLayoutState(string layoutId, string displayName);</code> | [src/Meridian.Wpf/Views/MeridianDockingManager.xaml.cs:216](../../../../src/Meridian.Wpf/Views/MeridianDockingManager.xaml.cs#L216) | Captures the current workstation docking state into the shared persistence model. |
 
 Source: [src/Meridian.Wpf/Views/Pages.cs:114](../../../../src/Meridian.Wpf/Views/Pages.cs#L114).
 
@@ -478,7 +575,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Views.PortfolioWorkspaceShellPageBase</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:355](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L355).
+Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:378](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L378).
 
 Binds derived pages to the portfolio workspace shell definition.
 
@@ -647,7 +744,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Views.ReportingWorkspaceShellPageBase</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:369](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L369).
+Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:392](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L392).
 
 Binds derived pages to the reporting workspace shell definition.
 
@@ -1008,105 +1105,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public SecurityPassportEditorPage(SecurityPassportEditorViewModel viewModel);</code> | [src/Meridian.Wpf/Views/SecurityPassportEditorPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/SecurityPassportEditorPage.xaml.cs#L12) |  |
-
-## SecurityPassportEditorView
-
-Qualified name: <code>Meridian.Wpf.Views.SecurityPassportEditorView</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/SecurityPassportEditorView.xaml.cs:10](../../../../src/Meridian.Wpf/Views/SecurityPassportEditorView.xaml.cs#L10).
-
-Reusable visual for the Security Master passport governed-write editor. Hosted both by SecurityPassportEditorPage and inline on the Security Master page; it carries no DataContext of its own and binds to whatever SecurityPassportEditorViewModel the host supplies.
-
-```csharp
-public partial class SecurityPassportEditorView : UserControl
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityPassportEditorView();</code> | [src/Meridian.Wpf/Views/SecurityPassportEditorView.xaml.cs:12](../../../../src/Meridian.Wpf/Views/SecurityPassportEditorView.xaml.cs#L12) |  |
-
-## ServiceManagerPage
-
-Qualified name: <code>Meridian.Wpf.Views.ServiceManagerPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:32](../../../../src/Meridian.Wpf/Views/Pages.cs#L32).
-
-```csharp
-public partial class ServiceManagerPage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/ServiceManagerPage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/ServiceManagerPage.xaml.cs#L11).
-
-Hosts backend service status and lifecycle controls.
-
-```csharp
-public partial class ServiceManagerPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ServiceManagerPage(BackendServiceManager serviceManager, LoggingService loggingService);</code> | [src/Meridian.Wpf/Views/ServiceManagerPage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/ServiceManagerPage.xaml.cs#L15) |  |
-
-## SettingsPage
-
-Qualified name: <code>Meridian.Wpf.Views.SettingsPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:101](../../../../src/Meridian.Wpf/Views/Pages.cs#L101).
-
-```csharp
-public partial class SettingsPage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/SettingsPage.xaml.cs:13](../../../../src/Meridian.Wpf/Views/SettingsPage.xaml.cs#L13).
-
-Settings page — thin code-behind. All state, service calls, and commands live in SettingsViewModel.
-
-```csharp
-public partial class SettingsPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SettingsPage(SettingsViewModel viewModel);</code> | [src/Meridian.Wpf/Views/SettingsPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/SettingsPage.xaml.cs#L17) |  |
-
-## SettingsWorkspaceShellPageBase
-
-Qualified name: <code>Meridian.Wpf.Views.SettingsWorkspaceShellPageBase</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:341](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L341).
-
-Binds derived pages to the settings workspace shell definition.
-
-```csharp
-public class SettingsWorkspaceShellPageBase : WorkspaceShellPageBase<SettingsWorkspaceShellStateProvider, Meridian.Wpf.Features.Settings.Shell.SettingsWorkspaceShellViewModel>
-```
-
-## SetupWizardPage
-
-Qualified name: <code>Meridian.Wpf.Views.SetupWizardPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:104](../../../../src/Meridian.Wpf/Views/Pages.cs#L104).
-
-```csharp
-public partial class SetupWizardPage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/SetupWizardPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/SetupWizardPage.xaml.cs#L10).
-
-Hosts initial provider, storage, and backend configuration steps.
-
-```csharp
-public partial class SetupWizardPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SetupWizardPage();</code> | [src/Meridian.Wpf/Views/SetupWizardPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/SetupWizardPage.xaml.cs#L12) |  |

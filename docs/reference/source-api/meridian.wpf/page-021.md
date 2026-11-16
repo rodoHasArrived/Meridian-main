@@ -6,6 +6,88 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationsRecordReleaseMapper
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.OperationsRecordReleaseMapper</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/OperationsRecordReleasePresentationModels.cs:30](../../../../src/Meridian.Wpf/Workstation/Models/OperationsRecordReleasePresentationModels.cs#L30).
+
+Projects the release path from source data through the accounting record to report-pack publication, composing the continuity workflow&#x27;s gates, accounting-record summary, and close package exactly like the browser record-release screen: step tones come from the owning gates, CombineTones lets any blocked step block the release and any unknown step keep it out of Ready, and publication readiness derives from the close package.
+
+```csharp
+public static class OperationsRecordReleaseMapper
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static WorkstationReadinessTone CombineTones(IReadOnlyList&lt;WorkstationReadinessTone&gt; tones);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsRecordReleasePresentationModels.cs:36](../../../../src/Meridian.Wpf/Workstation/Models/OperationsRecordReleasePresentationModels.cs#L36) | Tone precedence for composed steps: blocked, then review, then neutral, then ready — an unknown (neutral) input deliberately outranks ready so composition never fabricates green. |
+| <code>public static WorkstationReadinessTone AccountingSummaryTone(OperationsAccountingRecordSummaryDto? summary);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsRecordReleasePresentationModels.cs:58](../../../../src/Meridian.Wpf/Workstation/Models/OperationsRecordReleasePresentationModels.cs#L58) |  |
+| <code>public static string? ResolveAccountingRecordId(OperationsAccountingRecordSummaryDto summary);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsRecordReleasePresentationModels.cs:70](../../../../src/Meridian.Wpf/Workstation/Models/OperationsRecordReleasePresentationModels.cs#L70) |  |
+| <code>public static IReadOnlyList&lt;OperationsRecordReleaseStepModel&gt; BuildReleaseSteps(OperationsContinuityWorkflowDto? detail);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsRecordReleasePresentationModels.cs:85](../../../../src/Meridian.Wpf/Workstation/Models/OperationsRecordReleasePresentationModels.cs#L85) |  |
+| <code>public static OperationsRecordReleaseSummaryModel BuildSummary(IReadOnlyList&lt;OperationsRecordReleaseStepModel&gt; steps);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsRecordReleasePresentationModels.cs:139](../../../../src/Meridian.Wpf/Workstation/Models/OperationsRecordReleasePresentationModels.cs#L139) |  |
+
+## OperationsRecordReleaseStepModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.OperationsRecordReleaseStepModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/OperationsRecordReleasePresentationModels.cs:7](../../../../src/Meridian.Wpf/Workstation/Models/OperationsRecordReleasePresentationModels.cs#L7).
+
+```csharp
+public sealed record OperationsRecordReleaseStepModel(string StepId, int Index, string Label, string StatusText, string Detail, string RouteText, WorkstationReadinessTone ReadinessTone, string Tone);
+```
+
+## OperationsRecordReleaseSummaryModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.OperationsRecordReleaseSummaryModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/OperationsRecordReleasePresentationModels.cs:17](../../../../src/Meridian.Wpf/Workstation/Models/OperationsRecordReleasePresentationModels.cs#L17).
+
+```csharp
+public sealed record OperationsRecordReleaseSummaryModel(string StatusLabel, string StatusDetail, WorkstationReadinessTone ReadinessTone, string Tone);
+```
+
+## OperatorReadinessConsoleMapper
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.OperatorReadinessConsoleMapper</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs:49](../../../../src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs#L49).
+
+Projects the server-owned readiness contracts (trading operator readiness, operator inbox, reconciliation break queue, strategy run summaries) into desktop console rows. All gate and severity truth stays server-side; this mapper only restyles statuses and resolves navigation targets against the registered shell catalog.
+
+```csharp
+public static class OperatorReadinessConsoleMapper
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static WorkstationReadinessTone ToReadinessTone(TradingAcceptanceGateStatusDto status) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs:55](../../../../src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs#L55) |  |
+| <code>public static WorkstationReadinessTone ToReadinessTone(OperatorWorkItemToneDto tone) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs:64](../../../../src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs#L64) |  |
+| <code>public static IReadOnlyList&lt;OperatorReadinessGateRowModel&gt; BuildGateRows(TradingOperatorReadinessDto readiness);</code> | [src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs:73](../../../../src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs#L73) |  |
+| <code>public static IReadOnlyList&lt;OperatorReadinessPanelRowModel&gt; BuildSessionRows(TradingOperatorReadinessDto readiness);</code> | [src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs:109](../../../../src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs#L109) |  |
+| <code>public static IReadOnlyList&lt;OperatorReadinessPanelRowModel&gt; BuildTrustRows(TradingOperatorReadinessDto readiness);</code> | [src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs:176](../../../../src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs#L176) |  |
+| <code>public static IReadOnlyList&lt;OperatorReadinessPanelRowModel&gt; BuildPromotionRows(TradingOperatorReadinessDto readiness);</code> | [src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs:227](../../../../src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs#L227) |  |
+| <code>public static IReadOnlyList&lt;OperatorReadinessPanelRowModel&gt; BuildRunRows(StrategyWorkspaceSummary summary);</code> | [src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs:272](../../../../src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs#L272) |  |
+| <code>public static IReadOnlyList&lt;OperatorReadinessPanelRowModel&gt; BuildBreakRows(IReadOnlyList&lt;ReconciliationBreakQueueItem&gt; breaks);</code> | [src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs:300](../../../../src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs#L300) |  |
+| <code>public static IReadOnlyList&lt;OperatorReadinessWorkItemRowModel&gt; BuildWorkItemRows(IReadOnlyList&lt;OperatorWorkItemDto&gt; inboxItems, IReadOnlyList&lt;OperatorWorkItemDto&gt; readinessItems, Func&lt;string, bool&gt; isRegisteredPageTag, Meridian.Ui.Shared.Workflows.IWorkflowActionCatalog? workflowActionCatalog = null);</code> | [src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs:333](../../../../src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs#L333) | Merges the readiness and inbox work-item feeds and resolves each row to a registered shell page tag. Duplicate ids keep the more severe tone (then the newer timestamp) and the queue orders severity-first, matching the browser console and the server-side inbox dedup — PriorityScore alone cannot order the merge because only inbox items carry a score. |
+| <code>public static string ResolveWorkItemPageTag(OperatorWorkItemDto item, Func&lt;string, bool&gt; isRegisteredPageTag, Meridian.Ui.Shared.Workflows.IWorkflowActionCatalog? workflowActionCatalog = null);</code> | [src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs:392](../../../../src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs#L392) |  |
+| <code>public static IReadOnlyList&lt;OperatorReadinessFactModel&gt; BuildSummaryFacts(TradingOperatorReadinessDto? readiness, OperatorInboxDto? inbox, IReadOnlyList&lt;ReconciliationBreakQueueItem&gt;? breaks, StrategyWorkspaceSummary? runSummary);</code> | [src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs:506](../../../../src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs#L506) |  |
+| <code>public static string FormatStatus(TradingAcceptanceGateStatusDto status) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs:558](../../../../src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs#L558) |  |
+| <code>public static string FormatTimestamp(DateTimeOffset value) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs:565](../../../../src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs#L565) |  |
+
+## OperatorReadinessFactModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.OperatorReadinessFactModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs:7](../../../../src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs#L7).
+
+```csharp
+public sealed record OperatorReadinessFactModel(string Label, string Value, string Detail);
+```
+
 ## OperatorReadinessGateRowModel
 
 Qualified name: <code>Meridian.Wpf.Workstation.Models.OperatorReadinessGateRowModel</code>. Kind: `record`.
@@ -711,101 +793,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public TItem? SelectedItem { get; set; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/DetailWorkspaceViewModelBase.cs:11](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/DetailWorkspaceViewModelBase.cs#L11) |  |
 | <code>public bool IsInspectorVisible { get; set; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/DetailWorkspaceViewModelBase.cs:17](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/DetailWorkspaceViewModelBase.cs#L17) |  |
-
-## DiagnosticsViewModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.DiagnosticsViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/ViewModels/Base/DiagnosticsViewModel.cs:6](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/DiagnosticsViewModel.cs#L6).
-
-Exposes observable diagnostic status title and detail text.
-
-```csharp
-public sealed class DiagnosticsViewModel : Meridian.Wpf.ViewModels.BindableBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string StatusTitle { get; set; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/DiagnosticsViewModel.cs:11](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/DiagnosticsViewModel.cs#L11) |  |
-| <code>public string StatusDetail { get; set; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/DiagnosticsViewModel.cs:17](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/DiagnosticsViewModel.cs#L17) |  |
-
-## ErrorStateViewModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.ErrorStateViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/ViewModels/Base/ErrorStateViewModel.cs:6](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/ErrorStateViewModel.cs#L6).
-
-Exposes observable error presence, title, and message for reusable error presentation.
-
-```csharp
-public sealed class ErrorStateViewModel : Meridian.Wpf.ViewModels.BindableBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool HasError { get; set; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/ErrorStateViewModel.cs:12](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/ErrorStateViewModel.cs#L12) |  |
-| <code>public string Title { get; set; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/ErrorStateViewModel.cs:18](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/ErrorStateViewModel.cs#L18) |  |
-| <code>public string Message { get; set; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/ErrorStateViewModel.cs:24](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/ErrorStateViewModel.cs#L24) |  |
-
-## FilterableTableViewModel (generic arity 1)
-
-Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.FilterableTableViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/ViewModels/Base/FilterableTableViewModel.cs:6](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/FilterableTableViewModel.cs#L6).
-
-Maintains all table rows and filters the displayed collection when the filter query changes.
-
-```csharp
-public sealed class FilterableTableViewModel<TRow>: TableViewModel<TRow>
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string FilterQuery { get; set; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/FilterableTableViewModel.cs:11](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/FilterableTableViewModel.cs#L11) |  |
-| <code>public Func&lt;TRow, string, bool&gt; MatchFilter { get; set; } = static (_, _) =&gt; true;</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/FilterableTableViewModel.cs:23](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/FilterableTableViewModel.cs#L23) |  |
-| <code>public override void ReplaceRows(IEnumerable&lt;TRow&gt; rows);</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/FilterableTableViewModel.cs:25](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/FilterableTableViewModel.cs#L25) |  |
-| <code>public void ClearFilter() =&gt; …;</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/FilterableTableViewModel.cs:34](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/FilterableTableViewModel.cs#L34) |  |
-
-## InspectorViewModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.InspectorViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/ViewModels/Base/InspectorViewModel.cs:6](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/InspectorViewModel.cs#L6).
-
-Exposes observable inspector title and summary text.
-
-```csharp
-public sealed class InspectorViewModel : Meridian.Wpf.ViewModels.BindableBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Title { get; set; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/InspectorViewModel.cs:11](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/InspectorViewModel.cs#L11) |  |
-| <code>public string Summary { get; set; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/InspectorViewModel.cs:17](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/InspectorViewModel.cs#L17) |  |
-
-## LoadingStateViewModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.LoadingStateViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/ViewModels/Base/LoadingStateViewModel.cs:6](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/LoadingStateViewModel.cs#L6).
-
-Exposes observable loading activity and its explanatory message.
-
-```csharp
-public sealed class LoadingStateViewModel : Meridian.Wpf.ViewModels.BindableBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsLoading { get; set; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/LoadingStateViewModel.cs:11](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/LoadingStateViewModel.cs#L11) |  |
-| <code>public string Message { get; set; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/LoadingStateViewModel.cs:17](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/LoadingStateViewModel.cs#L17) |  |

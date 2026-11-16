@@ -194,6 +194,54 @@ Declared public members:
 | <code>void CancelActivation();</code> | [src/Meridian.Wpf/Contracts/IPageActivationLifetime.cs:17](../../../../src/Meridian.Wpf/Contracts/IPageActivationLifetime.cs#L17) |  |
 | <code>void Deactivate();</code> | [src/Meridian.Wpf/Contracts/IPageActivationLifetime.cs:19](../../../../src/Meridian.Wpf/Contracts/IPageActivationLifetime.cs#L19) |  |
 
+## IPageRefreshContentHost
+
+Qualified name: <code>Meridian.Wpf.Contracts.IPageRefreshContentHost</code>. Kind: `interface`.
+
+Source: [src/Meridian.Wpf/Contracts/IPageRefreshTarget.cs:23](../../../../src/Meridian.Wpf/Contracts/IPageRefreshTarget.cs#L23).
+
+Implemented by shell chrome that wraps the page the operator is working in, so the shell refresh reaches the hosted page rather than the wrapper.
+
+```csharp
+public interface IPageRefreshContentHost
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>object? PageRefreshContent { get; }</code> | [src/Meridian.Wpf/Contracts/IPageRefreshTarget.cs:25](../../../../src/Meridian.Wpf/Contracts/IPageRefreshTarget.cs#L25) |  |
+
+## IPageRefreshOptOut
+
+Qualified name: <code>Meridian.Wpf.Contracts.IPageRefreshOptOut</code>. Kind: `interface`.
+
+Source: [src/Meridian.Wpf/Contracts/IPageRefreshTarget.cs:34](../../../../src/Meridian.Wpf/Contracts/IPageRefreshTarget.cs#L34).
+
+Marks a page or view model whose public RefreshCommand does more than re-read data (for example it loads plugins, writes, sends, or starts jobs). The shell refresh does not pick such a command up by convention and falls back to re-navigating the page instead. A type that also implements IPageRefreshTarget has opted back in explicitly.
+
+```csharp
+public interface IPageRefreshOptOut
+```
+
+## IPageRefreshTarget
+
+Qualified name: <code>Meridian.Wpf.Contracts.IPageRefreshTarget</code>. Kind: `interface`.
+
+Source: [src/Meridian.Wpf/Contracts/IPageRefreshTarget.cs:14](../../../../src/Meridian.Wpf/Contracts/IPageRefreshTarget.cs#L14).
+
+Implemented by a page or page view model that can reload its own data in place. The shell Refresh control (toolbar button and F5) executes RefreshCommand instead of re-navigating, so selection, filters, and typed input survive a refresh.
+
+```csharp
+public interface IPageRefreshTarget
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ICommand RefreshCommand { get; }</code> | [src/Meridian.Wpf/Contracts/IPageRefreshTarget.cs:16](../../../../src/Meridian.Wpf/Contracts/IPageRefreshTarget.cs#L16) |  |
+
 ## IRemoteWorkstationClient
 
 Qualified name: <code>Meridian.Wpf.Contracts.IRemoteWorkstationClient</code>. Kind: `interface`.
@@ -988,13 +1036,13 @@ Declared public members:
 | --- | --- | --- |
 | <code>public const string StrategyShellTitle = Strategy.ShellTitle;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:21](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L21) |  |
 | <code>public const string DataShellTitle = Data.ShellTitle;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:22](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L22) |  |
-| <code>public static IReadOnlyList&lt;WorkspaceCopyEntry&gt; Entries { get; } = [..BuildEntries(Trading.WorkspaceId, Trading.Descriptor, Trading.ShellTitle, Trading.ShellSubtitle), ..BuildEntries(Portfolio.WorkspaceId, Portfolio.Descriptor, Portfolio.ShellTitle, Portfolio.ShellSubtitle), ..BuildEntries(Accounting.WorkspaceId, Accounting.Descriptor, Accounting.ShellTitle, Accounting.ShellSubtitleNoFund), ..BuildEntries(Reporting.WorkspaceId, Reporting.Descriptor, Reporting.ShellTitle, Reporting.ShellSubtitle), ..BuildEntries(Strategy.WorkspaceId, Strategy.Descriptor, Strategy.ShellTitle, Strategy.ShellSubtitle), ..BuildEntries(Data.WorkspaceId, Data.Descriptor, Data.ShellTitle, Data.ShellSubtitle), ..BuildEntries(Settings.WorkspaceId, Settings.Descriptor, Settings.ShellTitle, Settings.ShellSubtitle)];</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:197](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L197) |  |
+| <code>public static IReadOnlyList&lt;WorkspaceCopyEntry&gt; Entries { get; } = [..BuildEntries(Trading.WorkspaceId, Trading.Descriptor, Trading.ShellTitle, Trading.ShellSubtitle), ..BuildEntries(Portfolio.WorkspaceId, Portfolio.Descriptor, Portfolio.ShellTitle, Portfolio.ShellSubtitle), ..BuildEntries(Accounting.WorkspaceId, Accounting.Descriptor, Accounting.ShellTitle, Accounting.ShellSubtitleNoFund), ..BuildEntries(Reporting.WorkspaceId, Reporting.Descriptor, Reporting.ShellTitle, Reporting.ShellSubtitle), ..BuildEntries(Strategy.WorkspaceId, Strategy.Descriptor, Strategy.ShellTitle, Strategy.ShellSubtitle), ..BuildEntries(Data.WorkspaceId, Data.Descriptor, Data.ShellTitle, Data.ShellSubtitle), ..BuildEntries(Settings.WorkspaceId, Settings.Descriptor, Settings.ShellTitle, Settings.ShellSubtitle)];</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:209](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L209) |  |
 
 ## Accounting
 
 Qualified name: <code>Meridian.Wpf.Copy.WorkspaceCopyCatalog.Accounting</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:64](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L64).
+Source: [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:76](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L76).
 
 Provides titles, descriptions, and scope copy for the accounting workspace.
 
@@ -1006,17 +1054,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string WorkspaceId = WorkstationWorkspaceCatalog.AccountingKey;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:66](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L66) |  |
-| <code>public static readonly WorkspaceDescriptorCopy Descriptor = new (WorkspaceId, WorkstationWorkspaceCatalog.AccountingLabel, WorkstationWorkspaceCatalog.AccountingDesktopDescription, WorkstationWorkspaceCatalog.AccountingDesktopSummary, WorkstationWorkspaceCatalog.AccountingDesktopTileSummary, WorkstationWorkspaceCatalog.AccountingDesktopShellDisplayName);</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:67](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L67) |  |
-| <code>public const string ShellTitle = &quot;Accounting Workspace&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:75](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L75) |  |
-| <code>public const string ShellSubtitleNoFund = &quot;Fund-aware accounting shell for ledger, reconciliation, trial balance, and audit readiness.&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:76](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L76) |  |
-| <code>public const string ShellSubtitleFund = &quot;Review accounting, reconciliations, cash, financing, and approval gates without leaving the shell.&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:77](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L77) |  |
+| <code>public const string WorkspaceId = WorkstationWorkspaceCatalog.AccountingKey;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:78](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L78) |  |
+| <code>public static readonly WorkspaceDescriptorCopy Descriptor = new (WorkspaceId, WorkstationWorkspaceCatalog.AccountingLabel, WorkstationWorkspaceCatalog.AccountingDesktopDescription, WorkstationWorkspaceCatalog.AccountingDesktopSummary, WorkstationWorkspaceCatalog.AccountingDesktopTileSummary, WorkstationWorkspaceCatalog.AccountingDesktopShellDisplayName);</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:79](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L79) |  |
+| <code>public const string ShellTitle = &quot;Accounting Workspace&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:87](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L87) |  |
+| <code>public const string ShellSubtitleNoFund = &quot;See what is blocking the close, who owns it, and the next action.&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:88](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L88) |  |
+| <code>public const string ShellSubtitleFund = ShellSubtitleNoFund;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:89](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L89) |  |
 
 ## Data
 
 Qualified name: <code>Meridian.Wpf.Copy.WorkspaceCopyCatalog.Data</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:120](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L120).
+Source: [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:132](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L132).
 
 Provides titles, descriptions, and scope copy for the data workspace.
 
@@ -1028,19 +1076,19 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string WorkspaceId = WorkstationWorkspaceCatalog.DataKey;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:122](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L122) |  |
-| <code>public static readonly WorkspaceDescriptorCopy Descriptor = new (WorkspaceId, WorkstationWorkspaceCatalog.DataLabel, WorkstationWorkspaceCatalog.DataDesktopDescription, WorkstationWorkspaceCatalog.DataDesktopSummary, WorkstationWorkspaceCatalog.DataDesktopTileSummary, WorkstationWorkspaceCatalog.DataDesktopShellDisplayName);</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:123](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L123) |  |
-| <code>public const string ShellTitle = &quot;Data Workspace&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:131](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L131) |  |
-| <code>public const string ShellSubtitle = &quot;Provider freshness, backfill pressure, storage health, and export job visibility in one operator shell.&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:132](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L132) |  |
-| <code>public const string PrimaryScopeLabel = &quot;Queue&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:133](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L133) |  |
-| <code>public const string DefaultScopeLabel = &quot;Provider and storage health&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:134](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L134) |  |
-| <code>public const string DefaultScopeSummary = &quot;Provider health, backfill priority, storage follow-up, and export delivery stay in one fixed shell.&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:135](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L135) |  |
+| <code>public const string WorkspaceId = WorkstationWorkspaceCatalog.DataKey;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:134](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L134) |  |
+| <code>public static readonly WorkspaceDescriptorCopy Descriptor = new (WorkspaceId, WorkstationWorkspaceCatalog.DataLabel, WorkstationWorkspaceCatalog.DataDesktopDescription, WorkstationWorkspaceCatalog.DataDesktopSummary, WorkstationWorkspaceCatalog.DataDesktopTileSummary, WorkstationWorkspaceCatalog.DataDesktopShellDisplayName);</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:135](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L135) |  |
+| <code>public const string ShellTitle = &quot;Data Workspace&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:143](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L143) |  |
+| <code>public const string ShellSubtitle = &quot;Check that data providers are healthy and that data is arriving.&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:144](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L144) |  |
+| <code>public const string PrimaryScopeLabel = &quot;Queue&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:145](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L145) |  |
+| <code>public const string DefaultScopeLabel = &quot;Provider and storage health&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:146](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L146) |  |
+| <code>public const string DefaultScopeSummary = &quot;Provider health, backfill priority, storage follow-up, and export delivery stay in one fixed shell.&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:147](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L147) |  |
 
 ## DataOperations
 
 Qualified name: <code>Meridian.Wpf.Copy.WorkspaceCopyCatalog.DataOperations</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:173](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L173).
+Source: [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:185](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L185).
 
 Preserves legacy data-operations workspace copy by forwarding to the data workspace.
 
@@ -1052,19 +1100,19 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string WorkspaceId = Data.WorkspaceId;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:175](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L175) |  |
-| <code>public static readonly WorkspaceDescriptorCopy Descriptor = Data.Descriptor;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:176](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L176) |  |
-| <code>public const string ShellTitle = Data.ShellTitle;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:177](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L177) |  |
-| <code>public const string ShellSubtitle = Data.ShellSubtitle;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:178](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L178) |  |
-| <code>public const string PrimaryScopeLabel = Data.PrimaryScopeLabel;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:179](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L179) |  |
-| <code>public const string DefaultScopeLabel = Data.DefaultScopeLabel;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:180](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L180) |  |
-| <code>public const string DefaultScopeSummary = Data.DefaultScopeSummary;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:181](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L181) |  |
+| <code>public const string WorkspaceId = Data.WorkspaceId;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:187](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L187) |  |
+| <code>public static readonly WorkspaceDescriptorCopy Descriptor = Data.Descriptor;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:188](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L188) |  |
+| <code>public const string ShellTitle = Data.ShellTitle;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:189](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L189) |  |
+| <code>public const string ShellSubtitle = Data.ShellSubtitle;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:190](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L190) |  |
+| <code>public const string PrimaryScopeLabel = Data.PrimaryScopeLabel;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:191](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L191) |  |
+| <code>public const string DefaultScopeLabel = Data.DefaultScopeLabel;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:192](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L192) |  |
+| <code>public const string DefaultScopeSummary = Data.DefaultScopeSummary;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:193](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L193) |  |
 
 ## Governance
 
 Qualified name: <code>Meridian.Wpf.Copy.WorkspaceCopyCatalog.Governance</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:188](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L188).
+Source: [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:200](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L200).
 
 Preserves legacy governance workspace copy by forwarding to the accounting workspace.
 
@@ -1076,17 +1124,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string WorkspaceId = Accounting.WorkspaceId;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:190](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L190) |  |
-| <code>public static readonly WorkspaceDescriptorCopy Descriptor = Accounting.Descriptor;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:191](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L191) |  |
-| <code>public const string ShellTitle = Accounting.ShellTitle;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:192](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L192) |  |
-| <code>public const string ShellSubtitleNoFund = Accounting.ShellSubtitleNoFund;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:193](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L193) |  |
-| <code>public const string ShellSubtitleFund = Accounting.ShellSubtitleFund;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:194](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L194) |  |
+| <code>public const string WorkspaceId = Accounting.WorkspaceId;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:202](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L202) |  |
+| <code>public static readonly WorkspaceDescriptorCopy Descriptor = Accounting.Descriptor;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:203](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L203) |  |
+| <code>public const string ShellTitle = Accounting.ShellTitle;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:204](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L204) |  |
+| <code>public const string ShellSubtitleNoFund = Accounting.ShellSubtitleNoFund;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:205](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L205) |  |
+| <code>public const string ShellSubtitleFund = Accounting.ShellSubtitleFund;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:206](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L206) |  |
 
 ## Portfolio
 
 Qualified name: <code>Meridian.Wpf.Copy.WorkspaceCopyCatalog.Portfolio</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:46](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L46).
+Source: [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:58](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L58).
 
 Provides titles, descriptions, and scope copy for the portfolio workspace.
 
@@ -1098,16 +1146,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string WorkspaceId = WorkstationWorkspaceCatalog.PortfolioKey;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:48](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L48) |  |
-| <code>public static readonly WorkspaceDescriptorCopy Descriptor = new (WorkspaceId, WorkstationWorkspaceCatalog.PortfolioLabel, WorkstationWorkspaceCatalog.PortfolioDesktopDescription, WorkstationWorkspaceCatalog.PortfolioDesktopSummary, WorkstationWorkspaceCatalog.PortfolioDesktopTileSummary, WorkstationWorkspaceCatalog.PortfolioDesktopShellDisplayName);</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:49](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L49) |  |
-| <code>public const string ShellTitle = &quot;Portfolio Workspace&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:57](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L57) |  |
-| <code>public const string ShellSubtitle = &quot;Account, aggregate, fund, lending, and import workflows for portfolio review.&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:58](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L58) |  |
+| <code>public const string WorkspaceId = WorkstationWorkspaceCatalog.PortfolioKey;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:60](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L60) |  |
+| <code>public static readonly WorkspaceDescriptorCopy Descriptor = new (WorkspaceId, WorkstationWorkspaceCatalog.PortfolioLabel, WorkstationWorkspaceCatalog.PortfolioDesktopDescription, WorkstationWorkspaceCatalog.PortfolioDesktopSummary, WorkstationWorkspaceCatalog.PortfolioDesktopTileSummary, WorkstationWorkspaceCatalog.PortfolioDesktopShellDisplayName);</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:61](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L61) |  |
+| <code>public const string ShellTitle = &quot;Portfolio Workspace&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:69](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L69) |  |
+| <code>public const string ShellSubtitle = &quot;See what the portfolio holds, what it is worth, and how current the prices are.&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:70](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L70) |  |
 
 ## Reporting
 
 Qualified name: <code>Meridian.Wpf.Copy.WorkspaceCopyCatalog.Reporting</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:83](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L83).
+Source: [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:95](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L95).
 
 Provides titles, descriptions, and scope copy for the reporting workspace.
 
@@ -1119,16 +1167,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string WorkspaceId = WorkstationWorkspaceCatalog.ReportingKey;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:85](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L85) |  |
-| <code>public static readonly WorkspaceDescriptorCopy Descriptor = new (WorkspaceId, WorkstationWorkspaceCatalog.ReportingLabel, WorkstationWorkspaceCatalog.ReportingDesktopDescription, WorkstationWorkspaceCatalog.ReportingDesktopSummary, WorkstationWorkspaceCatalog.ReportingDesktopTileSummary, WorkstationWorkspaceCatalog.ReportingDesktopShellDisplayName);</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:86](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L86) |  |
-| <code>public const string ShellTitle = &quot;Reporting Workspace&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:94](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L94) |  |
-| <code>public const string ShellSubtitle = &quot;Report packs, dashboards, and analysis export workflows.&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:95](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L95) |  |
+| <code>public const string WorkspaceId = WorkstationWorkspaceCatalog.ReportingKey;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:97](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L97) |  |
+| <code>public static readonly WorkspaceDescriptorCopy Descriptor = new (WorkspaceId, WorkstationWorkspaceCatalog.ReportingLabel, WorkstationWorkspaceCatalog.ReportingDesktopDescription, WorkstationWorkspaceCatalog.ReportingDesktopSummary, WorkstationWorkspaceCatalog.ReportingDesktopTileSummary, WorkstationWorkspaceCatalog.ReportingDesktopShellDisplayName);</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:98](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L98) |  |
+| <code>public const string ShellTitle = &quot;Reporting Workspace&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:106](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L106) |  |
+| <code>public const string ShellSubtitle = &quot;See which reports are blocked today, who owns each one, and the next action.&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:107](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L107) |  |
 
 ## Research
 
 Qualified name: <code>Meridian.Wpf.Copy.WorkspaceCopyCatalog.Research</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:160](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L160).
+Source: [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:172](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L172).
 
 Preserves legacy research workspace copy by forwarding to the strategy workspace.
 
@@ -1140,17 +1188,36 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string WorkspaceId = Strategy.WorkspaceId;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:162](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L162) |  |
-| <code>public static readonly WorkspaceDescriptorCopy Descriptor = Strategy.Descriptor;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:163](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L163) |  |
-| <code>public const string ShellTitle = Strategy.ShellTitle;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:164](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L164) |  |
-| <code>public const string ShellSubtitle = Strategy.ShellSubtitle;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:165](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L165) |  |
-| <code>public const string PrimaryScopeLabel = Strategy.PrimaryScopeLabel;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:166](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L166) |  |
+| <code>public const string WorkspaceId = Strategy.WorkspaceId;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:174](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L174) |  |
+| <code>public static readonly WorkspaceDescriptorCopy Descriptor = Strategy.Descriptor;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:175](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L175) |  |
+| <code>public const string ShellTitle = Strategy.ShellTitle;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:176](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L176) |  |
+| <code>public const string ShellSubtitle = Strategy.ShellSubtitle;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:177](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L177) |  |
+| <code>public const string PrimaryScopeLabel = Strategy.PrimaryScopeLabel;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:178](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L178) |  |
+
+## Scope
+
+Qualified name: <code>Meridian.Wpf.Copy.WorkspaceCopyCatalog.Scope</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:27](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L27).
+
+Provides the two shared phrases the desktop shell uses when no scope is selected.
+
+```csharp
+public static class Scope
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string AllAuthorized = &quot;All authorized scopes&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:30](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L30) | Shown where the page still lists everything the operator may see. |
+| <code>public const string NoneSelected = &quot;No scope selected&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:33](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L33) | Shown where the page stays empty or locked until a scope is chosen. |
 
 ## Settings
 
 Qualified name: <code>Meridian.Wpf.Copy.WorkspaceCopyCatalog.Settings</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:141](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L141).
+Source: [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:153](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L153).
 
 Provides titles, descriptions, and scope copy for the settings workspace.
 
@@ -1162,16 +1229,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string WorkspaceId = WorkstationWorkspaceCatalog.SettingsKey;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:143](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L143) |  |
-| <code>public static readonly WorkspaceDescriptorCopy Descriptor = new (WorkspaceId, WorkstationWorkspaceCatalog.SettingsLabel, WorkstationWorkspaceCatalog.SettingsDesktopDescription, WorkstationWorkspaceCatalog.SettingsDesktopSummary, WorkstationWorkspaceCatalog.SettingsDesktopTileSummary, WorkstationWorkspaceCatalog.SettingsDesktopShellDisplayName);</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:144](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L144) |  |
-| <code>public const string ShellTitle = &quot;Settings Workspace&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:152](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L152) |  |
-| <code>public const string ShellSubtitle = &quot;Workstation configuration, diagnostics, support, and operator setup.&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:153](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L153) |  |
+| <code>public const string WorkspaceId = WorkstationWorkspaceCatalog.SettingsKey;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:155](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L155) |  |
+| <code>public static readonly WorkspaceDescriptorCopy Descriptor = new (WorkspaceId, WorkstationWorkspaceCatalog.SettingsLabel, WorkstationWorkspaceCatalog.SettingsDesktopDescription, WorkstationWorkspaceCatalog.SettingsDesktopSummary, WorkstationWorkspaceCatalog.SettingsDesktopTileSummary, WorkstationWorkspaceCatalog.SettingsDesktopShellDisplayName);</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:156](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L156) |  |
+| <code>public const string ShellTitle = &quot;Settings Workspace&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:164](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L164) |  |
+| <code>public const string ShellSubtitle = &quot;Pick the setup task you need.&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:165](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L165) |  |
 
 ## Strategy
 
 Qualified name: <code>Meridian.Wpf.Copy.WorkspaceCopyCatalog.Strategy</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:101](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L101).
+Source: [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:113](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L113).
 
 Provides titles, descriptions, and scope copy for the strategy workspace.
 
@@ -1183,70 +1250,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string WorkspaceId = WorkstationWorkspaceCatalog.StrategyKey;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:103](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L103) |  |
-| <code>public static readonly WorkspaceDescriptorCopy Descriptor = new (WorkspaceId, WorkstationWorkspaceCatalog.StrategyLabel, WorkstationWorkspaceCatalog.StrategyDesktopDescription, WorkstationWorkspaceCatalog.StrategyDesktopSummary, WorkstationWorkspaceCatalog.StrategyDesktopTileSummary, WorkstationWorkspaceCatalog.StrategyDesktopShellDisplayName);</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:104](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L104) |  |
-| <code>public const string ShellTitle = &quot;Strategy Workspace&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:112](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L112) |  |
-| <code>public const string ShellSubtitle = &quot;Market briefing, run studio, and promotion-aware strategy workflow.&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:113](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L113) |  |
-| <code>public const string PrimaryScopeLabel = &quot;Strategy&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:114](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L114) |  |
-
-## Trading
-
-Qualified name: <code>Meridian.Wpf.Copy.WorkspaceCopyCatalog.Trading</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:27](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L27).
-
-Provides titles, descriptions, and scope copy for the trading workspace.
-
-```csharp
-public static class Trading
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string WorkspaceId = WorkstationWorkspaceCatalog.TradingKey;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:29](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L29) |  |
-| <code>public static readonly WorkspaceDescriptorCopy Descriptor = new (WorkspaceId, WorkstationWorkspaceCatalog.TradingLabel, WorkstationWorkspaceCatalog.TradingDesktopDescription, WorkstationWorkspaceCatalog.TradingDesktopSummary, WorkstationWorkspaceCatalog.TradingDesktopTileSummary, WorkstationWorkspaceCatalog.TradingDesktopShellDisplayName);</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:30](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L30) |  |
-| <code>public const string ShellTitle = &quot;Trading Desk&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:38](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L38) |  |
-| <code>public const string ShellSubtitle = &quot;Risk-aware trading shell for live readiness, blotter review, safe staging, and docked execution detail.&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:39](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L39) |  |
-| <code>public const string PrimaryScopeLabel = &quot;Desk&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:40](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L40) |  |
-
-## WorkspaceCopyEntry
-
-Qualified name: <code>Meridian.Wpf.Copy.WorkspaceCopyEntry</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:14](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L14).
-
-```csharp
-public sealed record WorkspaceCopyEntry(string Key, string Text);
-```
-
-## WorkspaceDescriptorCopy
-
-Qualified name: <code>Meridian.Wpf.Copy.WorkspaceDescriptorCopy</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:6](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L6).
-
-```csharp
-public sealed record WorkspaceDescriptorCopy(string Id, string Title, string Description, string Summary, string TileSummary, string ShellDisplayName);
-```
-
-## AccountingFeatureModule
-
-Qualified name: <code>Meridian.Wpf.Features.Accounting.AccountingFeatureModule</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs:47](../../../../src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs#L47).
-
-Registers accounting desktop services and contributes the feature&#x27;s navigation pages and workspace metadata.
-
-```csharp
-public sealed class AccountingFeatureModule : IDesktopFeatureModule
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public void Register(IServiceCollection services);</code> | [src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs:51](../../../../src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs#L51) |  |
-| <code>public IReadOnlyList&lt;ShellPageDescriptor&gt; DescribePages() =&gt; …;</code> | [src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs:370](../../../../src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs#L370) |  |
-| <code>public WorkspaceCapabilityDescriptor DescribeWorkspace() =&gt; …;</code> | [src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs:372](../../../../src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs#L372) |  |
+| <code>public const string WorkspaceId = WorkstationWorkspaceCatalog.StrategyKey;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:115](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L115) |  |
+| <code>public static readonly WorkspaceDescriptorCopy Descriptor = new (WorkspaceId, WorkstationWorkspaceCatalog.StrategyLabel, WorkstationWorkspaceCatalog.StrategyDesktopDescription, WorkstationWorkspaceCatalog.StrategyDesktopSummary, WorkstationWorkspaceCatalog.StrategyDesktopTileSummary, WorkstationWorkspaceCatalog.StrategyDesktopShellDisplayName);</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:116](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L116) |  |
+| <code>public const string ShellTitle = &quot;Strategy Workspace&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:124](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L124) |  |
+| <code>public const string ShellSubtitle = &quot;Review recent strategy runs and open the one you want to work on.&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:125](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L125) |  |
+| <code>public const string PrimaryScopeLabel = &quot;Strategy&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:126](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L126) |  |

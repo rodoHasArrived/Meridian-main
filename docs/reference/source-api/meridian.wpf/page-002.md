@@ -6,6 +6,68 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## Trading
+
+Qualified name: <code>Meridian.Wpf.Copy.WorkspaceCopyCatalog.Trading</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:39](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L39).
+
+Provides titles, descriptions, and scope copy for the trading workspace.
+
+```csharp
+public static class Trading
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string WorkspaceId = WorkstationWorkspaceCatalog.TradingKey;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:41](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L41) |  |
+| <code>public static readonly WorkspaceDescriptorCopy Descriptor = new (WorkspaceId, WorkstationWorkspaceCatalog.TradingLabel, WorkstationWorkspaceCatalog.TradingDesktopDescription, WorkstationWorkspaceCatalog.TradingDesktopSummary, WorkstationWorkspaceCatalog.TradingDesktopTileSummary, WorkstationWorkspaceCatalog.TradingDesktopShellDisplayName);</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:42](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L42) |  |
+| <code>public const string ShellTitle = &quot;Trading Workspace&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:50](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L50) |  |
+| <code>public const string ShellSubtitle = &quot;See your positions and open orders, and check whether the account is ready to trade.&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:51](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L51) |  |
+| <code>public const string PrimaryScopeLabel = &quot;Desk&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:52](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L52) |  |
+
+## WorkspaceCopyEntry
+
+Qualified name: <code>Meridian.Wpf.Copy.WorkspaceCopyEntry</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:14](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L14).
+
+```csharp
+public sealed record WorkspaceCopyEntry(string Key, string Text);
+```
+
+## WorkspaceDescriptorCopy
+
+Qualified name: <code>Meridian.Wpf.Copy.WorkspaceDescriptorCopy</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:6](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L6).
+
+```csharp
+public sealed record WorkspaceDescriptorCopy(string Id, string Title, string Description, string Summary, string TileSummary, string ShellDisplayName);
+```
+
+## AccountingFeatureModule
+
+Qualified name: <code>Meridian.Wpf.Features.Accounting.AccountingFeatureModule</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs:47](../../../../src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs#L47).
+
+Registers accounting desktop services and contributes the feature&#x27;s navigation pages and workspace metadata.
+
+```csharp
+public sealed class AccountingFeatureModule : IDesktopFeatureModule
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public void Register(IServiceCollection services);</code> | [src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs:51](../../../../src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs#L51) |  |
+| <code>public IReadOnlyList&lt;ShellPageDescriptor&gt; DescribePages() =&gt; …;</code> | [src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs:370](../../../../src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs#L370) |  |
+| <code>public WorkspaceCapabilityDescriptor DescribeWorkspace() =&gt; …;</code> | [src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs:372](../../../../src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs#L372) |  |
+
 ## DataFeatureModule
 
 Qualified name: <code>Meridian.Wpf.Features.Data.DataFeatureModule</code>. Kind: `class`.
@@ -766,7 +828,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Features.Settings.Shell.ISettingsWorkspaceShellPresentationService</code>. Kind: `interface`.
 
-Source: [src/Meridian.Wpf/Features/Settings/Shell/SettingsWorkspaceShellPresentationService.cs:10](../../../../src/Meridian.Wpf/Features/Settings/Shell/SettingsWorkspaceShellPresentationService.cs#L10).
+Source: [src/Meridian.Wpf/Features/Settings/Shell/SettingsWorkspaceShellPresentationService.cs:11](../../../../src/Meridian.Wpf/Features/Settings/Shell/SettingsWorkspaceShellPresentationService.cs#L11).
 
 Projects a settings snapshot into shell context, commands, and readiness presentation.
 
@@ -778,7 +840,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>SettingsWorkspaceShellPresentation Build(SettingsWorkspaceShellSnapshot snapshot);</code> | [src/Meridian.Wpf/Features/Settings/Shell/SettingsWorkspaceShellPresentationService.cs:12](../../../../src/Meridian.Wpf/Features/Settings/Shell/SettingsWorkspaceShellPresentationService.cs#L12) |  |
+| <code>SettingsWorkspaceShellPresentation Build(SettingsWorkspaceShellSnapshot snapshot);</code> | [src/Meridian.Wpf/Features/Settings/Shell/SettingsWorkspaceShellPresentationService.cs:13](../../../../src/Meridian.Wpf/Features/Settings/Shell/SettingsWorkspaceShellPresentationService.cs#L13) |  |
 
 ## ISettingsWorkspaceShellSnapshotService
 
@@ -886,7 +948,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Features.Settings.Shell.SettingsWorkspaceShellPresentationService</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Features/Settings/Shell/SettingsWorkspaceShellPresentationService.cs:18](../../../../src/Meridian.Wpf/Features/Settings/Shell/SettingsWorkspaceShellPresentationService.cs#L18).
+Source: [src/Meridian.Wpf/Features/Settings/Shell/SettingsWorkspaceShellPresentationService.cs:19](../../../../src/Meridian.Wpf/Features/Settings/Shell/SettingsWorkspaceShellPresentationService.cs#L19).
 
 Builds settings shell context, commands, and readiness presentation from a settings snapshot.
 
@@ -898,7 +960,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public SettingsWorkspaceShellPresentation Build(SettingsWorkspaceShellSnapshot snapshot);</code> | [src/Meridian.Wpf/Features/Settings/Shell/SettingsWorkspaceShellPresentationService.cs:20](../../../../src/Meridian.Wpf/Features/Settings/Shell/SettingsWorkspaceShellPresentationService.cs#L20) |  |
+| <code>public SettingsWorkspaceShellPresentation Build(SettingsWorkspaceShellSnapshot snapshot);</code> | [src/Meridian.Wpf/Features/Settings/Shell/SettingsWorkspaceShellPresentationService.cs:21](../../../../src/Meridian.Wpf/Features/Settings/Shell/SettingsWorkspaceShellPresentationService.cs#L21) |  |
 
 ## SettingsWorkspaceShellSnapshot
 
@@ -1030,7 +1092,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public MainWindow(MainWindowViewModel viewModel, WpfServices.NavigationService navigationService, WpfServices.KeyboardShortcutService keyboardShortcutService, WpfServices.NotificationService notificationService, WpfServices.FundContextService fundContextService, WpfServices.WorkstationOperatingContextService operatingContextService, DesktopShellCoordinator shellCoordinator, DesktopShellSessionService sessionService, DesktopLaunchRouter launchRouter, FileDropRouter fileDropRouter, IWindowStateStore windowStateStore);</code> | [src/Meridian.Wpf/MainWindow.xaml.cs:59](../../../../src/Meridian.Wpf/MainWindow.xaml.cs#L59) |  |
-| <code>public void ForceStartupWindowRecovery();</code> | [src/Meridian.Wpf/MainWindow.xaml.cs:985](../../../../src/Meridian.Wpf/MainWindow.xaml.cs#L985) |  |
+| <code>public void ForceStartupWindowRecovery();</code> | [src/Meridian.Wpf/MainWindow.xaml.cs:996](../../../../src/Meridian.Wpf/MainWindow.xaml.cs#L996) |  |
 
 ## AccountingSubarea
 
@@ -1101,91 +1163,3 @@ Declared public members:
 | <code>public string ValidationStatusLabel =&gt; …;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:49](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L49) |  |
 | <code>public string ValidationStatusDetail =&gt; …;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:50](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L50) |  |
 | <code>public bool CanPromoteToPaper { get; set; }</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:51](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L51) |  |
-
-## AlertModel
-
-Qualified name: <code>Meridian.Wpf.Models.AlertModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Models/DataQualityModels.cs:53](../../../../src/Meridian.Wpf/Models/DataQualityModels.cs#L53).
-
-Model for alert display.
-
-```csharp
-public sealed class AlertModel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Id { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/DataQualityModels.cs:55](../../../../src/Meridian.Wpf/Models/DataQualityModels.cs#L55) |  |
-| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/DataQualityModels.cs:56](../../../../src/Meridian.Wpf/Models/DataQualityModels.cs#L56) |  |
-| <code>public string AlertType { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/DataQualityModels.cs:57](../../../../src/Meridian.Wpf/Models/DataQualityModels.cs#L57) |  |
-| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/DataQualityModels.cs:58](../../../../src/Meridian.Wpf/Models/DataQualityModels.cs#L58) |  |
-| <code>public string Severity { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/DataQualityModels.cs:59](../../../../src/Meridian.Wpf/Models/DataQualityModels.cs#L59) |  |
-| <code>public Brush SeverityBrush { get; set; } = Brushes.Gray;</code> | [src/Meridian.Wpf/Models/DataQualityModels.cs:60](../../../../src/Meridian.Wpf/Models/DataQualityModels.cs#L60) |  |
-
-## AlignmentHistoryEntry
-
-Qualified name: <code>Meridian.Wpf.Models.AlignmentHistoryEntry</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Models/AlignmentModels.cs:6](../../../../src/Meridian.Wpf/Models/AlignmentModels.cs#L6).
-
-Display model for a completed time-series alignment run shown in the recent history list.
-
-```csharp
-public sealed class AlignmentHistoryEntry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Name { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Models/AlignmentModels.cs:8](../../../../src/Meridian.Wpf/Models/AlignmentModels.cs#L8) |  |
-| <code>public string DetailsText { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Models/AlignmentModels.cs:9](../../../../src/Meridian.Wpf/Models/AlignmentModels.cs#L9) |  |
-| <code>public string DateText { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Models/AlignmentModels.cs:10](../../../../src/Meridian.Wpf/Models/AlignmentModels.cs#L10) |  |
-
-## AnomalyModel
-
-Qualified name: <code>Meridian.Wpf.Models.AnomalyModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Models/DataQualityModels.cs:64](../../../../src/Meridian.Wpf/Models/DataQualityModels.cs#L64).
-
-Model for anomaly display.
-
-```csharp
-public sealed class AnomalyModel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/DataQualityModels.cs:66](../../../../src/Meridian.Wpf/Models/DataQualityModels.cs#L66) |  |
-| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/DataQualityModels.cs:67](../../../../src/Meridian.Wpf/Models/DataQualityModels.cs#L67) |  |
-| <code>public string Timestamp { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/DataQualityModels.cs:68](../../../../src/Meridian.Wpf/Models/DataQualityModels.cs#L68) |  |
-| <code>public string Type { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/DataQualityModels.cs:69](../../../../src/Meridian.Wpf/Models/DataQualityModels.cs#L69) |  |
-| <code>public SolidColorBrush SeverityColor { get; set; } = new (Colors.Gray);</code> | [src/Meridian.Wpf/Models/DataQualityModels.cs:70](../../../../src/Meridian.Wpf/Models/DataQualityModels.cs#L70) |  |
-
-## BackfillProviderModel
-
-Qualified name: <code>Meridian.Wpf.Models.BackfillProviderModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Models/ProviderHealthModels.cs:26](../../../../src/Meridian.Wpf/Models/ProviderHealthModels.cs#L26).
-
-Display model for a backfill provider card.
-
-```csharp
-public sealed class BackfillProviderModel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ProviderId { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/ProviderHealthModels.cs:28](../../../../src/Meridian.Wpf/Models/ProviderHealthModels.cs#L28) |  |
-| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/ProviderHealthModels.cs:29](../../../../src/Meridian.Wpf/Models/ProviderHealthModels.cs#L29) |  |
-| <code>public string StatusText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/ProviderHealthModels.cs:30](../../../../src/Meridian.Wpf/Models/ProviderHealthModels.cs#L30) |  |
-| <code>public SolidColorBrush StatusColor { get; set; } = new (Colors.Gray);</code> | [src/Meridian.Wpf/Models/ProviderHealthModels.cs:31](../../../../src/Meridian.Wpf/Models/ProviderHealthModels.cs#L31) |  |
-| <code>public string RateLimitText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/ProviderHealthModels.cs:32](../../../../src/Meridian.Wpf/Models/ProviderHealthModels.cs#L32) |  |
-| <code>public string LastUsedText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/ProviderHealthModels.cs:33](../../../../src/Meridian.Wpf/Models/ProviderHealthModels.cs#L33) |  |

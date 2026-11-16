@@ -18,7 +18,7 @@ digraph UiImplementationFlow {
   node [fontname="Segoe UI", shape=box, style="rounded,filled", color="#475569", fontcolor="#e2e8f0", fillcolor="#1e293b"];
   edge [fontname="Segoe UI", color="#94a3b8", penwidth=1.3, arrowsize=0.8];
 
-  generated [shape=note, fillcolor="#1d4ed8", color="#60a5fa", label="Source fingerprint: d085257ac6cd\nTransient pages in App.xaml.cs: 5\nRegistry tags: 98"];
+  generated [shape=note, fillcolor="#1d4ed8", color="#60a5fa", label="Source fingerprint: 1c82994c508a\nTransient pages in App.xaml.cs: 5\nRegistry tags: 98"];
   app [shape=component, fillcolor="#0f766e", color="#2dd4bf", label="App.xaml.cs\nHost + DI composition"];
   window [shape=component, fillcolor="#2563eb", color="#93c5fd", label="MainWindow.xaml(.cs)\nRoot frame + global shortcuts"];
   page [shape=component, fillcolor="#7c3aed", color="#c4b5fd", label="MainPage.xaml(.cs)\nSidebar shell + command palette"];
@@ -37,463 +37,471 @@ digraph UiImplementationFlow {
   page -> main_page_services [label="constructor injection"];
 
   subgraph cluster_section_1 {
-    label="Trading / Desk";
-    color="#334155";
-    style="rounded";
-    section_1 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Trading / Desk\n1 page classes\n0 transient registrations"];
-    views -> section_1;
-    section_1_TradingWorkspaceShellPage [label="Trading Workspace Shell\nTradingWorkspaceShellPage\nNot in App DI", fillcolor="#111827"];
-    section_1 -> section_1_TradingWorkspaceShellPage;
-  }
-
-  subgraph cluster_section_2 {
     label="Trading / Market Feed";
     color="#334155";
     style="rounded";
-    section_2 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Trading / Market Feed\n2 page classes\n0 transient registrations"];
-    views -> section_2;
-    section_2_LiveDataViewerPage [label="Live Data Viewer\nLiveDataViewerPage\nNot in App DI", fillcolor="#111827"];
-    section_2 -> section_2_LiveDataViewerPage;
-    section_2_OrderBookPage [label="Order Book\nOrderBookPage\nNot in App DI", fillcolor="#111827"];
-    section_2 -> section_2_OrderBookPage;
+    section_1 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Trading / Market Feed\n2 page classes\n0 transient registrations"];
+    views -> section_1;
+    section_1_LiveDataViewerPage [label="Live Data Viewer\nLiveDataViewerPage\nNot in App DI", fillcolor="#111827"];
+    section_1 -> section_1_LiveDataViewerPage;
+    section_1_OrderBookPage [label="Order Book\nOrderBookPage\nNot in App DI", fillcolor="#111827"];
+    section_1 -> section_1_OrderBookPage;
   }
 
-  subgraph cluster_section_3 {
+  subgraph cluster_section_2 {
     label="Trading / Execution";
     color="#334155";
     style="rounded";
-    section_3 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Trading / Execution\n3 page classes\n0 transient registrations"];
-    views -> section_3;
-    section_3_PositionBlotterPage [label="Position Blotter\nPositionBlotterPage\nNot in App DI", fillcolor="#111827"];
-    section_3 -> section_3_PositionBlotterPage;
-    section_3_RunRiskPage [label="Run Risk\nRunRiskPage\nNot in App DI", fillcolor="#111827"];
-    section_3 -> section_3_RunRiskPage;
-    section_3_TradingHoursPage [label="Trading Hours\nTradingHoursPage\nNot in App DI", fillcolor="#111827"];
-    section_3 -> section_3_TradingHoursPage;
+    section_2 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Trading / Execution\n3 page classes\n0 transient registrations"];
+    views -> section_2;
+    section_2_PositionBlotterPage [label="Position Blotter\nPositionBlotterPage\nNot in App DI", fillcolor="#111827"];
+    section_2 -> section_2_PositionBlotterPage;
+    section_2_RunRiskPage [label="Run Risk\nRunRiskPage\nNot in App DI", fillcolor="#111827"];
+    section_2 -> section_2_RunRiskPage;
+    section_2_TradingHoursPage [label="Trading Hours\nTradingHoursPage\nNot in App DI", fillcolor="#111827"];
+    section_2 -> section_2_TradingHoursPage;
   }
 
-  subgraph cluster_section_4 {
+  subgraph cluster_section_3 {
     label="Portfolio / Specialty";
     color="#334155";
     style="rounded";
-    section_4 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Portfolio / Specialty\n1 page classes\n0 transient registrations"];
-    views -> section_4;
-    section_4_DirectLendingPage [label="Direct Lending\nDirectLendingPage\nNot in App DI", fillcolor="#111827"];
-    section_4 -> section_4_DirectLendingPage;
+    section_3 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Portfolio / Specialty\n1 page classes\n0 transient registrations"];
+    views -> section_3;
+    section_3_DirectLendingPage [label="Direct Lending\nDirectLendingPage\nNot in App DI", fillcolor="#111827"];
+    section_3 -> section_3_DirectLendingPage;
   }
 
-  subgraph cluster_section_5 {
-    label="Portfolio / Launchpad";
-    color="#334155";
-    style="rounded";
-    section_5 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Portfolio / Launchpad\n1 page classes\n0 transient registrations"];
-    views -> section_5;
-    section_5_PortfolioWorkspaceShellPage [label="Portfolio Workspace Shell\nPortfolioWorkspaceShellPage\nNot in App DI", fillcolor="#111827"];
-    section_5 -> section_5_PortfolioWorkspaceShellPage;
-  }
-
-  subgraph cluster_section_6 {
+  subgraph cluster_section_4 {
     label="Portfolio / Accounts";
     color="#334155";
     style="rounded";
-    section_6 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Portfolio / Accounts\n2 page classes\n0 transient registrations"];
-    views -> section_6;
-    section_6_AccountPortfolioPage [label="Account Portfolio\nAccountPortfolioPage\nNot in App DI", fillcolor="#111827"];
-    section_6 -> section_6_AccountPortfolioPage;
-    section_6_AggregatePortfolioPage [label="Aggregate Portfolio\nAggregatePortfolioPage\nNot in App DI", fillcolor="#111827"];
-    section_6 -> section_6_AggregatePortfolioPage;
+    section_4 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Portfolio / Accounts\n2 page classes\n0 transient registrations"];
+    views -> section_4;
+    section_4_AccountPortfolioPage [label="Account Portfolio\nAccountPortfolioPage\nNot in App DI", fillcolor="#111827"];
+    section_4 -> section_4_AccountPortfolioPage;
+    section_4_AggregatePortfolioPage [label="Aggregate Portfolio\nAggregatePortfolioPage\nNot in App DI", fillcolor="#111827"];
+    section_4 -> section_4_AggregatePortfolioPage;
   }
 
-  subgraph cluster_section_7 {
+  subgraph cluster_section_5 {
     label="Portfolio / Run Inspectors";
     color="#334155";
     style="rounded";
-    section_7 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Portfolio / Run Inspectors\n2 page classes\n0 transient registrations"];
-    views -> section_7;
-    section_7_RunPortfolioPage [label="Run Portfolio\nRunPortfolioPage\nNot in App DI", fillcolor="#111827"];
-    section_7 -> section_7_RunPortfolioPage;
-    section_7_FinancialRecordExplorerPage [label="Financial Record Explorer\nFinancialRecordExplorerPage\nNot in App DI", fillcolor="#111827"];
-    section_7 -> section_7_FinancialRecordExplorerPage;
+    section_5 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Portfolio / Run Inspectors\n2 page classes\n0 transient registrations"];
+    views -> section_5;
+    section_5_RunPortfolioPage [label="Run Portfolio\nRunPortfolioPage\nNot in App DI", fillcolor="#111827"];
+    section_5 -> section_5_RunPortfolioPage;
+    section_5_FinancialRecordExplorerPage [label="Financial Record Explorer\nFinancialRecordExplorerPage\nNot in App DI", fillcolor="#111827"];
+    section_5 -> section_5_FinancialRecordExplorerPage;
   }
 
-  subgraph cluster_section_8 {
+  subgraph cluster_section_6 {
     label="Portfolio / Fund";
     color="#334155";
     style="rounded";
-    section_8 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Portfolio / Fund\n2 page classes\n0 transient registrations"];
-    views -> section_8;
-    section_8_FundLedgerPage [label="Fund Ledger\nFundLedgerPage\nNot in App DI", fillcolor="#111827"];
-    section_8 -> section_8_FundLedgerPage;
-    section_8_FundAccountsPage [label="Fund Accounts\nFundAccountsPage\nNot in App DI", fillcolor="#111827"];
-    section_8 -> section_8_FundAccountsPage;
+    section_6 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Portfolio / Fund\n2 page classes\n0 transient registrations"];
+    views -> section_6;
+    section_6_FundLedgerPage [label="Fund Ledger\nFundLedgerPage\nNot in App DI", fillcolor="#111827"];
+    section_6 -> section_6_FundLedgerPage;
+    section_6_FundAccountsPage [label="Fund Accounts\nFundAccountsPage\nNot in App DI", fillcolor="#111827"];
+    section_6 -> section_6_FundAccountsPage;
   }
 
-  subgraph cluster_section_9 {
+  subgraph cluster_section_7 {
     label="Portfolio / Import";
     color="#334155";
     style="rounded";
-    section_9 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Portfolio / Import\n1 page classes\n0 transient registrations"];
-    views -> section_9;
-    section_9_PortfolioImportPage [label="Portfolio Import\nPortfolioImportPage\nNot in App DI", fillcolor="#111827"];
-    section_9 -> section_9_PortfolioImportPage;
+    section_7 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Portfolio / Import\n1 page classes\n0 transient registrations"];
+    views -> section_7;
+    section_7_PortfolioImportPage [label="Portfolio Import\nPortfolioImportPage\nNot in App DI", fillcolor="#111827"];
+    section_7 -> section_7_PortfolioImportPage;
   }
 
-  subgraph cluster_section_10 {
-    label="Accounting / Launchpad";
-    color="#334155";
-    style="rounded";
-    section_10 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Accounting / Launchpad\n1 page classes\n0 transient registrations"];
-    views -> section_10;
-    section_10_AccountingWorkspaceShellPage [label="Accounting Workspace Shell\nAccountingWorkspaceShellPage\nNot in App DI", fillcolor="#111827"];
-    section_10 -> section_10_AccountingWorkspaceShellPage;
-  }
-
-  subgraph cluster_section_11 {
+  subgraph cluster_section_8 {
     label="Accounting / Fund Ops";
     color="#334155";
     style="rounded";
-    section_11 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Accounting / Fund Ops\n13 page classes\n0 transient registrations"];
-    views -> section_11;
-    section_11_FundStructureSetupPage [label="Fund Structure Setup\nFundStructureSetupPage\nNot in App DI", fillcolor="#111827"];
-    section_11 -> section_11_FundStructureSetupPage;
-    section_11_FundLedgerPage [label="Fund Ledger\nFundLedgerPage\nNot in App DI", fillcolor="#111827"];
-    section_11 -> section_11_FundLedgerPage;
-    section_11_OperationsContinuityPage [label="Operations Continuity\nOperationsContinuityPage\nNot in App DI", fillcolor="#111827"];
-    section_11 -> section_11_OperationsContinuityPage;
-    section_11_PostedLedgerPage [label="Posted Ledger\nPostedLedgerPage\nNot in App DI", fillcolor="#111827"];
-    section_11 -> section_11_PostedLedgerPage;
-    section_11_FundLedgerPage [label="Fund Ledger\nFundLedgerPage\nNot in App DI", fillcolor="#111827"];
-    section_11 -> section_11_FundLedgerPage;
-    section_11_FundLedgerPage [label="Fund Ledger\nFundLedgerPage\nNot in App DI", fillcolor="#111827"];
-    section_11 -> section_11_FundLedgerPage;
-    section_11_FundLedgerPage [label="Fund Ledger\nFundLedgerPage\nNot in App DI", fillcolor="#111827"];
-    section_11 -> section_11_FundLedgerPage;
-    section_11_AccountingConfigurePage [label="Accounting Configure\nAccountingConfigurePage\nNot in App DI", fillcolor="#111827"];
-    section_11 -> section_11_AccountingConfigurePage;
-    section_11_more [shape=note, fillcolor="#0f172a", color="#64748b", label="+ 5 more page classes"];
-    section_11 -> section_11_more;
+    section_8 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Accounting / Fund Ops\n13 page classes\n0 transient registrations"];
+    views -> section_8;
+    section_8_FundStructureSetupPage [label="Fund Structure Setup\nFundStructureSetupPage\nNot in App DI", fillcolor="#111827"];
+    section_8 -> section_8_FundStructureSetupPage;
+    section_8_FundLedgerPage [label="Fund Ledger\nFundLedgerPage\nNot in App DI", fillcolor="#111827"];
+    section_8 -> section_8_FundLedgerPage;
+    section_8_OperationsContinuityPage [label="Operations Continuity\nOperationsContinuityPage\nNot in App DI", fillcolor="#111827"];
+    section_8 -> section_8_OperationsContinuityPage;
+    section_8_PostedLedgerPage [label="Posted Ledger\nPostedLedgerPage\nNot in App DI", fillcolor="#111827"];
+    section_8 -> section_8_PostedLedgerPage;
+    section_8_FundLedgerPage [label="Fund Ledger\nFundLedgerPage\nNot in App DI", fillcolor="#111827"];
+    section_8 -> section_8_FundLedgerPage;
+    section_8_FundLedgerPage [label="Fund Ledger\nFundLedgerPage\nNot in App DI", fillcolor="#111827"];
+    section_8 -> section_8_FundLedgerPage;
+    section_8_FundLedgerPage [label="Fund Ledger\nFundLedgerPage\nNot in App DI", fillcolor="#111827"];
+    section_8 -> section_8_FundLedgerPage;
+    section_8_AccountingConfigurePage [label="Accounting Configure\nAccountingConfigurePage\nNot in App DI", fillcolor="#111827"];
+    section_8 -> section_8_AccountingConfigurePage;
+    section_8_more [shape=note, fillcolor="#0f172a", color="#64748b", label="+ 5 more page classes"];
+    section_8 -> section_8_more;
   }
 
-  subgraph cluster_section_12 {
+  subgraph cluster_section_9 {
     label="Accounting / Run Inspectors";
     color="#334155";
     style="rounded";
-    section_12 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Accounting / Run Inspectors\n2 page classes\n0 transient registrations"];
-    views -> section_12;
-    section_12_RunLedgerPage [label="Run Ledger\nRunLedgerPage\nNot in App DI", fillcolor="#111827"];
-    section_12 -> section_12_RunLedgerPage;
-    section_12_RunCashFlowPage [label="Run Cash Flow\nRunCashFlowPage\nNot in App DI", fillcolor="#111827"];
-    section_12 -> section_12_RunCashFlowPage;
+    section_9 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Accounting / Run Inspectors\n2 page classes\n0 transient registrations"];
+    views -> section_9;
+    section_9_RunLedgerPage [label="Run Ledger\nRunLedgerPage\nNot in App DI", fillcolor="#111827"];
+    section_9 -> section_9_RunLedgerPage;
+    section_9_RunCashFlowPage [label="Run Cash Flow\nRunCashFlowPage\nNot in App DI", fillcolor="#111827"];
+    section_9 -> section_9_RunCashFlowPage;
   }
 
-  subgraph cluster_section_13 {
-    label="Reporting / Launchpad";
-    color="#334155";
-    style="rounded";
-    section_13 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Reporting / Launchpad\n1 page classes\n0 transient registrations"];
-    views -> section_13;
-    section_13_ReportingWorkspaceShellPage [label="Reporting Workspace Shell\nReportingWorkspaceShellPage\nNot in App DI", fillcolor="#111827"];
-    section_13 -> section_13_ReportingWorkspaceShellPage;
-  }
-
-  subgraph cluster_section_14 {
+  subgraph cluster_section_10 {
     label="Reporting / Report Packs";
     color="#334155";
     style="rounded";
-    section_14 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Reporting / Report Packs\n5 page classes\n0 transient registrations"];
-    views -> section_14;
-    section_14_FundLedgerPage [label="Fund Ledger\nFundLedgerPage\nNot in App DI", fillcolor="#111827"];
-    section_14 -> section_14_FundLedgerPage;
-    section_14_DashboardPage [label="Dashboard\nDashboardPage\nNot in App DI", fillcolor="#111827"];
-    section_14 -> section_14_DashboardPage;
-    section_14_EvidenceWorkbenchPage [label="Evidence Workbench\nEvidenceWorkbenchPage\nNot in App DI", fillcolor="#111827"];
-    section_14 -> section_14_EvidenceWorkbenchPage;
-    section_14_OperationsRecordReleasePage [label="Operations Record Release\nOperationsRecordReleasePage\nNot in App DI", fillcolor="#111827"];
-    section_14 -> section_14_OperationsRecordReleasePage;
-    section_14_FinancialRecordExplorerPage [label="Financial Record Explorer\nFinancialRecordExplorerPage\nNot in App DI", fillcolor="#111827"];
-    section_14 -> section_14_FinancialRecordExplorerPage;
+    section_10 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Reporting / Report Packs\n5 page classes\n0 transient registrations"];
+    views -> section_10;
+    section_10_FundLedgerPage [label="Fund Ledger\nFundLedgerPage\nNot in App DI", fillcolor="#111827"];
+    section_10 -> section_10_FundLedgerPage;
+    section_10_DashboardPage [label="Dashboard\nDashboardPage\nNot in App DI", fillcolor="#111827"];
+    section_10 -> section_10_DashboardPage;
+    section_10_EvidenceWorkbenchPage [label="Evidence Workbench\nEvidenceWorkbenchPage\nNot in App DI", fillcolor="#111827"];
+    section_10 -> section_10_EvidenceWorkbenchPage;
+    section_10_OperationsRecordReleasePage [label="Operations Record Release\nOperationsRecordReleasePage\nNot in App DI", fillcolor="#111827"];
+    section_10 -> section_10_OperationsRecordReleasePage;
+    section_10_FinancialRecordExplorerPage [label="Financial Record Explorer\nFinancialRecordExplorerPage\nNot in App DI", fillcolor="#111827"];
+    section_10 -> section_10_FinancialRecordExplorerPage;
   }
 
-  subgraph cluster_section_15 {
+  subgraph cluster_section_11 {
     label="Reporting / Dashboard";
     color="#334155";
     style="rounded";
-    section_15 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Reporting / Dashboard\n1 page classes\n0 transient registrations"];
-    views -> section_15;
-    section_15_DashboardPage [label="Dashboard\nDashboardPage\nNot in App DI", fillcolor="#111827"];
-    section_15 -> section_15_DashboardPage;
+    section_11 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Reporting / Dashboard\n1 page classes\n0 transient registrations"];
+    views -> section_11;
+    section_11_DashboardPage [label="Dashboard\nDashboardPage\nNot in App DI", fillcolor="#111827"];
+    section_11 -> section_11_DashboardPage;
   }
 
-  subgraph cluster_section_16 {
+  subgraph cluster_section_12 {
     label="Reporting / Exports";
     color="#334155";
     style="rounded";
-    section_16 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Reporting / Exports\n3 page classes\n0 transient registrations"];
-    views -> section_16;
-    section_16_AnalysisExportPage [label="Analysis Export\nAnalysisExportPage\nNot in App DI", fillcolor="#111827"];
-    section_16 -> section_16_AnalysisExportPage;
-    section_16_AnalysisExportWizardPage [label="Analysis Export Wizard\nAnalysisExportWizardPage\nNot in App DI", fillcolor="#111827"];
-    section_16 -> section_16_AnalysisExportWizardPage;
-    section_16_ExportPresetsPage [label="Export Presets\nExportPresetsPage\nNot in App DI", fillcolor="#111827"];
-    section_16 -> section_16_ExportPresetsPage;
+    section_12 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Reporting / Exports\n3 page classes\n0 transient registrations"];
+    views -> section_12;
+    section_12_AnalysisExportPage [label="Analysis Export\nAnalysisExportPage\nNot in App DI", fillcolor="#111827"];
+    section_12 -> section_12_AnalysisExportPage;
+    section_12_AnalysisExportWizardPage [label="Analysis Export Wizard\nAnalysisExportWizardPage\nNot in App DI", fillcolor="#111827"];
+    section_12 -> section_12_AnalysisExportWizardPage;
+    section_12_ExportPresetsPage [label="Export Presets\nExportPresetsPage\nNot in App DI", fillcolor="#111827"];
+    section_12 -> section_12_ExportPresetsPage;
   }
 
-  subgraph cluster_section_17 {
+  subgraph cluster_section_13 {
     label="Strategy / Analysis";
     color="#334155";
     style="rounded";
-    section_17 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Strategy / Analysis\n5 page classes\n0 transient registrations"];
-    views -> section_17;
-    section_17_LeanIntegrationPage [label="Lean Integration\nLeanIntegrationPage\nNot in App DI", fillcolor="#111827"];
-    section_17 -> section_17_LeanIntegrationPage;
-    section_17_EventReplayPage [label="Event Replay\nEventReplayPage\nNot in App DI", fillcolor="#111827"];
-    section_17 -> section_17_EventReplayPage;
-    section_17_ChartingPage [label="Charting\nChartingPage\nNot in App DI", fillcolor="#111827"];
-    section_17 -> section_17_ChartingPage;
-    section_17_AdvancedAnalyticsPage [label="Advanced Analytics\nAdvancedAnalyticsPage\nNot in App DI", fillcolor="#111827"];
-    section_17 -> section_17_AdvancedAnalyticsPage;
-    section_17_QuantScriptPage [label="Quant Script\nQuantScriptPage\nNot in App DI", fillcolor="#111827"];
-    section_17 -> section_17_QuantScriptPage;
+    section_13 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Strategy / Analysis\n5 page classes\n0 transient registrations"];
+    views -> section_13;
+    section_13_LeanIntegrationPage [label="Lean Integration\nLeanIntegrationPage\nNot in App DI", fillcolor="#111827"];
+    section_13 -> section_13_LeanIntegrationPage;
+    section_13_EventReplayPage [label="Event Replay\nEventReplayPage\nNot in App DI", fillcolor="#111827"];
+    section_13 -> section_13_EventReplayPage;
+    section_13_ChartingPage [label="Charting\nChartingPage\nNot in App DI", fillcolor="#111827"];
+    section_13 -> section_13_ChartingPage;
+    section_13_AdvancedAnalyticsPage [label="Advanced Analytics\nAdvancedAnalyticsPage\nNot in App DI", fillcolor="#111827"];
+    section_13 -> section_13_AdvancedAnalyticsPage;
+    section_13_QuantScriptPage [label="Quant Script\nQuantScriptPage\nNot in App DI", fillcolor="#111827"];
+    section_13 -> section_13_QuantScriptPage;
   }
 
-  subgraph cluster_section_18 {
+  subgraph cluster_section_14 {
     label="Strategy / Desk";
     color="#334155";
     style="rounded";
-    section_18 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Strategy / Desk\n1 page classes\n0 transient registrations"];
-    views -> section_18;
-    section_18_WatchlistPage [label="Watchlist\nWatchlistPage\nNot in App DI", fillcolor="#111827"];
-    section_18 -> section_18_WatchlistPage;
+    section_14 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Strategy / Desk\n1 page classes\n0 transient registrations"];
+    views -> section_14;
+    section_14_WatchlistPage [label="Watchlist\nWatchlistPage\nNot in App DI", fillcolor="#111827"];
+    section_14 -> section_14_WatchlistPage;
   }
 
-  subgraph cluster_section_19 {
-    label="Strategy / Launchpad";
-    color="#334155";
-    style="rounded";
-    section_19 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Strategy / Launchpad\n3 page classes\n0 transient registrations"];
-    views -> section_19;
-    section_19_StrategyWorkspaceShellPage [label="Strategy Workspace Shell\nStrategyWorkspaceShellPage\nNot in App DI", fillcolor="#111827"];
-    section_19 -> section_19_StrategyWorkspaceShellPage;
-    section_19_HomeWorkspacePage [label="Home Workspace\nHomeWorkspacePage\nNot in App DI", fillcolor="#111827"];
-    section_19 -> section_19_HomeWorkspacePage;
-    section_19_OperatorReadinessConsolePage [label="Operator Readiness Console\nOperatorReadinessConsolePage\nNot in App DI", fillcolor="#111827"];
-    section_19 -> section_19_OperatorReadinessConsolePage;
-  }
-
-  subgraph cluster_section_20 {
+  subgraph cluster_section_15 {
     label="Strategy / Studio";
     color="#334155";
     style="rounded";
-    section_20 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Strategy / Studio\n4 page classes\n0 transient registrations"];
-    views -> section_20;
-    section_20_BacktestPage [label="Backtest\nBacktestPage\nNot in App DI", fillcolor="#111827"];
-    section_20 -> section_20_BacktestPage;
-    section_20_StrategyRunsPage [label="Strategy Runs\nStrategyRunsPage\nNot in App DI", fillcolor="#111827"];
-    section_20 -> section_20_StrategyRunsPage;
-    section_20_RunMatPage [label="Run Mat\nRunMatPage\nNot in App DI", fillcolor="#111827"];
-    section_20 -> section_20_RunMatPage;
-    section_20_BatchBacktestPage [label="Batch Backtest\nBatchBacktestPage\nNot in App DI", fillcolor="#111827"];
-    section_20 -> section_20_BatchBacktestPage;
+    section_15 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Strategy / Studio\n4 page classes\n0 transient registrations"];
+    views -> section_15;
+    section_15_BacktestPage [label="Backtest\nBacktestPage\nNot in App DI", fillcolor="#111827"];
+    section_15 -> section_15_BacktestPage;
+    section_15_StrategyRunsPage [label="Strategy Runs\nStrategyRunsPage\nNot in App DI", fillcolor="#111827"];
+    section_15 -> section_15_StrategyRunsPage;
+    section_15_RunMatPage [label="Run Mat\nRunMatPage\nNot in App DI", fillcolor="#111827"];
+    section_15 -> section_15_RunMatPage;
+    section_15_BatchBacktestPage [label="Batch Backtest\nBatchBacktestPage\nNot in App DI", fillcolor="#111827"];
+    section_15 -> section_15_BatchBacktestPage;
   }
 
-  subgraph cluster_section_21 {
+  subgraph cluster_section_16 {
     label="Strategy / Inspectors";
     color="#334155";
     style="rounded";
-    section_21 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Strategy / Inspectors\n1 page classes\n0 transient registrations"];
-    views -> section_21;
-    section_21_RunDetailPage [label="Run Detail\nRunDetailPage\nNot in App DI", fillcolor="#111827"];
-    section_21 -> section_21_RunDetailPage;
+    section_16 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Strategy / Inspectors\n1 page classes\n0 transient registrations"];
+    views -> section_16;
+    section_16_RunDetailPage [label="Run Detail\nRunDetailPage\nNot in App DI", fillcolor="#111827"];
+    section_16 -> section_16_RunDetailPage;
   }
 
-  subgraph cluster_section_22 {
+  subgraph cluster_section_17 {
+    label="Strategy / Launchpad";
+    color="#334155";
+    style="rounded";
+    section_17 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Strategy / Launchpad\n2 page classes\n0 transient registrations"];
+    views -> section_17;
+    section_17_HomeWorkspacePage [label="Home Workspace\nHomeWorkspacePage\nNot in App DI", fillcolor="#111827"];
+    section_17 -> section_17_HomeWorkspacePage;
+    section_17_OperatorReadinessConsolePage [label="Operator Readiness Console\nOperatorReadinessConsolePage\nNot in App DI", fillcolor="#111827"];
+    section_17 -> section_17_OperatorReadinessConsolePage;
+  }
+
+  subgraph cluster_section_18 {
     label="Data / Inspectors";
     color="#334155";
     style="rounded";
-    section_22 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Data / Inspectors\n4 page classes\n0 transient registrations"];
-    views -> section_22;
-    section_22_DataBrowserPage [label="Data Browser\nDataBrowserPage\nNot in App DI", fillcolor="#111827"];
-    section_22 -> section_22_DataBrowserPage;
-    section_22_DataCalendarPage [label="Data Calendar\nDataCalendarPage\nNot in App DI", fillcolor="#111827"];
-    section_22 -> section_22_DataCalendarPage;
-    section_22_DataSamplingPage [label="Data Sampling\nDataSamplingPage\nNot in App DI", fillcolor="#111827"];
-    section_22 -> section_22_DataSamplingPage;
-    section_22_TimeSeriesAlignmentPage [label="Time Series Alignment\nTimeSeriesAlignmentPage\nNot in App DI", fillcolor="#111827"];
-    section_22 -> section_22_TimeSeriesAlignmentPage;
+    section_18 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Data / Inspectors\n4 page classes\n0 transient registrations"];
+    views -> section_18;
+    section_18_DataBrowserPage [label="Data Browser\nDataBrowserPage\nNot in App DI", fillcolor="#111827"];
+    section_18 -> section_18_DataBrowserPage;
+    section_18_DataCalendarPage [label="Data Calendar\nDataCalendarPage\nNot in App DI", fillcolor="#111827"];
+    section_18 -> section_18_DataCalendarPage;
+    section_18_DataSamplingPage [label="Data Sampling\nDataSamplingPage\nNot in App DI", fillcolor="#111827"];
+    section_18 -> section_18_DataSamplingPage;
+    section_18_TimeSeriesAlignmentPage [label="Time Series Alignment\nTimeSeriesAlignmentPage\nNot in App DI", fillcolor="#111827"];
+    section_18 -> section_18_TimeSeriesAlignmentPage;
   }
 
-  subgraph cluster_section_23 {
+  subgraph cluster_section_19 {
     label="Data / Catalog";
     color="#334155";
     style="rounded";
-    section_23 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Data / Catalog\n5 page classes\n0 transient registrations"];
-    views -> section_23;
-    section_23_IndexSubscriptionPage [label="Index Subscription\nIndexSubscriptionPage\nNot in App DI", fillcolor="#111827"];
-    section_23 -> section_23_IndexSubscriptionPage;
-    section_23_OptionsPage [label="Options\nOptionsPage\nNot in App DI", fillcolor="#111827"];
-    section_23 -> section_23_OptionsPage;
-    section_23_SymbolsPage [label="Symbols\nSymbolsPage\nNot in App DI", fillcolor="#111827"];
-    section_23 -> section_23_SymbolsPage;
-    section_23_SymbolMappingPage [label="Symbol Mapping\nSymbolMappingPage\nNot in App DI", fillcolor="#111827"];
-    section_23 -> section_23_SymbolMappingPage;
-    section_23_SymbolStoragePage [label="Symbol Storage\nSymbolStoragePage\nNot in App DI", fillcolor="#111827"];
-    section_23 -> section_23_SymbolStoragePage;
+    section_19 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Data / Catalog\n5 page classes\n0 transient registrations"];
+    views -> section_19;
+    section_19_IndexSubscriptionPage [label="Index Subscription\nIndexSubscriptionPage\nNot in App DI", fillcolor="#111827"];
+    section_19 -> section_19_IndexSubscriptionPage;
+    section_19_OptionsPage [label="Options\nOptionsPage\nNot in App DI", fillcolor="#111827"];
+    section_19 -> section_19_OptionsPage;
+    section_19_SymbolsPage [label="Symbols\nSymbolsPage\nNot in App DI", fillcolor="#111827"];
+    section_19 -> section_19_SymbolsPage;
+    section_19_SymbolMappingPage [label="Symbol Mapping\nSymbolMappingPage\nNot in App DI", fillcolor="#111827"];
+    section_19 -> section_19_SymbolMappingPage;
+    section_19_SymbolStoragePage [label="Symbol Storage\nSymbolStoragePage\nNot in App DI", fillcolor="#111827"];
+    section_19 -> section_19_SymbolStoragePage;
   }
 
-  subgraph cluster_section_24 {
+  subgraph cluster_section_20 {
     label="Data / Operations Queue";
     color="#334155";
     style="rounded";
-    section_24 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Data / Operations Queue\n6 page classes\n0 transient registrations"];
-    views -> section_24;
-    section_24_AddProviderWizardPage [label="Add Provider Wizard\nAddProviderWizardPage\nNot in App DI", fillcolor="#111827"];
-    section_24 -> section_24_AddProviderWizardPage;
-    section_24_ProviderPage [label="Provider\nProviderPage\nNot in App DI", fillcolor="#111827"];
-    section_24 -> section_24_ProviderPage;
-    section_24_BackfillPage [label="Backfill\nBackfillPage\nNot in App DI", fillcolor="#111827"];
-    section_24 -> section_24_BackfillPage;
-    section_24_DataSourcesPage [label="Data Sources\nDataSourcesPage\nNot in App DI", fillcolor="#111827"];
-    section_24 -> section_24_DataSourcesPage;
-    section_24_ProviderHealthPage [label="Provider Health\nProviderHealthPage\nNot in App DI", fillcolor="#111827"];
-    section_24 -> section_24_ProviderHealthPage;
-    section_24_CollectionSessionPage [label="Collection Session\nCollectionSessionPage\nNot in App DI", fillcolor="#111827"];
-    section_24 -> section_24_CollectionSessionPage;
+    section_20 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Data / Operations Queue\n6 page classes\n0 transient registrations"];
+    views -> section_20;
+    section_20_AddProviderWizardPage [label="Add Provider Wizard\nAddProviderWizardPage\nNot in App DI", fillcolor="#111827"];
+    section_20 -> section_20_AddProviderWizardPage;
+    section_20_ProviderPage [label="Provider\nProviderPage\nNot in App DI", fillcolor="#111827"];
+    section_20 -> section_20_ProviderPage;
+    section_20_BackfillPage [label="Backfill\nBackfillPage\nNot in App DI", fillcolor="#111827"];
+    section_20 -> section_20_BackfillPage;
+    section_20_DataSourcesPage [label="Data Sources\nDataSourcesPage\nNot in App DI", fillcolor="#111827"];
+    section_20 -> section_20_DataSourcesPage;
+    section_20_ProviderHealthPage [label="Provider Health\nProviderHealthPage\nNot in App DI", fillcolor="#111827"];
+    section_20 -> section_20_ProviderHealthPage;
+    section_20_CollectionSessionPage [label="Collection Session\nCollectionSessionPage\nNot in App DI", fillcolor="#111827"];
+    section_20 -> section_20_CollectionSessionPage;
   }
 
-  subgraph cluster_section_25 {
+  subgraph cluster_section_21 {
     label="Data / Assurance";
     color="#334155";
     style="rounded";
-    section_25 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Data / Assurance\n5 page classes\n0 transient registrations"];
-    views -> section_25;
-    section_25_ArchiveHealthPage [label="Archive Health\nArchiveHealthPage\nNot in App DI", fillcolor="#111827"];
-    section_25 -> section_25_ArchiveHealthPage;
-    section_25_StorageOptimizationPage [label="Storage Optimization\nStorageOptimizationPage\nNot in App DI", fillcolor="#111827"];
-    section_25 -> section_25_StorageOptimizationPage;
-    section_25_RetentionAssurancePage [label="Retention Assurance\nRetentionAssurancePage\nNot in App DI", fillcolor="#111827"];
-    section_25 -> section_25_RetentionAssurancePage;
-    section_25_DataQualityPage [label="Data Quality\nDataQualityPage\nNot in App DI", fillcolor="#111827"];
-    section_25 -> section_25_DataQualityPage;
-    section_25_SecurityMasterPage [label="Security Master\nSecurityMasterPage\nNot in App DI", fillcolor="#111827"];
-    section_25 -> section_25_SecurityMasterPage;
+    section_21 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Data / Assurance\n5 page classes\n0 transient registrations"];
+    views -> section_21;
+    section_21_ArchiveHealthPage [label="Archive Health\nArchiveHealthPage\nNot in App DI", fillcolor="#111827"];
+    section_21 -> section_21_ArchiveHealthPage;
+    section_21_StorageOptimizationPage [label="Storage Optimization\nStorageOptimizationPage\nNot in App DI", fillcolor="#111827"];
+    section_21 -> section_21_StorageOptimizationPage;
+    section_21_RetentionAssurancePage [label="Retention Assurance\nRetentionAssurancePage\nNot in App DI", fillcolor="#111827"];
+    section_21 -> section_21_RetentionAssurancePage;
+    section_21_DataQualityPage [label="Data Quality\nDataQualityPage\nNot in App DI", fillcolor="#111827"];
+    section_21 -> section_21_DataQualityPage;
+    section_21_SecurityMasterPage [label="Security Master\nSecurityMasterPage\nNot in App DI", fillcolor="#111827"];
+    section_21 -> section_21_SecurityMasterPage;
   }
 
-  subgraph cluster_section_26 {
-    label="Data / Launchpad";
-    color="#334155";
-    style="rounded";
-    section_26 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Data / Launchpad\n1 page classes\n0 transient registrations"];
-    views -> section_26;
-    section_26_DataWorkspaceShellPage [label="Data Workspace Shell\nDataWorkspaceShellPage\nNot in App DI", fillcolor="#111827"];
-    section_26 -> section_26_DataWorkspaceShellPage;
-  }
-
-  subgraph cluster_section_27 {
+  subgraph cluster_section_22 {
     label="Data / Platform";
     color="#334155";
     style="rounded";
-    section_27 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Data / Platform\n2 page classes\n0 transient registrations"];
-    views -> section_27;
-    section_27_StoragePage [label="Storage\nStoragePage\nNot in App DI", fillcolor="#111827"];
-    section_27 -> section_27_StoragePage;
-    section_27_ScheduleManagerPage [label="Schedule Manager\nScheduleManagerPage\nNot in App DI", fillcolor="#111827"];
-    section_27 -> section_27_ScheduleManagerPage;
+    section_22 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Data / Platform\n2 page classes\n0 transient registrations"];
+    views -> section_22;
+    section_22_StoragePage [label="Storage\nStoragePage\nNot in App DI", fillcolor="#111827"];
+    section_22 -> section_22_StoragePage;
+    section_22_ScheduleManagerPage [label="Schedule Manager\nScheduleManagerPage\nNot in App DI", fillcolor="#111827"];
+    section_22 -> section_22_ScheduleManagerPage;
   }
 
-  subgraph cluster_section_28 {
+  subgraph cluster_section_23 {
     label="Data / Packaging";
     color="#334155";
     style="rounded";
-    section_28 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Data / Packaging\n2 page classes\n0 transient registrations"];
-    views -> section_28;
-    section_28_DataExportPage [label="Data Export\nDataExportPage\nNot in App DI", fillcolor="#111827"];
-    section_28 -> section_28_DataExportPage;
-    section_28_PackageManagerPage [label="Package Manager\nPackageManagerPage\nNot in App DI", fillcolor="#111827"];
-    section_28 -> section_28_PackageManagerPage;
+    section_23 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Data / Packaging\n2 page classes\n0 transient registrations"];
+    views -> section_23;
+    section_23_DataExportPage [label="Data Export\nDataExportPage\nNot in App DI", fillcolor="#111827"];
+    section_23 -> section_23_DataExportPage;
+    section_23_PackageManagerPage [label="Package Manager\nPackageManagerPage\nNot in App DI", fillcolor="#111827"];
+    section_23 -> section_23_PackageManagerPage;
   }
 
-  subgraph cluster_section_29 {
+  subgraph cluster_section_24 {
     label="Settings / Notifications";
     color="#334155";
     style="rounded";
-    section_29 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Settings / Notifications\n3 page classes\n0 transient registrations"];
-    views -> section_29;
-    section_29_ActivityLogPage [label="Activity Log\nActivityLogPage\nNot in App DI", fillcolor="#111827"];
-    section_29 -> section_29_ActivityLogPage;
-    section_29_MessagingHubPage [label="Messaging Hub\nMessagingHubPage\nNot in App DI", fillcolor="#111827"];
-    section_29 -> section_29_MessagingHubPage;
-    section_29_NotificationCenterPage [label="Notification Center\nNotificationCenterPage\nNot in App DI", fillcolor="#111827"];
-    section_29 -> section_29_NotificationCenterPage;
+    section_24 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Settings / Notifications\n3 page classes\n0 transient registrations"];
+    views -> section_24;
+    section_24_ActivityLogPage [label="Activity Log\nActivityLogPage\nNot in App DI", fillcolor="#111827"];
+    section_24 -> section_24_ActivityLogPage;
+    section_24_MessagingHubPage [label="Messaging Hub\nMessagingHubPage\nNot in App DI", fillcolor="#111827"];
+    section_24 -> section_24_MessagingHubPage;
+    section_24_NotificationCenterPage [label="Notification Center\nNotificationCenterPage\nNot in App DI", fillcolor="#111827"];
+    section_24 -> section_24_NotificationCenterPage;
   }
 
-  subgraph cluster_section_30 {
+  subgraph cluster_section_25 {
     label="Settings / Support";
     color="#334155";
     style="rounded";
-    section_30 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Settings / Support\n4 page classes\n0 transient registrations"];
-    views -> section_30;
-    section_30_KeyboardShortcutsPage [label="Keyboard Shortcuts\nKeyboardShortcutsPage\nNot in App DI", fillcolor="#111827"];
-    section_30 -> section_30_KeyboardShortcutsPage;
-    section_30_HelpPage [label="Help\nHelpPage\nNot in App DI", fillcolor="#111827"];
-    section_30 -> section_30_HelpPage;
-    section_30_SetupWizardPage [label="Setup Wizard\nSetupWizardPage\nNot in App DI", fillcolor="#111827"];
-    section_30 -> section_30_SetupWizardPage;
-    section_30_WelcomePage [label="Welcome\nWelcomePage\nNot in App DI", fillcolor="#111827"];
-    section_30 -> section_30_WelcomePage;
+    section_25 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Settings / Support\n4 page classes\n0 transient registrations"];
+    views -> section_25;
+    section_25_KeyboardShortcutsPage [label="Keyboard Shortcuts\nKeyboardShortcutsPage\nNot in App DI", fillcolor="#111827"];
+    section_25 -> section_25_KeyboardShortcutsPage;
+    section_25_HelpPage [label="Help\nHelpPage\nNot in App DI", fillcolor="#111827"];
+    section_25 -> section_25_HelpPage;
+    section_25_SetupWizardPage [label="Setup Wizard\nSetupWizardPage\nNot in App DI", fillcolor="#111827"];
+    section_25 -> section_25_SetupWizardPage;
+    section_25_WelcomePage [label="Welcome\nWelcomePage\nNot in App DI", fillcolor="#111827"];
+    section_25 -> section_25_WelcomePage;
   }
 
-  subgraph cluster_section_31 {
+  subgraph cluster_section_26 {
     label="Settings / Workspace layouts";
     color="#334155";
     style="rounded";
-    section_31 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Settings / Workspace layouts\n2 page classes\n0 transient registrations"];
-    views -> section_31;
-    section_31_WorkspacePage [label="Workspace\nWorkspacePage\nNot in App DI", fillcolor="#111827"];
-    section_31 -> section_31_WorkspacePage;
-    section_31_WorkflowLibraryPage [label="Workflow Library\nWorkflowLibraryPage\nNot in App DI", fillcolor="#111827"];
-    section_31 -> section_31_WorkflowLibraryPage;
+    section_26 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Settings / Workspace layouts\n2 page classes\n0 transient registrations"];
+    views -> section_26;
+    section_26_WorkspacePage [label="Workspace\nWorkspacePage\nNot in App DI", fillcolor="#111827"];
+    section_26 -> section_26_WorkspacePage;
+    section_26_WorkflowLibraryPage [label="Workflow Library\nWorkflowLibraryPage\nNot in App DI", fillcolor="#111827"];
+    section_26 -> section_26_WorkflowLibraryPage;
   }
 
-  subgraph cluster_section_32 {
-    label="Settings / Launchpad";
-    color="#334155";
-    style="rounded";
-    section_32 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Settings / Launchpad\n1 page classes\n0 transient registrations"];
-    views -> section_32;
-    section_32_SettingsWorkspaceShellPage [label="Settings Workspace Shell\nSettingsWorkspaceShellPage\nNot in App DI", fillcolor="#111827"];
-    section_32 -> section_32_SettingsWorkspaceShellPage;
-  }
-
-  subgraph cluster_section_33 {
+  subgraph cluster_section_27 {
     label="Settings / Preferences";
     color="#334155";
     style="rounded";
-    section_33 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Settings / Preferences\n2 page classes\n0 transient registrations"];
-    views -> section_33;
-    section_33_SettingsPage [label="Settings\nSettingsPage\nNot in App DI", fillcolor="#111827"];
-    section_33 -> section_33_SettingsPage;
-    section_33_CredentialManagementPage [label="Credential Management\nCredentialManagementPage\nNot in App DI", fillcolor="#111827"];
-    section_33 -> section_33_CredentialManagementPage;
+    section_27 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Settings / Preferences\n2 page classes\n0 transient registrations"];
+    views -> section_27;
+    section_27_SettingsPage [label="Settings\nSettingsPage\nNot in App DI", fillcolor="#111827"];
+    section_27 -> section_27_SettingsPage;
+    section_27_CredentialManagementPage [label="Credential Management\nCredentialManagementPage\nNot in App DI", fillcolor="#111827"];
+    section_27 -> section_27_CredentialManagementPage;
   }
 
-  subgraph cluster_section_34 {
+  subgraph cluster_section_28 {
     label="Settings / Operations";
     color="#334155";
     style="rounded";
-    section_34 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Settings / Operations\n6 page classes\n0 transient registrations"];
+    section_28 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Settings / Operations\n6 page classes\n0 transient registrations"];
+    views -> section_28;
+    section_28_SystemHealthPage [label="System Health\nSystemHealthPage\nNot in App DI", fillcolor="#111827"];
+    section_28 -> section_28_SystemHealthPage;
+    section_28_LifecycleControlPage [label="Lifecycle Control\nLifecycleControlPage\nNot in App DI", fillcolor="#111827"];
+    section_28 -> section_28_LifecycleControlPage;
+    section_28_DiagnosticsPage [label="Diagnostics\nDiagnosticsPage\nNot in App DI", fillcolor="#111827"];
+    section_28 -> section_28_DiagnosticsPage;
+    section_28_ServiceManagerPage [label="Service Manager\nServiceManagerPage\nNot in App DI", fillcolor="#111827"];
+    section_28 -> section_28_ServiceManagerPage;
+    section_28_AdminMaintenancePage [label="Admin Maintenance\nAdminMaintenancePage\nNot in App DI", fillcolor="#111827"];
+    section_28 -> section_28_AdminMaintenancePage;
+    section_28_EnvironmentDesignerPage [label="Environment Designer\nEnvironmentDesignerPage\nNot in App DI", fillcolor="#111827"];
+    section_28 -> section_28_EnvironmentDesignerPage;
+  }
+
+  subgraph cluster_section_29 {
+    label="Desk / \\uE945";
+    color="#334155";
+    style="rounded";
+    section_29 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Desk / \\uE945\n1 page classes\n0 transient registrations"];
+    views -> section_29;
+    section_29_TradingWorkspaceShellPage [label="Trading Workspace Shell\nTradingWorkspaceShellPage\nNot in App DI", fillcolor="#111827"];
+    section_29 -> section_29_TradingWorkspaceShellPage;
+  }
+
+  subgraph cluster_section_30 {
+    label="Launchpad / \\uE8D7";
+    color="#334155";
+    style="rounded";
+    section_30 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Launchpad / \\uE8D7\n1 page classes\n0 transient registrations"];
+    views -> section_30;
+    section_30_AccountingWorkspaceShellPage [label="Accounting Workspace Shell\nAccountingWorkspaceShellPage\nNot in App DI", fillcolor="#111827"];
+    section_30 -> section_30_AccountingWorkspaceShellPage;
+  }
+
+  subgraph cluster_section_31 {
+    label="Launchpad / \\uEE94";
+    color="#334155";
+    style="rounded";
+    section_31 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Launchpad / \\uEE94\n1 page classes\n0 transient registrations"];
+    views -> section_31;
+    section_31_DataWorkspaceShellPage [label="Data Workspace Shell\nDataWorkspaceShellPage\nNot in App DI", fillcolor="#111827"];
+    section_31 -> section_31_DataWorkspaceShellPage;
+  }
+
+  subgraph cluster_section_32 {
+    label="Launchpad / \\uE821";
+    color="#334155";
+    style="rounded";
+    section_32 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Launchpad / \\uE821\n1 page classes\n0 transient registrations"];
+    views -> section_32;
+    section_32_PortfolioWorkspaceShellPage [label="Portfolio Workspace Shell\nPortfolioWorkspaceShellPage\nNot in App DI", fillcolor="#111827"];
+    section_32 -> section_32_PortfolioWorkspaceShellPage;
+  }
+
+  subgraph cluster_section_33 {
+    label="Launchpad / \\uE8A5";
+    color="#334155";
+    style="rounded";
+    section_33 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Launchpad / \\uE8A5\n1 page classes\n0 transient registrations"];
+    views -> section_33;
+    section_33_ReportingWorkspaceShellPage [label="Reporting Workspace Shell\nReportingWorkspaceShellPage\nNot in App DI", fillcolor="#111827"];
+    section_33 -> section_33_ReportingWorkspaceShellPage;
+  }
+
+  subgraph cluster_section_34 {
+    label="Launchpad / \\uE713";
+    color="#334155";
+    style="rounded";
+    section_34 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Launchpad / \\uE713\n1 page classes\n0 transient registrations"];
     views -> section_34;
-    section_34_SystemHealthPage [label="System Health\nSystemHealthPage\nNot in App DI", fillcolor="#111827"];
-    section_34 -> section_34_SystemHealthPage;
-    section_34_LifecycleControlPage [label="Lifecycle Control\nLifecycleControlPage\nNot in App DI", fillcolor="#111827"];
-    section_34 -> section_34_LifecycleControlPage;
-    section_34_DiagnosticsPage [label="Diagnostics\nDiagnosticsPage\nNot in App DI", fillcolor="#111827"];
-    section_34 -> section_34_DiagnosticsPage;
-    section_34_ServiceManagerPage [label="Service Manager\nServiceManagerPage\nNot in App DI", fillcolor="#111827"];
-    section_34 -> section_34_ServiceManagerPage;
-    section_34_AdminMaintenancePage [label="Admin Maintenance\nAdminMaintenancePage\nNot in App DI", fillcolor="#111827"];
-    section_34 -> section_34_AdminMaintenancePage;
-    section_34_EnvironmentDesignerPage [label="Environment Designer\nEnvironmentDesignerPage\nNot in App DI", fillcolor="#111827"];
-    section_34 -> section_34_EnvironmentDesignerPage;
+    section_34_SettingsWorkspaceShellPage [label="Settings Workspace Shell\nSettingsWorkspaceShellPage\nNot in App DI", fillcolor="#111827"];
+    section_34 -> section_34_SettingsWorkspaceShellPage;
+  }
+
+  subgraph cluster_section_35 {
+    label="Launchpad / \\uEC35";
+    color="#334155";
+    style="rounded";
+    section_35 [shape=folder, fillcolor="#0f172a", color="#64748b", label="Launchpad / \\uEC35\n1 page classes\n0 transient registrations"];
+    views -> section_35;
+    section_35_StrategyWorkspaceShellPage [label="Strategy Workspace Shell\nStrategyWorkspaceShellPage\nNot in App DI", fillcolor="#111827"];
+    section_35 -> section_35_StrategyWorkspaceShellPage;
   }
 
   { rank=min; generated; app; }

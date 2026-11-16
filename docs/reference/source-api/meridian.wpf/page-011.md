@@ -6,6 +6,91 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ShellRouteRegistry
+
+Qualified name: <code>Meridian.Wpf.Shell.Services.ShellRouteRegistry</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs:9](../../../../src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs#L9).
+
+Indexes desktop routes and aliases for canonical page and workspace lookup.
+
+```csharp
+public sealed class ShellRouteRegistry : IShellRouteRegistry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ShellRouteRegistry() : this(ShellPageRegistryBuilder.BuildDefault());</code> | [src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs:15](../../../../src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs#L15) |  |
+| <code>public ShellRouteRegistry(IShellPageRegistry pageRegistry);</code> | [src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs:20](../../../../src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs#L20) |  |
+| <code>public IReadOnlyList&lt;ShellRoute&gt; Routes =&gt; …;</code> | [src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs:27](../../../../src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs#L27) |  |
+| <code>public ShellRoute? GetRoute(string? pageTag);</code> | [src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs:29](../../../../src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs#L29) |  |
+| <code>public bool IsRegistered(string? pageTag) =&gt; …;</code> | [src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs:41](../../../../src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs#L41) |  |
+| <code>public Type? GetPageType(string? pageTag) =&gt; …;</code> | [src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs:43](../../../../src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs#L43) |  |
+| <code>public string GetCanonicalPageTag(string? pageTag) =&gt; …;</code> | [src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs:45](../../../../src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs#L45) |  |
+| <code>public string? InferWorkspaceIdForPageTag(string? pageTag) =&gt; …;</code> | [src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs:48](../../../../src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs#L48) |  |
+| <code>public IReadOnlyList&lt;ShellRoute&gt; GetRoutesForWorkspace(string workspaceId);</code> | [src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs:50](../../../../src/Meridian.Wpf/Shell/Services/ShellRouteRegistry.cs#L50) |  |
+
+## DesktopShellSessionRestorePlan
+
+Qualified name: <code>Meridian.Wpf.Shell.Session.DesktopShellSessionRestorePlan</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Shell/Session/DesktopShellSessionService.cs:11](../../../../src/Meridian.Wpf/Shell/Session/DesktopShellSessionService.cs#L11).
+
+```csharp
+public sealed record DesktopShellSessionRestorePlan(string? DeferredPageTag, string TargetPageTag);
+```
+
+## DesktopShellSessionService
+
+Qualified name: <code>Meridian.Wpf.Shell.Session.DesktopShellSessionService</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Shell/Session/DesktopShellSessionService.cs:18](../../../../src/Meridian.Wpf/Shell/Session/DesktopShellSessionService.cs#L18).
+
+Coordinates retained desktop session state with window placement and workspace restoration.
+
+```csharp
+public sealed class DesktopShellSessionService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DesktopShellSessionService(WorkspaceService workspaceService, FundContextService fundContextService, WorkstationOperatingContextService operatingContextService, NavigationService navigationService, Meridian.Wpf.Services.LoggingService loggingService);</code> | [src/Meridian.Wpf/Shell/Session/DesktopShellSessionService.cs:26](../../../../src/Meridian.Wpf/Shell/Session/DesktopShellSessionService.cs#L26) |  |
+| <code>public void SaveWorkspaceSession(DesktopWindowBounds bounds, bool shellIsOpen);</code> | [src/Meridian.Wpf/Shell/Session/DesktopShellSessionService.cs:40](../../../../src/Meridian.Wpf/Shell/Session/DesktopShellSessionService.cs#L40) |  |
+| <code>public async Task SynchronizeLastSelectedFundAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Shell/Session/DesktopShellSessionService.cs:83](../../../../src/Meridian.Wpf/Shell/Session/DesktopShellSessionService.cs#L83) |  |
+| <code>public async Task&lt;DesktopShellSessionRestorePlan?&gt; BuildRestorePlanForContextAsync(WorkstationOperatingContext context, Func&lt;string?, string&gt; resolveDefaultPageTag, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Shell/Session/DesktopShellSessionService.cs:129](../../../../src/Meridian.Wpf/Shell/Session/DesktopShellSessionService.cs#L129) |  |
+| <code>public Task SetLastSelectedOperatingContextAsync(WorkstationOperatingContext context, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Shell/Session/DesktopShellSessionService.cs:182](../../../../src/Meridian.Wpf/Shell/Session/DesktopShellSessionService.cs#L182) |  |
+| <code>public Task LoadWorkspacesAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Shell/Session/DesktopShellSessionService.cs:188](../../../../src/Meridian.Wpf/Shell/Session/DesktopShellSessionService.cs#L188) |  |
+
+## DesktopWindowBounds
+
+Qualified name: <code>Meridian.Wpf.Shell.Session.DesktopWindowBounds</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Shell/Session/DesktopWindowState.cs:5](../../../../src/Meridian.Wpf/Shell/Session/DesktopWindowState.cs#L5).
+
+```csharp
+public sealed record DesktopWindowBounds(double Left, double Top, double Width, double Height, bool IsMaximized);
+```
+
+## DesktopWindowState
+
+Qualified name: <code>Meridian.Wpf.Shell.Session.DesktopWindowState</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Shell/Session/DesktopWindowState.cs:12](../../../../src/Meridian.Wpf/Shell/Session/DesktopWindowState.cs#L12).
+
+```csharp
+public sealed record DesktopWindowState(double Left, double Top, double Width, double Height, bool IsMaximized, DateTime SavedAt)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DesktopWindowBounds ToBounds() =&gt; …;</code> | [src/Meridian.Wpf/Shell/Session/DesktopWindowState.cs:20](../../../../src/Meridian.Wpf/Shell/Session/DesktopWindowState.cs#L20) |  |
+
 ## IWindowStateStore
 
 Qualified name: <code>Meridian.Wpf.Shell.Session.IWindowStateStore</code>. Kind: `interface`.
@@ -1039,7 +1124,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.ViewModels.AccountingWorkspaceShellViewModel</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:387](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L387).
+Source: [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:388](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L388).
 
 Exposes bindable state and commands to review ledger, cash, reconciliation, trial balance, and audit workflows.
 
@@ -1051,7 +1136,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public AccountingWorkspaceShellViewModel() : base(ShellNavigationCatalog.GetWorkspaceShell(&quot;accounting&quot;) !);</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:389](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L389) |  |
+| <code>public AccountingWorkspaceShellViewModel() : base(ShellNavigationCatalog.GetWorkspaceShell(&quot;accounting&quot;) !);</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:390](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L390) |  |
 
 ## AccountPortfolioViewModel
 
@@ -1070,48 +1155,47 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public string AccountId { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:28](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L28) |  |
-| <code>public string DisplayName { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:47](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L47) |  |
-| <code>public string Kind { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:54](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L54) |  |
-| <code>public decimal Cash { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:63](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L63) |  |
-| <code>public decimal LongMarketValue { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:70](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L70) |  |
-| <code>public decimal ShortMarketValue { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:77](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L77) |  |
-| <code>public decimal GrossExposure { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:84](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L84) |  |
-| <code>public decimal NetExposure { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:91](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L91) |  |
-| <code>public decimal UnrealisedPnl { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:98](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L98) |  |
-| <code>public decimal RealisedPnl { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:105](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L105) |  |
-| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:112](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L112) |  |
-| <code>public bool IsRefreshing { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:119](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L119) |  |
-| <code>public string PositionsEmptyStateTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:135](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L135) |  |
-| <code>public string PositionsEmptyStateDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:142](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L142) |  |
-| <code>public DateTimeOffset AsOf { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:149](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L149) |  |
-| <code>public ObservableCollection&lt;AccountPositionRow&gt; Positions { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:157](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L157) |  |
-| <code>public WorkstationTableModel&lt;AccountPositionRow&gt; PositionsTable { get; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:159](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L159) |  |
-| <code>public AccountPositionRow? SelectedPosition { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:161](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L161) |  |
-| <code>public InspectorPanelModel SelectedPositionInspector { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:176](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L176) |  |
-| <code>public bool HasPositions =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:184](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L184) |  |
-| <code>public bool IsPositionsGridVisible =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:186](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L186) |  |
-| <code>public bool IsPositionsEmptyStateVisible =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:188](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L188) |  |
-| <code>public bool HasSelectedPosition =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:190](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L190) |  |
-| <code>public bool CanRefreshAccount =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:192](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L192) |  |
-| <code>public string RefreshTooltip { get; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:194](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L194) |  |
-| <code>public bool CanOpenSelectedSecurity =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:209](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L209) |  |
-| <code>public string SelectedSecurityTooltip =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:211](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L211) |  |
-| <code>public string PositionActionStateTitle =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:218](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L218) |  |
-| <code>public string PositionActionStateDetail =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:220](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L220) |  |
-| <code>public object? Parameter { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:231](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L231) | Receives the account ID string set by NavigationService after page creation. |
-| <code>public IAsyncRelayCommand RefreshCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:243](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L243) |  |
-| <code>public IRelayCommand OpenSelectedSecurityCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:244](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L244) |  |
-| <code>public AccountPortfolioViewModel(ApiClientService apiClient);</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:248](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L248) |  |
-| <code>public async Task InitializeAsync(string accountId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:300](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L300) |  |
-| <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:307](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L307) |  |
-| <code>public static bool CanRefreshAccountForState(string? accountId, bool isRefreshing) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:389](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L389) |  |
-| <code>public static AccountPositionsEmptyState BuildPositionsEmptyState(bool isRefreshing, bool hasLoadedAccountSnapshot, bool hasAccountContext, int positionCount);</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:392](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L392) |  |
+| <code>public string DisplayName { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:46](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L46) |  |
+| <code>public string Kind { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:53](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L53) |  |
+| <code>public decimal Cash { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:62](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L62) |  |
+| <code>public decimal LongMarketValue { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:69](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L69) |  |
+| <code>public decimal ShortMarketValue { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:76](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L76) |  |
+| <code>public decimal GrossExposure { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:83](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L83) |  |
+| <code>public decimal NetExposure { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:90](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L90) |  |
+| <code>public decimal UnrealisedPnl { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:97](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L97) |  |
+| <code>public decimal RealisedPnl { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:104](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L104) |  |
+| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:111](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L111) |  |
+| <code>public bool IsRefreshing { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:118](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L118) |  |
+| <code>public string PositionsEmptyStateTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:133](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L133) |  |
+| <code>public string PositionsEmptyStateDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:140](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L140) |  |
+| <code>public DateTimeOffset AsOf { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:147](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L147) |  |
+| <code>public ObservableCollection&lt;AccountPositionRow&gt; Positions { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:155](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L155) |  |
+| <code>public WorkstationTableModel&lt;AccountPositionRow&gt; PositionsTable { get; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:157](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L157) |  |
+| <code>public AccountPositionRow? SelectedPosition { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:159](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L159) |  |
+| <code>public InspectorPanelModel SelectedPositionInspector { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:174](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L174) |  |
+| <code>public bool HasPositions =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:182](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L182) |  |
+| <code>public bool IsPositionsGridVisible =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:184](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L184) |  |
+| <code>public bool IsPositionsEmptyStateVisible =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:186](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L186) |  |
+| <code>public bool HasSelectedPosition =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:188](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L188) |  |
+| <code>public bool CanRefreshAccount =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:190](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L190) |  |
+| <code>public bool CanOpenSelectedSecurity =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:192](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L192) |  |
+| <code>public string SelectedSecurityTooltip =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:194](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L194) |  |
+| <code>public string PositionActionStateTitle =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:201](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L201) |  |
+| <code>public string PositionActionStateDetail =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:203](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L203) |  |
+| <code>public object? Parameter { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:214](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L214) | Receives the account ID string set by NavigationService after page creation. |
+| <code>public IAsyncRelayCommand RefreshCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:226](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L226) |  |
+| <code>public IRelayCommand OpenSelectedSecurityCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:227](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L227) |  |
+| <code>public AccountPortfolioViewModel(ApiClientService apiClient);</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:231](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L231) |  |
+| <code>public async Task InitializeAsync(string accountId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:283](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L283) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:290](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L290) |  |
+| <code>public static bool CanRefreshAccountForState(string? accountId, bool isRefreshing) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:372](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L372) |  |
+| <code>public static AccountPositionsEmptyState BuildPositionsEmptyState(bool isRefreshing, bool hasLoadedAccountSnapshot, bool hasAccountContext, int positionCount);</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:375](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L375) |  |
 
 ## AccountPositionRow
 
 Qualified name: <code>Meridian.Wpf.ViewModels.AccountPositionRow</code>. Kind: `record`.
 
-Source: [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:533](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L533).
+Source: [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:515](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L515).
 
 Row model for the positions grid in AccountPortfolioViewModel.
 
@@ -1123,13 +1207,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public MarkFreshnessPresentation Mark =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:542](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L542) |  |
+| <code>public MarkFreshnessPresentation Mark =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:524](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L524) |  |
 
 ## AccountPositionsEmptyState
 
 Qualified name: <code>Meridian.Wpf.ViewModels.AccountPositionsEmptyState</code>. Kind: `record`.
 
-Source: [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:545](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L545).
+Source: [src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs:527](../../../../src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs#L527).
 
 ```csharp
 public sealed record AccountPositionsEmptyState(bool IsVisible, string Title, string Detail);
@@ -1453,7 +1537,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.ViewModels.AggregatedPositionRow</code>. Kind: `record`.
 
-Source: [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:439](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L439).
+Source: [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:433](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L433).
 
 Row model for the netted positions grid in AggregatePortfolioViewModel.
 
@@ -1465,13 +1549,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public MarkFreshnessPresentation Mark =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:449](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L449) |  |
+| <code>public MarkFreshnessPresentation Mark =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:443](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L443) |  |
 
 ## AggregatePortfolioEmptyState
 
 Qualified name: <code>Meridian.Wpf.ViewModels.AggregatePortfolioEmptyState</code>. Kind: `record`.
 
-Source: [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:452](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L452).
+Source: [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:446](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L446).
 
 ```csharp
 public sealed record AggregatePortfolioEmptyState(bool IsVisible, string Title, string Detail);
@@ -1498,29 +1582,28 @@ Declared public members:
 | <code>public IReadOnlyList&lt;string&gt; Top5Concentrations { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:42](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L42) |  |
 | <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:49](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L49) |  |
 | <code>public bool IsRefreshing { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:56](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L56) |  |
-| <code>public string PositionsEmptyStateTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:72](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L72) |  |
-| <code>public string PositionsEmptyStateDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:79](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L79) |  |
-| <code>public DateTimeOffset AsOf { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:86](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L86) |  |
-| <code>public ObservableCollection&lt;AggregatedPositionRow&gt; Positions { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:94](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L94) |  |
-| <code>public WorkstationTableModel&lt;AggregatedPositionRow&gt; PositionsTable { get; }</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:96](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L96) |  |
-| <code>public AggregatedPositionRow? SelectedPosition { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:98](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L98) |  |
-| <code>public InspectorPanelModel SelectedPositionInspector { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:113](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L113) |  |
-| <code>public bool HasPositions =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:122](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L122) |  |
-| <code>public bool IsPositionsGridVisible =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:124](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L124) |  |
-| <code>public bool IsPositionsEmptyStateVisible =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:126](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L126) |  |
-| <code>public bool HasSelectedPosition =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:128](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L128) |  |
-| <code>public bool CanRefreshPortfolio =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:130](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L130) |  |
-| <code>public string RefreshTooltip =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:132](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L132) |  |
-| <code>public bool CanOpenSelectedSecurity =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:136](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L136) |  |
-| <code>public string SelectedSecurityTooltip =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:138](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L138) |  |
-| <code>public string PortfolioActionStateTitle =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:145](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L145) |  |
-| <code>public string PortfolioActionStateDetail =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:147](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L147) |  |
-| <code>public IAsyncRelayCommand RefreshCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:153](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L153) |  |
-| <code>public IRelayCommand OpenSelectedSecurityCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:154](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L154) |  |
-| <code>public AggregatePortfolioViewModel(ApiClientService apiClient);</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:158](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L158) |  |
-| <code>public async Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:211](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L211) |  |
-| <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:217](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L217) |  |
-| <code>public static AggregatePortfolioEmptyState BuildPositionsEmptyState(bool isRefreshing, bool hasLoadedPortfolioSnapshot, bool hasLoadError, int positionCount);</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:302](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L302) |  |
+| <code>public string PositionsEmptyStateTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:71](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L71) |  |
+| <code>public string PositionsEmptyStateDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:78](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L78) |  |
+| <code>public DateTimeOffset AsOf { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:85](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L85) |  |
+| <code>public ObservableCollection&lt;AggregatedPositionRow&gt; Positions { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:93](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L93) |  |
+| <code>public WorkstationTableModel&lt;AggregatedPositionRow&gt; PositionsTable { get; }</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:95](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L95) |  |
+| <code>public AggregatedPositionRow? SelectedPosition { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:97](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L97) |  |
+| <code>public InspectorPanelModel SelectedPositionInspector { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:112](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L112) |  |
+| <code>public bool HasPositions =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:121](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L121) |  |
+| <code>public bool IsPositionsGridVisible =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:123](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L123) |  |
+| <code>public bool IsPositionsEmptyStateVisible =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:125](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L125) |  |
+| <code>public bool HasSelectedPosition =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:127](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L127) |  |
+| <code>public bool CanRefreshPortfolio =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:129](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L129) |  |
+| <code>public bool CanOpenSelectedSecurity =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:131](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L131) |  |
+| <code>public string SelectedSecurityTooltip =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:133](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L133) |  |
+| <code>public string PortfolioActionStateTitle =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:140](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L140) |  |
+| <code>public string PortfolioActionStateDetail =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:142](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L142) |  |
+| <code>public IAsyncRelayCommand RefreshCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:148](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L148) |  |
+| <code>public IRelayCommand OpenSelectedSecurityCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:149](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L149) |  |
+| <code>public AggregatePortfolioViewModel(ApiClientService apiClient);</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:153](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L153) |  |
+| <code>public async Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:206](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L206) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:212](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L212) |  |
+| <code>public static AggregatePortfolioEmptyState BuildPositionsEmptyState(bool isRefreshing, bool hasLoadedPortfolioSnapshot, bool hasLoadError, int positionCount);</code> | [src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs:297](../../../../src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs#L297) |  |
 
 ## AlignmentOptionChoice
 
@@ -2064,149 +2147,3 @@ Declared public members:
 | <code>public required string ErrorMessage { get; init; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:35](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L35) |  |
 | <code>public bool HasError =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:36](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L36) |  |
 | <code>public static BatchRunResultItem FromRun(BatchBacktestRun run);</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:38](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L38) |  |
-
-## BatchSweepParameterOption
-
-Qualified name: <code>Meridian.Wpf.ViewModels.BatchSweepParameterOption</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:13](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L13).
-
-Describes one supported request-level parameter that the desktop batch panel can sweep.
-
-```csharp
-public sealed record BatchSweepParameterOption(string Key, string Label, string Format, decimal DefaultStart, decimal DefaultStop, decimal DefaultStep);
-```
-
-## BiasDisclosureItemVm
-
-Qualified name: <code>Meridian.Wpf.ViewModels.BiasDisclosureItemVm</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:640](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L640).
-
-UI display wrapper for a single bias-disclosure line item.
-
-```csharp
-public sealed record BiasDisclosureItemVm(BiasDisclosureItem Item)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Severity =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:642](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L642) |  |
-| <code>public string Title =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:643](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L643) |  |
-| <code>public string Detail =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:644](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L644) |  |
-| <code>public bool IsWarning =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:645](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L645) |  |
-| <code>public bool IsCaution =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:646](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L646) |  |
-
-## BindableBase
-
-Qualified name: <code>Meridian.Wpf.ViewModels.BindableBase</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/BindableBase.cs:12](../../../../src/Meridian.Wpf/ViewModels/BindableBase.cs#L12).
-
-Base class for all WPF ViewModels. Extends ObservableObject so that ViewModels marked partial can use the &#91;ObservableProperty&#93; and &#91;RelayCommand&#93; source generators from CommunityToolkit.Mvvm without any structural changes to existing call sites.
-
-```csharp
-public abstract class BindableBase : ObservableObject
-```
-
-## CarryTradeBacktestViewModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.CarryTradeBacktestViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:21](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L21).
-
-ViewModel for the Carry Trade Backtest page. Lets users select an arbitrary set of securities, configure carry-specific parameters, run a backtest backed by CarryTradeBacktestStrategy, and view a viability assessment.
-
-```csharp
-public sealed class CarryTradeBacktestViewModel : BindableBase, IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string NewSymbol { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:30](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L30) |  |
-| <code>public ObservableCollection&lt;string&gt; SelectedSymbols { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:33](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L33) | Symbols added by the user to the carry portfolio. |
-| <code>public DateTime FromDate { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:38](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L38) |  |
-| <code>public DateTime ToDate { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:41](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L41) |  |
-| <code>public decimal InitialCash { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:44](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L44) |  |
-| <code>public string DataRoot { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:47](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L47) |  |
-| <code>public YieldCarryMode YieldCarryMode { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:53](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L53) | Carry signal mode: YieldSpread, YieldRotation, or ClassicCarry. |
-| <code>public IReadOnlyList&lt;YieldCarryMode&gt; YieldCarryModes { get; } = Enum.GetValues&lt;YieldCarryMode&gt;();</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:55](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L55) |  |
-| <code>public CarryOptimizationMethod OptimizationMethod { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:58](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L58) |  |
-| <code>public IReadOnlyList&lt;CarryOptimizationMethod&gt; OptimizationMethods { get; } = Enum.GetValues&lt;CarryOptimizationMethod&gt;();</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:60](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L60) |  |
-| <code>public double RiskAversion { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:64](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L64) |  |
-| <code>public double RiskFreeRate { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:67](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L67) |  |
-| <code>public double MaxSinglePosition { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:70](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L70) |  |
-| <code>public double TargetVolatility { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:73](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L73) |  |
-| <code>public bool UseTargetVolatility { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:76](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L76) |  |
-| <code>public int RebalanceFrequencyDays { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:79](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L79) |  |
-| <code>public double MinYieldSpread { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:87](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L87) |  |
-| <code>public ObservableCollection&lt;SymbolYieldVm&gt; SymbolYields { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:100](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L100) | Optional per-symbol annual yield overrides. The user can enter the known dividend yield, bond coupon rate, or FX carry rate for each security. When left blank the strategy estimates yield from price history. |
-| <code>public string NewYieldSymbol { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:103](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L103) |  |
-| <code>public double NewYieldValue { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:106](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L106) |  |
-| <code>public bool IsRunning { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:111](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L111) |  |
-| <code>public bool CanRun =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:121](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L121) |  |
-| <code>public double ProgressFraction { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:124](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L124) |  |
-| <code>public string StatusText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:127](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L127) |  |
-| <code>public ObservableCollection&lt;EquityCurvePoint&gt; EquityCurvePoints { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:131](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L131) |  |
-| <code>public string TotalReturn { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:136](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L136) |  |
-| <code>public string AnnualisedReturn { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:139](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L139) |  |
-| <code>public string SharpeRatio { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:142](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L142) |  |
-| <code>public string SortinoRatio { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:145](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L145) |  |
-| <code>public string CalmarRatio { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:148](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L148) |  |
-| <code>public string MaxDrawdown { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:151](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L151) |  |
-| <code>public string WinRate { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:154](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L154) |  |
-| <code>public string TotalTrades { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:157](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L157) |  |
-| <code>public string NetPnl { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:160](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L160) |  |
-| <code>public string TotalCommissions { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:163](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L163) |  |
-| <code>public string Xirr { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:166](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L166) |  |
-| <code>public string EventsProcessed { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:169](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L169) |  |
-| <code>public string ElapsedTime { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:172](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L172) |  |
-| <code>public string ViabilityGrade { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:178](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L178) | Letter grade: A / B / C / D / F or &quot;--&quot; before first run. |
-| <code>public string ViabilityScore { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:182](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L182) | Composite score 0–100. |
-| <code>public string ViabilitySummary { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:185](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L185) |  |
-| <code>public string ViabilityGradeColor { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:189](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L189) | Hex colour used to highlight the grade badge. |
-| <code>public ObservableCollection&lt;SymbolAttributionVm&gt; Attribution { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:193](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L193) |  |
-| <code>public ObservableCollection&lt;FillEventVm&gt; Fills { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:194](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L194) |  |
-| <code>public ObservableCollection&lt;CashFlowVm&gt; CashFlows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:195](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L195) |  |
-| <code>public string? LatestRecordedRunId { get; set; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:200](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L200) |  |
-| <code>public bool HasLatestRecordedRun =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:201](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L201) |  |
-| <code>public IAsyncRelayCommand RunBacktestCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:205](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L205) |  |
-| <code>public IRelayCommand CancelBacktestCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:206](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L206) |  |
-| <code>public IRelayCommand AddSymbolCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:207](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L207) |  |
-| <code>public IRelayCommand&lt;string&gt; RemoveSymbolCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:208](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L208) |  |
-| <code>public IRelayCommand AddPresetFaangCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:209](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L209) |  |
-| <code>public IRelayCommand AddPresetMagnificentSevenCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:210](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L210) |  |
-| <code>public IRelayCommand AddPresetEtfsCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:211](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L211) |  |
-| <code>public IRelayCommand AddPresetDividendEtfsCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:213](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L213) | Preset for high-yield dividend ETFs (VYM, SCHD, HDV, DVY, JEPI). |
-| <code>public IRelayCommand AddPresetBondCarryCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:215](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L215) | Preset for bond carry pairs (TLT, HYG, LQD, EMB, SHY). |
-| <code>public IRelayCommand ClearSymbolsCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:216](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L216) |  |
-| <code>public IRelayCommand AddYieldOverrideCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:217](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L217) |  |
-| <code>public IRelayCommand&lt;SymbolYieldVm&gt; RemoveYieldOverrideCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:218](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L218) |  |
-| <code>public IRelayCommand OpenRunBrowserCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:219](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L219) |  |
-| <code>public IRelayCommand OpenRunDetailCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:220](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L220) |  |
-| <code>public IRelayCommand OpenRunPortfolioCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:221](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L221) |  |
-| <code>public CarryTradeBacktestViewModel(BacktestService backtestService, NavigationService navigationService, StrategyRunWorkspaceService strategyRunWorkspaceService);</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:223](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L223) |  |
-| <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs:552](../../../../src/Meridian.Wpf/ViewModels/CarryTradeBacktestViewModel.cs#L552) |  |
-
-## CashFlowEventRow
-
-Qualified name: <code>Meridian.Wpf.ViewModels.CashFlows.CashFlowEventRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/ViewModels/CashFlows/ContractualCashFlowScenarioViewModel.cs:49](../../../../src/Meridian.Wpf/ViewModels/CashFlows/ContractualCashFlowScenarioViewModel.cs#L49).
-
-Exact server decimals for one projected event; nothing is recomputed on the desktop.
-
-```csharp
-public sealed record CashFlowEventRow(string Date, string StreamId, string OpeningBalance, string CashInterest, string ScheduledPrincipal, string ForecastPrepayment, string RedeemedPrincipal, string PremiumAndPenalty, string ClosingBalance, string Direction)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static CashFlowEventRow From(ContractualCashFlowEvent e) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/CashFlows/ContractualCashFlowScenarioViewModel.cs:52](../../../../src/Meridian.Wpf/ViewModels/CashFlows/ContractualCashFlowScenarioViewModel.cs#L52) |  |
-| <code>public static string Exact(decimal value) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/CashFlows/ContractualCashFlowScenarioViewModel.cs:56](../../../../src/Meridian.Wpf/ViewModels/CashFlows/ContractualCashFlowScenarioViewModel.cs#L56) |  |

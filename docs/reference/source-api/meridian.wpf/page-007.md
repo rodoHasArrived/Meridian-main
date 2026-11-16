@@ -6,6 +6,111 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataWorkspacePresentation
+
+Qualified name: <code>Meridian.Wpf.Services.DataWorkspacePresentation</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1040](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1040).
+
+Carries the data workspace context, commands, overview metrics, workflow steps, and queue presentation.
+
+```csharp
+public sealed class DataWorkspacePresentation
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WorkspaceShellContextInput Context { get; init; } = new ();</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1042](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1042) |  |
+| <code>public WorkspaceCommandGroup CommandGroup { get; init; } = new ();</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1043](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1043) |  |
+| <code>public DataHeroState HeroState { get; init; } = DataHeroState.Loading();</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1044](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1044) |  |
+| <code>public IReadOnlyList&lt;DataHeroMetric&gt; HeroMetrics { get; init; } = DataHeroMetric.LoadingMetrics();</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1045](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1045) |  |
+| <code>public IReadOnlyList&lt;DataIntegrationWorkflowStep&gt; IntegrationWorkflowSteps { get; init; } = DataIntegrationWorkflowStep.LoadingSteps();</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1046](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1046) |  |
+| <code>public string QueueScopeBadgeText { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1047](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1047) |  |
+| <code>public string QueueSummaryText { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1048](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1048) |  |
+| <code>public IReadOnlyList&lt;WorkspaceQueueItem&gt; ProviderQueueItems { get; init; } = Array.Empty&lt;WorkspaceQueueItem&gt;();</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1049](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1049) |  |
+| <code>public IReadOnlyList&lt;WorkspaceQueueItem&gt; BackfillQueueItems { get; init; } = Array.Empty&lt;WorkspaceQueueItem&gt;();</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1050](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1050) |  |
+| <code>public IReadOnlyList&lt;WorkspaceQueueItem&gt; StorageQueueItems { get; init; } = Array.Empty&lt;WorkspaceQueueItem&gt;();</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1051](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1051) |  |
+| <code>public string OperationsSummaryTitleText { get; init; } = &quot;Data&quot;;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1052](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1052) |  |
+| <code>public string OperationsSummaryDetailText { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1053](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1053) |  |
+| <code>public string SummaryProvidersText { get; init; } = DataWorkspacePresentationBuilder.ProvidersUnavailableSummary;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1054](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1054) |  |
+| <code>public string SummaryProvidersTone { get; init; } = WorkspaceTone.Warning;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1055](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1055) |  |
+| <code>public string SummaryBackfillText { get; init; } = DataWorkspacePresentationBuilder.BackfillUnavailableSummary;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1056](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1056) |  |
+| <code>public string SummaryBackfillTone { get; init; } = WorkspaceTone.Neutral;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1057](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1057) |  |
+| <code>public string SummaryStorageText { get; init; } = DataWorkspacePresentationBuilder.StorageUnavailableSummary;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1058](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1058) |  |
+| <code>public string SummaryStorageTone { get; init; } = WorkspaceTone.Success;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1059](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1059) |  |
+| <code>public IReadOnlyList&lt;WorkspaceRecentItem&gt; RecentOperations { get; init; } = Array.Empty&lt;WorkspaceRecentItem&gt;();</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1060](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1060) |  |
+| <code>public WorkspaceQueueRegionState ProviderQueueState { get; init; } = WorkspaceQueueRegionState.None;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1061](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1061) |  |
+| <code>public WorkspaceQueueRegionState BackfillQueueState { get; init; } = WorkspaceQueueRegionState.None;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1062](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1062) |  |
+| <code>public WorkspaceQueueRegionState StorageQueueState { get; init; } = WorkspaceQueueRegionState.None;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1063](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1063) |  |
+
+## DataWorkspacePresentationBuilder
+
+Qualified name: <code>Meridian.Wpf.Services.DataWorkspacePresentationBuilder</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:16](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L16).
+
+Projects data-workspace snapshots into context badges, commands, workflow steps, and queue presentation.
+
+```csharp
+public static class DataWorkspacePresentationBuilder
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static DataWorkspacePresentation Build(DataWorkspaceData data);</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:25](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L25) |  |
+
+## DataWorkspaceShellStateProvider
+
+Qualified name: <code>Meridian.Wpf.Services.DataWorkspaceShellStateProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs:115](../../../../src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs#L115).
+
+Supplies the data workspace definition and shell state.
+
+```csharp
+public sealed class DataWorkspaceShellStateProvider : WorkspaceShellStateProviderBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DataWorkspaceShellStateProvider(WorkstationOperatingContextService? operatingContextService) : base(operatingContextService);</code> | [src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs:117](../../../../src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs#L117) |  |
+| <code>public override WorkspaceShellDefinition Definition =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs:122](../../../../src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs#L122) |  |
+
+## DemoTourService
+
+Qualified name: <code>Meridian.Wpf.Services.DemoTourService</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/DemoTourService.cs:11](../../../../src/Meridian.Wpf/Services/DemoTourService.cs#L11).
+
+Coordinates the safe, fixture-backed desktop tour used for first-launch onboarding and Settings.
+
+```csharp
+public sealed class DemoTourService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static DemoTourService Instance =&gt; …;</code> | [src/Meridian.Wpf/Services/DemoTourService.cs:19](../../../../src/Meridian.Wpf/Services/DemoTourService.cs#L19) |  |
+| <code>public DemoTourService(FixtureModeDetector fixtureModeDetector, NavigationService navigationService);</code> | [src/Meridian.Wpf/Services/DemoTourService.cs:21](../../../../src/Meridian.Wpf/Services/DemoTourService.cs#L21) |  |
+| <code>public event EventHandler? TourChanged;</code> | [src/Meridian.Wpf/Services/DemoTourService.cs:27](../../../../src/Meridian.Wpf/Services/DemoTourService.cs#L27) |  |
+| <code>public IReadOnlyList&lt;DemoTourStep&gt; Steps { get; } = [new (1, &quot;Data/provider status&quot;, &quot;DataShell&quot;, &quot;Review sample provider health and queue telemetry before any live provider credentials are connected.&quot;), new (2, &quot;Portfolio records&quot;, &quot;PortfolioShell&quot;, &quot;Inspect sample portfolio records that are isolated from retained source-backed books.&quot;), new (3, &quot;Accounting reconciliation&quot;, &quot;FundReconciliation&quot;, &quot;Walk through safe sample breaks, match context, and close-readiness posture.&quot;), new (4, &quot;Evidence/audit context&quot;, &quot;FundAuditTrail&quot;, &quot;Confirm retained evidence, audit history, and source references are visibly sample-only.&quot;), new (5, &quot;Reporting readiness&quot;, &quot;ReportingShell&quot;, &quot;Preview governed report readiness without publishing provider-backed operational data.&quot;), new (6, &quot;Settings&quot;, &quot;SettingsShell&quot;, &quot;Finish in Settings, where the tour can be restarted and demo/sample mode is clearly labeled.&quot;)];</code> | [src/Meridian.Wpf/Services/DemoTourService.cs:29](../../../../src/Meridian.Wpf/Services/DemoTourService.cs#L29) |  |
+| <code>public bool IsTourActive =&gt; …;</code> | [src/Meridian.Wpf/Services/DemoTourService.cs:39](../../../../src/Meridian.Wpf/Services/DemoTourService.cs#L39) |  |
+| <code>public DemoTourStep? CurrentStep =&gt; …;</code> | [src/Meridian.Wpf/Services/DemoTourService.cs:41](../../../../src/Meridian.Wpf/Services/DemoTourService.cs#L41) |  |
+| <code>public string CurrentStepText =&gt; …;</code> | [src/Meridian.Wpf/Services/DemoTourService.cs:43](../../../../src/Meridian.Wpf/Services/DemoTourService.cs#L43) |  |
+| <code>public string CurrentStepDetail =&gt; …;</code> | [src/Meridian.Wpf/Services/DemoTourService.cs:47](../../../../src/Meridian.Wpf/Services/DemoTourService.cs#L47) |  |
+| <code>public bool CanMoveNext =&gt; …;</code> | [src/Meridian.Wpf/Services/DemoTourService.cs:50](../../../../src/Meridian.Wpf/Services/DemoTourService.cs#L50) |  |
+| <code>public void StartTour();</code> | [src/Meridian.Wpf/Services/DemoTourService.cs:52](../../../../src/Meridian.Wpf/Services/DemoTourService.cs#L52) |  |
+| <code>public void MoveNext();</code> | [src/Meridian.Wpf/Services/DemoTourService.cs:61](../../../../src/Meridian.Wpf/Services/DemoTourService.cs#L61) |  |
+| <code>public void EndTour();</code> | [src/Meridian.Wpf/Services/DemoTourService.cs:73](../../../../src/Meridian.Wpf/Services/DemoTourService.cs#L73) |  |
+
 ## DemoTourStep
 
 Qualified name: <code>Meridian.Wpf.Services.DemoTourStep</code>. Kind: `record`.
@@ -1010,86 +1115,3 @@ Declared public members:
 | <code>public const int Warning = InfoBarConstants.WarningDurationMs;</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:39](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L39) |  |
 | <code>public const int Error = InfoBarConstants.ErrorDurationMs;</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:40](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L40) |  |
 | <code>public const int Critical = InfoBarConstants.CriticalDurationMs;</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:41](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L41) |  |
-
-## InfoBarSeverity
-
-Qualified name: <code>Meridian.Wpf.Services.InfoBarSeverity</code>. Kind: `enum`.
-
-Source: [src/Meridian.Wpf/Services/InfoBarService.cs:12](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L12).
-
-Severity levels for info bar notifications. Maps to the shared InfoBarSeverityLevel for WPF compatibility.
-
-```csharp
-public enum InfoBarSeverity : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Informational</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:14](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L14) |  |
-| <code>Success</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:15](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L15) |  |
-| <code>Warning</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:16](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L16) |  |
-| <code>Error</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:17](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L17) |  |
-
-## InlineValidationResult
-
-Qualified name: <code>Meridian.Wpf.Services.InlineValidationResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/ConfigService.cs:35](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L35).
-
-Result of inline validation for a single provider field change. Used to provide immediate feedback in the WPF settings panel.
-
-```csharp
-public sealed class InlineValidationResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string[] Errors { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Wpf/Services/ConfigService.cs:37](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L37) |  |
-| <code>public string[] Warnings { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Wpf/Services/ConfigService.cs:38](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L38) |  |
-| <code>public bool IsValid =&gt; …;</code> | [src/Meridian.Wpf/Services/ConfigService.cs:39](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L39) |  |
-| <code>public bool HasWarnings =&gt; …;</code> | [src/Meridian.Wpf/Services/ConfigService.cs:40](../../../../src/Meridian.Wpf/Services/ConfigService.cs#L40) |  |
-
-## IOperationsControlCenterClient
-
-Qualified name: <code>Meridian.Wpf.Services.IOperationsControlCenterClient</code>. Kind: `interface`.
-
-Source: [src/Meridian.Wpf/Services/OperationsControlCenterClient.cs:10](../../../../src/Meridian.Wpf/Services/OperationsControlCenterClient.cs#L10).
-
-Defines shared approval-policy, close-calendar, continuity-workflow, and close-readiness queries.
-
-```csharp
-public interface IOperationsControlCenterClient
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;OperationsApprovalPolicyMatrixDto?&gt; GetApprovalPolicyMatrixAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/OperationsControlCenterClient.cs:12](../../../../src/Meridian.Wpf/Services/OperationsControlCenterClient.cs#L12) |  |
-| <code>Task&lt;OperationsCloseCalendarDto?&gt; GetCloseCalendarAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/OperationsControlCenterClient.cs:14](../../../../src/Meridian.Wpf/Services/OperationsControlCenterClient.cs#L14) |  |
-| <code>Task&lt;IReadOnlyList&lt;OperationsContinuityWorkflowSummaryDto&gt;?&gt; GetWorkflowsAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/OperationsControlCenterClient.cs:21](../../../../src/Meridian.Wpf/Services/OperationsControlCenterClient.cs#L21) | Returns the continuity workflow list, or null when the workstation API call failed — callers that surface workflow state must not render an outage as an empty queue. |
-| <code>Task&lt;OperationsContinuityWorkflowDto?&gt; GetWorkflowAsync(Guid workflowId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/OperationsControlCenterClient.cs:27](../../../../src/Meridian.Wpf/Services/OperationsControlCenterClient.cs#L27) | Returns the continuity workflow detail, or null when the workflow does not exist or the workstation API call failed. |
-| <code>Task&lt;FinancialOperationsCommandCenterDto?&gt; GetCloseReadinessAsync(CloseReadinessScopeDto scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/OperationsControlCenterClient.cs:29](../../../../src/Meridian.Wpf/Services/OperationsControlCenterClient.cs#L29) |  |
-
-## IPreparerDraftCheckApiClient
-
-Qualified name: <code>Meridian.Wpf.Services.IPreparerDraftCheckApiClient</code>. Kind: `interface`.
-
-Source: [src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs:6](../../../../src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs#L6).
-
-```csharp
-public interface IPreparerDraftCheckApiClient
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;ApiResponse&lt;SinglePrincipalAttestationWorkspaceDto&gt;&gt; GetDraftCheckWorkspaceAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs:8](../../../../src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs#L8) |  |
-| <code>Task&lt;ApiResponse&lt;SinglePrincipalAttestationSubjectSnapshotDto&gt;&gt; InspectDraftCheckAsync(Guid securityId, Guid runId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs:10](../../../../src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs#L10) |  |
-| <code>Task&lt;ApiResponse&lt;PreparerAttestationReceiptDto&gt;&gt; RecordDraftCheckAsync(RecordPreparerAttestationRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs:12](../../../../src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs#L12) |  |
-| <code>Task&lt;ApiResponse&lt;PreparerAttestationRevocationDto&gt;&gt; RevokeDraftCheckAsync(RevokePreparerAttestationRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs:14](../../../../src/Meridian.Wpf/Services/WorkstationContractualCashFlowApiClient.DraftChecks.cs#L14) |  |

@@ -6,6 +6,104 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DiagnosticsViewModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.DiagnosticsViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/ViewModels/Base/DiagnosticsViewModel.cs:6](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/DiagnosticsViewModel.cs#L6).
+
+Exposes observable diagnostic status title and detail text.
+
+```csharp
+public sealed class DiagnosticsViewModel : Meridian.Wpf.ViewModels.BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string StatusTitle { get; set; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/DiagnosticsViewModel.cs:11](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/DiagnosticsViewModel.cs#L11) |  |
+| <code>public string StatusDetail { get; set; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/DiagnosticsViewModel.cs:17](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/DiagnosticsViewModel.cs#L17) |  |
+
+## ErrorStateViewModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.ErrorStateViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/ViewModels/Base/ErrorStateViewModel.cs:6](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/ErrorStateViewModel.cs#L6).
+
+Exposes observable error presence, title, and message for reusable error presentation.
+
+```csharp
+public sealed class ErrorStateViewModel : Meridian.Wpf.ViewModels.BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool HasError { get; set; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/ErrorStateViewModel.cs:12](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/ErrorStateViewModel.cs#L12) |  |
+| <code>public string Title { get; set; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/ErrorStateViewModel.cs:18](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/ErrorStateViewModel.cs#L18) |  |
+| <code>public string Message { get; set; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/ErrorStateViewModel.cs:24](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/ErrorStateViewModel.cs#L24) |  |
+
+## FilterableTableViewModel (generic arity 1)
+
+Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.FilterableTableViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/ViewModels/Base/FilterableTableViewModel.cs:6](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/FilterableTableViewModel.cs#L6).
+
+Maintains all table rows and filters the displayed collection when the filter query changes.
+
+```csharp
+public sealed class FilterableTableViewModel<TRow>: TableViewModel<TRow>
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string FilterQuery { get; set; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/FilterableTableViewModel.cs:11](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/FilterableTableViewModel.cs#L11) |  |
+| <code>public Func&lt;TRow, string, bool&gt; MatchFilter { get; set; } = static (_, _) =&gt; true;</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/FilterableTableViewModel.cs:23](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/FilterableTableViewModel.cs#L23) |  |
+| <code>public override void ReplaceRows(IEnumerable&lt;TRow&gt; rows);</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/FilterableTableViewModel.cs:25](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/FilterableTableViewModel.cs#L25) |  |
+| <code>public void ClearFilter() =&gt; …;</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/FilterableTableViewModel.cs:34](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/FilterableTableViewModel.cs#L34) |  |
+
+## InspectorViewModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.InspectorViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/ViewModels/Base/InspectorViewModel.cs:6](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/InspectorViewModel.cs#L6).
+
+Exposes observable inspector title and summary text.
+
+```csharp
+public sealed class InspectorViewModel : Meridian.Wpf.ViewModels.BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Title { get; set; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/InspectorViewModel.cs:11](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/InspectorViewModel.cs#L11) |  |
+| <code>public string Summary { get; set; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/InspectorViewModel.cs:17](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/InspectorViewModel.cs#L17) |  |
+
+## LoadingStateViewModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.LoadingStateViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/ViewModels/Base/LoadingStateViewModel.cs:6](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/LoadingStateViewModel.cs#L6).
+
+Exposes observable loading activity and its explanatory message.
+
+```csharp
+public sealed class LoadingStateViewModel : Meridian.Wpf.ViewModels.BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsLoading { get; set; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/LoadingStateViewModel.cs:11](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/LoadingStateViewModel.cs#L11) |  |
+| <code>public string Message { get; set; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/LoadingStateViewModel.cs:17](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/LoadingStateViewModel.cs#L17) |  |
+
 ## RoutingMatrixRow
 
 Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.RoutingMatrixRow</code>. Kind: `class`.

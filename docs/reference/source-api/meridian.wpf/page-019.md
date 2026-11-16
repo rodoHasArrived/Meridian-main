@@ -6,6 +6,108 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityPassportEditorView
+
+Qualified name: <code>Meridian.Wpf.Views.SecurityPassportEditorView</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/SecurityPassportEditorView.xaml.cs:10](../../../../src/Meridian.Wpf/Views/SecurityPassportEditorView.xaml.cs#L10).
+
+Reusable visual for the Security Master passport governed-write editor. Hosted both by SecurityPassportEditorPage and inline on the Security Master page; it carries no DataContext of its own and binds to whatever SecurityPassportEditorViewModel the host supplies.
+
+```csharp
+public partial class SecurityPassportEditorView : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityPassportEditorView();</code> | [src/Meridian.Wpf/Views/SecurityPassportEditorView.xaml.cs:12](../../../../src/Meridian.Wpf/Views/SecurityPassportEditorView.xaml.cs#L12) |  |
+
+## ServiceManagerPage
+
+Qualified name: <code>Meridian.Wpf.Views.ServiceManagerPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:32](../../../../src/Meridian.Wpf/Views/Pages.cs#L32).
+
+```csharp
+public partial class ServiceManagerPage : Page
+```
+
+Source: [src/Meridian.Wpf/Views/ServiceManagerPage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/ServiceManagerPage.xaml.cs#L11).
+
+Hosts backend service status and lifecycle controls.
+
+```csharp
+public partial class ServiceManagerPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ServiceManagerPage(BackendServiceManager serviceManager, LoggingService loggingService);</code> | [src/Meridian.Wpf/Views/ServiceManagerPage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/ServiceManagerPage.xaml.cs#L15) |  |
+
+## SettingsPage
+
+Qualified name: <code>Meridian.Wpf.Views.SettingsPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:101](../../../../src/Meridian.Wpf/Views/Pages.cs#L101).
+
+```csharp
+public partial class SettingsPage : Page
+```
+
+Source: [src/Meridian.Wpf/Views/SettingsPage.xaml.cs:13](../../../../src/Meridian.Wpf/Views/SettingsPage.xaml.cs#L13).
+
+Settings page — thin code-behind. All state, service calls, and commands live in SettingsViewModel.
+
+```csharp
+public partial class SettingsPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SettingsPage(SettingsViewModel viewModel);</code> | [src/Meridian.Wpf/Views/SettingsPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/SettingsPage.xaml.cs#L17) |  |
+
+## SettingsWorkspaceShellPageBase
+
+Qualified name: <code>Meridian.Wpf.Views.SettingsWorkspaceShellPageBase</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:364](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L364).
+
+Binds derived pages to the settings workspace shell definition.
+
+```csharp
+public class SettingsWorkspaceShellPageBase : WorkspaceShellPageBase<SettingsWorkspaceShellStateProvider, Meridian.Wpf.Features.Settings.Shell.SettingsWorkspaceShellViewModel>
+```
+
+## SetupWizardPage
+
+Qualified name: <code>Meridian.Wpf.Views.SetupWizardPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:104](../../../../src/Meridian.Wpf/Views/Pages.cs#L104).
+
+```csharp
+public partial class SetupWizardPage : Page
+```
+
+Source: [src/Meridian.Wpf/Views/SetupWizardPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/SetupWizardPage.xaml.cs#L10).
+
+Hosts initial provider, storage, and backend configuration steps.
+
+```csharp
+public partial class SetupWizardPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SetupWizardPage();</code> | [src/Meridian.Wpf/Views/SetupWizardPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/SetupWizardPage.xaml.cs#L12) |  |
+
 ## ShellMastheadControl
 
 Qualified name: <code>Meridian.Wpf.Views.ShellMastheadControl</code>. Kind: `class`.
@@ -197,7 +299,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Views.StrategyWorkspaceShellPageBase</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:285](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L285).
+Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:308](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L308).
 
 Binds derived pages to the strategy workspace shell definition.
 
@@ -390,7 +492,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Views.TradingWorkspaceShellPageBase</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:299](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L299).
+Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:322](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L322).
 
 Binds derived pages to the trading workspace shell definition.
 
@@ -625,21 +727,22 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Views.WorkspaceDeepPageHostPage</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Views/WorkspaceDeepPageHostPage.xaml.cs:13](../../../../src/Meridian.Wpf/Views/WorkspaceDeepPageHostPage.xaml.cs#L13).
+Source: [src/Meridian.Wpf/Views/WorkspaceDeepPageHostPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/WorkspaceDeepPageHostPage.xaml.cs#L14).
 
 Wraps legacy deep pages in the shared workstation shell chrome so direct navigation preserves workspace context, related workflows, and trust signals.
 
 ```csharp
-public partial class WorkspaceDeepPageHostPage : Page
+public partial class WorkspaceDeepPageHostPage : Page, IPageRefreshContentHost
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public WorkspaceDeepPageHostPage(NavigationService navigationService, WorkspaceShellContextService? shellContextService, string pageTag, Page hostedPage, object? navigationParameter, WorkspaceChromePresentationMode presentationMode);</code> | [src/Meridian.Wpf/Views/WorkspaceDeepPageHostPage.xaml.cs:24](../../../../src/Meridian.Wpf/Views/WorkspaceDeepPageHostPage.xaml.cs#L24) |  |
-| <code>public Page HostedPage =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceDeepPageHostPage.xaml.cs:50](../../../../src/Meridian.Wpf/Views/WorkspaceDeepPageHostPage.xaml.cs#L50) |  |
-| <code>public object? HostedContent =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceDeepPageHostPage.xaml.cs:52](../../../../src/Meridian.Wpf/Views/WorkspaceDeepPageHostPage.xaml.cs#L52) |  |
+| <code>public WorkspaceDeepPageHostPage(NavigationService navigationService, WorkspaceShellContextService? shellContextService, string pageTag, Page hostedPage, object? navigationParameter, WorkspaceChromePresentationMode presentationMode);</code> | [src/Meridian.Wpf/Views/WorkspaceDeepPageHostPage.xaml.cs:25](../../../../src/Meridian.Wpf/Views/WorkspaceDeepPageHostPage.xaml.cs#L25) |  |
+| <code>public Page HostedPage =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceDeepPageHostPage.xaml.cs:51](../../../../src/Meridian.Wpf/Views/WorkspaceDeepPageHostPage.xaml.cs#L51) |  |
+| <code>public object? HostedContent =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceDeepPageHostPage.xaml.cs:53](../../../../src/Meridian.Wpf/Views/WorkspaceDeepPageHostPage.xaml.cs#L53) |  |
+| <code>public object? PageRefreshContent =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceDeepPageHostPage.xaml.cs:56](../../../../src/Meridian.Wpf/Views/WorkspaceDeepPageHostPage.xaml.cs#L56) |  |
 
 ## WorkspaceDialogChromeControl
 
@@ -868,13 +971,19 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Views.WorkspaceShellPageBase</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:15](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L15).
+Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:16](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L16).
 
 Binds derived pages to the workspace shell definition.
 
 ```csharp
-public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel>: Page where TStateProvider : class, IWorkspaceShellStateProvider where TViewModel : WorkspaceShellViewModelBase
+public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel>: Page, IPageRefreshTarget where TStateProvider : class, IWorkspaceShellStateProvider where TViewModel : WorkspaceShellViewModelBase
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ICommand RefreshCommand =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:46](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L46) | The shell Refresh control (toolbar button and F5) reloads the workspace shell and every docked page in place instead of rebuilding the shell by re-navigation. |
 
 ## AsyncCommandViewModel
 
@@ -1000,129 +1109,3 @@ Declared public members:
 | <code>public ActivityLogGridControl();</code> | [src/Meridian.Wpf/Workstation/Controls/ActivityLogGridControl.xaml.cs:29](../../../../src/Meridian.Wpf/Workstation/Controls/ActivityLogGridControl.xaml.cs#L29) |  |
 | <code>public AuditTimelineModel? Timeline { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/ActivityLogGridControl.xaml.cs:34](../../../../src/Meridian.Wpf/Workstation/Controls/ActivityLogGridControl.xaml.cs#L34) |  |
 | <code>public bool IsTimelineEmpty { get; private set; }</code> | [src/Meridian.Wpf/Workstation/Controls/ActivityLogGridControl.xaml.cs:40](../../../../src/Meridian.Wpf/Workstation/Controls/ActivityLogGridControl.xaml.cs#L40) |  |
-
-## DenseDataGridControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Controls.DenseDataGridControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:20](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L20).
-
-Displays workstation table rows with selection, empty-state content, and keyboard command support.
-
-```csharp
-public partial class DenseDataGridControl : UserControl
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly DependencyProperty TableProperty = DependencyProperty.Register(nameof(Table), typeof(WorkstationTableModel), typeof(DenseDataGridControl), new PropertyMetadata(null, OnTableChanged));</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:22](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L22) |  |
-| <code>public static readonly DependencyProperty SelectedItemProperty = DependencyProperty.Register(nameof(SelectedItem), typeof(object), typeof(DenseDataGridControl), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:29](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L29) |  |
-| <code>public static readonly DependencyProperty SelectedItemsProperty = DependencyProperty.Register(nameof(SelectedItems), typeof(ObservableCollection&lt;object&gt;), typeof(DenseDataGridControl), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:36](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L36) |  |
-| <code>public static readonly DependencyProperty SelectionModeProperty = DependencyProperty.Register(nameof(SelectionMode), typeof(System.Windows.Controls.SelectionMode), typeof(DenseDataGridControl), new PropertyMetadata(System.Windows.Controls.SelectionMode.Single));</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:43](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L43) |  |
-| <code>public static readonly DependencyProperty EmptyContentProperty = DependencyProperty.Register(nameof(EmptyContent), typeof(object), typeof(DenseDataGridControl), new PropertyMetadata(null));</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:50](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L50) |  |
-| <code>public static readonly DependencyProperty GridAutomationIdProperty = DependencyProperty.Register(nameof(GridAutomationId), typeof(string), typeof(DenseDataGridControl), new PropertyMetadata(&quot;DenseDataGridRows&quot;));</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:57](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L57) |  |
-| <code>public static readonly DependencyProperty EmptyAutomationIdProperty = DependencyProperty.Register(nameof(EmptyAutomationId), typeof(string), typeof(DenseDataGridControl), new PropertyMetadata(&quot;DenseDataGridEmptyState&quot;));</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:64](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L64) |  |
-| <code>public static readonly DependencyProperty ShortcutScopeProperty = DependencyProperty.Register(nameof(ShortcutScope), typeof(UIElement), typeof(DenseDataGridControl), new PropertyMetadata(null, OnShortcutScopeChanged));</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:71](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L71) |  |
-| <code>public static readonly DependencyProperty FilterTargetProperty = DependencyProperty.Register(nameof(FilterTarget), typeof(UIElement), typeof(DenseDataGridControl), new PropertyMetadata(null, OnFilterTargetChanged));</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:78](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L78) |  |
-| <code>public static readonly DependencyProperty OpenSelectedDetailsCommandProperty = DependencyProperty.Register(nameof(OpenSelectedDetailsCommand), typeof(ICommand), typeof(DenseDataGridControl), new PropertyMetadata(null));</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:85](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L85) |  |
-| <code>public static readonly DependencyProperty CloseDetailsCommandProperty = DependencyProperty.Register(nameof(CloseDetailsCommand), typeof(ICommand), typeof(DenseDataGridControl), new PropertyMetadata(null));</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:92](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L92) |  |
-| <code>public static readonly DependencyProperty ClearFiltersCommandProperty = DependencyProperty.Register(nameof(ClearFiltersCommand), typeof(ICommand), typeof(DenseDataGridControl), new PropertyMetadata(null));</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:99](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L99) |  |
-| <code>public static readonly DependencyProperty JumpToRelatedRecordsCommandProperty = DependencyProperty.Register(nameof(JumpToRelatedRecordsCommand), typeof(ICommand), typeof(DenseDataGridControl), new PropertyMetadata(null));</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:106](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L106) |  |
-| <code>public DenseDataGridControl();</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:120](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L120) |  |
-| <code>public WorkstationTableModel? Table { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:143](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L143) |  |
-| <code>public object? SelectedItem { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:149](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L149) |  |
-| <code>public ObservableCollection&lt;object&gt;? SelectedItems { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:155](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L155) |  |
-| <code>public System.Windows.Controls.SelectionMode SelectionMode { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:161](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L161) |  |
-| <code>public object? EmptyContent { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:167](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L167) |  |
-| <code>public string GridAutomationId { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:173](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L173) |  |
-| <code>public string EmptyAutomationId { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:179](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L179) |  |
-| <code>public UIElement? FilterTarget { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:185](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L185) |  |
-| <code>public UIElement? ShortcutScope { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:197](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L197) | An element composed around this grid — an inspector rail, toolbar, or the whole panel — whose descendants should keep the grid&#x27;s chrome shortcuts alive while they hold keyboard focus. Siblings are not on the routed-input path to this control, so without the mirror Escape and Ctrl+J go dead the moment focus enters the rail. |
-| <code>public ICommand? OpenSelectedDetailsCommand { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:203](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L203) |  |
-| <code>public ICommand? CloseDetailsCommand { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:209](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L209) |  |
-| <code>public ICommand? ClearFiltersCommand { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:215](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L215) |  |
-| <code>public ICommand? JumpToRelatedRecordsCommand { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:221](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L221) |  |
-
-## DenseGridKeyboardCommands
-
-Qualified name: <code>Meridian.Wpf.Workstation.Controls.DenseGridKeyboardCommands</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Controls/DenseGridKeyboardCommands.cs:8](../../../../src/Meridian.Wpf/Workstation/Controls/DenseGridKeyboardCommands.cs#L8).
-
-Defines routed keyboard commands for filtering, detail inspection, related records, and grid selection.
-
-```csharp
-public static class DenseGridKeyboardCommands
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly RoutedUICommand FocusFilter = new (&quot;Focus filter&quot;, nameof(FocusFilter), typeof(DenseGridKeyboardCommands));</code> | [src/Meridian.Wpf/Workstation/Controls/DenseGridKeyboardCommands.cs:10](../../../../src/Meridian.Wpf/Workstation/Controls/DenseGridKeyboardCommands.cs#L10) |  |
-| <code>public static readonly RoutedUICommand OpenSelectedDetails = new (&quot;Open selected details&quot;, nameof(OpenSelectedDetails), typeof(DenseGridKeyboardCommands));</code> | [src/Meridian.Wpf/Workstation/Controls/DenseGridKeyboardCommands.cs:15](../../../../src/Meridian.Wpf/Workstation/Controls/DenseGridKeyboardCommands.cs#L15) |  |
-| <code>public static readonly RoutedUICommand CloseDetails = new (&quot;Close details&quot;, nameof(CloseDetails), typeof(DenseGridKeyboardCommands));</code> | [src/Meridian.Wpf/Workstation/Controls/DenseGridKeyboardCommands.cs:20](../../../../src/Meridian.Wpf/Workstation/Controls/DenseGridKeyboardCommands.cs#L20) |  |
-| <code>public static readonly RoutedUICommand ClearFilters = new (&quot;Clear filters&quot;, nameof(ClearFilters), typeof(DenseGridKeyboardCommands));</code> | [src/Meridian.Wpf/Workstation/Controls/DenseGridKeyboardCommands.cs:25](../../../../src/Meridian.Wpf/Workstation/Controls/DenseGridKeyboardCommands.cs#L25) |  |
-| <code>public static readonly RoutedUICommand JumpToRelatedRecords = new (&quot;Jump to related records&quot;, nameof(JumpToRelatedRecords), typeof(DenseGridKeyboardCommands));</code> | [src/Meridian.Wpf/Workstation/Controls/DenseGridKeyboardCommands.cs:30](../../../../src/Meridian.Wpf/Workstation/Controls/DenseGridKeyboardCommands.cs#L30) |  |
-
-## DiagnosticsChecklistControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Controls.DiagnosticsChecklistControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Controls/DiagnosticsChecklistControl.xaml.cs:10](../../../../src/Meridian.Wpf/Workstation/Controls/DiagnosticsChecklistControl.xaml.cs#L10).
-
-Displays a workstation diagnostics checklist through its bound presentation model.
-
-```csharp
-public partial class DiagnosticsChecklistControl : UserControl
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly DependencyProperty ChecklistProperty = DependencyProperty.Register(nameof(Checklist), typeof(DiagnosticsChecklistModel), typeof(DiagnosticsChecklistControl), new PropertyMetadata(null));</code> | [src/Meridian.Wpf/Workstation/Controls/DiagnosticsChecklistControl.xaml.cs:12](../../../../src/Meridian.Wpf/Workstation/Controls/DiagnosticsChecklistControl.xaml.cs#L12) |  |
-| <code>public DiagnosticsChecklistControl();</code> | [src/Meridian.Wpf/Workstation/Controls/DiagnosticsChecklistControl.xaml.cs:19](../../../../src/Meridian.Wpf/Workstation/Controls/DiagnosticsChecklistControl.xaml.cs#L19) |  |
-| <code>public DiagnosticsChecklistModel? Checklist { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/DiagnosticsChecklistControl.xaml.cs:24](../../../../src/Meridian.Wpf/Workstation/Controls/DiagnosticsChecklistControl.xaml.cs#L24) |  |
-
-## HealthBadgeControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Controls.HealthBadgeControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Controls/HealthBadgeControl.xaml.cs:13](../../../../src/Meridian.Wpf/Workstation/Controls/HealthBadgeControl.xaml.cs#L13).
-
-Displays a workstation health badge through its bound presentation model.
-
-```csharp
-public partial class HealthBadgeControl : UserControl
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly DependencyProperty BadgeProperty = DependencyProperty.Register(nameof(Badge), typeof(WorkstationBadgeModel), typeof(HealthBadgeControl), new PropertyMetadata(null, OnBadgeChanged));</code> | [src/Meridian.Wpf/Workstation/Controls/HealthBadgeControl.xaml.cs:15](../../../../src/Meridian.Wpf/Workstation/Controls/HealthBadgeControl.xaml.cs#L15) |  |
-| <code>public HealthBadgeControl();</code> | [src/Meridian.Wpf/Workstation/Controls/HealthBadgeControl.xaml.cs:22](../../../../src/Meridian.Wpf/Workstation/Controls/HealthBadgeControl.xaml.cs#L22) |  |
-| <code>public WorkstationBadgeModel? Badge { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/HealthBadgeControl.xaml.cs:27](../../../../src/Meridian.Wpf/Workstation/Controls/HealthBadgeControl.xaml.cs#L27) |  |
-
-## InspectorPanelControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Controls.InspectorPanelControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Controls/InspectorPanelControl.xaml.cs:10](../../../../src/Meridian.Wpf/Workstation/Controls/InspectorPanelControl.xaml.cs#L10).
-
-Displays the selected record&#x27;s facts, badge, and detail through a bound inspector presentation model.
-
-```csharp
-public partial class InspectorPanelControl : UserControl
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly DependencyProperty PanelProperty = DependencyProperty.Register(nameof(Panel), typeof(InspectorPanelModel), typeof(InspectorPanelControl), new PropertyMetadata(null));</code> | [src/Meridian.Wpf/Workstation/Controls/InspectorPanelControl.xaml.cs:12](../../../../src/Meridian.Wpf/Workstation/Controls/InspectorPanelControl.xaml.cs#L12) |  |
-| <code>public InspectorPanelControl();</code> | [src/Meridian.Wpf/Workstation/Controls/InspectorPanelControl.xaml.cs:19](../../../../src/Meridian.Wpf/Workstation/Controls/InspectorPanelControl.xaml.cs#L19) |  |
-| <code>public InspectorPanelModel? Panel { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/InspectorPanelControl.xaml.cs:24](../../../../src/Meridian.Wpf/Workstation/Controls/InspectorPanelControl.xaml.cs#L24) |  |

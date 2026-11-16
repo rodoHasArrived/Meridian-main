@@ -6,6 +6,132 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DenseDataGridControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Controls.DenseDataGridControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:20](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L20).
+
+Displays workstation table rows with selection, empty-state content, and keyboard command support.
+
+```csharp
+public partial class DenseDataGridControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly DependencyProperty TableProperty = DependencyProperty.Register(nameof(Table), typeof(WorkstationTableModel), typeof(DenseDataGridControl), new PropertyMetadata(null, OnTableChanged));</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:22](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L22) |  |
+| <code>public static readonly DependencyProperty SelectedItemProperty = DependencyProperty.Register(nameof(SelectedItem), typeof(object), typeof(DenseDataGridControl), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:29](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L29) |  |
+| <code>public static readonly DependencyProperty SelectedItemsProperty = DependencyProperty.Register(nameof(SelectedItems), typeof(ObservableCollection&lt;object&gt;), typeof(DenseDataGridControl), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:36](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L36) |  |
+| <code>public static readonly DependencyProperty SelectionModeProperty = DependencyProperty.Register(nameof(SelectionMode), typeof(System.Windows.Controls.SelectionMode), typeof(DenseDataGridControl), new PropertyMetadata(System.Windows.Controls.SelectionMode.Single));</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:43](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L43) |  |
+| <code>public static readonly DependencyProperty EmptyContentProperty = DependencyProperty.Register(nameof(EmptyContent), typeof(object), typeof(DenseDataGridControl), new PropertyMetadata(null));</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:50](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L50) |  |
+| <code>public static readonly DependencyProperty GridAutomationIdProperty = DependencyProperty.Register(nameof(GridAutomationId), typeof(string), typeof(DenseDataGridControl), new PropertyMetadata(&quot;DenseDataGridRows&quot;));</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:57](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L57) |  |
+| <code>public static readonly DependencyProperty EmptyAutomationIdProperty = DependencyProperty.Register(nameof(EmptyAutomationId), typeof(string), typeof(DenseDataGridControl), new PropertyMetadata(&quot;DenseDataGridEmptyState&quot;));</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:64](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L64) |  |
+| <code>public static readonly DependencyProperty ShortcutScopeProperty = DependencyProperty.Register(nameof(ShortcutScope), typeof(UIElement), typeof(DenseDataGridControl), new PropertyMetadata(null, OnShortcutScopeChanged));</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:71](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L71) |  |
+| <code>public static readonly DependencyProperty FilterTargetProperty = DependencyProperty.Register(nameof(FilterTarget), typeof(UIElement), typeof(DenseDataGridControl), new PropertyMetadata(null, OnFilterTargetChanged));</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:78](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L78) |  |
+| <code>public static readonly DependencyProperty OpenSelectedDetailsCommandProperty = DependencyProperty.Register(nameof(OpenSelectedDetailsCommand), typeof(ICommand), typeof(DenseDataGridControl), new PropertyMetadata(null));</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:85](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L85) |  |
+| <code>public static readonly DependencyProperty CloseDetailsCommandProperty = DependencyProperty.Register(nameof(CloseDetailsCommand), typeof(ICommand), typeof(DenseDataGridControl), new PropertyMetadata(null));</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:92](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L92) |  |
+| <code>public static readonly DependencyProperty ClearFiltersCommandProperty = DependencyProperty.Register(nameof(ClearFiltersCommand), typeof(ICommand), typeof(DenseDataGridControl), new PropertyMetadata(null));</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:99](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L99) |  |
+| <code>public static readonly DependencyProperty JumpToRelatedRecordsCommandProperty = DependencyProperty.Register(nameof(JumpToRelatedRecordsCommand), typeof(ICommand), typeof(DenseDataGridControl), new PropertyMetadata(null));</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:106](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L106) |  |
+| <code>public DenseDataGridControl();</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:120](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L120) |  |
+| <code>public WorkstationTableModel? Table { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:143](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L143) |  |
+| <code>public object? SelectedItem { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:149](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L149) |  |
+| <code>public ObservableCollection&lt;object&gt;? SelectedItems { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:155](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L155) |  |
+| <code>public System.Windows.Controls.SelectionMode SelectionMode { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:161](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L161) |  |
+| <code>public object? EmptyContent { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:167](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L167) |  |
+| <code>public string GridAutomationId { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:173](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L173) |  |
+| <code>public string EmptyAutomationId { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:179](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L179) |  |
+| <code>public UIElement? FilterTarget { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:185](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L185) |  |
+| <code>public UIElement? ShortcutScope { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:197](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L197) | An element composed around this grid — an inspector rail, toolbar, or the whole panel — whose descendants should keep the grid&#x27;s chrome shortcuts alive while they hold keyboard focus. Siblings are not on the routed-input path to this control, so without the mirror Escape and Ctrl+J go dead the moment focus enters the rail. |
+| <code>public ICommand? OpenSelectedDetailsCommand { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:203](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L203) |  |
+| <code>public ICommand? CloseDetailsCommand { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:209](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L209) |  |
+| <code>public ICommand? ClearFiltersCommand { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:215](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L215) |  |
+| <code>public ICommand? JumpToRelatedRecordsCommand { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs:221](../../../../src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs#L221) |  |
+
+## DenseGridKeyboardCommands
+
+Qualified name: <code>Meridian.Wpf.Workstation.Controls.DenseGridKeyboardCommands</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Controls/DenseGridKeyboardCommands.cs:8](../../../../src/Meridian.Wpf/Workstation/Controls/DenseGridKeyboardCommands.cs#L8).
+
+Defines routed keyboard commands for filtering, detail inspection, related records, and grid selection.
+
+```csharp
+public static class DenseGridKeyboardCommands
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly RoutedUICommand FocusFilter = new (&quot;Focus filter&quot;, nameof(FocusFilter), typeof(DenseGridKeyboardCommands));</code> | [src/Meridian.Wpf/Workstation/Controls/DenseGridKeyboardCommands.cs:10](../../../../src/Meridian.Wpf/Workstation/Controls/DenseGridKeyboardCommands.cs#L10) |  |
+| <code>public static readonly RoutedUICommand OpenSelectedDetails = new (&quot;Open selected details&quot;, nameof(OpenSelectedDetails), typeof(DenseGridKeyboardCommands));</code> | [src/Meridian.Wpf/Workstation/Controls/DenseGridKeyboardCommands.cs:15](../../../../src/Meridian.Wpf/Workstation/Controls/DenseGridKeyboardCommands.cs#L15) |  |
+| <code>public static readonly RoutedUICommand CloseDetails = new (&quot;Close details&quot;, nameof(CloseDetails), typeof(DenseGridKeyboardCommands));</code> | [src/Meridian.Wpf/Workstation/Controls/DenseGridKeyboardCommands.cs:20](../../../../src/Meridian.Wpf/Workstation/Controls/DenseGridKeyboardCommands.cs#L20) |  |
+| <code>public static readonly RoutedUICommand ClearFilters = new (&quot;Clear filters&quot;, nameof(ClearFilters), typeof(DenseGridKeyboardCommands));</code> | [src/Meridian.Wpf/Workstation/Controls/DenseGridKeyboardCommands.cs:25](../../../../src/Meridian.Wpf/Workstation/Controls/DenseGridKeyboardCommands.cs#L25) |  |
+| <code>public static readonly RoutedUICommand JumpToRelatedRecords = new (&quot;Jump to related records&quot;, nameof(JumpToRelatedRecords), typeof(DenseGridKeyboardCommands));</code> | [src/Meridian.Wpf/Workstation/Controls/DenseGridKeyboardCommands.cs:30](../../../../src/Meridian.Wpf/Workstation/Controls/DenseGridKeyboardCommands.cs#L30) |  |
+
+## DiagnosticsChecklistControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Controls.DiagnosticsChecklistControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Controls/DiagnosticsChecklistControl.xaml.cs:10](../../../../src/Meridian.Wpf/Workstation/Controls/DiagnosticsChecklistControl.xaml.cs#L10).
+
+Displays a workstation diagnostics checklist through its bound presentation model.
+
+```csharp
+public partial class DiagnosticsChecklistControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly DependencyProperty ChecklistProperty = DependencyProperty.Register(nameof(Checklist), typeof(DiagnosticsChecklistModel), typeof(DiagnosticsChecklistControl), new PropertyMetadata(null));</code> | [src/Meridian.Wpf/Workstation/Controls/DiagnosticsChecklistControl.xaml.cs:12](../../../../src/Meridian.Wpf/Workstation/Controls/DiagnosticsChecklistControl.xaml.cs#L12) |  |
+| <code>public DiagnosticsChecklistControl();</code> | [src/Meridian.Wpf/Workstation/Controls/DiagnosticsChecklistControl.xaml.cs:19](../../../../src/Meridian.Wpf/Workstation/Controls/DiagnosticsChecklistControl.xaml.cs#L19) |  |
+| <code>public DiagnosticsChecklistModel? Checklist { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/DiagnosticsChecklistControl.xaml.cs:24](../../../../src/Meridian.Wpf/Workstation/Controls/DiagnosticsChecklistControl.xaml.cs#L24) |  |
+
+## HealthBadgeControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Controls.HealthBadgeControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Controls/HealthBadgeControl.xaml.cs:13](../../../../src/Meridian.Wpf/Workstation/Controls/HealthBadgeControl.xaml.cs#L13).
+
+Displays a workstation health badge through its bound presentation model.
+
+```csharp
+public partial class HealthBadgeControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly DependencyProperty BadgeProperty = DependencyProperty.Register(nameof(Badge), typeof(WorkstationBadgeModel), typeof(HealthBadgeControl), new PropertyMetadata(null, OnBadgeChanged));</code> | [src/Meridian.Wpf/Workstation/Controls/HealthBadgeControl.xaml.cs:15](../../../../src/Meridian.Wpf/Workstation/Controls/HealthBadgeControl.xaml.cs#L15) |  |
+| <code>public HealthBadgeControl();</code> | [src/Meridian.Wpf/Workstation/Controls/HealthBadgeControl.xaml.cs:22](../../../../src/Meridian.Wpf/Workstation/Controls/HealthBadgeControl.xaml.cs#L22) |  |
+| <code>public WorkstationBadgeModel? Badge { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/HealthBadgeControl.xaml.cs:27](../../../../src/Meridian.Wpf/Workstation/Controls/HealthBadgeControl.xaml.cs#L27) |  |
+
+## InspectorPanelControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Controls.InspectorPanelControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Controls/InspectorPanelControl.xaml.cs:10](../../../../src/Meridian.Wpf/Workstation/Controls/InspectorPanelControl.xaml.cs#L10).
+
+Displays the selected record&#x27;s facts, badge, and detail through a bound inspector presentation model.
+
+```csharp
+public partial class InspectorPanelControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly DependencyProperty PanelProperty = DependencyProperty.Register(nameof(Panel), typeof(InspectorPanelModel), typeof(InspectorPanelControl), new PropertyMetadata(null));</code> | [src/Meridian.Wpf/Workstation/Controls/InspectorPanelControl.xaml.cs:12](../../../../src/Meridian.Wpf/Workstation/Controls/InspectorPanelControl.xaml.cs#L12) |  |
+| <code>public InspectorPanelControl();</code> | [src/Meridian.Wpf/Workstation/Controls/InspectorPanelControl.xaml.cs:19](../../../../src/Meridian.Wpf/Workstation/Controls/InspectorPanelControl.xaml.cs#L19) |  |
+| <code>public InspectorPanelModel? Panel { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/InspectorPanelControl.xaml.cs:24](../../../../src/Meridian.Wpf/Workstation/Controls/InspectorPanelControl.xaml.cs#L24) |  |
+
 ## MetricTileControl
 
 Qualified name: <code>Meridian.Wpf.Workstation.Controls.MetricTileControl</code>. Kind: `class`.
@@ -732,86 +858,4 @@ Source: [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationMod
 
 ```csharp
 public sealed record OperationsContinuityWorkflowRowModel(Guid WorkflowId, string Label, string StatusText, string GatesText, string UpdatedText, WorkstationReadinessTone ReadinessTone, string Tone, long Version = 0, Guid FundAccountId = default, string PeriodId = "", Guid? LedgerBookId = null);
-```
-
-## OperationsRecordReleaseMapper
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.OperationsRecordReleaseMapper</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/OperationsRecordReleasePresentationModels.cs:30](../../../../src/Meridian.Wpf/Workstation/Models/OperationsRecordReleasePresentationModels.cs#L30).
-
-Projects the release path from source data through the accounting record to report-pack publication, composing the continuity workflow&#x27;s gates, accounting-record summary, and close package exactly like the browser record-release screen: step tones come from the owning gates, CombineTones lets any blocked step block the release and any unknown step keep it out of Ready, and publication readiness derives from the close package.
-
-```csharp
-public static class OperationsRecordReleaseMapper
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static WorkstationReadinessTone CombineTones(IReadOnlyList&lt;WorkstationReadinessTone&gt; tones);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsRecordReleasePresentationModels.cs:36](../../../../src/Meridian.Wpf/Workstation/Models/OperationsRecordReleasePresentationModels.cs#L36) | Tone precedence for composed steps: blocked, then review, then neutral, then ready — an unknown (neutral) input deliberately outranks ready so composition never fabricates green. |
-| <code>public static WorkstationReadinessTone AccountingSummaryTone(OperationsAccountingRecordSummaryDto? summary);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsRecordReleasePresentationModels.cs:58](../../../../src/Meridian.Wpf/Workstation/Models/OperationsRecordReleasePresentationModels.cs#L58) |  |
-| <code>public static string? ResolveAccountingRecordId(OperationsAccountingRecordSummaryDto summary);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsRecordReleasePresentationModels.cs:70](../../../../src/Meridian.Wpf/Workstation/Models/OperationsRecordReleasePresentationModels.cs#L70) |  |
-| <code>public static IReadOnlyList&lt;OperationsRecordReleaseStepModel&gt; BuildReleaseSteps(OperationsContinuityWorkflowDto? detail);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsRecordReleasePresentationModels.cs:85](../../../../src/Meridian.Wpf/Workstation/Models/OperationsRecordReleasePresentationModels.cs#L85) |  |
-| <code>public static OperationsRecordReleaseSummaryModel BuildSummary(IReadOnlyList&lt;OperationsRecordReleaseStepModel&gt; steps);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsRecordReleasePresentationModels.cs:139](../../../../src/Meridian.Wpf/Workstation/Models/OperationsRecordReleasePresentationModels.cs#L139) |  |
-
-## OperationsRecordReleaseStepModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.OperationsRecordReleaseStepModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/OperationsRecordReleasePresentationModels.cs:7](../../../../src/Meridian.Wpf/Workstation/Models/OperationsRecordReleasePresentationModels.cs#L7).
-
-```csharp
-public sealed record OperationsRecordReleaseStepModel(string StepId, int Index, string Label, string StatusText, string Detail, string RouteText, WorkstationReadinessTone ReadinessTone, string Tone);
-```
-
-## OperationsRecordReleaseSummaryModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.OperationsRecordReleaseSummaryModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/OperationsRecordReleasePresentationModels.cs:17](../../../../src/Meridian.Wpf/Workstation/Models/OperationsRecordReleasePresentationModels.cs#L17).
-
-```csharp
-public sealed record OperationsRecordReleaseSummaryModel(string StatusLabel, string StatusDetail, WorkstationReadinessTone ReadinessTone, string Tone);
-```
-
-## OperatorReadinessConsoleMapper
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.OperatorReadinessConsoleMapper</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs:49](../../../../src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs#L49).
-
-Projects the server-owned readiness contracts (trading operator readiness, operator inbox, reconciliation break queue, strategy run summaries) into desktop console rows. All gate and severity truth stays server-side; this mapper only restyles statuses and resolves navigation targets against the registered shell catalog.
-
-```csharp
-public static class OperatorReadinessConsoleMapper
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static WorkstationReadinessTone ToReadinessTone(TradingAcceptanceGateStatusDto status) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs:55](../../../../src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs#L55) |  |
-| <code>public static WorkstationReadinessTone ToReadinessTone(OperatorWorkItemToneDto tone) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs:64](../../../../src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs#L64) |  |
-| <code>public static IReadOnlyList&lt;OperatorReadinessGateRowModel&gt; BuildGateRows(TradingOperatorReadinessDto readiness);</code> | [src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs:73](../../../../src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs#L73) |  |
-| <code>public static IReadOnlyList&lt;OperatorReadinessPanelRowModel&gt; BuildSessionRows(TradingOperatorReadinessDto readiness);</code> | [src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs:109](../../../../src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs#L109) |  |
-| <code>public static IReadOnlyList&lt;OperatorReadinessPanelRowModel&gt; BuildTrustRows(TradingOperatorReadinessDto readiness);</code> | [src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs:176](../../../../src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs#L176) |  |
-| <code>public static IReadOnlyList&lt;OperatorReadinessPanelRowModel&gt; BuildPromotionRows(TradingOperatorReadinessDto readiness);</code> | [src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs:227](../../../../src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs#L227) |  |
-| <code>public static IReadOnlyList&lt;OperatorReadinessPanelRowModel&gt; BuildRunRows(StrategyWorkspaceSummary summary);</code> | [src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs:272](../../../../src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs#L272) |  |
-| <code>public static IReadOnlyList&lt;OperatorReadinessPanelRowModel&gt; BuildBreakRows(IReadOnlyList&lt;ReconciliationBreakQueueItem&gt; breaks);</code> | [src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs:300](../../../../src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs#L300) |  |
-| <code>public static IReadOnlyList&lt;OperatorReadinessWorkItemRowModel&gt; BuildWorkItemRows(IReadOnlyList&lt;OperatorWorkItemDto&gt; inboxItems, IReadOnlyList&lt;OperatorWorkItemDto&gt; readinessItems, Func&lt;string, bool&gt; isRegisteredPageTag, Meridian.Ui.Shared.Workflows.IWorkflowActionCatalog? workflowActionCatalog = null);</code> | [src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs:333](../../../../src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs#L333) | Merges the readiness and inbox work-item feeds and resolves each row to a registered shell page tag. Duplicate ids keep the more severe tone (then the newer timestamp) and the queue orders severity-first, matching the browser console and the server-side inbox dedup — PriorityScore alone cannot order the merge because only inbox items carry a score. |
-| <code>public static string ResolveWorkItemPageTag(OperatorWorkItemDto item, Func&lt;string, bool&gt; isRegisteredPageTag, Meridian.Ui.Shared.Workflows.IWorkflowActionCatalog? workflowActionCatalog = null);</code> | [src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs:392](../../../../src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs#L392) |  |
-| <code>public static IReadOnlyList&lt;OperatorReadinessFactModel&gt; BuildSummaryFacts(TradingOperatorReadinessDto? readiness, OperatorInboxDto? inbox, IReadOnlyList&lt;ReconciliationBreakQueueItem&gt;? breaks, StrategyWorkspaceSummary? runSummary);</code> | [src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs:506](../../../../src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs#L506) |  |
-| <code>public static string FormatStatus(TradingAcceptanceGateStatusDto status) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs:558](../../../../src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs#L558) |  |
-| <code>public static string FormatTimestamp(DateTimeOffset value) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs:565](../../../../src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs#L565) |  |
-
-## OperatorReadinessFactModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.OperatorReadinessFactModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs:7](../../../../src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs#L7).
-
-```csharp
-public sealed record OperatorReadinessFactModel(string Label, string Value, string Detail);
 ```

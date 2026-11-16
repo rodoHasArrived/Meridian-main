@@ -6,6 +6,97 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## QuantScriptExecutionRecordRequest
+
+Qualified name: <code>Meridian.Wpf.Services.QuantScriptExecutionRecordRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs:12](../../../../src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs#L12).
+
+```csharp
+public sealed record QuantScriptExecutionRecordRequest(string DocumentTitle, string DocumentPath, QuantScriptDocumentKind DocumentKind, bool Success, Dictionary<string, string> ParameterSnapshot, List<QuantScriptResolvedParameterDescriptorRecord> RuntimeParameters, string ConsoleExcerpt, List<QuantScriptExecutionMetricRecord> Metrics, List<string> PlotTitles, IReadOnlyList<BacktestResult> CapturedBacktests);
+```
+
+## QuantScriptLayoutService
+
+Qualified name: <code>Meridian.Wpf.Services.QuantScriptLayoutService</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/QuantScriptLayoutService.cs:7](../../../../src/Meridian.Wpf/Services/QuantScriptLayoutService.cs#L7).
+
+Stores QuantScript page layout settings (row heights, active tab) in memory for the current session. Values are reset when the application restarts.
+
+```csharp
+public sealed class QuantScriptLayoutService : IQuantScriptLayoutService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public (double ChartHeight, double EditorHeight) LoadRowHeights() =&gt; …;</code> | [src/Meridian.Wpf/Services/QuantScriptLayoutService.cs:17](../../../../src/Meridian.Wpf/Services/QuantScriptLayoutService.cs#L17) |  |
+| <code>public void SaveRowHeights(double chartHeight, double editorHeight);</code> | [src/Meridian.Wpf/Services/QuantScriptLayoutService.cs:20](../../../../src/Meridian.Wpf/Services/QuantScriptLayoutService.cs#L20) |  |
+| <code>public int LoadLastActiveTab() =&gt; …;</code> | [src/Meridian.Wpf/Services/QuantScriptLayoutService.cs:26](../../../../src/Meridian.Wpf/Services/QuantScriptLayoutService.cs#L26) |  |
+| <code>public void SaveLastActiveTab(int tabIndex);</code> | [src/Meridian.Wpf/Services/QuantScriptLayoutService.cs:28](../../../../src/Meridian.Wpf/Services/QuantScriptLayoutService.cs#L28) |  |
+
+## QuantScriptTemplateCatalogService
+
+Qualified name: <code>Meridian.Wpf.Services.QuantScriptTemplateCatalogService</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/QuantScriptTemplateCatalogService.cs:12](../../../../src/Meridian.Wpf/Services/QuantScriptTemplateCatalogService.cs#L12).
+
+Lists and loads QuantScript starter templates from the configured template directory.
+
+```csharp
+public sealed class QuantScriptTemplateCatalogService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public QuantScriptTemplateCatalogService(ILogger&lt;QuantScriptTemplateCatalogService&gt; logger) : this(logger, Path.Combine(AppContext.BaseDirectory, &quot;Templates&quot;, &quot;QuantScript&quot;));</code> | [src/Meridian.Wpf/Services/QuantScriptTemplateCatalogService.cs:18](../../../../src/Meridian.Wpf/Services/QuantScriptTemplateCatalogService.cs#L18) |  |
+| <code>public QuantScriptTemplateCatalogService(ILogger&lt;QuantScriptTemplateCatalogService&gt; logger, string catalogRoot);</code> | [src/Meridian.Wpf/Services/QuantScriptTemplateCatalogService.cs:23](../../../../src/Meridian.Wpf/Services/QuantScriptTemplateCatalogService.cs#L23) |  |
+| <code>public IReadOnlyList&lt;QuantScriptTemplateDefinition&gt; ListTemplates();</code> | [src/Meridian.Wpf/Services/QuantScriptTemplateCatalogService.cs:30](../../../../src/Meridian.Wpf/Services/QuantScriptTemplateCatalogService.cs#L30) |  |
+| <code>public async Task&lt;QuantScriptTemplateDocument&gt; LoadTemplateAsync(string templateId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/QuantScriptTemplateCatalogService.cs:55](../../../../src/Meridian.Wpf/Services/QuantScriptTemplateCatalogService.cs#L55) |  |
+
+## ReconciliationReadService
+
+Qualified name: <code>Meridian.Wpf.Services.ReconciliationReadService</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/ReconciliationReadService.cs:17](../../../../src/Meridian.Wpf/Services/ReconciliationReadService.cs#L17).
+
+Builds the Accounting reconciliation workbench summary for a fund profile. Reconciliation posture is read exclusively from the server workstation API — the same IWorkstationReconciliationApiClient the workbench break queue already uses — so the summary tiles and the break queue on the same screen share one source of truth (co-equal-lanes contract: neither client forks product state). When the API is unavailable the result preserves that failure separately from a confirmed missing reconciliation record; it never falls back to the desktop-local fund-account JSON stores.
+
+```csharp
+public sealed class ReconciliationReadService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReconciliationReadService(StrategyRunWorkspaceService runWorkspaceService, IWorkstationReconciliationApiClient reconciliationApiClient);</code> | [src/Meridian.Wpf/Services/ReconciliationReadService.cs:22](../../../../src/Meridian.Wpf/Services/ReconciliationReadService.cs#L22) |  |
+| <code>public async Task&lt;FundReconciliationReadResult&gt; GetAsync(string fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/ReconciliationReadService.cs:30](../../../../src/Meridian.Wpf/Services/ReconciliationReadService.cs#L30) |  |
+
+## ReportingWorkspaceShellPresentationService
+
+Qualified name: <code>Meridian.Wpf.Services.ReportingWorkspaceShellPresentationService</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/ReportingWorkspaceShellPresentationService.cs:10](../../../../src/Meridian.Wpf/Services/ReportingWorkspaceShellPresentationService.cs#L10).
+
+Builds reporting decision queues and command groups from reporting readiness and governance state.
+
+```csharp
+public static class ReportingWorkspaceShellPresentationService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;WorkspaceQueueItem&gt; BuildFallbackDecisionItems() =&gt; …;</code> | [src/Meridian.Wpf/Services/ReportingWorkspaceShellPresentationService.cs:12](../../../../src/Meridian.Wpf/Services/ReportingWorkspaceShellPresentationService.cs#L12) |  |
+| <code>public static IReadOnlyList&lt;WorkspaceQueueItem&gt; BuildDecisionItems(FundReportingSummaryDto? reporting);</code> | [src/Meridian.Wpf/Services/ReportingWorkspaceShellPresentationService.cs:94](../../../../src/Meridian.Wpf/Services/ReportingWorkspaceShellPresentationService.cs#L94) |  |
+| <code>public static WorkspaceCommandGroup BuildCommandGroup(bool hasFund) =&gt; …;</code> | [src/Meridian.Wpf/Services/ReportingWorkspaceShellPresentationService.cs:388](../../../../src/Meridian.Wpf/Services/ReportingWorkspaceShellPresentationService.cs#L388) |  |
+
 ## ReportingWorkspaceShellStateProvider
 
 Qualified name: <code>Meridian.Wpf.Services.ReportingWorkspaceShellStateProvider</code>. Kind: `class`.
@@ -957,107 +1048,3 @@ Declared public members:
 | <code>public void ResetAllTips();</code> | [src/Meridian.Wpf/Services/TooltipService.cs:47](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L47) |  |
 | <code>public IReadOnlyList&lt;OnboardingTip&gt; GetOnboardingTips(string pageKey) =&gt; …;</code> | [src/Meridian.Wpf/Services/TooltipService.cs:54](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L54) |  |
 | <code>public string GetTooltipContent(string featureKey) =&gt; …;</code> | [src/Meridian.Wpf/Services/TooltipService.cs:60](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L60) | Gets formatted tooltip text for a feature (title + description + tips). Can be used to populate WPF ToolTip content on controls. |
-
-## TradingSafetyCommandService
-
-Qualified name: <code>Meridian.Wpf.Services.TradingSafetyCommandService</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/TradingSafetyCommandService.cs:13](../../../../src/Meridian.Wpf/Services/TradingSafetyCommandService.cs#L13).
-
-Carries out the Trading command bar&#x27;s desk safety commands against the shared execution service, and reports what each one actually achieved. Separate from TradingWorkspaceShellPresentationService on purpose. That service composes shell presentation from half a dozen workspace services; executing a halt needs none of them, and hanging the safety seam off it would make the desk&#x27;s kill path depend on the whole presentation graph being constructible.
-
-```csharp
-public sealed class TradingSafetyCommandService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public TradingSafetyCommandService(IExecutionSafetyControlClient? client = null);</code> | [src/Meridian.Wpf/Services/TradingSafetyCommandService.cs:22](../../../../src/Meridian.Wpf/Services/TradingSafetyCommandService.cs#L22) |  |
-| <code>public static bool IsSafetyCommand(string? commandId) =&gt; …;</code> | [src/Meridian.Wpf/Services/TradingSafetyCommandService.cs:31](../../../../src/Meridian.Wpf/Services/TradingSafetyCommandService.cs#L31) | Command ids that must reach the shared execution service rather than only rearranging panes. Every other command in the bar is navigation. |
-| <code>public async Task&lt;SafetyCommandOutcome&gt; ExecuteAsync(string commandId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/TradingSafetyCommandService.cs:39](../../../../src/Meridian.Wpf/Services/TradingSafetyCommandService.cs#L39) | Runs a desk safety command and returns its real outcome. Commands that are not safety commands, and hosts with no execution-control connection, both report failure rather than a silent no-op. |
-
-## TradingWorkspaceShellPresentationService
-
-Qualified name: <code>Meridian.Wpf.Services.TradingWorkspaceShellPresentationService</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/TradingWorkspaceShellPresentationService.cs:13](../../../../src/Meridian.Wpf/Services/TradingWorkspaceShellPresentationService.cs#L13).
-
-Builds trading workspace context and actions from the active fund and trading state.
-
-```csharp
-public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public TradingWorkspaceShellPresentationService(StrategyRunWorkspaceService runService, FundContextService fundContextService, WorkstationOperatingContextService? operatingContextService, CashFinancingReadService cashFinancingReadService, WorkspaceShellContextService shellContextService, WorkstationWorkflowSummaryService? workflowSummaryService = null, TradingOperatorReadinessService? operatorReadinessService = null, DesktopAuthenticationSession? authenticationSession = null);</code> | [src/Meridian.Wpf/Services/TradingWorkspaceShellPresentationService.cs:25](../../../../src/Meridian.Wpf/Services/TradingWorkspaceShellPresentationService.cs#L25) |  |
-| <code>public event EventHandler? PresentationInvalidated;</code> | [src/Meridian.Wpf/Services/TradingWorkspaceShellPresentationService.cs:45](../../../../src/Meridian.Wpf/Services/TradingWorkspaceShellPresentationService.cs#L45) |  |
-| <code>public void Start();</code> | [src/Meridian.Wpf/Services/TradingWorkspaceShellPresentationService.cs:47](../../../../src/Meridian.Wpf/Services/TradingWorkspaceShellPresentationService.cs#L47) |  |
-| <code>public void Stop();</code> | [src/Meridian.Wpf/Services/TradingWorkspaceShellPresentationService.cs:65](../../../../src/Meridian.Wpf/Services/TradingWorkspaceShellPresentationService.cs#L65) |  |
-
-## TradingWorkspaceShellStateProvider
-
-Qualified name: <code>Meridian.Wpf.Services.TradingWorkspaceShellStateProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs:81](../../../../src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs#L81).
-
-Supplies the trading workspace definition and shell state.
-
-```csharp
-public sealed class TradingWorkspaceShellStateProvider : WorkspaceShellStateProviderBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public TradingWorkspaceShellStateProvider(StrategyRunWorkspaceService runService, FundContextService fundContextService, WorkstationOperatingContextService? operatingContextService) : base(operatingContextService);</code> | [src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs:86](../../../../src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs#L86) |  |
-| <code>public override WorkspaceShellDefinition Definition =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs:96](../../../../src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs#L96) |  |
-| <code>public override async Task&lt;WorkspaceShellState&gt; GetStateAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs:99](../../../../src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs#L99) |  |
-
-## VerificationJobEventArgs
-
-Qualified name: <code>Meridian.Wpf.Services.VerificationJobEventArgs</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/ArchiveHealthService.cs:508](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L508).
-
-Carries the archive verification job whose state has changed.
-
-```csharp
-public sealed class VerificationJobEventArgs : EventArgs
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public VerificationJob? Job { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:510](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L510) |  |
-
-## VerificationProgress
-
-Qualified name: <code>Meridian.Wpf.Services.VerificationProgress</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/ArchiveHealthService.cs:524](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L524).
-
-Reports archive verification file counts, progress, current file, and processing rate.
-
-```csharp
-public sealed class VerificationProgress
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int ProcessedFiles { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:526](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L526) |  |
-| <code>public int TotalFiles { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:527](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L527) |  |
-| <code>public int VerifiedFiles { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:528](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L528) |  |
-| <code>public int FailedFiles { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:529](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L529) |  |
-| <code>public double ProgressPercent { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:530](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L530) |  |
-| <code>public string? CurrentFile { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:531](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L531) |  |
-| <code>public double FilesPerSecond { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:532](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L532) |  |
-| <code>public int? EstimatedTimeRemainingSeconds { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:533](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L533) |  |

@@ -21,6 +21,18 @@ authority and records these browser-first presentation changes. WPF source is un
 
 These entries describe implementation scope, not operator acceptance or live certification.
 
+## Browser UX consolidation delta — 2026-11-16
+
+| Browser change | WPF state |
+| --- | --- |
+| One refresh control | Ported: shell Refresh and F5 reload the active page, docked panes and visible split panes in place (`IPageRefreshTarget`, `PageRefreshResolver`); page-level Refresh buttons bound to the page's main command are removed. Sub-panel Refresh buttons remain. |
+| One plain page purpose, consistent titles | Ported for the seven workspace shell pages (`WorkspaceCopyCatalog`). Deeper pages still use "posture"/"handoff" wording. |
+| Scope stated one way | Ported as wording: "All authorized scopes" / "No scope selected" (`WorkspaceCopyCatalog.Scope`). The Trading and Accounting shells still show their own context cards. |
+| Consistent holdings figures | Partial: the position blotter shows the market value the execution source reports. No currency or weight columns; Account and Aggregate portfolio totals still come from separate endpoints. |
+| Trust stated once, overview layout order | Not ported. |
+
+WPF changes in this delta were compile-checked with the full WPF build; WPF tests run on Windows CI.
+
 This plan operationalizes the v0.25 design-charter decision to reactivate the WPF desktop
 workstation as an active, co-equal operator UI lane and bring it up to parity with the browser
 workstation. It is the working companion to roadmap item `W8-WPF-PARITY-001`.

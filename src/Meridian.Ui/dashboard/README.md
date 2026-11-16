@@ -620,8 +620,14 @@ or authorization and does not synchronize between browsers.
 
 Every workspace overview opens with `PageHeading` (`components/ui/page-heading.tsx`): the page
 name, then an optional one-line purpose on its own line, then page actions. Write the purpose as
-one sentence in the operator's terms, with no internal vocabulary ("posture", "governed",
-"evidence routes"). Method notes and chart scaling rules go behind `InfoNote`
+one sentence in the operator's terms, with no internal vocabulary. The same rule covers every
+string the dashboard writes for the operator: say "health", "status" or "readiness" for
+"posture"; drop "governed" (or say "approved"/"controlled" where the control matters); say "next
+step" or "delivery" for "handoff"; "view" or "summary" for a derived "projection" (a real
+forecast keeps the word); "area" for "workstream"; "data" for "read model"; "supporting record
+link" for "evidence route". Page names such as "Close Cockpit" are names and stay. Text that
+comes from the server, and wording that is sent to the server or stored in audit records, is not
+rewritten here. Method notes and chart scaling rules go behind `InfoNote`
 (`components/ui/info-note.tsx`), not above the table they explain.
 
 Overview pages follow one order: page heading, headline figures, the page's main list or queue
@@ -639,14 +645,21 @@ readiness checks and session history are collapsed below them.
   `OperationalTrustSummary` renders only when the page's own facts differ from the global state
   (pass `showWhenClear` where the row is the only place a page names its source and date).
 - **Scope.** The header scope bar is the one scope control. Pages do not restate the scope or
-  carry their own scope button. With no fund account in scope, Trading shows one row that picks
-  the account into the header scope.
+  carry their own scope button. A workspace that works one fund account at a time (Trading)
+  gets its account step inside the bar: `ScopeBarAccountPicker`, passed as the bar's
+  `accountPicker`, shows while no account is in scope and sets only the fund-account dimension.
+  The page itself has no picker; Trading's recovery row points at the bar.
 - **Refresh.** The header Refresh is the one refresh button. It reloads the workstation payloads
   and bumps `GlobalRefreshProvider`; a panel that loads its own data subscribes with
   `useOnGlobalRefresh(reload)` instead of rendering a refresh button. A panel shows a local
   "Retry" only inside its error state. An action that starts new verification is named for what
-  it does ("Verify credentials", "Synchronize and reconcile"), never "Refresh". Sub-page panels
-  that still carry their own Refresh button are being moved to this pattern.
+  it does ("Verify credentials", "Run checks again", "Fetch latest prices"), never "Refresh".
+  Sub-page panels use `PanelReload` (`components/ui/panel-reload.tsx`): it subscribes to the
+  header Refresh and renders one "Retry" only while the panel's last load failed. Two rules for
+  the reload a panel hands to it: drive `failed` from a failed load only (not from a failed save
+  or command), and never let a header-driven reload discard operator input. Skip the reload while
+  a draft, an open editor, a preview under review or a typed reason exists, and keep the last
+  loaded data on screen while re-reading. The header is the only control labelled "Refresh".
 
 `TableWorkbench` can opt in to `compactToolbar` on task queues. Search, active filters and match
 counts stay visible; Table options discloses Columns, Density, Export and saved-view controls.
