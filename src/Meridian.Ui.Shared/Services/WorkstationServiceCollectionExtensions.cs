@@ -581,7 +581,11 @@ public static class WorkstationServiceCollectionExtensions
                 paperMatchingIsAuthoritative: () =>
                     sp.GetService<Meridian.Execution.Sdk.IExecutionGateway>()
                         is Meridian.Execution.PaperTradingGateway,
-                livePortfolioAccessor: sp.GetService<LiveBrokeragePortfolioSyncService>));
+                livePortfolioAccessor: sp.GetService<LiveBrokeragePortfolioSyncService>,
+                // The same freshness window the paper gateways match under, built from the same
+                // options instance, so the guard drops exactly the observations the matcher drops.
+                paperObservationFreshness: Meridian.Execution.PaperMatching.PaperObservationFreshnessPolicy.From(
+                    sp.GetService<Meridian.Execution.Adapters.PaperTradingGatewayOptions>())));
         // Governed-approval queue for escalated orders (severity outcome: Escalate parks).
         // Queue transitions persist atomically so parked approvals survive restarts.
         services.TryAddSingleton<RiskEscalationQueueService>(sp => new RiskEscalationQueueService(

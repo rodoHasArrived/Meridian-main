@@ -317,4 +317,37 @@ public sealed class LedgerQueryTests
             .WhoseValue.Should().Be(15_000m);
     }
 
+    [Fact]
+    public void GetJournalEntries_RunIdFilter_ReturnsOnlyEntriesTaggedWithThatRun()
+    {
+        var ledger = new BacktestLedger();
+        var t1 = new DateTimeOffset(2024, 1, 2, 14, 30, 0, TimeSpan.Zero);
+
+        void PostBuy(string description, string? runId) =>
+            ledger.PostLines(
+                t1,
+                description,
+                [
+                    (LedgerAccounts.Securities("SPY"), 100m, 0m),
+                    (LedgerAccounts.Cash, 0m, 100m)
+                ],
+                new JournalEntryMetadata(
+                    ActivityType: "trade-fill",
+                    StrategyId: "mom-1",
+                    Tags: runId is null
+                        ? null
+                        : new Dictionary<string, string> { [LedgerQuery.StrategyRunIdTag] = runId }));
+
+        PostBuy("run 42 fill", "run-42");
+        PostBuy("run 43 fill", "run-43");
+        PostBuy("unattributed fill", null);
+
+        ledger.GetJournalEntries(new LedgerQuery(RunId: " run-42 "))
+            .Should().ContainSingle().Which.Description.Should().Be("run 42 fill");
+        // Run ids are exact identifiers: no case folding, and an unattributed entry never matches.
+        ledger.GetJournalEntries(new LedgerQuery(RunId: "RUN-42")).Should().BeEmpty();
+        ledger.GetJournalEntries(new LedgerQuery(StrategyId: "mom-1", RunId: "run-43"))
+            .Should().ContainSingle().Which.Description.Should().Be("run 43 fill");
+        ledger.GetJournalEntries(new LedgerQuery(StrategyId: "mom-1")).Should().HaveCount(3);
+    }
 }

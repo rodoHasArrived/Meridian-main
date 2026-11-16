@@ -46,6 +46,7 @@ public sealed class PaperTradingGateway :
     // data arrival can re-evaluate them for fills.
     private readonly ConcurrentDictionary<string, RestingPaperOrder> _restingOrders = new(StringComparer.Ordinal);
     private int _scaffoldPriceWarningIssued;
+    private readonly PaperObservationFreshnessPolicy _freshness;
     private bool _connected;
     private int _fillSequence;
     private int _disposed;
@@ -105,6 +106,7 @@ public sealed class PaperTradingGateway :
             securityIdentity);
         _scaffoldMarketFillPrice = Adapters.PaperTradingGatewayScaffoldPricing.ResolveScaffoldMarketFillPrice(options);
         _allowScaffoldMarketFills = Adapters.PaperTradingGatewayScaffoldPricing.ResolveAllowScaffoldMarketFills(options);
+        _freshness = PaperObservationFreshnessPolicy.From(options);
         _liveFeed = liveFeed;
         _costModel = new PaperTradingCostModel(costOptions);
         _evaluationPump = new PaperSymbolEvaluationPump(EvaluateRestingOrdersForSymbolAsync, _logger);
@@ -202,7 +204,7 @@ public sealed class PaperTradingGateway :
         {
             var observation = _canonicalSyntheticPricing
                 ? PaperMarketObservation.FromCallerPrice(request.LimitPrice!.Value)
-                : PaperMarketObservation.Capture(_liveFeed, request.Symbol);
+                : _freshness.Capture(_liveFeed, request.Symbol);
 
             var match = PaperOrderMatchingPolicy.Evaluate(
                 request.Side, OrderType.Market, limitPrice: null, stopPrice: null,
@@ -215,10 +217,13 @@ public sealed class PaperTradingGateway :
                     .ConfigureAwait(false);
             }
 
-            if (!_allowScaffoldMarketFills)
+            // A stalled feed is not "no feed wired": scaffold pricing must not stand in.
+            if (observation.IsStale || !_allowScaffoldMarketFills)
             {
-                var rejectReason = Adapters.PaperTradingGatewayScaffoldPricing
-                    .BuildNoReferencePriceRejectReason(request.Symbol);
+                var rejectReason = observation.IsStale
+                    ? _freshness.BuildStaleObservationRejectReason(request.Symbol)
+                    : Adapters.PaperTradingGatewayScaffoldPricing
+                        .BuildNoReferencePriceRejectReason(request.Symbol);
                 _logger.LogWarning(
                     "Paper order rejected: {Symbol} {Side} {Quantity} — {RejectReason}",
                     LogSanitizer.Sanitize(request.Symbol), request.Side, request.Quantity, LogSanitizer.Sanitize(rejectReason));
@@ -246,7 +251,7 @@ public sealed class PaperTradingGateway :
                 "An order with this client order id is already resting in the paper gateway.");
         }
 
-        var initialObservation = PaperMarketObservation.Capture(_liveFeed, request.Symbol);
+        var initialObservation = _freshness.Capture(_liveFeed, request.Symbol);
         var initialMatch = PaperOrderMatchingPolicy.Evaluate(
             request.Side, request.Type, request.LimitPrice, request.StopPrice,
             stopAlreadyTriggered: false, initialObservation);
@@ -416,7 +421,7 @@ public sealed class PaperTradingGateway :
                 stopTriggered = resting.StopTriggered;
             }
 
-            var observation = PaperMarketObservation.Capture(_liveFeed, request.Symbol);
+            var observation = _freshness.Capture(_liveFeed, request.Symbol);
             var match = PaperOrderMatchingPolicy.Evaluate(
                 request.Side, request.Type, request.LimitPrice, request.StopPrice,
                 stopTriggered, observation);
