@@ -29,6 +29,16 @@ public readonly record struct PaperMarketObservation
     /// <summary>Close of the last observed bar, when bar data is in effect.</summary>
     public decimal? BarClose { get; init; }
 
+    /// <summary>
+    /// True when the symbol has tick data but none of it is inside the configured freshness
+    /// window (<see cref="PaperObservationFreshnessPolicy"/>). A stale observation carries no
+    /// prices: nothing fills, triggers, or prices against it.
+    /// </summary>
+    public bool IsStale { get; init; }
+
+    /// <summary>The observation of a symbol whose tick feed has stalled.</summary>
+    public static PaperMarketObservation Stale => new() { IsStale = true };
+
     /// <summary>True when at least one usable observed price is present.</summary>
     public bool HasAnyObservation =>
         BidPrice.HasValue || AskPrice.HasValue || LastTradePrice.HasValue
@@ -96,8 +106,12 @@ public readonly record struct PaperMarketObservation
         // separately let a capture racing a market update observe the quote from before the
         // update and the trade from after it, producing a fill envelope that was never in
         // effect (#2676).
-        var snapshot = feed.GetSnapshot(symbol);
+        return FromSnapshot(feed.GetSnapshot(symbol));
+    }
 
+    /// <summary>Projects one coherent feed snapshot into an observation.</summary>
+    internal static PaperMarketObservation FromSnapshot(in MarketDataSnapshot snapshot)
+    {
         decimal? bid = null;
         decimal? ask = null;
         if (snapshot.Quote is { } quote)
