@@ -286,6 +286,31 @@ describe("Entity operations", () => {
     expect(screen.getByRole("button", { name: "New approved rate set" })).toBeEnabled();
   });
 
+  it("gives a confirmed counterpart retry a new request identity and reuses it only while unconfirmed", async () => {
+    const proposal: IntercompanyProposal = { source: { proposalId: "proposal-a", sourceJournalId: "source-journal", sourceBookId: "book-a", sourceEntityId: "entity-a", counterpartyEntityId: "entity-b", accountingArrangementId: "arrangement-a", accountingArrangementRevisionId: "mapping-a", intercompanyAgreementId: "legal-a", intercompanyAgreementVersion: 4, intercompanyAgreementPayloadHash: "approved-native-payload", transactionId: "recharge-123", effectiveDate: "2026-11-01", sourceFunctionalCurrency: "USD" }, status: "NeedsFix", attempts: 2, recordedAt: "2026-11-01", targetBookId: null, targetJournalId: null, lastError: "Destination period is locked.", dueDate: null, sourceDigest: "source-digest" };
+    vi.mocked(getEntityOperation).mockImplementation(async (path) => path.includes("/proposals") ? [proposal] : []);
+    // Delivery fails again after each scheduled retry, so the record stays repairable.
+    vi.mocked(postEntityOperation).mockResolvedValueOnce(proposal).mockRejectedValueOnce(new Error("Service unreachable")).mockResolvedValue(proposal);
+    renderWithRouter(<EntityCounterpartProposals scope={scope} />);
+    await screen.findByText("Destination period is locked.");
+    fireEvent.click(screen.getByRole("button", { name: "recharge-123" }));
+    fireEvent.change(screen.getByLabelText("Delivery retry reason"), { target: { value: "Destination period reopened" } });
+    const retry = async (calls: number) => {
+      const button = await screen.findByRole("button", { name: "Retry counterpart delivery" });
+      await waitFor(() => expect(button).toBeEnabled());
+      fireEvent.click(button);
+      await waitFor(() => expect(postEntityOperation).toHaveBeenCalledTimes(calls));
+      await waitFor(() => expect(screen.getByRole("button", { name: "Retry counterpart delivery" })).toBeEnabled());
+    };
+    await retry(1);
+    await retry(2);
+    await retry(3);
+    const ids = vi.mocked(postEntityOperation).mock.calls.map(([, body]) => (body as { requestId: string; reason: string }).requestId);
+    expect(vi.mocked(postEntityOperation).mock.calls.every(([, body]) => (body as { reason: string }).reason === "Destination period reopened")).toBe(true);
+    expect(ids[1]).not.toBe(ids[0]);
+    expect(ids[2]).toBe(ids[1]);
+  });
+
   it("shows delivery failure and links a specifically identified existing counterpart", async () => {
     const proposal: IntercompanyProposal = { source: { proposalId: "proposal-a", sourceJournalId: "source-journal", sourceBookId: "book-a", sourceEntityId: "entity-a", counterpartyEntityId: "entity-b", accountingArrangementId: "arrangement-a", accountingArrangementRevisionId: "mapping-a", intercompanyAgreementId: "legal-a", intercompanyAgreementVersion: 4, intercompanyAgreementPayloadHash: "approved-native-payload", transactionId: "recharge-123", effectiveDate: "2026-11-01", sourceFunctionalCurrency: "USD" }, status: "NeedsFix", attempts: 2, recordedAt: "2026-11-01", targetBookId: null, targetJournalId: null, lastError: "Destination period is locked.", dueDate: null, sourceDigest: "source-digest" };
     vi.mocked(getEntityOperation).mockImplementation(async (path) => path.includes("/proposals") ? [proposal] : []);
