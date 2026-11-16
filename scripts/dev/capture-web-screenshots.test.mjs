@@ -10,6 +10,9 @@ import {
   captureRouteWithRetries,
   checkHoldingsTotals,
   checkKpiConsistency,
+  checkKpiLabelConsistency,
+  findStatusContradictions,
+  loadKpiDefinitions,
   collectKpiSnapshots,
   collectAllowedContentIssueKinds,
   createCaptureApiTracker,
@@ -979,4 +982,44 @@ test("content check flags the article 'a' before a vowel sound", () => {
   const issues = findCaptureContentIssues("Ops Desk has a Operator session. Add a entry or a Admin. Class A income, a user, a one-time code, a European fund, an owner, data access.");
   assert.deepEqual(issues.filter((issue) => issue.kind === "article-before-vowel").map((issue) => issue.excerpt),
     ["a Operator", "a entry", "a Admin"]);
+});
+
+test("the status bar may not say up to date while the masthead or the page needs review", () => {
+  assert.deepEqual(findStatusContradictions({ statusBar: "Sync up to date", pageFreshness: null, shellFreshness: null }), []);
+  assert.deepEqual(findStatusContradictions({ statusBar: "Sync connected Freshness Providers 1 of 4 healthy", pageFreshness: "Stale", shellFreshness: "Providers 1 of 4 healthy" }), []);
+  assert.deepEqual(
+    findStatusContradictions({ statusBar: "Sync up to date", pageFreshness: null, shellFreshness: "Providers 1 of 4 healthy" }),
+    ['status bar "Sync up to date" vs masthead "Providers 1 of 4 healthy"']
+  );
+  assert.equal(findStatusContradictions({ statusBar: "Sync up to date", pageFreshness: "Stale", shellFreshness: "Providers" }).length, 2);
+});
+
+test("a positions table that does not name its source is reported", () => {
+  assert.deepEqual(
+    findCaptureContentIssues("Trading", { unsourcedPositionTables: ["Session positions evidence", "Session positions evidence"] }),
+    [{ kind: "position-source-missing", excerpt: "Session positions evidence" }]
+  );
+  assert.deepEqual(findCaptureContentIssues("Trading", { unsourcedPositionTables: [] }), []);
+});
+
+test("figures sharing a label and population must agree across ids and routes", async () => {
+  const definitions = await loadKpiDefinitions();
+  assert.ok(definitions.some((definition) => definition.id === "system.providers-online"), "shared KPI catalog loads");
+  const kpi = (id, value, population = "Providers in use") => ({ id, value, display: value, population });
+  const capture = (route, kpis, scenario = null) => ({ status: "passed", route, scenario, kpis });
+
+  const conflicting = checkKpiLabelConsistency([
+    capture("/", [kpi("system.providers-online", "1 of 4 providers")]),
+    capture("/data", [kpi("data.providers-healthy", "0 of 3 providers")])
+  ], definitions);
+  assert.equal(conflicting.conflicts.length, 1);
+  assert.equal(conflicting.conflicts[0].group, "Providers healthy · Providers in use");
+
+  // The same value, a different dataset, or a different rendered population is not a conflict.
+  assert.equal(checkKpiLabelConsistency([
+    capture("/", [kpi("system.providers-online", "1 of 4 providers")]),
+    capture("/data", [kpi("data.providers-healthy", "1 of 4 providers")]),
+    capture("/data", [kpi("data.providers-healthy", "0 of 3 providers")], "stale"),
+    capture("/settings", [kpi("data.providers-healthy", "0 of 3 providers", "Providers visible to you")])
+  ], definitions).conflicts.length, 0);
 });

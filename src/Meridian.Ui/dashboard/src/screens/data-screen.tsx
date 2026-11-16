@@ -104,7 +104,7 @@ import type {
   SessionInfo
 } from "@/types";
 import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
-import { applyCrossScreenCounts, selectCrossScreenCounts } from "@/lib/cross-screen-counts";
+import { applyCrossScreenCounts, countProviderHealth, formatProviderHealth, selectCrossScreenCounts } from "@/lib/cross-screen-counts";
 import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
 import { statusPanelClass, statusTextClass } from "@/design-system/status-styles";
 
@@ -247,6 +247,15 @@ function DataScreenContent({
     })),
     [vm.providerSection.rows]
   );
+  // Providers healthy is the shared workstation count, the same figure Today and Settings show.
+  // When the cards loaded here disagree with it (a provider not yet loaded, or newer evidence on one
+  // side), say so instead of letting the strip and the cards silently differ.
+  const providerCountDifference = useMemo(() => {
+    const shared = selectCrossScreenCounts({ shared: sharedCounts }).providers;
+    const local = countProviderHealth(kpiProviders);
+    if (!shared || !local || (shared.healthy === local.healthy && shared.total === local.total)) return null;
+    return `Providers healthy counts every provider in use across the workstation (${formatProviderHealth(shared)}); the health cards below show ${formatProviderHealth(local)} loaded on this page.`;
+  }, [sharedCounts, kpiProviders]);
   const queryPanel = useDataQueryPanel();
   const qualityPanel = useDataQualityPanel(dataQualityFetcher);
   const capabilityMatrixPanel = useCapabilityMatrixPanel();
@@ -314,6 +323,9 @@ function DataScreenContent({
       <KpiProvider models={{ data: { ...data, providers: kpiProviders, metrics: applyCrossScreenCounts(data.metrics, selectCrossScreenCounts({ shared: sharedCounts, providers: kpiProviders })) } }}>
         <StatStrip ids={workspaceKpiIds("data", data.metrics)} label="Data headline metrics" source="Data workspace" figureSource="data" />
       </KpiProvider>
+      {providerCountDifference ? (
+        <p className="text-xs text-muted-foreground" data-testid="provider-count-difference">{providerCountDifference}</p>
+      ) : null}
       {showProviderWorkstream ? <SettingsChangeImpactBanner /> : null}
 
       {showHealthMonitoring ? (

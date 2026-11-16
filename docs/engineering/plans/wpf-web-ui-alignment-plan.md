@@ -33,6 +33,15 @@ These entries describe implementation scope, not operator acceptance or live cer
 
 WPF changes in this delta were compile-checked with the full WPF build; WPF tests run on Windows CI.
 
+## Browser UX Phase A delta — figures and status — 2026-11-16
+
+| Browser change | WPF state |
+| --- | --- |
+| One definition (label, population, comparison basis) per headline figure | Shared seam ready, not consumed: `GET /api/workstation/kpi-definitions` serves `WorkstationKpiDefinitions` (`src/Meridian.Ui.Shared/Services/WorkstationKpiDefinitions.cs`). WPF headline strips should read their labels and populations from it before composing presentation. |
+| One provider-health count on every screen | Shared seam exists (`/api/workstation/cross-screen-counts`); WPF Data and Settings parity pages should show that count, not a page-local one. |
+| Position surfaces name their source | Not ported. The WPF position blotter should state paper session vs live holdings vs retained run. |
+| Status bar freshness never says "up to date" over a stale source | Not ported. |
+
 This plan operationalizes the v0.25 design-charter decision to reactivate the WPF desktop
 workstation as an active, co-equal operator UI lane and bring it up to parity with the browser
 workstation. It is the working companion to roadmap item `W8-WPF-PARITY-001`.

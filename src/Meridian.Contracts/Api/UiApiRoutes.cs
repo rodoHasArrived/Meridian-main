@@ -830,6 +830,9 @@ public static class UiApiRoutes
     /// <summary>Open orders, provider health and open breaks, counted once for every screen (A3).</summary>
     public const string WorkstationCrossScreenCounts = "/api/workstation/cross-screen-counts";
 
+    /// <summary>The fixed label, population and comparison basis of every headline figure (UX Phase A).</summary>
+    public const string WorkstationKpiDefinitions = "/api/workstation/kpi-definitions";
+
     /// <summary>The signed-in operator's default operating scope (C1).</summary>
     public const string WorkstationOperatorScopePreference = "/api/workstation/operator/scope-preference";
 

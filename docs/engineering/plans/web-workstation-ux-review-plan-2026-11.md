@@ -534,9 +534,8 @@ rules and the shared `StatStrip` and `MetricCard` apply them, so a screen cannot
 
 Still open from P1:
 
-- The KPI definition registry (Phase 3 item 2) and the cross-route same-value assertion. Strips
-  still take values from each workspace's read model; this change makes the source visible, it
-  does not make the numbers agree.
+- ~~The KPI definition registry (Phase 3 item 2) and the cross-route same-value assertion.~~
+  Closed by UX Phase A (2026-11-16): see "Phase A: figures and status you can trust" below.
 - Real baselines and a page-level "Compare to" control. No read model carries a comparison period;
   `WorkstationMetricCard.Delta` needs a baseline (or a prior value) before either can exist. The
   browser `MetricSnapshot.baseline` field is ready to receive it.
@@ -611,11 +610,7 @@ Done:
 
 Open in Phase 3:
 
-- **KPI definition registry (P1 item 1).** Not started; see "Still open from P1" above. The
-  headline-figure trust rules now hide a change figure that has no baseline, but same-named
-  numbers still come from each workspace's own read model, so "Runs 24" can still disagree with
-  "2 of 2 loaded". The registry is a shared read-model change and needs a matching
-  `W8-WPF-PARITY-001` item.
+- **KPI definition registry (P1 item 1).** Closed by UX Phase A (2026-11-16); see below.
 - **Content start height.** The first Trading card started at about 435px when this increment was
   written. Two changes that merged alongside it bring it to about 350px: the page-header
   simplification (one header row, no "<Workspace> Workstation" title, a fund picker in place of
@@ -750,3 +745,38 @@ agree and gives deltas a real baseline. Add label, scope, as-of time and compari
 shared read model, move every strip onto it, and file the matching `W8-WPF-PARITY-001` item. Then
 add display names to the read models behind the twelve excused routes so their
 `allowedContentIssues` entries can be removed.
+
+## Phase A: figures and status you can trust (2026-11-16)
+
+Closes P1 item 1 and the status-bar half of the trust work. What changed:
+
+- **One definition per headline figure.** `lib/kpi-registry.ts` already owned each figure's
+  label and computation; every registered figure now also states its population and comparison
+  basis (`KPI_DEFINITIONS`). Strips print the population once when the figures share one
+  ("Covers: Live holdings · all accounts") and under each figure when they differ, and publish it
+  as `data-kpi-population`. The shared read model serves the same catalog at
+  `GET /api/workstation/kpi-definitions` (`WorkstationKpiDefinitions.cs`) for the WPF desktop;
+  `tests/fixtures/kpi-definitions/kpi-definitions.json` holds the browser and C# catalogs to the
+  same values.
+- **One provider-health count.** Data's "Providers healthy" now reads the shared cross-screen
+  count, as Today and Settings do, and counts its own loaded cards only when the shared count is
+  withheld, labelled "Providers visible to you". When the cards below disagree with the shared
+  count, Data says so in one line. Settings' setup checklist now reads "provider connections pass
+  setup checks", a separate population from provider health.
+- **"Runs 24" removed.** The figure came from capture and development fixtures carrying a legacy
+  `runs` card the server never sends; the fixtures now carry the server's `active-runs`,
+  `queued-runs`, `review-runs` and `winning-runs` cards and the registry no longer maps `runs`.
+  Task-workbench counts read "N of M shown".
+- **Position sources named.** Trading's position card reads "Source: Paper session (Alpaca …1234)"
+  and links to Portfolio's "Compare position sources", which now lists each symbol whose quantity
+  or average price differs between live holdings and the session. Position tables carry
+  `data-position-source` (`lib/position-source.ts`).
+- **Status bar freshness.** The footer starts from the masthead pill's provenance and provider
+  items (`resolveShellFreshness`) and always states Freshness; a page can make it worse but never
+  clear it, and "up to date" appears only when every reported source is current.
+- **Screenshot harness.** `status-contradiction` now also compares the footer with the masthead
+  pill; new `position-source-missing` rule; new cross-figure check `checkKpiLabelConsistency`
+  fails when two figures with the same label and population show different values in one dataset.
+
+WPF parity: `W8-WPF-PARITY-001` gains consuming `/api/workstation/kpi-definitions` for desktop
+headline strips (see `wpf-web-ui-alignment-plan.md`).

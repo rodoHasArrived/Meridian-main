@@ -86,7 +86,8 @@ import { eyebrowClassName } from "@/design-system/label-case";
 import { metricFreshnessFromTrustTone, withMetricContext } from "@/lib/metric-trust";
 import { resolveFigureEvidence, resolveFigureScope, useWorkspaceFigureContext } from "@/lib/workspace-figure-context";
 import { FigureDifferenceNote } from "@/components/meridian/figure-difference-note";
-import { buildPortfolioFigureDifferenceNote } from "@/screens/portfolio-screen.figure-differences";
+import { buildPositionSourceDifferences, buildPortfolioFigureDifferenceNote } from "@/screens/portfolio-screen.figure-differences";
+import { describeBrokerageSessionSource, describeLiveHoldingsSource, describeRetainedRunSource, positionSourceAttributes } from "@/lib/position-source";
 import { withPortfolioMarkEvidence } from "@/screens/portfolio-screen.headline-evidence";
 import { toSeverity } from "@/design-system/status-styles";
 
@@ -636,6 +637,12 @@ function PortfolioScreenContent({
     "portfolio.retained-market-value": retainedKpiContext,
     "portfolio.retained-records": retainedKpiContext
   };
+  const sessionSource = describeBrokerageSessionSource(trading?.brokerage);
+  const positionSourceDescriptor = retainedSource ? describeRetainedRunSource(retainedRunId, retainedAsOf) : describeLiveHoldingsSource();
+  const positionSourceDifferences = showBrokerageSync || retainedSource
+    ? []
+    : buildPositionSourceDifferences({ holdings: portfolio?.positions, session: trading?.positions, sessionLabel: sessionSource.label });
+  const compareSourcesRequested = location.hash === "#compare-sources";
   const figureDifferenceNote = showBrokerageSync
     ? null
     : buildPortfolioFigureDifferenceNote({
@@ -758,7 +765,7 @@ function PortfolioScreenContent({
             value={positionSource}
             onChange={(event) => setPositionSource(event.target.value as "live" | "retained")}
           >
-            <option value="live">Live holdings</option>
+            <option value="live">Live holdings · all accounts</option>
             <option value="retained">{retainedSourceLabel}</option>
           </select>
         </div>
@@ -772,8 +779,14 @@ function PortfolioScreenContent({
         compact={showOverview}
       />
       {showOverview || showAttribution ? (
-        <TechnicalDetails label="Compare position sources">
-          <p className="text-xs leading-5 text-muted-foreground">Live holdings are the current portfolio view. Retained records belong to {retainedRunLabel === "Retained run" ? "the run supplied by the record source" : retainedRunLabel}. Market value and exposure have different financial meanings; neither substitutes for the other.</p>
+        <TechnicalDetails id="compare-sources" label="Compare position sources" open={compareSourcesRequested || undefined}>
+          <p className="text-xs leading-5 text-muted-foreground">Live holdings cover every account. Trading shows the {sessionSource.label.charAt(0).toLowerCase()}{sessionSource.label.slice(1)} for the selected account, so the same symbol can read differently there.</p>
+          {positionSourceDifferences.length ? (
+            <ul className="mt-2 space-y-1 text-xs leading-5 text-foreground" aria-label="Why these differ" data-testid="position-source-differences">
+              {positionSourceDifferences.map((difference) => <li key={difference}>{difference}</li>)}
+            </ul>
+          ) : null}
+          <p className="mt-2 text-xs leading-5 text-muted-foreground">Live holdings are the current portfolio view. Retained records belong to {retainedRunLabel === "Retained run" ? "the run supplied by the record source" : retainedRunLabel}. Market value and exposure have different financial meanings; neither substitutes for the other.</p>
           {figureDifferenceNote ? <FigureDifferenceNote note={figureDifferenceNote} /> : null}
           {retainedRunId ? (
             <TechnicalDetails label="Retained source identity" className="mt-3">
@@ -1246,7 +1259,7 @@ function PortfolioScreenContent({
                 shareError={positionsTable.shareError}
               />
               {vm.hasPositions ? (
-                <div data-holdings-table data-holdings-loaded-count={vm.positionRows.length}
+                <div data-holdings-table data-holdings-loaded-count={vm.positionRows.length} {...positionSourceAttributes(positionSourceDescriptor)}
                   data-holdings-total={vm.holdingsTotal.exposureAmount ?? ""} data-holdings-total-currency={vm.holdingsTotal.currency ?? ""}>
                 <TableWorkbench
                   workbenchId="portfolio-positions"

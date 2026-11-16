@@ -613,7 +613,8 @@ export const CAPTURE_CONTENT_ISSUE_KINDS = [
   "unavailable-placeholder",
   "disabled-primary-without-reason",
   "status-contradiction",
-  "truncated-badge"
+  "truncated-badge",
+  "position-source-missing"
 ];
 
 /**
@@ -661,9 +662,11 @@ export function isSlugIdentifier(token) {
  *     its freshness needs review or is blocked. Also read from the DOM by the caller.
  *   - truncated-badge: a visible status badge whose text is clipped ("OPE" for "Open"). Badges
  *     never truncate; a long one wraps. Read from the DOM by the caller.
+ *   - position-source-missing: a positions table that does not name where its rows come from
+ *     (paper session, live holdings or a retained run). Read from the DOM by the caller.
  * Returns one entry per distinct offending excerpt.
  */
-export function findCaptureContentIssues(text, { unexplainedDisabledActions = [], statusContradictions = [], truncatedBadges = [] } = {}) {
+export function findCaptureContentIssues(text, { unexplainedDisabledActions = [], statusContradictions = [], truncatedBadges = [], unsourcedPositionTables = [] } = {}) {
   const issues = [];
   const seen = new Set();
   const record = (kind, excerpt) => {
@@ -715,6 +718,9 @@ export function findCaptureContentIssues(text, { unexplainedDisabledActions = []
   }
   for (const badge of truncatedBadges) {
     record("truncated-badge", String(badge || "(unlabelled badge)"));
+  }
+  for (const table of unsourcedPositionTables) {
+    record("position-source-missing", String(table || "(unlabelled positions table)"));
   }
 
   return issues;
@@ -857,6 +863,50 @@ function canonicalJson(value) {
   return value;
 }
 
+/**
+ * The status bar may say "up to date" only when neither the page's freshness fact nor the masthead
+ * pill's source items (provenance, provider health) need review.
+ */
+export function findStatusContradictions(probe) {
+  if (!/up to date/i.test(probe?.statusBar ?? "")) return [];
+  return [
+    probe?.pageFreshness ? `status bar "${probe.statusBar}" vs page "${probe.pageFreshness}"` : null,
+    probe?.shellFreshness ? `status bar "${probe.statusBar}" vs masthead "${probe.shellFreshness}"` : null
+  ].filter(Boolean);
+}
+
+/**
+ * Different registered figures that share a label and a population are the same figure to an
+ * operator ("Providers healthy · Providers in use" on Today and on Data). Within one dataset they
+ * must show the same value, whichever id or payload supplied them. Groups come from the shared
+ * KPI definitions fixture; a figure whose rendered population differs (e.g. "Providers visible to
+ * you") is a different group.
+ */
+export function checkKpiLabelConsistency(captures, definitions) {
+  const groupOf = new Map();
+  for (const definition of definitions ?? []) {
+    groupOf.set(definition.id, `${definition.label}\u0000${definition.population}`);
+  }
+  const observed = new Map();
+  const conflicts = [];
+  for (const capture of captures) {
+    if (capture.status !== "passed") continue;
+    for (const kpi of capture.kpis ?? []) {
+      const group = groupOf.get(kpi.id);
+      if (!group) continue;
+      const key = JSON.stringify([capture.scenario ?? null, group, kpi.population ?? null]);
+      const current = { id: kpi.id, value: kpi.value, display: kpi.display, route: capture.route };
+      const previous = observed.get(key);
+      if (!previous) {
+        observed.set(key, current);
+      } else if (previous.id !== current.id && previous.value !== current.value) {
+        conflicts.push({ group: group.replace("\u0000", " · "), previous, current });
+      }
+    }
+  }
+  return { conflicts };
+}
+
 /** Compare observations only within the same dataset, operating scope and read revision. */
 export function checkKpiConsistency(captures) {
   const observed = new Map();
@@ -896,6 +946,16 @@ function decimalToScaled(text, scale) {
  * "Total exposure" headline figure. A table narrowed by a filter (fewer rows shown than loaded) is
  * not a complete population and is skipped.
  */
+/** The shared headline-figure catalog (tests/fixtures/kpi-definitions), or none when it is absent. */
+export async function loadKpiDefinitions(repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..", "..")) {
+  try {
+    const raw = await fs.readFile(path.join(repoRoot, "tests", "fixtures", "kpi-definitions", "kpi-definitions.json"), "utf8");
+    return JSON.parse(raw).definitions ?? [];
+  } catch {
+    return [];
+  }
+}
+
 export function checkHoldingsTotals(captures) {
   const conflicts = [];
   let checkedCount = 0;
@@ -967,7 +1027,8 @@ export async function collectKpiSnapshots(page) {
       value: element.getAttribute("data-kpi-value"),
       display: element.getAttribute("data-kpi-display"),
       renderedDisplay: element.querySelector("[data-kpi-rendered-value]")?.textContent?.trim() ?? null,
-      revision: element.getAttribute("data-kpi-revision")
+      revision: element.getAttribute("data-kpi-revision"),
+      population: element.getAttribute("data-kpi-population")
     })));
   for (const snapshot of snapshots) {
     if (!snapshot.id || !snapshot.scope || snapshot.value === null || snapshot.display === null) {
@@ -1172,19 +1233,33 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
   const unexplainedDisabledActions = Array.isArray(disabledActionProbe) ? disabledActionProbe : [];
   // The status bar and the page's posture strip answer the same freshness question; the bar may
   // not say "up to date" while a strip on the page says its freshness needs review or is blocked.
+  // The masthead pill's provenance and provider items are the shell's freshness: the bar may not
+  // say "up to date" while either of them needs review either.
   const statusProbe = await page.evaluate(() => {
+    const text = (element) => (element?.textContent ?? "").replace(/\s+/g, " ").trim();
     const staleFact = Array.from(document.querySelectorAll(
       "main [data-trust-fact='freshness'][data-trust-tone='review'], main [data-trust-fact='freshness'][data-trust-tone='blocked']"
     )).find((element) => element.getClientRects().length > 0);
+    const staleShellItem = Array.from(document.querySelectorAll(
+      "[data-trust-strip-item='source'], [data-trust-strip-item='providers']"
+    )).find((element) => ["review", "blocked"].includes(element.getAttribute("data-trust-strip-tone") ?? ""));
     const footer = document.querySelector("footer.workstation-statusbar");
     return {
-      pageFreshness: staleFact ? (staleFact.textContent ?? "").replace(/\s+/g, " ").trim() : null,
-      statusBar: footer ? (footer.textContent ?? "").replace(/\s+/g, " ").trim() : ""
+      pageFreshness: staleFact ? text(staleFact) : null,
+      shellFreshness: staleShellItem ? text(staleShellItem) : null,
+      statusBar: footer ? text(footer) : ""
     };
   });
-  const statusContradictions = statusProbe?.pageFreshness && /up to date/i.test(statusProbe.statusBar ?? "")
-    ? [`status bar "${statusProbe.statusBar}" vs page "${statusProbe.pageFreshness}"`]
-    : [];
+  const statusContradictions = findStatusContradictions(statusProbe);
+  // Every positions table names its source (paper session, live holdings or a retained run).
+  const positionSourceProbe = await page.evaluate(() =>
+    Array.from((document.querySelector("main") ?? document.body).querySelectorAll("table"))
+      .filter((table) => table.getClientRects().length > 0)
+      .filter((table) => /\bpositions?\b/i.test(`${table.getAttribute("aria-label") ?? ""} ${table.querySelector("caption")?.textContent ?? ""}`))
+      .filter((table) => !table.closest("[data-position-source]"))
+      .map((table) => (table.getAttribute("aria-label") ?? table.querySelector("caption")?.textContent ?? "").replace(/\s+/g, " ").trim())
+  );
+  const unsourcedPositionTables = Array.isArray(positionSourceProbe) ? positionSourceProbe : [];
   // A clipped status badge ("OPE") reads as a different status. Badges are measured, not read:
   // the text is all there in innerText even when the box cuts it off.
   const truncatedBadgeProbe = await page.evaluate(() =>
@@ -1198,7 +1273,7 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
     await fs.mkdir(textDir, { recursive: true });
     await fs.writeFile(path.join(textDir, `${capture.name}.txt`), `${mainText}\n`);
   }
-  const contentIssues = partitionCaptureContentIssues(mainText, capture, { unexplainedDisabledActions, statusContradictions, truncatedBadges });
+  const contentIssues = partitionCaptureContentIssues(mainText, capture, { unexplainedDisabledActions, statusContradictions, truncatedBadges, unsourcedPositionTables });
   if (contentIssues.blocking.length > 0) {
     throw new Error(describeCaptureContentIssues(capture.name, contentIssues.blocking));
   }
@@ -1618,6 +1693,12 @@ async function main() {
       problems.push(`KPI '${conflict.id}' disagrees for scope ${conflict.scope}: `
         + `${conflict.previous.route} shows '${conflict.previous.display}' (${conflict.previous.value}), `
         + `${conflict.current.route} shows '${conflict.current.display}' (${conflict.current.value}).`);
+    }
+    manifest.kpiLabelConsistency = checkKpiLabelConsistency(results, await loadKpiDefinitions());
+    for (const conflict of manifest.kpiLabelConsistency.conflicts) {
+      problems.push(`'${conflict.group}' disagrees across figures: ${conflict.previous.route} shows `
+        + `'${conflict.previous.display}' (${conflict.previous.id}), ${conflict.current.route} shows `
+        + `'${conflict.current.display}' (${conflict.current.id}).`);
     }
     manifest.holdingsTotals = checkHoldingsTotals(results);
     for (const conflict of manifest.holdingsTotals.conflicts) {

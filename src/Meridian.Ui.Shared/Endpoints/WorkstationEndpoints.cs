@@ -433,6 +433,12 @@ public static partial class WorkstationEndpoints
         .Produces<WorkstationCrossScreenCountsDto>(200)
         .RequireWorkstationTenantCompanyScope();
 
+        // UX Phase A: one definition per headline figure, read by the browser and WPF workstations.
+        // The catalog describes figures, not data, so any workstation reader may load it.
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationKpiDefinitions), () => Results.Json(WorkstationKpiDefinitions.Catalog, jsonOptions))
+        .WithName("GetWorkstationKpiDefinitions").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewStrategies, UserPermission.ManageStrategies, UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
+        .Produces<WorkstationKpiDefinitionsDto>(200);
+
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationDataOperations), async (HttpContext context) =>
         {
             var payload = await BuildDataPayloadAsync(context).ConfigureAwait(false);

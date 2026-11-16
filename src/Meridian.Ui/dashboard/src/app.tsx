@@ -96,6 +96,7 @@ import { NotificationCenter } from "@/components/meridian/notification-center";
 import { ActivityCenter } from "@/components/meridian/activity-center";
 import { DegradedModeBanner } from "@/components/meridian/degraded-mode-banner";
 import { resolveWorkstationDataProvenance } from "@/app-shell.data-provenance-badge";
+import { resolveShellFreshness } from "@/app-shell.trust-strip";
 import { DesignSystemMasthead } from "@/design-system/primitives";
 import {
   WorkstationStatusBar,
@@ -1120,7 +1121,8 @@ function AppShell({
           workspaceLabel: headerWorkspace.label,
           refreshing: loading || refreshStatus.inFlight,
           hasError: Boolean(error),
-          pageFreshness
+          pageFreshness,
+          shellFreshness: resolveShellFreshness(shell.trustStrip)
         })}
       />
 

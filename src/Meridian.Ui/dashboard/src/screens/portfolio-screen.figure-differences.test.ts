@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildPortfolioFigureDifferenceNote } from "@/screens/portfolio-screen.figure-differences";
+import { buildPortfolioFigureDifferenceNote, buildPositionSourceDifferences } from "@/screens/portfolio-screen.figure-differences";
 import { buildPortfolioFallbackMetrics } from "@/screens/portfolio-screen.view-model";
 import type { FinancialRecordExplorerDto } from "@/types";
 
@@ -130,5 +130,24 @@ describe("buildPortfolioFigureDifferenceNote", () => {
     expect(buildPortfolioFigureDifferenceNote({ headerMetrics, headerProvenance, explorer: agreeing })).toBeNull();
     expect(buildPortfolioFigureDifferenceNote({ headerMetrics, headerProvenance, explorer: explorer({ isBlocked: true }) })).toBeNull();
     expect(buildPortfolioFigureDifferenceNote({ headerMetrics, headerProvenance, explorer: null })).toBeNull();
+  });
+});
+
+describe("buildPositionSourceDifferences", () => {
+  const holding = (symbol: string, quantity: string, averagePrice: string) => ({ symbol, quantity, averagePrice });
+
+  it("names both sources for a symbol that reads differently", () => {
+    expect(buildPositionSourceDifferences({
+      holdings: [holding("AAPL", "38", "142.20"), holding("MSFT", "10", "400")],
+      session: [holding("aapl", "100", "188.10"), holding("MSFT", "10.00", "$400.00")],
+      sessionLabel: "Paper session (Alpaca …4567)"
+    })).toEqual([
+      "AAPL: 38 at 142.20 in live holdings vs 100 at 188.10 in the paper session (Alpaca …4567). Different sources, not a conflict."
+    ]);
+  });
+
+  it("says nothing when either source is empty", () => {
+    expect(buildPositionSourceDifferences({ holdings: [], session: [holding("AAPL", "1", "1")], sessionLabel: "Paper session" })).toEqual([]);
+    expect(buildPositionSourceDifferences({ holdings: [holding("AAPL", "1", "1")], session: null, sessionLabel: "Paper session" })).toEqual([]);
   });
 });
