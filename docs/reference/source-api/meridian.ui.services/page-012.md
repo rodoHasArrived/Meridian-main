@@ -6,9 +6,81 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyOperationCapabilities
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyOperationCapabilities</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs:8](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs#L8).
+
+Server-resolved permissions for the signed-in account; never inferred on the workstation.
+
+```csharp
+public sealed record IntercompanyOperationCapabilities(bool CanManageAgreements = false, bool CanManageLifecycle = false, bool CanManageLedger = false, bool CanViewLedger = false);
+```
+
+## IWorkstationAccountingCloseApiClient
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IWorkstationAccountingCloseApiClient</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:8](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L8).
+
+Governed server close management for operator workstations.
+
+```csharp
+public interface IWorkstationAccountingCloseApiClient : IAccountingCloseManagementService;
+```
+
+## IWorkstationEntityConsolidationApiClient
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IWorkstationEntityConsolidationApiClient</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:9](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L9).
+
+Shared governed entity and consolidation projections; no workstation calculations.
+
+```csharp
+public partial interface IWorkstationEntityConsolidationApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;OrganizationStructureGraphDto&gt; GetStructureAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:11](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L11) |  |
+| <code>Task&lt;EntityTimelineDto&gt; GetTimelineAsync(Guid organizationId, Guid entityId, DateTimeOffset asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:12](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L12) |  |
+| <code>Task&lt;IReadOnlyList&lt;LedgerPeriodDto&gt;&gt; GetPeriodsAsync(Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:13](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L13) |  |
+| <code>Task&lt;ConsolidationViewDto&gt; PreviewAsync(ConsolidationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:14](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L14) |  |
+| <code>Task&lt;ConsolidationViewDto&gt; CreateDraftsAsync(ConsolidationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:15](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L15) |  |
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs:7](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs#L7).
+
+```csharp
+public partial interface IWorkstationEntityConsolidationApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;EntityLifecycleReviewPreviewDto&gt; PreviewLifecycleReviewAsync(AppendEntityLifecycleRevisionRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs:9](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs#L9) |  |
+| <code>Task&lt;EntityLifecycleRevisionDto&gt; AppendLifecycleRevisionAsync(AppendEntityLifecycleRevisionRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs:11](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs#L11) |  |
+
 ## IWorkstationIntercompanyAgreementApiClient
 
 Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IWorkstationIntercompanyAgreementApiClient</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Accruals.cs:7](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Accruals.cs#L7).
+
+```csharp
+public partial interface IWorkstationIntercompanyAgreementApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ApiResponse&lt;IntercompanyAccrualProposalDto&gt;&gt; PreviewInterestAccrualAsync(IntercompanyAccrualRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Accruals.cs:10](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Accruals.cs#L10) | Read-only computation over the operator&#x27;s selection; the server resolves every economic input. |
+| <code>Task&lt;ApiResponse&lt;ManualJournalEntryDraftDto&gt;&gt; CreateInterestAccrualDraftAsync(CreateIntercompanyAccrualDraftRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Accruals.cs:13](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Accruals.cs#L13) | Retains the previewed computation as a source-book review draft. It never approves or posts. |
 
 Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs:8](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs#L8).
 
@@ -321,6 +393,19 @@ Declared public members:
 ## WorkstationIntercompanyAgreementApiClient
 
 Qualified name: <code>Meridian.Ui.Services.Services.Accounting.WorkstationIntercompanyAgreementApiClient</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Accruals.cs:17](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Accruals.cs#L17).
+
+```csharp
+public sealed partial class WorkstationIntercompanyAgreementApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;ApiResponse&lt;IntercompanyAccrualProposalDto&gt;&gt; PreviewInterestAccrualAsync(IntercompanyAccrualRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Accruals.cs:22](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Accruals.cs#L22) |  |
+| <code>public async Task&lt;ApiResponse&lt;ManualJournalEntryDraftDto&gt;&gt; CreateInterestAccrualDraftAsync(CreateIntercompanyAccrualDraftRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Accruals.cs:41](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Accruals.cs#L41) |  |
 
 Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs:16](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs#L16).
 
@@ -1259,66 +1344,3 @@ Declared public members:
 | <code>public List&lt;string&gt; Issues { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:209](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L209) |  |
 | <code>public List&lt;string&gt; Recommendations { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:210](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L210) |  |
 | <code>public DateTime CheckedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:211](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L211) |  |
-
-## IQualityArchiveStore
-
-Qualified name: <code>Meridian.Ui.Services.Services.IQualityArchiveStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Services/Services/QualityArchiveStore.cs:17](../../../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs#L17).
-
-Interface for persisting and retrieving daily quality records.
-
-```csharp
-public interface IQualityArchiveStore : IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task RecordAsync(string symbol, DateOnly date, double completenessScore, CancellationToken ct);</code> | [src/Meridian.Ui.Services/Services/QualityArchiveStore.cs:22](../../../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs#L22) | Records a daily quality score for a symbol. |
-| <code>Task&lt;IReadOnlyList&lt;DailyQualityRecord&gt;&gt; GetHistoryAsync(string symbol, DateOnly from, DateOnly to, CancellationToken ct);</code> | [src/Meridian.Ui.Services/Services/QualityArchiveStore.cs:27](../../../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs#L27) | Retrieves historical quality records for a symbol within a date range. |
-| <code>Task&lt;IReadOnlyList&lt;string&gt;&gt; GetSymbolsAsync(CancellationToken ct);</code> | [src/Meridian.Ui.Services/Services/QualityArchiveStore.cs:32](../../../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs#L32) | Gets all tracked symbols. |
-
-## LiveStatusEventArgs
-
-Qualified name: <code>Meridian.Ui.Services.Services.LiveStatusEventArgs</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:106](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L106).
-
-Event arguments for live status monitoring updates.
-
-```csharp
-public sealed class LiveStatusEventArgs : EventArgs
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SimpleStatus? Status { get; init; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:108](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L108) |  |
-| <code>public DateTime Timestamp { get; init; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:109](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L109) |  |
-| <code>public bool IsStale { get; init; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:110](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L110) |  |
-
-## LogEntryEventArgs
-
-Qualified name: <code>Meridian.Ui.Services.Services.LogEntryEventArgs</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/LoggingServiceBase.cs:20](../../../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs#L20).
-
-Event arguments for log entry events.
-
-```csharp
-public sealed class LogEntryEventArgs : EventArgs
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LogLevel Level { get; }</code> | [src/Meridian.Ui.Services/Services/LoggingServiceBase.cs:22](../../../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs#L22) |  |
-| <code>public DateTime Timestamp { get; }</code> | [src/Meridian.Ui.Services/Services/LoggingServiceBase.cs:23](../../../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs#L23) |  |
-| <code>public string Message { get; }</code> | [src/Meridian.Ui.Services/Services/LoggingServiceBase.cs:24](../../../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs#L24) |  |
-| <code>public Exception? Exception { get; }</code> | [src/Meridian.Ui.Services/Services/LoggingServiceBase.cs:25](../../../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs#L25) |  |
-| <code>public (string key, string value)[] Properties { get; }</code> | [src/Meridian.Ui.Services/Services/LoggingServiceBase.cs:26](../../../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs#L26) |  |
-| <code>public LogEntryEventArgs(LogLevel level, DateTime timestamp, string message, Exception? exception, (string key, string value)[] properties);</code> | [src/Meridian.Ui.Services/Services/LoggingServiceBase.cs:28](../../../../src/Meridian.Ui.Services/Services/LoggingServiceBase.cs#L28) |  |

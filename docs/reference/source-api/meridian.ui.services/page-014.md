@@ -6,6 +6,68 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SmartRecommendationsService
+
+Qualified name: <code>Meridian.Ui.Services.SmartRecommendationsService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:13](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L13).
+
+Service that analyzes existing data and provides smart recommendations for backfill operations, gap repairs, and data quality improvements.
+
+```csharp
+public sealed class SmartRecommendationsService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static SmartRecommendationsService Instance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:23](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L23) | Gets the singleton instance. |
+| <code>public async Task&lt;BackfillRecommendations&gt; GetRecommendationsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:35](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L35) | Generates smart recommendations based on current data state. |
+
+## StaleIndicatorResult
+
+Qualified name: <code>Meridian.Ui.Services.StaleIndicatorResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/FormatHelpers.cs:141](../../../../src/Meridian.Ui.Services/Services/FormatHelpers.cs#L141).
+
+Result of stale data indicator formatting. Used by pages to display consistent &quot;last update&quot; text with stale/fresh coloring.
+
+```csharp
+public sealed class StaleIndicatorResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string DisplayText { get; }</code> | [src/Meridian.Ui.Services/Services/FormatHelpers.cs:143](../../../../src/Meridian.Ui.Services/Services/FormatHelpers.cs#L143) |  |
+| <code>public bool IsStale { get; }</code> | [src/Meridian.Ui.Services/Services/FormatHelpers.cs:144](../../../../src/Meridian.Ui.Services/Services/FormatHelpers.cs#L144) |  |
+| <code>public StaleIndicatorResult(string displayText, bool isStale);</code> | [src/Meridian.Ui.Services/Services/FormatHelpers.cs:146](../../../../src/Meridian.Ui.Services/Services/FormatHelpers.cs#L146) |  |
+
+## StorageAnalysisOptions
+
+Qualified name: <code>Meridian.Ui.Services.StorageAnalysisOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1322](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1322).
+
+Options for storage analysis.
+
+```csharp
+public sealed class StorageAnalysisOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool CalculateHashes { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1324](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1324) |  |
+| <code>public bool FindDuplicates { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1325](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1325) |  |
+| <code>public bool AnalyzeCompression { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1326](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1326) |  |
+| <code>public bool FindSmallFiles { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1327](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1327) |  |
+| <code>public bool AnalyzeTiering { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1328](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1328) |  |
+| <code>public int ColdTierAgeDays { get; set; } = 90;</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1329](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1329) |  |
+
 ## StorageAnalysisProgress
 
 Qualified name: <code>Meridian.Ui.Services.StorageAnalysisProgress</code>. Kind: `class`.
@@ -1150,65 +1212,3 @@ Declared public members:
 | <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:673](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L673) |  |
 | <code>public string? Message { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:674](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L674) |  |
 | <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:675](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L675) |  |
-
-## SymbolOperationResult
-
-Qualified name: <code>Meridian.Ui.Services.SymbolOperationResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:565](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L565).
-
-Reports an operation&#x27;s success for one symbol with an optional message and error.
-
-```csharp
-public sealed class SymbolOperationResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:567](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L567) |  |
-| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:568](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L568) |  |
-| <code>public string? Message { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:569](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L569) |  |
-| <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:570](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L570) |  |
-
-## SymbolPathResponse
-
-Qualified name: <code>Meridian.Ui.Services.SymbolPathResponse</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/StorageModels.cs:81](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L81).
-
-Carries the API storage-folder path for a symbol.
-
-```csharp
-public sealed class SymbolPathResponse
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:83](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L83) |  |
-| <code>public string FolderPath { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:84](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L84) |  |
-
-## SymbolQualityInfo
-
-Qualified name: <code>Meridian.Ui.Services.SymbolQualityInfo</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs:1203](../../../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs#L1203).
-
-Quality info for a single symbol.
-
-```csharp
-public sealed class SymbolQualityInfo
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs:1205](../../../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs#L1205) |  |
-| <code>public double Completeness { get; set; }</code> | [src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs:1206](../../../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs#L1206) |  |
-| <code>public long RecordCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs:1207](../../../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs#L1207) |  |
-| <code>public bool HasGaps { get; set; }</code> | [src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs:1208](../../../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs#L1208) |  |
-| <code>public string QualityGrade { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs:1209](../../../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs#L1209) |  |

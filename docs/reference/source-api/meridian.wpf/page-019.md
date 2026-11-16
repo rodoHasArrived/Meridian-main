@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityPassportEditorPage
+
+Qualified name: <code>Meridian.Wpf.Views.SecurityPassportEditorPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/SecurityPassportEditorPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/SecurityPassportEditorPage.xaml.cs#L10).
+
+Hosts governed instrument-passport field editing and review.
+
+```csharp
+public partial class SecurityPassportEditorPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityPassportEditorPage(SecurityPassportEditorViewModel viewModel);</code> | [src/Meridian.Wpf/Views/SecurityPassportEditorPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/SecurityPassportEditorPage.xaml.cs#L12) |  |
+
 ## SecurityPassportEditorView
 
 Qualified name: <code>Meridian.Wpf.Views.SecurityPassportEditorView</code>. Kind: `class`.
@@ -1087,25 +1105,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public string SlotId { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/Composition/WorkspaceCompositionDefinition.cs:8](../../../../src/Meridian.Wpf/Workstation/Composition/WorkspaceCompositionDefinition.cs#L8) |  |
 | <code>public string ModuleId { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/Composition/WorkspaceCompositionDefinition.cs:9](../../../../src/Meridian.Wpf/Workstation/Composition/WorkspaceCompositionDefinition.cs#L9) |  |
-
-## ActivityLogGridControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Controls.ActivityLogGridControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Controls/ActivityLogGridControl.xaml.cs:11](../../../../src/Meridian.Wpf/Workstation/Controls/ActivityLogGridControl.xaml.cs#L11).
-
-Displays audit timeline entries and exposes an empty-state flag.
-
-```csharp
-public partial class ActivityLogGridControl : UserControl
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly DependencyProperty TimelineProperty = DependencyProperty.Register(nameof(Timeline), typeof(AuditTimelineModel), typeof(ActivityLogGridControl), new PropertyMetadata(null, OnTimelineChanged));</code> | [src/Meridian.Wpf/Workstation/Controls/ActivityLogGridControl.xaml.cs:13](../../../../src/Meridian.Wpf/Workstation/Controls/ActivityLogGridControl.xaml.cs#L13) |  |
-| <code>public static readonly DependencyProperty IsTimelineEmptyProperty = DependencyProperty.Register(nameof(IsTimelineEmpty), typeof(bool), typeof(ActivityLogGridControl), new PropertyMetadata(true));</code> | [src/Meridian.Wpf/Workstation/Controls/ActivityLogGridControl.xaml.cs:20](../../../../src/Meridian.Wpf/Workstation/Controls/ActivityLogGridControl.xaml.cs#L20) |  |
-| <code>public ActivityLogGridControl();</code> | [src/Meridian.Wpf/Workstation/Controls/ActivityLogGridControl.xaml.cs:29](../../../../src/Meridian.Wpf/Workstation/Controls/ActivityLogGridControl.xaml.cs#L29) |  |
-| <code>public AuditTimelineModel? Timeline { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/ActivityLogGridControl.xaml.cs:34](../../../../src/Meridian.Wpf/Workstation/Controls/ActivityLogGridControl.xaml.cs#L34) |  |
-| <code>public bool IsTimelineEmpty { get; private set; }</code> | [src/Meridian.Wpf/Workstation/Controls/ActivityLogGridControl.xaml.cs:40](../../../../src/Meridian.Wpf/Workstation/Controls/ActivityLogGridControl.xaml.cs#L40) |  |

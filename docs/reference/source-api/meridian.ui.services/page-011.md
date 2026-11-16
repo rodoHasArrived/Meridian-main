@@ -1209,6 +1209,88 @@ Declared public members:
 | <code>public string FunctionalDebit =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:379](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L379) |  |
 | <code>public string FunctionalCredit =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:380](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L380) |  |
 
+## IntercompanyInterestAccrualLineRow
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyInterestAccrualLineRow</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:225](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L225).
+
+One line of the proposed source journal, exactly as the server would retain it.
+
+```csharp
+public sealed class IntercompanyInterestAccrualLineRow(ManualJournalEntryLineDto line)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Account =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:227](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L227) |  |
+| <code>public string Side =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:228](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L228) |  |
+| <code>public string Amount =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:229](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L229) |  |
+| <code>public string Original =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:230](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L230) |  |
+
+## IntercompanyInterestAccrualSliceRow
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyInterestAccrualSliceRow</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:213](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L213).
+
+One homogeneous accrual slice; every figure is the server&#x27;s exact decimal.
+
+```csharp
+public sealed class IntercompanyInterestAccrualSliceRow(IntercompanyAccrualSliceDto slice)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Days =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:215](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L215) |  |
+| <code>public string Principal =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:216](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L216) |  |
+| <code>public string AnnualRate =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:217](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L217) |  |
+| <code>public string DayCount =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:218](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L218) |  |
+| <code>public string UnroundedAmount =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:219](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L219) |  |
+| <code>public string Authority =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:220](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L220) |  |
+| <code>public string PrincipalEvidence =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:221](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L221) |  |
+
+## IntercompanyInterestAccrualWorkspace
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyInterestAccrualWorkspace</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:16](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L16).
+
+Desktop presentation state for requesting a governed loan-interest accrual. The operator supplies selections only; every rate, principal, amount and permission comes from the shared intercompany API, and a draft is bound to the evidence digest of the preview the operator saw. Nothing is calculated here.
+
+```csharp
+public sealed partial class IntercompanyInterestAccrualWorkspace : ObservableObject, IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyInterestAccrualWorkspace(IWorkstationIntercompanyAgreementApiClient client);</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:30](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L30) |  |
+| <code>public ObservableCollection&lt;IntercompanyInterestAccrualSliceRow&gt; Slices { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:37](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L37) |  |
+| <code>public ObservableCollection&lt;IntercompanyInterestAccrualLineRow&gt; Lines { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:38](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L38) |  |
+| <code>public ObservableCollection&lt;string&gt; Refusals { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:39](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L39) |  |
+| <code>public IAsyncRelayCommand PreviewCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:40](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L40) |  |
+| <code>public IAsyncRelayCommand CreateDraftCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:41](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L41) |  |
+| <code>public bool IsBusy { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:42](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L42) |  |
+| <code>public bool CanManageLedger { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:44](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L44) | The server&#x27;s answer for the signed-in account. Source-book authority is still checked per command. |
+| <code>public string PermissionNote =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:45](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L45) |  |
+| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:48](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L48) |  |
+| <code>public string Summary { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:50](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L50) | The previewed amount and journal date, or the reason no amount is shown. |
+| <code>public string Evidence { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:51](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L51) |  |
+| <code>public string DraftStatus { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:52](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L52) |  |
+| <code>public string SourceBook { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:53](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L53) |  |
+| <code>public string InterestProfile { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:54](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L54) |  |
+| <code>public string PrincipalProfile { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:55](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L55) |  |
+| <code>public string AccrualFrom { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:57](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L57) | First accrued day (yyyy-MM-dd). |
+| <code>public string AccrualTo { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:59](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L59) | First day not accrued (yyyy-MM-dd); the journal is dated the day before. |
+| <code>public void ResetSession();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:168](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L168) | Clear prior-session evidence and invalidate every outstanding response on account changes. |
+| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:186](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L186) |  |
+
 ## IntercompanyLegacyCoverageCandidate
 
 Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyLegacyCoverageCandidate</code>. Kind: `record`.
@@ -1218,62 +1300,3 @@ Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgr
 ```csharp
 public sealed record IntercompanyLegacyCoverageCandidate(Guid LedgerBookId, Guid JournalEntryId, Guid EntryId, string SourceLineDigest, string AccountName, string AccountType, decimal Debit, decimal Credit, DateOnly EffectiveDate);
 ```
-
-## IntercompanyOperationCapabilities
-
-Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyOperationCapabilities</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs:8](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs#L8).
-
-Server-resolved permissions for the signed-in account; never inferred on the workstation.
-
-```csharp
-public sealed record IntercompanyOperationCapabilities(bool CanManageAgreements = false, bool CanManageLifecycle = false, bool CanManageLedger = false, bool CanViewLedger = false);
-```
-
-## IWorkstationAccountingCloseApiClient
-
-Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IWorkstationAccountingCloseApiClient</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:8](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L8).
-
-Governed server close management for operator workstations.
-
-```csharp
-public interface IWorkstationAccountingCloseApiClient : IAccountingCloseManagementService;
-```
-
-## IWorkstationEntityConsolidationApiClient
-
-Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IWorkstationEntityConsolidationApiClient</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:9](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L9).
-
-Shared governed entity and consolidation projections; no workstation calculations.
-
-```csharp
-public partial interface IWorkstationEntityConsolidationApiClient
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;OrganizationStructureGraphDto&gt; GetStructureAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:11](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L11) |  |
-| <code>Task&lt;EntityTimelineDto&gt; GetTimelineAsync(Guid organizationId, Guid entityId, DateTimeOffset asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:12](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L12) |  |
-| <code>Task&lt;IReadOnlyList&lt;LedgerPeriodDto&gt;&gt; GetPeriodsAsync(Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:13](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L13) |  |
-| <code>Task&lt;ConsolidationViewDto&gt; PreviewAsync(ConsolidationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:14](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L14) |  |
-| <code>Task&lt;ConsolidationViewDto&gt; CreateDraftsAsync(ConsolidationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:15](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L15) |  |
-
-Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs:7](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs#L7).
-
-```csharp
-public partial interface IWorkstationEntityConsolidationApiClient
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;EntityLifecycleReviewPreviewDto&gt; PreviewLifecycleReviewAsync(AppendEntityLifecycleRevisionRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs:9](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs#L9) |  |
-| <code>Task&lt;EntityLifecycleRevisionDto&gt; AppendLifecycleRevisionAsync(AppendEntityLifecycleRevisionRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs:11](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs#L11) |  |

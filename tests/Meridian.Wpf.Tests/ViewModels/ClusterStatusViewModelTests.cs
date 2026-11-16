@@ -121,7 +121,6 @@ public sealed class ClusterStatusViewModelTests
         xaml.Should().NotContain("ClusterStatusRefreshButton");
         xaml.Should().NotContain("Command=\"{Binding RefreshCommand}\"");
         viewModel.Should().Contain("public IAsyncRelayCommand RefreshCommand { get; }");
-        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
         xaml.Should().Contain("Table=\"{Binding NodesTable}\"");
         xaml.Should().Contain("SelectedItem=\"{Binding SelectedNode, Mode=TwoWay}\"");
         xaml.Should().Contain("Inspector=\"{Binding SelectedNodeInspector}\"");

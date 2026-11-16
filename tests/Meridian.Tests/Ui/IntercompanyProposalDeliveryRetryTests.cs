@@ -66,6 +66,30 @@ public sealed class IntercompanyProposalDeliveryRetryTests
     }
 
     [Fact]
+    public async Task DeliveredCounterpart_IsNotHeldBackAsAnIncompleteFundEvent_WhileAClientDraftWithTheSameLabelStillIs()
+    {
+        // The destination team must be able to send the generated counterpart for review. Its treasury context is
+        // labelled as an intercompany mirror, which is a classification and carries no fund event or capital account.
+        var fixture = new DeliveryFixture();
+        (await fixture.Service.RunOnceAsync("worker")).Should().Be(1);
+        var counterpart = (await fixture.StoredDrafts()).Should().ContainSingle().Subject;
+        counterpart.TreasuryContext!.FundEventType.Should().Be(IntercompanyProposalDraftBuilder.MirrorFundEventType);
+
+        var reviewed = await fixture.Workbench.ValidateDraftAsync(new(counterpart, "destination-preparer",
+            LedgerBookId: IntercompanyProposalTestData.BookB, TenantId: "tenant-a", CompanyId: "company-a"));
+        // The label does not exempt a draft that is not a retained counterpart, or one that names a capital account.
+        var clientDraft = await fixture.Workbench.ValidateDraftAsync(new(counterpart with { JournalEntryId = Guid.NewGuid(), IntercompanyProposalId = null, IntercompanyProposalSourceDigest = null },
+            "destination-preparer", LedgerBookId: IntercompanyProposalTestData.BookB, TenantId: "tenant-a", CompanyId: "company-a"));
+        var withCapitalAccount = await fixture.Workbench.ValidateDraftAsync(new(counterpart with { TreasuryContext = counterpart.TreasuryContext with { CapitalAccountId = "capital-account-1" } },
+            "destination-preparer", LedgerBookId: IntercompanyProposalTestData.BookB, TenantId: "tenant-a", CompanyId: "company-a"));
+
+        reviewed.ValidationIssues.Select(issue => issue.Code).Should().NotContain(["manual-je.fund-event-missing", "manual-je.capital-account-missing"]);
+        clientDraft.ValidationIssues.Select(issue => issue.Code).Should().Contain(["manual-je.fund-event-missing", "manual-je.capital-account-missing"]);
+        withCapitalAccount.ValidationIssues.Select(issue => issue.Code).Should().Contain("manual-je.fund-event-missing");
+        fixture.VerifyNothingPosted();
+    }
+
+    [Fact]
     public async Task RestartAfterDraftSavedButBeforeReceipt_RecoversSameDraftWithoutOverwritingReviewerDecision()
     {
         var fixture = new DeliveryFixture();
@@ -292,12 +316,14 @@ public sealed class IntercompanyProposalDeliveryRetryTests
                     "fixture-v1", IntercompanyProposalTestData.Now, [], [], [], [], [], [], TenantId: "tenant-a", CompanyId: "company-a"));
             var owners = new Mock<IFundProfileTenancyRegistry>();
             owners.Setup(registry => registry.ResolveAsync("target-fund", It.IsAny<CancellationToken>())).ReturnsAsync(() => TargetOwner);
-            var workbench = new ManualJournalEntryWorkbenchService(Drafts, configuration.Object, new InMemoryAccountingActionAuditStore(),
+            Workbench = new ManualJournalEntryWorkbenchService(Drafts, configuration.Object, new InMemoryAccountingActionAuditStore(),
                 journalStore: _journals.Object);
             Service = new IntercompanyProposalDeliveryService(_proposals.Object,
                 IntercompanyArrangementTestData.Service(arrangementStore.Object, Agreement), _journals.Object, bindings.Object,
-                configuration.Object, Drafts, workbench, owners.Object, new Mock<IConsolidationFxAuthority>(MockBehavior.Strict).Object);
+                configuration.Object, Drafts, Workbench, owners.Object, new Mock<IConsolidationFxAuthority>(MockBehavior.Strict).Object);
         }
+
+        internal ManualJournalEntryWorkbenchService Workbench { get; }
 
         internal IntercompanyProposalDeliveryService Service { get; }
         internal InMemoryManualJournalEntryDraftStore Drafts { get; } = new();

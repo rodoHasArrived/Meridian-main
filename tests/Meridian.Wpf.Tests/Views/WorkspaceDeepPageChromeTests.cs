@@ -250,7 +250,8 @@ public sealed class WorkspaceDeepPageChromeTests
         xaml.Should().Contain("ClusterStatusSummaryInspector");
         xaml.Should().Contain("ClusterStatusSelectionInspector");
         xaml.Should().Contain("ClusterStatusActionInspector");
-        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
+        // The page's own Refresh button, and the disabled-state tooltip it carried, moved to the shell Refresh.
+        xaml.Should().NotContain("ClusterStatusRefreshButton");
     }
 
     [Fact]
