@@ -559,17 +559,17 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         }
 
         self.assertEqual("Report Packs", captures["W04A"].get("waitForText"))
-        self.assertIn("Governed export queue", captures["W04C"].get("waitForTexts", []))
+        self.assertIn("Export queue", captures["W04C"].get("waitForTexts", []))
         self.assertNotIn("Run a governed report now", captures["W04C"].get("waitForTexts", []))
         self.assertIn("Review approval details", captures["W04E"].get("waitForTexts", []))
         self.assertNotIn("report-run-board-202605", captures["W04E"].get("waitForTexts", []))
 
         # The run-detail capture renders the governed screen, which loads its run from the
         # authoritative reporting endpoints instead of the workstation reporting read model.
-        self.assertIn("Governed lifecycle", captures["W04I2"].get("waitForTexts", []))
+        self.assertIn("Report lifecycle", captures["W04I2"].get("waitForTexts", []))
         self.assertIn("Immutable release artifacts", captures["W04I2"].get("waitForTexts", []))
         self.assertIn(
-            "Governed report run unavailable",
+            "Report run unavailable",
             captures["W04I2"].get("waitForAbsentTexts", []),
         )
 
@@ -607,7 +607,7 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertEqual("/data/import", captures["W06I"].get("path"))
         self.assertEqual("/data/operations", captures["W06J"].get("path"))
         self.assertEqual("/data/assurance", captures["W06K"].get("path"))
-        self.assertIn("Governed file import", captures["W06I"].get("waitForTexts", []))
+        self.assertIn("File import", captures["W06I"].get("waitForTexts", []))
         self.assertIn("Selected Backfill", captures["W06C"].get("waitForTexts", []))
         self.assertEqual("/settings/accounting-systems", captures["W07B"].get("path"))
         self.assertEqual("/settings/providers/alpaca/setup", captures["W07C"].get("path"))
