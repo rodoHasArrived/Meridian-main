@@ -253,9 +253,11 @@ public sealed class ConfigStore
             }
 
             JsonObject root;
+            string? previousJson = null;
             if (File.Exists(ConfigPath))
             {
                 var json = await File.ReadAllTextAsync(ConfigPath, ct).ConfigureAwait(false);
+                previousJson = json;
                 root = ParseConfigRoot(json);
             }
             else
@@ -278,6 +280,7 @@ public sealed class ConfigStore
             using var candidate = JsonDocument.Parse(output);
             ProviderConfigurationCredentialGuard.Validate(candidate.RootElement, _ownershipPolicy);
             await AtomicFileWriter.WriteAsync(ConfigPath, output, ct).ConfigureAwait(false);
+            RecordDocumentChange(previousJson, output);
         }
         catch (ProviderConfigurationCredentialException)
         {
@@ -291,6 +294,33 @@ public sealed class ConfigStore
         {
             throw new InvalidOperationException($"Failed to save feature capability overrides: {ex.Message}", ex);
         }
+    }
+
+    /// <summary>
+    /// Change tracking for writers that edit the raw JSON document instead of an <see cref="AppConfig"/>.
+    /// The write has already succeeded, so a document the typed reader cannot project is logged and
+    /// skipped: tracking must never turn a durable save into a reported failure.
+    /// </summary>
+    private void RecordDocumentChange(string? previousJson, string nextJson)
+    {
+        try
+        {
+            var previous = string.IsNullOrWhiteSpace(previousJson)
+                ? CreateDefaultConfig(ConfigPath)
+                : ProjectDocument(previousJson);
+            ConfigurationChangeTracker.ForPath(ConfigPath).Record(previous, ProjectDocument(nextJson));
+        }
+        catch (Exception ex) when (ex is JsonException or InvalidDataException or NotSupportedException)
+        {
+            Log.Warning(ex, "Saved configuration {ConfigPath} could not be projected for change tracking", ConfigPath);
+        }
+
+        AppConfig ProjectDocument(string json)
+            => NormalizeLoadedConfig(
+                ConfigPath,
+                json,
+                JsonSerializer.Deserialize<AppConfig>(json, AppConfigJsonOptions.Read)
+                    ?? throw new InvalidDataException("Configuration document is JSON null."));
     }
 
     public string? TryLoadStatusJson()
