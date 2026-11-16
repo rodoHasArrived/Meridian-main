@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationsContinuityWorkflowRowModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.OperationsContinuityWorkflowRowModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:8](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L8).
+
+```csharp
+public sealed record OperationsContinuityWorkflowRowModel(Guid WorkflowId, string Label, string StatusText, string GatesText, string UpdatedText, WorkstationReadinessTone ReadinessTone, string Tone, long Version = 0, Guid FundAccountId = default, string PeriodId = "", Guid? LedgerBookId = null);
+```
+
 ## OperationsRecordReleaseMapper
 
 Qualified name: <code>Meridian.Wpf.Workstation.Models.OperationsRecordReleaseMapper</code>. Kind: `class`.
@@ -774,22 +784,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public string QualitySummary { get; protected set; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/DataQualityViewModelBase.cs:10](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/DataQualityViewModelBase.cs#L10) |  |
-
-## DetailWorkspaceViewModelBase (generic arity 1)
-
-Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.DetailWorkspaceViewModelBase</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/ViewModels/Base/DetailWorkspaceViewModelBase.cs:6](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/DetailWorkspaceViewModelBase.cs#L6).
-
-Adds selected-item and inspector visibility state to workspace view models.
-
-```csharp
-public abstract class DetailWorkspaceViewModelBase<TItem>: WorkspaceViewModelBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public TItem? SelectedItem { get; set; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/DetailWorkspaceViewModelBase.cs:11](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/DetailWorkspaceViewModelBase.cs#L11) |  |
-| <code>public bool IsInspectorVisible { get; set; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/DetailWorkspaceViewModelBase.cs:17](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/DetailWorkspaceViewModelBase.cs#L17) |  |

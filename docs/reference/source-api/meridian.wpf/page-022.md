@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DetailWorkspaceViewModelBase (generic arity 1)
+
+Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.DetailWorkspaceViewModelBase</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/ViewModels/Base/DetailWorkspaceViewModelBase.cs:6](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/DetailWorkspaceViewModelBase.cs#L6).
+
+Adds selected-item and inspector visibility state to workspace view models.
+
+```csharp
+public abstract class DetailWorkspaceViewModelBase<TItem>: WorkspaceViewModelBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TItem? SelectedItem { get; set; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/DetailWorkspaceViewModelBase.cs:11](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/DetailWorkspaceViewModelBase.cs#L11) |  |
+| <code>public bool IsInspectorVisible { get; set; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/DetailWorkspaceViewModelBase.cs:17](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/DetailWorkspaceViewModelBase.cs#L17) |  |
+
 ## DiagnosticsViewModel
 
 Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.DiagnosticsViewModel</code>. Kind: `class`.

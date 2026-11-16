@@ -1125,6 +1125,11 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         DateTimeOffset recordedAtUtc)
     {
         var treasuryContext = NormalizeTreasuryContext(draft.TreasuryContext, draft.AccountingDate);
+        var treasuryFundEventType = NormalizeOptional(treasuryContext?.FundEventType);
+        // The mirror label still classifies the posting source below, but it is not written as a treasury fund
+        // event: the ledger requires a fund event identity and capital account with one, and a counterpart has neither.
+        if (IsIntercompanyMirrorLabelOnly(draft.IntercompanyProposalId is not null, treasuryContext))
+            treasuryContext = treasuryContext! with { FundEventType = null };
         var sourceJournalEntryId = draft.ReversalOfJournalEntryId ?? draft.RebookedFromJournalEntryId;
         var idempotencyKey = NormalizeOptional(treasuryContext?.IdempotencyKey)
                              ?? $"manual-je:{ledgerBookId:N}:{draft.JournalEntryId:N}";
@@ -1137,7 +1142,6 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             draft.JournalEntryId.ToString("D"),
             idempotencyKey);
 
-        var treasuryFundEventType = NormalizeOptional(treasuryContext?.FundEventType);
         var sourceEventType = treasuryFundEventType is not null
             ? $"ManualJournalEntry:{treasuryFundEventType}"
             : null;

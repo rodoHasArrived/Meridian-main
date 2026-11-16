@@ -2642,11 +2642,11 @@ W12-FINRPT-001: planned; health green; evidence planned_evidence. Bind existing 
 | Priority | high |
 | Owner lane | Accounting and Ledger |
 | Evidence posture | in_progress |
-| Last reviewed | 2026-11-14 |
+| Last reviewed | 2026-11-16 |
 
 ### Current Summary
 
-W12-ICACCRUAL-001: in_progress; health yellow; evidence in_progress. Fixed-rate simple interest is calculated from approved structured terms and retained as a reviewed source draft whose counterpart arrives through the existing proposal pipeline; operator screens, fees, floating rates and service-backed evidence remain open.
+W12-ICACCRUAL-001: in_progress; health yellow; evidence in_progress. Fixed-rate simple interest from approved terms becomes a reviewed source draft with a proposed counterpart. Browser and WPF request surfaces and a PostgreSQL post-and-deliver run were recorded 2026-11-16, pending owner acceptance and a Windows run of the WPF control; fees and floating rates stay open.
 
 ### Status References
 
@@ -2658,6 +2658,11 @@ W12-ICACCRUAL-001: in_progress; health yellow; evidence in_progress. Fixed-rate 
 - Evidence: [src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs](../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs)
 - Evidence: [tests/Meridian.FundStructure.Tests/IntercompanyAccrualPreviewServiceTests.cs](../../../tests/Meridian.FundStructure.Tests/IntercompanyAccrualPreviewServiceTests.cs)
 - Evidence: [tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilderTests.cs](../../../tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilderTests.cs)
+- Evidence: [src/Meridian.Ui/dashboard/src/screens/accounting-screen.entity-interest-accrual.tsx](../../../src/Meridian.Ui/dashboard/src/screens/accounting-screen.entity-interest-accrual.tsx)
+- Evidence: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs](../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs)
+- Evidence: [src/Meridian.Wpf/Views/IntercompanyInterestAccrualControl.xaml](../../../src/Meridian.Wpf/Views/IntercompanyInterestAccrualControl.xaml)
+- Evidence: [tests/Meridian.Ui.Tests/Services/IntercompanyInterestAccrualWorkspaceTests.cs](../../../tests/Meridian.Ui.Tests/Services/IntercompanyInterestAccrualWorkspaceTests.cs)
+- Evidence: [tests/Meridian.Tests/Storage/IntercompanyAccrualPostAndDeliverPostgresTests.cs](../../../tests/Meridian.Tests/Storage/IntercompanyAccrualPostAndDeliverPostgresTests.cs)
 
 
 ### Exit Criteria

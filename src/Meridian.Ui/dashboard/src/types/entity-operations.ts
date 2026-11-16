@@ -129,3 +129,31 @@ export interface IntercompanyAccountBinding {
   accountPath: string; accountName: string; accountType: string; effectiveFrom: string; effectiveTo: string | null;
   historicalNames: string[]; recordedBy: string; recordedAt: string; reason: string; isArchived: boolean;
 }
+
+/** Operator selection only. Rates, day counts, principal and amounts are always server-resolved. */
+export interface IntercompanyAccrualRequest {
+  sourceBookId: string; interestArrangementId: string; principalArrangementId: string;
+  /** Half-open window: accrualFrom is the first accrued day, accrualTo the first day not accrued. */
+  accrualFrom: string; accrualTo: string;
+}
+/** Exact server decimals arrive as text and are shown without numeric conversion. */
+export interface IntercompanyAccrualSlice {
+  sequence: number; from: string; to: string; accountingArrangementRevisionId: string; agreementVersion: number;
+  agreementPayloadHash: string; schedulePeriodSequence: number; principal: string; annualRate: string; dayCount: string;
+  yearFraction: string; unroundedAmount: string; principalEvidenceReference: string;
+}
+export interface IntercompanyAccrualComputation {
+  status: "Ready" | "Unavailable" | string; ruleVersion: string; agreementId?: string | null; currency?: string | null;
+  accrualFrom: string; accrualTo: string; amount?: string | null; unroundedAmount?: string | null; kernelVersion: string;
+  calendars: { calendarId: string; contentHash: string }[]; slices: IntercompanyAccrualSlice[]; diagnostics: string[];
+}
+/** Preview and draft share one shape so the operator reviews exactly what would be retained. */
+export interface IntercompanyAccrualProposal {
+  computation: IntercompanyAccrualComputation; diagnostics: string[];
+  evidence?: { postingDate: string; transactionId: string; functionalCurrency: string; functionalAmount: string;
+    postingAgreementVersion: number; postingArrangementRevisionId: string;
+    principal: { openingPrincipal: string; openingJournalCount: number; movements: { journalEntryId: string; effectiveDate: string; signedAmount: string }[] };
+    fx?: import("@/types").ManualJournalEntryDraft["intercompanyFx"] } | null;
+  evidenceDigest?: string | null;
+  draft?: import("@/types").ManualJournalEntryDraft | null;
+}

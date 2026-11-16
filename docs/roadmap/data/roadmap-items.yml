@@ -3390,7 +3390,7 @@ items:
     health: yellow
     priority: high
     evidence_posture: in_progress
-    status_note: Fixed-rate simple interest is calculated from approved structured terms and retained as a reviewed source draft whose counterpart arrives through the existing proposal pipeline; operator screens, fees, floating rates and service-backed evidence remain open.
+    status_note: Fixed-rate simple interest from approved terms becomes a reviewed source draft with a proposed counterpart. Browser and WPF request surfaces and a PostgreSQL post-and-deliver run were recorded 2026-11-16, pending owner acceptance and a Windows run of the WPF control; fees and floating rates stay open.
     decision_ids:
       - DEC-IC-ACCRUAL-001
     pr_references: []
@@ -3421,4 +3421,14 @@ items:
         path: tests/Meridian.FundStructure.Tests/IntercompanyAccrualPreviewServiceTests.cs
       - type: test
         path: tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilderTests.cs
-    last_reviewed: 2026-11-14
+      - type: source
+        path: src/Meridian.Ui/dashboard/src/screens/accounting-screen.entity-interest-accrual.tsx
+      - type: source
+        path: src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs
+      - type: source
+        path: src/Meridian.Wpf/Views/IntercompanyInterestAccrualControl.xaml
+      - type: test
+        path: tests/Meridian.Ui.Tests/Services/IntercompanyInterestAccrualWorkspaceTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Storage/IntercompanyAccrualPostAndDeliverPostgresTests.cs
+    last_reviewed: 2026-11-16

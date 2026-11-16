@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ActivityLogGridControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Controls.ActivityLogGridControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Controls/ActivityLogGridControl.xaml.cs:11](../../../../src/Meridian.Wpf/Workstation/Controls/ActivityLogGridControl.xaml.cs#L11).
+
+Displays audit timeline entries and exposes an empty-state flag.
+
+```csharp
+public partial class ActivityLogGridControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly DependencyProperty TimelineProperty = DependencyProperty.Register(nameof(Timeline), typeof(AuditTimelineModel), typeof(ActivityLogGridControl), new PropertyMetadata(null, OnTimelineChanged));</code> | [src/Meridian.Wpf/Workstation/Controls/ActivityLogGridControl.xaml.cs:13](../../../../src/Meridian.Wpf/Workstation/Controls/ActivityLogGridControl.xaml.cs#L13) |  |
+| <code>public static readonly DependencyProperty IsTimelineEmptyProperty = DependencyProperty.Register(nameof(IsTimelineEmpty), typeof(bool), typeof(ActivityLogGridControl), new PropertyMetadata(true));</code> | [src/Meridian.Wpf/Workstation/Controls/ActivityLogGridControl.xaml.cs:20](../../../../src/Meridian.Wpf/Workstation/Controls/ActivityLogGridControl.xaml.cs#L20) |  |
+| <code>public ActivityLogGridControl();</code> | [src/Meridian.Wpf/Workstation/Controls/ActivityLogGridControl.xaml.cs:29](../../../../src/Meridian.Wpf/Workstation/Controls/ActivityLogGridControl.xaml.cs#L29) |  |
+| <code>public AuditTimelineModel? Timeline { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/ActivityLogGridControl.xaml.cs:34](../../../../src/Meridian.Wpf/Workstation/Controls/ActivityLogGridControl.xaml.cs#L34) |  |
+| <code>public bool IsTimelineEmpty { get; private set; }</code> | [src/Meridian.Wpf/Workstation/Controls/ActivityLogGridControl.xaml.cs:40](../../../../src/Meridian.Wpf/Workstation/Controls/ActivityLogGridControl.xaml.cs#L40) |  |
+
 ## DenseDataGridControl
 
 Qualified name: <code>Meridian.Wpf.Workstation.Controls.DenseDataGridControl</code>. Kind: `class`.
@@ -848,14 +870,4 @@ Source: [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationMod
 
 ```csharp
 public sealed record OperationsContinuityQueueRollupModel(string StatusLabel, int BlockedCount, int ReviewCount, WorkstationReadinessTone ReadinessTone, string Tone);
-```
-
-## OperationsContinuityWorkflowRowModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.OperationsContinuityWorkflowRowModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:8](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L8).
-
-```csharp
-public sealed record OperationsContinuityWorkflowRowModel(Guid WorkflowId, string Label, string StatusText, string GatesText, string UpdatedText, WorkstationReadinessTone ReadinessTone, string Tone, long Version = 0, Guid FundAccountId = default, string PeriodId = "", Guid? LedgerBookId = null);
 ```

@@ -61,6 +61,13 @@ reused for an identical retry; the server decides permission, target-book author
 amount. Responses for another book, proposal, link target or repricing request are refused, a
 break outage reads as unknown rather than empty, and amounts render from exact decimals.
 
+`IntercompanyInterestAccrualWorkspace` is the desktop state for requesting a governed loan-interest
+accrual over `/api/ledger/intercompany/accruals/preview` and `/drafts`, the routes the browser uses.
+It sends the source book, the two accounting profiles and the half-open window only; the rate,
+principal and amount are the server's. A draft is bound to the evidence digest of the preview that
+was shown, any change to the selection withdraws that preview, and a response for another window,
+book or computation is refused. It never approves or posts.
+
 `WorkstationOnboardingApiClient` and `OnboardingShadowWorkspace` bring shadow-mode onboarding
 (W11-SHADOW-001) to the desktop over the browser's onboarding routes. The panel covers:
 

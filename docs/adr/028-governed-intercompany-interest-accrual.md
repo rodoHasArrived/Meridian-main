@@ -111,12 +111,19 @@ result through the existing review and proposal pipeline. It never posts on its 
 | Tests | `tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilderTests.cs` | Principal, overlap, draft, guard, counterpart mirror and profile rule |
 | Tests | `tests/Meridian.Tests/Ui/IntercompanyAccrualDraftServiceTests.cs` | Service resolution and refusals |
 | Tests | `tests/Meridian.Tests/Ui/AccountingConfigurationServiceTests.IntercompanyAccrual.cs` | Evidence retention through the journal workbench |
+| Browser | `src/Meridian.Ui/dashboard/src/screens/accounting-screen.entity-interest-accrual.tsx` | "Accrue interest" on an approved `LoanInterest` accounting profile |
+| Desktop | `src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs`, `src/Meridian.Wpf/Views/IntercompanyInterestAccrualControl.xaml` | Interest accrual tab over the same two routes |
+| Tests | `tests/Meridian.Tests/Storage/IntercompanyAccrualPostAndDeliverPostgresTests.cs` | PostgreSQL post at source, deliver, post at destination |
 
 The calculator, template, source draft, evidence guard, endpoints and the tests above are
-implemented. Browser and WPF screens for requesting an accrual are not: the browser can select the
-`LoanInterest` template when authoring a profile, and the accrual itself is reachable through the
-shared API only. No PostgreSQL-backed or end-to-end post-and-deliver run is recorded for this
-increment. This decision does not certify a release or move a roadmap row to done.
+implemented. Since 2026-11-16 both workstations can request an accrual over the same preview and
+draft routes: the browser from an approved `LoanInterest` accounting profile, and WPF from an
+Interest accrual tab. Each sends the operator's selection only, shows the server's computation, and
+drafts with the evidence digest of the preview it showed. A PostgreSQL-backed run posts the source
+accrual, delivers the counterpart proposal and posts the destination side; the legal registry,
+profile history, entity lifecycle and journal drafts in that run are synthetic stand-ins. The WPF
+control is compiled but its native interaction is proven only on the Windows runner. This decision
+does not certify a release or move a roadmap row to done.
 
 ## Rationale
 
