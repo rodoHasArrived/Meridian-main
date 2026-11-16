@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Storage.Services.OrphanReport</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:960](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L960).
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:971](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L971).
 
 ```csharp
 public sealed record OrphanReport(DateTime GeneratedAt, IReadOnlyList<OrphanedFile> OrphanedFiles, long TotalOrphanedBytes);
