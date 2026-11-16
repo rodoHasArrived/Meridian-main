@@ -438,7 +438,7 @@ public sealed record DateRange(DateTimeOffset Start, DateTimeOffset End);
 
 Qualified name: <code>Meridian.Storage.Services.DefragOptions</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:932](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L932).
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:943](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L943).
 
 ```csharp
 public sealed record DefragOptions(long MinFileSizeBytes = 1_048_576, int MaxFilesPerMerge = 100, bool PreserveOriginals = false, System.IO.Compression.CompressionLevel TargetCompression = System.IO.Compression.CompressionLevel.Optimal, TimeSpan MaxFileAge = default, bool DryRun = false)
@@ -448,14 +448,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public TimeSpan MaxFileAge { get; init; } = MaxFileAge == default? TimeSpan.FromDays(1) : MaxFileAge;</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:941](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L941) |  |
-| <code>public DefragOptions() : this(1_048_576);</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:943](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L943) |  |
+| <code>public TimeSpan MaxFileAge { get; init; } = MaxFileAge == default? TimeSpan.FromDays(1) : MaxFileAge;</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:952](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L952) |  |
+| <code>public DefragOptions() : this(1_048_576);</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:954](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L954) |  |
 
 ## DefragResult
 
 Qualified name: <code>Meridian.Storage.Services.DefragResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:946](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L946).
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:957](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L957).
 
 ```csharp
 public sealed record DefragResult(int FilesProcessed, int FilesCreated, long BytesBefore, long BytesAfter, double CompressionImprovement, TimeSpan Duration, int MergeGroupsAttempted = 0, int MergeGroupsSucceeded = 0, int FilesDeleted = 0, IReadOnlyList<string>? Errors = null);
@@ -644,7 +644,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Services.FileMigrationResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:611](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L611).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:633](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L633).
 
 ```csharp
 public sealed record FileMigrationResult(string SourcePath, string TargetPath, long OriginalSize, long NewSize);
@@ -793,7 +793,7 @@ public sealed record FileSearchResult(string Path, string Symbol, string EventTy
 
 Qualified name: <code>Meridian.Storage.Services.HealthCheckOptions</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:824](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L824).
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:835](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L835).
 
 ```csharp
 public sealed record HealthCheckOptions(bool ValidateChecksums = true, bool CheckSequenceContinuity = true, bool ValidateSchemas = true, bool CheckFilePermissions = true, bool IdentifyCorruption = true, bool CheckManifestConsistency = false, string[]? Paths = null, int ParallelChecks = 4);
@@ -803,7 +803,7 @@ public sealed record HealthCheckOptions(bool ValidateChecksums = true, bool Chec
 
 Qualified name: <code>Meridian.Storage.Services.HealthIssue</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:870](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L870).
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:881](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L881).
 
 ```csharp
 public sealed record HealthIssue(IssueSeverity Severity, IssueType Type, string Path, string? ExpectedChecksum = null, string? ActualChecksum = null, string? Details = null, string RecommendedAction = "", bool AutoRepairable = false);
@@ -813,7 +813,7 @@ public sealed record HealthIssue(IssueSeverity Severity, IssueType Type, string 
 
 Qualified name: <code>Meridian.Storage.Services.HealthReport</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:835](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L835).
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:846](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L846).
 
 ```csharp
 public sealed record HealthReport(string ReportId, DateTime GeneratedAt, long ScanDurationMs, HealthSummary Summary, IReadOnlyList<HealthIssue> Issues, HealthStatistics Statistics);

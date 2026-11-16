@@ -1071,11 +1071,11 @@ Declared public members:
 | <code>public Task ConnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:162](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L162) |  |
 | <code>public Task DisconnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:170](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L170) |  |
 | <code>public async Task&lt;ExecutionReport&gt; SubmitOrderAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:178](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L178) |  |
-| <code>public Task&lt;ExecutionReport&gt; CancelOrderAsync(string orderId, CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:277](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L277) |  |
-| <code>public Task&lt;ExecutionReport&gt; ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:307](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L307) |  |
-| <code>public async IAsyncEnumerable&lt;ExecutionReport&gt; StreamExecutionReportsAsync([EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:369](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L369) |  |
-| <code>public void EvaluateSymbol(string symbol);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:382](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L382) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/PaperTradingGateway.cs:590](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L590) |  |
+| <code>public Task&lt;ExecutionReport&gt; CancelOrderAsync(string orderId, CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:298](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L298) |  |
+| <code>public Task&lt;ExecutionReport&gt; ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:328](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L328) |  |
+| <code>public async IAsyncEnumerable&lt;ExecutionReport&gt; StreamExecutionReportsAsync([EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:390](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L390) |  |
+| <code>public void EvaluateSymbol(string symbol);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:403](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L403) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/PaperTradingGateway.cs:611](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L611) |  |
 
 ## SecurityMasterGate
 
