@@ -203,7 +203,9 @@ the sequential test default; set
 `MERIDIAN_CI_TEST_MAX_PARALLEL=2` only when local capacity permits. Each shard uses isolated
 temporary files and retains its logs, TRX results, and duration under
 `artifacts/test-results/dotnet/`; temporary fixture files are removed after the shard exits.
-The project roster, catch-all shard, filters, and failure aggregation remain the same.
+The project roster, catch-all shard, and failure aggregation remain the same. The serial
+`WorkstationEndpointsTests` class runs as three disjoint process shards selected by method-name
+prefix; the base shard keeps every method the other two do not name.
 Golden Path runs browser, WPF, and pilot harness validation concurrently, then requires
 all three successes in the stable `Pilot Acceptance Evidence` gate. See the
 [workflow guide](../../.github/workflows/README.md) for the execution and evidence details.

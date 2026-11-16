@@ -52,7 +52,10 @@ class RunDotnetCiTestsTests(unittest.TestCase):
                 return [MODULE.TestResult(p.name, p.path, 0, []) for p in items]
         with patch.object(MODULE, "ThreadPoolExecutor", Executor):
             results = MODULE.run_tests(projects, configuration="Release", test_filter="", results_dir=Path("unused"), dry_run=True, max_parallel=2)
-        self.assertEqual(submitted[:3], ["core-ui-workstation-endpoints", "core-execution-strategy", "core-ui-other"])
+        self.assertEqual(submitted[:4], [
+            "core-ui-other", "core-ui-workstation-endpoints-map",
+            "core-ui-workstation-endpoints", "core-ui-workstation-endpoints-a-c",
+        ])
         self.assertCountEqual(submitted, [p.name for p in projects])
         self.assertEqual([r.name for r in results], [p.name for p in projects])
 
@@ -63,6 +66,8 @@ class RunDotnetCiTestsTests(unittest.TestCase):
             [project.name for project in projects],
             [
                 "core-application",
+                "core-ui-workstation-endpoints-map",
+                "core-ui-workstation-endpoints-a-c",
                 "core-ui-workstation-endpoints",
                 "core-ui-other",
                 "core-infrastructure",
@@ -91,6 +96,51 @@ class RunDotnetCiTestsTests(unittest.TestCase):
         self.assertTrue(projects[0].filter_expression)
         self.assertTrue(projects[-1].filter_expression, "core-remainder must carry the catch-all filter")
 
+    def test_duration_hints_name_only_default_shards(self):
+        names = {project.name for project in MODULE.parse_project_entries([])}
+
+        self.assertEqual(set(MODULE.SHARD_DURATION_HINTS) - names, set(), "a renamed shard must take its hint with it")
+
+    def test_workstation_endpoint_shards_run_each_test_method_exactly_once(self):
+        """Evaluate the generated filters the way VSTest does: '~' is contains, '&' binds before '|'."""
+        prefix = f"FullyQualifiedName~{MODULE.WORKSTATION_ENDPOINTS_CLASS}"
+        shards = [
+            project for project in MODULE.parse_project_entries([])
+            if project.path == MODULE.CORE_TEST_PROJECT_PATH and project.filter_expression.lstrip("(").startswith(prefix)
+        ]
+        self.assertEqual(
+            [shard.name for shard in shards],
+            [*(name for name, _ in MODULE.WORKSTATION_ENDPOINTS_SPLITS), "core-ui-workstation-endpoints"],
+        )
+
+        def matches(filter_expression, fully_qualified_name):
+            python = re.sub(
+                r"FullyQualifiedName(!?)~([A-Za-z0-9_.]+)",
+                lambda term: f"({term.group(2)!r} {'not in' if term.group(1) else 'in'} name)",
+                filter_expression,
+            ).replace("&", " and ").replace("|", " or ")
+            return eval(python, {"__builtins__": {}}, {"name": fully_qualified_name})
+
+        methods = [
+            "MapWorkstationEndpoints_FeatureCapabilities_ShouldExposeDescriptors",
+            "MapWorkstationEndpoints_A", "AccountOversight_ClosePriceHistory", "BulkCasework_Assigns",
+            "ClosePreparation_Plans", "ManualJournalLifecycle_Posts", "MapOther_Route", "OpenLotBackfill_Runs",
+            "Zeta_NewlyAddedTest", "a_lowercase_name", "_LeadingUnderscore",
+        ]
+        owners = {
+            method: [s.name for s in shards if matches(s.filter_expression, f"{MODULE.WORKSTATION_ENDPOINTS_CLASS}.{method}")]
+            for method in methods
+        }
+        self.assertEqual({method: len(names) for method, names in owners.items()}, dict.fromkeys(methods, 1))
+        self.assertEqual(owners["MapWorkstationEndpoints_A"], ["core-ui-workstation-endpoints-map"])
+        self.assertEqual(owners["AccountOversight_ClosePriceHistory"], ["core-ui-workstation-endpoints-a-c"])
+        self.assertEqual(owners["Zeta_NewlyAddedTest"], ["core-ui-workstation-endpoints"])
+        # Other Ui classes stay in core-ui-other, whose exclusion is the whole class prefix.
+        other = next(p for p in MODULE.parse_project_entries([]) if p.name == "core-ui-other")
+        self.assertFalse(any(matches(s.filter_expression, "Meridian.Tests.Ui.StrategyDesignerWorkstationEndpointsTests.A") for s in shards))
+        self.assertTrue(matches(other.filter_expression, "Meridian.Tests.Ui.StrategyDesignerWorkstationEndpointsTests.A"))
+        self.assertFalse(matches(other.filter_expression, f"{MODULE.WORKSTATION_ENDPOINTS_CLASS}.Zeta_NewlyAddedTest"))
+
     def test_core_reporting_shard_includes_all_reporting_governance_tests(self):
         projects = MODULE.parse_project_entries([])
         reporting = next(project for project in projects if project.name == "core-reporting")
@@ -108,6 +158,9 @@ class RunDotnetCiTestsTests(unittest.TestCase):
         self.assertNotIn("FullyQualifiedName!~FullyQualifiedName", remainder)
         # Prefixes from non-core projects (paths other than Meridian.Tests) are irrelevant.
         self.assertNotIn("Meridian.Ui.Tests", remainder)
+        # A fragment inside an excluded namespace is already excluded by the shorter term.
+        self.assertIn("FullyQualifiedName!~Meridian.Tests.Ui&", remainder)
+        self.assertNotIn("WorkstationEndpointsTests", remainder)
 
     def test_verify_test_project_coverage_flags_unwired_projects(self):
         import tempfile

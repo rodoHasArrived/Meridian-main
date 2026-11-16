@@ -444,6 +444,13 @@ Dispatch **CI Concurrency Benchmark** at a fixed commit with `subject=dotnet`, `
 Decision artifacts include discovered-test digests, counts and test-only wall time. Failed or
 incomplete samples reject promotion. Vitest retains two workers and process recycling.
 
+The .NET candidate depends on roster shape as well as process count. A lane cannot finish
+before its longest shard, and `WorkstationEndpointsTests` ran as one serial process for about
+800 of the 867 test seconds in main run 43964213788, so four processes could not have met the
+15% rule there. The class now runs as three disjoint process shards (see the
+[workflow README](../../.github/workflows/README.md)); the hosted default stays at two until a
+paired benchmark on a commit that contains the split is reviewed.
+
 For local diagnostics, `benchmark-ci.py --local` records the actual checkout, local runner
 identity, worktree state and fresh per-variant evidence. Local measurements cannot authorize
 hosted-default promotion. Keep local failures and missing discovery/timing in the decision
