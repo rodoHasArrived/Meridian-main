@@ -105,6 +105,15 @@
                                    Margin="0,3,0,0"
                                    Visibility="{Binding HasError, Converter={StaticResource BoolToVisibilityConverter}}"
                                    AutomationProperties.AutomationId="EvidenceWorkbenchErrorText" />
+                        <Button Content="Retry"
+                                Command="{Binding RefreshCommand}"
+                                ToolTip="Reload subjects, packet, request lists, and retained documents from the shared workstation API."
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                HorizontalAlignment="Right"
+                                Margin="0,6,0,0"
+                                Visibility="{Binding HasError, Converter={StaticResource BoolToVisibilityConverter}}"
+                                AutomationProperties.AutomationId="EvidenceWorkbenchRetryButton"
+                                AutomationProperties.Name="Retry loading evidence workbench" />
                     </StackPanel>
                 </Grid>
             </Border>

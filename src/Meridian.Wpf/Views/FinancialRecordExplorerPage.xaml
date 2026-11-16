@@ -69,8 +69,6 @@
                                 MinWidth="320"
                                 VerticalAlignment="Center"
                                 AutomationProperties.AutomationId="FinancialRecordExplorerActionPosture">
-                        <WrapPanel HorizontalAlignment="Right">
-                        </WrapPanel>
                         <TextBlock Text="{Binding EmptyStateTitle}"
                                    FontSize="12"
                                    FontWeight="SemiBold"

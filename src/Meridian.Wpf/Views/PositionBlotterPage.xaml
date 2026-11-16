@@ -115,9 +115,6 @@
                             Style="{StaticResource DangerButtonStyle}"
                             ToolTip="Close or flatten selected positions"
                             Margin="0,0,8,0" />
-                    <Button Content="Refresh"
-                            Command="{Binding RefreshCommand}"
-                            Style="{StaticResource GhostButtonStyle}" />
                 </StackPanel>
             </Grid>
         </Border>
