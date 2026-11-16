@@ -2,7 +2,7 @@
 
 **Status:** automation-owned-support
 **Owner:** core-team
-**Reviewed:** 2026-09-23
+**Reviewed:** 2026-11-15
 
 This folder holds generated repository reports, compatibility entry points, and retained evidence
 contracts. Delivery status comes from the [roadmap registry](../roadmap/README.md); release readiness
@@ -45,8 +45,9 @@ rerun it from the repository root. Paths in the command column are relative to t
 | [Workflow manifest](workflow-manifest.json), [drift report](workflow-drift-report.md), and [validation summary](workflow-validation-summary.json) | `python build/scripts/docs/generate-workflow-manifest.py`; workflow declarations and file inventory. |
 
 Several of these reports are gitignored local outputs (see the `/docs/status/` entries in
-`.gitignore`), including program state, automation summary, AI inventory and handoff reports,
-prompt routing, the API contract, paper replay, evidence continuity and governance dashboards,
+`.gitignore`), including program state, the TODO scan, example validation, automation summary,
+AI inventory and handoff reports, prompt routing, the API contract, paper replay, evidence
+continuity and governance dashboards,
 the WPF screen tracker, the workflow drift report and validation summary. Their links resolve
 only after the owning command has run in your checkout. A fresh clone shows them as missing,
 which `repair-links.py` reports as broken links.
