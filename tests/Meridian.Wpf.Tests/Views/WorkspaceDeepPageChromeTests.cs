@@ -142,7 +142,8 @@ public sealed class WorkspaceDeepPageChromeTests
         var xaml = File.ReadAllText(absolutePath);
 
         xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
-        xaml.Should().Contain("ProviderHealthInlineRefreshButton");
+        xaml.Should().NotContain("ProviderHealthInlineRefreshButton", "the shell Refresh reloads provider health in place");
+        xaml.Should().NotContain("Refresh_Click");
         xaml.Should().Contain("ProviderManagementCenter");
         xaml.Should().Contain("DenseDataGridControl");
         xaml.Should().Contain("InspectorPanelControl");

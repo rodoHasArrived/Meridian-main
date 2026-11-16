@@ -90,6 +90,123 @@ public sealed class PageRefreshResolverTests
     }
 
     [Fact]
+    public void Resolve_Frame_UnwrapsToTheHostedPage()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var command = new CountingCommand();
+            var frame = new Frame { Content = new Page { DataContext = new ConventionalTarget(command) } };
+
+            PageRefreshResolver.Resolve(frame).Should().BeSameAs(command);
+            PageRefreshResolver.Resolve(new Frame()).Should().BeNull();
+        });
+    }
+
+    [Fact]
+    public void Resolve_OptedOutViewModel_IsNotMatchedByConvention()
+    {
+        var command = new CountingCommand();
+
+        PageRefreshResolver.Resolve(new OptedOutTarget(command)).Should().BeNull();
+        PageRefreshResolver.Resolve(new ContentHost(new OptedOutTarget(command))).Should().BeNull();
+        PageRefreshResolver.TryRefreshInPlace(new OptedOutTarget(command))
+            .Should().BeFalse("an opted-out page falls back to re-navigation");
+        command.ExecuteCount.Should().Be(0);
+    }
+
+    [Fact]
+    public void Resolve_OptedOutDataContext_IsNotMatchedByConvention()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var command = new CountingCommand();
+
+            PageRefreshResolver.Resolve(new Page { DataContext = new OptedOutTarget(command) }).Should().BeNull();
+        });
+    }
+
+    [Fact]
+    public void Resolve_OptedOutTypeWithExplicitInterface_StillResolvesTheInterfaceCommand()
+    {
+        var command = new CountingCommand();
+
+        PageRefreshResolver.Resolve(new OptedOutExplicitTarget(command)).Should().BeSameAs(command);
+    }
+
+    [Fact]
+    public void RefreshAllInPlace_ExecutesEveryContentThatExposesAnExecutableCommand()
+    {
+        var first = new CountingCommand();
+        var second = new CountingCommand();
+
+        var executed = PageRefreshResolver.RefreshAllInPlace(
+        [
+            new ConventionalTarget(first),
+            new ContentHost(new InterfaceTarget(second))
+        ]);
+
+        executed.Should().Be(2);
+        first.ExecuteCount.Should().Be(1);
+        second.ExecuteCount.Should().Be(1);
+    }
+
+    [Fact]
+    public void RefreshAllInPlace_SkipsContentWithoutACommand()
+    {
+        var command = new CountingCommand();
+
+        var executed = PageRefreshResolver.RefreshAllInPlace(
+        [
+            new object(),
+            null,
+            new OptedOutTarget(new CountingCommand()),
+            new ConventionalTarget(command)
+        ]);
+
+        executed.Should().Be(1);
+        command.ExecuteCount.Should().Be(1);
+    }
+
+    [Fact]
+    public void RefreshAllInPlace_DoesNotExecuteABusyCommand()
+    {
+        var busy = new CountingCommand(canExecute: false);
+        var ready = new CountingCommand();
+
+        var executed = PageRefreshResolver.RefreshAllInPlace(
+        [
+            new ConventionalTarget(busy),
+            new ConventionalTarget(ready)
+        ]);
+
+        executed.Should().Be(1);
+        busy.ExecuteCount.Should().Be(0);
+        ready.ExecuteCount.Should().Be(1);
+    }
+
+    [Fact]
+    public void RefreshAllInPlace_ExecutesACommandSharedByTwoPanesOnce()
+    {
+        var shared = new CountingCommand();
+
+        var executed = PageRefreshResolver.RefreshAllInPlace(
+        [
+            new ConventionalTarget(shared),
+            new ConventionalTarget(shared)
+        ]);
+
+        executed.Should().Be(1);
+        shared.ExecuteCount.Should().Be(1);
+    }
+
+    [Fact]
+    public void RefreshAllInPlace_NullOrEmpty_DoesNothing()
+    {
+        PageRefreshResolver.RefreshAllInPlace(null).Should().Be(0);
+        PageRefreshResolver.RefreshAllInPlace([]).Should().Be(0);
+    }
+
+    [Fact]
     public void TryRefreshInPlace_ExecutesCommandOnce_AndReportsHandled()
     {
         var command = new CountingCommand();
@@ -152,6 +269,28 @@ public sealed class PageRefreshResolverTests
         }
 
         public CountingCommand RefreshCommand { get; }
+    }
+
+    private sealed class OptedOutTarget : IPageRefreshOptOut
+    {
+        public OptedOutTarget(CountingCommand command)
+        {
+            RefreshCommand = command;
+        }
+
+        public CountingCommand RefreshCommand { get; }
+    }
+
+    private sealed class OptedOutExplicitTarget : IPageRefreshOptOut, IPageRefreshTarget
+    {
+        private readonly ICommand _command;
+
+        public OptedOutExplicitTarget(ICommand command)
+        {
+            _command = command;
+        }
+
+        ICommand IPageRefreshTarget.RefreshCommand => _command;
     }
 
     private sealed class NonCommandRefreshProperty

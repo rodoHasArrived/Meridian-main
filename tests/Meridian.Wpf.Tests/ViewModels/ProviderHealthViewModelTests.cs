@@ -359,6 +359,11 @@ public sealed class ProviderHealthViewModelTests
     {
         var noSelection = ProviderHealthViewModel.BuildProviderManagementCommandGroup();
 
+        noSelection.PrimaryCommands.Should().NotContain(
+            command => command.Id == "RefreshStatus",
+            "the shell Refresh reloads provider health through IPageRefreshTarget");
+        typeof(Meridian.Wpf.Contracts.IPageRefreshTarget).IsAssignableFrom(typeof(ProviderHealthViewModel)).Should().BeTrue();
+
         var disabledDiagnostics = noSelection.PrimaryCommands.Single(command => command.Id == "RunDiagnostics");
         disabledDiagnostics.IsEnabled.Should().BeFalse();
         disabledDiagnostics.DisabledReason.Should().Be("Select a provider before running diagnostics.");

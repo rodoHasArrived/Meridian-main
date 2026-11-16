@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using Meridian.Ui.Services;
+using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
@@ -12,7 +13,7 @@ namespace Meridian.Wpf.Views;
 /// <summary>
 /// Binds derived pages to the  workspace shell definition.
 /// </summary>
-public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page
+public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page, IPageRefreshTarget
     where TStateProvider : class, IWorkspaceShellStateProvider
     where TViewModel : WorkspaceShellViewModelBase
 {
@@ -21,6 +22,8 @@ public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page
     private readonly WorkspaceLayoutManager _layoutManager = new();
     private readonly TStateProvider _stateProvider;
     private WorkspaceShellState? _lastState;
+    private MeridianDockingManager? _refreshDockManager;
+    private IRelayCommand? _refreshCommand;
 
     protected WorkspaceShellPageBase(
         NavigationService navigationService,
@@ -36,6 +39,24 @@ public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page
 
     protected TViewModel ViewModel { get; }
 
+    /// <summary>
+    /// The shell Refresh control (toolbar button and F5) reloads the workspace shell and every
+    /// docked page in place instead of rebuilding the shell by re-navigation.
+    /// </summary>
+    public ICommand RefreshCommand => _refreshCommand ??= new RelayCommand(RefreshWorkspaceInPlace);
+
+    /// <summary>
+    /// Runs the shell page's own reload path (hero, queues, context strip). Docked pages are
+    /// reloaded separately through <see cref="PageRefreshResolver.RefreshAllInPlace"/>.
+    /// </summary>
+    protected virtual Task RefreshShellInPlaceAsync() => Task.CompletedTask;
+
+    private void RefreshWorkspaceInPlace()
+    {
+        DispatchRefresh(RefreshShellInPlaceAsync);
+        PageRefreshResolver.RefreshAllInPlace(_refreshDockManager?.GetOpenPageContents());
+    }
+
     private void OnAttentionPrimaryActionRequested(object? sender, string pageTag)
         => NavigateToRegisteredPage(pageTag);
 
@@ -48,6 +69,7 @@ public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page
     protected async Task RestoreDockLayoutAsync(MeridianDockingManager dockManager)
     {
         ArgumentNullException.ThrowIfNull(dockManager);
+        _refreshDockManager = dockManager;
 
         try
         {
@@ -125,6 +147,7 @@ public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page
     protected void OpenWorkspacePage(MeridianDockingManager dockManager, string pageTag, PaneDropAction action, object? parameter = null)
     {
         ArgumentNullException.ThrowIfNull(dockManager);
+        _refreshDockManager = dockManager;
 
         try
         {

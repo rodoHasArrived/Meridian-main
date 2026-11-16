@@ -140,6 +140,10 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
         ApplyTone(ValidationStatusPill, ValidationStatusLabelText, ViewModel.ValidationStatusTone);
     }
 
+    /// <inheritdoc />
+    protected override Task RefreshShellInPlaceAsync()
+        => ViewModel.RefreshAsync();
+
     private void OnPaneDropRequested(object? sender, PaneDropEventArgs e)
         => OpenDroppedPane(TradingDockManager, e);
 

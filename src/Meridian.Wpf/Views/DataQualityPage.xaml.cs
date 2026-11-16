@@ -171,9 +171,6 @@ public partial class DataQualityPage : Page
     {
         switch (e.Command.Id)
         {
-            case "Refresh":
-                _ = _viewModel.RefreshAsync();
-                break;
             case "RunQualityCheck":
                 ShowQualityCheckPanel();
                 break;
@@ -311,7 +308,6 @@ public partial class DataQualityPage : Page
         {
             PrimaryCommands =
             [
-                new WorkspaceCommandItem { Id = "Refresh", Label = "Refresh", Description = "Refresh data quality metrics.", Glyph = "\uE72C", Tone = WorkspaceTone.Primary },
                 new WorkspaceCommandItem { Id = "RunQualityCheck", Label = "Run quality check", Description = "Run a quality check for a symbol or file path.", Glyph = "\uE9D5" }
             ],
             SecondaryCommands =

@@ -180,6 +180,50 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
+    public void RefreshPageCommand_ReloadsEveryVisibleSplitPaneInPlace()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainPageViewModel();
+            vm.ActivateShell();
+            var historyBefore = NavigationService.Instance.GetBreadcrumbs().Count;
+            var activePane = new RefreshablePageViewModelStub();
+            var secondPane = new RefreshablePageViewModelStub();
+            var busyPane = new RefreshablePageViewModelStub(canExecute: false);
+            vm.ActivePageContentAccessor = () => activePane;
+            vm.OtherVisiblePaneContentsAccessor = () => [secondPane, busyPane, new object(), null];
+
+            vm.RefreshPageCommand.Execute(null);
+
+            activePane.RefreshCommand.ExecuteCount.Should().Be(1);
+            secondPane.RefreshCommand.ExecuteCount.Should().Be(1);
+            busyPane.RefreshCommand.ExecuteCount.Should().Be(0);
+            NavigationService.Instance.GetBreadcrumbs().Should().HaveCount(historyBefore);
+        });
+    }
+
+    [Fact]
+    public void RefreshPageCommand_WhenOnlyTheActivePaneLacksACommand_NavigatesTheActivePaneAndReloadsTheOthers()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainPageViewModel();
+            vm.ActivateShell();
+            var historyBefore = NavigationService.Instance.GetBreadcrumbs().Count;
+            var secondPane = new RefreshablePageViewModelStub();
+            vm.ActivePageContentAccessor = () => new object();
+            vm.OtherVisiblePaneContentsAccessor = () => [secondPane, new object()];
+
+            vm.RefreshPageCommand.Execute(null);
+
+            secondPane.RefreshCommand.ExecuteCount.Should().Be(1);
+            NavigationService.Instance.GetBreadcrumbs().Should().HaveCount(
+                historyBefore + 1,
+                "only the active pane falls back to re-navigation; inactive panes are never re-navigated");
+        });
+    }
+
+    [Fact]
     public void MainWindowRefreshCommand_SendsRefreshStatusAndRequestsShellRefresh()
     {
         WpfTestThread.Run(() =>
@@ -218,6 +262,7 @@ public sealed class MainShellViewModelTests
         windowCode.Should().Contain("_viewModel.ShellRefreshRequested += OnShellRefreshRequested;");
         windowCode.Should().Contain("mainPage.RefreshCurrentPage();");
         mainPageCode.Should().Contain("_viewModel.RefreshPageCommand.Execute(null);");
+        mainPageCode.Should().Contain("_viewModel.OtherVisiblePaneContentsAccessor = GetInactiveVisiblePaneContents;");
     }
 
     private sealed class RefreshablePageViewModelStub

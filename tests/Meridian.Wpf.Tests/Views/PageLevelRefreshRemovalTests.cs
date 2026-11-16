@@ -46,6 +46,7 @@ public sealed class PageLevelRefreshRemovalTests
     [InlineData("OperationsContinuityPage.xaml")]
     [InlineData("OperatorReadinessConsolePage.xaml")]
     [InlineData("PluginManagementPage.xaml")]
+    [InlineData("ProviderHealthPage.xaml")]
     [InlineData("SystemHealthPage.xaml")]
     [InlineData("AccountingConfigurePage.xaml")]
     [InlineData("ClusterStatusPage.xaml")]
@@ -66,6 +67,7 @@ public sealed class PageLevelRefreshRemovalTests
     [InlineData("OperationsRecordReleasePage.xaml", "OperationsRecordReleaseRetryButton", "{Binding HasWorkflowError, Converter={StaticResource BoolToVisibilityConverter}}")]
     [InlineData("PostedLedgerPage.xaml", "PostedLedgerRetryButton", "{Binding HasLoadError, Converter={StaticResource BoolToVisibilityConverter}}")]
     [InlineData("SymbolStoragePage.xaml", "SymbolStorageRetryButton", "{Binding HasError, Converter={StaticResource BoolToVisibilityConverter}}")]
+    [InlineData("ServiceManagerPage.xaml", "ServiceManagerStatusRetryButton", "{Binding IsStatusLoadFailed, Converter={StaticResource BoolToVisibilityConverter}}")]
     public void PageSource_ShouldKeepRetryOnlyInsideTheErrorState(string pageFile, string retryAutomationId, string errorVisibilityBinding)
     {
         var xaml = ReadView(pageFile);
@@ -106,7 +108,6 @@ public sealed class PageLevelRefreshRemovalTests
     [InlineData(typeof(OperationsContinuityViewModel))]
     [InlineData(typeof(OperationsRecordReleaseViewModel))]
     [InlineData(typeof(OperatorReadinessConsoleViewModel))]
-    [InlineData(typeof(PluginManagementViewModel))]
     [InlineData(typeof(PositionBlotterViewModel))]
     [InlineData(typeof(PostedLedgerViewModel))]
     [InlineData(typeof(SystemHealthViewModel))]
@@ -116,12 +117,94 @@ public sealed class PageLevelRefreshRemovalTests
     [InlineData(typeof(MessagingHubViewModel))]
     [InlineData(typeof(StrategyRunBrowserViewModel))]
     [InlineData(typeof(SymbolStorageViewModel))]
+    [InlineData(typeof(ServiceManagerViewModel))]
+    [InlineData(typeof(ProviderHealthViewModel))]
+    [InlineData(typeof(DataQualityViewModel))]
     public void PageViewModel_ShouldStillExposeTheRefreshCommandTheShellInvokes(Type viewModelType)
     {
         var property = viewModelType.GetProperty(PageRefreshResolver.ConventionalCommandPropertyName);
 
         property.Should().NotBeNull();
         typeof(ICommand).IsAssignableFrom(property!.PropertyType).Should().BeTrue();
+        typeof(Meridian.Wpf.Contracts.IPageRefreshOptOut).IsAssignableFrom(viewModelType).Should().BeFalse();
+    }
+
+    [Fact]
+    public void PluginManagementViewModel_ShouldOptOutBecauseItsRefreshReloadsPluginAssemblies()
+    {
+        typeof(Meridian.Wpf.Contracts.IPageRefreshOptOut)
+            .IsAssignableFrom(typeof(PluginManagementViewModel))
+            .Should().BeTrue("shell Refresh must fall back to re-navigation instead of re-running plugin loading");
+        typeof(Meridian.Wpf.Contracts.IPageRefreshTarget)
+            .IsAssignableFrom(typeof(PluginManagementViewModel))
+            .Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData(typeof(ProviderHealthViewModel))]
+    [InlineData(typeof(DataQualityViewModel))]
+    [InlineData(typeof(DashboardViewModel))]
+    public void ActionBarPageViewModel_ShouldBeAnExplicitRefreshTarget(Type viewModelType)
+    {
+        typeof(Meridian.Wpf.Contracts.IPageRefreshTarget).IsAssignableFrom(viewModelType).Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData(@"ViewModels\ProviderHealthViewModel.cs")]
+    [InlineData(@"ViewModels\DataQualityViewModel.cs")]
+    [InlineData(@"ViewModels\DashboardViewModel.cs")]
+    [InlineData(@"Views\DataQualityPage.xaml.cs")]
+    public void PageSource_ShouldNotOfferItsOwnRefreshAction(string relativePath)
+    {
+        var source = ReadSource(relativePath);
+
+        source.Should().NotContain("new ActionEntry(\"Refresh\"");
+        source.Should().NotContain("Label = \"Refresh\"");
+        source.Should().NotContain("\"Refresh Status\"");
+    }
+
+    [Fact]
+    public void SettingsShellFallbackCommand_ShouldReadRetryBecauseItOnlyShowsWhenTheSnapshotFailed()
+    {
+        var source = ReadSource(@"Features\Settings\Shell\SettingsWorkspaceShellViewModel.cs");
+
+        source.Should().Contain("Id = \"Refresh\", Label = \"Retry\"");
+        source.Should().NotContain("Label = \"Refresh\"");
+    }
+
+    [Theory]
+    [InlineData(@"Views\StrategyWorkspaceShellPage.xaml.cs")]
+    [InlineData(@"Views\AccountingWorkspaceShellPage.xaml.cs")]
+    [InlineData(@"Features\Trading\Shell\TradingWorkspaceShellPage.xaml.cs")]
+    [InlineData(@"Features\Settings\Shell\SettingsWorkspaceShellPage.xaml.cs")]
+    [InlineData(@"Features\Data\Shell\DataWorkspaceShellPage.xaml.cs")]
+    [InlineData(@"Features\Reporting\Shell\ReportingWorkspaceShellPage.xaml.cs")]
+    [InlineData(@"Features\Portfolio\Shell\PortfolioWorkspaceShellPage.xaml.cs")]
+    public void WorkspaceShellPage_ShouldRunItsOwnReloadPathFromTheShellRefresh(string relativePath)
+    {
+        ReadSource(relativePath).Should().Contain("protected override Task RefreshShellInPlaceAsync()");
+    }
+
+    [Theory]
+    [InlineData(typeof(Meridian.Wpf.Views.StrategyWorkspaceShellPage))]
+    [InlineData(typeof(Meridian.Wpf.Views.AccountingWorkspaceShellPage))]
+    [InlineData(typeof(Meridian.Wpf.Views.TradingWorkspaceShellPage))]
+    [InlineData(typeof(Meridian.Wpf.Features.Settings.Shell.SettingsWorkspaceShellPage))]
+    [InlineData(typeof(Meridian.Wpf.Features.Data.Shell.DataWorkspaceShellPage))]
+    [InlineData(typeof(Meridian.Wpf.Features.Reporting.Shell.ReportingWorkspaceShellPage))]
+    [InlineData(typeof(Meridian.Wpf.Features.Portfolio.Shell.PortfolioWorkspaceShellPage))]
+    public void WorkspaceShellPage_ShouldBeARefreshTargetSoDockedPagesReloadInPlace(Type shellPageType)
+    {
+        typeof(Meridian.Wpf.Contracts.IPageRefreshTarget).IsAssignableFrom(shellPageType).Should().BeTrue();
+    }
+
+    [Fact]
+    public void WorkspaceShellPageBaseSource_ShouldFanOutToDockedPagesWithoutNavigating()
+    {
+        var source = ReadSource(@"Views\WorkspaceShellPageBase.cs");
+
+        source.Should().Contain("DispatchRefresh(RefreshShellInPlaceAsync);");
+        source.Should().Contain("PageRefreshResolver.RefreshAllInPlace(_refreshDockManager?.GetOpenPageContents());");
     }
 
     [Fact]
@@ -137,6 +220,9 @@ public sealed class PageLevelRefreshRemovalTests
             .IsAssignableFrom(typeof(Meridian.Wpf.Views.WorkspaceDeepPageHostPage))
             .Should().BeTrue();
     }
+
+    private static string ReadSource(string relativePath)
+        => File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\" + relativePath));
 
     private static string ReadView(string pageFile)
         => File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\" + pageFile));

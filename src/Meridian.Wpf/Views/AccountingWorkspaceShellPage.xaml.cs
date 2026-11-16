@@ -263,6 +263,10 @@ public partial class AccountingWorkspaceShellPage : AccountingWorkspaceShellPage
         }
     }
 
+    /// <inheritdoc />
+    protected override Task RefreshShellInPlaceAsync()
+        => RefreshAsync();
+
     private void OnPaneDropRequested(object? sender, PaneDropEventArgs e)
         => OpenDroppedPane(AccountingDockManager, e);
 

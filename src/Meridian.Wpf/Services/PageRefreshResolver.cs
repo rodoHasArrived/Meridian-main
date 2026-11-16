@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using Meridian.Wpf.Contracts;
 
@@ -20,7 +21,9 @@ public static class PageRefreshResolver
     /// Resolves the refresh command for <paramref name="pageContent"/> (the navigation frame's content).
     /// Order: <see cref="IPageRefreshTarget"/> on the content or its data context, then a public
     /// <c>RefreshCommand</c> property on the data context, then on the content itself.
-    /// Chrome wrappers implementing <see cref="IPageRefreshContentHost"/> are unwrapped first.
+    /// Chrome wrappers implementing <see cref="IPageRefreshContentHost"/> and hosting
+    /// <see cref="Frame"/>s are unwrapped first. A page or view model marked
+    /// <see cref="IPageRefreshOptOut"/> is never matched by convention.
     /// </summary>
     public static ICommand? Resolve(object? pageContent) => Resolve(pageContent, 0);
 
@@ -48,6 +51,32 @@ public static class PageRefreshResolver
         return true;
     }
 
+    /// <summary>
+    /// Reloads every page in <paramref name="pageContents"/> that exposes a refresh command which
+    /// can execute. Content without a command, and commands that are busy, are skipped; nothing is
+    /// re-navigated. Used for the pages docked in a workspace shell and for split panes.
+    /// </summary>
+    /// <returns>The number of refresh commands executed.</returns>
+    public static int RefreshAllInPlace(IEnumerable<object?>? pageContents)
+    {
+        if (pageContents is null)
+        {
+            return 0;
+        }
+
+        var executed = new HashSet<object>(ReferenceEqualityComparer.Instance);
+        foreach (var content in pageContents)
+        {
+            // The same view model can back more than one pane; reload it once.
+            if (Resolve(content) is { } command && command.CanExecute(null) && executed.Add(command))
+            {
+                command.Execute(null);
+            }
+        }
+
+        return executed.Count;
+    }
+
     private static ICommand? Resolve(object? candidate, int depth)
     {
         if (candidate is null || depth > MaxHostDepth)
@@ -65,6 +94,12 @@ public static class PageRefreshResolver
             return target.RefreshCommand;
         }
 
+        if (candidate is Frame frame)
+        {
+            // Dock panes and split panes host their page inside a frame.
+            return Resolve(frame.Content, depth + 1);
+        }
+
         var dataContext = candidate is FrameworkElement element ? element.DataContext : null;
         if (ReferenceEquals(dataContext, candidate))
         {
@@ -74,6 +109,11 @@ public static class PageRefreshResolver
         if (dataContext is IPageRefreshTarget dataContextTarget)
         {
             return dataContextTarget.RefreshCommand;
+        }
+
+        if (dataContext is IPageRefreshOptOut || candidate is IPageRefreshOptOut)
+        {
+            return null;
         }
 
         return ResolveByConvention(dataContext) ?? ResolveByConvention(candidate);

@@ -125,6 +125,10 @@ public partial class StrategyWorkspaceShellPage : StrategyWorkspaceShellPageBase
     private void ApplyToneBindings()
         => ApplyTone(StrategyHeroBadgeBorder, StrategyHeroBadgeText, ViewModel.StrategyHeroBadgeTone);
 
+    /// <inheritdoc />
+    protected override Task RefreshShellInPlaceAsync()
+        => ViewModel.RefreshAsync();
+
     private void OnPaneDropRequested(object? sender, PaneDropEventArgs e)
         => OpenDroppedPane(StrategyDockManager, e);
 

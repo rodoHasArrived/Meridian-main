@@ -24,3 +24,13 @@ public interface IPageRefreshContentHost
 {
     object? PageRefreshContent { get; }
 }
+
+/// <summary>
+/// Marks a page or view model whose public <c>RefreshCommand</c> does more than re-read data
+/// (for example it loads plugins, writes, sends, or starts jobs). The shell refresh does not pick
+/// such a command up by convention and falls back to re-navigating the page instead. A type that
+/// also implements <see cref="IPageRefreshTarget"/> has opted back in explicitly.
+/// </summary>
+public interface IPageRefreshOptOut
+{
+}

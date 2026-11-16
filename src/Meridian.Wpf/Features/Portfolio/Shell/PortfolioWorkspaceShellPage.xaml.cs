@@ -44,6 +44,10 @@ public partial class PortfolioWorkspaceShellPage : PortfolioWorkspaceShellPageBa
     private async System.Threading.Tasks.Task RefreshRequestedCoreAsync(object? sender, EventArgs e)
         => await ViewModel.RefreshShellContextAsync().ConfigureAwait(true);
 
+    /// <inheritdoc />
+    protected override Task RefreshShellInPlaceAsync()
+        => ViewModel.RefreshShellContextAsync();
+
     private void OnPaneDropRequested(object? sender, PaneDropEventArgs e)
         => OpenDroppedPane(PortfolioDockManager, e);
 

@@ -46,6 +46,7 @@ public partial class MainPage : Page
         _navigationService.NavigationStarting -= OnNavigationStarting;
         _navigationService.NavigationStarting += OnNavigationStarting;
         _viewModel.PropertyChanged += OnViewModelPropertyChanged;
+        _viewModel.OtherVisiblePaneContentsAccessor = GetInactiveVisiblePaneContents;
 
         _viewModel.ActivateShell();
         UpdateContentSurfaceVisibility();
@@ -55,6 +56,7 @@ public partial class MainPage : Page
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
     {
         _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
+        _viewModel.OtherVisiblePaneContentsAccessor = null;
         _navigationService.NavigationStarting -= OnNavigationStarting;
         DetachFrameNavigationHandlers();
         _viewModel.Dispose();

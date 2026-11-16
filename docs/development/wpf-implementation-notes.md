@@ -443,16 +443,35 @@ Parameter passing follows the standard MVVM drill-in pattern: `NavigationService
 The shell toolbar Refresh button and `F5` are the single refresh control. `MainPageViewModel`
 asks `PageRefreshResolver` (`Services/PageRefreshResolver.cs`) for the active page's reload command
 and executes it in place, so selection, filters, and typed input survive and no Back entry is
-added. The resolver looks for `IPageRefreshTarget` (`Contracts/IPageRefreshTarget.cs`) on the page
-or its `DataContext`, then for a public `RefreshCommand` property, and unwraps chrome hosts that
-implement `IPageRefreshContentHost` (`WorkspaceDeepPageHostPage`). A page with no reload command is
-re-navigated, which rebuilds it and adds a Back entry. `F5` also still sends the `RefreshStatus`
-message.
+added. `F5` also still sends the `RefreshStatus` message.
 
-Pages do not carry their own page-level Refresh button. A page may show a local `Retry` bound to
-the same command inside an error state, keep an empty-state action, and keep buttons that reload
-one sub-panel through a different command. Workspace shell pages (`*WorkspaceShellPage`) expose no
-reload command yet, so the shell refresh still rebuilds them together with their docked panes.
+Resolution order (`Contracts/IPageRefreshTarget.cs` holds the contracts):
+
+1. Chrome hosts that implement `IPageRefreshContentHost` (`WorkspaceDeepPageHostPage`) and hosting
+   `Frame`s are unwrapped to the page they show.
+2. `IPageRefreshTarget` on the page, then on its `DataContext`. `DashboardViewModel`,
+   `ProviderHealthViewModel`, `DataQualityViewModel`, and every workspace shell page implement it.
+3. A public `RefreshCommand` property on the `DataContext`, then on the page (convention).
+4. A view model marked `IPageRefreshOptOut` is never matched by convention. Use it when
+   `RefreshCommand` does more than re-read; `PluginManagementViewModel` opts out because its
+   command re-runs plugin loading.
+
+A page with no reload command is re-navigated, which rebuilds it and adds a Back entry. A command
+that is found but cannot execute (a load is already running) is left alone.
+
+The refresh fans out without navigating:
+
+- **Workspace shell pages.** `WorkspaceShellPageBase.RefreshCommand` runs the shell page's own
+  reload path (`RefreshShellInPlaceAsync`, overridden by each of the seven shells) and then
+  `PageRefreshResolver.RefreshAllInPlace` over `MeridianDockingManager.GetOpenPageContents()`, so
+  docked and floating panes reload in place and keep their state.
+- **Split panes.** `MainPage` supplies the content of every visible pane other than the active one;
+  those reload in place when they expose a command. Only the active pane falls back to
+  re-navigation.
+
+Pages do not carry their own page-level Refresh button or action. A page may show a local `Retry`
+bound to the same command inside an error state, keep an empty-state action, and keep buttons that
+reload one sub-panel through a different command.
 
 ---
 

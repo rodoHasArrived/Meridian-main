@@ -117,7 +117,6 @@ public sealed class FinancialRecordExplorerViewModel : BindableBase, IDisposable
         {
             if (SetProperty(ref _isRefreshing, value))
             {
-                OnPropertyChanged(nameof(RefreshTooltip));
                 RefreshCommand.NotifyCanExecuteChanged();
                 ApplySavedViewCommand.NotifyCanExecuteChanged();
             }
@@ -165,10 +164,6 @@ public sealed class FinancialRecordExplorerViewModel : BindableBase, IDisposable
     public bool IsEmptyStateVisible => !HasRows;
 
     public bool HasSelectedRecord => SelectedRecord is not null;
-
-    public string RefreshTooltip => IsRefreshing
-        ? "Financial record explorer refresh is already running."
-        : $"Refresh the source-backed {Title}.";
 
     public string ActiveSavedViewId
     {

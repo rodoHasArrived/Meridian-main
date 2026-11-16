@@ -126,6 +126,10 @@ public partial class SettingsWorkspaceShellPage : SettingsWorkspaceShellPageBase
     private async System.Threading.Tasks.Task HeroActionClickCoreAsync(object sender, RoutedEventArgs e)
         => await ExecuteTaggedActionAsync(sender, actionId => ViewModel.ExecuteActionAsync(actionId, navigate: false));
 
+    /// <inheritdoc />
+    protected override Task RefreshShellInPlaceAsync()
+        => ViewModel.ExecuteActionAsync("Refresh", navigate: false);
+
     private void OnPaneDropRequested(object? sender, PaneDropEventArgs e)
         => OpenDroppedPane(SettingsDockManager, e);
 

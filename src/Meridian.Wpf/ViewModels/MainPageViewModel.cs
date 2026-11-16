@@ -1040,6 +1040,9 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     /// <summary>Test seam for the content the shell refresh reloads; defaults to the navigation frame.</summary>
     internal Func<object?>? ActivePageContentAccessor { get; set; }
 
+    /// <summary>Supplied by the shell view: the content of visible split panes other than the active one.</summary>
+    internal Func<IEnumerable<object?>>? OtherVisiblePaneContentsAccessor { get; set; }
+
     private void RefreshCurrentPage()
     {
         UpdateShellRefreshStamp();
@@ -1051,6 +1054,9 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             // No reload command: rebuild the page, as before. This adds a Back entry.
             NavigateToWithWorkspaceScope(CurrentPageTag);
         }
+
+        // Inactive split panes reload in place when they can; they are never re-navigated.
+        PageRefreshResolver.RefreshAllInPlace(OtherVisiblePaneContentsAccessor?.Invoke());
 
         RequestShellRefresh();
     }
