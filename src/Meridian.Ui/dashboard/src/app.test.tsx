@@ -1012,7 +1012,7 @@ describe("App", () => {
     expect(scopeBar()).not.toHaveTextContent("Account");
   });
 
-  it("picks the fund account inline on Orders and carries it in the URL and on links (P4)", async () => {
+  it("picks the fund account in the scope bar on Orders and carries it in the URL and on links (P4)", async () => {
     const user = userEvent.setup();
     const fundAccountId = "11111111-2222-3333-4444-555555555555";
     mockWorkstationData({
@@ -1042,9 +1042,12 @@ describe("App", () => {
     expect(recovery.compareDocumentPosition(blotter) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(blotter.compareDocumentPosition(journal) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(journal).toHaveTextContent("Select an account to see its journal");
-    await user.type(within(recovery).getByLabelText("Fund account"), "Main fund");
+    // The page carries no picker of its own: the account step is inside the header scope bar.
+    expect(within(recovery).queryByLabelText("Fund account")).not.toBeInTheDocument();
+    expect(recovery).toHaveTextContent("Choose the account in the scope bar above.");
+    const scopeRegion = screen.getByRole("region", { name: "Operating scope bar" });
+    await user.type(within(scopeRegion).getByRole("combobox", { name: "Account for this workspace" }), "Main fund");
     await user.keyboard("{Enter}");
-    await user.click(within(recovery).getByRole("button", { name: "Use account" }));
 
     await waitFor(() => {
       const params = new URLSearchParams((screen.getByLabelText("Current route").textContent ?? "").split("?")[1]);

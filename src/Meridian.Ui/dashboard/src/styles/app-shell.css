@@ -737,7 +737,8 @@ button.operating-scope-chip:focus-visible { outline: 2px solid var(--interaction
 .operating-scope-chip-item-retained { color: var(--ws-text-muted); font-weight: 500; }
 .operating-scope-chip-sep { color: var(--ws-text-muted); }
 /* The permanent scope bar: "Scope  Account All authorized › Period All authorized". */
-.operating-scope-bar { min-width: 0; }
+.operating-scope-bar { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
+.operating-scope-bar-account { flex-shrink: 0; width: 13rem; max-width: 40vw; }
 .operating-scope-bar-button {
   display: inline-flex; align-items: center; gap: 0.5rem; max-width: min(40rem, 46vw); min-height: 1.75rem;
   padding: 0.125rem 0.625rem; border: 1px solid var(--ws-border); border-radius: var(--radius-sm);
