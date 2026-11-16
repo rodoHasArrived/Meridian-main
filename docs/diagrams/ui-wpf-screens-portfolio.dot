@@ -18,8 +18,8 @@ digraph WpfPortfolioScreens {
   node [fontname="Segoe UI", shape=box, style="rounded,filled", color="#475569", fontcolor="#e2e8f0", fillcolor="#1e293b"];
   edge [fontname="Segoe UI", color="#94a3b8", penwidth=1.2, arrowsize=0.75];
 
-  generated [shape=note, fillcolor="#1d4ed8", color="#60a5fa", label="Source fingerprint: 1c82994c508a\nPortfolio screens: 8\nSections: 5"];
-  workspace [shape=folder, fillcolor="#0f766e", color="#2dd4bf", label="Portfolio workspace\nPrimary 3 | Secondary 4 | Overflow 1"];
+  generated [shape=note, fillcolor="#1d4ed8", color="#60a5fa", label="Source fingerprint: f706b5da35aa\nPortfolio screens: 9\nSections: 6"];
+  workspace [shape=folder, fillcolor="#0f766e", color="#2dd4bf", label="Portfolio workspace\nPrimary 4 | Secondary 4 | Overflow 1"];
   generated -> workspace [color="#38bdf8"];
 
   subgraph cluster_section_1 {
@@ -33,49 +33,59 @@ digraph WpfPortfolioScreens {
   }
 
   subgraph cluster_section_2 {
-    label="Accounts";
+    label="Launchpad";
     color="#334155";
     style="rounded";
-    section_2 [shape=folder, fillcolor="#172554", color="#93c5fd", label="Accounts\n2 screens"];
+    section_2 [shape=folder, fillcolor="#172554", color="#93c5fd", label="Launchpad\n1 screens"];
     workspace -> section_2;
-    screen_AccountPortfolio [fillcolor="#1e293b", label="Account portfolio\nAccountPortfolio → AccountPortfolioPage\nPrimary | order 10"];
-    section_2 -> screen_AccountPortfolio;
-    screen_AggregatePortfolio [fillcolor="#1e293b", label="Aggregate portfolio\nAggregatePortfolio → AggregatePortfolioPage\nPrimary | order 20"];
-    section_2 -> screen_AggregatePortfolio;
+    screen_PortfolioShell [fillcolor="#1e293b", label="Portfolio Workspace\nPortfolioShell → PortfolioWorkspaceShellPage\nPrimary | order 0"];
+    section_2 -> screen_PortfolioShell;
   }
 
   subgraph cluster_section_3 {
-    label="Run Inspectors";
+    label="Accounts";
     color="#334155";
     style="rounded";
-    section_3 [shape=folder, fillcolor="#172554", color="#93c5fd", label="Run Inspectors\n2 screens"];
+    section_3 [shape=folder, fillcolor="#172554", color="#93c5fd", label="Accounts\n2 screens"];
     workspace -> section_3;
-    screen_RunPortfolio [fillcolor="#1e293b", label="Run portfolio\nRunPortfolio → RunPortfolioPage\nPrimary | order 30"];
-    section_3 -> screen_RunPortfolio;
-    screen_PortfolioExplorer [fillcolor="#312e81", label="Portfolio explorer\nPortfolioExplorer → FinancialRecordExplorerPage\nSecondary | order 35"];
-    section_3 -> screen_PortfolioExplorer;
+    screen_AccountPortfolio [fillcolor="#1e293b", label="Account portfolio\nAccountPortfolio → AccountPortfolioPage\nPrimary | order 10"];
+    section_3 -> screen_AccountPortfolio;
+    screen_AggregatePortfolio [fillcolor="#1e293b", label="Aggregate portfolio\nAggregatePortfolio → AggregatePortfolioPage\nPrimary | order 20"];
+    section_3 -> screen_AggregatePortfolio;
   }
 
   subgraph cluster_section_4 {
-    label="Fund";
+    label="Run Inspectors";
     color="#334155";
     style="rounded";
-    section_4 [shape=folder, fillcolor="#172554", color="#93c5fd", label="Fund\n2 screens"];
+    section_4 [shape=folder, fillcolor="#172554", color="#93c5fd", label="Run Inspectors\n2 screens"];
     workspace -> section_4;
-    screen_FundPortfolio [fillcolor="#312e81", label="Fund portfolio\nFundPortfolio → FundLedgerPage\nSecondary | order 40"];
-    section_4 -> screen_FundPortfolio;
-    screen_FundAccounts [fillcolor="#312e81", label="Fund accounts\nFundAccounts → FundAccountsPage\nSecondary | order 50"];
-    section_4 -> screen_FundAccounts;
+    screen_RunPortfolio [fillcolor="#1e293b", label="Run portfolio\nRunPortfolio → RunPortfolioPage\nPrimary | order 30"];
+    section_4 -> screen_RunPortfolio;
+    screen_PortfolioExplorer [fillcolor="#312e81", label="Portfolio explorer\nPortfolioExplorer → FinancialRecordExplorerPage\nSecondary | order 35"];
+    section_4 -> screen_PortfolioExplorer;
   }
 
   subgraph cluster_section_5 {
+    label="Fund";
+    color="#334155";
+    style="rounded";
+    section_5 [shape=folder, fillcolor="#172554", color="#93c5fd", label="Fund\n2 screens"];
+    workspace -> section_5;
+    screen_FundPortfolio [fillcolor="#312e81", label="Fund portfolio\nFundPortfolio → FundLedgerPage\nSecondary | order 40"];
+    section_5 -> screen_FundPortfolio;
+    screen_FundAccounts [fillcolor="#312e81", label="Fund accounts\nFundAccounts → FundAccountsPage\nSecondary | order 50"];
+    section_5 -> screen_FundAccounts;
+  }
+
+  subgraph cluster_section_6 {
     label="Import";
     color="#334155";
     style="rounded";
-    section_5 [shape=folder, fillcolor="#172554", color="#93c5fd", label="Import\n1 screens"];
-    workspace -> section_5;
+    section_6 [shape=folder, fillcolor="#172554", color="#93c5fd", label="Import\n1 screens"];
+    workspace -> section_6;
     screen_PortfolioImport [fillcolor="#312e81", label="Portfolio import\nPortfolioImport → PortfolioImportPage\nSecondary | order 60"];
-    section_5 -> screen_PortfolioImport;
+    section_6 -> screen_PortfolioImport;
   }
 
   { rank=min; generated; workspace; }

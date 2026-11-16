@@ -57,7 +57,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Models.ShellNavigationCatalog</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Models/ShellNavigationCatalog.Accounting.cs:8](../../../../src/Meridian.Wpf/Models/ShellNavigationCatalog.Accounting.cs#L8).
+Source: [src/Meridian.Wpf/Models/ShellNavigationCatalog.Accounting.cs:7](../../../../src/Meridian.Wpf/Models/ShellNavigationCatalog.Accounting.cs#L7).
 
 ```csharp
 public static partial class ShellNavigationCatalog
@@ -105,7 +105,7 @@ Declared public members:
 | <code>public static WorkspaceShellLayoutDescriptor GetWorkspaceLayoutDescriptor(string? workspaceId);</code> | [src/Meridian.Wpf/Models/ShellNavigationCatalog.Layouts.cs:8](../../../../src/Meridian.Wpf/Models/ShellNavigationCatalog.Layouts.cs#L8) |  |
 | <code>public static ShellPosture GetWorkspacePosture(string? workspaceId) =&gt; …;</code> | [src/Meridian.Wpf/Models/ShellNavigationCatalog.Layouts.cs:16](../../../../src/Meridian.Wpf/Models/ShellNavigationCatalog.Layouts.cs#L16) |  |
 
-Source: [src/Meridian.Wpf/Models/ShellNavigationCatalog.Strategy.cs:6](../../../../src/Meridian.Wpf/Models/ShellNavigationCatalog.Strategy.cs#L6).
+Source: [src/Meridian.Wpf/Models/ShellNavigationCatalog.Strategy.cs:5](../../../../src/Meridian.Wpf/Models/ShellNavigationCatalog.Strategy.cs#L5).
 
 ```csharp
 public static partial class ShellNavigationCatalog
