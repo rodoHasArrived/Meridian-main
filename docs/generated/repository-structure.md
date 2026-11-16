@@ -14520,6 +14520,7 @@ Meridian-main
 │   │   │   ├── LiveTradingEngineTests.AuditCancellation.cs
 │   │   │   ├── LiveTradingEngineTests.cs
 │   │   │   ├── LiveTradingEngineTests.FinancingCoverage.cs
+│   │   │   ├── LiveTradingEngineTests.PromotionLedgerPosting.cs
 │   │   │   ├── MovingAverageParityTests.cs
 │   │   │   ├── PortfolioReadServiceTests.cs
 │   │   │   ├── PromotionServiceLiveGovernanceTests.cs
