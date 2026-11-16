@@ -1591,7 +1591,7 @@ describe("accounting-screen journal-entry view model", () => {
     expect(services.saveDraft).not.toHaveBeenCalled();
     expect(services.applyLifecycleAction).not.toHaveBeenCalled();
     for (const action of ["Approve", "Post", "Reverse", "Rebook", "LockAfterClose"]) {
-      expect(result.current.lifecycleCommands.find((command) => command.action === action)?.disabledReason).toContain("governed asset workflow");
+      expect(result.current.lifecycleCommands.find((command) => command.action === action)?.disabledReason).toContain("asset workflow");
     }
     expect(result.current.lifecycleStatusText).toContain("generic approval, posting and corrections are unavailable");
   });
@@ -1607,7 +1607,7 @@ describe("accounting-screen journal-entry view model", () => {
     await act(async () => { await result.current.submit(); });
     expect(services.submitApproval).toHaveBeenCalledTimes(1);
     expect(result.current.draft.status).toBe("Submitted");
-    expect(result.current.lifecycleCommands.find((command) => command.action === "Approve")?.disabledReason).toContain("governed asset workflow");
+    expect(result.current.lifecycleCommands.find((command) => command.action === "Approve")?.disabledReason).toContain("asset workflow");
     expect(result.current.lifecycleCommands.find((command) => command.action === "Reject")?.disabledReason).toBeNull();
   });
 

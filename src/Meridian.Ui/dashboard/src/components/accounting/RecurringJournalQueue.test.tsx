@@ -37,7 +37,7 @@ it("shows definition changes and locked period ownership and governed reopen wit
   expect(await screen.findByText(/DefinitionChanged · Approval: Not submitted/)).toBeInTheDocument();
   expect(screen.getByText(/Template version no longer matches/)).toBeInTheDocument();
   expect(screen.getByText("Period lock owner: controller-a")).toBeInTheDocument();
-  expect(screen.getByText(/Governed reopen: Accounting/)).toBeInTheDocument();
+  expect(screen.getByText(/Period reopen: Accounting/)).toBeInTheDocument();
   expect(screen.queryByRole("button", { name: "Review retained draft" })).not.toBeInTheDocument();
 });
 

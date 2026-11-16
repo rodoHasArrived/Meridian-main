@@ -162,7 +162,7 @@ function ScopedCashForecastsPanel({ scope, context, onDirtyChange }: AccountCash
       <CardDescription>Reconcile settled opening cash and observed receipts to closing cash. Retained expectations preserve coupon, maturity, principal, unsettled-trade and factor-payment predictions.</CardDescription>
     </CardHeader>
     <CardContent className="space-y-4">
-      <p className="text-sm text-muted-foreground">Account {scope.accountId} · Book {context.bookName} · Base {scope.baseCurrency}. Certification reports cash reconciliation. Payment execution uses its own separate workflow.</p>
+      <p className="text-sm text-muted-foreground">Account {scope.accountId} · Book {context.bookName} · Base {scope.baseCurrency}. Certification reports cash reconciliation. Payment execution uses its own separately controlled workflow.</p>
       {!context.canWrite ? <StatusBanner tone="info" title={<span className="text-foreground">Read-only cash forecasts</span>} detail="You can inspect retained evidence. Capturing a forecast requires an authenticated session with ledger management permission." /> : null}
       {error ? <StatusBanner tone="danger" role="alert" title={<span className="text-foreground">Cash forecast evidence needs attention</span>} detail={`${error} Retained inputs stay available. Missing or corrupt stores require the documented provisioning or recovery process; retry after service recovery.`} /> : null}
       {notice ? <p className="text-sm" role="status">{notice}</p> : null}

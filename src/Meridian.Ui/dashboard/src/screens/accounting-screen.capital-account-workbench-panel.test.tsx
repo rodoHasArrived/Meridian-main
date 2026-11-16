@@ -167,7 +167,7 @@ describe("CapitalAccountWorkbenchPanel rollforward proof", () => {
     expect(within(proof).getByText("Ending net activity")).toBeInTheDocument();
     expect(within(proof).getByText("$180.00")).toBeInTheDocument();
     expect(within(proof).getByText("Opening + movements = closing · 2 movements")).toBeInTheDocument();
-    expect(within(proof).getByText(/Opening is derived by the capital-account projection/)).toBeInTheDocument();
+    expect(within(proof).getByText(/Opening is derived by the capital-account summary/)).toBeInTheDocument();
   });
 
   it("opens the proof and prints the out-by amount when the ending does not tie", async () => {
