@@ -262,9 +262,9 @@ jobs:
           python3 build/scripts/docs/scan-source-todos.py --summary
           python3 build/scripts/docs/render-roadmap-docs.py --summary
           python3 build/scripts/docs/render-source-docs.py --summary
-          git diff -- docs/roadmap/generated docs/source/generated docs/status/ROADMAP_SUMMARY.md src --exit-code
+          git diff -- docs/roadmap/generated docs/source/generated src --exit-code
           mkdir -p artifacts/targeted-docs
-          cp docs/status/ROADMAP_SUMMARY.md artifacts/targeted-docs/ROADMAP_SUMMARY.md
+          cp docs/roadmap/generated/ROADMAP_SUMMARY.md artifacts/targeted-docs/ROADMAP_SUMMARY.md
 
       - name: Run WPF development validation
         if: inputs.mode == 'wpf-dev-loop'

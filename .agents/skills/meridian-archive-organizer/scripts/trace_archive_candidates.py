@@ -74,7 +74,6 @@ STRONG_STATUS_EXACT = {
     "docs/status/IMPROVEMENTS.md",
     "docs/status/OPPORTUNITY_SCAN.md",
     "docs/status/README.md",
-    "docs/status/ROADMAP.md",
     "docs/status/ROADMAP_COMBINED.md",
     "docs/status/TARGET_END_PRODUCT.md",
     "docs/status/production-status.md",

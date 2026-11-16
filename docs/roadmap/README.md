@@ -40,8 +40,7 @@ python3 build/scripts/docs/render-roadmap-docs.py --summary
 python3 build/scripts/docs/render-roadmap-diagrams.py --summary
 ```
 
-The Markdown renderer also updates the compatibility summary at `docs/status/ROADMAP_SUMMARY.md`
-and the generated manifest. The diagram renderer owns
+The Markdown renderer also updates the generated manifest. The diagram renderer owns
 `docs/architecture/diagrams/meridian-development-roadmap.mmd`.
 Generated files are derived artifacts. Update the registry or renderer instead of editing generated outputs by hand.
 
