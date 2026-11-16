@@ -1557,7 +1557,8 @@ describe("SettingsScreen", () => {
     expect(screen.getByText("Data providers")).toBeInTheDocument();
     expect(screen.getByText("Alpaca")).toBeInTheDocument();
     expect(screen.getByText("Polygon.io")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Refresh Provider Connection Center routing data" })).toBeInTheDocument();
+    // Loaded routing evidence is re-read by the header Refresh; no local refresh or retry control shows.
+    expect(screen.queryByRole("button", { name: /Provider Connection Center routing data/ })).not.toBeInTheDocument();
     expect(screen.getByText("Reference data")).toBeInTheDocument();
     expect(screen.getByText("97% · Healthy")).toBeInTheDocument();
     expect(screen.getByText("Routing evidence missing")).toBeInTheDocument();

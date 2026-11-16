@@ -191,7 +191,8 @@ describe("WatchlistScreen", () => {
     await screen.findByText(/Live prices for 2 symbols/i, undefined, fullSuiteTimeout);
     vi.mocked(api.getLiveQuotesSnapshot).mockClear();
 
-    await user.click(screen.getByRole("button", { name: /Refresh live prices/i }));
+    expect(screen.queryByRole("button", { name: /^Refresh/ })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Fetch latest live prices" }));
 
     await waitFor(() => {
       expect(api.getLiveQuotesSnapshot).toHaveBeenCalledWith(["MSFT", "AAPL"], expect.objectContaining({

@@ -1092,17 +1092,17 @@ describe("buildLiveQuoteRefreshCommand", () => {
   it("hides refresh until a symbol is active and disables during refresh", () => {
     expect(buildLiveQuoteRefreshCommand(null, false)).toBeNull();
     expect(buildLiveQuoteRefreshCommand("AAPL", false)).toMatchObject({
-      label: "Refresh",
-      ariaLabel: "Refresh live data for AAPL",
+      label: "Fetch latest",
+      ariaLabel: "Fetch latest live data for AAPL",
       disabled: false,
       disabledReason: null,
       busy: false
     });
     expect(buildLiveQuoteRefreshCommand("AAPL", true)).toMatchObject({
-      label: "Refreshing",
-      ariaLabel: "Refreshing live data for AAPL",
+      label: "Fetching",
+      ariaLabel: "Fetching latest live data for AAPL",
       disabled: true,
-      disabledReason: "Live market data refresh is already running.",
+      disabledReason: "Live market data is already being fetched.",
       busy: true
     });
   });
@@ -1397,7 +1397,8 @@ describe("LiveQuotesScreen quick trade", () => {
     expect(await screen.findByRole("button", { name: /Buy AAPL at ask 188\.07/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Sell AAPL at 188\.05/i })).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Refresh live data for AAPL" }));
+    expect(screen.queryByRole("button", { name: /^Refresh/ })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Fetch latest live data for AAPL" }));
 
     expect(await screen.findByText("quote feed offline")).toBeInTheDocument();
     expect(screen.getByText("trade tape offline")).toBeInTheDocument();

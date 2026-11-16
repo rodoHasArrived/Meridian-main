@@ -648,11 +648,12 @@ describe("buildSettingsScreenViewModel", () => {
     });
 
     expect(vm.providerConnectionCenter.statusLabel).toBe("Refreshing");
-    expect(vm.providerConnectionCenter.refreshAction).toMatchObject({
-      label: "Refreshing...",
-      busy: true,
-      disabled: true
-    });
+    // Loaded evidence is re-read by the header Refresh; the local control exists only as Retry after a failed load.
+    expect(vm.providerConnectionCenter.refreshAction).toBeNull();
+    expect(buildSettingsScreenViewModel({ session, overview, providerConnections: [], workspaceErrors: { settings: "Provider-routing connection refresh failed." } }).providerConnectionCenter.refreshAction)
+      .toMatchObject({ label: "Retry", ariaLabel: "Retry loading Provider Connection Center routing data", busy: false, disabled: false });
+    expect(buildSettingsScreenViewModel({ session, overview, providerConnections: null, providerRoutingRefreshing: true }).providerConnectionCenter.refreshAction)
+      .toMatchObject({ label: "Retrying...", busy: true, disabled: true });
     expect(vm.providerConnectionCenter.routingSummaryLabel).toBe("2 routing connections · 2 bindings · 2 trust snapshots");
 
     const dataRows = vm.providerConnectionCenter.groups.find((group) => group.id === "data")?.rows ?? [];

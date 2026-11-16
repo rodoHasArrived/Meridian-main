@@ -9,6 +9,7 @@ import { TechnicalDetails } from "@/components/ui/technical-details";
 import { TimeText } from "@/components/ui/time-text";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { searchExecutionAuditTrail } from "@/lib/api/execution-audit.api";
 import { buildExecutionJourney } from "@/screens/execution-journey.view-model";
 import { auditLedgerLabel } from "@/screens/trading-screen.audit-trail.view-model";
@@ -34,7 +35,7 @@ export function ExecutionJourneyPanel({ orderId, fills = EMPTY_FILLS }: { orderI
   const vm = buildExecutionJourney(orderId, scopeRead?.results ?? [], fills);
   return <Card aria-label={`Execution journey for ${orderId}`}>
     <CardHeader>
-      <div className="flex items-start justify-between gap-2"><CardTitle className="text-base">Execution journey · {orderId}</CardTitle><Button size="sm" variant="outline" onClick={() => { setRead(null); setRevision((value) => value + 1); }}>Refresh journey</Button></div>
+      <div className="flex items-start justify-between gap-2"><CardTitle className="text-base">Execution journey · {orderId}</CardTitle><PanelReload reload={() => { setRead(null); setRevision((value) => value + 1); }} failed={Boolean(scopeRead?.error)} what="the execution journey" /></div>
       <CardDescription>Recorded events for this order, oldest first.</CardDescription>
     </CardHeader>
     <CardContent className="space-y-3 text-sm">

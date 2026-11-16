@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { TaxParcelComposition } from "@/screens/tax-parcel-composition";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PanelReload } from "@/components/ui/panel-reload";
 import { StatusBanner } from "@/components/ui/status-banner";
