@@ -1,5 +1,7 @@
 using FluentAssertions;
 using Meridian.Backtesting.Sdk;
+using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Services;
 using Meridian.Execution;
 using Meridian.Execution.Adapters;
 using Meridian.Execution.Events;
@@ -7,7 +9,6 @@ using Meridian.Execution.PaperMatching;
 using Meridian.Execution.Services;
 using Meridian.Ledger;
 using Meridian.Strategies.Live;
-using Meridian.Strategies.Live.Strategies;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
@@ -20,6 +21,7 @@ namespace Meridian.Tests.Strategies;
 
 public sealed partial class LiveTradingEngineTests
 {
+    private static readonly Guid AaplSecurityId = Guid.Parse("5ec0a9f1-0000-4000-8000-000000000aa1");
     // ---- Promotion to paper books the run's fills ----
 
     /// <summary>
@@ -33,7 +35,7 @@ public sealed partial class LiveTradingEngineTests
     public async Task PromotedPaperRun_FillsPostBalancedJournalsTaggedWithTheTargetRun()
     {
         const decimal observedPrice = 100m;
-        const decimal quantity = 7m;
+        const decimal quantity = 1m; // RecordingOrderLiveStrategy buys one share on its first trade
         const decimal fixedCommission = 1.25m;
         var dataRoot = Path.Combine(Path.GetTempPath(), "meridian-promotion-ledger", Guid.NewGuid().ToString("N"));
         try
@@ -44,14 +46,14 @@ public sealed partial class LiveTradingEngineTests
             await using var postingStore = new WalTradeFillPostingStore(
                 new TradeFillPostingStoreOptions(Path.Combine(dataRoot, "fill-postings"), postingContext),
                 NullLogger<WalTradeFillPostingStore>.Instance);
-            // No Security Master is configured in this harness; the gate's own fail-closed
-            // behaviour is covered by the LedgerPostingConsumer tests.
+            // Posting is fail-closed on Security Master identity: an unresolved fill stays
+            // pending for replay. The harness resolves AAPL so the posting can complete.
             await using var consumer = new LedgerPostingConsumer(
                 target,
                 NullLogger<LedgerPostingConsumer>.Instance,
                 postingStore,
                 postingContext,
-                requireSecurityMasterPostingGate: false);
+                securityValidationGate: new ResolvedSecurityValidationGate(AaplSecurityId));
 
             var store = new StrategyRunStore(new FileOperationalCaseHistoryStore(Path.Combine(dataRoot, "runs")));
             var hub = new Meridian.Execution.Live.LiveMarketEventHub();
@@ -74,19 +76,19 @@ public sealed partial class LiveTradingEngineTests
                 tradeEventPublisher: consumer);
             await oms.StartAsync();
 
+            // The strategy signals when its fill reaches the run session, so the run is only
+            // stopped after the fill has been delivered to it (stopping mid-delivery fails the run).
+            var strategy = new RecordingOrderLiveStrategy("promotion-ledger-strategy");
+            var catalog = new LiveStrategyCatalog().Register(strategy.StrategyId, _ => strategy);
             var source = StrategyRunEntry.StartWithEvidence(
-                BuyAndHoldLiveStrategy.CatalogId, "Buy and hold", RunType.Backtest, "promotion-ledger-source",
+                strategy.StrategyId, "Recording strategy", RunType.Backtest, "promotion-ledger-source",
                 engine: "MeridianNative",
-                parameterSet: new Dictionary<string, string>
-                {
-                    ["symbols"] = "AAPL",
-                    ["quantity"] = quantity.ToString(System.Globalization.CultureInfo.InvariantCulture)
-                },
+                parameterSet: new Dictionary<string, string> { ["symbols"] = "AAPL" },
                 retainedEvidenceReferences: [CanonicalPromotionVaultReference]).Complete(BuildPassingResult());
             await store.RecordRunAsync(source);
 
             string promotedRunId;
-            await using (var engine = CreateEngine(store, hub, cache, oms, portfolio: portfolio))
+            await using (var engine = CreateEngine(store, hub, cache, oms, catalog, portfolio: portfolio))
             {
                 var promotions = new PromotionService(store, new BacktestToLivePromoter(),
                     new InMemoryPromotionRecordStore(), NullLogger<PromotionService>.Instance, runLauncher: engine);
@@ -101,10 +103,11 @@ public sealed partial class LiveTradingEngineTests
                 promotedRunId.Should().NotBe(source.RunId);
                 await WaitForLifecycleAsync(store, promotedRunId, StrategyRunLifecycleEventType.Activated);
 
-                // The OMS completes a fill only after the accounting handoff is durably
-                // accepted, so a filled order means the posting is retained for the consumer.
-                await PublishTradesUntilAsync(hub, cache, "AAPL", observedPrice, () =>
-                    oms.GetCompletedOrders().Any(order => order.Status == ExecutionSdk.OrderStatus.Filled));
+                // The OMS delivers a fill only after its accounting handoff is durably accepted,
+                // so once the strategy sees the fill the posting is retained for the consumer.
+                await PublishTradesUntilAsync(hub, cache, "AAPL", observedPrice,
+                    () => strategy.FillReceived.Task.IsCompleted);
+                (await strategy.FillReceived.Task.WaitAsync(WaitBudget)).FilledQuantity.Should().Be((long)quantity);
                 (await engine.StopRunAsync(promotedRunId)).Should().BeTrue();
             }
 
@@ -125,7 +128,8 @@ public sealed partial class LiveTradingEngineTests
                 && entry.Metadata.Tags.ContainsKey(TradeFillCashFlowReplayCompatibility.StrategyRunIdTag)
                 && entry.Metadata.Tags[TradeFillCashFlowReplayCompatibility.StrategyRunIdTag] == promotedRunId,
                 "every journal must link back to the promoted paper run, not the backtest source");
-            journals.Should().OnlyContain(entry => entry.Metadata.StrategyId == BuyAndHoldLiveStrategy.CatalogId);
+            journals.Should().OnlyContain(entry => entry.Metadata.StrategyId == strategy.StrategyId);
+            journals.Should().OnlyContain(entry => entry.Metadata.SecurityId == AaplSecurityId);
             journals.Should().OnlyContain(entry =>
                 entry.Lines.Sum(line => line.Debit) == entry.Lines.Sum(line => line.Credit),
                 "every posted journal must balance");
@@ -156,6 +160,49 @@ public sealed partial class LiveTradingEngineTests
         {
             if (Directory.Exists(dataRoot))
                 Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
+    /// <summary>Resolves every symbol to one Security Master identity with no blocking issues.</summary>
+    private sealed class ResolvedSecurityValidationGate(Guid securityId) : ISecurityValidationGateService
+    {
+        public Task<SecurityValidationGateResultDto> ValidateSymbolAsync(
+            string symbol,
+            SecurityValidationWorkflowDto workflow,
+            string? workflowReference = null,
+            string? actor = null,
+            bool persistSnapshot = false,
+            CancellationToken ct = default)
+            => Task.FromResult(BuildResult(symbol, workflow));
+
+        public Task<SecurityValidationGateResultDto> ValidateSecurityAsync(
+            Guid requestedSecurityId,
+            SecurityValidationWorkflowDto workflow,
+            string? workflowReference = null,
+            string? actor = null,
+            bool persistSnapshot = false,
+            string? symbol = null,
+            CancellationToken ct = default)
+            => Task.FromResult(BuildResult(symbol ?? requestedSecurityId.ToString(), workflow));
+
+        private SecurityValidationGateResultDto BuildResult(string symbol, SecurityValidationWorkflowDto workflow)
+        {
+            var report = new SecurityValidationReportDto(
+                securityId,
+                Scope: "Security",
+                EvaluatedAtUtc: DateTimeOffset.UtcNow,
+                HasBlockingIssues: false,
+                CriticalIssueCount: 0,
+                ErrorIssueCount: 0,
+                Issues: []);
+            return new SecurityValidationGateResultDto(
+                workflow,
+                symbol.Trim().ToUpperInvariant(),
+                securityId,
+                IsResolved: true,
+                IsBlocked: false,
+                Report: report,
+                Snapshot: null);
         }
     }
 }
