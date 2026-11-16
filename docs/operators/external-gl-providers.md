@@ -121,6 +121,13 @@ accounting/access scope, and inclusive `PeriodStart` / `PeriodEnd`. Retained imp
 must use `PersistPreview=true` before export review. Preview-only results do not
 replace retained evidence. The integration service supplies scoped content hashes.
 
+Retained imports, mapping profiles and export packages (with their certifications) are written
+under `workstation/accounting/external-gl/` in the configured data root and reloaded at startup,
+so they survive a host restart. Each collection is one JSON file replaced atomically; the write
+completes before the record becomes visible. An unreadable file stops the service from starting
+empty: restore or remove it before continuing. This is single-host local storage and does not
+coordinate two hosts writing the same directory.
+
 - Xero reads the chart, accrual Journals and TrialBalance report. Journals are
   scanned by journal-number offset, including backdated entries, then filtered to
   the requested accounting dates. Report account attributes identify accounts;

@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TradeBookingRequest
+
+Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.TradeBookingRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:144](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L144).
+
+Request to book a trade on trade date (T+0).
+
+```csharp
+public sealed record TradeBookingRequest(string AccountId, string Symbol, ReconciliationDimension Dimension, decimal Quantity, decimal Amount, string Currency, DateOnly TradeDate, int SettlementCycleDays, string BookedBy, string? BookingId = null, DateTimeOffset? BookedAtUtc = null);
+```
+
 ## TrueBreakEscalation
 
 Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.TrueBreakEscalation</code>. Kind: `record`.
@@ -1141,22 +1153,3 @@ Declared public members:
 | <code>public const string OverExpiryIssueCode = &quot;private-capital.commitment-over-expiry&quot;;</code> | [src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs:16](../../../../src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs#L16) |  |
 | <code>public static CommitmentRollForward Build(InvestorCommitment commitment, IReadOnlyList&lt;CommitmentActivityEvent&gt; events, IReadOnlyList&lt;CommitmentExpiryEvent&gt;? expiryEvents = null);</code> | [src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs:21](../../../../src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs#L21) | Builds the roll-forward for one commitment from dated activity and governed expiry events. |
 | <code>public static CommitmentRollForward BuildFromFundEvents(InvestorCommitment commitment, IReadOnlyList&lt;PrivateCapitalFundEventDto&gt; fundEvents, Func&lt;PrivateCapitalFundEventDto, DistributionRecallability&gt;? recallabilityClassifier = null, IReadOnlyList&lt;CommitmentExpiryEvent&gt;? expiryEvents = null, bool includeUnposted = false);</code> | [src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs:159](../../../../src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs#L159) | Adapts the private-capital fund-event projection for one commitment. Events are matched by capital account (and investor when both sides declare one) in the commitment currency; recallability is read from the supplied classifier because the projection does not carry it structurally (it rides journal metadata tags). |
-
-## DefaultInterestCalculator
-
-Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.DefaultInterestCalculator</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/DefaultInterestCalculator.cs:11](../../../../src/Meridian.FinancialOperations/PrivateCapital/DefaultInterestCalculator.cs#L11).
-
-Detects unfunded capital-call installments past their grace period and computes simple default interest on the unfunded principal. Pure and deterministic.
-
-```csharp
-public static class DefaultInterestCalculator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static decimal ComputeSimpleInterest(decimal principal, decimal annualRate, DateOnly from, DateOnly to, DefaultInterestConvention convention);</code> | [src/Meridian.FinancialOperations/PrivateCapital/DefaultInterestCalculator.cs:18](../../../../src/Meridian.FinancialOperations/PrivateCapital/DefaultInterestCalculator.cs#L18) | Computes simple interest on a defaulted principal from from (exclusive of the grace period, handled by the caller) to to under the given day-count convention, rounded to 2dp. |
-| <code>public static IReadOnlyList&lt;CapitalCallDefault&gt; Evaluate(InvestorCommitment commitment, IReadOnlyList&lt;DrawdownInstallment&gt; installments, IReadOnlyList&lt;CapitalCallFundingReceipt&gt; fundingReceipts, DateOnly asOf);</code> | [src/Meridian.FinancialOperations/PrivateCapital/DefaultInterestCalculator.cs:46](../../../../src/Meridian.FinancialOperations/PrivateCapital/DefaultInterestCalculator.cs#L46) | Evaluates each installment against its funding evidence and, where the call is unfunded past its grace period, produces a CapitalCallDefault with a single accrual span from the grace end to the cure date (if fully funded later) or to asOf. |

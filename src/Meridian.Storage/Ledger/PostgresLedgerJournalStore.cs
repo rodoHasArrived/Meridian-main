@@ -98,6 +98,8 @@ public sealed partial class PostgresLedgerJournalStore :
             throw new LedgerValidationException($"Journal entry '{entry.Entry.JournalEntryId}' is not balanced.");
         }
 
+        LedgerDurableBalanceRule.Ensure(entry.Entry);
+
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
 
@@ -212,6 +214,8 @@ public sealed partial class PostgresLedgerJournalStore :
         {
             throw new LedgerValidationException($"Journal entry '{entry.Entry.JournalEntryId}' is not balanced.");
         }
+
+        LedgerDurableBalanceRule.Ensure(entry.Entry);
 
         var entitlementBookId = await AcquireAppendEntitlementBookAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         if (await TryResolveCommittedReplayAsync(connection, transaction, entry, ct).ConfigureAwait(false))
