@@ -131,10 +131,11 @@ describe("single-principal evidence acknowledgment", () => {
     vi.mocked(api.recordPreparerAttestation).mockRejectedValueOnce(new ApiError({ path: "/attestations", status: 409, detail: "Source changed" }));
     const view = render(<GlobalRefreshProvider sequence={0}><SinglePrincipalAttestationPanel vaultId="vault-1" documentId="document-1" /></GlobalRefreshProvider>);
     await loaded(); confirm();
+    expect(screen.queryByRole("button", { name: /Refresh attestation|Retry loading attestation/ })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Attest evidence inspection" }));
     await screen.findByText(/Refresh the current policy and evidence/);
     expect(screen.queryByRole("button", { name: "Retry same command" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Refresh attestation|Retry loading attestation/ })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Retry loading attestation" })).toBeEnabled();
     view.rerender(<GlobalRefreshProvider sequence={1}><SinglePrincipalAttestationPanel vaultId="vault-1" documentId="document-1" /></GlobalRefreshProvider>);
     await loaded();
     expect(screen.getByRole("checkbox")).not.toBeChecked();

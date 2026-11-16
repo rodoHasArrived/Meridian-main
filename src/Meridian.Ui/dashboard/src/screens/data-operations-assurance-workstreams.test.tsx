@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useState, type ReactNode } from "react";
@@ -28,8 +28,9 @@ describe("data operations assurance workstreams", () => {
     render(<MemoryRouter><HeaderRefresh><IngestionOperationsWorkstream /><StorageAssuranceWorkstream /></HeaderRefresh></MemoryRouter>);
     expect(await screen.findByText("job-1")).toBeInTheDocument();
     expect(await screen.findByText("Temporary candidates")).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Refresh/ })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Retry loading/ })).not.toBeInTheDocument();
+    // The embedded archive-maintenance panel (data-operations-maintenance.tsx) owns its own controls.
+    expect(within(screen.getByRole("region", { name: "Ingestion Operations Center" })).queryByRole("button", { name: /Refresh/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Retry loading (ingestion operations|storage assurance)/ })).not.toBeInTheDocument();
 
     api.getIngestionOperations.mockRejectedValueOnce(new Error("Ingestion read model offline"));
     fireEvent.click(screen.getByRole("button", { name: "Header refresh" }));

@@ -71,9 +71,10 @@ describe("retained robustness grid", () => {
     expect(screen.queryByRole("button", { name: /retained experiments/ })).not.toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Header refresh" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("Forbidden");
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Retry loading retained experiments" }));
     await waitFor(() => expect(getRunSweeps).toHaveBeenCalledTimes(3));
-    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+    expect(await screen.findByRole("table")).toBeInTheDocument();
   });
   it("keeps same-ID legacy experiments with different mode, feed and objective independently selectable", async () => {
     const other: StrategySweepResultGroup = {
