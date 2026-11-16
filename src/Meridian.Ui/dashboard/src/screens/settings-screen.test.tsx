@@ -2020,7 +2020,7 @@ describe("SettingsScreen", () => {
     expect(within(panel).getByText("1 rows")).toBeInTheDocument();
     expect(within(panel).getByText("1 review required")).toBeInTheDocument();
     expect(within(panel).getByText("1 ready / 0 blocked")).toBeInTheDocument();
-    expect(within(panel).getByText("0 handoffs")).toBeInTheDocument();
+    expect(within(panel).getByText("0 deliveries")).toBeInTheDocument();
     expect(within(panel).getByText("sync-positions-2")).toBeInTheDocument();
     expect(within(panel).getByText("quarantine-position-1")).toBeInTheDocument();
     expect(within(panel).getByText("quarantine-position-3")).toBeInTheDocument();
