@@ -6705,6 +6705,7 @@ Meridian-main
 │   │   │   └── OrderStatusFacts.cs
 │   │   ├── PaperMatching
 │   │   │   ├── PaperMarketObservation.cs
+│   │   │   ├── PaperObservationFreshnessPolicy.cs
 │   │   │   ├── PaperOrderMatchingPolicy.cs
 │   │   │   ├── PaperSymbolEvaluationPump.cs
 │   │   │   ├── PaperTradingCostModel.cs
@@ -13244,6 +13245,7 @@ Meridian-main
 │   │   │   ├── PaperGatewayTickSizeBoundaryTests.cs
 │   │   │   ├── PaperLedgerIntegrityTests.cs
 │   │   │   ├── PaperLotConventionTests.cs
+│   │   │   ├── PaperObservationFreshnessTests.cs
 │   │   │   ├── PaperOrderMatchingPolicyTests.cs
 │   │   │   ├── PaperPositionUnitizedLotTests.cs
 │   │   │   ├── PaperSessionAccountingProvenanceTests.cs
