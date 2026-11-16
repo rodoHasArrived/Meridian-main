@@ -99,13 +99,9 @@ const payload: AppShellWorkspacePayload = {
 };
 
 function renderScreen({
-  onEditOperatingScope = vi.fn(),
-  onRefresh = vi.fn(),
   refreshing = false,
   search = "?symbol=MSFT"
 }: {
-  onEditOperatingScope?: () => void;
-  onRefresh?: () => void;
   refreshing?: boolean;
   search?: string;
 } = {}) {
@@ -122,8 +118,6 @@ function renderScreen({
       viewModel={shell.workflowContinuity}
       trustStrip={shell.trustStrip}
       attention={shell.attention}
-      onEditOperatingScope={onEditOperatingScope}
-      onRefresh={onRefresh}
       refreshing={refreshing}
     />
   );
@@ -374,21 +368,16 @@ describe("DailyControlTowerScreen", () => {
     expect(screen.getByRole("region", { name: "Workstation status" })).toHaveAttribute("data-status-tone", "blocked");
   });
 
-  it("exposes provider and refresh remediation with the status row", async () => {
-    const user = userEvent.setup();
-    const onEditOperatingScope = vi.fn();
-    const onRefresh = vi.fn();
-    renderScreen({ onEditOperatingScope, onRefresh, search: "" });
+  it("exposes provider remediation with the status row and leaves scope and refresh to the header", () => {
+    renderScreen({ search: "" });
 
     const status = screen.getByRole("region", { name: "Workstation status" });
     expect(within(status).getByRole("link", { name: "Open provider posture" }))
       .toHaveAttribute("href", "/data/providers");
 
-    await user.click(screen.getByRole("button", { name: "Set operating scope" }));
-    await user.click(within(status).getByRole("button", { name: "Refresh evidence: control tower" }));
-
-    expect(onEditOperatingScope).toHaveBeenCalledTimes(1);
-    expect(onRefresh).toHaveBeenCalledTimes(1);
+    // Scope is chosen in the header scope bar and refresh is the header's one button.
+    expect(screen.queryByRole("button", { name: /operating scope|scope filter/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /refresh/i })).not.toBeInTheDocument();
   });
 
   it("preserves compatible operating scope in provider recovery", () => {
@@ -426,7 +415,8 @@ describe("DailyControlTowerScreen", () => {
     await userEvent.setup().selectOptions(screen.getByRole("combobox", { name: "Show" }), "all");
     expect(screen.queryByRole("region", { name: "Choose Control Tower scope" })).not.toBeInTheDocument();
     expect(screen.getByRole("treegrid", { name: "Today queue" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Daily control tower confidence")).toHaveTextContent("All authorized scopes");
+    // The header scope bar states the scope; Today does not repeat it.
+    expect(screen.getByLabelText("Daily control tower confidence")).not.toHaveTextContent("All authorized scopes");
     expect(screen.getByRole("columnheader", { name: "Workspace" })).toBeInTheDocument();
     // Owner is tracked for inbox rows only; workspace signals say so rather than inventing one.
     expect(screen.getByRole("columnheader", { name: "Owner" })).toBeInTheDocument();

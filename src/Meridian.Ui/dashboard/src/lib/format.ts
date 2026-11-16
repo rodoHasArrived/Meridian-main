@@ -225,6 +225,23 @@ export function pluralizeCount(count: number, singular: string, options: Plurali
   return `${renderedCount} ${count === 1 ? singular : plural}`;
 }
 
+// Vowel-initial words that start with a consonant sound ("a user", "a one-time", "a European").
+const CONSONANT_SOUND_VOWEL_START = /^(?:uni|us[aeu]|ut[eio]|eu|one|once|ubiq)/i;
+// Consonant-initial words that start with a vowel sound ("an hour", "an honest").
+const VOWEL_SOUND_CONSONANT_START = /^(?:hour|honest|honou?r|heir)/i;
+
+/**
+ * A word or phrase with the right indefinite article: "an Operator session", "a Viewer session".
+ * Use it wherever a generated sentence puts "a" before a name it does not control.
+ */
+export function withIndefiniteArticle(phrase: string): string {
+  const word = phrase.trim();
+  const vowelSound = /^[aeiou]/i.test(word)
+    ? !CONSONANT_SOUND_VOWEL_START.test(word)
+    : VOWEL_SOUND_CONSONANT_START.test(word);
+  return `${vowelSound ? "an" : "a"} ${word}`;
+}
+
 /**
  * A count out of a named population, e.g. "1 of 5 providers". Every KPI that shows a part of a
  * whole uses this, so the denominator always says what it counts and two figures over different

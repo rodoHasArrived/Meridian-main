@@ -184,6 +184,7 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
       </form> : null}
       <OperationalTrustSummary
         label="Family office data confidence"
+        showWhenClear
         source={{
           value: resolvedStructure?.displayName ?? loadStateSourceLabel(loadState),
           detail: "Entity, portfolio, accounting, and private-asset sources",

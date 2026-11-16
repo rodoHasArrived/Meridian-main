@@ -1,7 +1,7 @@
 import { formatProviderHealth, selectSharedProviderHealth } from "@/lib/cross-screen-counts";
 import type { WorkstationCrossScreenCounts } from "@/types/cross-screen-counts";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { pluralizeCount } from "@/lib/format";
+import { pluralizeCount, withIndefiniteArticle } from "@/lib/format";
 import { resolveKpi } from "@/lib/kpi-registry";
 import {
   connectAlpacaConnection,
@@ -1961,10 +1961,10 @@ function buildProfileAuthenticationPanel(
     : isLiveSession
       ? `${session.displayName} is operating in LIVE mode as ${session.role}. Confirm account authority and diagnostics before live workflows.`
       : hasCurrentBrokerageAuthority
-        ? `${session.displayName} has a ${session.role} session with verified brokerage authority for ${workspaceLabel}.`
+        ? `${session.displayName} has ${withIndefiniteArticle(session.role)} session with verified brokerage authority for ${workspaceLabel}.`
         : brokerageEvidenceNeedsRefresh
-          ? `${session.displayName} has a ${session.role} session for ${workspaceLabel}, but brokerage evidence is ${verificationFreshness.status === "unavailable" ? "not current" : verificationFreshness.status} and needs re-verification before readiness handoff.`
-          : `${session.displayName} has a ${session.role} session in ${environmentLabel}; brokerage authority still needs verification.`;
+          ? `${session.displayName} has ${withIndefiniteArticle(session.role)} session for ${workspaceLabel}, but brokerage evidence is ${verificationFreshness.status === "unavailable" ? "not current" : verificationFreshness.status} and needs re-verification before readiness handoff.`
+          : `${session.displayName} has ${withIndefiniteArticle(session.role)} session in ${environmentLabel}; brokerage authority still needs verification.`;
   const notice = !session
     ? {
         title: "Authentication context unavailable",

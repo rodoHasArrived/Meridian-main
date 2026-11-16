@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  describeCompactProvenance,
   buildFigureDifferenceNote,
   buildMetricTrust,
   combineMetricFreshness,
@@ -250,5 +251,31 @@ describe("buildFigureDifferenceNote", () => {
 
     expect(note?.unexplained).toBe(true);
     expect(note?.summary).toBe("Header strip and Portfolio Explorer report the same source but different figures. Treat both as unverified until the difference is traced.");
+  });
+});
+
+describe("describeCompactProvenance", () => {
+  const now = new Date("2026-11-15T16:00:00Z");
+  const at = (asOf: string, scope = "All accounts", source = "Portfolio workspace") =>
+    ({ id: source + asOf, label: "Cash", value: "$1", delta: "", tone: "default" as const, provenance: { source, asOf, scope } });
+
+  it("names the data kind, the time when it is today, and the shared scope", () => {
+    expect(describeCompactProvenance([at("2026-11-15T12:08:00Z"), at("2026-11-15T12:08:00Z")], { dataLabel: "seeded demo data", now }))
+      .toBe("Seeded · 12:08 UTC · All accounts");
+  });
+
+  it("keeps the date for an earlier day and names stale figures", () => {
+    expect(describeCompactProvenance([at("2026-05-07T12:08:00Z")], { freshness: "stale", now }))
+      .toBe("Stale · May 7, 2026, 12:08 UTC · All accounts");
+  });
+
+  it("leaves out what the figures do not share and says the sources are mixed", () => {
+    expect(describeCompactProvenance([at("2026-11-15T12:08:00Z"), at("2026-11-15T12:09:00Z", "Account A", "Trading workspace")], { dataLabel: "seeded demo data", now }))
+      .toBe("Seeded · Mixed sources");
+  });
+
+  it("falls back to the strip's scope when no figure states one", () => {
+    const bare = { id: "a", label: "Cash", value: "$1", delta: "", tone: "default" as const };
+    expect(describeCompactProvenance([bare], { scope: "All authorized scopes", now })).toBe("All authorized scopes");
   });
 });

@@ -1,5 +1,5 @@
-import { createContext, useContext, useEffect, useId, useRef, useState, type ReactNode } from "react";
-import { Info } from "lucide-react";
+import { createContext, useContext, useId, useSyncExternalStore, type ReactNode } from "react";
+import { InfoNote } from "@/components/ui/info-note";
 
 const OperatorContext = createContext<string | null>(null);
 
@@ -8,80 +8,63 @@ export function SectionDescriptionPreferences({ operatorKey, children }: { opera
   return <OperatorContext.Provider value={operatorKey}>{children}</OperatorContext.Provider>;
 }
 
-/** Instructional copy only: scope, warnings and source evidence must stay visible. */
-export function SectionDescription({ descriptionKey, label = "About this section", children }: {
+const STORAGE_PREFIX = "meridian.workstation.pageDescriptions.v1";
+const listeners = new Set<() => void>();
+// Used when storage is blocked or no operator is loaded, so the choice still holds for the visit.
+const sessionChoices = new Map<string, boolean>();
+
+const storageKey = (operator: string | null) => `${STORAGE_PREFIX}:${encodeURIComponent(operator ?? "anonymous")}`;
+
+function readHidden(operator: string | null): boolean {
+  const key = storageKey(operator);
+  if (sessionChoices.has(key)) return sessionChoices.get(key)!;
+  try { return operator !== null && localStorage.getItem(key) === "hidden"; } catch { return false; }
+}
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  return () => { listeners.delete(listener); };
+}
+
+/**
+ * The operator's one setting for page and section descriptions (Settings > Preferences): shown as
+ * a line under each heading, or tucked behind an information icon. It replaces the per-section
+ * inline "Hide" link, so descriptions look the same on every page and across visits.
+ */
+export function useSectionDescriptionsHidden(): [hidden: boolean, setHidden: (hidden: boolean) => void] {
+  const operator = useContext(OperatorContext);
+  const hidden = useSyncExternalStore(subscribe, () => readHidden(operator), () => false);
+  const setHidden = (next: boolean) => {
+    const key = storageKey(operator);
+    sessionChoices.set(key, next);
+    try { if (operator !== null) localStorage.setItem(key, next ? "hidden" : "shown"); } catch { /* Storage is optional. */ }
+    listeners.forEach((listener) => listener());
+  };
+  return [hidden, setHidden];
+}
+
+/** Test seam: forget choices held for the visit. */
+export function resetSectionDescriptionChoices() {
+  sessionChoices.clear();
+  listeners.forEach((listener) => listener());
+}
+
+/**
+ * Instructional copy only: scope, warnings and source evidence must stay visible. Rendered as a
+ * line of text, or behind an information icon when the operator has turned descriptions off.
+ * `descriptionKey` names the section for callers and tests; the preference is not per section.
+ */
+export function SectionDescription({ label = "About this section", children }: {
   descriptionKey: string;
   label?: string;
   children: ReactNode;
 }) {
-  const operator = useContext(OperatorContext);
-  const storageKey = operator ? `meridian:section-description:v1:${encodeURIComponent(operator)}:${encodeURIComponent(descriptionKey)}` : null;
-  // Remount on operator/section changes so one person's preference cannot hide another's help.
-  return <Description key={storageKey ?? descriptionKey} storageKey={storageKey} label={label}>{children}</Description>;
-}
-
-function Description({ storageKey, label, children }: { storageKey: string | null; label: string; children: ReactNode }) {
   const id = useId();
-  const descriptionRef = useRef<HTMLDivElement>(null);
-  const infoRef = useRef<HTMLElement>(null);
-  const restoreFocus = useRef(false);
-  const [seen, setSeen] = useState(() => {
-    try { return storageKey !== null && localStorage.getItem(storageKey) === "seen"; } catch { return false; }
-  });
-  useEffect(() => {
-    // Keep copy visible for this visit. Only remember descriptions actually in view,
-    // so mounting help below the fold or inside a closed disclosure does not mark it read.
-    if (seen || !storageKey || !descriptionRef.current) return;
-    const record = () => {
-      try { localStorage.setItem(storageKey, "seen"); } catch { /* Storage is optional. */ }
-    };
-    if (typeof IntersectionObserver === "undefined") { record(); return; }
-    const observer = new IntersectionObserver((entries) => {
-      if (entries.some((entry) => entry.isIntersecting && entry.intersectionRatio >= 0.5)) {
-        record();
-        observer.disconnect();
-      }
-    }, { threshold: 0.5 });
-    observer.observe(descriptionRef.current);
-    return () => observer.disconnect();
-  }, [seen, storageKey]);
-  const remember = () => {
-    restoreFocus.current = true;
-    setSeen(true);
-    try { if (storageKey) localStorage.setItem(storageKey, "seen"); } catch { /* Help remains usable without storage. */ }
-  };
-  useEffect(() => {
-    if (seen && restoreFocus.current) {
-      infoRef.current?.focus();
-      restoreFocus.current = false;
-    }
-  }, [seen]);
+  const [hidden] = useSectionDescriptionsHidden();
 
-  if (!seen) {
-    return (
-      <div ref={descriptionRef} className="flex min-w-0 items-baseline gap-2 text-xs leading-5 text-muted-foreground">
-        <div className="min-w-0" id={id}>{children}</div>
-        <button type="button" onClick={remember} aria-label={`Hide description: ${label}`} aria-describedby={id}
-          className="shrink-0 rounded-sm px-1 underline underline-offset-2 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
-          Hide
-        </button>
-      </div>
-    );
+  if (!hidden) {
+    return <div className="min-w-0 text-xs leading-5 text-muted-foreground" id={id}>{children}</div>;
   }
 
-  return (
-    <details className="relative inline-block align-middle" onKeyDown={(event) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        event.currentTarget.open = false;
-        event.currentTarget.querySelector("summary")?.focus();
-      }
-    }}>
-      <summary ref={infoRef} aria-label={label} title={label}
-        className="flex size-6 cursor-pointer list-none items-center justify-center rounded-sm text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary [&::-webkit-details-marker]:hidden">
-        <Info className="size-3.5" aria-hidden="true" />
-      </summary>
-      <div className="absolute left-0 top-full z-30 w-80 max-w-[calc(100vw-4rem)] rounded-sm border border-border bg-card p-3 text-xs leading-5 text-muted-foreground shadow-md">{children}</div>
-    </details>
-  );
+  return <InfoNote label={label}>{children}</InfoNote>;
 }

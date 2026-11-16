@@ -4,6 +4,7 @@ import { useKpi } from "@/lib/kpi-context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DensityToggle } from "@/components/ui/density-toggle";
+import { useSectionDescriptionsHidden } from "@/components/ui/section-description";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { usesTrackedCaps } from "@/design-system/label-case";
@@ -175,7 +176,7 @@ export function SettingsAppearanceSection() {
           Appearance
         </CardTitle>
         <CardDescription className="mt-2">
-          Choose the workstation theme, screen density and display time zone for this browser.
+          Choose the theme, screen density, display time zone and page descriptions for this browser.
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4 md:grid-cols-2">
@@ -188,8 +189,26 @@ export function SettingsAppearanceSection() {
           <DensityToggle persist="meridian.workstation.density.v1" fullWidth />
         </div>
         <SettingsTimeZonePreference />
+        <PageDescriptionsPreference />
       </CardContent>
     </Card>
+  );
+}
+
+/** One setting for every page and section description; there is no per-page "Hide" link. */
+function PageDescriptionsPreference() {
+  const [hidden, setHidden] = useSectionDescriptionsHidden();
+  return (
+    <div className="grid gap-2">
+      <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Page descriptions</div>
+      <label className="flex items-start gap-2 text-sm">
+        <input type="checkbox" className="mt-1" checked={!hidden} onChange={(event) => setHidden(!event.target.checked)} />
+        <span>
+          Show the one-line description under page and section headings
+          <span className="block text-xs text-muted-foreground">When off, each description is behind an information icon beside its heading.</span>
+        </span>
+      </label>
+    </div>
   );
 }
 

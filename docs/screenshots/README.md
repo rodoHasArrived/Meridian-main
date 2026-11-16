@@ -91,12 +91,18 @@ any of these (`findCaptureContentIssues`):
 | `opaque-identifier` | a GUID-shaped identifier |
 | `singular-count-plural-noun` | a count of one before a phrase-ending plural noun ("1 rows") |
 | `api-path` | a request path such as `/api/ledger/...` |
+| `article-before-vowel` | "a" before a vowel sound ("a Operator session"); "a user" and "a one-time" pass |
 | `internal-term` | "lane", "payload", "mutation" or "caller-visible" |
 | `slug-identifier` | a slug-shaped record identifier (`run-dev-1`, `default-fund`, `entity-fund-alpha`); ordinary compounds such as "as-of" and "read-only" pass |
 | `latency-not-duration` | a `Latency` label followed by a clock time or "Never" |
 | `unavailable-placeholder` | "Basis unavailable" or "Saved views unavailable" |
 | `disabled-primary-without-reason` | a visible disabled primary button with no `title` or description saying why |
 | `status-contradiction` | a status bar that says "up to date" while the page's posture strip says its freshness needs review or is blocked |
+
+After all routes are captured, the script also compares totals on each page (`checkHoldingsTotals`):
+where a holdings table shows every loaded row, the sum of its row exposures must equal both the
+table's own total line and the page's "Total exposure" headline figure. A disagreement fails the
+run and is recorded under `holdingsTotals` in the manifest. A table narrowed by a filter is skipped.
 
 The first seven read the rendered text; the last two read the DOM. Collapsed technical details,
 `title` attributes and form-field values are not rendered text, so identifiers and request paths

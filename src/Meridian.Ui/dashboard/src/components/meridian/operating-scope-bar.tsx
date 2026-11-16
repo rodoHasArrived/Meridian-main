@@ -9,13 +9,15 @@ import {
 import { cn } from "@/lib/utils";
 
 /**
- * The operating scope as a permanent, labelled part of the top bar:
- * `Scope  Entity … › Fund … › Account … › Period …`, plus Subject, Run and Provider when set. An
- * unset Entity, Fund or Account reads "All authorized" and an unset Period "All periods", so an
- * unscoped view never looks like an empty one. Ids show as names when `valueLabels` supplies them. It is shown on every route (the scope still carries
+ * The operating scope as a permanent, labelled part of the top bar. With nothing narrowed it reads
+ * `Scope  All authorized scopes`; otherwise it lists only the fields that are set
+ * (`Scope  Fund Alpha › Period 2026-05`), so an unscoped view never looks like an empty one and a
+ * narrowed one shows exactly what narrows it. Ids show as names when `valueLabels` supplies them. It is shown on every route (the scope still carries
  * on a page that does not filter by it) and opens the shell's scope picker. A set dimension the
  * current screen does not filter by stays in the bar, muted, so a carried scope is never invisible.
  */
+const UNSCOPED_LABEL = "All authorized scopes";
+
 export function OperatingScopeBar({
   operatingScope,
   onEditOperatingScope,
@@ -28,8 +30,10 @@ export function OperatingScopeBar({
   valueLabels?: OperatingScopeValueLabels;
 }) {
   const applicabilityId = useId();
-  const segments = buildOperatingScopeBarSegments(operatingScope, scopeDimensionsInEffect, valueLabels);
-  const spoken = segments.map((segment) => `${segment.label} ${segment.value}`).join(", ");
+  const allSegments = buildOperatingScopeBarSegments(operatingScope, scopeDimensionsInEffect, valueLabels);
+  const unscoped = !allSegments.some((segment) => segment.isSet);
+  const segments = allSegments.filter((segment) => segment.isSet);
+  const spoken = unscoped ? UNSCOPED_LABEL : segments.map((segment) => `${segment.label} ${segment.value}`).join(", ");
   const applied = segments.filter((segment) => segment.isSet && segment.applied);
   const retained = segments.filter((segment) => segment.isSet && !segment.applied);
   const describe = (items: typeof segments) => items.map((segment) => `${segment.label} ${segment.value}`).join(", ");
@@ -39,21 +43,21 @@ export function OperatingScopeBar({
     <>
       <span className="operating-scope-bar-label" aria-hidden="true">Scope</span>
       <span className="operating-scope-bar-segments" aria-hidden="true">
+        {unscoped ? (
+          <span className="operating-scope-bar-segment" title="Not narrowed: covers everything you are authorized to see, and each screen's default date range">
+            <span className="operating-scope-bar-value">{UNSCOPED_LABEL}</span>
+          </span>
+        ) : null}
         {segments.map((segment, index) => (
           <span
             key={segment.id}
             className={cn(
               "operating-scope-bar-segment",
-              !segment.isSet && "operating-scope-bar-segment-unset",
               !segment.applied && "operating-scope-bar-segment-retained"
             )}
-            title={!segment.isSet
-              ? segment.id === "window"
-                ? `${segment.label}: not narrowed; each screen shows its own default range`
-                : `${segment.label}: not narrowed; covers everything you are authorized to see`
-              : segment.applied
-                ? `${segment.label}: applied here`
-                : `${segment.label}: carried, but not applied on this screen`}
+            title={segment.applied
+              ? `${segment.label}: applied here`
+              : `${segment.label}: carried, but not applied on this screen`}
           >
             {index > 0 ? <span className="operating-scope-bar-sep">›</span> : null}
             <span className="operating-scope-bar-dimension">{segment.label}</span>

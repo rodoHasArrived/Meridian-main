@@ -23,6 +23,7 @@ import {
 } from "@/app-shell.operating-scope";
 import { CommandPalette } from "@/components/meridian/command-palette";
 import { KeyboardShortcutsSheet } from "@/components/meridian/keyboard-shortcuts-sheet";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import { getGlobalKeyBinding, matchesKeyCombo } from "@/lib/keymap";
 import { ScopePicker } from "@/components/meridian/scope-picker";
 import { collectScopeFundAccounts, type ScopeFundAccountOption } from "@/lib/operating-scope/fund-accounts";
@@ -371,6 +372,7 @@ function AppShell({
   const [keyboardHelpOpen, setKeyboardHelpOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
   const [scopePickerOpen, setScopePickerOpen] = useState(false);
+  const [globalRefreshSequence, setGlobalRefreshSequence] = useState(0);
   const openScopePicker = useCallback(() => setScopePickerOpen(true), []);
   const [layoutRestoreSequence, setLayoutRestoreSequence] = useState(0);
   const [routeAnnouncement, setRouteAnnouncement] = useState("");
@@ -905,8 +907,16 @@ function AppShell({
     shell.routeFocus.targetElementId
   ]);
 
+  // The header Refresh is the one refresh control: it reloads the workstation payloads (deferred
+  // ones too) and signals panels that load their own data to reload with it.
+  const refreshEverything = () => {
+    setGlobalRefreshSequence((sequence) => sequence + 1);
+    void refresh({ includeDeferred: true });
+  };
+
   return (
     <SectionDescriptionPreferences operatorKey={session ? `${session.environment}:${session.displayName}:${session.role}` : null}>
+    <GlobalRefreshProvider sequence={globalRefreshSequence}>
     <MetricPassportSessionProvider scopeKey={JSON.stringify([operatingScopeInput, refreshStatus.inFlight])} sessionIdentity={session}>
     <EntityInspectorProvider scopeKey={JSON.stringify(operatingScopeInput)} sessionIdentity={session} refreshSequence={refreshStatus.inFlight ? 1 : 0}>
     <ScopePickerOpenerProvider open={openScopePicker}>
@@ -996,7 +1006,7 @@ function AppShell({
             workspace={headerWorkspace}
             session={session}
             dataProvenance={dataProvenance}
-            onRefresh={refresh}
+            onRefresh={refreshEverything}
             refreshing={loading || refreshStatus.inFlight}
           />
 
@@ -1012,10 +1022,6 @@ function AppShell({
                       trustStrip={shell.trustStrip}
                       attention={shell.attention}
                       triage={triageInbox}
-                      onEditOperatingScope={() => setScopePickerOpen(true)}
-                      onRefresh={() => {
-                        void refresh({ includeDeferred: true });
-                      }}
                       refreshing={loading || refreshStatus.inFlight}
                     />
                   )} />
@@ -1179,6 +1185,7 @@ function AppShell({
     </ScopePickerOpenerProvider>
     </EntityInspectorProvider>
     </MetricPassportSessionProvider>
+    </GlobalRefreshProvider>
     </SectionDescriptionPreferences>
   );
 }

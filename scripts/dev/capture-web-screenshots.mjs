@@ -597,7 +597,13 @@ const LATENCY_NOT_DURATION_PATTERN = /^latency\n(?:never|[a-z]{3} \d{1,2}, \d{1,
 // Placeholders standing in for optional context: an undeclared basis printed as a failure, or a
 // missing harness fixture behind the saved-views notice.
 const UNAVAILABLE_PLACEHOLDER_PATTERN = /\b(?:basis|saved views) unavailable\b/gi;
+// The article "a" directly before a word that starts with a vowel sound ("a Operator session").
+// Generated sentences get the article from withIndefiniteArticle in the dashboard's lib/format.
+// Words that start with a vowel letter but a consonant sound ("a user", "a one-time") pass.
+const ARTICLE_BEFORE_VOWEL_PATTERN = /(?<![\w'’/-])a ([aeiou][a-z]+)/gi;
+const CONSONANT_SOUND_VOWEL_START = /^(?:uni|us[aeu]|ut[eio]|eu|one|once|ubiq)/i;
 export const CAPTURE_CONTENT_ISSUE_KINDS = [
+  "article-before-vowel",
   "opaque-identifier",
   "singular-count-plural-noun",
   "api-path",
@@ -637,6 +643,8 @@ export function isSlugIdentifier(token) {
  *     none of which is part of the rendered text.
  *   - singular-count-plural-noun: "1 rows" style counts. Use pluralizeCount from the dashboard's
  *     lib/format.
+ *   - article-before-vowel: "a" before a vowel sound ("a Operator session"). Generated sentences
+ *     use withIndefiniteArticle from the dashboard's lib/format.
  *   - api-path: a request path such as "/api/ledger/...". Failed requests go through ErrorNotice,
  *     which keeps the path under "Technical details".
  *   - internal-term: "lane", "payload", "mutation", "caller-visible".
@@ -674,6 +682,12 @@ export function findCaptureContentIssues(text, { unexplainedDisabledActions = []
     const noun = match[1].toLowerCase();
     if (!NOT_PLURAL_NOUNS.has(noun) && !/(ss|us|is)$/.test(noun)) {
       record("singular-count-plural-noun", match[0]);
+    }
+  }
+  for (const match of content.matchAll(ARTICLE_BEFORE_VOWEL_PATTERN)) {
+    // Only the lowercase article: a capital "A" is usually a label ("Class A income").
+    if (match[0].startsWith("a ") && !CONSONANT_SOUND_VOWEL_START.test(match[1])) {
+      record("article-before-vowel", match[0]);
     }
   }
   for (const match of content.matchAll(API_PATH_PATTERN)) {
@@ -741,7 +755,7 @@ export function describeCaptureContentIssues(captureName, issues) {
   const more = issues.length > 5 ? `; and ${issues.length - 5} more` : "";
   return `Capture ${captureName} renders ${issues.length} operator-copy issue(s) in its main content: ${shown}${more}. `
     + "Name records by display name and keep identifiers and request paths in technical details; use pluralizeCount "
-    + "for counts; write for operators, not about the system; give a disabled primary button a disabledReason; "
+    + "for counts and withIndefiniteArticle for a/an before a generated name; write for operators, not about the system; give a disabled primary button a disabledReason; "
     + "show latency only as a duration; leave an undeclared basis off the strip; never clip a status badge; "
     + "a 'Saved views unavailable' notice in a capture means a missing fixture. "
     + "A route that cannot comply yet lists the kind with a reason under allowedContentIssues in the route catalog.";
@@ -868,6 +882,71 @@ export function checkKpiConsistency(captures) {
     }
   }
   return { observationCount, comparisonCount, conflicts };
+}
+
+function decimalToScaled(text, scale) {
+  const match = /^(-?)(\d+)(?:\.(\d+))?$/.exec(String(text ?? "").trim());
+  if (!match || (match[3]?.length ?? 0) > scale) return null;
+  return BigInt(`${match[2]}${(match[3] ?? "").padEnd(scale, "0")}`) * (match[1] ? -1n : 1n);
+}
+
+/**
+ * On one page, the holdings table and the headline must give the same total exposure: the sum of
+ * the table's row exposures has to equal both the table's own total line and the page's
+ * "Total exposure" headline figure. A table narrowed by a filter (fewer rows shown than loaded) is
+ * not a complete population and is skipped.
+ */
+export function checkHoldingsTotals(captures) {
+  const conflicts = [];
+  let checkedCount = 0;
+  const scale = 18;
+  for (const capture of captures) {
+    if (capture.status !== "passed") continue;
+    const headline = (capture.kpis ?? []).find((kpi) => kpi.id === "portfolio.total-exposure");
+    let headlineValue = null;
+    try { headlineValue = headline ? JSON.parse(headline.value) : null; } catch { headlineValue = null; }
+    for (const table of capture.holdingsTables ?? []) {
+      if (table.rowAmounts.length !== table.loadedCount) continue;
+      checkedCount += 1;
+      const report = (problem) => conflicts.push({ capture: capture.name, route: capture.route, problem });
+      const amounts = table.rowAmounts.map((amount) => decimalToScaled(amount, scale));
+      const headlineAvailable = headlineValue?.status === "available";
+      if (amounts.some((amount) => amount === null) || new Set(table.rowCurrencies).size > 1) {
+        // Rows that cannot be summed must not sit under a total that claims they were.
+        if (table.total) report(`the table shows a total of ${table.total} but its rows cannot be summed in one currency`);
+        else if (headlineAvailable) report(`the headline shows '${headline.display}' but the table rows cannot be summed in one currency`);
+        continue;
+      }
+      const sum = amounts.reduce((total, amount) => total + amount, 0n);
+      const tableTotal = decimalToScaled(table.total, scale);
+      if (table.total && tableTotal !== sum) {
+        report(`the table rows sum to a different amount than the table total (${table.total})`);
+      }
+      if (headlineAvailable && decimalToScaled(headlineValue.value, scale) !== sum) {
+        report(`the table rows sum to a different amount than the headline figure '${headline.display}'`);
+      }
+      if (headline && !headlineAvailable && table.total) {
+        report(`the table shows a total of ${table.total} but the headline figure shows '${headline.display}'`);
+      }
+    }
+  }
+  return { checkedCount, conflicts };
+}
+
+export async function collectHoldingsTables(page) {
+  return page.locator("[data-holdings-table]").evaluateAll((tables) => {
+    const visible = (element) => element.getClientRects().length > 0 && getComputedStyle(element).visibility !== "hidden";
+    return tables.filter(visible).map((table) => {
+      const cells = Array.from(table.querySelectorAll("[data-holding-exposure]")).filter(visible);
+      return {
+        loadedCount: Number(table.getAttribute("data-holdings-loaded-count")),
+        total: table.getAttribute("data-holdings-total") || null,
+        totalCurrency: table.getAttribute("data-holdings-total-currency") || null,
+        rowAmounts: cells.map((cell) => cell.getAttribute("data-holding-exposure") ?? ""),
+        rowCurrencies: cells.map((cell) => cell.getAttribute("data-holding-currency") ?? "")
+      };
+    });
+  });
 }
 
 export async function collectKpiSnapshots(page) {
@@ -1141,6 +1220,7 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
   }
 
   const kpis = await collectKpiSnapshots(page);
+  const holdingsTables = await collectHoldingsTables(page);
 
   await fs.mkdir(outputDir, { recursive: true });
   const buffer = await page.screenshot({ path: outputPath, fullPage: true });
@@ -1166,6 +1246,7 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
     bytes: buffer.length,
     textLength,
     kpis,
+    holdingsTables,
     // Exceptions the route catalog grants this capture, kept visible in the manifest.
     ...(contentIssues.allowed.length > 0 ? { allowedContentIssues: contentIssues.allowed } : {}),
     durationSeconds: Number(((Date.now() - started) / 1000).toFixed(2)),
@@ -1537,6 +1618,10 @@ async function main() {
       problems.push(`KPI '${conflict.id}' disagrees for scope ${conflict.scope}: `
         + `${conflict.previous.route} shows '${conflict.previous.display}' (${conflict.previous.value}), `
         + `${conflict.current.route} shows '${conflict.current.display}' (${conflict.current.value}).`);
+    }
+    manifest.holdingsTotals = checkHoldingsTotals(results);
+    for (const conflict of manifest.holdingsTotals.conflicts) {
+      problems.push(`Holdings total disagrees on ${conflict.route} (${conflict.capture}): ${conflict.problem}.`);
     }
     if (missingCoverage.length > 0) {
       problems.push(`Live route(s) without a screenshot capture entry: ${missingCoverage.join(", ")}`);

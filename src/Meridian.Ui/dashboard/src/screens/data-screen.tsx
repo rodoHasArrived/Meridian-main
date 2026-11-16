@@ -1,3 +1,4 @@
+import { PageHeading } from "@/components/ui/page-heading";
 import {
   CheckCircle2,
   DatabaseZap,
@@ -280,14 +281,7 @@ function DataScreenContent({
         aria-label="Data workspace context"
         className="flex flex-wrap items-end justify-between gap-3"
       >
-        <div className="min-w-0">
-          <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
-            {routeCopy.title}
-          </h2>
-          <p className="mt-0.5 max-w-3xl text-xs leading-5 text-muted-foreground">
-            {routeCopy.description}
-          </p>
-        </div>
+        <PageHeading title={routeCopy.title} purpose={routeCopy.description} descriptionKey={`data:${routeCopy.title}`} />
         <div className="flex flex-wrap items-center gap-2">
           <Button
             type="button"

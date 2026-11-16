@@ -511,8 +511,22 @@ applied financial filter. Trading metrics remain owned by the Trading read model
 
 Portfolio defaults to Live holdings. The source selector reveals retained run records
 with their own market-value and record-count definitions; exposure and market value
-are distinct measures. Compare position sources is a collapsed disclosure. Holding
-table and inspector values retain their source's supplied meaning.
+are distinct measures. Compare position sources is a collapsed disclosure.
+
+The holdings table, the headline figures and the holding detail panel read one model,
+`lib/holdings-model.ts`, so they cannot disagree. Values the source supplies are shown
+unchanged. When the source omits them, the model derives two row figures and says so:
+
+- Market value: the last recorded value (quantity × recorded price), marked "Stale" with the
+  price date, or "no price date" when the source gave none. A mark the shared valuation policy
+  rates Current is not marked stale.
+- Weight: the holding's share of the headline total exposure, with that basis in the tooltip.
+
+A value that does not exist renders "—" with the reason as a tooltip and screen-reader text,
+never a sentence in the cell. Currency has its own column: the supplied ISO code, or USD for a
+"$" amount under the same rule the headline total uses. The line under the table restates the
+headline total. Headline aggregates are unchanged: missing or mixed denominations still
+withhold them.
 
 The screenshot harness independently reads `[data-kpi-rendered-value]`, checks it
 against the registry display annotation, then compares KPI ID + applied scope across
@@ -520,6 +534,12 @@ routes within each scenario (and explicit source revision, when supplied). Both 
 and formatted discrepancies fail the run and remain in `manifest.kpiConsistency`.
 Fixtures must be consistent within the same scenario; differing sources need distinct
 registry IDs/scopes, not cosmetic labels that hide discrepancies.
+
+The harness also runs `checkHoldingsTotals` per page: where `[data-holdings-table]` shows every
+loaded row, the `[data-holding-exposure]` amounts must sum to the table total and to the page's
+`portfolio.total-exposure` headline. Conflicts fail the run and remain in
+`manifest.holdingsTotals`. Its `article-before-vowel` copy rule flags "a" before a vowel sound;
+generated sentences use `withIndefiniteArticle` from `@/lib/format`.
 
 Focused verification: `kpi-registry.test.ts`, `stat-strip.test.tsx`, registry card tests,
 Portfolio/Settings suites, and `node --test scripts/dev/capture-web-screenshots.test.mjs
@@ -591,10 +611,42 @@ Use `SectionDescription` only for instructional copy, with a stable `description
 accessible label. `ScreenLayout` and `WorkspaceSection` opt in using `descriptionKey`; dynamic
 financial state, warnings, source evidence, and scope must never use remembered help. The shell
 scopes browser-local reading preferences to the session environment, operator name and role.
-Copy remains inline on its first visit; visibility observation or Hide remembers it for later
-visits. An information disclosure then restores the copy with Enter/Space; Escape closes it and
-returns focus. Storage failures leave help usable. These preferences do not change financial data
-or authorization and do not synchronize between browsers.
+Descriptions show as a line of text on every visit. One operator setting, "Page descriptions"
+under Settings > Preferences (`useSectionDescriptionsHidden`), moves all of them behind an
+information icon instead; there is no per-section "Hide" link and a description no longer
+collapses after it has been seen once. The icon opens with Enter/Space; Escape closes it and
+returns focus. Storage failures leave help usable. The setting does not change financial data
+or authorization and does not synchronize between browsers.
+
+Every workspace overview opens with `PageHeading` (`components/ui/page-heading.tsx`): the page
+name, then an optional one-line purpose on its own line, then page actions. Write the purpose as
+one sentence in the operator's terms, with no internal vocabulary ("posture", "governed",
+"evidence routes"). Method notes and chart scaling rules go behind `InfoNote`
+(`components/ui/info-note.tsx`), not above the table they explain.
+
+Overview pages follow one order: page heading, headline figures, the page's main list or queue
+with its detail panel, then secondary sections collapsed in `TechnicalDetails`. A section is never
+a heading with no content. Trading's overview leads with the position book and the order blotter;
+readiness checks and session history are collapsed below them.
+
+## Trust, scope and refresh are each stated once
+
+- **Trust.** The masthead owns the environment and the worst open issue. Headline figures carry
+  one compact label (`describeCompactProvenance`: data kind, shared as-of time, shared scope); the
+  full source sentence is its hover text and spoken form, and each figure's details icon states
+  its own source. An unverified figure is marked on the figure (dotted underline, reason on
+  hover), not by a sentence under the row; stale figures keep the clock and the word "Stale".
+  `OperationalTrustSummary` renders only when the page's own facts differ from the global state
+  (pass `showWhenClear` where the row is the only place a page names its source and date).
+- **Scope.** The header scope bar is the one scope control. Pages do not restate the scope or
+  carry their own scope button. With no fund account in scope, Trading shows one row that picks
+  the account into the header scope.
+- **Refresh.** The header Refresh is the one refresh button. It reloads the workstation payloads
+  and bumps `GlobalRefreshProvider`; a panel that loads its own data subscribes with
+  `useOnGlobalRefresh(reload)` instead of rendering a refresh button. A panel shows a local
+  "Retry" only inside its error state. An action that starts new verification is named for what
+  it does ("Verify credentials", "Synchronize and reconcile"), never "Refresh". Sub-page panels
+  that still carry their own Refresh button are being moved to this pattern.
 
 `TableWorkbench` can opt in to `compactToolbar` on task queues. Search, active filters and match
 counts stay visible; Table options discloses Columns, Density, Export and saved-view controls.
@@ -615,13 +667,13 @@ The browser shell renders `WorkspaceHeader` as one row above every route:
   a workspace root reads `Trading`, the front door reads `Today`). The masthead shows only
   `Meridian` and announces the workspace to assistive technology, so the location is stated once.
 - **Centre:** the permanent operating-scope bar (`components/meridian/operating-scope-bar.tsx`),
-  `Scope  Entity … › Fund … › Account … › Period …`, with Subject, Run and Provider inserted
-  before Period when set. An unset Entity, Fund or Account reads `All authorized` and an unset
-  Period reads `All periods` (never "None"); set dimensions the current screen does not apply are
+  which lists only the fields that are set (`Scope  Fund … › Period …`, with Subject, Run and
+  Provider before Period) and shrinks to `Scope  All authorized scopes` when nothing is narrowed
+  (never "None"); set dimensions the current screen does not apply are
   muted and described as retained. Entity and fund ids print as names when the organization graph
   has loaded (`valueLabels`), otherwise as ids. It shows on every route and opens the scope picker.
-  The empty scope as a whole reads `All authorized scopes` (`OPERATING_SCOPE_EMPTY_SUMMARY`), the
-  same words Today prints.
+  The empty scope as a whole reads `All authorized scopes` (`OPERATING_SCOPE_EMPTY_SUMMARY`).
+  Today does not repeat the scope.
 - **Right:** Refresh, `Views` (saved-layout and save-current-view controls) and an overflow menu
   holding Copy link and the workspace's About text.
 
