@@ -240,6 +240,9 @@ describe("Entity operations", () => {
     expect(screen.getByRole("button", { name: "Approve accounting mappings" })).toBeDisabled();
     expect(screen.getByLabelText("Accounting profile reference")).toHaveValue("Unsaved reviewed mapping");
     fireEvent.click(screen.getByRole("button", { name: "Cancel profile editing" }));
+    expect(headerRefreshReads()).toBe(0);
+    expect(screen.getByLabelText("Accounting profile action reason")).toHaveValue("Mappings reviewed");
+    fireEvent.change(screen.getByLabelText("Accounting profile action reason"), { target: { value: "" } });
     expect(headerRefreshReads()).toBeGreaterThan(0);
     expect(postEntityOperation).toHaveBeenCalledTimes(1);
   });
