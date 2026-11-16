@@ -337,6 +337,11 @@ Trading and Portfolio position tables name their source; and the status bar star
 masthead pill's provenance and provider checks, so it never says "up to date" over a stale source.
 The new shared contract is `/api/workstation/kpi-definitions` (see `src/Meridian.Ui.Shared/README.md`).
 
+It also carries UX Phase B (main task first, quieter states). Journal Entry opens on the editor,
+with journal automation below it and one notice for a shared failure. The Today queue shows one line
+per item, grows with the page, and says why each item is ranked where it is. A value missing on
+every row is said once. Live quotes starts from the watchlist. No shared contract changed.
+
 ## Change rules
 
 Do not create mobile product surfaces here. Keep browser operator UI work under `dashboard/` and shared behavior in contracts/services consumed by the browser workstation and retained WPF compatibility surfaces.

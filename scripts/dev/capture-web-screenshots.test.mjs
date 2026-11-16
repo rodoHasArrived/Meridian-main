@@ -13,6 +13,9 @@ import {
   checkKpiLabelConsistency,
   findStatusContradictions,
   isPositionsTableLabel,
+  findRepeatedUnavailableLines,
+  describePrimaryTaskPosition,
+  describeFailureNotices,
   loadKpiDefinitions,
   collectKpiSnapshots,
   collectAllowedContentIssueKinds,
@@ -1031,4 +1034,30 @@ test("only tables named as positions books must name their source", () => {
   assert.equal(isPositionsTableLabel("Alpaca paper brokerage accounts"), false);
   assert.equal(isPositionsTableLabel("Retained account margin position contributions"), false);
   assert.equal(isPositionsTableLabel(null), false);
+});
+
+test("a repeated unavailable line is reported once with its count; two repeats pass", () => {
+  const text = "Ledger\nEntity name unavailable\nEntity name unavailable\nEntity name unavailable\nAge unavailable\nAge unavailable";
+  assert.deepEqual(findRepeatedUnavailableLines(text), ["Entity name unavailable ×3"]);
+  assert.deepEqual(findCaptureContentIssues(text).filter((issue) => issue.kind === "repeated-unavailable"),
+    [{ kind: "repeated-unavailable", excerpt: "Entity name unavailable ×3" }]);
+  assert.deepEqual(findRepeatedUnavailableLines("Basis\nNo data"), []);
+});
+
+test("a declared primary task must start within its limit", () => {
+  const task = { selector: "[aria-label=\"Today queue\"]", maxTop: 600 };
+  assert.equal(describePrimaryTaskPosition(task, 423), null);
+  assert.equal(describePrimaryTaskPosition(task, 1012.4), "[aria-label=\"Today queue\"] starts at 1012px (limit 600px)");
+  assert.equal(describePrimaryTaskPosition(task, null), "[aria-label=\"Today queue\"] not found");
+  assert.equal(describePrimaryTaskPosition(undefined, 2000), null);
+  assert.deepEqual(findCaptureContentIssues("Today", { primaryTaskIssues: ["x starts at 900px (limit 600px)"] }),
+    [{ kind: "primary-task-below-fold", excerpt: "x starts at 900px (limit 600px)" }]);
+});
+
+test("one backend failure shows at most the declared number of notices and Retry buttons", () => {
+  assert.deepEqual(describeFailureNotices(1, { alerts: 1, retries: 1 }), []);
+  assert.deepEqual(describeFailureNotices(1, { alerts: 2, retries: 3 }), ["2 alerts (limit 1)", "3 Retry buttons (limit 1)"]);
+  assert.deepEqual(describeFailureNotices(undefined, { alerts: 9, retries: 9 }), []);
+  assert.deepEqual(findCaptureContentIssues("Journal", { failureNoticeIssues: ["2 alerts (limit 1)"] }),
+    [{ kind: "single-failure-notice", excerpt: "2 alerts (limit 1)" }]);
 });

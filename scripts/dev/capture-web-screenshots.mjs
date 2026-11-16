@@ -614,8 +614,14 @@ export const CAPTURE_CONTENT_ISSUE_KINDS = [
   "disabled-primary-without-reason",
   "status-contradiction",
   "truncated-badge",
-  "position-source-missing"
+  "position-source-missing",
+  "primary-task-below-fold",
+  "repeated-unavailable",
+  "single-failure-notice"
 ];
+
+/** How often the same "… unavailable" line may repeat in a route's main content. */
+export const MAX_REPEATED_UNAVAILABLE_LINES = 2;
 
 /**
  * True for a hyphenated token that is a record identifier rather than an English compound. Tuned
@@ -664,9 +670,17 @@ export function isSlugIdentifier(token) {
  *     never truncate; a long one wraps. Read from the DOM by the caller.
  *   - position-source-missing: a positions table that does not name where its rows come from
  *     (paper session, live holdings or a retained run). Read from the DOM by the caller.
+ *   - primary-task-below-fold: the route declares `primaryTask: { selector, maxTop }` and that
+ *     element starts lower than `maxTop` pixels. The main task sits under the page heading.
+ *     Measured by the caller.
+ *   - repeated-unavailable: the same line containing "unavailable" appears more than
+ *     MAX_REPEATED_UNAVAILABLE_LINES times. A value missing on every row is said once (a column
+ *     note), not repeated per row.
+ *   - single-failure-notice: the route declares `maxAlerts` and shows more alerts or Retry
+ *     buttons than that. One backend failure shows one notice with one Retry. Counted by the caller.
  * Returns one entry per distinct offending excerpt.
  */
-export function findCaptureContentIssues(text, { unexplainedDisabledActions = [], statusContradictions = [], truncatedBadges = [], unsourcedPositionTables = [] } = {}) {
+export function findCaptureContentIssues(text, { unexplainedDisabledActions = [], statusContradictions = [], truncatedBadges = [], unsourcedPositionTables = [], primaryTaskIssues = [], failureNoticeIssues = [] } = {}) {
   const issues = [];
   const seen = new Set();
   const record = (kind, excerpt) => {
@@ -721,6 +735,15 @@ export function findCaptureContentIssues(text, { unexplainedDisabledActions = []
   }
   for (const table of unsourcedPositionTables) {
     record("position-source-missing", String(table || "(unlabelled positions table)"));
+  }
+  for (const issue of primaryTaskIssues) {
+    record("primary-task-below-fold", String(issue));
+  }
+  for (const issue of failureNoticeIssues) {
+    record("single-failure-notice", String(issue));
+  }
+  for (const line of findRepeatedUnavailableLines(content)) {
+    record("repeated-unavailable", line);
   }
 
   return issues;
@@ -861,6 +884,34 @@ function canonicalJson(value) {
     return Object.fromEntries(Object.keys(value).sort().map((key) => [key, canonicalJson(value[key])]));
   }
   return value;
+}
+
+/** Lines containing "unavailable" that appear more than the allowed number of times, as "line ×n". */
+export function findRepeatedUnavailableLines(text, limit = MAX_REPEATED_UNAVAILABLE_LINES) {
+  const counts = new Map();
+  for (const raw of String(text ?? "").split(/\r?\n/)) {
+    const line = raw.replace(/\s+/g, " ").trim();
+    if (!/\bunavailable\b/i.test(line)) continue;
+    counts.set(line, (counts.get(line) ?? 0) + 1);
+  }
+  return [...counts].filter(([, count]) => count > limit).map(([line, count]) => `${line} ×${count}`);
+}
+
+/** A declared primary task that is missing or starts below `maxTop`, as an issue line, or null. */
+export function describePrimaryTaskPosition(primaryTask, measuredTop) {
+  if (!primaryTask?.selector) return null;
+  const maxTop = Number.isFinite(primaryTask.maxTop) ? primaryTask.maxTop : 600;
+  if (measuredTop === null || measuredTop === undefined) return `${primaryTask.selector} not found`;
+  return measuredTop > maxTop ? `${primaryTask.selector} starts at ${Math.round(measuredTop)}px (limit ${maxTop}px)` : null;
+}
+
+/** More alerts or Retry buttons than the route allows, as issue lines. */
+export function describeFailureNotices(maxAlerts, counts) {
+  if (!Number.isInteger(maxAlerts)) return [];
+  return [
+    counts.alerts > maxAlerts ? `${counts.alerts} alerts (limit ${maxAlerts})` : null,
+    counts.retries > maxAlerts ? `${counts.retries} Retry buttons (limit ${maxAlerts})` : null
+  ].filter(Boolean);
 }
 
 /**
@@ -1284,7 +1335,29 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
     await fs.mkdir(textDir, { recursive: true });
     await fs.writeFile(path.join(textDir, `${capture.name}.txt`), `${mainText}\n`);
   }
-  const contentIssues = partitionCaptureContentIssues(mainText, capture, { unexplainedDisabledActions, statusContradictions, truncatedBadges, unsourcedPositionTables });
+  // The route's primary task sits under its heading: measured from the top of the page.
+  const primaryTaskTop = capture.primaryTask?.selector
+    ? await page.evaluate((selector) => {
+      const element = Array.from(document.querySelectorAll(selector)).find((candidate) => candidate.getClientRects().length > 0);
+      return element ? element.getBoundingClientRect().top + window.scrollY : null;
+    }, capture.primaryTask.selector)
+    : null;
+  const primaryTaskIssue = describePrimaryTaskPosition(capture.primaryTask, primaryTaskTop);
+  const primaryTaskIssues = primaryTaskIssue ? [primaryTaskIssue] : [];
+  // One backend failure, one notice: visible alerts and Retry buttons in the main content.
+  const failureNoticeCounts = Number.isInteger(capture.maxAlerts)
+    ? await page.evaluate(() => {
+      const main = document.querySelector("main") ?? document.body;
+      const visible = (element) => element.getClientRects().length > 0;
+      return {
+        alerts: Array.from(main.querySelectorAll("[role='alert']")).filter(visible).length,
+        retries: Array.from(main.querySelectorAll("button")).filter(visible)
+          .filter((button) => /^retry\b/i.test((button.textContent ?? "").trim())).length
+      };
+    })
+    : { alerts: 0, retries: 0 };
+  const failureNoticeIssues = describeFailureNotices(capture.maxAlerts, failureNoticeCounts);
+  const contentIssues = partitionCaptureContentIssues(mainText, capture, { unexplainedDisabledActions, statusContradictions, truncatedBadges, unsourcedPositionTables, primaryTaskIssues, failureNoticeIssues });
   if (contentIssues.blocking.length > 0) {
     throw new Error(describeCaptureContentIssues(capture.name, contentIssues.blocking));
   }
@@ -1333,6 +1406,7 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
     textLength,
     kpis,
     holdingsTables,
+    ...(capture.primaryTask?.selector ? { primaryTaskTop } : {}),
     // Exceptions the route catalog grants this capture, kept visible in the manifest.
     ...(contentIssues.allowed.length > 0 ? { allowedContentIssues: contentIssues.allowed } : {}),
     durationSeconds: Number(((Date.now() - started) / 1000).toFixed(2)),

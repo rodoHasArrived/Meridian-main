@@ -11,6 +11,7 @@
       "id": "W00A",
       "name": "web-daily-control-tower",
       "path": "/",
+      "primaryTask": { "selector": "[aria-label=\"Today queue\"]", "maxTop": 600 },
       "docLabel": "Daily Control Tower",
       "waitForText": "Today",
       "requiredApiRoutes": [
@@ -33,6 +34,7 @@
       "id": "W01",
       "name": "web-trading-workspace",
       "path": "/trading",
+      "primaryTask": { "selector": "[data-position-source]", "maxTop": 600 },
       "docLabel": "Trading \u2014 Orders blotter",
       "waitForText": "Trading overview",
       "allowedContentIssues": [
@@ -648,6 +650,8 @@
       "id": "W03J",
       "name": "web-accounting-journal-entries",
       "path": "/accounting/journal-entries",
+      "primaryTask": { "selector": "[aria-label=\"Manual journal entry - balanced double-entry\"]", "maxTop": 600 },
+      "maxAlerts": 1,
       "docLabel": "Accounting \u2014 Journal Entries",
       "waitForText": "Manual journal entry workbench",
       "requiredApiRoutes": [
@@ -1155,13 +1159,14 @@
       "id": "W06B",
       "name": "web-data-live-quotes",
       "path": "/data/quotes",
+      "primaryTask": { "selector": "form", "maxTop": 600 },
       "docLabel": "Data \u2014 Market Data (Live Quotes view)",
-      "waitForText": "Live Market Data Workspace",
+      "waitForText": "Live quotes",
       "requiredApiRoutes": [
         "/api/workstation/data"
       ],
       "waitForTexts": [
-        "Live Market Data Workspace",
+        "Live quotes",
         "CONNECTION: CONNECTED"
       ]
     },

@@ -15,7 +15,6 @@ import { DetailRail } from "@/components/meridian/detail-rail";
 import { TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian/table-workbench";
 import { buildAttentionSignalFact } from "@/components/meridian/attention-signal-fact";
 import { StatusRow } from "@/components/meridian/status-row";
-import type { OperationalTrustTone } from "@/components/meridian/operational-trust-summary";
 import {
   OperatorTriageActionDialog, OperatorTriageDetailRail, OperatorTriageInboxActions, OperatorTriageInboxError,
   OperatorTriageInboxFilters, OperatorTriageNotices, restoreTriageFilters, TriageAge, TriageAssignCheckbox,
@@ -26,11 +25,11 @@ import { ATTENTION_COUNT_RULE, countAttention, needsAttention } from "@/lib/atte
 import { useQueueKeyboard } from "@/lib/use-queue-keyboard";
 import { SeverityBadge } from "@/components/operations";
 import {
-  buildDailyControlTowerModel, buildTodayQueueRows, todayQueueRowKey, type TodayQueueRow
+  buildDailyControlTowerModel, buildTodayQueueRows, describeTodayQueueRank, todayQueueRowKey, type TodayQueueRow
 } from "@/lib/daily-control-tower";
 import { routeForTriageItem } from "@/lib/operator-inbox-triage";
 import { eyebrowClassName } from "@/design-system/label-case";
-import { formatTimestamp, pluralizeCount } from "@/lib/format";
+import { pluralizeCount } from "@/lib/format";
 import { toSeverity } from "@/design-system/status-styles";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 
@@ -86,7 +85,8 @@ function DailyControlTowerQueue({
   const [selection, setSelection] = useState<QueueSelection>(null);
 
   const search = triage.search.trim().toLowerCase();
-  const workspaceRows = search
+  // Workspace signals have no owner, so "Assigned to me" leaves them out (and says so).
+  const workspaceRows = triage.mineOnly ? [] : search
     ? model.queueRows.filter((row) => `${row.item.label} ${row.item.detail} ${row.item.workspaceLabel}`.toLowerCase().includes(search))
     : model.queueRows;
   // The default view is the count rule itself, so the rows on screen are the rows the sidebar
@@ -104,10 +104,7 @@ function DailyControlTowerQueue({
     ?? queueRows[0]
     ?? null;
   const selectedInboxItem = selectedRow?.source === "inbox" ? selectedRow.item : null;
-  const freshness = selectedRow?.source === "inbox"
-    ? buildTowerFreshness(selectedRow.item.createdAt, "Observed time of the selected shared inbox item.")
-    : buildTowerFreshness(selectedRow?.focus.proof?.timestampIso,
-      selectedRow?.focus.proofPassportItems.find((item) => item.id === "freshness")?.detail);
+  const rankReason = selectedRow ? describeTodayQueueRank(queueRows, selectedRow.key) : null;
 
   const selectRow = (row: TodayQueueRow) => {
     if (row.source === "inbox") {
@@ -137,17 +134,16 @@ function DailyControlTowerQueue({
     {
       id: "item",
       label: "Item",
-      wrap: true,
       exportValue: (row) => row.label,
+      // One line per item: severity first, then the title. The description is in the detail rail.
       render: (row) => (
-        <div className="space-y-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="font-medium text-foreground">{row.label}</span>
+        <div className="flex min-w-0 max-w-[32rem] items-center gap-2">
+          <span className="shrink-0">
             {row.source === "workspace"
               ? <SeverityBadge status={toSeverity(row.focus.badgeVariant)} label={row.focus.statusLabel} />
               : <TriageSeverityStatus item={row.item} />}
-          </div>
-          <p className="text-xs leading-5 text-muted-foreground">{row.detail}</p>
+          </span>
+          <span className="truncate font-medium text-foreground" title={`${row.label}. ${row.detail}`}>{row.label}</span>
         </div>
       )
     },
@@ -158,6 +154,8 @@ function DailyControlTowerQueue({
       label: "Owner",
       priority: "low",
       exportValue: (row) => row.owner,
+      hideWhenEmpty: (row) => !row.owner,
+      emptyNote: "Owner: no item is assigned",
       render: (row) => row.owner ?? (row.source === "inbox" ? "Unassigned" : "Not tracked")
     },
     {
@@ -166,14 +164,19 @@ function DailyControlTowerQueue({
       priority: "medium",
       className: "whitespace-nowrap tabular-nums",
       exportValue: (row) => row.observedAt,
-      render: (row) => <TriageAge value={row.observedAt} />
+      hideWhenEmpty: (row) => !row.observedAt,
+      emptyNote: "Age: no item has an observed time",
+      // A single missing age is a dash with its reason on hover, not "Age unavailable" per row.
+      render: (row) => row.observedAt ? <TriageAge value={row.observedAt} /> : <span title="No observed time is linked to this item" aria-label="No observed time">—</span>
     },
     {
       id: "due",
       label: "Due",
       className: "whitespace-nowrap tabular-nums",
       exportValue: (row) => row.dueAt,
-      render: (row) => <TimeText value={row.dueAt} display="compact" fallback="No due time" />
+      hideWhenEmpty: (row) => !row.dueAt,
+      emptyNote: "Due: no item has a due time",
+      render: (row) => <TimeText value={row.dueAt} display="compact" fallback="—" />
     },
     {
       id: "state",
@@ -257,9 +260,6 @@ function DailyControlTowerQueue({
 
       <section aria-label="Daily control tower confidence" className="space-y-2">
         <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <span title={freshness.detail}><span className="text-muted-foreground">Selected evidence </span>{freshness.value}</span>
-          </div>
           {showsInbox && triage.inbox ? (
             <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Inbox filters" aria-busy={triage.loading || triage.busy}>
               <span className="sr-only">{fundAccountId ? "Account filter applied" : "All authorized accounts"}</span>
@@ -306,7 +306,10 @@ function DailyControlTowerQueue({
         {/* Command outcome and unconfirmed-command recovery stay visible under every Source filter. */}
         <OperatorTriageNotices triage={triage} showPersistence={false} />
 
-        <div onKeyDownCapture={queueKeyboard} className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
+        {triage.mineOnly && queueSource !== "inbox" && model.queueRows.length > 0 ? (
+          <p role="status" className="text-xs text-muted-foreground">Workspace signals have no owner, so Assigned to me hides them.</p>
+        ) : null}
+        <div onKeyDownCapture={queueKeyboard} className="today-queue grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
           <TableWorkbench
             compactToolbar
             workbenchId="operator-inbox"
@@ -321,7 +324,7 @@ function DailyControlTowerQueue({
               setQueueSource(filters.source === "workspace" || filters.source === "inbox" ? filters.source : "all");
             }}
             filters={<OperatorTriageInboxFilters triage={triage} visibilityLabel="Show" activeLabel="Needs attention"
-              mineLabel="My inbox items" showMine={showsInbox && Boolean(triage.inbox)} />}
+              mineLabel="Assigned to me" showMine={Boolean(triage.inbox)} />}
             selection={showsInbox && triage.inbox ? triageSelection(triage) : undefined}
             tableId="daily-control-tower-queue"
             columns={queueColumns}
@@ -331,17 +334,19 @@ function DailyControlTowerQueue({
             getRowSelectAriaLabel={(row) => row.label}
             getRowAriaControls={(row) => row.source === "workspace" ? EVIDENCE_PANEL_ID : TRIAGE_PANEL_ID}
             getRowAriaExpanded={(row) => row.key === selectedRow?.key}
-            getRowClassName={() => "align-top"}
             onRowSelect={selectRow}
             selectedRowId={selectedRow?.key ?? null}
             emptyText={emptyText}
             ariaLabel="Today queue"
             maxVisibleRows={null}
           />
-          {selectedRow?.source === "inbox" ? (
-            <OperatorTriageDetailRail id={TRIAGE_PANEL_ID} triage={triage} item={selectedRow.item} />
-          ) : selectedRow?.source === "workspace" ? (
-            <WorkspaceEvidenceRail row={selectedRow} />
+          {selectedRow ? (
+            <div className="min-w-0 space-y-2">
+              {rankReason ? <p className="text-xs leading-5 text-muted-foreground" data-testid="today-rank-reason"><span className="font-medium text-foreground">Why ranked here: </span>{rankReason}</p> : null}
+              {selectedRow.source === "inbox"
+                ? <OperatorTriageDetailRail id={TRIAGE_PANEL_ID} triage={triage} item={selectedRow.item} />
+                : <WorkspaceEvidenceRail row={selectedRow} />}
+            </div>
           ) : null}
         </div>
         <OperatorTriageActionDialog triage={triage} />
@@ -379,6 +384,7 @@ function WorkspaceEvidenceRail({ row }: { row: Extract<TodayQueueRow, { source: 
       fields={focus.proofPassportItems.slice(0, 4).map((passportItem) => ({ label: passportItem.label,
         value: <><span>{passportItem.value}</span><p className="mt-1 text-xs leading-5 text-muted-foreground">{passportItem.detail}</p></> }))}
     >
+      <p className="mt-3 text-sm leading-6 text-foreground">{row.detail}</p>
       <p className="my-3 text-sm leading-6 text-muted-foreground">{focus.proofPassportSummary}</p>
       {focus.proofPassportItems.length > 4 ? (
         <TechnicalDetails
@@ -402,29 +408,3 @@ function WorkspaceEvidenceRail({ row }: { row: Extract<TodayQueueRow, { source: 
 
 const SEEDED_INBOX_REASON = /^Seeded read-only inbox\./i;
 
-const TOWER_FRESHNESS_WINDOW_MS = 24 * 60 * 60 * 1000;
-
-function buildTowerFreshness(
-  timestampIso: string | null | undefined,
-  detail: string | null | undefined,
-  nowMs = Date.now()
-): { value: string; detail: string; tone: OperationalTrustTone } {
-  const observedAtMs = Date.parse(timestampIso ?? "");
-  if (!Number.isFinite(observedAtMs)) {
-    return {
-      value: "Timestamp unavailable",
-      detail: detail ?? "No timestamped evidence is linked to the leading decision.",
-      tone: "review"
-    };
-  }
-
-  const observedAt = new Date(observedAtMs);
-  const timestampLabel = formatTimestamp(observedAt);
-  const stale = nowMs - observedAtMs > TOWER_FRESHNESS_WINDOW_MS;
-
-  return {
-    value: `${stale ? "Stale update" : "Current"} · ${timestampLabel}`,
-    detail: detail ?? "Latest evidence for the leading decision.",
-    tone: stale ? "review" : "ready"
-  };
-}

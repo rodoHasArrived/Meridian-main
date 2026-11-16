@@ -106,6 +106,25 @@ describe("TableWorkbench", () => {
     }
   });
 
+  it("says once that a column has no values instead of a placeholder on every row", async () => {
+    interface DueRow { id: string; due: string | null }
+    const dueColumns: TableWorkbenchColumn<DueRow>[] = [
+      { id: "id", label: "Record", render: row => row.id },
+      { id: "due", label: "Due", hideWhenEmpty: row => !row.due, emptyNote: "Due: no item has a due time", render: row => row.due ?? "No due time" }
+    ];
+    const { rerender } = render(<TableWorkbench workbenchId="due-empty" columns={dueColumns}
+      rows={[{ id: "a", due: null }, { id: "b", due: null }]} getRowId={row => row.id} emptyText="None" ariaLabel="Due records" sourceDescription="Test rows" completePopulation />);
+    await act(async () => { await Promise.resolve(); });
+    expect(screen.queryByRole("columnheader", { name: "Due" })).not.toBeInTheDocument();
+    expect(screen.queryByText("No due time")).not.toBeInTheDocument();
+    expect(screen.getByText("Due: no item has a due time")).toBeInTheDocument();
+    rerender(<TableWorkbench workbenchId="due-empty" columns={dueColumns}
+      rows={[{ id: "a", due: null }, { id: "b", due: "Jul 14" }]} getRowId={row => row.id} emptyText="None" ariaLabel="Due records" sourceDescription="Test rows" completePopulation />);
+    expect(screen.getByRole("columnheader", { name: "Due" })).toBeInTheDocument();
+    expect(screen.getByText("No due time")).toBeInTheDocument();
+    expect(screen.queryByText("Due: no item has a due time")).not.toBeInTheDocument();
+  });
+
   it("shows a selection bar only while rows are selected", async () => {
     const user = userEvent.setup();
     const onClear = vi.fn();

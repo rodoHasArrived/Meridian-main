@@ -3,6 +3,7 @@ import { buildAppShellViewState, type AppShellWorkspacePayload } from "@/app-she
 import {
   buildDailyControlTowerModel,
   buildTodayQueueRows,
+  describeTodayQueueRank,
   buildWorkspaceAttentionCounts,
   dailyControlTowerProofPassportLabels,
   selectDailyControlTowerQueueItems,
@@ -272,6 +273,17 @@ describe("buildTodayQueueRows", () => {
     ]);
     expect(rows.find((row) => row.id === "in-info")).toMatchObject({ source: "inbox", sourceLabel: "Shared inbox", workspaceLabel: "Unspecified" });
     expect(rows.find((row) => row.id === "ws-blocked")).toMatchObject({ source: "workspace", sourceLabel: "Workspace signal", observedAt: "2026-05-14T20:00:00Z" });
+  });
+
+  it("says why each row is ranked where it is, by the same keys the queue sorts on", () => {
+    const rows = buildTodayQueueRows(
+      [focus("ws-review-undated", "review", null), focus("ws-blocked", "blocked", "2026-05-14T20:00:00Z"), focus("ws-review-old", "review", "2026-05-14T10:00:00Z")],
+      [inbox("in-warning", "Warning", "2026-05-14T12:00:00Z"), inbox("in-critical", "Critical", "2026-05-14T21:00:00Z"), inbox("in-tie", "Warning", "2026-05-14T10:00:00Z")]
+    );
+    expect(describeTodayQueueRank(rows, "workspace:ws-blocked")).toBe("Ranked 1 of 6. Sorted by severity (blocked), then oldest first: the oldest of 2 blocked items.");
+    expect(describeTodayQueueRank(rows, "inbox:in-critical")).toBe("Ranked 2 of 6. Sorted by severity (blocked), then oldest first: 2nd oldest of 2 blocked items.");
+    expect(describeTodayQueueRank(rows, "workspace:ws-review-undated")).toBe("Ranked 6 of 6. Sorted by severity (needs action), then oldest first: no observed time, so it follows timed items in its source's order.");
+    expect(describeTodayQueueRank(rows, "inbox:missing")).toBeNull();
   });
 
   it("writes the selected item's summary as a sentence, not comma-joined labels", () => {

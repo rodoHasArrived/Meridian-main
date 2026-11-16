@@ -597,13 +597,15 @@ describe("finance standard pages", () => {
     expect(table).not.toHaveTextContent("$500");
     // Posting lines inherit their entry's status; instruction copy is not a status value.
     expect(table).not.toHaveTextContent("Select amount for proof");
-    // Missing display-name evidence must not promote an internal identifier to an entity name.
-    expect(table).toHaveTextContent("Entity name unavailable");
+    // Missing display-name evidence must not promote an internal identifier to an entity name, and
+    // when no row has a name the Entity column is said once rather than "unavailable" on every row.
+    expect(table).not.toHaveTextContent("Entity name unavailable");
+    expect(screen.getByText("Entity: no posting has an entity name; entity IDs are in each journal's detail and in exports")).toBeInTheDocument();
     expect(table).not.toHaveTextContent("entity-lux");
     expect(table).not.toHaveTextContent("All entities");
   });
 
-  it("keeps entity workspace destinations in the exact source book, period and route scope", async () => {
+  it("keeps entity references in the source book when posted entries carry no entity names", async () => {
     mockPostedBook();
     const feederBookId = "00000000-0000-0000-0000-0000000000cc";
     const sourceBook = (await ledgerReportsApi.getLedgerBooks())[0]!;
@@ -627,18 +629,12 @@ describe("finance standard pages", () => {
     await renderPage(<LedgerExplorerScreen data={data} />,
       `/accounting/ledger?ledgerBookId=${feederBookId}&periodId=${LEDGER_PERIOD_ID}&symbol=EURUSD&asOf=2026-07-31`);
 
-    const links = screen.getAllByRole("link", { name: "Inspect Entity name unavailable" });
-    expect(links.length).toBeGreaterThan(0);
-    for (const link of links) {
-      const destination = new URL(link.getAttribute("href")!, "https://meridian.test");
-      expect(destination.pathname).toBe("/accounting/ledger");
-      expect(destination.searchParams.get("ledgerBookId")).toBe(feederBookId);
-      expect(destination.searchParams.get("periodId")).toBe(LEDGER_PERIOD_ID);
-      expect(destination.searchParams.get("symbol")).toBe("EURUSD");
-      expect(destination.searchParams.get("asOf")).toBe("2026-07-31");
-      expect(destination.searchParams.has("entityId")).toBe(false);
-      expect(destination.searchParams.has("accountId")).toBe(false);
-    }
+    // Posted entries carry entity IDs but no entity names, so the Entity column is said once and
+    // the entity reference stays in Journal references (and in exports), in the source book's scope.
+    const table = await screen.findByRole("table", { name: "Ledger Explorer results" });
+    expect(within(table).queryByRole("columnheader", { name: "Entity" })).not.toBeInTheDocument();
+    expect(screen.getByText("Entity: no posting has an entity name; entity IDs are in each journal's detail and in exports")).toBeInTheDocument();
+    expect(screen.getByText(/je-feeder · Entity reference: entity-feeder/)).toBeInTheDocument();
   });
 
   it("opens consolidation as a scoped workflow rather than a ledger tail", async () => {

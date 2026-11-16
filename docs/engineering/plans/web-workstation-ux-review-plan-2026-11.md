@@ -780,3 +780,47 @@ Closes P1 item 1 and the status-bar half of the trust work. What changed:
 
 WPF parity: `W8-WPF-PARITY-001` gains consuming `/api/workstation/kpi-definitions` for desktop
 headline strips (see `wpf-web-ui-alignment-plan.md`).
+
+## Phase B: main task first, quieter states (2026-11-16)
+
+Closes review proposals 3 (primary task above the fold), 4 (Today queue) and 10 (unavailable
+states). What changed:
+
+- **Journal Entry editor first.**
+  - The editor (balance bar, draft rail, journal lines) now sits directly under the page heading.
+  - Accrual schedules and recurring journals move below it into a "Journal automation · …"
+    disclosure, whose summary carries their counts.
+  - Both read the same journal-automation backend, so a failure now shows one
+    "Journal automation unavailable" notice with one Retry that reloads both
+    (`lib/combined-load-state.ts`, plus `quietFailure` on `AccrualScheduleWorkbench` and
+    `RecurringJournalQueue`). It used to show two notices, a red line and three Retry buttons.
+  - The entity box is a named picker when the organization structure loads, and a typed ID with a
+    note when it does not.
+- **Today queue.**
+  - One line per item: severity badge, then title. The description moved to the detail rail.
+  - The queue grows with the page instead of scrolling inside its card.
+  - Columns with no value on any row (Owner, Age, Due) are left out with one note each, through
+    the new `hideWhenEmpty`/`emptyNote` on `TableWorkbenchColumn`.
+  - A single missing age or due time is "—" with its reason on hover.
+  - The stray "Selected evidence" line is gone.
+  - The selected item states "Why ranked here", built from the same keys the queue sorts on
+    (`describeTodayQueueRank`).
+  - "Assigned to me" applies to every source, and says that workspace signals have no owner.
+- **Note once.**
+  - Ledger Explorer drops its Entity column when no posting has an entity name (posted entries
+    carry IDs only) and says so once. The IDs stay in Journal references and in exports.
+- **Live quotes.**
+  - The title is "Live quotes"; the stray "Data" scope line is gone.
+  - Freshness chips print their subject ("Quote matrix: No data").
+  - With no symbols, Connection reads "Connected · no symbols subscribed" and Coverage is not
+    shown.
+  - An empty list starts from the watchlist (archived symbols skipped) before the starter set.
+  - Table captions no longer put an article before the symbol.
+- **Screenshot harness.** New rules:
+  - `primary-task-below-fold`: routes declare `primaryTask: { selector, maxTop }`. Today, Trading,
+    Journal Entry and Live quotes are declared at 600px and measure 423, 360, 348 and 244px.
+  - `repeated-unavailable`: the same "… unavailable" line more than twice.
+  - `single-failure-notice`: routes declare `maxAlerts`; Journal Entry allows 1.
+
+  All 82 routes pass with no new exceptions.
+

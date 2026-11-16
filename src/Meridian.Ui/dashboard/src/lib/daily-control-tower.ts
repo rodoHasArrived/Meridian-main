@@ -502,3 +502,34 @@ function outputLabelForRoute(route: string, workspaceLabel: string): string {
 
   return `${workspaceLabel} output`;
 }
+
+const SEVERITY_WORDS: Record<TodayQueueRow["severity"], string> = { blocked: "blocked", action: "needs action", info: "informational", clear: "clear" };
+
+/**
+ * Why a row sits where it does in the queue, in the order `buildTodayQueueRows` sorts by:
+ * severity first, then the oldest observed time, then the source's own order. `rows` is the
+ * queue as shown, so the position matches what the operator sees.
+ */
+export function describeTodayQueueRank(rows: readonly TodayQueueRow[], key: string): string | null {
+  const index = rows.findIndex((row) => row.key === key);
+  if (index < 0) return null;
+  const row = rows[index]!;
+  const peers = rows.filter((candidate) => candidate.severity === row.severity);
+  const position = peers.indexOf(row) + 1;
+  const observed = Number.isFinite(Date.parse(row.observedAt ?? ""));
+  const word = SEVERITY_WORDS[row.severity];
+  const order = !observed
+    ? "no observed time, so it follows timed items in its source's order"
+    : peers.length === 1
+      ? `the only ${word} item`
+      : position === 1
+        ? `the oldest of ${peers.length} ${word} items`
+        : `${ordinal(position)} oldest of ${peers.length} ${word} items`;
+  return `Ranked ${index + 1} of ${rows.length}. Sorted by severity (${word}), then oldest first: ${order}.`;
+}
+
+function ordinal(value: number): string {
+  const tens = value % 100;
+  const suffix = tens >= 11 && tens <= 13 ? "th" : ({ 1: "st", 2: "nd", 3: "rd" } as Record<number, string>)[value % 10] ?? "th";
+  return `${value}${suffix}`;
+}

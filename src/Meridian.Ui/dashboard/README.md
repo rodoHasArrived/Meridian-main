@@ -528,6 +528,12 @@ Compare position sources lists symbols that differ between live holdings and the
 The status bar's Freshness starts from `resolveShellFreshness` (masthead provenance and provider
 items); a page can make it worse but never clear it.
 
+A value missing on every row is said once. A `TableWorkbenchColumn` with `hideWhenEmpty` is left
+out when no loaded row has a value, and its `emptyNote` is shown once in the toolbar. A single
+missing value is "—" with its reason on hover. Panels that read one backend report their load
+status (`lib/combined-load-state.ts`), so a shared failure shows one notice with one Retry. Journal
+Entry uses this for accrual schedules and recurring journals, below the editor.
+
 The holdings table, the headline figures and the holding detail panel read one model,
 `lib/holdings-model.ts`, so they cannot disagree. Values the source supplies are shown
 unchanged. When the source omits them, the model derives two row figures and says so:

@@ -53,6 +53,14 @@ export interface TableWorkbenchColumn<T> extends DenseDataTableColumn<T> {
    * wrapping it before any column is dropped; figures and identifiers stay on one line.
    */
   wrap?: boolean;
+  /**
+   * Return true when this row has no value for the column. When every loaded row is empty, the
+   * column is left out and `emptyNote` is said once in the toolbar instead of the same
+   * placeholder on every row. A column with any value stays.
+   */
+  hideWhenEmpty?: (row: T) => boolean;
+  /** The note shown once when every row is empty, e.g. "Due: no item has a due time". */
+  emptyNote?: string;
   /** Original source value, before financial display formatting. Omit for action columns. */
   exportValue?: (row: T) => CsvCell;
   /** Use only for exact, unformatted decimal source strings. Text never acquires numeric semantics implicitly. */
@@ -168,9 +176,14 @@ export function TableWorkbench<T>({ workbenchId, sourceKey = "", columns, rows, 
   // Beside a detail rail the table drops its least important columns rather than clipping the
   // last one or scrolling sideways: one tier at a time, only while the table really overflows.
   const droppedPriorities: readonly string[] = DROP_ORDER.slice(0, dropLevel);
-  const fittedColumns = visibleColumns.filter(column => !droppedPriorities.includes(column.priority ?? "high"));
-  const nextDroppableTier = DROP_ORDER.slice(dropLevel).findIndex(tier => visibleColumns.some(column => column.priority === tier));
-  const droppedColumnCount = visibleColumns.length - fittedColumns.length;
+  // A column with no value in any loaded row says so once instead of repeating a placeholder.
+  const emptyColumns = rows.length > 0
+    ? visibleColumns.filter(column => column.hideWhenEmpty && rows.every(row => column.hideWhenEmpty!(row)))
+    : [];
+  const populatedColumns = visibleColumns.filter(column => !emptyColumns.includes(column));
+  const fittedColumns = populatedColumns.filter(column => !droppedPriorities.includes(column.priority ?? "high"));
+  const nextDroppableTier = DROP_ORDER.slice(dropLevel).findIndex(tier => populatedColumns.some(column => column.priority === tier));
+  const droppedColumnCount = populatedColumns.length - fittedColumns.length;
   // TableWorkbench owns the single Columns control, including caller-owned URL state.
   // DenseDataTable must render these exact fields without a second visibility layer.
   const tableColumns = fittedColumns.map(column => ({ ...column, hideable: false, defaultHidden: false,
@@ -301,6 +314,7 @@ export function TableWorkbench<T>({ workbenchId, sourceKey = "", columns, rows, 
         {filters}
         {showSearch || filters ? <span className="table-workbench-count">{pluralizeCount(filteredRows.length, "match", { plural: "matches" })}</span> : null}
         <div className="table-workbench-tools">
+          {emptyColumns.map(column => <span key={`empty-${column.id}`} className="table-workbench-view-notice" data-empty-column={column.id}>{column.emptyNote ?? `${column.label}: no values`}</span>)}
           {droppedColumnCount > 0 ? <span className="table-workbench-view-notice" title="Widen the table or close the detail pane to show every column. Hidden columns are still exported.">{pluralizeCount(droppedColumnCount, "column")} hidden to fit</span> : null}
           {unavailableViews ? <span role="status" title={notice} className="table-workbench-view-notice">Views unavailable</span> : null}
           {compactToolbar ? <details className="table-workbench-disclosure" onKeyDown={closeOnEscape}>

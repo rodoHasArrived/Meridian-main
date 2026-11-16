@@ -160,11 +160,22 @@ describe("DailyControlTowerScreen", () => {
     // informational inbox note is not counted.
     expect(screen.getByTestId("today-attention-count")).toHaveTextContent("4 need attention · blocked + action, excluding snoozed");
     expect(confidence).not.toHaveTextContent(/workspace signals? in the queue/);
-    expect(confidence).toHaveTextContent("Stale update");
-    expect(confidence).toHaveTextContent("May 14, 2026");
+    // No stray evidence line above the queue; the selected item says why it is ranked where it is.
+    expect(confidence).not.toHaveTextContent("Selected evidence");
+    expect(screen.getByTestId("today-rank-reason")).toHaveTextContent("Ranked 2 of 4. Sorted by severity (blocked), then oldest first: 2nd oldest of 2 blocked items.");
     expect(screen.queryByLabelText("Daily control tower decision drivers")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Daily control tower trust posture")).not.toBeInTheDocument();
     expect(screen.getByText("More evidence").closest("details")).not.toHaveAttribute("open");
+  });
+
+  it("offers Assigned to me on every source and says why workspace signals leave the list", async () => {
+    await renderLoaded();
+    const user = userEvent.setup();
+    const assigned = screen.getByRole("checkbox", { name: "Assigned to me" });
+    await user.click(assigned);
+    const grid = screen.getByRole("treegrid", { name: "Today queue" });
+    expect(grid.querySelectorAll('tbody tr[data-dense-row-id^="workspace:"]')).toHaveLength(0);
+    expect(screen.getByText("Workspace signals have no owner, so Assigned to me hides them.")).toBeInTheDocument();
   });
 
   it("keeps the seeded read-only inbox notice out of the normal view while its actions stay disabled", async () => {
@@ -205,7 +216,9 @@ describe("DailyControlTowerScreen", () => {
     expect(within(grid).getByRole("columnheader", { name: "Source" })).toBeInTheDocument();
     expect(screen.getByRole("row", { name: "Brokerage sync failed" })).toHaveTextContent("Workspace signal");
     expect(screen.getByRole("row", { name: "Cash break triage" })).toHaveTextContent("Shared inbox");
-    expect(screen.getByRole("row", { name: "Cash break triage" })).toHaveTextContent("Unassigned");
+    // No row has an owner, so the Owner column says so once instead of on every row.
+    expect(within(grid).queryByRole("columnheader", { name: "Owner" })).not.toBeInTheDocument();
+    expect(screen.getByText("Owner: no item is assigned")).toBeInTheDocument();
 
     // Severity first (both blockers lead), then age (the older inbox blocker first), then source rank.
     const keys = gridRowKeys();

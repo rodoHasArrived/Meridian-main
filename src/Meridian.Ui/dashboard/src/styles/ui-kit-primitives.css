@@ -73,6 +73,12 @@
   background: var(--ws-surface);
 }
 
+/* Today's queue is the page's primary task: it grows with the page instead of scrolling inside
+   its card, so more items are visible without a nested scrollbar. */
+.today-queue .dense-data-table-wrap {
+  max-height: none;
+}
+
 .dense-data-table {
   --dense-head-py: 0.4375rem;
   --dense-cell-py: 0.4375rem;

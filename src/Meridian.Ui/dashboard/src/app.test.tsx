@@ -638,7 +638,9 @@ describe("App", () => {
     const confidence = screen.getByRole("region", { name: "Daily control tower confidence" });
     // Scope is stated once, in the header bar; Today no longer repeats it.
     expect(within(confidence).queryByText("Scope")).not.toBeInTheDocument();
-    expect(within(confidence).getByText("Selected evidence")).toBeInTheDocument();
+    // The selected item's evidence time is in its detail rail; the queue says why it is ranked there.
+    expect(within(confidence).queryByText("Selected evidence")).not.toBeInTheDocument();
+    expect(screen.getByTestId("today-rank-reason")).toHaveTextContent(/^Why ranked here: Ranked \d+ of \d+\. Sorted by severity/);
     expect(within(screen.getByRole("region", { name: "Priority decision" })).getByRole("region", { name: "Workstation status" })).toHaveAttribute("data-status-tone", "blocked");
     expect(screen.getByTestId("today-attention-count")).toHaveTextContent(/^\d+ needs? attention · blocked \+ action, excluding snoozed/);
     const trust = screen.getByRole("region", { name: "Workstation build, environment, provenance, and provider health" });
