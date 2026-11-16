@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Globalization;
 using System.Text.Json;
 using Meridian.Backtesting.FillModels;
 using Meridian.Backtesting.Metrics;
@@ -323,9 +324,18 @@ public sealed class BacktestEngine(
             inactiveSecurityMasterSymbols,
             delistingMonitor,
             storedCorporateActionsApplied: portfolioActionAccounting);
+        var ledgerIntegrityBreaks = portfolio.LedgerIntegrityBreaks;
+        if (ledgerIntegrityBreaks.Count > 0)
+        {
+            logger.LogWarning(
+                "Backtest completed with {BreakCount} ledger integrity difference(s); first on {FirstBreakAt} ({FirstBreakCheck})",
+                ledgerIntegrityBreaks.Count, ledgerIntegrityBreaks[0].AsOf, ledgerIntegrityBreaks[0].Check);
+            biasDisclosure = WithLedgerIntegrityDisclosure(biasDisclosure, ledgerIntegrityBreaks);
+        }
+
         return new BacktestResult(request, universe, allSnapshots, allCashFlows, allFills, metrics, ledger, sw.Elapsed, eventsProcessed, tradeTickets, tcaReport, BiasDisclosure: biasDisclosure)
         {
-            LedgerIntegrityBreaks = portfolio.LedgerIntegrityBreaks,
+            LedgerIntegrityBreaks = ledgerIntegrityBreaks,
             CanonicalCorporateActions = canonicalActions?.Snapshot
         };
     }
@@ -1085,6 +1095,35 @@ public sealed class BacktestEngine(
             inactiveSecurityMasterSymbols,
             delistingLiquidations,
             items.OrderByDescending(static item => item.Severity).ToList());
+    }
+
+    /// <summary>
+    /// Day-end ledger differences are retained on the result, but a run that does not opt into
+    /// <see cref="BacktestRequest.FailOnLedgerIntegrityBreak"/> still completes. Disclosing them
+    /// with the run's other caveats puts the difference in front of every surface that shows the
+    /// result, rather than leaving it in a field no reader inspects.
+    /// </summary>
+    internal static BiasDisclosureReport WithLedgerIntegrityDisclosure(
+        BiasDisclosureReport disclosure,
+        IReadOnlyList<LedgerIntegrityBreak> breaks)
+    {
+        if (breaks.Count == 0)
+            return disclosure;
+
+        var first = breaks[0];
+        var checks = breaks.Select(static item => item.Check).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal);
+        var days = breaks.Select(static item => item.AsOf).Distinct().Count();
+        var item = new BiasDisclosureItem(
+            "ledger-integrity-break",
+            BiasSeverity.Warning,
+            $"{breaks.Count} ledger integrity difference(s) on {days} day(s)",
+            $"The run's ledger did not reconcile to its portfolio at day-end ({string.Join(", ", checks)}). "
+            + $"First difference {first.AsOf:yyyy-MM-dd}: {first.Message} Expected {first.Expected.ToString(CultureInfo.InvariantCulture)}, "
+            + $"ledger {first.Actual.ToString(CultureInfo.InvariantCulture)}. Treat reported cash, basis and P&L as unverified until the difference is explained.");
+        return disclosure with
+        {
+            Items = disclosure.Items.Append(item).OrderByDescending(static entry => entry.Severity).ToList()
+        };
     }
 
     private static IFillModel SelectFillModel(

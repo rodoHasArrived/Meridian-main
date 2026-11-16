@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## UnderlyingLinkPayload
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.UnderlyingLinkPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:71](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L71).
+
+A declared underlying link as the UnderlyingGraph stream records it.
+
+```csharp
+public sealed record UnderlyingLinkPayload(Guid LinkId, Guid SecurityId, string Role, Guid? UnderlyingSecurityId, string? Reference, decimal? Weight, DateTimeOffset ValidFrom, DateTimeOffset? ValidTo, string? Notes, string DeclaredBy, DateTimeOffset DeclaredAt);
+```
+
 ## UnderlyingLinkRemovedPayload
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.UnderlyingLinkRemovedPayload</code>. Kind: `record`.
@@ -807,14 +819,4 @@ Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:870](../../../.
 
 ```csharp
 public sealed record HealthIssue(IssueSeverity Severity, IssueType Type, string Path, string? ExpectedChecksum = null, string? ActualChecksum = null, string? Details = null, string RecommendedAction = "", bool AutoRepairable = false);
-```
-
-## HealthReport
-
-Qualified name: <code>Meridian.Storage.Services.HealthReport</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:835](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L835).
-
-```csharp
-public sealed record HealthReport(string ReportId, DateTime GeneratedAt, long ScanDurationMs, HealthSummary Summary, IReadOnlyList<HealthIssue> Issues, HealthStatistics Statistics);
 ```

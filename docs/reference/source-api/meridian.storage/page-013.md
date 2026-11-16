@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## HealthReport
+
+Qualified name: <code>Meridian.Storage.Services.HealthReport</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:835](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L835).
+
+```csharp
+public sealed record HealthReport(string ReportId, DateTime GeneratedAt, long ScanDurationMs, HealthSummary Summary, IReadOnlyList<HealthIssue> Issues, HealthStatistics Statistics);
+```
+
 ## HealthStatistics
 
 Qualified name: <code>Meridian.Storage.Services.HealthStatistics</code>. Kind: `class`.
@@ -888,14 +898,4 @@ Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:966](../../../.
 
 ```csharp
 public sealed record OrphanedFile(string Path, string Reason, long SizeBytes, DateTime LastModified);
-```
-
-## OrphanReport
-
-Qualified name: <code>Meridian.Storage.Services.OrphanReport</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:960](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L960).
-
-```csharp
-public sealed record OrphanReport(DateTime GeneratedAt, IReadOnlyList<OrphanedFile> OrphanedFiles, long TotalOrphanedBytes);
 ```
