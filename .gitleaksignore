@@ -51,3 +51,6 @@ bdf83bec5f378be92ca2c4f2ab76972ab0d5bda2:Meridian Design System/templates/settin
 # provenance and its bundled copy. Only these original commit/path/rule/line findings.
 de886adbf6285ae9b322b9ba1a64f68e2c8b025b:Meridian Design System/release-build.json:generic-api-key:179
 de886adbf6285ae9b322b9ba1a64f68e2c8b025b:Meridian Design System/_ds_bundle.js:generic-api-key:1
+# Fake Polygon ApiKey placeholder in a masking unit test, replaced in the next commit of the
+# same PR. Force-push is blocked, so the original commit stays in history. Only this finding.
+b7c099a204503f925b60dfa77a57f23bb419f52d:tests/Meridian.Tests/Application/Ui/EffectiveConfigurationProjectionTests.cs:generic-api-key:67

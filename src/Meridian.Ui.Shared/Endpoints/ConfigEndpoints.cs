@@ -82,36 +82,50 @@ public static class ConfigEndpoints
             var envVars = envOverride.GetRecognizedVariables();
 
             // Build effective config entries with source annotations
+            // The original hand-picked keys keep their established names, defaults and masking.
             var entries = new List<object>();
+            var curatedKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "symbols.count" };
+            void AddEntry(string key, string value, string? envVarName, string? defaultValue)
+            {
+                curatedKeys.Add(key);
+                entries.Add(BuildEntry(key, value, envVars, envVarName, defaultValue));
+            }
 
             // Core settings
-            entries.Add(BuildEntry("dataSource", cfg.DataSource.ToString(), envVars, "MDC_DATASOURCE", "IB"));
-            entries.Add(BuildEntry("dataRoot", cfg.DataRoot, envVars, "MDC_DATA_ROOT", "data"));
-            entries.Add(BuildEntry("compress", cfg.Compress?.ToString() ?? "null", envVars, "MDC_COMPRESS", "null"));
+            AddEntry("dataSource", cfg.DataSource.ToString(), "MDC_DATASOURCE", "IB");
+            AddEntry("dataRoot", cfg.DataRoot, "MDC_DATA_ROOT", "data");
+            AddEntry("compress", cfg.Compress?.ToString() ?? "null", "MDC_COMPRESS", "null");
 
             // Alpaca settings
             if (cfg.Alpaca != null)
             {
-                entries.Add(BuildEntry("alpaca.keyId", SensitiveValueMasker.Mask(cfg.Alpaca.KeyId), envVars, "MDC_ALPACA_KEY_ID", null));
-                entries.Add(BuildEntry("alpaca.secretKey", SensitiveValueMasker.MaskCompletely(cfg.Alpaca.SecretKey), envVars, "MDC_ALPACA_SECRET_KEY", null));
-                entries.Add(BuildEntry("alpaca.feed", cfg.Alpaca.Feed ?? "iex", envVars, "MDC_ALPACA_FEED", "iex"));
-                entries.Add(BuildEntry("alpaca.useSandbox", cfg.Alpaca.UseSandbox.ToString(), envVars, "MDC_ALPACA_SANDBOX", "False"));
+                AddEntry("alpaca.keyId", SensitiveValueMasker.Mask(cfg.Alpaca.KeyId), "MDC_ALPACA_KEY_ID", null);
+                AddEntry("alpaca.secretKey", SensitiveValueMasker.MaskCompletely(cfg.Alpaca.SecretKey), "MDC_ALPACA_SECRET_KEY", null);
+                AddEntry("alpaca.feed", cfg.Alpaca.Feed ?? "iex", "MDC_ALPACA_FEED", "iex");
+                AddEntry("alpaca.useSandbox", cfg.Alpaca.UseSandbox.ToString(), "MDC_ALPACA_SANDBOX", "False");
             }
 
             // Storage settings
             var storage = cfg.Storage;
-            entries.Add(BuildEntry("storage.namingConvention", storage?.NamingConvention ?? "BySymbol", envVars, "MDC_STORAGE_NAMING", "BySymbol"));
-            entries.Add(BuildEntry("storage.datePartition", storage?.DatePartition ?? "Daily", envVars, "MDC_STORAGE_PARTITION", "Daily"));
-            entries.Add(BuildEntry("storage.retentionDays", storage?.RetentionDays?.ToString() ?? "null", envVars, "MDC_STORAGE_RETENTION_DAYS", "null"));
-            entries.Add(BuildEntry("storage.enableParquetSink", storage?.EnableParquetSink.ToString() ?? "False", envVars, null, "False"));
+            AddEntry("storage.namingConvention", storage?.NamingConvention ?? "BySymbol", "MDC_STORAGE_NAMING", "BySymbol");
+            AddEntry("storage.datePartition", storage?.DatePartition ?? "Daily", "MDC_STORAGE_PARTITION", "Daily");
+            AddEntry("storage.retentionDays", storage?.RetentionDays?.ToString() ?? "null", "MDC_STORAGE_RETENTION_DAYS", "null");
+            AddEntry("storage.enableParquetSink", storage?.EnableParquetSink.ToString() ?? "False", null, "False");
 
             // Backfill settings
             var backfill = cfg.Backfill;
-            entries.Add(BuildEntry("backfill.enabled", backfill?.Enabled.ToString() ?? "False", envVars, "MDC_BACKFILL_ENABLED", "False"));
-            entries.Add(BuildEntry("backfill.provider", backfill?.Provider ?? "composite", envVars, "MDC_BACKFILL_PROVIDER", "composite"));
+            AddEntry("backfill.enabled", backfill?.Enabled.ToString() ?? "False", "MDC_BACKFILL_ENABLED", "False");
+            AddEntry("backfill.provider", backfill?.Provider ?? "composite", "MDC_BACKFILL_PROVIDER", "composite");
 
             // Symbols summary
             entries.Add(new { key = "symbols.count", value = (cfg.Symbols?.Length ?? 0).ToString(), source = "config", impact = ConfigurationChangeImpact.Live });
+
+            // Every remaining AppConfig field, so no section is missing from the effective view.
+            foreach (var entry in Meridian.Application.UI.EffectiveConfigurationProjection.Build(cfg, envVars))
+            {
+                if (!curatedKeys.Contains(entry.Key))
+                    entries.Add(new { key = entry.Key, value = entry.Value, source = entry.Source, impact = entry.Impact });
+            }
 
             // Environment overrides summary
             var activeOverrides = envVars.Where(v => v.IsSet).Select(v => new

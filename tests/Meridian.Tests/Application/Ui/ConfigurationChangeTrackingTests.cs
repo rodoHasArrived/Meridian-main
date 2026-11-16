@@ -62,6 +62,26 @@ public sealed class ConfigurationChangeTrackingTests : IDisposable
     }
 
     [Fact]
+    public async Task FeatureCapabilityOverrideSaveIsRecordedAsPendingChange()
+    {
+        var store = await CreateStore();
+        await store.SaveFeatureCapabilityOverridesAsync(new Dictionary<string, bool> { ["Synthetic"] = true });
+        var status = store.GetChangeStatus();
+        status.Changes.Should().ContainSingle(change => change.Path == "featureCapabilities.overrides.Synthetic");
+        status.PendingChanges.Should().ContainSingle(change => change.Path == "featureCapabilities.overrides.Synthetic");
+        status.RequiresRestart.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task FeatureCapabilityOverrideSaveIntoMissingFileIsRecorded()
+    {
+        Directory.CreateDirectory(_root);
+        var store = new ConfigStore(Path.Combine(_root, "appsettings.json"));
+        await store.SaveFeatureCapabilityOverridesAsync(new Dictionary<string, bool> { ["Synthetic"] = true });
+        store.GetChangeStatus().Changes.Should().Contain(change => change.Path == "featureCapabilities.overrides.Synthetic");
+    }
+
+    [Fact]
     public async Task WholeSaveRefusesMalformedAuthoritativeFileWithoutReplacingIt()
     {
         var store = await CreateStore();

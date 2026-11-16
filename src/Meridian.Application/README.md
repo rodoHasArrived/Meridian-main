@@ -32,6 +32,11 @@ The current runtime cannot rebuild providers in process, so pending provider rec
 Later live saves retain outstanding restart/reconnect changes; reverting a field to its host baseline
 clears that field's pending state. The journal stores value hashes rather than configuration values.
 `SaveAsync` now also refuses to overwrite a malformed existing authoritative document.
+Feature-capability override saves edit the raw document and are recorded in the same activation
+record; a saved document the typed reader cannot project is logged and left untracked rather than
+failing the save. `EffectiveConfigurationProjection` flattens the whole `AppConfig` document into
+source-annotated fields (`default`, `config`, `env:VAR`) for the effective-configuration endpoint,
+masks credential-like fields by name, and reports the symbol list and arrays over 25 items as counts.
 
 Provider routing rejects disabled connections and policy-gated fallbacks consistently across direct
 and scored selection. Catalog metadata placeholders yield to the first concrete capability factory.

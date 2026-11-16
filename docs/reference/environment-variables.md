@@ -237,7 +237,10 @@ Configuration values are resolved in this order (last wins):
 ## Viewing Effective Configuration
 
 The `/api/config/effective` endpoint returns settings in `entries` with a `source` annotation
-(`default`, `config`, or `env:VAR_NAME`). It requires `ViewConfig` or `ModifyConfig`; use the
+(`default`, `config`, or `env:VAR_NAME`). Entries cover every `AppConfig` section; credential-like
+fields are masked, and the symbol list and arrays longer than 25 items are reported as a
+`.count`. Values are the saved file values: an `env:` source marks a field the named variable
+overrides at host startup. It requires `ViewConfig` or `ModifyConfig`; use the
 [authenticated preflight procedure](../operators/preflight-checklist.md#authenticated-evidence-collection)
 for session or API-key examples.
 
