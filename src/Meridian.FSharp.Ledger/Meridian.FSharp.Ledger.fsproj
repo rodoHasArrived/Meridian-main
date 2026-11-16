@@ -17,6 +17,8 @@
     <Compile Include="Posting.fs" />
     <!-- Fund-economics fee/expense accruals — pure math, no dependencies -->
     <Compile Include="FundEconomics.fs" />
+    <!-- Time-weighted, Modified Dietz, and money-weighted return kernels (W10-PERF-001) — pure math -->
+    <Compile Include="ReturnMeasurement.fs" />
     <!-- Break and run metadata types — no dependencies on Reconciliation.fs -->
     <Compile Include="ReconciliationTypes.fs" />
     <Compile Include="Reconciliation.fs" />

@@ -353,13 +353,29 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
         return activeRun.GetOrStartStop(() => StopActiveRunCoreAsync(activeRun));
     }
 
-    private static async Task<VerifiedOperationOutcome> StopActiveRunCoreAsync(ActiveRun activeRun)
+    private async Task<VerifiedOperationOutcome> StopActiveRunCoreAsync(ActiveRun activeRun)
     {
         await activeRun.Initialized.ConfigureAwait(false);
         await activeRun.ControlGate.WaitAsync().ConfigureAwait(false);
         try
         {
             activeRun.Session.CloseOutboundOrderAdmission();
+
+            // A fill the OMS already accepted (and handed to accounting) may still be on its way
+            // through the shared report pump. Closing admission now would reject it as
+            // undeliverable and fail a run the operator asked to stop cleanly, so let accepted
+            // fills reach the session first.
+            var drainTimeout = _options.StopFillDrainTimeout > TimeSpan.Zero
+                ? _options.StopFillDrainTimeout
+                : TimeSpan.Zero;
+            if (!await activeRun.Session.WaitForAcceptedFillDeliveryAsync(drainTimeout).ConfigureAwait(false))
+            {
+                _logger.LogWarning(
+                    "Run {RunId} stop proceeded before every OMS-accepted fill reached its session (drain timeout {Timeout}).",
+                    activeRun.Session.RunId,
+                    drainTimeout);
+            }
+
             activeRun.CompleteReportAdmission();
             try
             {
@@ -857,11 +873,24 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
         {
             var retainedRun = await _repository.GetRunByIdAsync(runId, CancellationToken.None).ConfigureAwait(false)
                 ?? throw new InvalidOperationException($"No retained strategy run '{runId}' exists for the late fill.");
-            await _repository.RecordLifecycleEventAsync(
-                    retainedRun.Fail(failure, "An accepted broker fill could not reach the live strategy session."),
-                    StrategyRunLifecycleEventType.Failed,
-                    CancellationToken.None)
-                .ConfigureAwait(false);
+            if (retainedRun is { EndedAt: not null, TerminalStatus: StrategyRunStatus.Failed })
+            {
+                // The run's outcome is already explicitly failed. Appending a second Failed is not
+                // a valid transition and would move its retained end timestamp; the audit row
+                // below still records this particular undelivered report.
+                _logger.LogWarning(
+                    "Run {RunId} is already retained as failed; undelivered report for order {OrderId} is recorded in the audit trail only.",
+                    runId,
+                    clientOrderId);
+            }
+            else
+            {
+                await _repository.RecordLifecycleEventAsync(
+                        retainedRun.Fail(failure, "An accepted broker fill could not reach the live strategy session."),
+                        StrategyRunLifecycleEventType.Failed,
+                        CancellationToken.None)
+                    .ConfigureAwait(false);
+            }
         }
         catch (Exception ex)
         {

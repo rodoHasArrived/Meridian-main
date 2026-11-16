@@ -348,6 +348,26 @@ Declared public members:
 | <code>public int BlockedLegs =&gt; …;</code> | [src/Meridian.Storage/Ledger/LedgerCurrencyBackfill.cs:85](../../../../src/Meridian.Storage/Ledger/LedgerCurrencyBackfill.cs#L85) | Legs no evidence and no affirmation can complete; they stay currency-blind. |
 | <code>public bool IsComplete =&gt; …;</code> | [src/Meridian.Storage/Ledger/LedgerCurrencyBackfill.cs:88](../../../../src/Meridian.Storage/Ledger/LedgerCurrencyBackfill.cs#L88) | True when nothing is left to repair. |
 
+## LedgerDurableBalanceRule
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerDurableBalanceRule</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/LedgerDurableBalanceRule.cs:11](../../../../src/Meridian.Storage/Ledger/LedgerDurableBalanceRule.cs#L11).
+
+The durable journal is stricter than JournalEntry.IsBalanced: legs are stored as numeric(38, 10) and the journal seal requires at least two legs whose stored debits and credits are exactly equal. Checking the same rule before the transaction turns a database constraint failure at commit into a validation error that names the journal and the residual.
+
+```csharp
+public static class LedgerDurableBalanceRule
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int StoredScale = 10;</code> | [src/Meridian.Storage/Ledger/LedgerDurableBalanceRule.cs:14](../../../../src/Meridian.Storage/Ledger/LedgerDurableBalanceRule.cs#L14) | Decimal places retained by the journal leg amount columns. |
+| <code>public static string? Violation(JournalEntry entry);</code> | [src/Meridian.Storage/Ledger/LedgerDurableBalanceRule.cs:17](../../../../src/Meridian.Storage/Ledger/LedgerDurableBalanceRule.cs#L17) | Returns the reason the store would refuse the entry, or null when it is acceptable. |
+| <code>public static void Ensure(JournalEntry entry);</code> | [src/Meridian.Storage/Ledger/LedgerDurableBalanceRule.cs:40](../../../../src/Meridian.Storage/Ledger/LedgerDurableBalanceRule.cs#L40) | Throws when the store would refuse the entry. |
+
 ## LedgerJournalEntryQuery
 
 Qualified name: <code>Meridian.Storage.Ledger.LedgerJournalEntryQuery</code>. Kind: `record`.
@@ -801,13 +821,3 @@ Declared public members:
 | <code>public static OpenLotBackfillFactsDto ReadFacts(byte[] content, string hash);</code> | [src/Meridian.Storage/Ledger/OpenLotBackfillRules.cs:19](../../../../src/Meridian.Storage/Ledger/OpenLotBackfillRules.cs#L19) |  |
 | <code>public static LedgerTaxLotRecord Enrich(LedgerTaxLotRecord lot, OpenLotBackfillEvidenceDto evidence);</code> | [src/Meridian.Storage/Ledger/OpenLotBackfillRules.cs:43](../../../../src/Meridian.Storage/Ledger/OpenLotBackfillRules.cs#L43) |  |
 | <code>public static IReadOnlyList&lt;string&gt; Issues(LedgerTaxLotRecord lot);</code> | [src/Meridian.Storage/Ledger/OpenLotBackfillRules.cs:90](../../../../src/Meridian.Storage/Ledger/OpenLotBackfillRules.cs#L90) |  |
-
-## PeriodCloseEventRecord
-
-Qualified name: <code>Meridian.Storage.Ledger.PeriodCloseEventRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:387](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L387).
-
-```csharp
-public sealed record PeriodCloseEventRecord(Guid EventId, Guid PeriodId, string PriorStatus, string NewStatus, string ClosedBy, string Notes, DateTimeOffset RecordedAt);
-```

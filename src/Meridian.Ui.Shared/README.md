@@ -1291,6 +1291,18 @@ an Assign request, it also replaces the assignee with the authenticated operator
 flag before the queue hashes the request. `WorkstationEndpointsTests.BulkCasework.cs` covers the
 dry run, the per-case audit and the session assignee.
 
+## Return figures on the brokerage performance seam
+
+`PerformanceReturnFigures` maps the F# `ReturnMeasurement` kernel onto `PerformanceReturnFigureDto`
+and is reused by later fund, share-class and investor lanes (W10-PERF-001). For the existing
+brokerage performance route, `BrokeragePortfolioSyncService.GetPerformanceAsync` adds time-weighted
+and money-weighted figures from balance-snapshot equity; the method lives in
+`BrokeragePortfolioSyncService.Performance.cs`, a partial split that keeps the service file under
+the no-new-god-file cap. Only `Deposit`, `Withdrawal` and `Transfer`
+cash categories are external capital; dividends, interest, fees, premium and trade cash stay in the
+return. An `Other` transaction makes every figure `ReviewRequired`, and each figure is labeled
+`brokerage-balance-snapshots` as not ledger-derived.
+
 ## Portfolio cash-ladder currency evidence
 
 `PortfolioCashLadderReadService` requires currency evidence for every opening cash balance and

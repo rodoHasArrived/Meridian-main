@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterExceptionCaseworkService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SecurityMasterExceptionCaseworkService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:40](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L40).
+
+Reads Security Master-tagged cases from the authoritative reconciliation queue.
+
+```csharp
+public sealed class SecurityMasterExceptionCaseworkService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string QualityRunId = &quot;security-master-quality&quot;;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:45](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L45) | Canonical run identifier used by genuinely owner-scoped Security Master quality cases. |
+| <code>public SecurityMasterExceptionCaseworkService(IReconciliationBreakQueueRepository? breakQueueRepository, ILogger&lt;SecurityMasterExceptionCaseworkService&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:49](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L49) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationBreakQueueItem&gt;&gt; GetAgingExceptionsAsync(ReconciliationBreakQueueScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:60](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L60) | Returns exact-scope open Security Master cases whose SLA deadline has elapsed. |
+
 ## SecurityMasterExceptionSlaConfig
 
 Qualified name: <code>Meridian.Ui.Shared.Services.SecurityMasterExceptionSlaConfig</code>. Kind: `record`.
@@ -923,24 +943,4 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:89](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L89) |  |
-| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1558](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1558) |  |
-
-## WorkstationWorkflowReadScope
-
-Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationWorkflowReadScope</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs:28](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs#L28).
-
-Which workspace families a caller may read in the shared workflow summary. The summary is shell furniture that composes one card per canonical workspace, so its route admits the union of the per-workspace read permissions — otherwise a reporting or strategy reader loses the whole strip. Admission is therefore not authorization: without this projection a caller admitted by any one family receives every family&#x27;s card, and the strategy and accounting cards carry real record content (candidate strategy names, promotion state and reasons, open break counts, ledger continuity posture). Cards backed by no record content — Portfolio, Reporting and Settings, which vary only on whether an operating context is selected — are not gated here; there is nothing in them to withhold. There is deliberately no default: every caller of WorkstationWorkflowSummaryService.GetAsync states a scope, because the desktop lane reaches that service in process with no endpoint filter in between, and an optional argument there is a grant to whichever caller forgets it. Browser requests resolve theirs through ForRequest; the desktop resolves its operator&#x27;s through its own authenticated session.
-
-```csharp
-public sealed record WorkstationWorkflowReadScope(bool Trading, bool Accounting, bool Strategy, bool Data)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly WorkstationWorkflowReadScope All = new (Trading : true, Accounting : true, Strategy : true, Data : true);</code> | [src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs:38](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs#L38) | Every family readable. For a caller whose authority is already established to cover all of them, and for tests; never a stand-in for a scope that was not resolved. |
-| <code>public bool NeedsStrategyRuns =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs:49](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs#L49) | True when any family whose card is built from strategy runs is readable. Trading and Accounting both read the governed (paper and live) runs and Strategy reads the backtest queue, so a caller holding none of the three needs no run load at all. |
-| <code>public static WorkstationWorkflowReadScope ForRequest(HttpContext context) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs:71](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs#L71) | The families the current request may read. Each is the permission set already declared by the route that serves that family&#x27;s data directly, so the summary card and the surface it summarises admit the same callers and neither becomes the other&#x27;s second door: Trading — UserPermission.ViewTrades, as the trading read surface. Accounting — the reconciliation break queue&#x27;s set, which the accounting card&#x27;s open-break and continuity posture is drawn from. Strategy — the run-ledger routes&#x27; UserPermission.ViewStrategies and UserPermission.ManageStrategies. Data — the Data workspace&#x27;s own set. The card summarises that workspace and its next action opens it, so the two admit the same callers; the workspace payload reads the same provider metrics the card counts, so nothing reaches the card that the workspace withholds. UserPermission.AdminMaintenance is not a universal override: it appears only in the accounting set, because the reconciliation break queue accepts it and the trading, strategy and data workspaces do not. A profile carrying it alone administers maintenance routines; it is not thereby entitled to strategy candidates or trading posture. |
+| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1561](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1561) |  |

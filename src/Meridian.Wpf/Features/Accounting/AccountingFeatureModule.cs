@@ -342,6 +342,9 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, QuickBooksFixtureAccountingProvider>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, XeroFixtureAccountingProvider>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, NetSuiteFixtureAccountingProvider>());
+        // Imports, mapping profiles and certified export packages survive a restart.
+        services.TryAddSingleton(sp => new AccountingSystemIntegrationStateStore(
+            Path.Combine(ResolveAccountingDataDirectory(sp), "external-gl")));
         services.TryAddSingleton<AccountingSystemIntegrationService>();
         services.TryAddSingleton<AccountingProductionReadinessService>();
         services.AddTransient<AccountingConfigureViewModel>();

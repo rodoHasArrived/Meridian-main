@@ -554,7 +554,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Reporting.ReportKind</code>. Kind: `enum`.
 
-Source: [src/Meridian.Reporting/ReportGenerationService.cs:257](../../../../src/Meridian.Reporting/ReportGenerationService.cs#L257).
+Source: [src/Meridian.Reporting/ReportGenerationService.cs:276](../../../../src/Meridian.Reporting/ReportGenerationService.cs#L276).
 
 Type of governance report to generate.
 
@@ -566,24 +566,24 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>TrialBalance</code> | [src/Meridian.Reporting/ReportGenerationService.cs:259](../../../../src/Meridian.Reporting/ReportGenerationService.cs#L259) |  |
-| <code>NavSummary</code> | [src/Meridian.Reporting/ReportGenerationService.cs:260](../../../../src/Meridian.Reporting/ReportGenerationService.cs#L260) |  |
-| <code>AssetAllocation</code> | [src/Meridian.Reporting/ReportGenerationService.cs:261](../../../../src/Meridian.Reporting/ReportGenerationService.cs#L261) |  |
-| <code>ReconciliationPack</code> | [src/Meridian.Reporting/ReportGenerationService.cs:262](../../../../src/Meridian.Reporting/ReportGenerationService.cs#L262) |  |
-| <code>PerformanceReport</code> | [src/Meridian.Reporting/ReportGenerationService.cs:263](../../../../src/Meridian.Reporting/ReportGenerationService.cs#L263) |  |
-| <code>HoldingsReport</code> | [src/Meridian.Reporting/ReportGenerationService.cs:264](../../../../src/Meridian.Reporting/ReportGenerationService.cs#L264) |  |
-| <code>CapitalAccountStatement</code> | [src/Meridian.Reporting/ReportGenerationService.cs:265](../../../../src/Meridian.Reporting/ReportGenerationService.cs#L265) |  |
-| <code>InvestorStatement</code> | [src/Meridian.Reporting/ReportGenerationService.cs:266](../../../../src/Meridian.Reporting/ReportGenerationService.cs#L266) |  |
-| <code>BoardPacket</code> | [src/Meridian.Reporting/ReportGenerationService.cs:267](../../../../src/Meridian.Reporting/ReportGenerationService.cs#L267) |  |
-| <code>AuditPackage</code> | [src/Meridian.Reporting/ReportGenerationService.cs:268](../../../../src/Meridian.Reporting/ReportGenerationService.cs#L268) |  |
-| <code>CertifiedDataset</code> | [src/Meridian.Reporting/ReportGenerationService.cs:269](../../../../src/Meridian.Reporting/ReportGenerationService.cs#L269) |  |
-| <code>CustomReport</code> | [src/Meridian.Reporting/ReportGenerationService.cs:270](../../../../src/Meridian.Reporting/ReportGenerationService.cs#L270) |  |
+| <code>TrialBalance</code> | [src/Meridian.Reporting/ReportGenerationService.cs:278](../../../../src/Meridian.Reporting/ReportGenerationService.cs#L278) |  |
+| <code>NavSummary</code> | [src/Meridian.Reporting/ReportGenerationService.cs:279](../../../../src/Meridian.Reporting/ReportGenerationService.cs#L279) |  |
+| <code>AssetAllocation</code> | [src/Meridian.Reporting/ReportGenerationService.cs:280](../../../../src/Meridian.Reporting/ReportGenerationService.cs#L280) |  |
+| <code>ReconciliationPack</code> | [src/Meridian.Reporting/ReportGenerationService.cs:281](../../../../src/Meridian.Reporting/ReportGenerationService.cs#L281) |  |
+| <code>PerformanceReport</code> | [src/Meridian.Reporting/ReportGenerationService.cs:282](../../../../src/Meridian.Reporting/ReportGenerationService.cs#L282) |  |
+| <code>HoldingsReport</code> | [src/Meridian.Reporting/ReportGenerationService.cs:283](../../../../src/Meridian.Reporting/ReportGenerationService.cs#L283) |  |
+| <code>CapitalAccountStatement</code> | [src/Meridian.Reporting/ReportGenerationService.cs:284](../../../../src/Meridian.Reporting/ReportGenerationService.cs#L284) |  |
+| <code>InvestorStatement</code> | [src/Meridian.Reporting/ReportGenerationService.cs:285](../../../../src/Meridian.Reporting/ReportGenerationService.cs#L285) |  |
+| <code>BoardPacket</code> | [src/Meridian.Reporting/ReportGenerationService.cs:286](../../../../src/Meridian.Reporting/ReportGenerationService.cs#L286) |  |
+| <code>AuditPackage</code> | [src/Meridian.Reporting/ReportGenerationService.cs:287](../../../../src/Meridian.Reporting/ReportGenerationService.cs#L287) |  |
+| <code>CertifiedDataset</code> | [src/Meridian.Reporting/ReportGenerationService.cs:288](../../../../src/Meridian.Reporting/ReportGenerationService.cs#L288) |  |
+| <code>CustomReport</code> | [src/Meridian.Reporting/ReportGenerationService.cs:289](../../../../src/Meridian.Reporting/ReportGenerationService.cs#L289) |  |
 
 ## ReportPack
 
 Qualified name: <code>Meridian.Reporting.ReportPack</code>. Kind: `record`.
 
-Source: [src/Meridian.Reporting/ReportGenerationService.cs:316](../../../../src/Meridian.Reporting/ReportGenerationService.cs#L316).
+Source: [src/Meridian.Reporting/ReportGenerationService.cs:335](../../../../src/Meridian.Reporting/ReportGenerationService.cs#L335).
 
 A complete report pack ready for distribution or storage.
 
@@ -595,7 +595,7 @@ public sealed record ReportPack(Guid ReportId, string FundId, ReportKind ReportK
 
 Qualified name: <code>Meridian.Reporting.ReportRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Reporting/ReportGenerationService.cs:274](../../../../src/Meridian.Reporting/ReportGenerationService.cs#L274).
+Source: [src/Meridian.Reporting/ReportGenerationService.cs:293](../../../../src/Meridian.Reporting/ReportGenerationService.cs#L293).
 
 Request payload for ReportGenerationService.GenerateAsync.
 

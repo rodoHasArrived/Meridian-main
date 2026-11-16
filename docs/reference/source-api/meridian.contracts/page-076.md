@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationGeneratedReportWriterGridPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationGeneratedReportWriterGridPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:588](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L588).
+
+```csharp
+public sealed record WorkstationGeneratedReportWriterGridPayload(string GridId, string Title, string Kind, string Artifact, int DimensionCount, int MetricCount, int FormulaCount, string? ValidationSummary = null, int? ValidationPassedCount = null, int? ValidationWarningCount = null, int? ValidationFailedCount = null);
+```
+
 ## WorkstationKernelAlertThresholdsPayload
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationKernelAlertThresholdsPayload</code>. Kind: `record`.
@@ -532,16 +542,4 @@ Template metadata exposed to browser and desktop Reporting operator surfaces.
 
 ```csharp
 public sealed record WorkstationReportWriterMetricPayload(string Name, string SourceField, string Function, string? Label = null);
-```
-
-## WorkstationRiskGuardrail
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationRiskGuardrail</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:388](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L388).
-
-One live guardrail from the enforced risk-rule registry, rendered as a utilization bar: how much of the rule&#x27;s configured headroom the current portfolio consumes.
-
-```csharp
-public sealed record WorkstationRiskGuardrail(string RuleName, string State, string CurrentValue, string Threshold, decimal? UtilizationPercent, string Severity);
 ```

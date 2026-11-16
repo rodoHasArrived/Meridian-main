@@ -1906,22 +1906,29 @@ W10-RECON-004: planned; health green; evidence planned_evidence. Operator-taught
 | Field | Value |
 | --- | --- |
 | Wave | W10 |
-| Status | planned |
+| Status | in_progress |
 | Health | green |
 | Priority | high |
 | Owner lane | Accounting and Ledger |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-07-31 |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-11-16 |
 
 ### Current Summary
 
-W10-PERF-001: planned; health green; evidence planned_evidence. Extend or supersede the existing brokerage return seam; complete retained period, cash-flow and acceptance requirements before claiming fund performance.
+W10-PERF-001: in_progress; health green; evidence in_progress. Shared return kernel and brokerage-seam extension are implemented with golden tests; ledger-derived fund, class, and investor figures, the operator surface, and acceptance remain open.
 
 ### Status References
 
 - Decisions: none recorded
 - PR references (not inferred acceptance): none recorded
 - [Retained implementation detail and boundaries](../snapshots/status-prose-2026-11-14/W10-PERF-001.md)
+- Evidence: [src/Meridian.FSharp.Ledger/ReturnMeasurement.fs](../../../src/Meridian.FSharp.Ledger/ReturnMeasurement.fs)
+- Evidence: [src/Meridian.Contracts/Workstation/PerformanceReturnDtos.cs](../../../src/Meridian.Contracts/Workstation/PerformanceReturnDtos.cs)
+- Evidence: [src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs](../../../src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs)
+- Evidence: [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs](../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs)
+- Evidence: [tests/Meridian.FSharp.Tests/ReturnMeasurementTests.fs](../../../tests/Meridian.FSharp.Tests/ReturnMeasurementTests.fs)
+- Evidence: [tests/Meridian.Tests/Ui/PerformanceReturnFiguresTests.cs](../../../tests/Meridian.Tests/Ui/PerformanceReturnFiguresTests.cs)
+- Evidence: [docs/engineering/blueprints/investor-performance-pack-blueprint.md](../../engineering/blueprints/investor-performance-pack-blueprint.md)
 
 
 ### Exit Criteria

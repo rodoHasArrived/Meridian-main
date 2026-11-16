@@ -198,9 +198,13 @@ See `src/Meridian.FSharp.Trading/README.md` for transition semantics.
 The live engine and lifecycle manager enforce one active instance per strategy, including launches
 with different parameters or execution modes. Controls bind to that instance's exact run ID;
 a newer deferred run cannot replace its history. Engine-owned operator stop uses the session's
-shutdown path: close outbound order admission, drain admitted execution reports, wake an idle feed,
+shutdown path: close outbound order admission, wait (bounded by
+`LiveTradingEngineOptions.StopFillDrainTimeout`) until every fill the OMS already accepted for the
+run's orders has reached the session, drain admitted execution reports, wake an idle feed,
 finish callbacks and cleanup, build metrics, and retain a verified completion receipt. The session
 records `StopRequested` as `live-trading-engine` after fills drain; the manager delegates to it.
+When the engine has already retained `Failed` for an undeliverable fill, the session adopts that
+single terminal instead of appending another `Failed` or a recovery warning over it.
 Concurrent stop callers share that work; cancellation ends a caller's wait while shutdown continues.
 Paused engine sessions resume the same run. New runs launch through the engine after the prior session ends.
 The engine records `Activated` after promotion, `Suspended` on host shutdown, and `Recovered`

@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingCertifiedLedgerPresentationInput
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingCertifiedLedgerPresentationInput</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:16](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L16).
+
+Checkpoint-bound input for a canonical ledger presentation. The source implementation must resolve an already-built LedgerFinancialReportPack from the exact authoritative checkpoint represented by the reporting manifest. It must not rebuild the report pack from the manifest&#x27;s display rows because those rows do not prove opening balances or period classifications.
+
+```csharp
+public sealed record ReportingCertifiedLedgerPresentationInput(string SourceCheckpointId, string SourceCheckpointHash, string CertifiedDatasetHashSha256, LedgerFinancialReportPack ReportPack);
+```
+
 ## ReportingDeliveryDispatcher
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingDeliveryDispatcher</code>. Kind: `class`.
@@ -860,24 +872,3 @@ Declared public members:
 | <code>public async Task&lt;ReportingArtifactDownload&gt; ExchangeGrantForDownloadAsync(string grantId, SecureReportingGrantExchangeCommand command, string correlationId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:914](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L914) | Exchanges a one-time opaque bearer in a POST body directly for one audited exact-byte download. Tenant, package, audience, and artifact policy are read from durable grant and catalog state; the public caller cannot supply them. |
 | <code>public async Task&lt;ReportingArtifactDownload&gt; DownloadArtifactAsync(string runId, string artifactId, ReportingDistributionAuthority authority, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:1138](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L1138) |  |
 | <code>public async Task AuthorizePortalPackageAsync(string runId, ReportingDistributionAuthority authority, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:1181](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L1181) | Authorizes the authenticated secure-portal landing route against the Released run&#x27;s exact tenant, company, and immutable access-policy snapshot before the browser workstation opens. |
-
-## ReportingSecureDistributionHostedService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingSecureDistributionHostedService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionHostedService.cs:17](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionHostedService.cs#L17).
-
-Continuously drains the durable delivery outbox; no tenant-scoped HTTP pump is exposed.
-
-```csharp
-public sealed class ReportingSecureDistributionHostedService : BackgroundService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingSecureDistributionHostedService(ReportingDeliveryDispatcher dispatcher, ReportingScheduleService scheduleService, ReportingSecureDistributionApplicationService applicationService, SecureReportingDistributionOptions options, ILogger&lt;ReportingSecureDistributionHostedService&gt; logger) : this(dispatcher, scheduleService, applicationService, options, logger, readiness : null);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionHostedService.cs:39](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionHostedService.cs#L39) |  |
-| <code>public ReportingSecureDistributionHostedService(ReportingDeliveryDispatcher dispatcher, ReportingScheduleService scheduleService, ReportingSecureDistributionApplicationService applicationService, SecureReportingDistributionOptions options, ILogger&lt;ReportingSecureDistributionHostedService&gt; logger, ReportingDeliveryWorkerReadinessState? readiness);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionHostedService.cs:55](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionHostedService.cs#L55) |  |
-| <code>public override Task StartAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionHostedService.cs:127](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionHostedService.cs#L127) |  |
-| <code>public override async Task StopAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionHostedService.cs:133](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionHostedService.cs#L133) |  |

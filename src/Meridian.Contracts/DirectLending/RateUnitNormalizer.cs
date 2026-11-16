@@ -85,13 +85,13 @@ public static class RateUnitNormalizer
             return new(0m, $"{field} rate declares an unknown unit '{(int)rate.Unit}'.");
         }
 
-        var fraction = rate.Unit switch
+        // The unit arithmetic is shared with Security Master; ranges and sign policy stay per domain.
+        var fraction = SecurityMaster.RateUnitNormalizer.ToFraction(rate.Value, rate.Unit switch
         {
-            DirectLendingRateUnit.Fraction => rate.Value,
-            DirectLendingRateUnit.Percent => rate.Value / 100m,
-            DirectLendingRateUnit.BasisPoints => rate.Value / 10_000m,
-            _ => 0m
-        };
+            DirectLendingRateUnit.Fraction => SecurityMaster.RateUnit.Fraction,
+            DirectLendingRateUnit.Percent => SecurityMaster.RateUnit.Percent,
+            _ => SecurityMaster.RateUnit.BasisPoints
+        });
 
         if (Math.Abs(fraction) > MaxAbsoluteFraction)
         {

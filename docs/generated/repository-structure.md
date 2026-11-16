@@ -1806,10 +1806,12 @@ Meridian-main
 │   │   │   │   ├── equalization-and-series-accounting.md
 │   │   │   │   ├── incentive-fee-mechanics.md
 │   │   │   │   └── README.md
+│   │   │   ├── direct-lending-discount-premium-accounting.md
 │   │   │   ├── direct-lending-excess-payment-application.md
 │   │   │   ├── direct-lending-pik-capitalization-and-rate-resets.md
 │   │   │   ├── financing-liabilities-depreciation-blueprint.md
 │   │   │   ├── intercompany-agreement-registry.md
+│   │   │   ├── investor-performance-pack-blueprint.md
 │   │   │   ├── portfolio-cash-ladder-blueprint-2026-07.md
 │   │   │   ├── README.md
 │   │   │   ├── report-writer-auto-preview-blueprint.md
@@ -6321,6 +6323,7 @@ Meridian-main
 │   │   │   ├── OperatorScopePreferenceDtos.cs
 │   │   │   ├── OperatorSurfaceVisitDtos.cs
 │   │   │   ├── OperatorTriageDtos.cs
+│   │   │   ├── PerformanceReturnDtos.cs
 │   │   │   ├── PilotReadinessArtifactDtos.cs
 │   │   │   ├── PreparerAttestationEvidenceDtos.cs
 │   │   │   ├── PreparerAttestationProofExportDto.cs
@@ -6844,7 +6847,8 @@ Meridian-main
 │   │   │   ├── AccountingSystemIntegrationService.cs
 │   │   │   ├── AccountingSystemIntegrationService.Onboarding.cs
 │   │   │   ├── AccountingSystemIntegrationService.ProviderMetadata.cs
-│   │   │   └── AccountingSystemIntegrationService.Reconciliation.cs
+│   │   │   ├── AccountingSystemIntegrationService.Reconciliation.cs
+│   │   │   └── AccountingSystemIntegrationStateStore.cs
 │   │   ├── Banking
 │   │   │   ├── BankingException.cs
 │   │   │   ├── IBankingService.cs
@@ -7162,7 +7166,8 @@ Meridian-main
 │   │   ├── ReconciliationCaseWorkflow.fs
 │   │   ├── ReconciliationClassification.fs
 │   │   ├── ReconciliationRules.fs
-│   │   └── ReconciliationTypes.fs
+│   │   ├── ReconciliationTypes.fs
+│   │   └── ReturnMeasurement.fs
 │   ├── Meridian.FSharp.Trading
 │   │   ├── Interop.fs
 │   │   ├── Meridian.FSharp.Trading.fsproj
@@ -8301,6 +8306,7 @@ Meridian-main
 │   │   │   ├── LedgerBalanceSnapshotExtensions.cs
 │   │   │   ├── LedgerBookServiceException.cs
 │   │   │   ├── LedgerCurrencyBackfill.cs
+│   │   │   ├── LedgerDurableBalanceRule.cs
 │   │   │   ├── LedgerJournalStoreHydrationExtensions.cs
 │   │   │   ├── LedgerJournalStoreOptions.cs
 │   │   │   ├── LedgerMigrationRunner.cs
@@ -11070,6 +11076,7 @@ Meridian-main
 │   │   │   ├── BrokerageConnectionService.cs
 │   │   │   ├── BrokeragePortfolioState.cs
 │   │   │   ├── BrokeragePortfolioSyncService.cs
+│   │   │   ├── BrokeragePortfolioSyncService.Performance.cs
 │   │   │   ├── BrokerageSyncActualCashActivitySource.cs
 │   │   │   ├── CapitalAccountWorkbenchService.cs
 │   │   │   ├── CapitalCallFundingIntake.cs
@@ -11201,6 +11208,7 @@ Meridian-main
 │   │   │   ├── OptionAssessmentImportService.cs
 │   │   │   ├── OptionScreeningService.cs
 │   │   │   ├── PaperFuturesSettlementService.cs
+│   │   │   ├── PerformanceReturnFigures.cs
 │   │   │   ├── PeriodAdjustmentPreparationService.cs
 │   │   │   ├── PlaidWebhookVerifier.cs
 │   │   │   ├── PlaidWorkstationService.cs
@@ -12411,6 +12419,7 @@ Meridian-main
 │   │   ├── FillModelExpansionTests.cs
 │   │   ├── FillModelTests.cs
 │   │   ├── GlobalUsings.cs
+│   │   ├── LedgerIntegrityDisclosureTests.cs
 │   │   ├── LedgerIntegrityTests.cs
 │   │   ├── LedgerQueryTests.cs
 │   │   ├── LotLevelTrackingTests.cs
@@ -12540,6 +12549,7 @@ Meridian-main
 │   │   ├── PromotionPolicyTests.fs
 │   │   ├── ReconciliationCaseWorkflowTests.fs
 │   │   ├── ReportPackValidationRulesTests.fs
+│   │   ├── ReturnMeasurementTests.fs
 │   │   ├── RiskPolicyTests.fs
 │   │   ├── SecurityCalculationsTests.fs
 │   │   ├── SecurityDefinitionValidationTests.fs
@@ -14019,6 +14029,7 @@ Meridian-main
 │   │   │   ├── DataVendorEntitlementServiceTests.cs
 │   │   │   ├── DayCountConventionsTests.cs
 │   │   │   ├── DiscountedCashFlowValuationModelTests.cs
+│   │   │   ├── ExerciseStyleStoredLabelTests.cs
 │   │   │   ├── FaceValueLotGoldenTests.cs
 │   │   │   ├── FaceValueLotOddPeriodTests.cs
 │   │   │   ├── FaceValueLotTests.cs
@@ -14432,6 +14443,7 @@ Meridian-main
 │   │   │   ├── LedgerCurrencyBackfillTests.cs
 │   │   │   ├── LedgerDatabaseFactAttribute.cs
 │   │   │   ├── LedgerDatabaseTestDiscoveryTests.cs
+│   │   │   ├── LedgerDurableBalanceRuleTests.cs
 │   │   │   ├── LedgerEventAuditPostgresTests.cs
 │   │   │   ├── LedgerJournalExporterTests.cs
 │   │   │   ├── LedgerJournalStoreHydrationTests.cs
@@ -14527,6 +14539,8 @@ Meridian-main
 │   │   │   ├── LiveTradingEngineTests.AuditCancellation.cs
 │   │   │   ├── LiveTradingEngineTests.cs
 │   │   │   ├── LiveTradingEngineTests.FinancingCoverage.cs
+│   │   │   ├── LiveTradingEngineTests.PromotionLedgerPosting.cs
+│   │   │   ├── LiveTradingEngineTests.StopFillDrain.cs
 │   │   │   ├── MovingAverageParityTests.cs
 │   │   │   ├── PortfolioReadServiceTests.cs
 │   │   │   ├── PromotionServiceLiveGovernanceTests.cs
@@ -14663,6 +14677,7 @@ Meridian-main
 │   │   │   ├── AccountingSystemIntegrationServiceTests.cs
 │   │   │   ├── AccountingSystemIntegrationServiceTests.LiveProviders.cs
 │   │   │   ├── AccountingSystemIntegrationServiceTests.Onboarding.cs
+│   │   │   ├── AccountingSystemIntegrationServiceTests.Persistence.cs
 │   │   │   ├── AccountingSystemIntegrationServiceTests.StructuredFixture.cs
 │   │   │   ├── AccountingSystemIntercompanyControlsTests.cs
 │   │   │   ├── AggregatePortfolioExposureProviderTests.cs
@@ -14822,6 +14837,7 @@ Meridian-main
 │   │   │   ├── OptionReferenceEndpointsRoundtripTests.cs
 │   │   │   ├── OptionScreeningServiceTests.cs
 │   │   │   ├── PackagingEndpointsPathContainmentTests.cs
+│   │   │   ├── PerformanceReturnFiguresTests.cs
 │   │   │   ├── PeriodAdjustmentPreparationTests.cs
 │   │   │   ├── PlaidWebhookVerifierTests.cs
 │   │   │   ├── PlaidWorkstationServiceTests.cs

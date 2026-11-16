@@ -19264,6 +19264,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.PerformanceReturnFigureDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.PilotAcceptanceEvidenceCategoryDto"
     },
     {
@@ -49269,6 +49275,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.BrokeragePortfolioPerformanceDto",
+      "target": "contract:Meridian.Contracts.Workstation.PerformanceReturnFigureDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.BuildLedgerDraft",
       "target": "contract:Meridian.Contracts.Workstation.FundWorkflowCommandMetadata"
     },
@@ -68067,7 +68079,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "1074586338f5ec4913d804c688d38c8d241e9bd8bc10ec0086fffc7ec14a234a",
+  "fingerprint": "8d1236f96bd87312733a848c5731f2f25b079ce96a6f1745f96ac3e7ced90d91",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -87381,6 +87393,12 @@
       "label": "Meridian.Contracts.Workstation.PaymentInstruction"
     },
     {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.PerformanceReturnFigureDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.PerformanceReturnFigureDto"
+    },
+    {
       "classification": "enum",
       "id": "contract:Meridian.Contracts.Workstation.PilotAcceptanceEvidenceCategoryDto",
       "kind": "contract-type",
@@ -99953,11 +99971,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4207,
-    "contract_set_memberships": 5454,
-    "edges": 11307,
+    "contract_references": 4208,
+    "contract_set_memberships": 5455,
+    "edges": 11309,
     "foreign_keys": 208,
     "logical_references": 6,
-    "nodes": 5544
+    "nodes": 5545
   }
 }

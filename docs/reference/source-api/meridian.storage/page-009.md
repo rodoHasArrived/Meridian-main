@@ -6,6 +6,41 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PostgresReportingRunStore
+
+Qualified name: <code>Meridian.Storage.Reporting.PostgresReportingRunStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:17](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L17).
+
+PostgreSQL-backed operational snapshot store for reporting runs. Run identities are isolated by tenant, exact retries are no-ops, and every retained JSON payload is re-hashed before use.
+
+```csharp
+public sealed class PostgresReportingRunStore : IReportingRunStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool SupportsDurableCreateClaims =&gt; …;</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:19](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L19) |  |
+| <code>public PostgresReportingRunStore(ReportingArtifactStoreOptions options);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:26](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L26) |  |
+| <code>public IReadOnlyList&lt;ReportingRunSnapshot&gt; ListRuns(int limit = 25);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:35](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L35) |  |
+| <code>public IReadOnlyList&lt;ReportingRunSnapshot&gt; ListRuns(string tenantId, int limit = 25);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:59](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L59) |  |
+| <code>public IReadOnlyList&lt;ReportingRunSnapshot&gt; ListRuns(string tenantId, string? companyId, int limit = 25) =&gt; …;</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:90](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L90) |  |
+| <code>public IReadOnlyList&lt;ReportingRunSnapshot&gt; ListRuns(string tenantId, string? companyId, int offset, int limit);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:96](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L96) |  |
+| <code>public ReportingOutputManifest? GetManifest(string runId);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:170](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L170) |  |
+| <code>public ReportingOutputManifest? GetManifest(string tenantId, string runId);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:180](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L180) |  |
+| <code>public IReadOnlyList&lt;ReportingRunAuditEntry&gt; GetAudit(string runId);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:196](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L196) |  |
+| <code>public IReadOnlyList&lt;ReportingRunAuditEntry&gt; GetAudit(string tenantId, string runId);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:206](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L206) |  |
+| <code>public string? GetRevision(string runId);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:223](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L223) |  |
+| <code>public string? GetRevision(string tenantId, string runId);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:237](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L237) |  |
+| <code>public async Task&lt;ReportingRunCreateClaimResult&gt; TryClaimCreateAsync(string tenantId, string runId, string leaseOwner, DateTimeOffset nowUtc, TimeSpan leaseDuration, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:255](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L255) |  |
+| <code>public async Task&lt;bool&gt; RenewCreateClaimAsync(string tenantId, string runId, string leaseOwner, long leaseVersion, TimeSpan leaseDuration, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:391](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L391) |  |
+| <code>public async Task ReleaseCreateClaimAsync(string tenantId, string runId, string leaseOwner, long leaseVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:445](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L445) |  |
+| <code>public Task SaveAsync(ReportingOutputManifest manifest, IReadOnlyList&lt;ReportingRunAuditEntry&gt; auditTrail, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:488](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L488) |  |
+| <code>public Task SaveAsync(ReportingOutputManifest manifest, IReadOnlyList&lt;ReportingRunAuditEntry&gt; auditTrail, string? expectedRevision, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:494](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L494) |  |
+| <code>public Task SaveClaimedCreateAsync(ReportingOutputManifest manifest, IReadOnlyList&lt;ReportingRunAuditEntry&gt; auditTrail, string leaseOwner, long leaseVersion, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs:507](../../../../src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs#L507) |  |
+
 ## PostgresReportingScheduleStore
 
 Qualified name: <code>Meridian.Storage.Reporting.PostgresReportingScheduleStore</code>. Kind: `class`.
@@ -864,23 +899,3 @@ Declared public members:
 | <code>Task&lt;EdgarFilerRecord?&gt; LoadFilerAsync(string cik, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IEdgarReferenceDataStore.cs:16](../../../../src/Meridian.Storage/SecurityMaster/IEdgarReferenceDataStore.cs#L16) |  |
 | <code>Task&lt;EdgarFactsRecord?&gt; LoadFactsAsync(string cik, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IEdgarReferenceDataStore.cs:20](../../../../src/Meridian.Storage/SecurityMaster/IEdgarReferenceDataStore.cs#L20) |  |
 | <code>Task&lt;EdgarSecurityDataRecord?&gt; LoadSecurityDataAsync(string cik, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IEdgarReferenceDataStore.cs:24](../../../../src/Meridian.Storage/SecurityMaster/IEdgarReferenceDataStore.cs#L24) |  |
-
-## IEquityReferenceProjectionStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.IEquityReferenceProjectionStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IEquityReferenceProjectionStore.cs:6](../../../../src/Meridian.Storage/SecurityMaster/IEquityReferenceProjectionStore.cs#L6).
-
-Queries equity reference projections by security, exchange, and issuer.
-
-```csharp
-public interface IEquityReferenceProjectionStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;EquityProjectionRow?&gt; GetEquityAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IEquityReferenceProjectionStore.cs:8](../../../../src/Meridian.Storage/SecurityMaster/IEquityReferenceProjectionStore.cs#L8) |  |
-| <code>Task&lt;IReadOnlyList&lt;EquityProjectionRow&gt;&gt; GetByExchangeAsync(string exchangeCode, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IEquityReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/IEquityReferenceProjectionStore.cs#L9) |  |
-| <code>Task&lt;IReadOnlyList&lt;EquityProjectionRow&gt;&gt; GetByIssuerAsync(string issuerName, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IEquityReferenceProjectionStore.cs:10](../../../../src/Meridian.Storage/SecurityMaster/IEquityReferenceProjectionStore.cs#L10) |  |

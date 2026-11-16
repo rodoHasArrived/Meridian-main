@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountingPolicyService
+
+Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingPolicyService</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:69](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L69).
+
+Maintains accounting policies and resolves applicable rules under mutation and authority leases.
+
+```csharp
+public sealed class AccountingPolicyService : IAccountingPolicyService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public AccountingPolicyService() : this(TimeProvider.System);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:76](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L76) |  |
+| <code>public AccountingPolicyService(TimeProvider timeProvider);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:86](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L86) |  |
+| <code>public async Task&lt;IAsyncDisposable&gt; AcquireConsolidationAuthorityLeaseAsync(CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:97](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L97) |  |
+| <code>public async Task&lt;IAsyncDisposable&gt; AcquireRetainedPolicyAuthorityLeaseAsync(AccountingPolicyDto snapshot, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:103](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L103) |  |
+| <code>public async Task&lt;AccountingPolicyDto&gt; CreatePolicyAsync(CreateAccountingPolicyRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:128](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L128) |  |
+| <code>public Task&lt;AccountingPolicyDto&gt; ResolvePolicyAsync(AccountingPolicyQuery query, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:154](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L154) |  |
+| <code>public Task&lt;IReadOnlyList&lt;AccountingPolicyDto&gt;&gt; ListPoliciesAsync(AccountingBasisKindDto? accountingBasis = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:184](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L184) |  |
+
 ## AccountingPostingCandidatePostService
 
 Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingPostingCandidatePostService</code>. Kind: `class`.
@@ -962,15 +986,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public DateOnly ReconciliationDueDate =&gt; …;</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:179](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L179) | The T+1 date on which this booking&#x27;s trade/cash/position reconciliation is due, counted in business days (a Friday trade reconciles the following Monday). |
-
-## TradeBookingRequest
-
-Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.TradeBookingRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:144](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L144).
-
-Request to book a trade on trade date (T+0).
-
-```csharp
-public sealed record TradeBookingRequest(string AccountId, string Symbol, ReconciliationDimension Dimension, decimal Quantity, decimal Amount, string Currency, DateOnly TradeDate, int SettlementCycleDays, string BookedBy, string? BookingId = null, DateTimeOffset? BookedAtUtc = null);
-```

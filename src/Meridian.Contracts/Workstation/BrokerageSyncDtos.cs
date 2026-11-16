@@ -126,7 +126,11 @@ public sealed record BrokeragePortfolioPerformanceDto(
     decimal? CashAdjustedReturn,
     decimal? CashAdjustedReturnPercent,
     IReadOnlyList<BrokeragePortfolioPerformancePointDto> Points,
-    IReadOnlyList<string> Warnings);
+    IReadOnlyList<string> Warnings,
+    // W10-PERF-001 extends this seam rather than adding a parallel performance API.
+    // CashAdjustedReturn above keeps its original arithmetic (every cash transaction treated as
+    // a flow); these figures treat only deposits, withdrawals, and transfers as external flows.
+    IReadOnlyList<PerformanceReturnFigureDto>? ReturnFigures = null);
 
 public sealed record BrokerageCashFlowEntryDto(
     string TransactionId,
