@@ -30,8 +30,8 @@
       "id": "SRC-CONTRACTS",
       "path": "src/Meridian.Contracts",
       "readme": "src/Meridian.Contracts/README.md",
-      "readme_hash": "108bd0b7ec53fe11cf3303d8af3da9d0a3f60bb01c989c5493f751a23a519220",
-      "source_hash": "539804c06a3cd310f313c7ef67ff9f8b6f6668d6abc7f39248d937438bbec7f8"
+      "readme_hash": "88602edae116f045322490c92dcc94bfd3c804c0f519d266ff83badde72b4c3c",
+      "source_hash": "85f3e48c8c715fc395423830c7686ca4024f82a1e5b37a933d0aadfb14f267ad"
     },
     {
       "id": "SRC-CORE",
@@ -163,8 +163,8 @@
       "id": "SRC-FSHARP-LEDGER",
       "path": "src/Meridian.FSharp.Ledger",
       "readme": "src/Meridian.FSharp.Ledger/README.md",
-      "readme_hash": "d223ef0b7037aa981a170644c73c6481dae4d81c709e9f94f1e7bef4a821f49e",
-      "source_hash": "71fe8b9e247c6d57e3aebbd7fe9c565c8393cfc2a82e1e85802e8bff396dbb96"
+      "readme_hash": "13dc864c28bb90e8491ab9413eefeeaebe508ab9e447390cc846b4cb07dc343b",
+      "source_hash": "80ae362ba6569e8193e64382d9b63b0a9e952c283dd51f8b46ef8ea4147ab5e8"
     },
     {
       "id": "SRC-FSHARP-TRADING",
@@ -296,8 +296,8 @@
       "id": "SRC-UI-SHARED",
       "path": "src/Meridian.Ui.Shared",
       "readme": "src/Meridian.Ui.Shared/README.md",
-      "readme_hash": "66068c0010d9c505e4a76372436a6d4add65738f3ca5e7b7b82a2f24cd875195",
-      "source_hash": "f81010f96fe6fe5d4eb0689783d1df795805ce97781c533178aa70c79ab98ef9"
+      "readme_hash": "8473fdb9ca4f182fe06d16faebe15fb6dae65994ae53dd90fa7a3bf46b7726e4",
+      "source_hash": "cde53d9a9a4d535c1794169e5d1205f27ee590f539e9449e5d9c02575c2fc593"
     },
     {
       "id": "SRC-WPF",
