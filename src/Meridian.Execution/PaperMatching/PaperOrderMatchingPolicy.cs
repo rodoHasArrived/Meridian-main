@@ -54,6 +54,10 @@ public readonly record struct PaperMatchResult(
 /// <see cref="PaperMarketObservation.EnvelopeHigh"/>) — a paper fill can never print
 /// outside the observed market data in effect.</description></item>
 /// <item><description>Partial fills are not modeled: an order fills in full or rests.</description></item>
+/// <item><description>Observations are matched as the feed cache holds them, however old, unless
+/// the host opts into <see cref="PaperObservationFreshnessPolicy"/>; then stale tick data is
+/// withheld before evaluation, a market order with only stale tick data is rejected, and
+/// resting orders neither fill nor trigger until current data arrives.</description></item>
 /// </list>
 /// </summary>
 public static class PaperOrderMatchingPolicy

@@ -244,6 +244,16 @@ public sealed class Ledger : IReadOnlyLedger
         if (query.LineDimensions is not null)
             filtered = filtered.Where(entry => entry.Lines.Any(line => MatchesLineDimensions(line.Dimensions, query.LineDimensions)));
 
+        if (!string.IsNullOrWhiteSpace(query.RunId))
+        {
+            // Run ids are compared ordinally, as the posted-run ledger source compares them.
+            var runId = query.RunId.Trim();
+            filtered = filtered.Where(entry =>
+                entry.Metadata.Tags is { } tags
+                && tags.TryGetValue(LedgerQuery.StrategyRunIdTag, out var entryRunId)
+                && string.Equals(entryRunId, runId, StringComparison.Ordinal));
+        }
+
         return filtered.ToList();
     }
 

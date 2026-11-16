@@ -24,6 +24,15 @@ unchanged; operational logs do not carry those payloads or storage paths.
 
 Paper mode has one paper book: the DI-resolved `IOrderGateway` is `OmsGovernedExecutionOrderGateway`, a read-only view over the OMS's own paper `IExecutionGateway`, so direct submit/cancel through `IOrderGateway` is refused in paper as well as live mode. Its order-update stream reads `OrderManagementSystem.SubscribeOrderStateChanges()`: the OMS order table publishes every order-state transition (acceptance, fills, amendment, cancellation, rejection) at write time, in write order. Each subscription keeps only the latest unread state per order incarnation (a token issued when an order id is registered or a terminal id is reused), so a slow subscriber never blocks the OMS, skips only intermediate states, and still receives every order's final state, including orders already evicted from retention. Terminal order-status checks share `OrderManagement.OrderStatusFacts.IsTerminal`.
 
+Paper matching reads the live feed cache as it is by default, however old the last quote or print.
+Setting `PaperTrading:Gateway:MaxObservationAgeSeconds` opts into a freshness window
+(`PaperObservationFreshnessPolicy`): a quote or print outside it is dropped, and when a symbol has
+tick data but none is current the whole observation is withheld, including any cached bar. A market
+order is then rejected with a reason naming the setting, scaffold pricing does not stand in, and
+resting limit and stop orders neither fill nor trigger until current data arrives. Bar-only symbols
+are unaffected. The pre-trade guard (`AggregatePortfolioExposureProvider`) captures through the
+same policy, so it predicts the matcher under either setting.
+
 Reg T short sales post the collateral the broker holds (proceeds × the short initial rate) from `Cash` to `Short Sale Collateral Receivable`, and covering releases it back, so ledger cash equals the account's free cash while a short is open.
 
 `OrderManagementSystem.GetUnitReservingOrders` reserves the larger-quantity outcome of each pending amendment (the original order still executes if the amendment fails); `GetExposureReservingOrders` keeps the larger-value outcome.

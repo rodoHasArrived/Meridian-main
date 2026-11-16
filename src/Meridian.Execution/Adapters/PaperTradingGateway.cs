@@ -37,6 +37,7 @@ public sealed class PaperTradingGateway : IOrderGateway, Interfaces.IPaperFillEv
     private readonly bool _allowScaffoldMarketFills;
     private readonly Interfaces.ILiveFeedAdapter? _liveFeed;
     private int _scaffoldPriceWarningIssued;
+    private readonly PaperObservationFreshnessPolicy _freshness;
 
     private readonly ILogger<PaperTradingGateway> _logger;
     private readonly PaperTradingGatewayTradingParameters _tradingParameters;
@@ -144,6 +145,7 @@ public sealed class PaperTradingGateway : IOrderGateway, Interfaces.IPaperFillEv
             securityIdentity);
         _scaffoldMarketFillPrice = PaperTradingGatewayScaffoldPricing.ResolveScaffoldMarketFillPrice(options);
         _allowScaffoldMarketFills = PaperTradingGatewayScaffoldPricing.ResolveAllowScaffoldMarketFills(options);
+        _freshness = PaperObservationFreshnessPolicy.From(options);
         _liveFeed = liveFeed;
         _costModel = new PaperTradingCostModel(costOptions);
         _evaluationPump = new PaperSymbolEvaluationPump(EvaluateRestingOrdersForSymbolAsync, _logger);
@@ -354,7 +356,7 @@ public sealed class PaperTradingGateway : IOrderGateway, Interfaces.IPaperFillEv
         string orderId, WorkingPaperOrder order, bool initialSubmission, CancellationToken ct)
     {
         var request = order.Request;
-        var observation = PaperMarketObservation.Capture(_liveFeed, request.Symbol);
+        var observation = _freshness.Capture(_liveFeed, request.Symbol);
 
         bool stopTriggered;
         lock (_lock)
@@ -375,6 +377,15 @@ public sealed class PaperTradingGateway : IOrderGateway, Interfaces.IPaperFillEv
             case PaperMatchOutcome.Filled:
                 await EmitFillIfStillWorkingAsync(orderId, request, result.FillPrice!.Value, observation, ct)
                     .ConfigureAwait(false);
+                return;
+
+            case PaperMatchOutcome.NoMarketData when (OrderType)request.Type is OrderType.Market && observation.IsStale:
+                // A stalled feed is not "no feed wired": scaffold pricing must not stand in.
+                await EmitTerminalIfStillWorkingAsync(
+                    orderId,
+                    request,
+                    GatewayOrderStatus.Rejected,
+                    _freshness.BuildStaleObservationRejectReason(request.Symbol)).ConfigureAwait(false);
                 return;
 
             case PaperMatchOutcome.NoMarketData when (OrderType)request.Type is OrderType.Market:
