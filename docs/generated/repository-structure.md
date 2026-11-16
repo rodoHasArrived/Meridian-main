@@ -5319,7 +5319,8 @@ Meridian-main
 │   │   │   ├── Endpoints
 │   │   │   │   └── StatusEndpointHandlers.cs
 │   │   │   ├── ConfigStore.cs
-│   │   │   └── ConfigurationChangeTracker.cs
+│   │   │   ├── ConfigurationChangeTracker.cs
+│   │   │   └── EffectiveConfigurationProjection.cs
 │   │   ├── Integrations
 │   │   │   ├── BondHoldingImportService.cs
 │   │   │   ├── ProviderIntegrationActivationReadinessService.cs
@@ -12918,6 +12919,7 @@ Meridian-main
 │   │   │   │   ├── ConfigStoreCredentialPersistenceTests.cs
 │   │   │   │   ├── ConfigStoreTests.cs
 │   │   │   │   ├── ConfigurationChangeTrackingTests.cs
+│   │   │   │   ├── EffectiveConfigurationProjectionTests.cs
 │   │   │   │   ├── ProviderCredentialStoreTests.cs
 │   │   │   │   ├── ProviderModuleCredentialSelectionTests.cs
 │   │   │   │   └── ProviderModuleSetupServiceTests.cs

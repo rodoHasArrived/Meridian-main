@@ -522,13 +522,43 @@ Declared public members:
 | <code>public async Task&lt;IDisposable&gt; AcquireWriteLeaseAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:184](../../../../src/Meridian.Application/Http/ConfigStore.cs#L184) | Holds the cross-process configuration write lock (the .lock sidecar beside the file) until the returned lease is disposed. For writers that persist the document through their own serializer, such as the WPF shell&#x27;s configuration service, so the installed two-process workstation shares one lock with every UpdateAsync{T} caller. Not reentrant. |
 | <code>public async Task SaveAsync(AppConfig cfg, CancellationToken ct = default);</code> | [src/Meridian.Application/Http/ConfigStore.cs:206](../../../../src/Meridian.Application/Http/ConfigStore.cs#L206) | Whole-document replacement: the caller&#x27;s snapshot becomes the configuration, last writer wins. Reserved for callers that own the entire document (the CLI &quot;save this configuration&quot; path and the setup wizard&#x27;s generated output). Section-level edits use UpdateAsync{T}, which reads the current document under the same lock and cannot drop a concurrent change. |
 | <code>public async Task SaveFeatureCapabilityOverridesAsync(IReadOnlyDictionary&lt;string, bool&gt; overrides, CancellationToken ct = default);</code> | [src/Meridian.Application/Http/ConfigStore.cs:240](../../../../src/Meridian.Application/Http/ConfigStore.cs#L240) |  |
-| <code>public string? TryLoadStatusJson();</code> | [src/Meridian.Application/Http/ConfigStore.cs:296](../../../../src/Meridian.Application/Http/ConfigStore.cs#L296) |  |
-| <code>public string GetStatusPath(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:313](../../../../src/Meridian.Application/Http/ConfigStore.cs#L313) |  |
-| <code>public string GetBackfillStatusPath(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:320](../../../../src/Meridian.Application/Http/ConfigStore.cs#L320) |  |
-| <code>public BackfillResult? TryLoadBackfillStatus();</code> | [src/Meridian.Application/Http/ConfigStore.cs:327](../../../../src/Meridian.Application/Http/ConfigStore.cs#L327) |  |
-| <code>public string GetDataRoot(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:334](../../../../src/Meridian.Application/Http/ConfigStore.cs#L334) |  |
-| <code>public string GetProviderMetricsPath(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:340](../../../../src/Meridian.Application/Http/ConfigStore.cs#L340) |  |
-| <code>public ProviderMetricsStatus? TryLoadProviderMetrics();</code> | [src/Meridian.Application/Http/ConfigStore.cs:347](../../../../src/Meridian.Application/Http/ConfigStore.cs#L347) |  |
+| <code>public string? TryLoadStatusJson();</code> | [src/Meridian.Application/Http/ConfigStore.cs:326](../../../../src/Meridian.Application/Http/ConfigStore.cs#L326) |  |
+| <code>public string GetStatusPath(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:343](../../../../src/Meridian.Application/Http/ConfigStore.cs#L343) |  |
+| <code>public string GetBackfillStatusPath(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:350](../../../../src/Meridian.Application/Http/ConfigStore.cs#L350) |  |
+| <code>public BackfillResult? TryLoadBackfillStatus();</code> | [src/Meridian.Application/Http/ConfigStore.cs:357](../../../../src/Meridian.Application/Http/ConfigStore.cs#L357) |  |
+| <code>public string GetDataRoot(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:364](../../../../src/Meridian.Application/Http/ConfigStore.cs#L364) |  |
+| <code>public string GetProviderMetricsPath(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:370](../../../../src/Meridian.Application/Http/ConfigStore.cs#L370) |  |
+| <code>public ProviderMetricsStatus? TryLoadProviderMetrics();</code> | [src/Meridian.Application/Http/ConfigStore.cs:377](../../../../src/Meridian.Application/Http/ConfigStore.cs#L377) |  |
+
+## EffectiveConfigurationEntry
+
+Qualified name: <code>Meridian.Application.UI.EffectiveConfigurationEntry</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Http/EffectiveConfigurationProjection.cs:9](../../../../src/Meridian.Application/Http/EffectiveConfigurationProjection.cs#L9).
+
+One resolved configuration field: where its value comes from and what a change to it requires.
+
+```csharp
+public sealed record EffectiveConfigurationEntry(string Key, string Value, string Source, ConfigurationChangeImpact Impact);
+```
+
+## EffectiveConfigurationProjection
+
+Qualified name: <code>Meridian.Application.UI.EffectiveConfigurationProjection</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Http/EffectiveConfigurationProjection.cs:16](../../../../src/Meridian.Application/Http/EffectiveConfigurationProjection.cs#L16).
+
+Flattens the whole AppConfig document into source-annotated fields, so the effective-configuration view covers every section instead of a hand-maintained subset. Credential-bearing fields never leave this projection unmasked.
+
+```csharp
+public static class EffectiveConfigurationProjection
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;EffectiveConfigurationEntry&gt; Build(AppConfig config, IReadOnlyList&lt;EnvironmentOverrideInfo&gt; environmentVariables);</code> | [src/Meridian.Application/Http/EffectiveConfigurationProjection.cs:23](../../../../src/Meridian.Application/Http/EffectiveConfigurationProjection.cs#L23) |  |
 
 ## StatusEndpointHandlers
 
