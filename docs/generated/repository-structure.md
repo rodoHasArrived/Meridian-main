@@ -11069,6 +11069,7 @@ Meridian-main
 │   │   │   ├── BrokerageConnectionService.cs
 │   │   │   ├── BrokeragePortfolioState.cs
 │   │   │   ├── BrokeragePortfolioSyncService.cs
+│   │   │   ├── BrokeragePortfolioSyncService.Performance.cs
 │   │   │   ├── BrokerageSyncActualCashActivitySource.cs
 │   │   │   ├── CapitalAccountWorkbenchService.cs
 │   │   │   ├── CapitalCallFundingIntake.cs
