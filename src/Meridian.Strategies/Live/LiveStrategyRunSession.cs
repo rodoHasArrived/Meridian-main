@@ -57,7 +57,7 @@ internal sealed class LiveStrategyRunSession
     private volatile bool _hostOnlyFinalization;
     private Exception? _suspensionEvidenceFailure;
     private Exception? _requestedFailure;
-    private Action? _closeReportAdmission;
+    private Func<Task>? _closeReportAdmission;
     private SemaphoreSlim? _lifecycleControlGate;
     private int _outboundOrderAdmissionClosed;
 
@@ -145,6 +145,20 @@ internal sealed class LiveStrategyRunSession
 
     /// <summary>Connects finalization to the engine-owned delivery queue before execution starts.</summary>
     public void SetReportAdmissionCloser(Action closeReportAdmission)
+    {
+        ArgumentNullException.ThrowIfNull(closeReportAdmission);
+        SetReportAdmissionCloser(() =>
+        {
+            closeReportAdmission();
+            return Task.CompletedTask;
+        });
+    }
+
+    /// <summary>
+    /// Connects finalization to an engine-owned delivery queue whose closer may first wait for
+    /// fills the order manager has already settled to reach this session.
+    /// </summary>
+    public void SetReportAdmissionCloser(Func<Task> closeReportAdmission)
         => _closeReportAdmission = closeReportAdmission ?? throw new ArgumentNullException(nameof(closeReportAdmission));
 
     /// <summary>Waits for admitted start/pause commands before session cleanup begins.</summary>
@@ -883,7 +897,10 @@ internal sealed class LiveStrategyRunSession
         CloseOutboundOrderAdmission();
         try
         {
-            _closeReportAdmission?.Invoke();
+            if (_closeReportAdmission is { } closeReportAdmission)
+            {
+                await closeReportAdmission().ConfigureAwait(false);
+            }
         }
         catch (Exception ex)
         {

@@ -200,11 +200,12 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
                 fillReportQueueCapacity: fillQueueCapacity);
 
             var activeRun = new ActiveRun(session, fillQueueCapacity);
+            SeedPreviouslySettledFills(activeRun);
             session.SetLifecycleControlGate(activeRun.ControlGate);
-            session.SetReportAdmissionCloser(() =>
+            session.SetReportAdmissionCloser(async () =>
             {
                 activeRun.BeginStopping();
-                activeRun.CompleteReportAdmission();
+                await CloseReportAdmissionAfterSettledFillsAsync(activeRun).ConfigureAwait(false);
             });
             lock (_disposeSync)
             {
@@ -353,14 +354,14 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
         return activeRun.GetOrStartStop(() => StopActiveRunCoreAsync(activeRun));
     }
 
-    private static async Task<VerifiedOperationOutcome> StopActiveRunCoreAsync(ActiveRun activeRun)
+    private async Task<VerifiedOperationOutcome> StopActiveRunCoreAsync(ActiveRun activeRun)
     {
         await activeRun.Initialized.ConfigureAwait(false);
         await activeRun.ControlGate.WaitAsync().ConfigureAwait(false);
         try
         {
             activeRun.Session.CloseOutboundOrderAdmission();
-            activeRun.CompleteReportAdmission();
+            await CloseReportAdmissionAfterSettledFillsAsync(activeRun).ConfigureAwait(false);
             try
             {
                 await activeRun.Delivery.ConfigureAwait(false);
@@ -761,9 +762,11 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
 
                 await AccountUndeliverableExecutionReportAsync(
                         report,
-                        _activeRuns.ContainsKey(runId)
-                            ? $"Run '{runId}' reached its bounded delivery capacity."
-                            : $"Run '{runId}' retired before the report reached its session.",
+                        activeRun is null
+                            ? $"Run '{runId}' retired before the report reached its session."
+                            : activeRun.ReportAdmissionClosed
+                                ? $"Run '{runId}' closed report admission before the report reached its session."
+                                : $"Run '{runId}' reached its bounded delivery capacity.",
                         CancellationToken.None)
                     .ConfigureAwait(false);
             }
@@ -792,6 +795,81 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
                 await subscription.DisposeAsync().ConfigureAwait(false);
             }
         }
+    }
+
+    /// <summary>
+    /// Closes a run's report admission once every fill the OMS has settled for the run's orders
+    /// has been admitted to its delivery queue (or accounted as undeliverable). The OMS updates
+    /// an order's filled quantity and completes the fill's accounting handoff before it publishes
+    /// the report, so closing admission the moment a stop arrives can strand a fill the run
+    /// already owns. Orders with no settled fill (resting, parked, unfilled) do not delay the
+    /// stop, and the wait is bounded by <see cref="LiveTradingEngineOptions.StopFillDrainTimeout"/>.
+    /// </summary>
+    private async Task CloseReportAdmissionAfterSettledFillsAsync(ActiveRun activeRun)
+    {
+        if (!activeRun.ReportAdmissionClosed && _orderManager is OrderManagementSystem oms)
+        {
+            var started = System.Diagnostics.Stopwatch.GetTimestamp();
+            var timeout = _options.StopFillDrainTimeout < TimeSpan.Zero ? TimeSpan.Zero : _options.StopFillDrainTimeout;
+            while (!activeRun.ReportAdmissionClosed && HasUnadmittedSettledFill(oms, activeRun))
+            {
+                if (System.Diagnostics.Stopwatch.GetElapsedTime(started) >= timeout)
+                {
+                    _logger.LogWarning(
+                        "Run {RunId} stopped before every settled fill reached its session (waited {Timeout}); "
+                        + "later reports are accounted as undeliverable.",
+                        activeRun.Session.RunId,
+                        timeout);
+                    break;
+                }
+
+                await Task.Delay(StopFillDrainPollInterval).ConfigureAwait(false);
+            }
+        }
+
+        activeRun.CompleteReportAdmission();
+    }
+
+    private static readonly TimeSpan StopFillDrainPollInterval = TimeSpan.FromMilliseconds(10);
+
+    /// <summary>
+    /// A resumed run's orders may already carry fills the OMS recovered from an earlier host;
+    /// those were delivered (or accounted) by that host and are never republished, so they must
+    /// not hold this session's stop open.
+    /// </summary>
+    private void SeedPreviouslySettledFills(ActiveRun activeRun)
+    {
+        if (_orderManager is not OrderManagementSystem oms)
+        {
+            return;
+        }
+
+        foreach (var order in RunOrders(oms, activeRun))
+        {
+            activeRun.SeedSettledFill(order.OrderId, order.FilledQuantity);
+        }
+    }
+
+    private static IEnumerable<ExecutionSdk.OrderState> RunOrders(OrderManagementSystem oms, ActiveRun activeRun)
+    {
+        var prefix = LiveStrategyRunSession.BuildClientOrderIdPrefix(activeRun.Session.RunId);
+        return oms.GetOpenOrders()
+            .Concat(oms.GetCompletedOrders(int.MaxValue))
+            .Where(order => order.FilledQuantity > 0m && order.OrderId.StartsWith(prefix, StringComparison.Ordinal))
+            .DistinctBy(static order => order.OrderId, StringComparer.Ordinal);
+    }
+
+    private static bool HasUnadmittedSettledFill(OrderManagementSystem oms, ActiveRun activeRun)
+    {
+        foreach (var order in RunOrders(oms, activeRun))
+        {
+            if (order.FilledQuantity > activeRun.SettledFillQuantity(order.OrderId))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private async Task DeliverReportsToRunAsync(ActiveRun activeRun)
@@ -850,6 +928,7 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
             + $"report time {report.Timestamp:O}. {reason}");
 
         _activeRuns.TryGetValue(runId, out var activeRun);
+        activeRun?.RecordSettledFill(report);
         activeRun?.CompleteReportAdmission();
 
         Exception? repositoryFailure = null;
@@ -1005,6 +1084,7 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
         private readonly TaskCompletionSource _initialized =
             new(TaskCreationOptions.RunContinuationsAsynchronously);
         private int _reportAdmissionClosed;
+        private readonly ConcurrentDictionary<string, decimal> _settledFillQuantity = new(StringComparer.Ordinal);
         private readonly object _stopSync = new();
         private Task<VerifiedOperationOutcome>? _stop;
         private int _stopping;
@@ -1047,9 +1127,46 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
 
         public Task Initialized => _initialized.Task;
 
+        public bool ReportAdmissionClosed => Volatile.Read(ref _reportAdmissionClosed) != 0;
+
         public bool TryAdmitReport(ExecutionSdk.ExecutionReport report)
-            => Volatile.Read(ref _reportAdmissionClosed) == 0
-               && _reports.Writer.TryWrite(report);
+        {
+            if (Volatile.Read(ref _reportAdmissionClosed) != 0 || !_reports.Writer.TryWrite(report))
+            {
+                return false;
+            }
+
+            RecordSettledFill(report);
+            return true;
+        }
+
+        /// <summary>
+        /// Adds a fill report's quantity to its order's admitted total. The OMS publishes each
+        /// fill as an increment, so the running sum is comparable to the order's cumulative
+        /// filled quantity in the OMS.
+        /// </summary>
+        public void RecordSettledFill(ExecutionSdk.ExecutionReport report)
+        {
+            if (report.OrderStatus is not (ExecutionSdk.OrderStatus.Filled or ExecutionSdk.OrderStatus.PartiallyFilled)
+                || report.FilledQuantity <= 0m)
+            {
+                return;
+            }
+
+            var orderId = report.ClientOrderId ?? report.OrderId;
+            if (string.IsNullOrEmpty(orderId))
+            {
+                return;
+            }
+
+            _settledFillQuantity.AddOrUpdate(orderId, report.FilledQuantity, (_, settled) => settled + report.FilledQuantity);
+        }
+
+        public void SeedSettledFill(string orderId, decimal filledQuantity)
+            => _settledFillQuantity.AddOrUpdate(orderId, filledQuantity, (_, settled) => Math.Max(settled, filledQuantity));
+
+        public decimal SettledFillQuantity(string orderId)
+            => _settledFillQuantity.TryGetValue(orderId, out var settled) ? settled : 0m;
 
         public void CompleteReportAdmission()
         {

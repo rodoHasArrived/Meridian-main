@@ -14514,6 +14514,7 @@ Meridian-main
 │   │   │   ├── LiveTradingEngineTests.cs
 │   │   │   ├── LiveTradingEngineTests.FinancingCoverage.cs
 │   │   │   ├── LiveTradingEngineTests.PromotionLedgerPosting.cs
+│   │   │   ├── LiveTradingEngineTests.StopDuringFillDelivery.cs
 │   │   │   ├── MovingAverageParityTests.cs
 │   │   │   ├── PortfolioReadServiceTests.cs
 │   │   │   ├── PromotionServiceLiveGovernanceTests.cs

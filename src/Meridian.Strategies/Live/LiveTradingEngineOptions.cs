@@ -28,6 +28,15 @@ public sealed class LiveTradingEngineOptions
     public int FillReportQueueCapacity { get; set; } = 1024;
 
     /// <summary>
+    /// Longest a stopping run waits for fills the OMS has already settled for its orders to reach
+    /// its session before report admission closes. The OMS books a fill and runs its accounting
+    /// handoff before publishing the report, so a stop in that window would otherwise close the
+    /// session first and fail the run over a fill it legitimately owns. On timeout the stop
+    /// proceeds and any later report is accounted as undeliverable, as before.
+    /// </summary>
+    public TimeSpan StopFillDrainTimeout { get; set; } = TimeSpan.FromSeconds(5);
+
+    /// <summary>
     /// Directory holding user-authored strategy plugin assemblies. When set, promoted runs whose
     /// parameter set names a <c>pluginAssembly</c> are resolved from this directory and adapted
     /// into live execution; when null (the default) plugin-backed strategies stay disabled.

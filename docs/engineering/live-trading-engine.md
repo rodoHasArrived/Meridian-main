@@ -71,6 +71,13 @@ extend `LiveStrategyBase`. The trading universe comes from the run parameters `s
   (`NotSupportedException`) instead of being silently dropped.
 - Host shutdown stops sessions but leaves run entries open; `LiveTradingEngineHostedService`
   resumes still-open promoted runs on the next start (`ResumePendingRunsAsync`).
+- Stopping a run (operator stop, or the session finishing on its own) first waits for fills the
+  OMS has already settled for the run's orders to reach its session. The OMS books a fill and
+  completes its accounting handoff before publishing the report, so closing the session
+  immediately could strand a fill the run owns and fail the run. Only orders with a settled,
+  not-yet-delivered fill delay the stop; resting or unfilled orders do not. The wait is bounded
+  by `Execution:LiveTradingEngine:StopFillDrainTimeout` (default 5 seconds), after which the
+  stop proceeds and a later report is accounted as undeliverable, as before.
 - Completed runs retain a `SummaryOnly` `BacktestResult` (Sharpe/drawdown/return computed from
   the session's daily equity series) so paper → live promotion evaluation has honest metrics;
   unavailable closed-trade statistics are reported as coverage warnings, not fabricated.
@@ -87,7 +94,8 @@ extend `LiveStrategyBase`. The trading universe comes from the run parameters `s
     "LiveTradingEngine": {
       "Enabled": true,
       "AllowLiveRuns": false,
-      "DefaultSymbols": []
+      "DefaultSymbols": [],
+      "StopFillDrainTimeout": "00:00:05"  // max wait at stop for settled fills to reach the run
     }
   }
 }
@@ -103,5 +111,9 @@ by design.
 
 - `tests/Meridian.Tests/Strategies/LiveTradingEngineTests.cs` — closed-circuit loop, launch
   gating, resume sweep, promotion → launcher handoff.
+- `tests/Meridian.Tests/Strategies/LiveTradingEngineTests.StopDuringFillDelivery.cs` — a stop
+  that arrives while a settled fill awaits publication waits for it and ends the run Stopped.
+- `tests/Meridian.Tests/Strategies/LiveTradingEngineTests.PromotionLedgerPosting.cs` — promoted
+  paper run fills post balanced, run-tagged journals through the real OMS and ledger consumer.
 - `tests/Meridian.Tests/Execution/PaperGatewayLiveFeedPricingTests.cs` — feed-priced paper fills.
 - `tests/Meridian.Tests/Ui/LiveTradingEngineHostRegistrationTests.cs` — host tap composition.
