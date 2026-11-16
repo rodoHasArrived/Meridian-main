@@ -1,3 +1,5 @@
+import { InfoNote } from "@/components/ui/info-note";
+import { PageHeading } from "@/components/ui/page-heading";
 import { DetailFields, DetailPane } from "@/components/meridian/detail-pane";
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
 import type { KeyboardEvent } from "react";
@@ -19,7 +21,8 @@ import { OperationalTrustSummary, type OperationalTrustTone } from "@/components
 import type { DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian/table-workbench";
 import { exportTableQuery } from "@/lib/table-workbench";
-import { formatNumber, formatPercent, formatRatioAsPercent } from "@/lib/format";
+import { formatNumber, formatPercent, formatRatioAsPercent, pluralizeCount } from "@/lib/format";
+import type { HoldingFigure } from "@/lib/holdings-model";
 import { EntityLink } from "@/components/meridian/entity-inspector";
 import { AccountBalanceHistoryChart } from "@/components/meridian/account-balance-history-chart";
 import { StatStrip } from "@/components/meridian/stat-strip";
@@ -147,7 +150,7 @@ const positionColumns: DenseDataTableColumn<PortfolioPositionRow>[] = [
   },
   {
     id: "average",
-    label: "Avg",
+    label: "Avg price",
     numeric: true,
     hideable: true,
     render: (row) => <span className="font-mono text-foreground">{row.avgPrice}</span>
@@ -171,20 +174,34 @@ const positionColumns: DenseDataTableColumn<PortfolioPositionRow>[] = [
     label: "Exposure",
     numeric: true,
     hideable: true,
-    render: (row) => <PositionValueGraphic value={row.exposure} measurement={row.exposureGraphic} kind="exposure" reviewRequired={row.markFreshness.reviewRequired} className="text-foreground" />
+    render: (row) => <span data-holding-exposure={row.exposureAmount ?? ""} data-holding-currency={row.currency ?? ""}>
+      <PositionValueGraphic value={row.exposure} measurement={row.exposureGraphic} kind="exposure" reviewRequired={row.markFreshness.reviewRequired} className="text-foreground" />
+    </span>
   }
 ];
+
+/** A holdings figure: the value, a "stale" marker when it is a last recorded value, or "—" with the reason as a tooltip. */
+function HoldingFigureCell({ figure }: { figure: HoldingFigure }) {
+  return (
+    <span className="inline-flex flex-col items-end" title={figure.reason ?? undefined}>
+      <span className={cn("font-mono", figure.display === "—" ? "text-muted-foreground" : "text-foreground")}>{figure.display}</span>
+      {figure.staleLabel ? <span className="text-xs font-normal text-warning">{figure.staleLabel}</span> : null}
+      {figure.reason && (figure.display === "—" || figure.stale) ? <span className="sr-only">{figure.reason}</span> : null}
+    </span>
+  );
+}
 
 const positionWorkbenchColumns: TableWorkbenchColumn<PortfolioPositionRow>[] = positionColumns.map(column => ({
   ...column,
   exportValue: (row: PortfolioPositionRow) => ({ symbol: row.symbol, side: row.side, quantity: row.quantity,
     average: row.avgPrice, mark: row.markPrice, "unrealized-pnl": row.unrealizedPnl,
-    exposure: row.exposure, "mark-readiness": `${row.markFreshness.label}; observed ${row.markFreshness.observedOn}; age ${row.markFreshness.age}`
+    exposure: row.exposure, currency: row.currency ?? "", "mark-readiness": `${row.markFreshness.label}; observed ${row.markFreshness.observedOn}; age ${row.markFreshness.age}`
   } as Record<string, string>)[column.id]
 })).sort((left, right) => Number(right.id === "symbol") - Number(left.id === "symbol"));
 positionWorkbenchColumns.splice(5, 0,
-  { id: "market-value", label: "Market value", align: "right", exportValue: row => row.marketValue, render: row => row.marketValue },
-  { id: "weight", label: "Weight", align: "right", exportValue: row => row.weight, render: row => <span title={row.weightBasis ?? "The source has not supplied a comparable denominator."}>{row.weight}</span> },
+  { id: "currency", label: "Currency", hideable: true, exportValue: row => row.currency ?? "", render: row => <HoldingFigureCell figure={row.currencyFigure} /> },
+  { id: "market-value", label: "Market value", align: "right", exportValue: row => row.marketValueFigure.staleLabel ? `${row.marketValue} (${row.marketValueFigure.staleLabel})` : row.marketValue, render: row => <HoldingFigureCell figure={row.marketValueFigure} /> },
+  { id: "weight", label: "Weight", align: "right", exportValue: row => row.weight, render: row => <HoldingFigureCell figure={row.weightFigure} /> },
   { id: "day-pnl", label: "Day P&L", align: "right", exportValue: row => row.dayPnl, render: row => row.dayPnl });
 
 const runColumns: DenseDataTableColumn<PortfolioRunRow>[] = [
@@ -348,16 +365,16 @@ export function resolvePortfolioRouteView(pathname: string): PortfolioRouteViewI
 
 const portfolioRouteViewCopy: Record<PortfolioRouteViewId, { title: string; description: string }> = {
   overview: {
-    title: "Execution-linked holdings",
-    description: "Open holdings, cash posture, and the record explorer stay aligned with the active paper workflow."
+    title: "Holdings",
+    description: "See what the portfolio holds, what it is worth, and how current the prices are."
   },
   attribution: {
     title: "Run attribution evidence",
-    description: "Run-linked equity evidence: comparison signals, drill-ins, and per-run attribution detail."
+    description: "See how each strategy run contributed to portfolio value."
   },
   "brokerage-sync": {
     title: "Brokerage connection and coverage",
-    description: "Live brokerage portfolio, connection trust, and multi-asset coverage posture."
+    description: "Compare the broker's accounts and positions with what Meridian holds."
   }
 };
 
@@ -718,14 +735,7 @@ function PortfolioScreenContent({
         aria-label="Portfolio workbench context"
         className="flex flex-wrap items-end justify-between gap-3"
       >
-        <div className="min-w-0">
-          <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
-            {routeCopy.title}
-          </h2>
-          <p className={showOverview ? "sr-only" : "mt-0.5 max-w-3xl text-xs leading-5 text-muted-foreground"}>
-            {routeCopy.description}
-          </p>
-        </div>
+        <PageHeading title={routeCopy.title} purpose={routeCopy.description} descriptionKey={`portfolio:${routeView}`} />
         <div className="flex flex-wrap items-center justify-end gap-2">
           <Button asChild variant="outline" size="sm">
             <Link
@@ -1210,9 +1220,16 @@ function PortfolioScreenContent({
                     Select a holding to inspect its mark readiness and evidence.
                   </CardDescription>
                 </div>
-                <Badge variant="outline" aria-label={vm.positionCountLabel}>
-                  {vm.positionCountLabel}
-                </Badge>
+                <div className="flex items-center gap-1">
+                  {vm.hasPositions ? (
+                    <InfoNote label="How the bars under each amount are scaled">
+                      Each bar shows an amount against the largest in its column, across all loaded positions in the same currency. P&L bars run left for losses and right for gains. Amounts are compared as displayed, with no currency conversion.
+                    </InfoNote>
+                  ) : null}
+                  <Badge variant="outline" aria-label={vm.positionCountLabel}>
+                    {vm.positionCountLabel}
+                  </Badge>
+                </div>
               </div>
             </CardHeader>
             <CardContent className="px-3 py-2">
@@ -1229,11 +1246,8 @@ function PortfolioScreenContent({
                 shareError={positionsTable.shareError}
               />
               {vm.hasPositions ? (
-                <TechnicalDetails label="Bars show each amount against the largest in its column" className="mb-2" contentClassName="text-xs leading-5 text-muted-foreground">
-                  <p>Bars compare rounded, displayed $ amounts only. Each column uses its largest magnitude across all loaded positions before filters, grouped by supplied source currency. Amounts without currency stay in a separate approximate display group. P&L extends left for losses and right for gains from zero; no currency is inferred from $, and no conversion is applied.</p>
-                </TechnicalDetails>
-              ) : null}
-              {vm.hasPositions ? (
+                <div data-holdings-table data-holdings-loaded-count={vm.positionRows.length}
+                  data-holdings-total={vm.holdingsTotal.exposureAmount ?? ""} data-holdings-total-currency={vm.holdingsTotal.currency ?? ""}>
                 <TableWorkbench
                   workbenchId="portfolio-positions"
                   sourceKey={location.search}
@@ -1260,6 +1274,12 @@ function PortfolioScreenContent({
                   ariaLabel={vm.positionListLabel}
                   caption="Select a position row to update the holding detail panel."
                 />
+                <p className="mt-2 flex items-baseline justify-end gap-2 text-xs text-muted-foreground" aria-label="Holdings total">
+                  <span>Total exposure, all {pluralizeCount(vm.positionRows.length, "holding")}</span>
+                  <span className="font-mono text-sm font-semibold text-foreground" title={vm.holdingsTotal.reason ?? "Same figure as the Total exposure headline."}>{vm.holdingsTotal.exposure}</span>
+                  {vm.holdingsTotal.reason ? <span className="sr-only">{vm.holdingsTotal.reason}</span> : null}
+                </p>
+                </div>
               ) : (
                 <div role="status" className="rounded-sm border border-border/70 bg-background/40">
                   <EmptyState

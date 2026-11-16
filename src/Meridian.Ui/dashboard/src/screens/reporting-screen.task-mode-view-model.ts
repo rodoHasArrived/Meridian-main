@@ -25,7 +25,7 @@ const reportingTaskModeDefinitions: Record<ReportingTaskModeId, ReportingTaskMod
     id: "daily-reporting-cockpit",
     label: "Daily Reporting Cockpit",
     title: "Daily Reporting Cockpit",
-    description: "Reporting opens on the daily decision queue: blocked output, owner, affected report, next action, and retained proof.",
+    description: "See which reports are blocked today, who owns each one, and the next action.",
     routeLabel: "Daily Reporting Cockpit",
     ariaLabel: "Reporting task mode daily reporting cockpit"
   },
@@ -33,7 +33,7 @@ const reportingTaskModeDefinitions: Record<ReportingTaskModeId, ReportingTaskMod
     id: "report-builder",
     label: "Report Builder",
     title: "Report design workspace",
-    description: "Design governed output, report-writer grids, branding, and reusable templates without mixing in run or schedule operations.",
+    description: "Design report layouts, branding, and reusable templates.",
     routeLabel: "Report Builder",
     ariaLabel: "Reporting task mode report builder"
   },
@@ -41,7 +41,7 @@ const reportingTaskModeDefinitions: Record<ReportingTaskModeId, ReportingTaskMod
     id: "schedules",
     label: "Scheduled Reports",
     title: "Scheduled report delivery",
-    description: "Create, pause, resume, and run governed report schedules with their recipient delivery plans.",
+    description: "Create, pause, resume, and run report schedules and their recipient lists.",
     routeLabel: "Scheduled Reports",
     ariaLabel: "Reporting task mode scheduled reports"
   },
@@ -49,7 +49,7 @@ const reportingTaskModeDefinitions: Record<ReportingTaskModeId, ReportingTaskMod
     id: "run-status",
     label: "Run Status",
     title: "Report run readiness",
-    description: "Reporting owns report-run readiness, queue posture, schedule state, and publication blockers.",
+    description: "Track report runs and see what is blocking publication.",
     routeLabel: "Run Status",
     ariaLabel: "Reporting task mode run status"
   },
@@ -57,7 +57,7 @@ const reportingTaskModeDefinitions: Record<ReportingTaskModeId, ReportingTaskMod
     id: "delivery-evidence",
     label: "Delivery Evidence",
     title: "Delivery Evidence",
-    description: "Reporting owns retained evidence packets, report-line provenance, recipient support, and audit-ready delivery proof.",
+    description: "See the records behind each report line and proof of delivery.",
     routeLabel: "Delivery Evidence",
     ariaLabel: "Reporting task mode delivery evidence"
   },
@@ -65,7 +65,7 @@ const reportingTaskModeDefinitions: Record<ReportingTaskModeId, ReportingTaskMod
     id: "exports",
     label: "Exports",
     title: "Governed exports",
-    description: "Reporting owns governed export previews, generated artifacts, warnings, and retained manifest support.",
+    description: "Preview exports and review the files and warnings each one produced.",
     routeLabel: "Exports",
     ariaLabel: "Reporting task mode exports"
   },
@@ -73,7 +73,7 @@ const reportingTaskModeDefinitions: Record<ReportingTaskModeId, ReportingTaskMod
     id: "governance",
     label: "Governance",
     title: "Reporting controls",
-    description: "Reporting owns access scope, template approval posture, lifecycle decisions, and audit-ready controls.",
+    description: "Manage who can use each template and approve template changes.",
     routeLabel: "Governance",
     ariaLabel: "Reporting task mode governance"
   },
@@ -81,7 +81,7 @@ const reportingTaskModeDefinitions: Record<ReportingTaskModeId, ReportingTaskMod
     id: "report-pack-approval",
     label: "Report packs",
     title: "Report packs awaiting approval",
-    description: "Review governed report packs, resolve recipient blockers, and complete server-authorized approval or publication actions.",
+    description: "Review report packs, clear recipient blockers, and approve or publish them.",
     routeLabel: "Report packs",
     ariaLabel: "Reporting task mode report packs"
   }

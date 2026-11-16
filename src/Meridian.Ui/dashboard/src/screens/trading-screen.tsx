@@ -1,4 +1,5 @@
-import { SectionDescription } from "@/components/ui/section-description";
+import { PageHeading } from "@/components/ui/page-heading";
+import { useOnGlobalRefresh } from "@/lib/global-refresh";
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
 import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, FlaskConical, Layers, PauseCircle, PlayCircle, PlusCircle, RotateCcw, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
 import React, { type ReactNode } from "react";
@@ -147,11 +148,11 @@ export function resolveTradingRouteView(pathname: string): TradingRouteViewId {
 const tradingRouteViewCopy: Record<TradingRouteViewId, { title: string; description: string }> = {
   overview: {
     title: "Trading overview",
-    description: "Paper cockpit acceptance, session workflows, and promotion evidence. Orders, positions, and risk have focused routes."
+    description: "See your positions and open orders, and check whether the paper account is ready to trade."
   },
   orders: {
     title: "Orders blotter",
-    description: "Working orders, recent fills, and order actions for the active paper session."
+    description: "Work open orders and review recent fills for the active paper session."
   },
   positions: {
     title: "Position book",
@@ -159,7 +160,7 @@ const tradingRouteViewCopy: Record<TradingRouteViewId, { title: string; descript
   },
   risk: {
     title: "Risk guardrails",
-    description: "Guardrail posture, execution controls, and adapter health."
+    description: "Check risk limits, trading controls, and broker connection health."
   }
 };
 
@@ -561,6 +562,8 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
       tradingReadiness.refresh()
     ]);
   }
+  // Readiness and execution evidence reload with the header Refresh; neither has its own button.
+  useOnGlobalRefresh(refreshSessionEvidence);
 
   if (!data) {
     return <TradingLoadingPanel state={shellVm.loadingState} />;
@@ -669,13 +672,10 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
         aria-label="Execution cockpit context"
         className="min-w-0"
       >
-        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-          <h2 className="font-display text-lg font-semibold leading-tight text-foreground">{routeCopy.title}</h2>
-          <SectionDescription descriptionKey={`trading:${routeView}`} label={`About ${routeCopy.title}`}>
-            {routeCopy.description}
-          </SectionDescription>
-        </div>
+        <PageHeading title={routeCopy.title} purpose={routeCopy.description} descriptionKey={`trading:${routeView}`} />
       </section>
+
+      {showOverview ? <KpiProvider models={{ trading: { ...data, metrics: trustedHeadlineMetrics } }}><StatStrip ids={workspaceKpiIds("trading", trustedHeadlineMetrics)} label="Trading headline metrics" /></KpiProvider> : null}
 
       {/* The full recovery workspace belongs to the overview; every other route keeps one
           blocked-state row so its own object (blotter, book, guardrails) stays above the fold. */}
@@ -686,151 +686,18 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
         busy={tradingReadiness.refreshing}
         error={tradingReadiness.errorText}
         onRecover={tradingReadiness.recoverBrokerage}
-        variant={showOverview ? "full" : "row"}
+        // With no account in scope the overview shows one row that picks the account into the
+        // header scope, not a second picker box; the recovery workspace appears once one is chosen.
+        variant={showOverview && fundAccountId ? "full" : "row"}
         reviewHref={`${WORKSTATION_ROUTE_CATALOG.trading}${search}#brokerage-recovery`}
       />
 
-      {showOverview ? <KpiProvider models={{ trading: { ...data, metrics: trustedHeadlineMetrics } }}><StatStrip ids={workspaceKpiIds("trading", trustedHeadlineMetrics)} label="Trading headline metrics" /></KpiProvider> : null}
-
       {showOverview ? tradingConfidence : null}
 
-      {showOverview ? (
-      <section id="trading-posture" className="workspace-section-band" aria-labelledby="trading-posture-heading">
-        <div className="workspace-section-subheader">
-          <div className="min-w-0">
-            <p className="eyebrow-label">Posture</p>
-            <h3 id="trading-posture-heading" className="workspace-section-title">Trading readiness posture</h3>
-          </div>
-        </div>
-
-      <AcceptanceStatusCard
-        items={cockpitAcceptance}
-        readinessVm={tradingReadiness}
-      />
-
-      <div
-        role="region"
-        aria-label={shellVm.workflowStrip.ariaLabel}
-        className="panel-surface flex flex-wrap items-center gap-3 px-4 py-3"
-      >
-        <span className={cn("mr-1 text-xs font-semibold text-muted-foreground", usesTrackedCaps(shellVm.workflowStrip.eyebrow) && "uppercase tracking-[0.14em]")}>
-          {shellVm.workflowStrip.eyebrow}
-        </span>
-        {shellVm.workflowStrip.chips.map((chip) => (
-          <CockpitChip key={chip.label} label={chip.label} value={chip.value} />
-        ))}
-        <span id={shellVm.workflowStrip.statusId} className="sr-only" aria-live="polite">
-          {shellVm.workflowStrip.statusText}
-        </span>
-        {shellVm.workflowStrip.commands.map((command) => (
-          <WorkflowPanelButton
-            key={command.id}
-            command={command}
-            onOpen={() => shellVm.openWorkflowPanel(command.id)}
-          />
-        ))}
-      </div>
-      </section>
-      ) : null}
-
-      {showRisk ? (
-      <section id="trading-exceptions" className="workspace-section-band" aria-labelledby="trading-exceptions-heading">
-        <div className="workspace-section-subheader">
-          <div className="min-w-0">
-            <p className="eyebrow-label">Exceptions</p>
-            <h3 id="trading-exceptions-heading" className="workspace-section-title">Risk and adapter exceptions</h3>
-          </div>
-        </div>
-      <section className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
-        <Card className="panel-surface min-w-0">
-          <CardHeader>
-            <div className="eyebrow-label">Risk State</div>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5 text-primary" />
-              Paper risk cockpit
-            </CardTitle>
-            <CardDescription>{data.risk.summary}</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-3">
-            <Stat label="State" value={data.risk.state} tone={riskTone[data.risk.state]} />
-            {/* Scope named on the label: these are the paper session's risk figures, not the
-                Portfolio header's gross exposure over live holdings. */}
-            <Stat label="Net exposure · paper session" value={data.risk.netExposure} />
-            <Stat label="Gross exposure · paper session" value={data.risk.grossExposure} />
-            <Stat label="VaR (95%)" value={data.risk.var95} />
-            <Stat label="Max Drawdown" value={data.risk.maxDrawdown} />
-            <Stat label="Buying Power Used" value={data.risk.buyingPowerUsed} />
-          </CardContent>
-          <CardContent className="pt-0">
-            <div className="rounded-xl border border-border/70 bg-secondary/35 p-4">
-              <div className="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
-                <AlertTriangle className="h-4 w-4" />
-                Active guardrails
-              </div>
-              <GuardrailPanelBody
-                guardrails={data.risk.guardrails}
-                activeGuardrails={data.risk.activeGuardrails}
-              />
-            </div>
-            <div className="mt-3 rounded-xl border border-border/70 bg-background/80 p-4">
-              <ExecutionControlsHeader
-                executionEvidence={executionEvidence}
-                onConfirm={confirmVm.openConfirm}
-              />
-              <span className="sr-only" aria-live="polite">{executionEvidence.statusAnnouncement}</span>
-              {executionEvidence.errorText && (
-                <p role="alert" className="mb-2 rounded-md border border-warning/35 bg-warning/10 px-3 py-2 text-xs text-warning">
-                  {executionEvidence.errorText}
-                </p>
-              )}
-              {executionEvidence.controlsPanel ? (
-                <TechnicalDetails label="Audit details">
-                  <dl
-                    aria-label={executionEvidence.controlsPanel.ariaLabel}
-                    className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-2"
-                  >
-                    {executionEvidence.controlsPanel.rows.map((row) => (
-                      <div key={row.id} className="rounded-md border border-border/60 bg-secondary/20 px-2.5 py-2">
-                        <dt>{row.label}:</dt>
-                        <dd className="mt-1 break-words font-mono text-foreground">{row.value}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                </TechnicalDetails>
-              ) : (
-                <p className="text-xs text-muted-foreground">{executionEvidence.controlsEmptyText}</p>
-              )}
-            </div>
-            <TradingRiskControls governedApprovals={governedApprovals} />
-          </CardContent>
-        </Card>
-
-        <Card className="panel-surface-strong min-w-0 bg-panel-strong">
-          <CardHeader>
-            <div className="eyebrow-label">Brokerage connection</div>
-            <CardTitle className="flex items-center gap-2">
-              <Cable className="h-5 w-5 text-primary" />
-              Execution adapter health
-            </CardTitle>
-            {operatorNote(data.brokerage.notes) ? <CardDescription>{operatorNote(data.brokerage.notes)}</CardDescription> : null}
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            <KeyValueRow label="Provider" value={data.brokerage.provider} />
-            <KeyValueRow label="Account" value={data.brokerage.account} />
-            <KeyValueRow label="Environment" value={data.brokerage.environment.toUpperCase()} />
-            <KeyValueRow label="Connection" value={data.brokerage.connection} tone={wiringTone[data.brokerage.connection]} />
-            <KeyValueRow label="Last heartbeat" value={data.brokerage.lastHeartbeat} />
-            <KeyValueRow label="Order ingress" value={data.brokerage.orderIngress} />
-            <KeyValueRow label="Fill feed" value={data.brokerage.fillFeed} />
-          </CardContent>
-        </Card>
-      </section>
-      </section>
-      ) : null}
-
-      {showPositions ? (
-      <section id="trading-actions" className="workspace-section-band" aria-label="Position book and selected detail">
-      <WorkspaceWorkbenchShell label="Trading positions workbench" switchInspector inspectorRole="region" inspector={(
+      {/* The overview leads with its main lists: the position book, then the order blotter. */}
+      {showPositions || showOverview ? (
+      <section id={showOverview ? "trading-positions" : "trading-actions"} className="workspace-section-band" aria-label="Position book and selected detail">
+      <WorkspaceWorkbenchShell label="Trading positions workbench" switchInspector inspectorRole="region" inspectorLabel={showOverview ? "Selected position inspector" : undefined} inspector={(
 <div className="min-w-0">
           <TradingBlotterDetailPanel
             id={blotterVm.positionDetailId}
@@ -891,9 +758,9 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
       </section>
       ) : null}
 
-      {showOrders ? (
-      <section id="trading-actions" className="workspace-section-band" aria-label="Order blotter and selected detail">
-      <WorkspaceWorkbenchShell label="Trading orders workbench" switchInspector inspectorRole="region" inspector={(
+      {showOrders || showOverview ? (
+      <section id={showOverview ? "trading-orders" : "trading-actions"} className="workspace-section-band" aria-label="Order blotter and selected detail">
+      <WorkspaceWorkbenchShell label="Trading orders workbench" switchInspector inspectorRole="region" inspectorLabel={showOverview ? "Selected order inspector" : undefined} inspector={(
 <div className="min-w-0">
           {/* Orders and fills share one pane keyed to the row selected last. */}
           <TradingBlotterDetailPanel
@@ -1043,14 +910,139 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
       ) : null}
 
       {showOverview ? (
-      <section id="trading-history" className="workspace-section-band" aria-labelledby="trading-history-heading">
+      <section id="trading-posture" className="workspace-section-band" aria-label="Trading readiness posture">
+      {/* Secondary to the blotters, so collapsed by default. */}
+      <TechnicalDetails label="Readiness checks" contentClassName="p-0">
+      <AcceptanceStatusCard
+        items={cockpitAcceptance}
+        readinessVm={tradingReadiness}
+      />
+      </TechnicalDetails>
+
+      <div
+        role="region"
+        aria-label={shellVm.workflowStrip.ariaLabel}
+        className="panel-surface flex flex-wrap items-center gap-3 px-4 py-3"
+      >
+        <span className={cn("mr-1 text-xs font-semibold text-muted-foreground", usesTrackedCaps(shellVm.workflowStrip.eyebrow) && "uppercase tracking-[0.14em]")}>
+          {shellVm.workflowStrip.eyebrow}
+        </span>
+        {shellVm.workflowStrip.chips.map((chip) => (
+          <CockpitChip key={chip.label} label={chip.label} value={chip.value} />
+        ))}
+        <span id={shellVm.workflowStrip.statusId} className="sr-only" aria-live="polite">
+          {shellVm.workflowStrip.statusText}
+        </span>
+        {shellVm.workflowStrip.commands.map((command) => (
+          <WorkflowPanelButton
+            key={command.id}
+            command={command}
+            onOpen={() => shellVm.openWorkflowPanel(command.id)}
+          />
+        ))}
+      </div>
+      </section>
+      ) : null}
+
+      {showRisk ? (
+      <section id="trading-exceptions" className="workspace-section-band" aria-labelledby="trading-exceptions-heading">
         <div className="workspace-section-subheader">
           <div className="min-w-0">
-            <p className="eyebrow-label">History</p>
-            <h3 id="trading-history-heading" className="workspace-section-title">Paper session history and execution evidence</h3>
+            <p className="eyebrow-label">Exceptions</p>
+            <h3 id="trading-exceptions-heading" className="workspace-section-title">Risk and adapter exceptions</h3>
           </div>
-          <a className="workspace-section-jump" href="#trading-posture">Posture</a>
         </div>
+      <section className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+        <Card className="panel-surface min-w-0">
+          <CardHeader>
+            <div className="eyebrow-label">Risk State</div>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="h-5 w-5 text-primary" />
+              Paper risk cockpit
+            </CardTitle>
+            <CardDescription>{data.risk.summary}</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-4 md:grid-cols-3">
+            <Stat label="State" value={data.risk.state} tone={riskTone[data.risk.state]} />
+            {/* Scope named on the label: these are the paper session's risk figures, not the
+                Portfolio header's gross exposure over live holdings. */}
+            <Stat label="Net exposure · paper session" value={data.risk.netExposure} />
+            <Stat label="Gross exposure · paper session" value={data.risk.grossExposure} />
+            <Stat label="VaR (95%)" value={data.risk.var95} />
+            <Stat label="Max Drawdown" value={data.risk.maxDrawdown} />
+            <Stat label="Buying Power Used" value={data.risk.buyingPowerUsed} />
+          </CardContent>
+          <CardContent className="pt-0">
+            <div className="rounded-xl border border-border/70 bg-secondary/35 p-4">
+              <div className="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+                <AlertTriangle className="h-4 w-4" />
+                Active guardrails
+              </div>
+              <GuardrailPanelBody
+                guardrails={data.risk.guardrails}
+                activeGuardrails={data.risk.activeGuardrails}
+              />
+            </div>
+            <div className="mt-3 rounded-xl border border-border/70 bg-background/80 p-4">
+              <ExecutionControlsHeader
+                executionEvidence={executionEvidence}
+                onConfirm={confirmVm.openConfirm}
+              />
+              <span className="sr-only" aria-live="polite">{executionEvidence.statusAnnouncement}</span>
+              {executionEvidence.errorText && (
+                <p role="alert" className="mb-2 rounded-md border border-warning/35 bg-warning/10 px-3 py-2 text-xs text-warning">
+                  {executionEvidence.errorText}
+                </p>
+              )}
+              {executionEvidence.controlsPanel ? (
+                <TechnicalDetails label="Audit details">
+                  <dl
+                    aria-label={executionEvidence.controlsPanel.ariaLabel}
+                    className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-2"
+                  >
+                    {executionEvidence.controlsPanel.rows.map((row) => (
+                      <div key={row.id} className="rounded-md border border-border/60 bg-secondary/20 px-2.5 py-2">
+                        <dt>{row.label}:</dt>
+                        <dd className="mt-1 break-words font-mono text-foreground">{row.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </TechnicalDetails>
+              ) : (
+                <p className="text-xs text-muted-foreground">{executionEvidence.controlsEmptyText}</p>
+              )}
+            </div>
+            <TradingRiskControls governedApprovals={governedApprovals} />
+          </CardContent>
+        </Card>
+
+        <Card className="panel-surface-strong min-w-0 bg-panel-strong">
+          <CardHeader>
+            <div className="eyebrow-label">Brokerage connection</div>
+            <CardTitle className="flex items-center gap-2">
+              <Cable className="h-5 w-5 text-primary" />
+              Execution adapter health
+            </CardTitle>
+            {operatorNote(data.brokerage.notes) ? <CardDescription>{operatorNote(data.brokerage.notes)}</CardDescription> : null}
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            <KeyValueRow label="Provider" value={data.brokerage.provider} />
+            <KeyValueRow label="Account" value={data.brokerage.account} />
+            <KeyValueRow label="Environment" value={data.brokerage.environment.toUpperCase()} />
+            <KeyValueRow label="Connection" value={data.brokerage.connection} tone={wiringTone[data.brokerage.connection]} />
+            <KeyValueRow label="Last heartbeat" value={data.brokerage.lastHeartbeat} />
+            <KeyValueRow label="Order ingress" value={data.brokerage.orderIngress} />
+            <KeyValueRow label="Fill feed" value={data.brokerage.fillFeed} />
+          </CardContent>
+        </Card>
+      </section>
+      </section>
+      ) : null}
+
+      {showOverview ? (
+      <section id="trading-history" className="workspace-section-band" aria-label="Paper session history and execution evidence">
+      {/* Secondary to the blotters, so collapsed by default. */}
+      <TechnicalDetails label="Paper sessions and execution evidence">
       <section className="grid gap-4 xl:grid-cols-2">
         {/* Paper session management */}
         <Card className="panel-surface">
@@ -1296,6 +1288,7 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
 
         {/* Strategy lifecycle controls — moved to sheet; trigger in Workflow Tools strip */}
       </section>
+      </TechnicalDetails>
       </section>
       ) : null}
 

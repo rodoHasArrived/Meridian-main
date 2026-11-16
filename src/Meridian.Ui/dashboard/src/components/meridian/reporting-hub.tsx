@@ -227,7 +227,8 @@ function ReportingHubContent({
     <section role="region" aria-label="Daily reporting cockpit" className={cn("workspace-section-band", className)}>
       <div className="workspace-section-subheader">
         <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-          <h2 className="workspace-section-title">Daily reporting cockpit</h2>
+          {/* The page heading already names this page; the section keeps its name for assistive technology. */}
+          <h2 className="sr-only">Daily reporting cockpit</h2>
           <SectionDescription descriptionKey="reporting-daily-cockpit" label="About the daily reporting cockpit">
             Select work to review its evidence and next action.
           </SectionDescription>

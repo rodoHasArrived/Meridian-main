@@ -73,6 +73,34 @@ Each phase ships on its own, behind the existing browser smoke tests and screens
   - Example: `"12345678901234.565"` now renders `12,345,678,901,234.57`, and `"1.005"` renders
     `1.01` (previously `1.00`).
 
+**Portfolio figure consistency (landed 2026-11-15, extends P1 and P3):** the Portfolio holdings
+table, headline figures and holding detail panel read one model (`lib/holdings-model.ts`). With no
+current price, Market value shows the last recorded value with a "Stale" marker and the price date;
+a value that does not exist shows "—" with the reason as a tooltip. The table has a Currency column
+and a total line that restates the headline. The screenshot script fails a page whose table rows do
+not sum to the headline Total exposure. The page heading is "Holdings". The WPF Portfolio surface
+does not have this presentation yet.
+
+**Say it once: trust, scope, refresh, headings and copy (landed 2026-11-15, dashboard source;
+P1, P4, C4, C6):**
+- Trust: headline figures carry one compact label with the full source on hover; unverified is a
+  style on the figure; the page trust row renders only when the page differs from the global state.
+- Scope: the header bar shrinks to "All authorized scopes" and lists only set fields; Today's scope
+  row is gone; Trading without an account shows one row instead of a picker box.
+- Refresh: the header Refresh reloads page-owned panels through `useOnGlobalRefresh`. The Today,
+  inbox, Trading readiness, execution evidence, Settings activation and close-history refresh
+  buttons are gone; "Retry" appears only in an error state. About forty sub-page panels (Data
+  regions, Reporting, corporate actions, watchlist and others) still have their own Refresh button
+  and remain to be moved.
+- Headings: one `PageHeading` on every overview; the inline "Hide" link is replaced by one
+  preference under Settings > Preferences.
+- Layout: Trading's overview leads with positions and orders, with readiness and session history
+  collapsed; Accounting's case workbench lost its heading-only band; Settings shows an unavailable
+  activation status below the checklist.
+- Copy: page purpose lines across the seven workspaces are one plain sentence each; the Portfolio
+  chart-method note is behind an information icon.
+- The WPF workstation does not have these changes yet.
+
 **P1 first step (landed 2026-11-13):** the bottom status bar no longer repeats the
 masthead's worst issue ("Cash variance needs review +5 more"). It holds Sync and page Freshness
 only, so the trust strip is the one shell place that names the worst open issue.

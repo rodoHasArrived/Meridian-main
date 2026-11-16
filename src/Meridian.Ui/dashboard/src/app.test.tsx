@@ -303,7 +303,7 @@ const loadedOperatorInbox: OperatorTriageInbox = {
   }]
 };
 
-const EMPTY_SCOPE_BAR_NAME = "Operating scope: Entity All authorized, Fund All authorized, Account All authorized, Period All periods";
+const EMPTY_SCOPE_BAR_NAME = "Operating scope: All authorized scopes";
 
 /** The permanent top-bar scope bar; its accessible name lists every labelled dimension. */
 function scopeBar() {
@@ -636,7 +636,8 @@ describe("App", () => {
     // The header and Today word an unscoped view the same way: everything authorized.
     expect(scopeBar()).toHaveAccessibleName(EMPTY_SCOPE_BAR_NAME);
     const confidence = screen.getByRole("region", { name: "Daily control tower confidence" });
-    expect(within(confidence).getByText("Scope")).toBeInTheDocument();
+    // Scope is stated once, in the header bar; Today no longer repeats it.
+    expect(within(confidence).queryByText("Scope")).not.toBeInTheDocument();
     expect(within(confidence).getByText("Selected evidence")).toBeInTheDocument();
     expect(within(screen.getByRole("region", { name: "Priority decision" })).getByRole("region", { name: "Workstation status" })).toHaveAttribute("data-status-tone", "blocked");
     expect(screen.getByTestId("today-attention-count")).toHaveTextContent(/^\d+ needs? attention · blocked \+ action, excluding snoozed/);
@@ -658,7 +659,7 @@ describe("App", () => {
 
     expect(screen.queryByRole("region", { name: "Daily control tower decision drivers" })).not.toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Choose Control Tower scope" })).not.toBeInTheDocument();
-    expect(confidence).toHaveTextContent("All authorized scopes");
+    expect(confidence).not.toHaveTextContent("All authorized scopes");
     const todayQueue = await screen.findByRole("treegrid", { name: "Today queue" });
     expect(todayQueue).toBeInTheDocument();
     // One grid holds both sources, and one count covers it: the sidebar Today badge, the count
@@ -868,7 +869,7 @@ describe("App", () => {
     renderWithRouter(<App />, { initialEntries: ["/data/quotes?symbol=MSFT"] });
 
     expect(screen.getByRole("region", { name: "Operating scope bar" })).toBeInTheDocument();
-    expect(scopeBar()).toHaveAccessibleName("Operating scope: Entity All authorized, Fund All authorized, Account All authorized, Subject MSFT, Period All periods");
+    expect(scopeBar()).toHaveAccessibleName("Operating scope: Subject MSFT");
     expect(screen.queryByText("/data/quotes?symbol=MSFT")).not.toBeInTheDocument();
     // Workflow context lives in the scope chip's popover, not in the header row.
     expect(screen.queryByText("Workflow context")).not.toBeInTheDocument();
@@ -1008,7 +1009,7 @@ describe("App", () => {
       expect(stored).not.toHaveProperty("fundAccountId");
     });
     expect(scopeBar()).not.toHaveTextContent("fund-1");
-    expect(scopeBar()).toHaveTextContent("AccountAll authorized");
+    expect(scopeBar()).not.toHaveTextContent("Account");
   });
 
   it("picks the fund account inline on Orders and carries it in the URL and on links (P4)", async () => {
@@ -1051,7 +1052,7 @@ describe("App", () => {
       // Only the account changed; the rest of the scope is kept.
       expect(params.get("symbol")).toBe("MSFT");
     });
-    expect(scopeBar()).toHaveAccessibleName(`Operating scope: Entity All authorized, Fund All authorized, Account ${fundAccountId}, Subject MSFT, Period All periods`);
+    expect(scopeBar()).toHaveAccessibleName(`Operating scope: Account ${fundAccountId}, Subject MSFT`);
     expect(screen.queryByLabelText("Fund account")).not.toBeInTheDocument();
     // Links built from the scope carry it, so a followed or copied link opens in the same scope.
     const portfolioLink = within(screen.getAllByRole("navigation").find((nav) => within(nav).queryByRole("link", { name: /Portfolio/ }))!)

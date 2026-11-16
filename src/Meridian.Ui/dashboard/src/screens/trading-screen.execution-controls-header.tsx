@@ -44,7 +44,7 @@ export function ExecutionControlsHeader({
             {panel.breakerActionLabel}
           </Button>
         )}
-        <Button
+        {executionEvidence.errorText ? <Button
           size="sm"
           variant="outline"
           onClick={() => { void executionEvidence.refresh(); }}
@@ -55,7 +55,7 @@ export function ExecutionControlsHeader({
           aria-label={executionEvidence.refreshAriaLabel}
         >
           {executionEvidence.refreshButtonLabel}
-        </Button>
+        </Button> : null}
       </div>
     </div>
   );
