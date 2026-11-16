@@ -71,13 +71,13 @@
                                 <StackPanel Margin="12,0,0,0">
                                     <TextBlock Text="Portfolio Workspace"
                                                Style="{StaticResource PageTitleStyle}" />
-                                    <TextBlock Text="Account, aggregate, fund, and lending review stay in one executive cockpit."
+                                    <TextBlock Text="See what the portfolio holds, what it is worth, and how current the prices are."
                                                Style="{StaticResource CardDescriptionStyle}"
                                                TextWrapping="Wrap" />
                                 </StackPanel>
                             </StackPanel>
 
-                            <TextBlock Text="Use this cockpit to compare account exposure, fund-level readiness, import exceptions, and lending concentration before moving work into accounting or trading."
+                            <TextBlock Text="Compare account exposure, fund-level readiness, import exceptions, and lending concentration before moving work into accounting or trading."
                                        Margin="0,18,0,0"
                                        FontSize="13"
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}"
@@ -101,7 +101,7 @@
                                            FontSize="16"
                                            FontWeight="SemiBold"
                                            Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                <TextBlock Text="Validate account and fund posture, then route exceptions into reconciliation, import, or run inspectors."
+                                <TextBlock Text="Validate account and fund readiness, then route exceptions into reconciliation, import, or run inspectors."
                                            Margin="0,6,0,0"
                                            FontSize="12"
                                            Foreground="{StaticResource ConsoleTextSecondaryBrush}"
@@ -182,7 +182,7 @@
 
                         <Border Style="{StaticResource WorkspaceInspectorCardStyle}">
                             <StackPanel>
-                                <TextBlock Text="Cross-Workspace Handoff" Style="{StaticResource CardHeaderStyle}" />
+                                <TextBlock Text="Next step in another workspace" Style="{StaticResource CardHeaderStyle}" />
                                 <TextBlock Text="Portfolio decisions commonly move into trading, accounting, or reporting review."
                                            Margin="0,8,0,0"
                                            FontSize="11"

@@ -98,7 +98,7 @@
                 <Border Grid.Column="2" Style="{StaticResource CardStyle}">
                     <StackPanel>
                         <TextBlock Text="Context Details" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
-                        <TextBlock Text="{Binding SelectedOperatingContext.DisplayName, TargetNullValue=No context selected}"
+                        <TextBlock Text="{Binding SelectedOperatingContext.DisplayName, TargetNullValue=No scope selected}"
                                    Style="{StaticResource PageTitleStyle}" />
                         <TextBlock Text="{Binding SelectedOperatingContext.Subtitle}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" />
                         <TextBlock Text="{Binding SelectedContextLastOpenedText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,16" />

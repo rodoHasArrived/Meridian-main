@@ -60,7 +60,7 @@ public sealed class DataWorkspaceShellSmokeTests
         xaml.Should().Contain("AutomationProperties.AutomationId=\"DataWorkspaceQueuePanel\"");
         xaml.Should().Contain("AutomationProperties.AutomationId=\"DataWorkspaceDockStrip\"");
         xaml.Should().Contain("WorkspaceShellContextStripControl");
-        xaml.Should().Contain("Next Handoff");
+        xaml.Should().Contain("Next step");
         xaml.Should().Contain("OperationsHeroScopeText");
         xaml.Should().Contain("OperationsHeroSummaryText");
         xaml.Should().Contain("OperationsHeroFocusText");

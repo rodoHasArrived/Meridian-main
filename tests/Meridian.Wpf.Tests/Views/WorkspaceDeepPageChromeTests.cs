@@ -360,7 +360,7 @@ public sealed class WorkspaceDeepPageChromeTests
 
         xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
         xaml.Should().Contain("AccountingConfigureActionStrip");
-        xaml.Should().Contain("AccountingConfigureRefreshButton");
+        xaml.Should().NotContain("AccountingConfigureRefreshButton", "the shell Refresh reloads this page in place");
         xaml.Should().Contain("AccountingConfigureSeedBaselineButton");
         xaml.Should().Contain("AccountingConfigureActivateButton");
         xaml.Should().Contain("AccountingConfigureTabs");

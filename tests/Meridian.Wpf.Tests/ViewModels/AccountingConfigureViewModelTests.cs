@@ -1496,7 +1496,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         await harness.ViewModel.LoadAsync();
 
         harness.ViewModel.ConfigurationStatusText.Should().Be("Locked");
-        harness.ViewModel.ActiveFundText.Should().Be("No fund selected");
+        harness.ViewModel.ActiveFundText.Should().Be("No scope selected");
         harness.ViewModel.SetupReadinessRows.Should().BeEmpty();
         harness.ViewModel.LedgerBookRows.Should().BeEmpty();
         harness.ViewModel.LedgerBookAdministrationText.Should().Contain("Locked");
@@ -1687,7 +1687,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
 
         xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
         xaml.Should().Contain("AccountingConfigureActionStrip");
-        xaml.Should().Contain("AccountingConfigureRefreshButton");
+        xaml.Should().NotContain("AccountingConfigureRefreshButton", "the shell Refresh reloads this page in place");
         xaml.Should().Contain("AccountingConfigureSeedBaselineButton");
         xaml.Should().Contain("AccountingConfigureActivateButton");
         xaml.Should().Contain("AccountingConfigureCreateLedgerBookSetupButton");
