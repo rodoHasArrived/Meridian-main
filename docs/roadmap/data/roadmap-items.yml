@@ -2086,11 +2086,11 @@ items:
       - Portfolio
       - Reporting
     owner_lane: Accounting and Ledger
-    status: planned
+    status: in_progress
     health: green
     priority: high
-    evidence_posture: planned_evidence
-    status_note: Extend or supersede the existing brokerage return seam; complete retained period, cash-flow and acceptance requirements before claiming fund performance.
+    evidence_posture: in_progress
+    status_note: Shared return kernel and brokerage-seam extension are implemented with golden tests; ledger-derived fund, class, and investor figures, the operator surface, and acceptance remain open.
     decision_ids: []
     pr_references: []
     status_detail: docs/roadmap/snapshots/status-prose-2026-11-14/W10-PERF-001.md
@@ -2112,7 +2112,22 @@ items:
       - SRC-WPF
     diagrams:
       - DIA-ASSURANCE-LOOP
-    last_reviewed: 2026-07-31
+    evidence:
+      - type: source
+        path: src/Meridian.FSharp.Ledger/ReturnMeasurement.fs
+      - type: source
+        path: src/Meridian.Contracts/Workstation/PerformanceReturnDtos.cs
+      - type: source
+        path: src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs
+      - type: source
+        path: src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs
+      - type: test
+        path: tests/Meridian.FSharp.Tests/ReturnMeasurementTests.fs
+      - type: test
+        path: tests/Meridian.Tests/Ui/PerformanceReturnFiguresTests.cs
+      - type: doc
+        path: docs/engineering/blueprints/investor-performance-pack-blueprint.md
+    last_reviewed: 2026-11-16
 
   - id: W10-CONSOL-001
     title: Intercompany elimination on consolidated ledger views

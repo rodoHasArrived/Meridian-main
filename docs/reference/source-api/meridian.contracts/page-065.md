@@ -187,6 +187,18 @@ Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:18](../../../.
 public sealed record PaymentInstruction(Guid InstructionId, Guid AccountId, string Currency, decimal Amount, DateOnly TradeDate, DateOnly ValueDate, string Counterparty, string Reference);
 ```
 
+## PerformanceReturnFigureDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.PerformanceReturnFigureDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/PerformanceReturnDtos.cs:28](../../../../src/Meridian.Contracts/Workstation/PerformanceReturnDtos.cs#L28).
+
+One labeled return figure produced by the shared return kernel (W10-PERF-001). A figure always names its convention, status, period, currency, and source; Value is null whenever no single number may be shown as the return.
+
+```csharp
+public sealed record PerformanceReturnFigureDto(string Convention, string Status, string Currency, DateOnly PeriodStart, DateOnly PeriodEnd, decimal? Value, decimal? AnnualizedValue, int SubPeriodCount, IReadOnlyList<decimal> CandidateRates, string Source, IReadOnlyList<string> Reasons);
+```
+
 ## PilotAcceptanceEvidenceCategoryDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.PilotAcceptanceEvidenceCategoryDto</code>. Kind: `enum`.
@@ -705,14 +717,4 @@ Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1393](..
 
 ```csharp
 public sealed record PrivateCapitalCloseCockpitWorkflowDto(Guid WorkflowId, Guid FundAccountId, string PeriodId, OperationsWorkflowStatusDto Status, int CloseReadinessScore, bool IsReadyToClose, string WorkflowRoute, string? ClosePackageId, string? ClosePackageRoute, int BlockerCount, int OpenChecklistCount, DateTimeOffset UpdatedAtUtc, long Version = 0);
-```
-
-## PrivateCapitalNavSupportComponentDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.PrivateCapitalNavSupportComponentDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1440](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1440).
-
-```csharp
-public sealed record PrivateCapitalNavSupportComponentDto(string ComponentId, string Label, EvidenceStatusDto Status, bool IsReady, string Summary, string? Route, int Score);
 ```

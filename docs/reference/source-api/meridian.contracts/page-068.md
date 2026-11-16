@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingLedgerBookSelectionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportingLedgerBookSelectionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1321](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1321).
+
+```csharp
+public sealed record ReportingLedgerBookSelectionDto(Guid? LedgerBookId = null, string? LedgerBookCode = null);
+```
+
 ## ReportingOutputFormatDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportingOutputFormatDto</code>. Kind: `enum`.
@@ -590,16 +600,4 @@ Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1829]
 
 ```csharp
 public sealed record ReportPackRestateRequestDto(string ReasonCode, Guid PriorVersionReportId, IReadOnlyList<ReportPackChangedLineDto> ChangedLines, string? Approver = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
-```
-
-## ReportPackWorkflowActionRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportPackWorkflowActionRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1800](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1800).
-
-Optional action-origin metadata for report-pack workflow commands that historically used an empty body.
-
-```csharp
-public sealed record ReportPackWorkflowActionRequestDto(OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 ```
