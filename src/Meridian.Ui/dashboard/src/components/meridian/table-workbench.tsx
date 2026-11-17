@@ -1,4 +1,5 @@
 import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { buildShownExport, downloadShownXlsx, shownExportCsvRows, type ShownFooterCell } from "@/lib/table-export";
 import { Button } from "@/components/ui/button";
 import { DenseDataTable, nextDenseSort, sortRowsByValue, type DenseDataTableColumn, type DenseDataTableProps, type DenseDataTableSortState } from "@/components/meridian/ui-kit-primitives";
 import { downloadCsv, type CsvCell } from "@/lib/csv";
@@ -65,6 +66,10 @@ export interface TableWorkbenchColumn<T> extends DenseDataTableColumn<T> {
   exportValue?: (row: T) => CsvCell;
   /** Use only for exact, unformatted decimal source strings. Text never acquires numeric semantics implicitly. */
   exportType?: "decimal" | "text";
+  /** The value as the table shows it, for "Export as shown" (e.g. "120,500.00"). Falls back to `exportValue`. */
+  exportDisplay?: (row: T) => string | null | undefined;
+  /** Spreadsheet number format for this column's numbers in XLSX, e.g. "#,##0.00;(#,##0.00)". */
+  exportNumberFormat?: string;
 }
 
 /** Bind explicit source cells; rendered JSX is never parsed back into financial values. */
@@ -95,13 +100,18 @@ export interface TableWorkbenchProps<T> extends Omit<DenseDataTableProps<T>, "co
   exportLabel?: string;
   /** Bulk-selection bar, shown only while `selection.count > 0`. */
   selection?: TableWorkbenchSelection;
+  /**
+   * The totals row for "Export as shown", keyed by column id, matching `footerCells` on screen.
+   * A cell is a raw value or `{ value, display }` with the text the footer shows.
+   */
+  footerExport?: Partial<Record<string, ShownFooterCell>>;
   /** Server export for paginated or incomplete populations. Must use the active query. */
   onExportAll?: (columns: string[], search: string, sort?: DenseDataTableSortState | null, signal?: AbortSignal) => Promise<void>;
 }
 
 export function TableWorkbench<T>({ workbenchId, sourceKey = "", columns, rows, searchText: controlledSearch,
   onSearchTextChange, getSearchText, filters, compactToolbar = false, filterState, onRestoreFilters, onRestoreView, completePopulation = false,
-  sourceDescription, exportContext, exportLabel = "Export CSV", onExportAll, selection, sort, onToggleSort, defaultSort = null,
+  sourceDescription, exportContext, exportLabel = "Export CSV", onExportAll, footerExport, selection, sort, onToggleSort, defaultSort = null,
   hiddenColumnIds: controlledHiddenColumnIds, onHiddenColumnIdsChange, ...tableProps }: TableWorkbenchProps<T>) {
   const id = useId();
   const [localSearch, setLocalSearch] = useState("");
@@ -281,6 +291,31 @@ export function TableWorkbench<T>({ workbenchId, sourceKey = "", columns, rows, 
     } catch (cause) { if (current === session.current && !signal?.aborted) setError(cause instanceof Error ? cause.message : "Export failed. No complete export was produced."); }
     finally { if (current === session.current) setExporting(false); }
   }
+  /**
+   * Export as shown (UX Phase E): the visible columns in screen order, values formatted as the table
+   * shows them, and the totals row. Only from a complete loaded population; a server-paged table
+   * exports through the server as CSV only.
+   */
+  const shownColumns = visibleColumns.filter(column => column.exportValue || column.exportDisplay);
+  const shownUnavailable = !completePopulation ? "Export as shown needs the complete population loaded. Use the CSV export, which the server produces." : !shownColumns.length ? "No exportable columns are visible." : null;
+  async function exportShown(format: "csv" | "xlsx") {
+    const current = session.current;
+    setExporting(true); setError(null);
+    try {
+      const model = buildShownExport(shownColumns, filteredRows, footerExport ? { cells: footerExport, label: tableProps.footerLabel ?? "Totals" } : null);
+      const context = { Source: sourceDescription, ...exportContext, "Exported at UTC": new Date().toISOString() };
+      const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+      if (format === "xlsx") {
+        await downloadShownXlsx(`${workbenchId}-${stamp}.xlsx`, model, context, tableProps.ariaLabel);
+      } else {
+        const csv = safeTableCsv([...model.headers, ...Object.keys(context).map(key => `Context · ${key}`)],
+          shownExportCsvRows(model).map(row => [...row, ...Object.values(context)]));
+        if (!downloadCsv(`${workbenchId}-${stamp}-as-shown.csv`, csv)) throw new Error("CSV downloads are unavailable in this browser.");
+      }
+      if (current === session.current) setNotice(`Exported ${pluralizeCount(filteredRows.length, "row")} as shown${model.footer ? " with totals" : ""} (${format.toUpperCase()}).`);
+    } catch (cause) { if (current === session.current) setError(cause instanceof Error ? cause.message : "Export failed. No file was produced."); }
+    finally { if (current === session.current) setExporting(false); }
+  }
   const columnControls = hideableColumns.map(column => <label key={column.id}><input type="checkbox" checked={effectiveVisibleIds.includes(column.id)}
     disabled={visibleColumns.length === 1 && effectiveVisibleIds.includes(column.id)}
     onChange={event => changeVisibleIds(event.target.checked ? columns.filter(item => effectiveVisibleIds.includes(item.id) || item.id === column.id).map(item => item.id) : effectiveVisibleIds.filter(value => value !== column.id))} />{column.label || column.srLabel || column.id}</label>);
@@ -298,6 +333,12 @@ export function TableWorkbench<T>({ workbenchId, sourceKey = "", columns, rows, 
   };
   const exportControl = <Button size="sm" variant="outline" onClick={() => void exportAll()} disabled={exporting || !exportColumns.length || (!completePopulation && !onExportAll)}
     title={!completePopulation && !onExportAll ? "A complete authorized source is required before export." : `Export all ${pluralizeCount(filteredRows.length, "filtered match", { plural: "filtered matches" })}. ${sourceDescription}`}>{exporting ? "Exporting…" : exportLabel}</Button>;
+  const shownExportControls = <>
+    <Button size="sm" variant="outline" onClick={() => void exportShown("csv")} disabled={exporting || Boolean(shownUnavailable)} disabledReason={shownUnavailable}
+      title={shownUnavailable ?? "Visible columns in screen order, formatted as shown, with totals."}>Export as shown · CSV</Button>
+    <Button size="sm" variant="outline" onClick={() => void exportShown("xlsx")} disabled={exporting || Boolean(shownUnavailable)} disabledReason={shownUnavailable}
+      title={shownUnavailable ?? "Visible columns in screen order as a spreadsheet, numbers kept as numbers, with totals."}>Export as shown · XLSX</Button>
+  </>;
   const viewControls = <>
     <label>Saved views<select value={selectedView} onChange={event => restoreView(event.target.value)}><option value="">Current view</option>{views.map(view => <option key={view.viewId} value={view.viewId}>{view.label}{view.isReadOnly ? " · Legacy tenant view" : ""}</option>)}</select></label>
     <label>View name<input value={viewName} maxLength={100} onChange={event => setViewName(event.target.value)} /></label>
@@ -322,6 +363,7 @@ export function TableWorkbench<T>({ workbenchId, sourceKey = "", columns, rows, 
             <div className="table-workbench-menu table-workbench-options">
               <fieldset><legend>Columns</legend>{columnControls}</fieldset>
               {exportControl}
+              {shownExportControls}
               <fieldset><legend>Save view</legend>{viewControls}</fieldset>
             </div>
           </details> : <>
@@ -330,6 +372,7 @@ export function TableWorkbench<T>({ workbenchId, sourceKey = "", columns, rows, 
               <summary className="table-workbench-more" aria-label={`${tableProps.ariaLabel} more table actions`} title="Export and saved views"><span aria-hidden="true">⋯</span></summary>
               <div className="table-workbench-menu table-workbench-options">
                 {exportControl}
+                {shownExportControls}
                 <fieldset><legend>Save view</legend>{viewControls}</fieldset>
               </div>
             </details>

@@ -722,6 +722,12 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
               ariaLabel="Ledger Explorer results" rows={ledgerRows} getRowId={(row) => row.id}
               getRowClassName={(row) => row.posting ? "ledger-row--posting" : "ledger-row--journal"}
               footerLabel="Ledger totals"
+              footerExport={ledgerTotals ? {
+                date: "Totals",
+                debit: { value: ledgerTotals.debit, display: postedMoney(ledgerTotals.debit) },
+                credit: { value: ledgerTotals.credit, display: postedMoney(ledgerTotals.credit) },
+                source: ledgerTotals.balanced ? "Balanced" : `Difference ${postedMoney(ledgerTotals.debit - ledgerTotals.credit)}`
+              } : undefined}
               footerCells={ledgerTotals ? {
                 date: "Totals",
                 debit: postedMoney(ledgerTotals.debit),
@@ -730,11 +736,11 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
               } : undefined}
               emptyText={postedLedger.view.periodSelector.options.length === 0 ? postedLedger.view.periodSelector.errorText ?? postedLedger.view.periodSelector.loadingText ?? postedLedger.view.periodSelector.emptyText ?? "No ledger periods are available for this accounting scope." : "No posted entries match the current search."}
               columns={[
-                { id: "date", label: "Date", className: "whitespace-nowrap", render: (row) => row.posting ? null : formatAccountingDate(row.journal.timestamp), exportValue: (row) => row.journal.timestamp },
+                { id: "date", label: "Date", className: "whitespace-nowrap", render: (row) => row.posting ? null : formatAccountingDate(row.journal.timestamp), exportValue: (row) => row.journal.timestamp, exportDisplay: (row) => row.posting ? "" : formatAccountingDate(row.journal.timestamp) },
                 { id: "journalEntryId", label: "Journal ID", sortable: true, render: (row) => row.posting ? null : <EntityLink ariaLabel={`Open journal ${row.journal.journalEntryId}`} record={{ kind: "journal", id: row.journal.journalEntryId, label: row.journal.journalEntryId, workspaceHref: workstationRouteWithQuery("accountingJournalEntryDetail", { journalEntryId: row.journal.journalEntryId, periodId: postedLedger.selectedPeriodId }), summary: [{ label: "Status", value: "Posted" }, { label: "Date", value: formatAccountingDate(row.journal.timestamp) }, { label: "Description", value: row.journal.description || "Ledger posting" }] }}>{row.journal.journalEntryId}</EntityLink>, exportValue: (row) => row.journal.journalEntryId },
                 { id: "account", label: "Account", className: "ledger-cell--account", render: (row) => row.posting ? `${row.posting.accountName}${row.posting.symbol ? ` - ${row.posting.symbol}` : ""}` : row.journal.accountScopeId ? <EntityLink record={{ kind: "account", id: row.journal.accountScopeId, label: row.journal.accountScopeDisplayName ?? "Account name unavailable", workspaceHref: sourceLedgerContextHref, summary: [{ label: "Source", value: "Posted ledger dimensions" }, { label: "Workspace destination", value: "Source Ledger context · selected book and period" }] }} /> : row.journal.accountScopeDisplayName ?? "Multiple accounts", exportValue: (row) => row.posting?.accountName ?? row.journal.accountScopeDisplayName },
-                { id: "debit", label: "Debit", align: "right", className: "tabular-nums", render: (row) => postingAmountCell(row, "debit"), exportValue: (row) => row.posting?.debit ?? row.journal.totalDebits },
-                { id: "credit", label: "Credit", align: "right", className: "tabular-nums", render: (row) => postingAmountCell(row, "credit"), exportValue: (row) => row.posting?.credit ?? row.journal.totalCredits },
+                { id: "debit", label: "Debit", align: "right", className: "tabular-nums", render: (row) => postingAmountCell(row, "debit"), exportValue: (row) => row.posting?.debit ?? row.journal.totalDebits, exportDisplay: (row) => postedMoney(row.posting?.debit ?? row.journal.totalDebits), exportNumberFormat: "#,##0.00;(#,##0.00)" },
+                { id: "credit", label: "Credit", align: "right", className: "tabular-nums", render: (row) => postingAmountCell(row, "credit"), exportValue: (row) => row.posting?.credit ?? row.journal.totalCredits, exportDisplay: (row) => postedMoney(row.posting?.credit ?? row.journal.totalCredits), exportNumberFormat: "#,##0.00;(#,##0.00)" },
                 { id: "entity", label: "Entity",
                   // When no row's entity has a display name, say so once instead of on every row.
                   hideWhenEmpty: (row) => { const entityId = row.posting ? row.posting.dimensions?.entityId : row.journal.entityScopeId; return !entityId || !(row.journal.entityScopeDisplayName && row.journal.entityScopeDisplayName !== entityId && row.journal.entityScopeId === entityId); },
