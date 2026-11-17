@@ -6,6 +6,49 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IStatementValidationIssueRepository
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IStatementValidationIssueRepository</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:24](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L24).
+
+Saves and retrieves validation issues for a statement run.
+
+```csharp
+public interface IStatementValidationIssueRepository
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task SaveAsync(string runId, IReadOnlyList&lt;StatementValidationIssueDto&gt; issues, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:26](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L26) |  |
+| <code>Task&lt;IReadOnlyList&lt;StatementValidationIssueDto&gt;&gt; GetAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:27](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L27) |  |
+
+## IStatementValidationReferenceData
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IStatementValidationReferenceData</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:390](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L390).
+
+Supplies account, mapping, import, currency, and other reference checks for statement validation.
+
+```csharp
+public interface IStatementValidationReferenceData
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;bool&gt; AccountExistsAsync(string accountId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:392](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L392) |  |
+| <code>Task&lt;bool&gt; MappingProfileExistsAsync(string mappingProfileId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:393](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L393) |  |
+| <code>Task&lt;bool&gt; ToleranceProfileExistsAsync(string toleranceProfileId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:394](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L394) |  |
+| <code>Task&lt;bool&gt; ImportExistsAsync(string importFingerprint, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:395](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L395) |  |
+| <code>Task&lt;bool&gt; CurrencySupportedAsync(string currency, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:396](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L396) |  |
+| <code>Task&lt;bool&gt; TryMapActivityTypeAsync(string transactionCode, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:397](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L397) |  |
+| <code>Task&lt;bool&gt; TryResolveSecurityAsync(string securityIdentifier, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:398](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L398) |  |
+
 ## MatchingTolerances
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.MatchingTolerances</code>. Kind: `record`.
@@ -793,29 +836,3 @@ Enum declarations:
 | <code>Tolerance</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1045](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1045) |  |
 | <code>Candidate</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1046](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1046) |  |
 | <code>Unmatched</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1047](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1047) |  |
-
-## StatementMatchTolerance
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementMatchTolerance</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1031](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1031).
-
-```csharp
-public sealed record StatementMatchTolerance(decimal? Quantity = null, decimal? Amount = null);
-```
-
-## StatementMatchVariance
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementMatchVariance</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1019](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1019).
-
-```csharp
-public sealed record StatementMatchVariance(decimal? Quantity = null, decimal? MarketValue = null, decimal? Amount = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public decimal LargestAbsoluteAmount =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1024](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1024) |  |
