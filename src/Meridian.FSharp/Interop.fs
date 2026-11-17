@@ -383,6 +383,12 @@ type RiskInterop private () =
     static member EvaluateGrossExposure(ctx: RiskContext) : RiskDecisionDto =
         RiskRules.grossExposureLimit ctx |> RiskInterop.ToDto
 
+    /// The projected gross exposure the gross-exposure rule evaluates, for rejection evidence.
+    static member ProjectGrossExposure(ctx: RiskContext) : Nullable<decimal> =
+        match RiskRules.projectedGrossExposure ctx with
+        | Some projected -> Nullable projected
+        | None -> Nullable()
+
     static member EvaluateSymbolConcentration(ctx: RiskContext) : RiskDecisionDto =
         RiskRules.symbolConcentration ctx |> RiskInterop.ToDto
 

@@ -70,12 +70,17 @@ let projectedSymbolAbsoluteExposure (ctx: RiskContext) : decimal =
 /// be able to unwind incrementally rather than being locked out (and, at Critical
 /// severity, tripping the breaker on its own de-risking attempts).
 /// Missing exposure data or an unconfigured ceiling approves.
-let grossExposureLimit (ctx: RiskContext) : RiskDecision =
-    match ctx.PortfolioExposure, ctx.MaxGrossExposure with
-    | Some grossExposure, Some maxGrossExposure when maxGrossExposure > 0m ->
+/// The book's gross exposure after this order: the symbol's current absolute exposure is
+/// replaced by its projected one. None when the portfolio exposure is not measured.
+let projectedGrossExposure (ctx: RiskContext) : decimal option =
+    ctx.PortfolioExposure
+    |> Option.map (fun grossExposure ->
         let currentSymbolAbs = ctx.SymbolExposure |> Option.defaultValue 0m
-        let projectedSymbolAbs = projectedSymbolAbsoluteExposure ctx
-        let projected = max 0m (grossExposure - currentSymbolAbs + projectedSymbolAbs)
+        max 0m (grossExposure - currentSymbolAbs + projectedSymbolAbsoluteExposure ctx))
+
+let grossExposureLimit (ctx: RiskContext) : RiskDecision =
+    match ctx.PortfolioExposure, projectedGrossExposure ctx, ctx.MaxGrossExposure with
+    | Some grossExposure, Some projected, Some maxGrossExposure when maxGrossExposure > 0m ->
         if projected > maxGrossExposure && projected >= grossExposure then
             Reject (sprintf "Gross exposure limit: projected %.2f exceeds %.2f ceiling" (float projected) (float maxGrossExposure))
         else

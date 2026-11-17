@@ -1465,6 +1465,66 @@ public sealed class RobinhoodBrokerageGatewayTests : IDisposable
         handler.Requests.Should().NotContain(r => r.Url.Contains("attacker.example", StringComparison.OrdinalIgnoreCase));
     }
 
+    [Fact]
+    public async Task GetAccountInfoAsync_EmptyAccountList_FailsInsteadOfInventingAnAccount()
+    {
+        var sut = CreateSut(new StubHttpHandler(HttpStatusCode.OK, BuildJson(new { results = Array.Empty<object>() })));
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        var read = () => sut.GetAccountInfoAsync(cts.Token);
+
+        await read.Should().ThrowAsync<InvalidOperationException>().WithMessage("*no brokerage account*");
+    }
+
+    [Fact]
+    public async Task GetPositionsAsync_OptionsRequestFails_FailsInsteadOfReturningEquitiesOnly()
+    {
+        var handler = new RecordingHttpHandler((request, _) => Task.FromResult(request.RequestUri?.AbsolutePath switch
+        {
+            "/positions/" => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = BuildJson(new { results = Array.Empty<object>() })
+            },
+            "/options/positions/" => new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
+            {
+                Content = new StringContent("down")
+            },
+            _ => new HttpResponseMessage(HttpStatusCode.NotFound) { Content = new StringContent("unexpected") }
+        }));
+        var sut = CreateSut(handler);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        var read = () => sut.GetPositionsAsync(cts.Token);
+
+        await read.Should().ThrowAsync<HttpRequestException>().WithMessage("*incomplete*");
+    }
+
+    [Fact]
+    public async Task GetPositionsAsync_NoEquityResults_StillReturnsOptionPositions()
+    {
+        var handler = new RecordingHttpHandler((request, _) => Task.FromResult(request.RequestUri?.AbsolutePath switch
+        {
+            "/positions/" => new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildJson(new { }) },
+            "/options/positions/" => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = BuildJson(new
+                {
+                    results = new[]
+                    {
+                        new { chain_symbol = "SPY", quantity = "2", average_price = "1.50", type = "call" }
+                    }
+                })
+            },
+            _ => new HttpResponseMessage(HttpStatusCode.NotFound) { Content = new StringContent("unexpected") }
+        }));
+        var sut = CreateSut(handler);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        var positions = await sut.GetPositionsAsync(cts.Token);
+
+        positions.Should().ContainSingle(position => position.AssetClass == "option" && position.Symbol == "SPY");
+    }
+
     // ── CheckHealthAsync ──────────────────────────────────────────────────
 
     [Fact]

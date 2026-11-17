@@ -26,8 +26,8 @@ public sealed class PositionLimitRule : IRiskRule
 
     /// <summary>
     /// Creates a rule whose limit is read per evaluation, so operator-tuned limits take
-    /// effect without rebuilding the rule. A <see langword="null"/> limit means no limit
-    /// is configured and the rule approves.
+    /// effect without rebuilding the rule. A <see langword="null"/>, zero or negative limit
+    /// means no limit is configured and the rule approves.
     /// </summary>
     /// <param name="orderManagerAccessor">
     /// Optional accessor for the order book. When supplied, the limit is measured against the
@@ -60,8 +60,10 @@ public sealed class PositionLimitRule : IRiskRule
         ArgumentNullException.ThrowIfNull(request);
         ct.ThrowIfCancellationRequested();
 
+        // Zero or negative means "no limit configured", as in every other rule and in the
+        // operator control service, which already normalizes such limits to null.
         var maxPositionSize = _maxPositionSize();
-        if (maxPositionSize is null)
+        if (maxPositionSize is null or <= 0m)
         {
             return Task.FromResult(RiskValidationResult.Approved());
         }
