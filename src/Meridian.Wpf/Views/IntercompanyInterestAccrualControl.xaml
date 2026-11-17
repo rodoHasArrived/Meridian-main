@@ -33,9 +33,20 @@
             <TextBlock Text="Fixed-rate simple interest is calculated by the server from the approved legal terms, the loan-interest profile's approved revisions and the posted loan principal. No rate, principal or amount is entered here. Fees, floating rates and compounding are not calculated. The calculation and its evidence are shared with the browser workstation and nothing posts automatically."
                        Margin="0,5,0,12" TextWrapping="Wrap" />
             <WrapPanel>
-                <StackPanel><TextBlock Text="Source ledger book ID" /><TextBox Text="{Binding SourceBook, UpdateSourceTrigger=PropertyChanged}" Width="300" AutomationProperties.Name="Accrual source ledger book" /></StackPanel>
-                <StackPanel><TextBlock Text="Loan-interest accounting profile ID" /><TextBox Text="{Binding InterestProfile, UpdateSourceTrigger=PropertyChanged}" Width="300" AutomationProperties.Name="Loan-interest accounting profile" /></StackPanel>
-                <StackPanel><TextBlock Text="Loan principal accounting profile ID" /><TextBox Text="{Binding PrincipalProfile, UpdateSourceTrigger=PropertyChanged}" Width="300" AutomationProperties.Name="Loan principal accounting profile" /></StackPanel>
+                <Button Content="Load books" Command="{Binding LoadChoicesCommand}" VerticalAlignment="Center" AutomationProperties.Name="Load accrual books" />
+                <TextBlock Text="{Binding ChoicesStatus}" TextWrapping="Wrap" VerticalAlignment="Center" MaxWidth="640"
+                           AutomationProperties.Name="Accrual selection status" AutomationProperties.LiveSetting="Polite" />
+            </WrapPanel>
+            <WrapPanel>
+                <StackPanel><TextBlock Text="Source ledger book" />
+                    <ComboBox ItemsSource="{Binding BookChoices}" DisplayMemberPath="Label" SelectedValuePath="Id" SelectedValue="{Binding SourceBook}"
+                              Style="{StaticResource FormComboBoxStyle}" Width="360" Margin="0,3,12,10" AutomationProperties.Name="Accrual source ledger book" /></StackPanel>
+                <StackPanel><TextBlock Text="Loan-interest accounting profile" />
+                    <ComboBox ItemsSource="{Binding InterestProfileChoices}" DisplayMemberPath="Label" SelectedValuePath="Id" SelectedValue="{Binding InterestProfile}"
+                              Style="{StaticResource FormComboBoxStyle}" Width="360" Margin="0,3,12,10" AutomationProperties.Name="Loan-interest accounting profile" /></StackPanel>
+                <StackPanel><TextBlock Text="Loan principal accounting profile (same legal agreement)" />
+                    <ComboBox ItemsSource="{Binding PrincipalProfileChoices}" DisplayMemberPath="Label" SelectedValuePath="Id" SelectedValue="{Binding PrincipalProfile}"
+                              Style="{StaticResource FormComboBoxStyle}" Width="360" Margin="0,3,12,10" AutomationProperties.Name="Loan principal accounting profile" /></StackPanel>
             </WrapPanel>
             <WrapPanel>
                 <StackPanel><TextBlock Text="First accrued day (yyyy-MM-dd)" /><TextBox Text="{Binding AccrualFrom, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="First accrued day" /></StackPanel>

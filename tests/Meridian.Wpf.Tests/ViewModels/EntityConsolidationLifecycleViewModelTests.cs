@@ -82,6 +82,25 @@ public sealed class EntityConsolidationLifecycleViewModelTests
         Assert.Empty(view.TimelineRows);
     }
 
+    [Fact]
+    public async Task TimelineRowNamesTheMergerSuccessorOnTheStateItAppliesTo()
+    {
+        var successor = Guid.NewGuid();
+        var view = await ViewAsync(new Client { Successor = successor, Status = LegalEntityLifecycleStatusDto.Merged });
+
+        var row = Assert.Single(view.TimelineRows, item => item.Name.Contains("Merged"));
+        Assert.EndsWith($" · successor {successor:D}", row.Detail);
+    }
+
+    [Fact]
+    public async Task TimelineRowWithoutASuccessorShowsOnlyTheWindow()
+    {
+        var view = await ViewAsync(new Client());
+
+        var row = Assert.Single(view.TimelineRows, item => item.Name.Contains("Active"));
+        Assert.DoesNotContain("successor", row.Detail);
+    }
+
     private static async Task<EntityConsolidationViewModel> ViewAsync(Client client)
     {
         var view = new EntityConsolidationViewModel(client)
@@ -96,12 +115,15 @@ public sealed class EntityConsolidationLifecycleViewModelTests
     private sealed class Client : IWorkstationEntityConsolidationApiClient
     {
         public bool CanAttest { get; init; } = true;
+        public Guid? Successor { get; init; }
+        public LegalEntityLifecycleStatusDto Status { get; init; } = LegalEntityLifecycleStatusDto.Active;
         public LegalEntitySummaryDto Entity { get; } = new(Guid.NewGuid(), LegalEntityTypeDto.Other, "ENTITY", "Legal entity", "US", "USD", true, DateTimeOffset.UtcNow.AddYears(-1), null);
         public AppendEntityLifecycleRevisionRequestDto? LastAppend { get; private set; }
         public Task<OrganizationStructureGraphDto> GetStructureAsync(CancellationToken ct = default) => throw new NotSupportedException();
         public Task<EntityTimelineDto> GetTimelineAsync(Guid organizationId, Guid entityId, DateTimeOffset asOf, CancellationToken ct = default)
         {
-            var state = new EntityLifecycleStateDto(Guid.NewGuid(), new(2026, 1, 1, 0, 0, 0, TimeSpan.Zero), null, LegalEntityLifecycleStatusDto.Active, LegalEntityLifecycleEventKindDto.Formation);
+            var state = new EntityLifecycleStateDto(Guid.NewGuid(), new(2026, 1, 1, 0, 0, 0, TimeSpan.Zero), null, Status,
+                Successor is null ? LegalEntityLifecycleEventKindDto.Formation : LegalEntityLifecycleEventKindDto.Restructure, Successor);
             var revision = new EntityLifecycleRevisionDto("tenant", entityId, 2, DateTimeOffset.UtcNow, "operator", "Reviewed baseline", "evidence://baseline", "", "retained-hash", [state]);
             return Task.FromResult(new EntityTimelineDto(organizationId, Entity, asOf, [revision], [], [], [], [], []) { CanAttestExternalLifecycleReview = CanAttest });
         }
