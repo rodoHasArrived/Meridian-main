@@ -1445,7 +1445,10 @@ metadata naming `runId`, `sessionId` or `orderOrigin` is refused with 403 on sub
 removed from broker-reported position metadata. A risk-escalation release submits under the
 authority retained with the parked entry. Live manual orders, position actions included, are
 refused until a reviewed manual-intent contract exists. The workstation registers
-`StrategyRunAuthoritySource` for the OMS.
+`StrategyRunAuthoritySource` for the OMS. The trading workspace payload carries
+`ManualOrderEntry`, which mirrors the OMS's mode for the active gateway so the order ticket can
+disable live manual submission with the reason up front, and each working-order row carries its
+`Origin`.
 
 The `execution-webhook` client dials only public addresses: it resolves the host, refuses loopback, private, link-local and other internal addresses at connection time, pins the connection to the validated addresses, follows no redirects and uses no system proxy.
 

@@ -34,7 +34,7 @@ public sealed partial class OrderManagementSystem
         CancellationToken ct,
         OrderSubmissionAuthorityRecord? authority = null)
     {
-        var parkedState = CreateRejectedState(orderId, request, riskResult.RejectReason);
+        var parkedState = CreateRejectedState(orderId, request, riskResult.RejectReason, authority?.Origin ?? OrderCommandOrigin.Unattributed);
 
         // Retain the typed authority with the parked entry so its release is judged by it. Best
         // effort like the rest of post-park bookkeeping: without it the release stays on the
@@ -535,10 +535,12 @@ public sealed partial class OrderManagementSystem
     private static OrderState CreateRejectedState(
         string orderId,
         OrderRequest request,
-        string? reason)
+        string? reason,
+        OrderCommandOrigin? origin = null)
     {
         return new OrderState
         {
+            Origin = origin,
             OrderId = orderId,
             Symbol = request.Symbol,
             Side = request.Side,

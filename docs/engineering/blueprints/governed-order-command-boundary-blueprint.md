@@ -576,10 +576,15 @@ between preflight and dispatch using the same hook pattern as the existing opera
 - [x] **Live position actions (finding).** Live position closes and upsizes from the workstation were only ever authorized in tests, whose fixture broker positions carried the approved `runId` in metadata. No broker adapter reports a run id. Phase 0 strips `runId` from broker position metadata, and typed `PositionAction` authority is refused live as a manual order, so a live position action is refused either way. The position-action mapping tests (option metadata, position effect, routing-key stripping, account scope) now run against the real OMS in paper mode. Two new tests assert the live refusal. Whether a narrower live rule (for example, reduce-only closes) should exist is Open Question 2.
 
 ### Phase 4: Surfaces and tightening
-- [ ] `OrderResult.AuthorityDecision`; browser ticket refusal rendering; Live manual ticket disabled with reason; blotter Origin column; vitest
-- [ ] WPF parity-plan row
-- [ ] Owner decision on flipping `AllowUnattributedInPaper` to `false`
-- [ ] Paper rehearsal scenario and evidence
+- [x] `OrderResult.AuthorityDecision` (`AuthorityDecisionSummary`). It is set when order authority refuses an order (checkpoint `preflight` or `dispatch`, with reason code and reason; this includes the live readiness check that authority performs) and when a typed submission is admitted. `OrderState.Origin` records who originated every order created by submission, including refused and parked ones, and later lifecycle updates keep it. `OrderCommandOrigin` serializes by name.
+- [x] Browser ticket refusal rendering (`trading-screen.order-authority.ts`). An authority refusal reads "Order authority refused this order [just before dispatch] (CODE): reason". Other gates' refusals keep the server's plain message.
+- [x] Live manual ticket disabled with reason. `WorkstationTradingPayload.ManualOrderEntry` mirrors the OMS's mode for the active gateway (the gateway's declared mode, else the configured mode). On a live path the ticket shows the reason up front and submit is disabled. Without an OMS the field is absent and the ticket keeps its other checks.
+- [x] Working-order Origin column (Ticket, Position, Release, Strategy, Untyped) from `WorkstationTradingOrderRow.Origin`. The position "execution blotter" lists positions, not orders, so the column went on the working-orders table.
+- [x] Vitest: `trading-screen.order-authority.test.tsx`. .NET: typed-submit authority decision and origin tests, `WorkstationManualOrderEntryTests`.
+- [x] WPF parity-plan row (`docs/engineering/plans/wpf-web-ui-alignment-plan.md`). The shared seams are in place; the desktop order book's Origin column and a future WPF ticket are recorded as the gap.
+- [ ] **Owner decision:** whether untyped paper orders should also be refused, by adding an option such as `AllowUnattributedInPaper` defaulting to `false`. Not decided here, because accountless paper tickets would then be refused too (Open Question 6).
+- [x] Paper rehearsal: `OrderAuthorityPaperRehearsalTests` takes one paper OMS through a strategy-run order, an operator ticket, a ticket for an account that was not granted, a kill-switch submit and a legacy order, and checks the origins on the working-order book and the completed feed. Synthetic evidence only.
+- [ ] Recording kill-switch authority on the cancel-all sweep (carried from Phase 3). Cancels are never refused on authority, and the sweep's audit already names its actor, so this stays open as an audit enhancement.
 
 ### Phase 5: Wrap-up
 - [ ] Update `src/Meridian.Execution/README.md` (authority section), `docs/architecture/write-path-invariants.md` if it lists OMS invariants, and register this blueprint in `docs/engineering/blueprints/README.md`

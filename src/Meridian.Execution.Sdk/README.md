@@ -17,7 +17,9 @@ Order authority (`OrderCommandAuthority.cs`): `OrderSubmissionAuthority` records
 originated an order (`OrderCommandOrigin`), the `ExecutionAccountGrant` an endpoint verified, and
 for strategy orders the run id. It is built only by validating factories and has no public or
 JSON constructor; `OrderSubmissionAuthorityRecord` is its server-retained form, restored through
-the same factories. `IOrderManager.SubmitAsync(OrderSubmitCommand)` submits under it.
+the same factories. `IOrderManager.SubmitAsync(OrderSubmitCommand)` submits under it. `OrderState.Origin` and
+`OrderResult.AuthorityDecision` carry the origin and the authority outcome back to callers;
+`OrderCommandOrigin` serializes by name.
 `ExecutionOrderMetadataPolicy` treats `runId`, `run_id`, `sessionId`, `session_id` and
 `orderOrigin` as server-owned, so clients cannot supply run or session identity. See
 `docs/engineering/blueprints/governed-order-command-boundary-blueprint.md`.

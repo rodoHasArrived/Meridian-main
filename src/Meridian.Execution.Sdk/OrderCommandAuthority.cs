@@ -8,8 +8,9 @@ namespace Meridian.Execution.Sdk;
 /// </summary>
 /// <remarks>
 /// See <c>docs/engineering/blueprints/governed-order-command-boundary-blueprint.md</c>. The OMS
-/// does not yet consume these types (Phase 2 adds the authority resolver).
+/// is authoritative for these types. Serialized by name so clients can render it directly.
 /// </remarks>
+[System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<OrderCommandOrigin>))]
 public enum OrderCommandOrigin
 {
     /// <summary>Legacy <see cref="IOrderManager.PlaceOrderAsync"/> calls that carry no typed authority.</summary>
@@ -393,8 +394,9 @@ public sealed class OrderReplaceCommand
 }
 
 /// <summary>
-/// Which authority admitted or refused an order, for display on the order ticket and blotter.
-/// Not yet carried on <see cref="OrderResult"/> (Phase 4).
+/// Which authority admitted or refused an order, for display on the order ticket. Carried on
+/// <see cref="OrderResult.AuthorityDecision"/>; <see cref="Checkpoint"/> is <c>preflight</c> or
+/// <c>dispatch</c>.
 /// </summary>
 public sealed record AuthorityDecisionSummary(
     OrderCommandOrigin Origin,

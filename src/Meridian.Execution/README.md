@@ -268,7 +268,11 @@ so authority withdrawn while an order waited cannot route; a refusal releases ri
 consumed approvals like an operator-control refusal. Typed authority is retained on journal intents
 (`ExecutionJournalEntry.Authority`) and in `OrderSubmitted` audit metadata (`orderOrigin`,
 `accountGrant`, `accountGrantSource`, `releasedFromOrigin`). On a typed release, `actor` is the
-approver and `riskSubmitter` the original submitter, as on the untyped release path.
+approver and `riskSubmitter` the original submitter, as on the untyped release path. `OrderState.Origin`
+records who originated each order created by submission (refused and parked orders included), and
+`OrderResult.AuthorityDecision` reports the authority outcome to the caller: refusals by order
+authority with their checkpoint (`preflight` or `dispatch`) and reason code, and admitted typed
+submissions.
 
 The shared broker-report gate still serializes live callbacks, explicit recovery, amendment
 resolution, and retention. Amendment preparation keeps original/proposed snapshot identity and

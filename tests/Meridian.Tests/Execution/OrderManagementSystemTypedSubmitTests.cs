@@ -70,6 +70,42 @@ public sealed class OrderManagementSystemTypedSubmitTests : IDisposable
         var result = await _oms.PlaceOrderAsync(LimitOrder());
 
         result.Success.Should().BeTrue(result.ErrorMessage);
+        result.AuthorityDecision.Should().BeNull("an untyped order carries no typed authority decision");
+        _oms.GetOrder(result.OrderId)!.Origin.Should().Be(OrderCommandOrigin.Unattributed);
+    }
+
+    [Fact]
+    public async Task SubmitAsync_Admitted_ReportsAuthorityAndRecordsOrigin()
+    {
+        var result = await _oms.SubmitAsync(new OrderSubmitCommand(LimitOrder(), Ticket()));
+
+        result.Success.Should().BeTrue(result.ErrorMessage);
+        result.AuthorityDecision.Should().BeEquivalentTo(new AuthorityDecisionSummary(
+            OrderCommandOrigin.OperatorTicket, true, null, null, "dispatch", null, null));
+        _oms.GetOrder(result.OrderId)!.Origin.Should().Be(OrderCommandOrigin.OperatorTicket);
+    }
+
+    [Fact]
+    public async Task SubmitAsync_AuthorityRefusal_ReportsCheckpointCodeAndOrigin()
+    {
+        var result = await _oms.SubmitAsync(new OrderSubmitCommand(LimitOrder(fundAccountId: OtherAccountId), Ticket()));
+
+        result.Success.Should().BeFalse();
+        result.AuthorityDecision.Should().NotBeNull();
+        result.AuthorityDecision!.IsAuthorized.Should().BeFalse();
+        result.AuthorityDecision.Checkpoint.Should().Be("preflight");
+        result.AuthorityDecision.ReasonCode.Should().Be(OrderAuthorityReasonCodes.AccountGrantMismatch);
+        result.AuthorityDecision.Origin.Should().Be(OrderCommandOrigin.OperatorTicket);
+        result.OrderState!.Origin.Should().Be(OrderCommandOrigin.OperatorTicket);
+    }
+
+    [Fact]
+    public void OrderOrigin_SerializesByName()
+    {
+        var json = System.Text.Json.JsonSerializer.Serialize(new AuthorityDecisionSummary(
+            OrderCommandOrigin.StrategyRun, false, "RUN_NOT_ACTIVE", "ended", "dispatch", null, null));
+
+        json.Should().Contain("\"StrategyRun\"", "the browser renders the origin by name");
     }
 
     [Fact]

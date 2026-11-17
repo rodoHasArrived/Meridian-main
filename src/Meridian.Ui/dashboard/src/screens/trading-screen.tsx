@@ -322,6 +322,13 @@ function buildOrderColumns(confirmVm: TradingConfirmViewModel): DenseDataTableCo
       )
     },
     {
+      id: "origin",
+      label: "Origin",
+      sortValue: (order) => order.origin,
+      className: "text-foreground",
+      render: (order) => order.origin
+    },
+    {
       id: "submitted",
       label: "Submitted",
       className: "font-mono text-muted-foreground",
@@ -479,6 +486,7 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
     fundAccountId,
     positions: data?.positions ?? [],
     risk: data?.risk ?? null,
+    manualOrderEntry: data?.manualOrderEntry ?? null,
     onOrderAccepted: async () => {
       await Promise.all([
         executionEvidence.refresh(),
