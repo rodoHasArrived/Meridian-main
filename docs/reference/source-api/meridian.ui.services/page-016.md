@@ -6,6 +6,29 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TourStepEventArgs
+
+Qualified name: <code>Meridian.Ui.Services.TourStepEventArgs</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:545](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L545).
+
+Event args for tour step changes.
+
+```csharp
+public sealed class TourStepEventArgs : EventArgs
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string TourId { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:547](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L547) |  |
+| <code>public int StepIndex { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:548](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L548) |  |
+| <code>public int TotalSteps { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:549](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L549) |  |
+| <code>public TourStep Step { get; init; } = null !;</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:550](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L550) |  |
+| <code>public bool IsFirst { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:551](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L551) |  |
+| <code>public bool IsLast { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:552](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L552) |  |
+
 ## TradeEvent
 
 Qualified name: <code>Meridian.Ui.Services.TradeEvent</code>. Kind: `class`.

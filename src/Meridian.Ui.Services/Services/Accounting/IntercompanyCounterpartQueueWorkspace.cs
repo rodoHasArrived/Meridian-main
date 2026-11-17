@@ -13,7 +13,8 @@ namespace Meridian.Ui.Services.Services.Accounting;
 /// </summary>
 public sealed partial class IntercompanyCounterpartQueueWorkspace : ObservableObject, IDisposable
 {
-    private const string Idle = "Enter a source ledger book and load its counterpart delivery records.";
+    private const string Idle = "Choose a source ledger book and load its counterpart delivery records.";
+    private const string ChoicesIdle = "Load the books you can access to choose a source book.";
     private const string NoRepricing = "Select a drafted counterpart and preview to compare its retained and repriced amounts.";
     private readonly IWorkstationIntercompanyAgreementApiClient _client;
     private CancellationTokenSource _sessionCancellation = new();
@@ -27,6 +28,10 @@ public sealed partial class IntercompanyCounterpartQueueWorkspace : ObservableOb
     private Guid _previewProposal;
     private string? _commandKey;
     private Guid _commandId;
+    private readonly List<LedgerBookDto> _books = [];
+    private int _booksGeneration;
+    private bool _loadingBooks;
+    private string _choicesStatus = ChoicesIdle;
 
     public IntercompanyCounterpartQueueWorkspace(IWorkstationIntercompanyAgreementApiClient client)
     {
@@ -38,7 +43,16 @@ public sealed partial class IntercompanyCounterpartQueueWorkspace : ObservableOb
         PreviewRepricingCommand = new AsyncRelayCommand(PreviewRepricingAsync, () => Actionable && SelectedProposal!.CanReprice);
         ApplyRepricingCommand = new AsyncRelayCommand(ApplyRepricingAsync, () => Actionable && SelectedProposal!.CanReprice
             && _preview?.CurrentDraft is not null && _previewProposal == SelectedProposal.ProposalId && !string.IsNullOrWhiteSpace(RepricingReason));
+        LoadChoicesCommand = new AsyncRelayCommand(LoadBooksAsync, () => !_loadingBooks);
     }
+
+    /// <summary>Books the signed-in account can see; choosing one sets <see cref="SourceBook"/>.</summary>
+    public ObservableCollection<IntercompanyChoice> BookChoices { get; } = [];
+    /// <summary>Books owned by the selected proposal's counterparty entity; choosing one sets <see cref="TargetBook"/>.</summary>
+    public ObservableCollection<IntercompanyChoice> TargetBookChoices { get; } = [];
+    public IAsyncRelayCommand LoadChoicesCommand { get; }
+    /// <summary>What the book lists hold, or why one is empty.</summary>
+    public string ChoicesStatus { get => _choicesStatus; private set => SetProperty(ref _choicesStatus, value); }
 
     public ObservableCollection<IntercompanyCounterpartProposalRow> Proposals { get; } = [];
     public ObservableCollection<IntercompanyCounterpartBreakRow> Breaks { get; } = [];
@@ -72,6 +86,7 @@ public sealed partial class IntercompanyCounterpartQueueWorkspace : ObservableOb
             if (!SetProperty(ref _selected, value))
                 return;
             RetryReason = TargetBook = TargetJournal = LinkReason = "";
+            RefreshTargetBookChoices();
             ResetRepricing();
             OnPropertyChanged(nameof(SelectedGuidance));
             NotifyCommands();
@@ -87,6 +102,42 @@ public sealed partial class IntercompanyCounterpartQueueWorkspace : ObservableOb
     };
 
     private bool Actionable => !IsBusy && CanManageLedger && SelectedProposal is not null;
+
+    private async Task LoadBooksAsync()
+    {
+        var generation = ++_booksGeneration;
+        _loadingBooks = true;
+        LoadChoicesCommand.NotifyCanExecuteChanged();
+        try
+        {
+            var response = await _client.GetLedgerBooksAsync(_sessionCancellation.Token);
+            if (generation != _booksGeneration || _disposed)
+                return;
+            if (!response.Success || response.Data is null)
+            {
+                ChoicesStatus = $"Books could not be listed: {response.ErrorMessage ?? "the ledger book list is unavailable."}";
+                return;
+            }
+            _books.Clear();
+            _books.AddRange(response.Data);
+            IntercompanyChoice.Replace(BookChoices, _books.Select(IntercompanyChoice.Book));
+            RefreshTargetBookChoices();
+            ChoicesStatus = BookChoices.Count == 0 ? "No ledger book is visible to your signed-in account."
+                : $"{BookChoices.Count} book(s) available.";
+        }
+        catch (OperationCanceledException) { }
+        finally
+        {
+            _loadingBooks = false;
+            LoadChoicesCommand.NotifyCanExecuteChanged();
+        }
+    }
+
+    // An existing counterpart can only live in a book of the proposal's counterparty entity; the server
+    // still validates the book, journal, agreement and amounts when the link is submitted.
+    private void RefreshTargetBookChoices()
+        => IntercompanyChoice.Replace(TargetBookChoices, SelectedProposal is not { } proposal ? []
+            : _books.Where(book => book.FundStructureNodeId == proposal.CounterpartyEntityId).Select(IntercompanyChoice.Book));
 
     private void ChangeScope(ref string field, string value, [System.Runtime.CompilerServices.CallerMemberName] string? property = null)
     {
@@ -286,6 +337,11 @@ public sealed partial class IntercompanyCounterpartQueueWorkspace : ObservableOb
             return;
         Invalidate();
         Clear();
+        _booksGeneration++;
+        _books.Clear();
+        BookChoices.Clear();
+        TargetBookChoices.Clear();
+        ChoicesStatus = ChoicesIdle;
         CanManageLedger = false;
         SetProperty(ref _sourceBook, "", nameof(SourceBook));
         StatusText = Idle;
