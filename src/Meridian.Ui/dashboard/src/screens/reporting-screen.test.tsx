@@ -400,7 +400,7 @@ const accounting: AccountingWorkspaceResponse = {
         asOf: "2026-04-11T16:00:00Z",
         route: "/api/workstation/reporting?pnlSlice=daily",
         readinessSummary: "1 source-backed run(s) in the daily window; no prior-period source run is available for comparison.",
-        tags: ["pnl", "daily", "source-backed"],
+        tags: ["pnl", "daily", "source-backed", "no-prior"],
         versionStamp: "pnl-slice:20260411160000:daily:sources-1:prior-0"
       },
       {
@@ -1873,6 +1873,9 @@ describe("ReportingScreen", () => {
     expect(dailySlice).toHaveTextContent("2026-04-11");
     expect(dailySlice).toHaveTextContent("$50.00");
     expect(dailySlice).toHaveTextContent("1 source-backed run(s) in the daily window");
+    // No prior published period: the comparison reads as a dash, not a prior of $0.
+    expect(dailySlice).toHaveTextContent("Prior—");
+    expect(dailySlice).toHaveTextContent("Change—");
     expect(within(dailySlice).getByRole("link", { name: "Open Daily P&L P&L slice" })).toHaveAttribute(
       "href",
       "/api/workstation/reporting?pnlSlice=daily"
@@ -1881,6 +1884,7 @@ describe("ReportingScreen", () => {
     const yearlySlice = screen.getByRole("listitem", { name: "Yearly P&L Yearly P&L slice" });
     expect(yearlySlice).toHaveTextContent("2026-01-01 to 2026-04-11");
     expect(yearlySlice).toHaveTextContent("pnl-slice:20260411160000:yearly:sources-1:prior-0");
+    expect(yearlySlice).not.toHaveTextContent("Prior—");
   });
 
   it("renders Top-N and contribution analytics rows from the shared reporting payload", () => {
