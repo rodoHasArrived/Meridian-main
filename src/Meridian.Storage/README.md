@@ -1634,6 +1634,11 @@ or export consumers.
 `journal_entries.source_event_id` column, allowing a book/event proof chain to find its immutable
 journal without scanning unrelated metadata. No projection-event-to-journal link table, alternate
 schema, or new route is introduced.
+`LedgerJournalEntryQuery.FillId` and `.OrderId` find postings by the execution identifiers their
+metadata recorded: `fillId` exactly, and an order through the `source.orderId` tag or, for a GUID
+identifier, the `orderId` field. These read `journal_entries.metadata` JSON without an index, so
+callers bound them by book (the execution-lineage route always does); add an expression index if
+volumes require it.
 Approved typed posting commands stamp command, approval, source-event, Security Master, book
 position, projection model/run/event, and selected rule-pack/rule identities into normalized journal
 metadata while retaining typed evidence and line dimensions. Conflicting pre-existing command-owned

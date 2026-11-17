@@ -298,6 +298,74 @@ public sealed class LedgerJournalStoreTests
         (await foreign.QueryAsync(query)).Should().BeEmpty("knowing the journal identity must not bypass tenant scope");
     }
 
+    [Fact]
+    public void ExecutionLineageFilter_MatchesExactMetadataIdentifiersOnly()
+    {
+        var fillId = Guid.Parse("6F8B2C1E-0000-4000-8000-000000000001");
+        var (fillSql, fillParameters) = PostgresLedgerJournalStore.BuildExecutionLineageFilter(new LedgerJournalEntryQuery(FillId: fillId));
+        fillSql.Should().Be(" and je_filter.metadata ->> 'fillId' = @execution_fill_id");
+        fillParameters.Should().ContainSingle().Which.Should().Be(("execution_fill_id", (object)"6f8b2c1e-0000-4000-8000-000000000001"),
+            "metadata stores GUIDs in lowercase D form");
+
+        var (orderSql, orderParameters) = PostgresLedgerJournalStore.BuildExecutionLineageFilter(new LedgerJournalEntryQuery(OrderId: " PO-1 "));
+        orderSql.Should().Be(" and je_filter.metadata -> 'tags' ->> 'source.orderId' = @execution_order_id");
+        orderParameters.Should().ContainSingle().Which.Should().Be(("execution_order_id", (object)"PO-1"));
+
+        var orderGuid = Guid.NewGuid();
+        var (guidSql, guidParameters) = PostgresLedgerJournalStore.BuildExecutionLineageFilter(new LedgerJournalEntryQuery(OrderId: orderGuid.ToString("N")));
+        guidSql.Should().Contain("'source.orderId' = @execution_order_id").And.Contain("->> 'orderId' = @execution_order_guid");
+        guidParameters.Should().Contain(("execution_order_guid", (object)orderGuid.ToString("D")));
+
+        PostgresLedgerJournalStore.BuildExecutionLineageFilter(new LedgerJournalEntryQuery(LedgerBookId: Guid.NewGuid()))
+            .Sql.Should().BeEmpty();
+    }
+
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
+    public async Task QueryAsync_ExecutionLineageFindsPostingsByRecordedFillAndOrderWithinBookAndTenant()
+    {
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var registry = new PostgresFundProfileTenancyRegistry(database.Options);
+        await registry.BindAsync("fund-lineage", "tenant-alpha");
+        var now = DateTimeOffset.Parse("2026-05-15T12:00:00Z");
+        var book = new LedgerBookRecord(Guid.NewGuid(), "fund-lineage", Guid.NewGuid(),
+            FundStructureNodeKindDto.Fund, "Lineage book", "USD", now, now);
+        await database.JournalStore.SaveLedgerBookAsync(book);
+        var otherBook = book with { LedgerBookId = Guid.NewGuid(), FundStructureNodeId = Guid.NewGuid() };
+        await database.JournalStore.SaveLedgerBookAsync(otherBook);
+        var period = await database.JournalStore.SavePeriodAsync(new LedgerAccountingPeriod(
+            Guid.NewGuid(), book.LedgerBookId, 2026, 5, "2026-05", new(2026, 5, 1), new(2026, 5, 31),
+            "Open", now, null, 0), expectedVersion: 0);
+        LedgerJournalEntryWrite Write(DateTimeOffset at, JournalEntryMetadata metadata)
+        {
+            var write = BuildBalancedJournalWrite(period.PeriodId, at) with { AggregateId = book.LedgerBookId, LedgerBookId = book.LedgerBookId };
+            return write with { Entry = new JournalEntry(write.Entry.JournalEntryId, write.Entry.Timestamp, write.Entry.Description, write.Entry.Lines, metadata) };
+        }
+        var fillA = Guid.NewGuid();
+        var fillB = Guid.NewGuid();
+        var orderGuid = Guid.NewGuid();
+        var taggedFill = Write(now, new JournalEntryMetadata(ActivityType: "trade-fill", FillId: fillA,
+            Tags: new Dictionary<string, string> { ["source.orderId"] = "PO-1" }));
+        var guidOrderFill = Write(now.AddMinutes(1), new JournalEntryMetadata(ActivityType: "trade-fill", OrderId: orderGuid, FillId: fillB));
+        var unrelated = Write(now.AddMinutes(2), new JournalEntryMetadata(ActivityType: "margin-interest"));
+        foreach (var write in new[] { taggedFill, guidOrderFill, unrelated })
+            await database.JournalStore.AppendAsync(write);
+        var owner = new PostgresLedgerJournalStore(database.Options, new FixedQueryTenantAccessor("tenant-alpha"),
+            TenantScopeEnforcementOptions.FailClosed);
+
+        (await owner.QueryAsync(new LedgerJournalEntryQuery(LedgerBookId: book.LedgerBookId, FillId: fillA)))
+            .Should().ContainSingle().Which.Entry.JournalEntryId.Should().Be(taggedFill.Entry.JournalEntryId);
+        (await owner.QueryAsync(new LedgerJournalEntryQuery(LedgerBookId: book.LedgerBookId, OrderId: "PO-1")))
+            .Should().ContainSingle().Which.Entry.JournalEntryId.Should().Be(taggedFill.Entry.JournalEntryId);
+        (await owner.QueryAsync(new LedgerJournalEntryQuery(LedgerBookId: book.LedgerBookId, OrderId: orderGuid.ToString("D").ToUpperInvariant())))
+            .Should().ContainSingle().Which.Entry.JournalEntryId.Should().Be(guidOrderFill.Entry.JournalEntryId);
+        (await owner.QueryAsync(new LedgerJournalEntryQuery(LedgerBookId: book.LedgerBookId, OrderId: "PO-2"))).Should().BeEmpty();
+        (await owner.QueryAsync(new LedgerJournalEntryQuery(LedgerBookId: otherBook.LedgerBookId, FillId: fillA))).Should().BeEmpty();
+        var foreign = new PostgresLedgerJournalStore(database.Options, new FixedQueryTenantAccessor("tenant-beta"),
+            TenantScopeEnforcementOptions.FailClosed);
+        (await foreign.QueryAsync(new LedgerJournalEntryQuery(FillId: fillA))).Should().BeEmpty("a fill identifier must not bypass tenant scope");
+    }
+
     [LedgerDatabaseFact]
     [Trait("Category", "Integration")]
     public async Task QueryAsync_EffectiveWindow_IncludesEntryPostedAfterWindow()

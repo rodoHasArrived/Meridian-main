@@ -109,7 +109,7 @@ posted-period comparison's ClosingBalances measure.
 Close Cockpit lays the close plan's tasks out by due day after period end, with owners, blockers and
 dependencies; it uses the existing close-plan contract unchanged. The open-breaks headline KPI shows a
 sparkline rebuilt server-side from retained break times. Journal-entry detail shows the order, fill
-and run a posting came from.
+and run a posting came from, and Trading order evidence lists the order's ledger postings.
 
 The host-served bundle carries the design-system consolidation. It includes one status
 component; one formatting module (year-bearing UTC timestamps; accounting negatives in

@@ -618,6 +618,9 @@ not guessed. No metric snapshots are stored.
 Journal-entry DTOs carry `Execution` lineage from the posting's own metadata: the order id from the
 retained `source.orderId` tag (the execution journal's identifier) before the GUID `OrderId`, the
 `FillId`, and the `strategy.runId` tag. Nothing is matched by symbol, amount or time.
+`GET /api/ledger/books/{ledgerBookId}/execution-journal-entries?fillId=|orderId=` (exactly one) returns
+that book's postings recorded from a fill or order, with the period-comparison read checks. Automated
+fill accounting records the fill but not the order, so callers also look up fills.
 
 The posted-account running-balance read requires the same authenticated tenant/company and
 retained book ownership, including exact returned period, book and fund identities. Its optional

@@ -1423,7 +1423,10 @@ gap, with a screen-reader description. The open-breaks KPI carries the history o
 point equals the count it shows.
 A posted journal entry recorded from an execution shows its lineage on the journal-entry detail
 (`JournalExecutionLineage`): strategy run (Run Ledger link), order (Trading › Orders `?orderId=`),
-fill (identifier only; it has no page) and the entry itself.
+fill (identifier only; it has no page) and the entry itself. The other way, Trading's order evidence
+lists the order's ledger postings (`OrderLedgerPostings`): the book is the one whose fund-structure
+node is exactly the order's account, otherwise the operator chooses it; the lookup uses the order id
+and each GUID fill id, merged by journal entry.
 The Data overview's provider verification history is linkable: `?verificationConnection=`
 selects an exact connection and `?providerFamily=` its family's first connection (matched on
 `providerFamilyId`, never on display names; otherwise the first loaded connection), anchored at

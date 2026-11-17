@@ -941,7 +941,7 @@ This source reference records literal `MapGet`, `MapPost`, `MapPut`, `MapDelete`
 
 Handler parameters retain C# binding types, including injected services and infrastructure parameters; they are not all request-body fields. Body-read operations list explicitly decoded types. Response entries quote declared `.Produces*` metadata and observed `Results`/`TypedResults` factories, not an exhaustive response schema or status guarantee. A dash means the declaration supplies no extractable metadata; follow the source and detailed contracts above.
 
-**474 declarations** from **58 source files**.
+**475 declarations** from **58 source files**.
 
 
 ### HostAdapters
@@ -1596,6 +1596,7 @@ Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.PeriodComparison.cs](.
 | Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
 | --- | --- | --- | --- | --- | --- |
 | `/api/ledger/books/{ledgerBookId}/periods/{periodId}/comparison` | GET | `async (Guid ledgerBookId, Guid periodId, Guid? baselinePeriodId, DateTimeOffset? asOf, AccountingBasisKindDto? accountingBasis, PostedComparisonMeasureDto? measure, HttpContext context) => …` | `Produces<PostedPeriodComparisonDto>(200)`; `Produces(400)`; `Produces(403)`; `Produces(404)`; `Produces(503)`; `Results.Problem`; `Results.BadRequest`; `Results.Json`; `Results.NotFound` | `WithName("GetPostedLedgerPeriodComparison")` | [L19](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.PeriodComparison.cs#L19) |
+| `/api/ledger/books/{ledgerBookId}/execution-journal-entries` | GET | `async (Guid ledgerBookId, Guid? fillId, string? orderId, HttpContext context) => …` | `Produces<IReadOnlyList<LedgerJournalEntryDto>>(200)`; `Produces(400)`; `Produces(403)`; `Produces(503)`; `Results.BadRequest`; `Results.Problem`; `Results.Json` | `WithName("GetExecutionJournalLineage")` | [L71](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.PeriodComparison.cs#L71) |
 
 ### MoneyMarketFundEndpoints
 
