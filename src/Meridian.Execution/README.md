@@ -247,8 +247,10 @@ authority on submit, requires a fresh account grant for the order's account, ref
 orders (`MANUAL_LIVE_INTENT_CONTRACT_NOT_REVIEWED`) until a reviewed manual-intent contract exists,
 and binds live strategy orders to an active, live-promoted run through `IStrategyRunAuthoritySource`
 before readiness. A release is judged by the authority it was parked with. `PlaceOrderAsync` is the
-legacy, unattributed path and keeps its exact prior behavior: readiness for `runId` metadata in
-Live mode, nothing extra in paper. Security Master remains in `OrderAdmissionPolicy` after
+legacy, unattributed path: it still routes paper orders unchanged, but a live order submitted
+through it is refused (`ORDER_ORIGIN_UNATTRIBUTED_LIVE`) before readiness is consulted, because
+every production caller submits live orders under typed authority. Live position actions are
+refused as manual live orders; broker-reported position metadata never confers run authority. Security Master remains in `OrderAdmissionPolicy` after
 operator controls at preflight.
 
 Callers submit typed commands: the order ticket and position actions when the operator is verified

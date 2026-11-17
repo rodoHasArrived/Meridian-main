@@ -821,7 +821,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Sdk.OrderCancelCommand</code>. Kind: `class`.
 
-Source: [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:287](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L287).
+Source: [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:363](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L363).
 
 A cancel command for one working order.
 
@@ -833,9 +833,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public OrderCancelCommand(string orderId, OrderSubmissionAuthority authority);</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:289](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L289) |  |
-| <code>public string OrderId { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:296](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L296) |  |
-| <code>public OrderSubmissionAuthority Authority { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:298](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L298) |  |
+| <code>public OrderCancelCommand(string orderId, OrderSubmissionAuthority authority);</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:365](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L365) |  |
+| <code>public string OrderId { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:372](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L372) |  |
+| <code>public OrderSubmissionAuthority Authority { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:374](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L374) |  |
 
 ## OrderCancellationIdentifier
 

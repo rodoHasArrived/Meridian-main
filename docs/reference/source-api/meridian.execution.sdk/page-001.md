@@ -145,7 +145,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Sdk.AuthorityDecisionSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:323](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L323).
+Source: [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:399](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L399).
 
 Which authority admitted or refused an order, for display on the order ticket and blotter. Not yet carried on OrderResult (Phase 4).
 

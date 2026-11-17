@@ -15,6 +15,7 @@ public sealed class OrderAuthorityOptions
 public static class OrderAuthorityReasonCodes
 {
     public const string KillSwitchSubmitNotAllowed = "KILL_SWITCH_SUBMIT_NOT_ALLOWED";
+    public const string UnattributedLiveOrder = "ORDER_ORIGIN_UNATTRIBUTED_LIVE";
     public const string ManualLiveIntentContractNotReviewed = "MANUAL_LIVE_INTENT_CONTRACT_NOT_REVIEWED";
     public const string AccountGrantMissing = "ACCOUNT_GRANT_MISSING";
     public const string AccountGrantMismatch = "ACCOUNT_GRANT_MISMATCH";
@@ -110,8 +111,12 @@ internal sealed class OrderAuthorityResolver
         switch (root.Origin)
         {
             case OrderCommandOrigin.Unattributed:
+                // Every production caller submits live orders under typed authority, so an
+                // untyped live order has no established authority at all: its identity is only
+                // whatever metadata it carries. Paper keeps the untyped path.
                 return live
-                    ? await EvaluateReadinessAsync(prepared, prepared.RunId, observationOnly, ct).ConfigureAwait(false)
+                    ? Refuse(OrderAuthorityReasonCodes.UnattributedLiveOrder,
+                        "Live orders require typed order authority (a strategy run or a reviewed manual intent); this order was submitted without it.")
                     : OrderAuthorityDecision.Approved;
 
             case OrderCommandOrigin.KillSwitch:

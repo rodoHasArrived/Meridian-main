@@ -15,6 +15,7 @@ using Meridian.Infrastructure.Adapters.Robinhood;
 using Meridian.PortfolioRecords.Accounts;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
+using Meridian.Tests.TestHelpers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
@@ -338,6 +339,7 @@ public sealed class ExecutionGovernanceEndpointsTests
             services.AddSingleton<ExecutionOperatorControlService>();
             services.AddSingleton<IPortfolioState, EmptyPortfolioState>();
             services.AddSingleton<ILiveOrderReadinessGate>(_ => new ApprovedLiveOrderReadinessGate(ApprovedLiveRunId));
+            services.AddSingleton(LiveRuns.Source);
             RegisterFundAccountScope(services, LiveFundAccountId);
             services.AddSingleton(sp => new AlpacaBrokerageGateway(
                 sp.GetRequiredService<IHttpClientFactory>(),
@@ -402,6 +404,7 @@ public sealed class ExecutionGovernanceEndpointsTests
             services.AddSingleton<ExecutionOperatorControlService>();
             services.AddSingleton<IPortfolioState, EmptyPortfolioState>();
             services.AddSingleton<ILiveOrderReadinessGate>(_ => new ApprovedLiveOrderReadinessGate(ApprovedLiveRunId));
+            services.AddSingleton(LiveRuns.Source);
             RegisterFundAccountScope(services, LiveFundAccountId);
             services.AddSingleton(sp => new RobinhoodBrokerageGateway(
                 sp.GetRequiredService<IHttpClientFactory>(),
@@ -774,11 +777,12 @@ public sealed class ExecutionGovernanceEndpointsTests
     }
 
     /// <summary>
-    /// Submits a live order the way LiveStrategyRunSession does: server-side, with the promoted
-    /// run's id stamped into metadata. Clients cannot supply that id through the REST ticket.
+    /// Submits a live order the way LiveStrategyRunSession does: server-side, under typed
+    /// strategy-run authority for the promoted run. Clients cannot supply run authority through
+    /// the REST ticket, and live routing refuses untyped orders.
     /// </summary>
     private static Task<OrderResult> SubmitAsPromotedLiveRunAsync(WebApplication app, string? clientOrderId) =>
-        app.Services.GetRequiredService<IOrderManager>().PlaceOrderAsync(new OrderRequest
+        app.Services.GetRequiredService<IOrderManager>().SubmitLiveRunAsync(new OrderRequest
         {
             ClientOrderId = clientOrderId,
             Symbol = "AAPL",
@@ -790,11 +794,11 @@ public sealed class ExecutionGovernanceEndpointsTests
             FundAccountId = LiveFundAccountId,
             Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
-                ["actor"] = "ops",
-                ["runId"] = ApprovedLiveRunId,
-                ["correlationId"] = ApprovedLiveRunId
+                ["runId"] = ApprovedLiveRunId
             }
-        });
+        }, LiveRuns);
+
+    private static readonly LiveRunOrderAuthority LiveRuns = new(LiveFundAccountId);
 
     private static void ConfigureReadyBrokerage(BrokerageConfiguration config, string gatewayId)
     {

@@ -328,50 +328,96 @@ public sealed class RiskEndpointsTests
     public async Task TypedSubmit_ParkedOrder_IsReleasedUnderItsParkedAuthority()
     {
         // Governed order command boundary, Phase 3: a typed order that escalates keeps its
-        // authority with the escalation, and the release is judged by that authority while the
-        // queue still refuses a release by the order's own submitter.
-        var accountId = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
-        var queue = new RiskEscalationQueueService(
-            NullLogger<RiskEscalationQueueService>.Instance,
-            options: new RiskEscalationQueueOptions(
-                Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json")));
-        var validator = new CompositeRiskValidator(
-            [new EscalatingRule("order-notional", "band A")],
-            NullLogger<CompositeRiskValidator>.Instance,
-            escalationQueue: queue);
-        var oms = new OrderManagementSystem(
-            new Meridian.Execution.PaperTradingGateway(
-                NullLogger<Meridian.Execution.PaperTradingGateway>.Instance,
-                options: new Meridian.Execution.Adapters.PaperTradingGatewayOptions { AllowScaffoldMarketFills = true }),
-            NullLogger<OrderManagementSystem>.Instance,
-            riskValidator: validator,
-            portfolioState: new PaperTradingPortfolio(100_000m),
-            escalationQueue: queue);
-        await oms.StartAsync();
-        try
+        // authority with the escalation, and the release is judged by that authority.
+        await using var harness = await TypedEscalationHarness.StartAsync();
+
+        var entry = await harness.ParkTypedTicketAsync();
+        entry.Authority.Should().NotBeNull("the OMS retains the typed authority with the parked order");
+        entry.Authority!.Origin.Should().Be(OrderCommandOrigin.OperatorTicket);
+        entry.Authority.GrantFundAccountId.Should().Be(TypedEscalationHarness.AccountId);
+
+        harness.Queue.Approve(entry.EscalationId, "risk-desk", "independent review");
+        var released = await harness.ReleaseAsync(entry, "risk-desk");
+
+        released.Success.Should().BeTrue(released.ErrorMessage);
+        harness.Queue.TryGet(entry.EscalationId)!.ReleasedBy.Should().Be("risk-desk");
+        harness.Oms.GetOrder(released.OrderId!)!.FundAccountId.Should().Be(TypedEscalationHarness.AccountId);
+    }
+
+    [Fact]
+    public async Task TypedRelease_BySubmitter_DoesNotConsumeTheApproval()
+    {
+        // A typed release names its issuer as "actor"; the queue's segregation-of-duties check
+        // therefore still refuses a release by the order's own submitter.
+        await using var harness = await TypedEscalationHarness.StartAsync();
+        var entry = await harness.ParkTypedTicketAsync();
+        harness.Queue.Approve(entry.EscalationId, "risk-desk", "independent review");
+
+        var selfRelease = await harness.ReleaseAsync(entry, "submitter");
+
+        selfRelease.Success.Should().BeFalse();
+        var original = harness.Queue.TryGet(entry.EscalationId)!;
+        original.Status.Should().Be(RiskEscalationStatus.Approved, "the submitter's attempt did not consume the approval");
+        original.ReleasedBy.Should().BeNull();
+    }
+
+    private sealed class TypedEscalationHarness : IAsyncDisposable
+    {
+        public static readonly Guid AccountId = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
+
+        private TypedEscalationHarness(RiskEscalationQueueService queue, OrderManagementSystem oms)
         {
-            var grant = new ExecutionAccountGrant(accountId, "submitter", ExecutionAccountGrantSources.HttpPrincipal, DateTimeOffset.UtcNow);
-            var order = new OrderRequest
-            {
-                ClientOrderId = "typed-parked-1",
-                Symbol = "AAPL",
-                Side = OrderSide.Buy,
-                Type = OrderType.Limit,
-                Quantity = 10m,
-                LimitPrice = 100m,
-                FundAccountId = accountId
-            };
+            Queue = queue;
+            Oms = oms;
+        }
 
-            var parked = await oms.SubmitAsync(new OrderSubmitCommand(
-                order, OrderSubmissionAuthority.ForOperatorTicket("submitter", grant, "corr-1")));
+        public RiskEscalationQueueService Queue { get; }
 
+        public OrderManagementSystem Oms { get; }
+
+        public static async Task<TypedEscalationHarness> StartAsync()
+        {
+            var queue = new RiskEscalationQueueService(
+                NullLogger<RiskEscalationQueueService>.Instance,
+                options: new RiskEscalationQueueOptions(
+                    Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json")));
+            var validator = new CompositeRiskValidator(
+                [new EscalatingRule("order-notional", "band A")],
+                NullLogger<CompositeRiskValidator>.Instance,
+                escalationQueue: queue);
+            var oms = new OrderManagementSystem(
+                new Meridian.Execution.PaperTradingGateway(
+                    NullLogger<Meridian.Execution.PaperTradingGateway>.Instance,
+                    options: new Meridian.Execution.Adapters.PaperTradingGatewayOptions { AllowScaffoldMarketFills = true }),
+                NullLogger<OrderManagementSystem>.Instance,
+                riskValidator: validator,
+                portfolioState: new PaperTradingPortfolio(100_000m),
+                escalationQueue: queue);
+            await oms.StartAsync();
+            return new TypedEscalationHarness(queue, oms);
+        }
+
+        public async Task<RiskEscalationEntry> ParkTypedTicketAsync()
+        {
+            var grant = new ExecutionAccountGrant(AccountId, "submitter", ExecutionAccountGrantSources.HttpPrincipal, DateTimeOffset.UtcNow);
+            var parked = await Oms.SubmitAsync(new OrderSubmitCommand(
+                new OrderRequest
+                {
+                    ClientOrderId = $"typed-parked-{Guid.NewGuid():N}",
+                    Symbol = "AAPL",
+                    Side = OrderSide.Buy,
+                    Type = OrderType.Limit,
+                    Quantity = 10m,
+                    LimitPrice = 100m,
+                    FundAccountId = AccountId
+                },
+                OrderSubmissionAuthority.ForOperatorTicket("submitter", grant, "corr-1")));
             parked.RequiresApproval.Should().BeTrue();
-            var entry = queue.TryGet(parked.EscalationId!)!;
-            entry.Authority.Should().NotBeNull("the OMS retains the typed authority with the parked order");
-            entry.Authority!.Origin.Should().Be(OrderCommandOrigin.OperatorTicket);
-            entry.Authority.GrantFundAccountId.Should().Be(accountId);
+            return Queue.TryGet(parked.EscalationId!)!;
+        }
 
-            queue.Approve(entry.EscalationId, "risk-desk", "independent review");
+        public Task<OrderResult> ReleaseAsync(RiskEscalationEntry entry, string releasedBy)
+        {
             var releaseRequest = entry.Request with
             {
                 Metadata = new Dictionary<string, string>(entry.Request.Metadata!, StringComparer.OrdinalIgnoreCase)
@@ -379,24 +425,17 @@ public sealed class RiskEndpointsTests
                     [RiskEscalationQueueService.ApprovalMetadataKey] = entry.EscalationId
                 }
             };
-            var parkedAuthority = OrderSubmissionAuthority.FromRetainedRecord(entry.Authority);
-
-            var selfRelease = await oms.SubmitAsync(new OrderSubmitCommand(
-                releaseRequest,
-                OrderSubmissionAuthority.ForEscalationRelease(parkedAuthority, "submitter", $"risk-escalation-{entry.EscalationId}")));
-            selfRelease.Success.Should().BeFalse("the submitter cannot release their own escalated order");
-
-            var released = await oms.SubmitAsync(new OrderSubmitCommand(
-                releaseRequest,
-                OrderSubmissionAuthority.ForEscalationRelease(parkedAuthority, "risk-desk", $"risk-escalation-{entry.EscalationId}")));
-
-            released.Success.Should().BeTrue(released.ErrorMessage);
-            queue.TryGet(entry.EscalationId)!.ReleasedBy.Should().Be("risk-desk");
-            oms.GetOrder(released.OrderId!)!.FundAccountId.Should().Be(accountId);
+            var authority = OrderSubmissionAuthority.ForEscalationRelease(
+                OrderSubmissionAuthority.FromRetainedRecord(entry.Authority!),
+                releasedBy,
+                $"risk-escalation-{entry.EscalationId}");
+            return Oms.SubmitAsync(new OrderSubmitCommand(releaseRequest, authority));
         }
-        finally
+
+        public ValueTask DisposeAsync()
         {
-            oms.Dispose();
+            Oms.Dispose();
+            return ValueTask.CompletedTask;
         }
     }
 

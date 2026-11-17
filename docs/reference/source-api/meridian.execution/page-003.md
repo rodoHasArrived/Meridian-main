@@ -495,7 +495,7 @@ public sealed record ExecutionEquityObservation(Guid AccountId, string Scope, Da
 
 Qualified name: <code>Meridian.Execution.Services.ExecutionJournal</code>. Kind: `class`.
 
-Source: [src/Meridian.Execution/Services/ExecutionJournal.cs:36](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L36).
+Source: [src/Meridian.Execution/Services/ExecutionJournal.cs:37](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L37).
 
 Single-writer, crash-replayable WAL. Identity/content conflicts fail closed.
 
@@ -507,15 +507,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public Func&lt;Guid, string, JournalOpeningEvidence?&gt;? OpeningEvidenceSource { private get; init; }</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:43](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L43) |  |
-| <code>public Func&lt;Guid?&gt;? PaperBookIdentitySource { private get; init; }</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:44](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L44) |  |
-| <code>public ExecutionJournal(string root) =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:46](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L46) |  |
-| <code>public Task AppendAsync(ExecutionJournalEntry entry, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:54](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L54) |  |
-| <code>public Task AppendConditionAsync(ExecutionJournalEntry entry, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:58](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L58) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ExecutionJournalEntry&gt;&gt; ReadAsync(Guid? accountId = null, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:116](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L116) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;JournalOrder&gt;&gt; OrdersAsync(Guid accountId, string? symbol = null, string? strategy = null, string? tag = null, DateTimeOffset? from = null, DateTimeOffset? to = null, int take = 100, CancellationToken ct = default, string? scope = null, string? orderId = null, string? status = null, string? attemptId = null);</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:127](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L127) |  |
-| <code>public async Task&lt;JournalSummary&gt; SummaryAsync(Guid accountId, CancellationToken ct = default, string? scope = null, DateTimeOffset? from = null, DateTimeOffset? to = null);</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:292](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L292) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:444](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L444) |  |
+| <code>public Func&lt;Guid, string, JournalOpeningEvidence?&gt;? OpeningEvidenceSource { private get; init; }</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:44](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L44) |  |
+| <code>public Func&lt;Guid?&gt;? PaperBookIdentitySource { private get; init; }</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:45](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L45) |  |
+| <code>public ExecutionJournal(string root) =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:47](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L47) |  |
+| <code>public Task AppendAsync(ExecutionJournalEntry entry, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:55](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L55) |  |
+| <code>public Task AppendConditionAsync(ExecutionJournalEntry entry, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:59](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L59) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ExecutionJournalEntry&gt;&gt; ReadAsync(Guid? accountId = null, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:117](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L117) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;JournalOrder&gt;&gt; OrdersAsync(Guid accountId, string? symbol = null, string? strategy = null, string? tag = null, DateTimeOffset? from = null, DateTimeOffset? to = null, int take = 100, CancellationToken ct = default, string? scope = null, string? orderId = null, string? status = null, string? attemptId = null);</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:128](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L128) |  |
+| <code>public async Task&lt;JournalSummary&gt; SummaryAsync(Guid accountId, CancellationToken ct = default, string? scope = null, DateTimeOffset? from = null, DateTimeOffset? to = null);</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:293](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L293) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:445](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L445) |  |
 
 ## ExecutionJournalEntry
 
@@ -526,7 +526,7 @@ Source: [src/Meridian.Execution/Services/ExecutionJournal.cs:11](../../../../src
 Immutable execution evidence; operational reporting never posts accounting journals.
 
 ```csharp
-public sealed record ExecutionJournalEntry(int Version, string EventId, string Scope, Guid? AccountId, string OrderId, string Kind, DateTimeOffset RecordedAt, OrderRequest? Request = null, ExecutionReport? Report = null, OrderState? State = null, OrderMarketReference? Reference = null, string? Detail = null, ExecutionNotification? Notification = null, ExecutionAlertSettings? Settings = null, ExecutionEquityObservation? Equity = null, BrokerageFillSnapshotDto? ActivityFill = null, BrokerageActivityCursorDto? ActivityCursor = null, JournalOpeningEvidence? Opening = null, string? ReportingAssetClass = null, DateTimeOffset? ReconciledThrough = null, BrokerageActivityEventDto? Activity = null, OrderModification? Modification = null, Guid? AttemptId = null, Guid? PaperBookId = null);
+public sealed record ExecutionJournalEntry(int Version, string EventId, string Scope, Guid? AccountId, string OrderId, string Kind, DateTimeOffset RecordedAt, OrderRequest? Request = null, ExecutionReport? Report = null, OrderState? State = null, OrderMarketReference? Reference = null, string? Detail = null, ExecutionNotification? Notification = null, ExecutionAlertSettings? Settings = null, ExecutionEquityObservation? Equity = null, BrokerageFillSnapshotDto? ActivityFill = null, BrokerageActivityCursorDto? ActivityCursor = null, JournalOpeningEvidence? Opening = null, string? ReportingAssetClass = null, DateTimeOffset? ReconciledThrough = null, BrokerageActivityEventDto? Activity = null, OrderModification? Modification = null, Guid? AttemptId = null, Guid? PaperBookId = null, OrderSubmissionAuthorityRecord? Authority = null);
 ```
 
 ## ExecutionManualOverride
@@ -753,7 +753,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Services.JournalAttribution</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/ExecutionJournal.cs:23](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L23).
+Source: [src/Meridian.Execution/Services/ExecutionJournal.cs:24](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L24).
 
 ```csharp
 public sealed record JournalAttribution(string? StrategyId, string? RunId, string? Tag, decimal GrossRealizedPnl, decimal? NetRealizedPnl);
@@ -763,7 +763,7 @@ public sealed record JournalAttribution(string? StrategyId, string? RunId, strin
 
 Qualified name: <code>Meridian.Execution.Services.JournalOpeningEvidence</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/ExecutionJournal.cs:22](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L22).
+Source: [src/Meridian.Execution/Services/ExecutionJournal.cs:23](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L23).
 
 ```csharp
 public sealed record JournalOpeningEvidence(bool IsComplete, bool IsFlat, DateTimeOffset ObservedAt, string Source);
@@ -773,7 +773,7 @@ public sealed record JournalOpeningEvidence(bool IsComplete, bool IsFlat, DateTi
 
 Qualified name: <code>Meridian.Execution.Services.JournalOrder</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/ExecutionJournal.cs:25](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L25).
+Source: [src/Meridian.Execution/Services/ExecutionJournal.cs:26](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L26).
 
 ```csharp
 public sealed record JournalOrder(string OrderId, string Scope, Guid AccountId, string Symbol, string Side, string Status, decimal Quantity, decimal FilledQuantity, decimal? AverageFillPrice, string? StrategyId, string? RunId, string? Tag, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, IReadOnlyList<ExecutionJournalEntry> Events, string? AttemptId = null);
@@ -783,7 +783,7 @@ public sealed record JournalOrder(string OrderId, string Scope, Guid AccountId, 
 
 Qualified name: <code>Meridian.Execution.Services.JournalSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/ExecutionJournal.cs:31](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L31).
+Source: [src/Meridian.Execution/Services/ExecutionJournal.cs:32](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L32).
 
 ```csharp
 public sealed record JournalSummary(int Orders, int Fills, decimal? RealizedPnl, decimal? Commissions, decimal? Fees, decimal? Slippage, string Coverage, string Method = "FIFO operational attribution", decimal? NetRealizedPnl = null, IReadOnlyList<JournalAttribution>? Attributions = null);

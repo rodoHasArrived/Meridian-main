@@ -32,29 +32,22 @@ public sealed class OrderAuthorityResolverTests
         readiness.Requests.Should().BeEmpty();
     }
 
-    [Fact]
-    public async Task Live_Unattributed_UsesMetadataRunIdForReadiness()
+    [Theory]
+    [InlineData("run-1")]
+    [InlineData(null)]
+    public async Task Live_Unattributed_IsRefusedWithoutConsultingReadiness(string? metadataRunId)
     {
+        // Every production caller submits live orders under typed authority; metadata naming a
+        // run (even the promoted one) does not authorize an untyped live order.
         var readiness = new RecordingReadinessGate(approve: true);
         var resolver = Resolver(ExecutionMode.Live, readiness);
 
-        var decision = await resolver.EvaluatePreflightAsync(Prepared(Unattributed("run-1"), runId: "run-1"), default);
+        var decision = await resolver.EvaluatePreflightAsync(
+            Prepared(Unattributed(metadataRunId), runId: metadataRunId), default);
 
-        decision.IsApproved.Should().BeTrue();
-        decision.Readiness!.EvidenceReference.Should().Be("audit://run-1");
-        readiness.Requests.Should().ContainSingle().Which.RunId.Should().Be("run-1");
-    }
-
-    [Fact]
-    public async Task Live_Unattributed_WithoutRunId_KeepsLegacyReadinessRefusal()
-    {
-        var resolver = Resolver(ExecutionMode.Live, new RecordingReadinessGate(approve: true));
-
-        var decision = await resolver.EvaluatePreflightAsync(Prepared(Unattributed(null)), default);
-
-        decision.Refusal!.Source.Should().Be("live order readiness gate");
-        decision.Refusal.ReasonCode.Should().Be(OrderAuthorityReasonCodes.LiveOrderReadinessRejected);
-        decision.Refusal.Reason.Should().Contain("runId metadata");
+        decision.Refusal!.ReasonCode.Should().Be(OrderAuthorityReasonCodes.UnattributedLiveOrder);
+        decision.Refusal.Source.Should().Be("order authority");
+        readiness.Requests.Should().BeEmpty();
     }
 
     // ---- Kill switch ----
