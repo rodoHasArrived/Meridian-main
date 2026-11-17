@@ -824,3 +824,47 @@ states). What changed:
 
   All 82 routes pass with no new exceptions.
 
+## Phase C: finance grid and visual system (2026-11-17)
+
+Closes review proposals 5 (accounting grids), 6 (type, badges, disclosures) and 7 (layout and
+density). What changed:
+
+- **Ledger Explorer reads like a GL.**
+  - Journal header rows carry the date, journal ID, total and status. Posting lines beneath them
+    leave Date and Journal ID blank and indent the account; "Posting amount" filler text is gone.
+  - Amounts are plain right-aligned numbers, with a small proof control beside each one.
+  - A sticky totals row (the new `footerCells` on `DenseDataTable`/`TableWorkbench`) shows total
+    debits, total credits and "Balanced" or the difference.
+  - Accounting dates that are date-only or UTC midnight print as dates
+    (`formatAccountingDate`), not "00:00 UTC". The count reads "2 posted entries".
+- **Close Cockpit and the other accounting value cells.**
+  - `AccountingValue` follows the detail pane's value rules: figures and IDs in the data face on
+    one line, dates as dates, prose in the body face.
+  - In a narrow cell the value moves under its label instead of squeezing either one.
+  - The case workbench's field grid goes two-wide only when a timestamp fits.
+- **Type.**
+  - Table headers, toolbar chips and the account picker use the body face in sentence case;
+    figures keep tabular numerals.
+  - A new ratchet, `monospaceCapsLabels`, holds uppercase-monospace label class strings at their
+    current count (30, down from 33).
+- **One colour per status word.** `StatusBadge` takes its severity from its label when the label
+  is itself a status word (`badgeSeverity`), so "Blocked", "Review" or "Running" render the same
+  colour on every screen. Four labels the cross-route check found were added to the alias table.
+- **One disclosure style.** Every native `<details>` summary without its own icon gets the same
+  chevron as `TechnicalDetails` instead of the browser's ▸ marker (CSS-only, in `index.css`).
+- **Quieter masthead.** The hazard stripe is kept for a LIVE session showing non-real data. In
+  paper and demo sessions the SEEDED chip in the masthead pill says it, and the stripe is gone.
+  The masthead now carries `data-environment`.
+- **Layout.**
+  - From 1280px the detail inspector no longer sets its row's height, so a tall inspector beside
+    a short table leaves no blank band (Trading).
+  - A table wider than its card shows an edge shadow on the side with more columns.
+  - Media queries use four documented tiers (640, 980, 1279 and 1599px for the masthead only),
+    enforced by `styles/breakpoints.test.ts`.
+- **Screenshot harness.**
+  - `checkSeverityLabelConsistency` checks across routes that one status label has one severity.
+  - New rules: `detail-value-wraps`, `table-overflow-without-cue`, and opt-in `monospace-prose`
+    (Today, Trading, Ledger, Journal Entry).
+  - Close Cockpit, Ledger and Trading are also captured at 1024px.
+  - All 85 captures pass.
+

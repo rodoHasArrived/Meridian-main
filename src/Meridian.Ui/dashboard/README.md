@@ -534,6 +534,20 @@ missing value is "—" with its reason on hover. Panels that read one backend re
 status (`lib/combined-load-state.ts`), so a shared failure shows one notice with one Retry. Journal
 Entry uses this for accrual schedules and recurring journals, below the editor.
 
+Accounting grids follow general-ledger conventions:
+- `DenseDataTable`/`TableWorkbench` accept `footerCells` for a sticky totals row keyed by column.
+- Accounting dates go through `formatAccountingDate`, so date-only or midnight-UTC values print
+  without a time.
+- `AccountingValue` keeps figures on one line in the data face.
+
+`StatusBadge` takes its colour from a status-word label (`badgeSeverity`).
+
+Labels use the body face, and the `monospaceCapsLabels` ratchet stops new uppercase-monospace
+labels.
+
+Media queries use the breakpoint tiers documented at the end of `styles/index.css` and checked by
+`styles/breakpoints.test.ts`.
+
 The holdings table, the headline figures and the holding detail panel read one model,
 `lib/holdings-model.ts`, so they cannot disagree. Values the source supplies are shown
 unchanged. When the source omits them, the model derives two row figures and says so:

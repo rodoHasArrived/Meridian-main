@@ -1828,7 +1828,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
                   <h2 id="security-detail-page-title" className="mt-2 text-xl font-semibold tracking-normal text-foreground">
                     {securityMaster.pageView.detailTitle}
                   </h2>
-                  <p className={cn("mt-1 break-words text-xs text-muted-foreground", usesTrackedCaps(securityMaster.pageView.detailSubtitle) && "font-mono uppercase tracking-[0.12em]")}>
+                  <p className={cn("mt-1 break-words text-xs text-muted-foreground", usesTrackedCaps(securityMaster.pageView.detailSubtitle) && "uppercase tracking-[0.08em]")}>
                     {securityMaster.pageView.detailSubtitle}
                   </p>
                   <p className="mt-2 max-w-4xl text-sm leading-6 text-muted-foreground">

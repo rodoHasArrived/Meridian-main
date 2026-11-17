@@ -1,3 +1,4 @@
+import { FileSearch } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { TableWorkbench } from "@/components/meridian/table-workbench";
 import { DesignSystemStatus } from "@/design-system/status";
@@ -31,7 +32,7 @@ import {
 } from "@/lib/reporting-workspace";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import { financeBreakLabel } from "@/screens/accounting-screen.reconciliation.view-model";
-import { formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
+import { formatAccountingDate, formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
 import { ReportRunGovernanceScreen } from "@/screens/report-run-governance-screen";
 import { TrialBalanceScreen } from "@/screens/trial-balance-screen";
 import { useAccountingPostedLedgerViewModel, type PostedLedgerJournalLine } from "@/screens/accounting-screen.posted-ledger.view-model";
@@ -598,12 +599,31 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
     { id: `journal:${journal.journalEntryId}`, journal, posting: null as PostedLine | null },
     ...(journal.postedLines ?? []).map((posting) => ({ id: `posting:${journal.journalEntryId}:${posting.entryId}`, journal, posting }))
   ]);
+  // Totals over the posting lines shown, in exact cents so a balanced ledger reads exactly 0.
+  const ledgerTotals = useMemo(() => {
+    const postings = sortedRows.flatMap((journal) => journal.postedLines ?? []);
+    if (postings.length === 0) return null;
+    const cents = (value: number) => Math.round(value * 100);
+    const debitCents = postings.reduce((sum, posting) => sum + cents(posting.debit), 0);
+    const creditCents = postings.reduce((sum, posting) => sum + cents(posting.credit), 0);
+    return { debit: debitCents / 100, credit: creditCents / 100, balanced: debitCents === creditCents };
+  }, [sortedRows]);
   function postingAmountCell(row: (typeof ledgerRows)[number], side: "debit" | "credit") {
     const posting = row.posting;
     const value = posting ? posting[side] : side === "debit" ? row.journal.totalDebits : row.journal.totalCredits;
-    return posting && value !== 0 ? <button type="button" className="text-foreground underline decoration-dotted underline-offset-4 hover:decoration-solid focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-      aria-label={`Inspect ${side} ${postedMoney(value)} for ${posting.accountName} in journal ${row.journal.journalEntryId}`}
-      onClick={() => setSelectedAmount({ subjectId: `${row.journal.journalEntryId}:${posting.entryId}:${side}`, ledgerBookId: row.journal.ledgerBookId ?? "", periodId: row.journal.periodId ?? "", fundProfileId: selectedFundId, amount: value, currency: baseCurrency ?? "", label: `${posting.accountName} ${side} ${postedMoney(value)}` })}>{postedMoney(value)}</button> : postedMoney(value);
+    // Amounts read as numbers; the proof is a small control beside them, not an underlined link.
+    return posting && value !== 0 ? (
+      // The proof control sits before the amount, so amounts stay flush with the journal totals.
+      <span className="inline-flex items-center justify-end gap-1.5">
+        <button type="button" className="ledger-proof-button inline-flex size-5 items-center justify-center rounded-sm text-muted-foreground hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+          aria-label={`Inspect ${side} ${postedMoney(value)} for ${posting.accountName} in journal ${row.journal.journalEntryId}`}
+          title="Open proof"
+          onClick={() => setSelectedAmount({ subjectId: `${row.journal.journalEntryId}:${posting.entryId}:${side}`, ledgerBookId: row.journal.ledgerBookId ?? "", periodId: row.journal.periodId ?? "", fundProfileId: selectedFundId, amount: value, currency: baseCurrency ?? "", label: `${posting.accountName} ${side} ${postedMoney(value)}` })}>
+          <FileSearch className="size-3.5" aria-hidden="true" />
+        </button>
+        <span>{postedMoney(value)}</span>
+      </span>
+    ) : postedMoney(value);
   }
 
   if (!active) {
@@ -657,7 +677,7 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
                 ? "Loading the posted journal."
                 : postedLedger.journalErrorText
                   ? postedLedger.journalErrorText
-                  : `${filteredRows.length} posted entry(ies)${postedLedger.selectedPeriodLabel ? ` for ${postedLedger.selectedPeriodLabel}` : ""}.${filteredRows.length > 0 ? " Select a posting amount to open its proof." : ""}`}
+                  : `${pluralizeCount(filteredRows.length, "posted entry", { plural: "posted entries" })}${postedLedger.selectedPeriodLabel ? ` for ${postedLedger.selectedPeriodLabel}` : ""}.${filteredRows.length > 0 ? " Select a posting amount to open its proof." : ""}`}
             </p>
             <Badge variant={filteredRows.length > 0 ? "success" : "outline"}>{filteredRows.length}</Badge>
             <SectionDescription descriptionKey="accounting:ledger-explorer" label="About Ledger Explorer">
@@ -697,11 +717,19 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
                 setTabSearchParams(next, { replace: true });
               }}
               ariaLabel="Ledger Explorer results" rows={ledgerRows} getRowId={(row) => row.id}
+              getRowClassName={(row) => row.posting ? "ledger-row--posting" : "ledger-row--journal"}
+              footerLabel="Ledger totals"
+              footerCells={ledgerTotals ? {
+                date: "Totals",
+                debit: postedMoney(ledgerTotals.debit),
+                credit: postedMoney(ledgerTotals.credit),
+                source: ledgerTotals.balanced ? "Balanced" : `Difference ${postedMoney(ledgerTotals.debit - ledgerTotals.credit)}`
+              } : undefined}
               emptyText={postedLedger.view.periodSelector.options.length === 0 ? postedLedger.view.periodSelector.errorText ?? postedLedger.view.periodSelector.loadingText ?? postedLedger.view.periodSelector.emptyText ?? "No ledger periods are available for this accounting scope." : "No posted entries match the current search."}
               columns={[
-                { id: "date", label: "Date", className: "whitespace-nowrap", render: (row) => row.posting ? "Posting amount" : formatDateTimeLabel(row.journal.timestamp), exportValue: (row) => row.journal.timestamp },
-                { id: "journalEntryId", label: "Journal ID", sortable: true, render: (row) => row.posting ? null : <EntityLink ariaLabel={`Open journal ${row.journal.journalEntryId}`} record={{ kind: "journal", id: row.journal.journalEntryId, label: row.journal.journalEntryId, workspaceHref: workstationRouteWithQuery("accountingJournalEntryDetail", { journalEntryId: row.journal.journalEntryId, periodId: postedLedger.selectedPeriodId }), summary: [{ label: "Status", value: "Posted" }, { label: "Date", value: formatDateTimeLabel(row.journal.timestamp) }, { label: "Description", value: row.journal.description || "Ledger posting" }] }}>{row.journal.journalEntryId}</EntityLink>, exportValue: (row) => row.journal.journalEntryId },
-                { id: "account", label: "Account", render: (row) => row.posting ? `${row.posting.accountName}${row.posting.symbol ? ` - ${row.posting.symbol}` : ""}` : row.journal.accountScopeId ? <EntityLink record={{ kind: "account", id: row.journal.accountScopeId, label: row.journal.accountScopeDisplayName ?? "Account name unavailable", workspaceHref: sourceLedgerContextHref, summary: [{ label: "Source", value: "Posted ledger dimensions" }, { label: "Workspace destination", value: "Source Ledger context · selected book and period" }] }} /> : row.journal.accountScopeDisplayName ?? "Multiple accounts", exportValue: (row) => row.posting?.accountName ?? row.journal.accountScopeDisplayName },
+                { id: "date", label: "Date", className: "whitespace-nowrap", render: (row) => row.posting ? null : formatAccountingDate(row.journal.timestamp), exportValue: (row) => row.journal.timestamp },
+                { id: "journalEntryId", label: "Journal ID", sortable: true, render: (row) => row.posting ? null : <EntityLink ariaLabel={`Open journal ${row.journal.journalEntryId}`} record={{ kind: "journal", id: row.journal.journalEntryId, label: row.journal.journalEntryId, workspaceHref: workstationRouteWithQuery("accountingJournalEntryDetail", { journalEntryId: row.journal.journalEntryId, periodId: postedLedger.selectedPeriodId }), summary: [{ label: "Status", value: "Posted" }, { label: "Date", value: formatAccountingDate(row.journal.timestamp) }, { label: "Description", value: row.journal.description || "Ledger posting" }] }}>{row.journal.journalEntryId}</EntityLink>, exportValue: (row) => row.journal.journalEntryId },
+                { id: "account", label: "Account", className: "ledger-cell--account", render: (row) => row.posting ? `${row.posting.accountName}${row.posting.symbol ? ` - ${row.posting.symbol}` : ""}` : row.journal.accountScopeId ? <EntityLink record={{ kind: "account", id: row.journal.accountScopeId, label: row.journal.accountScopeDisplayName ?? "Account name unavailable", workspaceHref: sourceLedgerContextHref, summary: [{ label: "Source", value: "Posted ledger dimensions" }, { label: "Workspace destination", value: "Source Ledger context · selected book and period" }] }} /> : row.journal.accountScopeDisplayName ?? "Multiple accounts", exportValue: (row) => row.posting?.accountName ?? row.journal.accountScopeDisplayName },
                 { id: "debit", label: "Debit", align: "right", className: "tabular-nums", render: (row) => postingAmountCell(row, "debit"), exportValue: (row) => row.posting?.debit ?? row.journal.totalDebits },
                 { id: "credit", label: "Credit", align: "right", className: "tabular-nums", render: (row) => postingAmountCell(row, "credit"), exportValue: (row) => row.posting?.credit ?? row.journal.totalCredits },
                 { id: "entity", label: "Entity",

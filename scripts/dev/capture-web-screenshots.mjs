@@ -617,7 +617,10 @@ export const CAPTURE_CONTENT_ISSUE_KINDS = [
   "position-source-missing",
   "primary-task-below-fold",
   "repeated-unavailable",
-  "single-failure-notice"
+  "single-failure-notice",
+  "detail-value-wraps",
+  "table-overflow-without-cue",
+  "monospace-prose"
 ];
 
 /** How often the same "… unavailable" line may repeat in a route's main content. */
@@ -678,9 +681,16 @@ export function isSlugIdentifier(token) {
  *     note), not repeated per row.
  *   - single-failure-notice: the route declares `maxAlerts` and shows more alerts or Retry
  *     buttons than that. One backend failure shows one notice with one Retry. Counted by the caller.
+ *   - detail-value-wraps: a date or figure value (`[data-detail-value="date"|"number"]`) that
+ *     wraps onto more than one line. Dates and amounts read on one line. Measured by the caller.
+ *   - table-overflow-without-cue: a table that overflows sideways without a cue: neither inside a
+ *     table-workbench frame nor marked `data-overflow-right` (the edge shadow). Measured by the caller.
+ *   - monospace-prose: on routes that declare `monospaceProse: true`, visible text set in a
+ *     monospace face that is more than three words with no digits. The data face is for
+ *     figures, IDs and code; labels and sentences use the body face. Measured by the caller.
  * Returns one entry per distinct offending excerpt.
  */
-export function findCaptureContentIssues(text, { unexplainedDisabledActions = [], statusContradictions = [], truncatedBadges = [], unsourcedPositionTables = [], primaryTaskIssues = [], failureNoticeIssues = [] } = {}) {
+export function findCaptureContentIssues(text, { unexplainedDisabledActions = [], statusContradictions = [], truncatedBadges = [], unsourcedPositionTables = [], primaryTaskIssues = [], failureNoticeIssues = [], wrappedDetailValues = [], uncuedOverflowTables = [], monospaceProse = [] } = {}) {
   const issues = [];
   const seen = new Set();
   const record = (kind, excerpt) => {
@@ -741,6 +751,15 @@ export function findCaptureContentIssues(text, { unexplainedDisabledActions = []
   }
   for (const issue of failureNoticeIssues) {
     record("single-failure-notice", String(issue));
+  }
+  for (const value of wrappedDetailValues) {
+    record("detail-value-wraps", String(value));
+  }
+  for (const table of uncuedOverflowTables) {
+    record("table-overflow-without-cue", String(table || "(unlabelled table)"));
+  }
+  for (const text of monospaceProse) {
+    record("monospace-prose", String(text));
   }
   for (const line of findRepeatedUnavailableLines(content)) {
     record("repeated-unavailable", line);
@@ -960,6 +979,38 @@ export function checkKpiLabelConsistency(captures, definitions) {
         observed.set(key, current);
       } else if (previous.id !== current.id && previous.value !== current.value) {
         conflicts.push({ group: group.replace("\u0000", " · "), previous, current });
+      }
+    }
+  }
+  return { conflicts };
+}
+
+/** Visible status badges on a route: their label and the severity (colour) they render with. */
+export async function collectSeverityBadges(page) {
+  const badges = await page.evaluate(() =>
+    Array.from(document.querySelectorAll("main .mds-sev[data-severity], main [data-severity].mds-badge"))
+      .filter((badge) => badge.getClientRects().length > 0)
+      .map((badge) => ({ label: (badge.textContent ?? "").replace(/\s+/g, " ").trim(), severity: badge.getAttribute("data-severity") }))
+      .filter((badge) => badge.label && badge.severity));
+  return Array.isArray(badges) ? badges : [];
+}
+
+/**
+ * One status label has one colour: within a dataset, the same badge text (case-insensitive) must
+ * render with the same severity on every route.
+ */
+export function checkSeverityLabelConsistency(captures) {
+  const observed = new Map();
+  const conflicts = [];
+  for (const capture of captures) {
+    if (capture.status !== "passed") continue;
+    for (const badge of capture.severityBadges ?? []) {
+      const key = JSON.stringify([capture.scenario ?? null, badge.label.toLowerCase()]);
+      const current = { severity: badge.severity, route: capture.route };
+      const previous = observed.get(key);
+      if (!previous) observed.set(key, current);
+      else if (previous.severity !== current.severity && !conflicts.some((conflict) => conflict.key === key)) {
+        conflicts.push({ key, label: badge.label, previous, current });
       }
     }
   }
@@ -1357,7 +1408,39 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
     })
     : { alerts: 0, retries: 0 };
   const failureNoticeIssues = describeFailureNotices(capture.maxAlerts, failureNoticeCounts);
-  const contentIssues = partitionCaptureContentIssues(mainText, capture, { unexplainedDisabledActions, statusContradictions, truncatedBadges, unsourcedPositionTables, primaryTaskIssues, failureNoticeIssues });
+  // Dates and figures read on one line: a wrapped value box is taller than one line of its text.
+  const wrappedDetailValuesProbe = await page.evaluate(() =>
+    Array.from(document.querySelectorAll("main [data-detail-value='date'], main [data-detail-value='number']"))
+      .filter((element) => element.getClientRects().length > 0)
+      .filter((element) => {
+        const lineHeight = parseFloat(getComputedStyle(element).lineHeight) || parseFloat(getComputedStyle(element).fontSize) * 1.4;
+        return element.getBoundingClientRect().height > lineHeight * 1.5;
+      })
+      .map((element) => (element.textContent ?? "").replace(/\s+/g, " ").trim())
+  );
+  // A table that scrolls sideways shows a cue; the table-workbench frame draws it.
+  const uncuedOverflowTablesProbe = await page.evaluate(() =>
+    Array.from(document.querySelectorAll("main .dense-data-table-wrap"))
+      .filter((wrap) => wrap.getClientRects().length > 0 && wrap.scrollWidth > wrap.clientWidth + 1)
+      .filter((wrap) => !wrap.closest(".table-workbench-frame") && wrap.getAttribute("data-overflow-right") !== "true")
+      .map((wrap) => wrap.querySelector("table")?.getAttribute("aria-label") ?? "")
+  );
+  const wrappedDetailValues = Array.isArray(wrappedDetailValuesProbe) ? wrappedDetailValuesProbe : [];
+  const uncuedOverflowTables = Array.isArray(uncuedOverflowTablesProbe) ? uncuedOverflowTablesProbe : [];
+  // Labels and sentences in the data face, on routes that opt in.
+  const monospaceProseProbe = capture.monospaceProse
+    ? await page.evaluate(() => {
+      const found = new Set();
+      for (const element of document.querySelectorAll("main *")) {
+        if (element.getClientRects().length === 0 || !/mono/i.test(getComputedStyle(element).fontFamily)) continue;
+        const own = Array.from(element.childNodes).filter((node) => node.nodeType === 3).map((node) => node.textContent ?? "").join(" ").replace(/\s+/g, " ").trim();
+        if (own && !/\d/.test(own) && own.split(" ").length > 3) found.add(own);
+      }
+      return [...found];
+    })
+    : [];
+  const monospaceProse = Array.isArray(monospaceProseProbe) ? monospaceProseProbe : [];
+  const contentIssues = partitionCaptureContentIssues(mainText, capture, { unexplainedDisabledActions, statusContradictions, truncatedBadges, unsourcedPositionTables, primaryTaskIssues, failureNoticeIssues, wrappedDetailValues, uncuedOverflowTables, monospaceProse });
   if (contentIssues.blocking.length > 0) {
     throw new Error(describeCaptureContentIssues(capture.name, contentIssues.blocking));
   }
@@ -1379,6 +1462,7 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
   }
 
   const kpis = await collectKpiSnapshots(page);
+  const severityBadges = await collectSeverityBadges(page);
   const holdingsTables = await collectHoldingsTables(page);
 
   await fs.mkdir(outputDir, { recursive: true });
@@ -1405,6 +1489,7 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
     bytes: buffer.length,
     textLength,
     kpis,
+    severityBadges,
     holdingsTables,
     ...(capture.primaryTask?.selector ? { primaryTaskTop } : {}),
     // Exceptions the route catalog grants this capture, kept visible in the manifest.
@@ -1778,6 +1863,11 @@ async function main() {
       problems.push(`KPI '${conflict.id}' disagrees for scope ${conflict.scope}: `
         + `${conflict.previous.route} shows '${conflict.previous.display}' (${conflict.previous.value}), `
         + `${conflict.current.route} shows '${conflict.current.display}' (${conflict.current.value}).`);
+    }
+    manifest.severityConsistency = checkSeverityLabelConsistency(results);
+    for (const conflict of manifest.severityConsistency.conflicts) {
+      problems.push(`Status '${conflict.label}' renders as ${conflict.previous.severity} on ${conflict.previous.route} `
+        + `and ${conflict.current.severity} on ${conflict.current.route}; one label has one colour.`);
     }
     manifest.kpiLabelConsistency = checkKpiLabelConsistency(results, await loadKpiDefinitions());
     for (const conflict of manifest.kpiLabelConsistency.conflicts) {

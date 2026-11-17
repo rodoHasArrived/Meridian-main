@@ -16,6 +16,7 @@ import {
   findRepeatedUnavailableLines,
   describePrimaryTaskPosition,
   describeFailureNotices,
+  checkSeverityLabelConsistency,
   loadKpiDefinitions,
   collectKpiSnapshots,
   collectAllowedContentIssueKinds,
@@ -1060,4 +1061,30 @@ test("one backend failure shows at most the declared number of notices and Retry
   assert.deepEqual(describeFailureNotices(undefined, { alerts: 9, retries: 9 }), []);
   assert.deepEqual(findCaptureContentIssues("Journal", { failureNoticeIssues: ["2 alerts (limit 1)"] }),
     [{ kind: "single-failure-notice", excerpt: "2 alerts (limit 1)" }]);
+});
+
+test("one status label renders with one severity across routes", () => {
+  const capture = (route, severityBadges, scenario = null) => ({ status: "passed", route, scenario, severityBadges });
+  const conflicting = checkSeverityLabelConsistency([
+    capture("/", [{ label: "Review", severity: "review" }]),
+    capture("/settings", [{ label: "review", severity: "blocked" }, { label: "Blocked", severity: "blocked" }])
+  ]);
+  assert.equal(conflicting.conflicts.length, 1);
+  assert.equal(conflicting.conflicts[0].label, "review");
+  assert.equal(checkSeverityLabelConsistency([
+    capture("/", [{ label: "Review", severity: "review" }]),
+    capture("/settings", [{ label: "Review", severity: "review" }]),
+    capture("/settings", [{ label: "Review", severity: "action" }], "stale")
+  ]).conflicts.length, 0);
+});
+
+test("wrapped figures, uncued overflow and monospace prose are reported", () => {
+  assert.deepEqual(
+    findCaptureContentIssues("Close", { wrappedDetailValues: ["Jan 1, 2026"], uncuedOverflowTables: ["Positions"], monospaceProse: ["Select a row to inspect"] }),
+    [
+      { kind: "detail-value-wraps", excerpt: "Jan 1, 2026" },
+      { kind: "table-overflow-without-cue", excerpt: "Positions" },
+      { kind: "monospace-prose", excerpt: "Select a row to inspect" }
+    ]
+  );
 });

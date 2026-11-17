@@ -1000,7 +1000,7 @@ export function ManualJournalEntryWorkbenchPanel({ view, search }: { view: Manua
                             onClick={() => view.selectLine(line.lineId)}
                           >
                             <span className="block truncate font-semibold text-foreground">{line.securityDisplayName || (view.draft.assetAccountingDraft ? "Inspect line attribution" : "Choose security")}</span>
-                            <span className="block truncate font-mono text-xs text-muted-foreground">{line.securityId || "No Security Master reference"}</span>
+                            <span className={cn("block truncate text-xs text-muted-foreground", line.securityId && "font-mono")}>{line.securityId || "No Security Master reference"}</span>
                           </button>
                           <input disabled={Boolean(view.draft.assetAccountingDraft)}
                             id={`manual-je-description-${line.lineId}`}

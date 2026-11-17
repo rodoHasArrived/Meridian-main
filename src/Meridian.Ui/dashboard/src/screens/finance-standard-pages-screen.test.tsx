@@ -597,6 +597,16 @@ describe("finance standard pages", () => {
     expect(table).not.toHaveTextContent("$500");
     // Posting lines inherit their entry's status; instruction copy is not a status value.
     expect(table).not.toHaveTextContent("Select amount for proof");
+    // A general-ledger grid: journal rows, indented posting lines, plain amounts and a totals row.
+    expect(table).not.toHaveTextContent("Posting amount");
+    expect(table).not.toHaveTextContent("00:00 UTC");
+    const totals = within(table).getByRole("row", { name: "Ledger totals" });
+    expect(totals).toHaveTextContent("Totals");
+    // This fixture's only posting is a one-sided debit, so the totals row reports the difference.
+    expect(totals).toHaveTextContent("€500.00€0.00Difference €500.00");
+    expect(totals).not.toHaveTextContent("Balanced");
+    expect(table.querySelector("tr.ledger-row--posting")).not.toBeNull();
+    expect(screen.getAllByRole("button", { name: /^Inspect (debit|credit) / }).length).toBeGreaterThan(0);
     // Missing display-name evidence must not promote an internal identifier to an entity name, and
     // when no row has a name the Entity column is said once rather than "unavailable" on every row.
     expect(table).not.toHaveTextContent("Entity name unavailable");

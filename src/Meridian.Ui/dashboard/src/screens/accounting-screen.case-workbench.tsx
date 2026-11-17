@@ -120,7 +120,8 @@ export function AccountingCaseWorkbench({
           <CardContent className="space-y-4 text-sm">
             {selectedBreakDetail ? (
               <>
-                <div className="grid gap-3 sm:grid-cols-2">
+                {/* Two columns only when each cell fits a timestamp; a narrow column stacks the values. */}
+                <div className="grid gap-3 grid-cols-[repeat(auto-fit,minmax(12rem,1fr))]">
                   {selectedBreakDetail.fields.filter((field) => field.label !== "Run").slice(0, 6).map((field) => (
                     <AccountingValue key={field.label} label={field.label} value={field.value} />
                   ))}

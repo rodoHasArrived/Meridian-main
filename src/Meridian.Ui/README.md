@@ -342,6 +342,16 @@ with journal automation below it and one notice for a shared failure. The Today 
 per item, grows with the page, and says why each item is ranked where it is. A value missing on
 every row is said once. Live quotes starts from the watchlist. No shared contract changed.
 
+It also carries UX Phase C (accounting grid and visual system):
+- Ledger Explorer groups postings under their journal with a totals row and plain amounts.
+- Accounting dates print without invented times.
+- Labels use the body face, and one status word has one colour.
+- Disclosures share one chevron.
+- The masthead stripe is reserved for LIVE sessions.
+- Inspectors no longer stretch rows, and media queries use four tiers.
+
+No shared contract changed.
+
 ## Change rules
 
 Do not create mobile product surfaces here. Keep browser operator UI work under `dashboard/` and shared behavior in contracts/services consumed by the browser workstation and retained WPF compatibility surfaces.
