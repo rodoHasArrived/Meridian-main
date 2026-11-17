@@ -1,5 +1,6 @@
 using Meridian.Execution.Events;
 using Meridian.Execution.Models;
+using Meridian.Execution.OrderManagement;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -87,6 +88,8 @@ public static class OrderManagementSystemFactory
             sessionPolicy: services.GetService<IOrderSessionPolicy>(),
             journal: services.GetService<ExecutionJournal>(),
             marketReferences: services.GetService<IOrderMarketReferenceSource>(),
-            instrumentCoverage: services.GetService<IOrderInstrumentCoverageSource>());
+            instrumentCoverage: services.GetService<IOrderInstrumentCoverageSource>(),
+            strategyRunAuthority: services.GetService<IStrategyRunAuthoritySource>(),
+            authorityOptions: services.GetService<OrderAuthorityOptions>());
     }
 }

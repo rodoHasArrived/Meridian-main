@@ -235,10 +235,21 @@ passing the OMS instance as a general callback target.
 hosts use it: `AddBrokerageExecution` with `OrderManagementSystemComposition.BrokerageExecution`
 (risk validator, portfolio state, and options optional; no paper-session persistence) and the
 workstation `UiServer` with `HostedWorkstation` (all three required; paper-session persistence
-wired). New OMS dependencies are wired there once. `OrderSubmissionAuthority` and the order command
-types in `Meridian.Execution.Sdk` define typed order authority for the governed order command
-boundary; the OMS does not consume them yet (see
-`docs/engineering/blueprints/governed-order-command-boundary-blueprint.md`).
+wired). New OMS dependencies are wired there once.
+
+Order authority (governed order command boundary,
+`docs/engineering/blueprints/governed-order-command-boundary-blueprint.md`):
+`OrderManagementSystem.SubmitAsync(OrderSubmitCommand)` submits under a typed, server-built
+`OrderSubmissionAuthority`. `OrderAuthorityMetadata.Bind` replaces any caller identity metadata with
+the authority's identity before admission. `OrderAuthorityResolver` runs at the position the live
+readiness gate held in preflight, so other refusals keep their order. It refuses kill-switch
+authority on submit, requires a fresh account grant for the order's account, refuses manual live
+orders (`MANUAL_LIVE_INTENT_CONTRACT_NOT_REVIEWED`) until a reviewed manual-intent contract exists,
+and binds live strategy orders to an active, live-promoted run through `IStrategyRunAuthoritySource`
+before readiness. A release is judged by the authority it was parked with. `PlaceOrderAsync` is the
+legacy, unattributed path and keeps its exact prior behavior: readiness for `runId` metadata in
+Live mode, nothing extra in paper. Security Master remains in `OrderAdmissionPolicy` after
+operator controls.
 
 The shared broker-report gate still serializes live callbacks, explicit recovery, amendment
 resolution, and retention. Amendment preparation keeps original/proposed snapshot identity and

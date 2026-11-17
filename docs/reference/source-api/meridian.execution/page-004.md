@@ -6,6 +6,78 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LivePromotionControlDecision
+
+Qualified name: <code>Meridian.Execution.Services.LivePromotionControlDecision</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:113](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L113).
+
+Result of evaluating a Paper -&gt; Live promotion request against the current controls.
+
+```csharp
+public sealed record LivePromotionControlDecision(bool IsAllowed, string? RejectReason = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static LivePromotionControlDecision Allowed() =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:115](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L115) |  |
+| <code>public static LivePromotionControlDecision Rejected(string reason) =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:116](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L116) |  |
+
+## ManualOverrideRequest
+
+Qualified name: <code>Meridian.Execution.Services.ManualOverrideRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:84](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L84).
+
+Manual override creation request.
+
+```csharp
+public sealed record ManualOverrideRequest(string Kind, string Reason, string? CreatedBy = null, string? Symbol = null, string? StrategyId = null, string? RunId = null, DateTimeOffset? ExpiresAt = null, string? CorrelationId = null);
+```
+
+## OrderLifecycleManager
+
+Qualified name: <code>Meridian.Execution.Services.OrderLifecycleManager</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/Services/OrderLifecycleManager.cs:10](../../../../src/Meridian.Execution/Services/OrderLifecycleManager.cs#L10).
+
+Tracks in-flight orders and their state transitions for a single execution session. Listens to the IOrderGateway.StreamOrderUpdatesAsync stream and maintains a queryable view of all active and terminal orders.
+
+```csharp
+public sealed class OrderLifecycleManager : IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public OrderLifecycleManager(IOrderGateway gateway, ILogger&lt;OrderLifecycleManager&gt; logger);</code> | [src/Meridian.Execution/Services/OrderLifecycleManager.cs:20](../../../../src/Meridian.Execution/Services/OrderLifecycleManager.cs#L20) | Creates a new order lifecycle manager bound to gateway. |
+| <code>public void Start(CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/OrderLifecycleManager.cs:30](../../../../src/Meridian.Execution/Services/OrderLifecycleManager.cs#L30) | Starts consuming the order update stream from the gateway. This method is idempotent — calling it a second time is a no-op. |
+| <code>public OrderStatusUpdate? GetStatus(string orderId);</code> | [src/Meridian.Execution/Services/OrderLifecycleManager.cs:45](../../../../src/Meridian.Execution/Services/OrderLifecycleManager.cs#L45) | Returns the most recent status update for orderId, or null if the order is not known. |
+| <code>public IReadOnlyList&lt;OrderStatusUpdate&gt; GetAllOrders();</code> | [src/Meridian.Execution/Services/OrderLifecycleManager.cs:54](../../../../src/Meridian.Execution/Services/OrderLifecycleManager.cs#L54) | Returns all tracked orders as a snapshot. |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Services/OrderLifecycleManager.cs:86](../../../../src/Meridian.Execution/Services/OrderLifecycleManager.cs#L86) |  |
+
+## OrderPreviewService
+
+Qualified name: <code>Meridian.Execution.Services.OrderPreviewService</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/Services/OrderPreviewService.cs:13](../../../../src/Meridian.Execution/Services/OrderPreviewService.cs#L13).
+
+Evaluates the same admission/risk policies without dispatching or taking reservations.
+
+```csharp
+public sealed class OrderPreviewService : IOrderPreviewService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public OrderPreviewService(IExecutionGateway gateway, IOrderManager orders, IRiskValidator risk, IOrderMarketReferenceSource prices, ILogger&lt;OrderPreviewService&gt; logger, BrokerageConfiguration? configuration = null, ISecurityMasterGate? securityMaster = null, ExecutionOperatorControlService? controls = null, IPortfolioState? portfolio = null, IOrderSessionPolicy? sessions = null, TimeProvider? clock = null, IOrderInstrumentCoverageSource? coverage = null, ILiveOrderReadinessGate? liveReadiness = null);</code> | [src/Meridian.Execution/Services/OrderPreviewService.cs:23](../../../../src/Meridian.Execution/Services/OrderPreviewService.cs#L23) |  |
+| <code>public async Task&lt;OrderPreviewResult&gt; PreviewAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/OrderPreviewService.cs:41](../../../../src/Meridian.Execution/Services/OrderPreviewService.cs#L41) |  |
+
 ## PaperLedgerIntegrityBreak
 
 Qualified name: <code>Meridian.Execution.Services.PaperLedgerIntegrityBreak</code>. Kind: `record`.

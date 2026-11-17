@@ -97,7 +97,9 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
         IOrderSessionPolicy? sessionPolicy = null,
         ExecutionJournal? journal = null,
         IOrderMarketReferenceSource? marketReferences = null,
-        IOrderInstrumentCoverageSource? instrumentCoverage = null)
+        IOrderInstrumentCoverageSource? instrumentCoverage = null,
+        IStrategyRunAuthoritySource? strategyRunAuthority = null,
+        OrderAuthorityOptions? authorityOptions = null)
     {
         _gateway = gateway ?? throw new ArgumentNullException(nameof(gateway));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -134,7 +136,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
         }
         _admissionPolicy = new OrderAdmissionPolicy(
             gateway, logger, brokerageConfiguration, securityMasterGate,
-            operatorControls, liveOrderReadinessGate, portfolioState, sessionPolicy, marketReferences, instrumentCoverage);
+            operatorControls, liveOrderReadinessGate, portfolioState, sessionPolicy, marketReferences, instrumentCoverage,
+            runAuthority: strategyRunAuthority, authorityOptions: authorityOptions);
         _executionFailureState = new ExecutionFailureState(logger);
         _executionReportHub = new ExecutionReportHub(_options, () => gateway.GatewayId, auditTrail, logger, _executionFailureState);
         _executionAudit = new OrderExecutionAudit(auditTrail, () => gateway.GatewayId, logger);
@@ -158,17 +161,34 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
     }
 
     /// <inheritdoc />
-    public async Task<OrderResult> PlaceOrderAsync(OrderRequest request, CancellationToken ct = default)
+    /// <remarks>Legacy entry point: identity comes from request metadata (unattributed authority).</remarks>
+    public Task<OrderResult> PlaceOrderAsync(OrderRequest request, CancellationToken ct = default) =>
+        PlaceOrderSerializedAsync(request, authority: null, ct);
+
+    /// <inheritdoc />
+    public Task<OrderResult> SubmitAsync(OrderSubmitCommand command, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        return PlaceOrderSerializedAsync(OrderAuthorityMetadata.Bind(command.Order, command.Authority), command.Authority, ct);
+    }
+
+    private async Task<OrderResult> PlaceOrderSerializedAsync(
+        OrderRequest request,
+        OrderSubmissionAuthority? authority,
+        CancellationToken ct)
     {
         if (_portfolioState is not PaperTradingPortfolio { UsesCanonicalAccounting: true })
-            return await PlaceOrderCoreAsync(request, ct).ConfigureAwait(false);
+            return await PlaceOrderCoreAsync(request, authority, ct).ConfigureAwait(false);
         await _canonicalSubmissionGate.WaitAsync(ct).ConfigureAwait(false);
         try
-        { return await PlaceOrderCoreAsync(request, ct).ConfigureAwait(false); }
+        { return await PlaceOrderCoreAsync(request, authority, ct).ConfigureAwait(false); }
         finally { _canonicalSubmissionGate.Release(); }
     }
 
-    private async Task<OrderResult> PlaceOrderCoreAsync(OrderRequest request, CancellationToken ct)
+    private async Task<OrderResult> PlaceOrderCoreAsync(
+        OrderRequest request,
+        OrderSubmissionAuthority? authority,
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
         OrderManagementLifecycleCoordinator.OperationLease operation;
@@ -185,7 +205,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
 
         var orderId = request.ClientOrderId ?? GenerateOrderId();
         Guid? journalAttemptId = _journal is null ? null : Guid.NewGuid();
-        var prepared = _admissionPolicy.Prepare(request, orderId);
+        var prepared = _admissionPolicy.Prepare(request, orderId, authority);
         request = prepared.Request;
         var safeRequest = prepared.SafeRequest;
         var brokerName = prepared.BrokerName;

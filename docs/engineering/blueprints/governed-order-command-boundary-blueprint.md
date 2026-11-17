@@ -555,10 +555,12 @@ between preflight and dispatch using the same hook pattern as the existing opera
 - [x] `OrderManagementSystemFactory` with `OrderManagementSystemComposition` (`BrokerageExecution`, `HostedWorkstation`), replacing both composition sites, with `OrderManagementSystemFactoryTests`. The two hand-written compositions differed, and the factory keeps each difference by name: the hosted workstation requires `IRiskValidator`, `IPortfolioState`, and `OrderManagementSystemOptions` and wires `PaperSessionPersistenceService`; the library composition leaves the first three optional and does not wire session persistence.
 
 ### Phase 2: Resolver at preflight
-- [ ] `OrderAuthorityResolver` and `OrderAuthorityOptions`; move readiness and Security Master from `OrderAdmissionPolicy`
-- [ ] `PreparedOrderAdmission.Authority`; `PlaceOrderCoreAsync` takes authority; legacy shim
-- [ ] `StrategyRunAuthoritySource` in `Meridian.Strategies`
-- [ ] Resolver tests; existing admission-order tests green
+- [x] `OrderAuthorityResolver` and `OrderAuthorityOptions` (`src/Meridian.Execution/OrderManagement/OrderAuthority.cs`). Live readiness moved out of `OrderAdmissionPolicy` into the resolver, which runs at the position readiness held, so the refusal order of every other gate is unchanged. **Security Master stays in `OrderAdmissionPolicy`** after operator controls, because moving it into the resolver would put it before operator controls and change the refusal order. It joins the resolver with the dispatch recheck in Phase 3.
+- [x] `PreparedOrderAdmission.Authority`. `PlaceOrderCoreAsync` takes authority. `PlaceOrderAsync` is the legacy shim (`Unattributed`). `OrderManagementSystem.SubmitAsync` is the typed entry point. `OrderAuthorityMetadata.Bind` replaces caller-supplied identity metadata (`actor`, `runId`, `correlationId`, `sessionId` and their aliases) with the authority's identity and fills `FundAccountId` from the grant. A release keeps the original submitter as `actor`, because risk escalation reads it for segregation of duties.
+- [x] `IOrderManager.SubmitAsync`, `CancelAsync`, `ReplaceAsync` (moved from Phase 1). The OMS implements `SubmitAsync`. Cancel and replace forward to the untyped methods until Phase 3 records their authority.
+- [x] `StrategyRunAuthoritySource` in `Meridian.Strategies`, registered in `WorkstationServiceCollectionExtensions` and wired through `OrderManagementSystemFactory`. Strategy-artifact ids are null until the artifact-identity blueprint lands, and the resolver skips comparisons with null ids. "Active" means no `EndedAt` and no terminal status. A paused run still counts as active; Open Question 5.
+- [x] Resolver, typed-submit, and run-source tests (`OrderAuthorityResolverTests`, `OrderManagementSystemTypedSubmitTests`, `StrategyRunAuthoritySourceTests`). The existing admission-order tests and the full execution suite stay green.
+- **Sequencing correction.** The design said Phase 2 refuses `Unattributed` authority in Live mode. That would refuse every live strategy order, because `LiveStrategyRunSession` still calls `PlaceOrderAsync` until Phase 3 moves it to typed commands. In Phase 2, `Unattributed` keeps exactly its old behavior: paper orders pass, and live orders need readiness approval for their `runId` metadata. Refusing `Unattributed` in Live is now part of Phase 3 and lands after every caller is migrated. `OrderAuthorityOptions.AllowUnattributedInPaper` is not added until that switch exists.
 
 ### Phase 3: Callers and dispatch recheck
 - [ ] `ExecutionAccountGrantResolver`; always resolve an account on submit and position actions
@@ -567,6 +569,9 @@ between preflight and dispatch using the same hook pattern as the existing opera
 - [ ] Dispatch-checkpoint resolution in the dispatch block
 - [ ] Journal and audit fields for origin and both decisions
 - [ ] Extend the OMS, journal, kill-switch, run-session, and risk-endpoint suites
+- [ ] Move Security Master into the resolver with the dispatch recheck (deferred from Phase 2)
+- [ ] After every caller submits typed commands: refuse `Unattributed` authority in Live mode (deferred from Phase 2; see the sequencing correction above)
+- [ ] Source-generated JSON context for persisted authority (deferred from Phase 1)
 
 ### Phase 4: Surfaces and tightening
 - [ ] `OrderResult.AuthorityDecision`; browser ticket refusal rendering; Live manual ticket disabled with reason; blotter Origin column; vitest
@@ -588,6 +593,7 @@ between preflight and dispatch using the same hook pattern as the existing opera
 | 2 | Should `PositionAction` (close position) be allowed in Live under a narrower rule, for example reduce-only with an account grant, since closing exposure is a safety action? | Product owner | Operators can't close a live position from the workstation without the kill switch |
 | 3 | Is 8 hours the right `MaxGrantAge`, given that escalations can park overnight? | Product owner | Parked orders either expire unexpectedly or carry stale grants |
 | 4 | Does `ISecurityMasterGate` have a version stamp, so the dispatch check can be skipped when nothing changed? | Implementer | One extra Security Master call per order at dispatch |
+| 5 | Should a paused strategy run keep live order authority? `StrategyRunAuthoritySource` treats a run as active until it ends or reaches a terminal status, so a paused run still passes the run binding check. | Product owner | Orders a paused run already queued can still route |
 
 ## Risks
 

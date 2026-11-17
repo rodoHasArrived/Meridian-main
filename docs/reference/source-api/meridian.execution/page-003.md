@@ -6,6 +6,94 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PaperTradingCostOptions
+
+Qualified name: <code>Meridian.Execution.PaperMatching.PaperTradingCostOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs:23](../../../../src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs#L23).
+
+Cost model configuration applied to every paper fill (commission, fees, and slippage; spread cost arises from filling at the observed bid/ask side and is reported per fill). Bind from appsettings.json using the SectionKey section. Defaults model a retail per-share commission schedule so paper economics are non-zero out of the box; set rates to zero explicitly to simulate free execution.
+
+```csharp
+public sealed class PaperTradingCostOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string SectionKey = &quot;PaperTrading:Costs&quot;;</code> | [src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs:26](../../../../src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs#L26) | Configuration section key for IOptions binding. |
+| <code>public PaperCommissionKind CommissionKind { get; set; } = PaperCommissionKind.PerShare;</code> | [src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs:29](../../../../src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs#L29) | Commission computation kind. Default: per share. |
+| <code>public decimal CommissionRate { get; set; } = 0.005m;</code> | [src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs:35](../../../../src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs#L35) | Commission rate. Interpreted per CommissionKind: currency per share, basis points of notional, or currency per order. Default: 0.005 per share. |
+| <code>public decimal CommissionMinimum { get; set; } = 1.00m;</code> | [src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs:38](../../../../src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs#L38) | Minimum commission per order. Default: 1.00. |
+| <code>public decimal? CommissionMaximum { get; set; }</code> | [src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs:41](../../../../src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs#L41) | Optional maximum commission per order. |
+| <code>public decimal FeePerOrder { get; set; }</code> | [src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs:44](../../../../src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs#L44) | Flat regulatory/exchange fee charged per order. Default: 0. |
+| <code>public decimal FeeBasisPoints { get; set; }</code> | [src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs:47](../../../../src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs#L47) | Fee in basis points of fill notional. Default: 0. |
+| <code>public decimal SlippageBasisPoints { get; set; }</code> | [src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs:54](../../../../src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs#L54) | Slippage in basis points of fill notional, charged as an explicit cash cost on every fill. The fill price itself stays inside the observed market-data envelope; slippage models execution friction beyond the observed spread. Default: 0. |
+
+## PaperTradingGateway
+
+Qualified name: <code>Meridian.Execution.PaperTradingGateway</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/PaperTradingGateway.cs:28](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L28).
+
+Simulated execution gateway for paper trading. Orders are matched against observed market data under PaperOrderMatchingPolicy: market orders fill from the observed bid/ask/trade/bar in effect, limit orders fill only at or better than their limit price, stop orders trigger per the documented trade-preferred policy, and unmarketable limit/stop orders rest in this gateway and re-evaluate as new market data arrives — resting fills are delivered through StreamExecutionReportsAsync. Commission, fee, and slippage costs from PaperTradingCostModel apply to every fill. Market orders with no observed price are rejected, unless scaffold pricing is explicitly enabled via Adapters.PaperTradingGatewayOptions.AllowScaffoldMarketFills, in which case they fill at the configured scaffold notional price. Cancel and modify act only on orders currently resting in this gateway; an unknown order id is rejected rather than acknowledged.
+
+```csharp
+public sealed class PaperTradingGateway : IExecutionGateway, IExecutionGatewayModeProvider, IFaceValueOrderSizingGateway, Interfaces.IPaperFillEvaluationTrigger, IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PaperTradingGateway(ILogger&lt;PaperTradingGateway&gt; logger, ISecurityMasterQueryService? securityMaster = null, Adapters.PaperTradingGatewayOptions? options = null, Interfaces.ILiveFeedAdapter? liveFeed = null, PaperTradingCostOptions? costOptions = null) : this(logger, (ISecurityTradingParametersQueryService?) securityMaster, options, liveFeed, costOptions, securityMaster);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:83](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L83) | Retains the aggregate-query constructor used by compiled consumers. |
+| <code>public PaperTradingGateway(ILogger&lt;PaperTradingGateway&gt; logger, ISecurityTradingParametersQueryService? securityMaster, Adapters.PaperTradingGatewayOptions? options = null, Interfaces.ILiveFeedAdapter? liveFeed = null, PaperTradingCostOptions? costOptions = null, ISecurityIdentityQueryService? securityIdentity = null);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:93](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L93) |  |
+| <code>public string GatewayId =&gt; …;</code> | [src/Meridian.Execution/PaperTradingGateway.cs:118](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L118) |  |
+| <code>public ExecutionMode ExecutionMode =&gt; …;</code> | [src/Meridian.Execution/PaperTradingGateway.cs:121](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L121) |  |
+| <code>public bool UsesFaceValuePercentageOfPar(OrderRequest request);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:131](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L131) | Mirrors the live brokerage convention (see AlpacaBrokerageGateway): a treasury or corporate fixed-income order routes its quantity as face value with prices quoted as a percentage of par. Without this capability on the supported paper path, a 100,000-face order at 101.25 is measured by the pre-trade rails and booked by the paper book as $10,125,000 instead of $101,250 — the paper simulation must exercise the same sizing semantics the live gateway routes. |
+| <code>public bool IsConnected =&gt; …;</code> | [src/Meridian.Execution/PaperTradingGateway.cs:161](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L161) |  |
+| <code>public Task ConnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:164](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L164) |  |
+| <code>public Task DisconnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:172](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L172) |  |
+| <code>public async Task&lt;ExecutionReport&gt; SubmitOrderAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:180](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L180) |  |
+| <code>public Task&lt;ExecutionReport&gt; CancelOrderAsync(string orderId, CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:303](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L303) |  |
+| <code>public Task&lt;ExecutionReport&gt; ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:333](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L333) |  |
+| <code>public async IAsyncEnumerable&lt;ExecutionReport&gt; StreamExecutionReportsAsync([EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:395](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L395) |  |
+| <code>public void EvaluateSymbol(string symbol);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:408](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L408) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/PaperTradingGateway.cs:616](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L616) |  |
+
+## SecurityMasterGate
+
+Qualified name: <code>Meridian.Execution.SecurityMasterGate</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/SecurityMasterGate.cs:11](../../../../src/Meridian.Execution/SecurityMasterGate.cs#L11).
+
+Default ISecurityMasterGate implementation that uses ISecurityResolver to look up the symbol in the Security Master.
+
+```csharp
+public sealed class SecurityMasterGate : ISecurityMasterGate
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterGate(Meridian.Application.SecurityMaster.ISecurityResolver resolver, ILogger&lt;SecurityMasterGate&gt; logger) : this((ISecurityResolver) resolver, logger);</code> | [src/Meridian.Execution/SecurityMasterGate.cs:18](../../../../src/Meridian.Execution/SecurityMasterGate.cs#L18) |  |
+| <code>public SecurityMasterGate(ISecurityResolver resolver, ILogger&lt;SecurityMasterGate&gt; logger);</code> | [src/Meridian.Execution/SecurityMasterGate.cs:24](../../../../src/Meridian.Execution/SecurityMasterGate.cs#L24) |  |
+| <code>public async Task&lt;SecurityMasterGateResult&gt; CheckAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Execution/SecurityMasterGate.cs:31](../../../../src/Meridian.Execution/SecurityMasterGate.cs#L31) |  |
+
+## SecurityMasterGateResult
+
+Qualified name: <code>Meridian.Execution.SecurityMasterGateResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/ISecurityMasterGate.cs:8](../../../../src/Meridian.Execution/ISecurityMasterGate.cs#L8).
+
+Result from a Security Master gate check for an order symbol.
+
+```csharp
+public sealed record SecurityMasterGateResult(bool IsApproved, string? Reason = null);
+```
+
 ## PaperFinancingApiJsonContext
 
 Qualified name: <code>Meridian.Execution.Serialization.PaperFinancingApiJsonContext</code>. Kind: `class`.
@@ -759,75 +847,3 @@ Source: [src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs:22](../../..
 ```csharp
 public sealed record LiveOrderReadinessRequest(string RunId, string BrokerName, string Symbol, OrderSide Side, OrderType OrderType, decimal Quantity, string? StrategyId = null, string? Actor = null, string? CorrelationId = null, Guid? FundAccountId = null);
 ```
-
-## LivePromotionControlDecision
-
-Qualified name: <code>Meridian.Execution.Services.LivePromotionControlDecision</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:113](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L113).
-
-Result of evaluating a Paper -&gt; Live promotion request against the current controls.
-
-```csharp
-public sealed record LivePromotionControlDecision(bool IsAllowed, string? RejectReason = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static LivePromotionControlDecision Allowed() =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:115](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L115) |  |
-| <code>public static LivePromotionControlDecision Rejected(string reason) =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:116](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L116) |  |
-
-## ManualOverrideRequest
-
-Qualified name: <code>Meridian.Execution.Services.ManualOverrideRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:84](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L84).
-
-Manual override creation request.
-
-```csharp
-public sealed record ManualOverrideRequest(string Kind, string Reason, string? CreatedBy = null, string? Symbol = null, string? StrategyId = null, string? RunId = null, DateTimeOffset? ExpiresAt = null, string? CorrelationId = null);
-```
-
-## OrderLifecycleManager
-
-Qualified name: <code>Meridian.Execution.Services.OrderLifecycleManager</code>. Kind: `class`.
-
-Source: [src/Meridian.Execution/Services/OrderLifecycleManager.cs:10](../../../../src/Meridian.Execution/Services/OrderLifecycleManager.cs#L10).
-
-Tracks in-flight orders and their state transitions for a single execution session. Listens to the IOrderGateway.StreamOrderUpdatesAsync stream and maintains a queryable view of all active and terminal orders.
-
-```csharp
-public sealed class OrderLifecycleManager : IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public OrderLifecycleManager(IOrderGateway gateway, ILogger&lt;OrderLifecycleManager&gt; logger);</code> | [src/Meridian.Execution/Services/OrderLifecycleManager.cs:20](../../../../src/Meridian.Execution/Services/OrderLifecycleManager.cs#L20) | Creates a new order lifecycle manager bound to gateway. |
-| <code>public void Start(CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/OrderLifecycleManager.cs:30](../../../../src/Meridian.Execution/Services/OrderLifecycleManager.cs#L30) | Starts consuming the order update stream from the gateway. This method is idempotent — calling it a second time is a no-op. |
-| <code>public OrderStatusUpdate? GetStatus(string orderId);</code> | [src/Meridian.Execution/Services/OrderLifecycleManager.cs:45](../../../../src/Meridian.Execution/Services/OrderLifecycleManager.cs#L45) | Returns the most recent status update for orderId, or null if the order is not known. |
-| <code>public IReadOnlyList&lt;OrderStatusUpdate&gt; GetAllOrders();</code> | [src/Meridian.Execution/Services/OrderLifecycleManager.cs:54](../../../../src/Meridian.Execution/Services/OrderLifecycleManager.cs#L54) | Returns all tracked orders as a snapshot. |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Services/OrderLifecycleManager.cs:86](../../../../src/Meridian.Execution/Services/OrderLifecycleManager.cs#L86) |  |
-
-## OrderPreviewService
-
-Qualified name: <code>Meridian.Execution.Services.OrderPreviewService</code>. Kind: `class`.
-
-Source: [src/Meridian.Execution/Services/OrderPreviewService.cs:13](../../../../src/Meridian.Execution/Services/OrderPreviewService.cs#L13).
-
-Evaluates the same admission/risk policies without dispatching or taking reservations.
-
-```csharp
-public sealed class OrderPreviewService : IOrderPreviewService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public OrderPreviewService(IExecutionGateway gateway, IOrderManager orders, IRiskValidator risk, IOrderMarketReferenceSource prices, ILogger&lt;OrderPreviewService&gt; logger, BrokerageConfiguration? configuration = null, ISecurityMasterGate? securityMaster = null, ExecutionOperatorControlService? controls = null, IPortfolioState? portfolio = null, IOrderSessionPolicy? sessions = null, TimeProvider? clock = null, IOrderInstrumentCoverageSource? coverage = null, ILiveOrderReadinessGate? liveReadiness = null);</code> | [src/Meridian.Execution/Services/OrderPreviewService.cs:23](../../../../src/Meridian.Execution/Services/OrderPreviewService.cs#L23) |  |
-| <code>public async Task&lt;OrderPreviewResult&gt; PreviewAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/OrderPreviewService.cs:41](../../../../src/Meridian.Execution/Services/OrderPreviewService.cs#L41) |  |
