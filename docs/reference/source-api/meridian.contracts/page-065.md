@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperatorTriageBulkItem
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageBulkItem</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:18](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L18).
+
+```csharp
+public sealed record OperatorTriageBulkItem(string WorkItemId, long ExpectedVersion, long? ExpectedSourceVersion = null);
+```
+
+## OperatorTriageBulkResult
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageBulkResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:40](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L40).
+
+```csharp
+public sealed record OperatorTriageBulkResult(IReadOnlyList<OperatorTriageResult> Results);
+```
+
+## OperatorTriageCapabilities
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageCapabilities</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:26](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L26).
+
+```csharp
+public sealed record OperatorTriageCapabilities(bool CanAssign, bool CanAcknowledge, bool CanSnooze, bool CanUnsnooze, string? DisabledReason);
+```
+
 ## OperatorTriageCommand
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageCommand</code>. Kind: `record`.
@@ -673,48 +703,4 @@ Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1424](..
 
 ```csharp
 public sealed record PrivateCapitalCloseCockpitApprovalDto(string ApprovalId, Guid WorkflowId, Guid FundAccountId, string PeriodId, OperationsApprovalStateDto Status, string? Operator, string? Reviewer, string? Rationale, DateTimeOffset? SubmittedAtUtc, DateTimeOffset? DecidedAtUtc, string WorkflowRoute, int EvidenceLinkCount, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, bool IsCurrentDecision = true);
-```
-
-## PrivateCapitalCloseCockpitDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.PrivateCapitalCloseCockpitDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1487](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1487).
-
-```csharp
-public sealed record PrivateCapitalCloseCockpitDto(string? FundProfileId, Guid? LedgerBookId, Guid? FundAccountId, string? PeriodId, string? EntityId, DateTimeOffset ProjectedAtUtc, string CockpitRoute, EvidenceStatusDto OverallStatus, bool IsReadyToClose, int ReadinessScore, int WorkflowCount, int FundEventCount, int CapitalAccountCount, int ReportOutputCount, int DeliveredReportOutputCount, int ReadyLaneCount, int BlockedLaneCount, IReadOnlyList<PrivateCapitalCloseCockpitLaneDto> Lanes, IReadOnlyList<PrivateCapitalCloseCockpitWorkflowDto> Workflows, IReadOnlyList<OperationsCloseReadinessBlockerDto> Blockers, IReadOnlyList<OperationsNextActionDto> NextActions, IReadOnlyList<string> LiveCapabilities, IReadOnlyList<string> PlannedCapabilities, IReadOnlyList<PrivateCapitalCloseCockpitApprovalDto>? ApprovalHistory = null, IReadOnlyList<PrivateCapitalNavSupportPackageDto>? NavSupportPackages = null, IReadOnlyList<OperationsEvidencePackageSummaryDto>? EvidencePackages = null, DailyValuationScheduleStatusDto? DailyValuationStatus = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;PrivateCapitalCloseCockpitApprovalDto&gt; ApprovalHistory { get; init; } = ApprovalHistory??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1516](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1516) |  |
-| <code>public IReadOnlyList&lt;PrivateCapitalNavSupportPackageDto&gt; NavSupportPackages { get; init; } = NavSupportPackages??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1519](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1519) |  |
-| <code>public IReadOnlyList&lt;OperationsEvidencePackageSummaryDto&gt; EvidencePackages { get; init; } = EvidencePackages??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1522](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1522) |  |
-
-## PrivateCapitalCloseCockpitLaneDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.PrivateCapitalCloseCockpitLaneDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1408](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1408).
-
-```csharp
-public sealed record PrivateCapitalCloseCockpitLaneDto(string LaneId, string Label, EvidenceStatusDto Status, bool IsReady, string Summary, string? Route, int EvidenceLinkCount, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, IReadOnlyList<string>? RequiredActions = null, bool RequiredForClose = true)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; RequiredActions { get; init; } = RequiredActions??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1420](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1420) |  |
-
-## PrivateCapitalCloseCockpitWorkflowDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.PrivateCapitalCloseCockpitWorkflowDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1393](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1393).
-
-```csharp
-public sealed record PrivateCapitalCloseCockpitWorkflowDto(Guid WorkflowId, Guid FundAccountId, string PeriodId, OperationsWorkflowStatusDto Status, int CloseReadinessScore, bool IsReadyToClose, string WorkflowRoute, string? ClosePackageId, string? ClosePackageRoute, int BlockerCount, int OpenChecklistCount, DateTimeOffset UpdatedAtUtc, long Version = 0);
 ```

@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-17
 ---
 
 # src/Meridian.Contracts
@@ -477,6 +477,12 @@ not read, or whose source is not registered, is null, so clients show "—" rath
 scope (symbol, fund account, run, provider and date dimensions, plus the optional legal entity and
 fund dimensions `EntityId`/`FundId`, appended last), which browser and WPF apply when a session opens
 with no scope in its link or local storage.
+
+`Workstation/OperatorPreferencesDtos.cs` carries the signed-in operator's presentation preferences
+(`/api/workstation/operator/preferences`): appearance, density, display time zone, the
+page-descriptions setting and browser shortcut overrides keyed by binding id. Every value is
+optional; null means nothing is stored and the client keeps its own value. The values are
+display-only.
 
 `Workstation/WorkstationScopeOptionsDtos.cs` carries the entities, funds and fund accounts the
 calling operator may scope to (`GET /api/workstation/scope-options`), with each fund's visible

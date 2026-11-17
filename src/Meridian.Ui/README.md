@@ -39,7 +39,9 @@ in the shared services. See the dashboard README for these workflows and rebuild
 
 The served keyboard help sheet lets an operator rebind the workstation-global shortcuts (command
 palette, keyboard help) for that browser, with conflict, reserved-key and bare-letter checks. The
-overrides live in browser storage only; the host stores nothing. Rebuild the dashboard to serve it.
+overrides, with appearance, density, display time zone and the page-descriptions setting, are kept
+per operator on the host (`/api/workstation/operator/preferences`) and cached in browser storage, so
+they follow the operator to another browser. Rebuild the dashboard to serve it.
 
 The host-served bundle includes the Security Master bond analytics model selector and floating v3
 metrics, projected payments, fixing provenance and typed refusal states. Rebuild it from `dashboard/`

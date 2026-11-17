@@ -7,6 +7,7 @@
 // override that no longer parses, collides or is refused is ignored and the default applies.
 
 import { useSyncExternalStore } from "react";
+import { notifyOperatorPreferenceChanged } from "@/lib/operator-preference-events";
 
 export type GlobalKeyBindingId = "command-palette" | "keyboard-help";
 
@@ -299,7 +300,7 @@ export function getKeyBindingOverrides(): KeyBindingOverrides {
   return currentOverrides;
 }
 
-function writeOverrides(next: KeyBindingOverrides): void {
+function writeOverrides(next: KeyBindingOverrides, announce = true): void {
   try {
     if (Object.keys(next).length === 0) {
       storage()?.removeItem(KEY_BINDING_OVERRIDES_STORAGE_KEY);
@@ -311,6 +312,20 @@ function writeOverrides(next: KeyBindingOverrides): void {
   }
   currentOverrides = next;
   notify();
+  if (announce) {
+    notifyOperatorPreferenceChanged();
+  }
+}
+
+/**
+ * Replaces this browser's overrides with a set loaded from the operator's host preferences,
+ * decoded as defensively as stored values. Does not announce an operator change.
+ */
+export function applyKeyBindingOverrides(overrides: Readonly<Record<string, string>> | null | undefined): void {
+  const next = decodeKeyBindingOverrides(overrides ? JSON.stringify(overrides) : null);
+  if (JSON.stringify(next) !== JSON.stringify(getKeyBindingOverrides())) {
+    writeOverrides(next, false);
+  }
 }
 
 /**

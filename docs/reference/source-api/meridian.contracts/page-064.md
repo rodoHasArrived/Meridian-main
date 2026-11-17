@@ -607,6 +607,42 @@ Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:35](../../../.
 public sealed record OperatorInboxTriageDto(DateTimeOffset AsOf, string ActorId, IReadOnlyList<OperatorTriageItemDto> Items, bool PersistenceAvailable, string? UnavailableReason);
 ```
 
+## OperatorPreferencesDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperatorPreferencesDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs:22](../../../../src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs#L22).
+
+The signed-in operator&#x27;s stored presentation preferences and when they last changed.
+
+```csharp
+public sealed record OperatorPreferencesDto(OperatorPreferenceValuesDto Preferences, DateTimeOffset? UpdatedAt);
+```
+
+## OperatorPreferencesSaveRequest
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperatorPreferencesSaveRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs:29](../../../../src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs#L29).
+
+Replaces the signed-in operator&#x27;s presentation preferences as a whole. A null or empty set clears them.
+
+```csharp
+public sealed record OperatorPreferencesSaveRequest(OperatorPreferenceValuesDto? Preferences);
+```
+
+## OperatorPreferenceValuesDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperatorPreferenceValuesDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs:14](../../../../src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs#L14).
+
+The signed-in operator&#x27;s presentation preferences, kept on the host so they follow the operator to another browser or machine. Every value is optional: null means &quot;no preference stored&quot;, and the client keeps its own default. Values are display-only and never change stored or ledger data.
+
+```csharp
+public sealed record OperatorPreferenceValuesDto(string? Appearance = null, string? Density = null, string? DisplayTimeZone = null, bool? PageDescriptionsHidden = null, IReadOnlyDictionary<string, string>? KeyBindings = null);
+```
+
 ## OperatorScopePreferenceDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorScopePreferenceDto</code>. Kind: `record`.
@@ -680,34 +716,4 @@ Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:19](../../../.
 
 ```csharp
 public sealed record OperatorTriageBulkCommand(string CommandId, OperatorTriageAction Action, string Reason, string AssigneeId, IReadOnlyList<OperatorTriageBulkItem> Items, Guid? FundAccountId = null);
-```
-
-## OperatorTriageBulkItem
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageBulkItem</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:18](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L18).
-
-```csharp
-public sealed record OperatorTriageBulkItem(string WorkItemId, long ExpectedVersion, long? ExpectedSourceVersion = null);
-```
-
-## OperatorTriageBulkResult
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageBulkResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:40](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L40).
-
-```csharp
-public sealed record OperatorTriageBulkResult(IReadOnlyList<OperatorTriageResult> Results);
-```
-
-## OperatorTriageCapabilities
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageCapabilities</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:26](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L26).
-
-```csharp
-public sealed record OperatorTriageCapabilities(bool CanAssign, bool CanAcknowledge, bool CanSnooze, bool CanUnsnooze, string? DisabledReason);
 ```

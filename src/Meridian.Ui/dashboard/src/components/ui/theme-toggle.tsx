@@ -10,6 +10,7 @@ import {
   type Appearance
 } from "@/lib/theme";
 import { broadcastCompanionState } from "@/lib/companion-pane/opener-broadcast";
+import { onOperatorPreferencesApplied } from "@/lib/operator-preference-events";
 import { cn } from "@/lib/utils";
 
 export interface ThemeToggleProps {
@@ -66,6 +67,15 @@ export function ThemeToggle({
       applyAppearance(value);
     }
   }, [apply, value]);
+
+  // The workstation appearance can change under a mounted control when the operator's preferences
+  // load from the host; re-read the store so the selection matches what is applied.
+  useEffect(() => {
+    if (isControlled || persist !== APPEARANCE_STORAGE_KEY) {
+      return undefined;
+    }
+    return onOperatorPreferencesApplied(() => setInternal(readStoredAppearance()));
+  }, [isControlled, persist]);
 
   const select = (next: Appearance) => {
     if (!isControlled) {

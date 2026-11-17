@@ -6,6 +6,48 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationDataProviderDiagnostic
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationDataProviderDiagnostic</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1084](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1084).
+
+Compact provider diagnostic row embedded in the Data workspace provider center.
+
+```csharp
+public sealed record WorkstationDataProviderDiagnostic(string Id, string Label, string Status, string StatusLabel, string Detail);
+```
+
+## WorkstationDataProviderRecord
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationDataProviderRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1106](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1106).
+
+Provider-center row returned by the Data workspace bootstrap payload.
+
+```csharp
+public sealed record WorkstationDataProviderRecord(string ProviderId, string DisplayName, string Status, string Capability, string Latency, string Note, string TrustScore, string SignalSource, string ReasonCode, string RecommendedAction, string GateImpact, ProviderConnectionRowDto? ConnectionSummary, WorkstationDataProviderRoutingSummary? RoutingSummary, IReadOnlyList<WorkstationDataProviderDiagnostic> Diagnostics)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Provider =&gt; …;</code> | [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1122](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1122) |  |
+
+## WorkstationDataProviderRoutingSummary
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationDataProviderRoutingSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1094](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1094).
+
+Compact routing summary embedded in a Data workspace provider row.
+
+```csharp
+public sealed record WorkstationDataProviderRoutingSummary(string? ConnectionId, string? ProviderFamilyId, bool? ProductionReady, bool? CertificationFresh, int BindingCount, int FallbackRouteCount, string? HealthStatus);
+```
+
 ## WorkstationGeneratedReportWriterGridPayload
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationGeneratedReportWriterGridPayload</code>. Kind: `record`.
@@ -506,40 +548,4 @@ Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:517](../
 
 ```csharp
 public sealed record WorkstationReportWriterGridPayload(string GridId, string Title, string Kind, int DimensionCount, int MetricCount, int FormulaCount, IReadOnlyList<string>? RowFields = null, IReadOnlyList<string>? ColumnFields = null, IReadOnlyList<WorkstationReportWriterMetricPayload>? Metrics = null, IReadOnlyList<WorkstationReportWriterFormulaPayload>? Formulas = null, int? TopN = null, string? SortBy = null, bool SortDescending = true, IReadOnlyList<WorkstationReportWriterFilterPayload>? Filters = null, IReadOnlyList<WorkstationReportWriterFieldPayload>? SourceFields = null);
-```
-
-## WorkstationReportWriterMetricPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportWriterMetricPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:471](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L471).
-
-Template metadata exposed to browser and desktop Reporting operator surfaces.
-
-```csharp
-public sealed record WorkstationReportWriterMetricPayload(string Name, string SourceField, string Function, string? Label = null);
-```
-
-## WorkstationRiskGuardrail
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationRiskGuardrail</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:388](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L388).
-
-One live guardrail from the enforced risk-rule registry, rendered as a utilization bar: how much of the rule&#x27;s configured headroom the current portfolio consumes.
-
-```csharp
-public sealed record WorkstationRiskGuardrail(string RuleName, string State, string CurrentValue, string Threshold, decimal? UtilizationPercent, string Severity);
-```
-
-## WorkstationRunDigest
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationRunDigest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:115](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L115).
-
-Minimal run digest attached to session and strategy payloads. Fields match BuildRunDigest in WorkstationEndpoints.
-
-```csharp
-public sealed record WorkstationRunDigest(string RunId, string StrategyName, string Mode, string Status, string LastUpdated, bool HasLedger, bool HasPortfolio, WorkstationSecurityCoveragePayload SecurityCoverage);
 ```

@@ -6321,6 +6321,7 @@ Meridian-main
 │   │   │   ├── OperationsApprovalCollaborationDtos.cs
 │   │   │   ├── OperationsCloseChecklistHistoryDtos.cs
 │   │   │   ├── OperationsContinuityDtos.cs
+│   │   │   ├── OperatorPreferencesDtos.cs
 │   │   │   ├── OperatorScopePreferenceDtos.cs
 │   │   │   ├── OperatorSurfaceVisitDtos.cs
 │   │   │   ├── OperatorTriageDtos.cs
@@ -9717,6 +9718,9 @@ Meridian-main
 │   │   │   │   │   ├── onboarding.ts
 │   │   │   │   │   ├── operator-inbox-triage.test.ts
 │   │   │   │   │   ├── operator-inbox-triage.ts
+│   │   │   │   │   ├── operator-preference-events.ts
+│   │   │   │   │   ├── operator-preferences-sync.test.ts
+│   │   │   │   │   ├── operator-preferences-sync.ts
 │   │   │   │   │   ├── page-trust-context.test.tsx
 │   │   │   │   │   ├── page-trust-context.tsx
 │   │   │   │   │   ├── plaid-link.ts
@@ -10476,6 +10480,7 @@ Meridian-main
 │   │   │   │   │   ├── mark-freshness.ts
 │   │   │   │   │   ├── market-data.ts
 │   │   │   │   │   ├── number-passport-reference.ts
+│   │   │   │   │   ├── operator-preferences.ts
 │   │   │   │   │   ├── operator-scope-preference.ts
 │   │   │   │   │   ├── operator-surface-visit.ts
 │   │   │   │   │   ├── option-visualization.types.ts
@@ -10929,6 +10934,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpoints.LedgerExport.cs
 │   │   │   ├── WorkstationEndpoints.OperationsRegistration.cs
 │   │   │   ├── WorkstationEndpoints.OperatorInbox.cs
+│   │   │   ├── WorkstationEndpoints.OperatorPreferences.cs
 │   │   │   ├── WorkstationEndpoints.OperatorScopePreference.cs
 │   │   │   ├── WorkstationEndpoints.OperatorSurfaceVisits.cs
 │   │   │   ├── WorkstationEndpoints.OperatorTriage.cs
@@ -11358,6 +11364,7 @@ Meridian-main
 │   │   │   └── StreamTopic.cs
 │   │   ├── Workflows
 │   │   │   ├── BuiltInWorkflowDefinitionProvider.cs
+│   │   │   ├── FileOperatorPreferenceStore.cs
 │   │   │   ├── FileOperatorScopePreferenceStore.cs
 │   │   │   ├── FileOperatorSurfaceVisitStore.cs
 │   │   │   ├── FileWorkflowPresetStore.cs
@@ -15031,6 +15038,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpointsTests.OpenLotBackfill.cs
 │   │   │   ├── WorkstationEndpointsTests.OperationsContinuity.cs
 │   │   │   ├── WorkstationEndpointsTests.OperatorInbox.cs
+│   │   │   ├── WorkstationEndpointsTests.OperatorPreferences.cs
 │   │   │   ├── WorkstationEndpointsTests.OperatorScopePreference.cs
 │   │   │   ├── WorkstationEndpointsTests.OperatorSurfaceVisits.cs
 │   │   │   ├── WorkstationEndpointsTests.PeriodAdjustmentSchedule.cs

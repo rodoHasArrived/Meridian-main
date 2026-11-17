@@ -634,7 +634,23 @@ Overrides persist per browser under `meridian.workstation.keymap.v1`, follow oth
 `storage` events, and are decoded defensively: malformed, unknown, default-valued or refused
 entries are ignored, while a stored swap of the two bindings is kept. `getGlobalKeyBinding`
 returns the effective combo, so the shell and command palette honor overrides without other
-changes. Overrides do not follow the operator to another browser or to the WPF desktop.
+changes. Overrides follow the signed-in operator to other browsers through the host preferences
+below; they do not reach the WPF desktop.
+
+Operator presentation preferences follow the operator across browsers and machines
+(`lib/operator-preferences-sync.ts`, started from `app.tsx` once a non-fixture session is known):
+appearance, density, display time zone, the page-descriptions setting and the shortcut overrides are
+read from `GET /api/workstation/operator/preferences`. A value the host holds wins and is written to
+this browser's store without announcing a change; a value the host lacks keeps this browser's value,
+and the merged set is saved back, so the first signed-in visit migrates existing local choices.
+Afterwards every operator change saves the whole set (`PUT`, debounced 500 ms). Each preference
+writer announces changes through `lib/operator-preference-events.ts`; the theme and density toggles
+re-read their store when host values are applied. Host values the browser cannot use (an unknown
+appearance or density, a zone missing from its Intl data, refused shortcut combos) are ignored. Once
+the host holds a record, missing shortcut overrides mean "none", so a reset in one browser reaches
+the others. A failed read (no session, an older host, offline) leaves preferences browser-only for
+the visit and saves nothing; a failed save keeps the local value and retries with the next change.
+Last write wins across browsers. Fixture sessions stay browser-only. The values are display-only.
 
 Every workspace overview opens with `PageHeading` (`components/ui/page-heading.tsx`): the page
 name, then an optional one-line purpose on its own line, then page actions. Write the purpose as
@@ -831,6 +847,7 @@ scopes), `workspace-nav.test.tsx`, and `layout-switcher.test.tsx`.
 Shared contract change (additive): `OperatingScopeValuesDto` (the operator's default scope) gained
 optional `EntityId` and `FundId` members, appended last, so the server keeps entity and fund in a
 saved default; the dashboard mirror is `types/operator-scope-preference.ts`. No endpoint was added.
+The operator presentation preferences mirror `OperatorPreferencesDto` in `types/operator-preferences.ts`.
 
 React, React DOM, and their type packages are upgraded together. Runtime support uses the floating
 Node major in `.nvmrc` and the minimum declared in this dashboard's `engines.node`; both prerequisite

@@ -1,5 +1,6 @@
 import { createContext, useContext, useId, useSyncExternalStore, type ReactNode } from "react";
 import { InfoNote } from "@/components/ui/info-note";
+import { notifyOperatorPreferenceChanged } from "@/lib/operator-preference-events";
 
 const OperatorContext = createContext<string | null>(null);
 
@@ -34,13 +35,25 @@ function subscribe(listener: () => void) {
 export function useSectionDescriptionsHidden(): [hidden: boolean, setHidden: (hidden: boolean) => void] {
   const operator = useContext(OperatorContext);
   const hidden = useSyncExternalStore(subscribe, () => readHidden(operator), () => false);
-  const setHidden = (next: boolean) => {
-    const key = storageKey(operator);
-    sessionChoices.set(key, next);
-    try { if (operator !== null) localStorage.setItem(key, next ? "hidden" : "shown"); } catch { /* Storage is optional. */ }
-    listeners.forEach((listener) => listener());
-  };
+  const setHidden = (next: boolean) => setSectionDescriptionsHidden(operator, next);
   return [hidden, setHidden];
+}
+
+/** The descriptions setting for one operator key (`environment:name:role`), outside React. */
+export function readSectionDescriptionsHidden(operator: string | null): boolean {
+  return readHidden(operator);
+}
+
+/**
+ * Sets the descriptions setting for one operator key. `announce` is false when the value comes
+ * from the operator's host preferences rather than from the operator in this browser.
+ */
+export function setSectionDescriptionsHidden(operator: string | null, next: boolean, announce = true): void {
+  const key = storageKey(operator);
+  sessionChoices.set(key, next);
+  try { if (operator !== null) localStorage.setItem(key, next ? "hidden" : "shown"); } catch { /* Storage is optional. */ }
+  listeners.forEach((listener) => listener());
+  if (announce) notifyOperatorPreferenceChanged();
 }
 
 /** Test seam: forget choices held for the visit. */

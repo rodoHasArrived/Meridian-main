@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-16
+last_reviewed: 2026-11-17
 ---
 
 # src/Meridian.Ui.Shared
@@ -1241,6 +1241,20 @@ tenant, company and user under the data root (`workstation/operators/scope-prefe
 through the snapshot store's atomic replace; values are trimmed, capped at 128 printable characters,
 and an empty scope clears the default (an entity or fund alone is a scope). Both routes require an
 authenticated session and only ever read or write the caller's own record.
+
+## Operator presentation preferences
+
+`GET`/`PUT /api/workstation/operator/preferences` (`Endpoints/WorkstationEndpoints.OperatorPreferences.cs`)
+read and replace the signed-in operator's presentation preferences: appearance, density, display time
+zone, page-descriptions setting and browser shortcut overrides. `Workflows/FileOperatorPreferenceStore.cs`
+keeps one record per tenant, company and user (the same key as the default scope) under
+`workstation/operators/preferences.json`, through the snapshot store's atomic replace. A save
+replaces the whole set; an empty set clears it. Values are validated: appearance and density from
+fixed sets, the zone by IANA-name shape (at most 64 characters; the browser confirms it against its
+own zone data), and at most 32 shortcut overrides with hyphenated lowercase ids and printable combos
+of at most 64 characters. An invalid value returns 400 naming the field and keeps the stored set.
+Both routes require an authenticated session, only touch the caller's record, and return 501 when
+no store is registered. The values are display-only and never change stored or ledger data.
 
 ## Operating-scope options
 

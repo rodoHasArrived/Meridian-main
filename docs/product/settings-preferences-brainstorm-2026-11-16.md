@@ -64,6 +64,11 @@
 - **Problem:** A quant sets Europe/London and compact density at the office; at home everything is back to UTC.
 - **Fit:** Copy the `IOperatorScopePreferenceStore`/`FileOperatorScopePreferenceStore` pattern: sealed record DTO in `Meridian.Contracts.Workstation`, source-generated JSON context, atomic file writes, `context.RequestAborted` passed through, keyed by `ResolveOperatorPreferenceKey`. Browser hydrates on session start; if the server has no value, keep the local one and push it up.
 - **Effort:** Medium. **Impact:** High.
+- *Update 2026-11-17: implemented as `GET/PUT /api/workstation/operator/preferences` (appearance,
+  density, display time zone, page descriptions, browser shortcut overrides) with
+  `FileOperatorPreferenceStore`, and browser hydrate-then-write-through sync in
+  `lib/operator-preferences-sync.ts`. WPF does not read it yet; that is Idea 2. The default-layout
+  id is not included.*
 
 ### Idea 2: One preferences contract for browser and WPF
 - **What:** Grow `DesktopShellPreferences` into a shared `OperatorPreferences` contract: one density vocabulary (WPF maps Spacious → Standard), one theme enum merging `AppTheme` and browser `Appearance`, time zone honoured by WPF formatters.

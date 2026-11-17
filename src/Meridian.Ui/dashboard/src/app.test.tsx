@@ -7,7 +7,8 @@ import { App } from "@/app";
 import { captureLayoutState, upsertUserLayout } from "@/lib/saved-layouts";
 import { useWorkstationData } from "@/hooks/use-workstation-data";
 import { apiGetJson } from "@/lib/api";
-import { getOperatorScopePreference } from "@/lib/api/operator-workstation.api";
+import { getOperatorPreferences, getOperatorScopePreference } from "@/lib/api/operator-workstation.api";
+import { getDisplayTimeZone, reloadDisplayTimeZone } from "@/lib/display-time-zone";
 import { OPERATOR_TRIAGE_ENDPOINT, type OperatorTriageInbox } from "@/lib/operator-inbox-triage";
 import { OPERATING_CONTEXT_STORAGE_KEY } from "@/lib/operating-scope/persistence";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
@@ -39,6 +40,9 @@ vi.mock("@/lib/api/operator-workstation.api", () => ({
   getCrossScreenCounts: vi.fn().mockResolvedValue(null),
   getOperatorScopePreference: vi.fn().mockResolvedValue({ defaultScope: null, updatedAt: null }),
   saveOperatorScopePreference: vi.fn().mockResolvedValue({ defaultScope: null, updatedAt: null }),
+  // Presentation preferences stay browser-only unless a test loads them from the host.
+  getOperatorPreferences: vi.fn().mockRejectedValue(new Error("offline")),
+  saveOperatorPreferences: vi.fn().mockRejectedValue(new Error("offline")),
   recordOperatorSurfaceVisit: vi.fn().mockRejectedValue(new Error("offline")),
   getOperatorSurfaceVisit: vi.fn().mockRejectedValue(new Error("offline"))
 }));
@@ -527,6 +531,48 @@ describe("App", () => {
     expect(vi.mocked(getOperatorScopePreference).mock.calls.length).toBeGreaterThanOrEqual(2);
     vi.mocked(getOperatorScopePreference).mockReset().mockResolvedValue({ defaultScope: null, updatedAt: null });
     window.localStorage.removeItem(OPERATING_CONTEXT_STORAGE_KEY);
+  });
+
+  it("loads the signed-in operator's host preferences and applies them to this browser", async () => {
+    window.localStorage.removeItem("meridian.workstation.display-time-zone.v1");
+    reloadDisplayTimeZone();
+    vi.mocked(getOperatorPreferences).mockResolvedValue({
+      preferences: { appearance: "dark", density: "compact", displayTimeZone: "Europe/London", pageDescriptionsHidden: false, keyBindings: null },
+      updatedAt: "2026-11-17T09:00:00Z"
+    });
+    mockWorkstationData({
+      loading: false,
+      usingDevelopmentFixtures: false,
+      session: { displayName: "Ops Desk", role: "Operator", environment: "paper", activeWorkspace: "trading", commandCount: 7 }
+    });
+
+    renderWithRouter(<App />, { initialEntries: ["/trading"] });
+
+    await waitFor(() => expect(getDisplayTimeZone()).toBe("Europe/London"));
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+    expect(document.body.getAttribute("data-theme-density")).toBe("compact");
+
+    vi.mocked(getOperatorPreferences).mockReset().mockRejectedValue(new Error("offline"));
+    window.localStorage.removeItem("meridian.workstation.display-time-zone.v1");
+    window.localStorage.removeItem("meridian.workstation.appearance.v1");
+    window.localStorage.removeItem("meridian.workstation.density.v1");
+    reloadDisplayTimeZone();
+    document.documentElement.removeAttribute("data-theme");
+    document.body.removeAttribute("data-theme-density");
+  });
+
+  it("does not read host preferences for a fixture session", async () => {
+    vi.mocked(getOperatorPreferences).mockClear();
+    mockWorkstationData({
+      loading: false,
+      usingDevelopmentFixtures: true,
+      session: { displayName: "Ops Desk", role: "Operator", environment: "paper", activeWorkspace: "trading", commandCount: 7 }
+    });
+
+    renderWithRouter(<App />, { initialEntries: ["/trading"] });
+    await screen.findByRole("main");
+
+    expect(getOperatorPreferences).not.toHaveBeenCalled();
   });
 
   it("keeps an operator's explicit empty scope when the default loads late (C1)", async () => {
