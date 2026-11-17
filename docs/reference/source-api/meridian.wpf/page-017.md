@@ -6,6 +6,66 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WpfIndicatorValueVm
+
+Qualified name: <code>Meridian.Wpf.ViewModels.WpfIndicatorValueVm</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:834](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L834).
+
+Carries an indicator&#x27;s display name, formatted value, and value brush.
+
+```csharp
+public sealed class WpfIndicatorValueVm
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:836](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L836) |  |
+| <code>public string Value { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:837](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L837) |  |
+| <code>public Brush ValueBrush { get; set; } = Brushes.White;</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:838](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L838) |  |
+
+## WpfVolumeBarVm
+
+Qualified name: <code>Meridian.Wpf.ViewModels.WpfVolumeBarVm</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:814](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L814).
+
+Carries a volume bar&#x27;s rendered height, brush, and tooltip.
+
+```csharp
+public sealed class WpfVolumeBarVm
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public double Height { get; set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:816](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L816) |  |
+| <code>public Brush BarBrush { get; set; } = Brushes.Gray;</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:817](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L817) |  |
+| <code>public string Tooltip { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:818](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L818) |  |
+
+## WpfVolumeProfileBarVm
+
+Qualified name: <code>Meridian.Wpf.ViewModels.WpfVolumeProfileBarVm</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:824](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L824).
+
+Carries a price-volume bucket&#x27;s price label, rendered width, and brush.
+
+```csharp
+public sealed class WpfVolumeProfileBarVm
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string PriceLabel { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:826](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L826) |  |
+| <code>public double BarWidth { get; set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:827](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L827) |  |
+| <code>public Brush BarBrush { get; set; } = Brushes.Blue;</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:828](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L828) |  |
+
 ## AccountingClosePage
 
 Qualified name: <code>Meridian.Wpf.Views.AccountingClosePage</code>. Kind: `class`.
@@ -1032,63 +1092,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public FundProfileSelectionPage(FundProfileSelectionViewModel viewModel);</code> | [src/Meridian.Wpf/Views/FundProfileSelectionPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/FundProfileSelectionPage.xaml.cs#L14) |  |
-
-## FundStructureSetupPage
-
-Qualified name: <code>Meridian.Wpf.Views.FundStructureSetupPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/FundStructureSetupPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/FundStructureSetupPage.xaml.cs#L10).
-
-Provides the desktop page to create fund-structure entities, ownership links, and account handoff drafts.
-
-```csharp
-public partial class FundStructureSetupPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FundStructureSetupPage(FundStructureSetupViewModel viewModel);</code> | [src/Meridian.Wpf/Views/FundStructureSetupPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/FundStructureSetupPage.xaml.cs#L12) |  |
-
-## HelpPage
-
-Qualified name: <code>Meridian.Wpf.Views.HelpPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/HelpPage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/HelpPage.xaml.cs#L11).
-
-Help page with tutorials, documentation, and support links.
-
-```csharp
-public partial class HelpPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public HelpPage(WpfServices.NavigationService navigationService, WpfServices.NotificationService notificationService);</code> | [src/Meridian.Wpf/Views/HelpPage.xaml.cs:16](../../../../src/Meridian.Wpf/Views/HelpPage.xaml.cs#L16) |  |
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:99](../../../../src/Meridian.Wpf/Views/Pages.cs#L99).
-
-```csharp
-public partial class HelpPage : Page
-```
-
-## HomeWorkspacePage
-
-Qualified name: <code>Meridian.Wpf.Views.HomeWorkspacePage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/HomeWorkspacePage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/HomeWorkspacePage.xaml.cs#L11).
-
-Hosts the desktop workspace overview and recent activity.
-
-```csharp
-public partial class HomeWorkspacePage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public HomeWorkspacePage(HomeWorkspaceViewModel viewModel);</code> | [src/Meridian.Wpf/Views/HomeWorkspacePage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/HomeWorkspacePage.xaml.cs#L15) |  |
