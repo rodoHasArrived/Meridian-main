@@ -377,8 +377,10 @@ public sealed partial class OrderManagementSystem
             _logger.LogError(
                 exception,
                 "Kill-switch sweep by {Actor} ({CorrelationId}) finished as {Outcome} but its audit record could not be retained",
-                authority.Actor,
-                authority.CorrelationId,
+                // Both can originate in a request (the operator identity, the circuit-breaker
+                // request's correlation id), so they are sanitized before reaching the log.
+                LogSanitizer.Sanitize(authority.Actor),
+                LogSanitizer.Sanitize(authority.CorrelationId),
                 sweep.Outcome);
         }
     }
