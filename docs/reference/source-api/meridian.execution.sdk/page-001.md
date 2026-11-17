@@ -145,7 +145,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Sdk.AuthorityDecisionSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:401](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L401).
+Source: [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:411](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L411).
 
 Which authority admitted or refused an order, for display on the order ticket. Carried on OrderResult.AuthorityDecision; Checkpoint is preflight or dispatch.
 

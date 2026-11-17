@@ -645,7 +645,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Strategies.Services.StrategyRunAuthoritySource</code>. Kind: `class`.
 
-Source: [src/Meridian.Strategies/Services/StrategyRunAuthoritySource.cs:12](../../../../src/Meridian.Strategies/Services/StrategyRunAuthoritySource.cs#L12).
+Source: [src/Meridian.Strategies/Services/StrategyRunAuthoritySource.cs:23](../../../../src/Meridian.Strategies/Services/StrategyRunAuthoritySource.cs#L23).
 
 Supplies the OMS with retained strategy-run authority: the run record and the approved live promotion that targets it. Read-only; it never creates or repairs runs or promotions.
 
@@ -657,8 +657,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public StrategyRunAuthoritySource(IStrategyRepository runs, IPromotionRecordStore promotions);</code> | [src/Meridian.Strategies/Services/StrategyRunAuthoritySource.cs:17](../../../../src/Meridian.Strategies/Services/StrategyRunAuthoritySource.cs#L17) |  |
-| <code>public async Task&lt;StrategyRunAuthoritySnapshot?&gt; GetAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/StrategyRunAuthoritySource.cs:24](../../../../src/Meridian.Strategies/Services/StrategyRunAuthoritySource.cs#L24) |  |
+| <code>public StrategyRunAuthoritySource(IStrategyRepository runs, IPromotionRecordStore promotions);</code> | [src/Meridian.Strategies/Services/StrategyRunAuthoritySource.cs:29](../../../../src/Meridian.Strategies/Services/StrategyRunAuthoritySource.cs#L29) |  |
+| <code>public async Task&lt;StrategyRunAuthoritySnapshot?&gt; GetAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/StrategyRunAuthoritySource.cs:36](../../../../src/Meridian.Strategies/Services/StrategyRunAuthoritySource.cs#L36) |  |
 
 ## StrategyRunContinuityService
 
