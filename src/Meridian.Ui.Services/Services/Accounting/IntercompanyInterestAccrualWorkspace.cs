@@ -15,7 +15,7 @@ namespace Meridian.Ui.Services.Services.Accounting;
 /// </summary>
 public sealed partial class IntercompanyInterestAccrualWorkspace : ObservableObject, IDisposable
 {
-    private const string Idle = "Enter the source book, both accounting profiles and the accrual window, then preview.";
+    private const string Idle = "Choose the source book, both accounting profiles and the accrual window, then preview.";
     private const string NoPreview = "No accrual is previewed.";
     private readonly IWorkstationIntercompanyAgreementApiClient _client;
     private CancellationTokenSource _sessionCancellation = new();
@@ -26,13 +26,30 @@ public sealed partial class IntercompanyInterestAccrualWorkspace : ObservableObj
     private IntercompanyAccrualRequestDto? _previewRequest;
     private IntercompanyAccrualProposalDto? _preview;
     private ManualJournalEntryDraftDto? _draft;
+    private readonly List<ResolvedIntercompanyAccountingArrangementDto> _bookProfiles = [];
+    private int _choicesGeneration, _booksGeneration;
+    private bool _loadingBooks;
+    private string _choicesStatus = "Load the books you can access to choose a source book.";
 
     public IntercompanyInterestAccrualWorkspace(IWorkstationIntercompanyAgreementApiClient client)
     {
         _client = client;
         PreviewCommand = new AsyncRelayCommand(PreviewAsync, () => !IsBusy && SelectionEntered);
         CreateDraftCommand = new AsyncRelayCommand(CreateDraftAsync, () => !IsBusy && CanManageLedger && _preview is { IsReady: true } && _draft is null);
+        LoadChoicesCommand = new AsyncRelayCommand(LoadBooksAsync, () => !_loadingBooks);
     }
+
+    /// <summary>Books the signed-in account can see; choosing one sets <see cref="SourceBook"/>.</summary>
+    public ObservableCollection<IntercompanyChoice> BookChoices { get; } = [];
+    /// <summary>Approved LoanInterest profiles that map the chosen book today.</summary>
+    public ObservableCollection<IntercompanyChoice> InterestProfileChoices { get; } = [];
+    /// <summary>Approved Loan profiles of the same legal agreement as the chosen interest profile.</summary>
+    public ObservableCollection<IntercompanyChoice> PrincipalProfileChoices { get; } = [];
+    public IAsyncRelayCommand LoadChoicesCommand { get; }
+    /// <summary>What the selection lists hold, or why one is empty.</summary>
+    public string ChoicesStatus { get => _choicesStatus; private set => SetProperty(ref _choicesStatus, value); }
+    /// <summary>The latest profile read for the chosen book; completed when no read is outstanding.</summary>
+    public Task ProfileChoicesLoad { get; private set; } = Task.CompletedTask;
 
     public ObservableCollection<IntercompanyInterestAccrualSliceRow> Slices { get; } = [];
     public ObservableCollection<IntercompanyInterestAccrualLineRow> Lines { get; } = [];
@@ -50,8 +67,24 @@ public sealed partial class IntercompanyInterestAccrualWorkspace : ObservableObj
     public string Summary { get => _summary; private set => SetProperty(ref _summary, value); }
     public string Evidence { get => _evidence; private set => SetProperty(ref _evidence, value); }
     public string DraftStatus { get => _draftStatus; private set => SetProperty(ref _draftStatus, value); }
-    public string SourceBook { get => _sourceBook; set => ChangeSelection(ref _sourceBook, value); }
-    public string InterestProfile { get => _interestProfile; set => ChangeSelection(ref _interestProfile, value); }
+    public string SourceBook
+    {
+        get => _sourceBook;
+        set
+        {
+            if (ChangeSelection(ref _sourceBook, value))
+                ProfileChoicesLoad = LoadProfilesAsync();
+        }
+    }
+    public string InterestProfile
+    {
+        get => _interestProfile;
+        set
+        {
+            if (ChangeSelection(ref _interestProfile, value))
+                RefreshPrincipalChoices();
+        }
+    }
     public string PrincipalProfile { get => _principalProfile; set => ChangeSelection(ref _principalProfile, value); }
     /// <summary>First accrued day (yyyy-MM-dd).</summary>
     public string AccrualFrom { get => _accrualFrom; set => ChangeSelection(ref _accrualFrom, value); }
@@ -62,16 +95,89 @@ public sealed partial class IntercompanyInterestAccrualWorkspace : ObservableObj
         && !string.IsNullOrWhiteSpace(PrincipalProfile) && !string.IsNullOrWhiteSpace(AccrualFrom) && !string.IsNullOrWhiteSpace(AccrualTo);
 
     // A preview describes one exact selection; any change withdraws it rather than drafting a stale amount.
-    private void ChangeSelection(ref string field, string value, [System.Runtime.CompilerServices.CallerMemberName] string? property = null)
+    private bool ChangeSelection(ref string field, string value, [System.Runtime.CompilerServices.CallerMemberName] string? property = null)
     {
         if (!SetProperty(ref field, value ?? "", property))
-            return;
+            return false;
         Invalidate();
         var hadPreview = _preview is not null || _draft is not null;
         ClearPreview();
         if (hadPreview)
             StatusText = "Selection changed. Preview the accrual again before drafting.";
         NotifyCommands();
+        return true;
+    }
+
+    private async Task LoadBooksAsync()
+    {
+        var generation = ++_booksGeneration;
+        _loadingBooks = true;
+        LoadChoicesCommand.NotifyCanExecuteChanged();
+        try
+        {
+            var response = await _client.GetLedgerBooksAsync(_sessionCancellation.Token);
+            if (generation != _booksGeneration || _disposed)
+                return;
+            if (!response.Success || response.Data is null)
+            {
+                ChoicesStatus = $"Books could not be listed: {response.ErrorMessage ?? "the ledger book list is unavailable."}";
+                return;
+            }
+            IntercompanyChoice.Replace(BookChoices, response.Data.Select(IntercompanyChoice.Book));
+            ChoicesStatus = BookChoices.Count == 0 ? "No ledger book is visible to your signed-in account."
+                : $"{BookChoices.Count} book(s) available. Choosing one lists the accounting profiles that map it.";
+        }
+        catch (OperationCanceledException) { }
+        finally
+        {
+            _loadingBooks = false;
+            LoadChoicesCommand.NotifyCanExecuteChanged();
+        }
+    }
+
+    // Profiles that map the chosen book, read through the same server resolution the browser uses. A read
+    // that finishes after another book was chosen is ignored rather than mixed into the new book's lists.
+    private async Task LoadProfilesAsync()
+    {
+        var generation = ++_choicesGeneration;
+        _bookProfiles.Clear();
+        InterestProfileChoices.Clear();
+        PrincipalProfileChoices.Clear();
+        if (!Guid.TryParse(SourceBook, out var book) || book == Guid.Empty)
+            return;
+        ChoicesStatus = "Listing the accounting profiles that map this book…";
+        try
+        {
+            var response = await _client.GetCoverageProfilesAsync(book, DateOnly.FromDateTime(DateTime.UtcNow), _sessionCancellation.Token);
+            if (generation != _choicesGeneration || _disposed)
+                return;
+            if (!response.Success || response.Data is null)
+            {
+                ChoicesStatus = $"Accounting profiles could not be listed: {response.ErrorMessage ?? "profile authority is unavailable."}";
+                return;
+            }
+            _bookProfiles.AddRange(response.Data);
+            IntercompanyChoice.Replace(InterestProfileChoices, _bookProfiles
+                .Where(profile => profile.TemplateKind == IntercompanyAccountingTemplateKindDto.LoanInterest).Select(IntercompanyChoice.Profile));
+            ChoicesStatus = InterestProfileChoices.Count == 0
+                ? "No approved loan-interest profile maps this book today."
+                : "Choose the loan-interest profile; its loan principal profiles follow.";
+            RefreshPrincipalChoices();
+        }
+        catch (OperationCanceledException) { }
+    }
+
+    // A principal profile qualifies only when it is a Loan profile pinned to the same legal agreement.
+    private void RefreshPrincipalChoices()
+    {
+        var interest = _bookProfiles.FirstOrDefault(profile => string.Equals(profile.ArrangementId.ToString("D"), InterestProfile, StringComparison.OrdinalIgnoreCase));
+        IntercompanyChoice.Replace(PrincipalProfileChoices, interest is null ? [] : _bookProfiles
+            .Where(profile => profile.TemplateKind == IntercompanyAccountingTemplateKindDto.Loan && profile.CanonicalAgreementId == interest.CanonicalAgreementId)
+            .Select(IntercompanyChoice.Profile));
+        if (interest is not null && PrincipalProfileChoices.Count == 0)
+            ChoicesStatus = "No approved loan principal profile of the same legal agreement maps this book today.";
+        if (PrincipalProfileChoices.Count > 0 && PrincipalProfileChoices.All(choice => !string.Equals(choice.Id, PrincipalProfile, StringComparison.OrdinalIgnoreCase)))
+            PrincipalProfile = PrincipalProfileChoices[0].Id;
     }
 
     private Task PreviewAsync() => RunAsync(async token =>
@@ -171,6 +277,14 @@ public sealed partial class IntercompanyInterestAccrualWorkspace : ObservableObj
             return;
         Invalidate();
         ClearPreview();
+        _choicesGeneration++;
+        _booksGeneration++;
+        _bookProfiles.Clear();
+        BookChoices.Clear();
+        InterestProfileChoices.Clear();
+        PrincipalProfileChoices.Clear();
+        ProfileChoicesLoad = Task.CompletedTask;
+        ChoicesStatus = "Load the books you can access to choose a source book.";
         _permissionKnown = false;
         CanManageLedger = false;
         OnPropertyChanged(nameof(PermissionNote));
