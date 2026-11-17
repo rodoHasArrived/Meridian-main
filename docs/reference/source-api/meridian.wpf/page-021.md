@@ -6,6 +6,43 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationsContinuityCloseBlockerPresentation
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.OperationsContinuityCloseBlockerPresentation</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:122](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L122).
+
+```csharp
+public sealed record OperationsContinuityCloseBlockerPresentation(CloseReadinessBlockerDto Blocker)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string OwnerLabel =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:124](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L124) |  |
+| <code>public string RepairInstruction =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:126](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L126) |  |
+
+## OperationsContinuityClosePresentation
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.OperationsContinuityClosePresentation</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:6](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L6).
+
+Displays the selected shared close decision; legacy gate totals cannot establish close readiness.
+
+```csharp
+public sealed record OperationsContinuityClosePresentation(bool IsReady, string Label, string Detail)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;CloseReadinessBlockerDto&gt; Blockers { get; init; } = [];</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:8](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L8) |  |
+| <code>public IReadOnlyList&lt;OperationsContinuityCloseBlockerPresentation&gt; BlockerRows =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:9](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L9) |  |
+| <code>public static OperationsContinuityClosePresentation Build(OperationsContinuityWorkflowDto? workflow, FinancialOperationsCommandCenterDto? commandCenter, CloseReadinessScopeDto? selectedScope);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:12](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L12) |  |
+
 ## OperationsContinuityMapper
 
 Qualified name: <code>Meridian.Wpf.Workstation.Models.OperationsContinuityMapper</code>. Kind: `class`.
@@ -744,33 +781,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public DenseDataGridControl();</code> | [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:10](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L10) |  |
-
-## KeyValueFactGridControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Tables.KeyValueFactGridControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:37](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L37).
-
-Displays read-only key-value facts using virtualized rows and columns.
-
-```csharp
-public sealed class KeyValueFactGridControl : DataGrid
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public KeyValueFactGridControl();</code> | [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:39](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L39) |  |
-
-## SearchFilterBarControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Tables.SearchFilterBarControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:30](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L30).
-
-Provides a content surface for table search and filter controls.
-
-```csharp
-public sealed class SearchFilterBarControl : ContentControl
-```

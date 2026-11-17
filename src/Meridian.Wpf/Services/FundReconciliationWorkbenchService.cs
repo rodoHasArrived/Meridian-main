@@ -803,7 +803,7 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
 
     private static string FormatTimestamp(DateTimeOffset? value)
         => value.HasValue
-            ? UtcFormat.FormatUtcTimestamp(value.Value)
+            ? UtcFormat.FormatDisplayTimestamp(value.Value)
             : "\u2014";
 
     private static string TrimMiddle(string? value)

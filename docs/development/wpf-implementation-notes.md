@@ -441,7 +441,7 @@ Parameter passing follows the standard MVVM drill-in pattern: `NavigationService
 ### Saved shortcut overrides
 
 Changes made through `KeyboardShortcutService.UpdateShortcut` or `SetShortcutEnabled` are saved
-per machine with the other desktop shell preferences
+with the other desktop shell preferences
 (`%LOCALAPPDATA%\Meridian\desktop-shell-preferences.json`, via
 `SettingsConfigurationService.SetShortcutOverrides`) and reapplied at startup, where `App.xaml.cs`
 attaches the store. Only differences from the defaults are stored. At load, an override is skipped
@@ -449,6 +449,8 @@ when its action is not a default shortcut, its key or modifiers do not parse, it
 another shortcut, or it would leave Start/Stop Collector, Toggle Connection, or Delete Selected
 without Ctrl or Alt. Collisions are checked against the whole saved set, so a saved swap of two
 chords reapplies both; when two saved rebindings claim one chord the earlier entry keeps it.
+That local file is a cache: the overrides also follow the operator through the host preferences
+(see below).
 
 `KeyboardShortcutsPage` is the in-app editor, backed by `KeyboardShortcutsViewModel`. Each row
 offers **Rebind** (captures the next key chord; bare Ctrl/Shift/Alt/Win presses are ignored and
@@ -458,6 +460,53 @@ fails `KeyboardShortcutService.IsBindingAllowed` or collides per `HasConflict` i
 inline reason naming the rule or the shortcut that holds the chord; `UpdateShortcut` is only
 called for accepted chords. A per-row reset is refused while another shortcut has been rebound onto
 that default chord. **Reset to defaults** clears every override.
+
+### Theme and density follow the operator
+
+The shell theme and density come from the operator's host preferences
+(`/api/workstation/operator/preferences`), the same set the browser workstation syncs, through
+`DesktopOperatorPreferenceSync` (`Meridian.Ui.Services`) and `WpfDesktopPreferenceSurface`. Values
+the host holds are applied at startup; a desktop change saves only appearance and density and keeps
+the browser's other values. The browser's `spacious` density shows as Standard here and is not
+narrowed by a desktop save. With no reachable host (or in fixture mode) theme and density stay
+local; the theme then starts as Light as before.
+
+### Shortcut overrides follow the operator
+
+Desktop shortcut overrides are saved with the operator's host preferences as `DesktopKeyBindings`,
+separate from the browser's shortcut overrides because the two clients have different actions and
+chord formats. At startup a host set replaces this desktop's, and an empty host set restores every
+default. When the host has no desktop set yet, this desktop's local overrides are saved up, so the
+first desktop to sync seeds the others. A rebind, toggle or reset in `KeyboardShortcutsPage` re-reads
+the host set and saves only the desktop shortcut overrides. Host overrides that this desktop cannot
+apply (an unknown action, an unparseable key, a colliding chord) are skipped, and the local
+`desktop-shell-preferences.json` keeps what applied, so the overrides still load offline. A browser
+save never clears them. Another desktop's change arrives at the next start; last write wins.
+
+### Notifications and quiet hours follow the operator
+
+The Settings page Notifications card edits the live `NotificationService` settings: **Show pop-up
+notifications**, the five types (connection, errors, backfill, data gaps, storage) and quiet hours
+typed as 24-hour `HH:mm` times. Each change applies at once and is saved with the operator's host
+preferences, the same set the browser's Settings > Preferences > Notifications card edits, so either
+client can change it. Quiet hours are read in the operator's display time zone; a window ending
+earlier than it starts runs past midnight and its end minute is not quiet. The host set is applied at
+startup; another client's change arrives at the next start. Without a reachable host the defaults
+apply for the run. The pop-up switch is no longer read from the configuration file. **Send Test
+Notification** reports when pop-ups are off or held by quiet hours instead of showing nothing. The
+sound choice stays local and is not applied yet.
+
+### Timestamps follow the display time zone
+
+Timestamps that the desktop labels with a zone use `FormatHelpers.FormatDisplayTimestamp`
+(`Meridian.Ui.Services`), or `DisplayTimestampConverter` from XAML, never a hand-written `" UTC"`
+suffix. The zone is the operator's host display time zone, applied to `DisplayTimeZone` at startup
+and whenever the desktop saves preferences; it is UTC when unset, when the host cannot be read, or
+when this machine cannot resolve the zone. UTC labels are unchanged ("2026-07-05 12:00 UTC"); other
+zones show local time with the offset for that instant ("2026-07-05 13:00 UTC+01:00"). Code that
+parses a formatted label back uses `TryParseDisplayTimestamp`. Open screens reformat on their next
+refresh. This is display only: stored, audit and ledger values stay UTC. A page that uses `DisplayTimestampConverter` declares it in its own resources, like the other
+page converters, because pages also load without `App.xaml`.
 
 ### One refresh control
 

@@ -6,6 +6,31 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ExportEstimate
+
+Qualified name: <code>Meridian.Ui.Services.ExportEstimate</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs:1159](../../../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs#L1159).
+
+Export size and duration estimate.
+
+```csharp
+public sealed class ExportEstimate
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public long TotalRecords { get; set; }</code> | [src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs:1161](../../../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs#L1161) |  |
+| <code>public long AvailableRecords { get; set; }</code> | [src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs:1162](../../../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs#L1162) |  |
+| <code>public double CompletenessPercent { get; set; }</code> | [src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs:1163](../../../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs#L1163) |  |
+| <code>public long EstimatedSizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs:1164](../../../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs#L1164) |  |
+| <code>public int EstimatedDurationSeconds { get; set; }</code> | [src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs:1165](../../../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs#L1165) |  |
+| <code>public List&lt;string&gt; Warnings { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs:1166](../../../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs#L1166) |  |
+| <code>public string EstimatedSizeFormatted =&gt; …;</code> | [src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs:1168](../../../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs#L1168) |  |
+| <code>public string EstimatedDurationFormatted =&gt; …;</code> | [src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs:1169](../../../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs#L1169) |  |
+
 ## ExportFormat
 
 Qualified name: <code>Meridian.Ui.Services.ExportFormat</code>. Kind: `enum`.
@@ -699,7 +724,14 @@ Declared public members:
 | <code>public static string FormatUtcTimestamp(DateTimeOffset? value, string fallback) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FormatHelpers.cs:103](../../../../src/Meridian.Ui.Services/Services/FormatHelpers.cs#L103) | Formats an optional timestamp in UTC, or returns fallback when it is absent. |
 | <code>public static string FormatUtcTimestamp(DateTime? value, string fallback) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FormatHelpers.cs:109](../../../../src/Meridian.Ui.Services/Services/FormatHelpers.cs#L109) | Formats an optional timestamp in UTC, or returns fallback when it is absent. |
 | <code>public static bool TryParseUtcTimestamp(string? text, out DateTimeOffset value) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FormatHelpers.cs:116](../../../../src/Meridian.Ui.Services/Services/FormatHelpers.cs#L116) | Reads back a label written by FormatUtcTimestamp(DateTimeOffset), e.g. &quot;2026-07-05 12:00 UTC&quot;, to minute precision. Returns false for any other text. |
-| <code>public static DateTime AsUtc(DateTime value) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FormatHelpers.cs:129](../../../../src/Meridian.Ui.Services/Services/FormatHelpers.cs#L129) | The UTC instant of a DateTime. A local value is converted. A value with no kind is read as UTC, because the API&#x27;s timestamps are UTC and a JSON value without an offset carries no local meaning. |
+| <code>public const string DisplayTimestampFormat = &quot;yyyy-MM-dd HH:mm&quot;;</code> | [src/Meridian.Ui.Services/Services/FormatHelpers.cs:125](../../../../src/Meridian.Ui.Services/Services/FormatHelpers.cs#L125) | Date and time part of a display timestamp, e.g. &quot;2026-07-05 13:00&quot;. |
+| <code>public static string FormatDisplayTimestamp(DateTimeOffset value, string pattern = DisplayTimestampFormat);</code> | [src/Meridian.Ui.Services/Services/FormatHelpers.cs:135](../../../../src/Meridian.Ui.Services/Services/FormatHelpers.cs#L135) | Formats an instant in the operator&#x27;s display time zone (DisplayTimeZone) with pattern for the date and time, followed by the zone label: &quot;UTC&quot; when the display zone is UTC (so &quot;2026-07-05 12:00 UTC&quot;, exactly FormatUtcTimestamp(DateTimeOffset)), otherwise the zone&#x27;s offset at that instant, e.g. &quot;2026-07-05 13:00 UTC+01:00&quot;. The offset is shown rather than a zone abbreviation so every label is unambiguous and can be read back. Display only: stored, audit and ledger values keep their own UTC form. |
+| <code>public static string FormatDisplayTimestamp(DateTime value, string pattern = DisplayTimestampFormat) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FormatHelpers.cs:151](../../../../src/Meridian.Ui.Services/Services/FormatHelpers.cs#L151) | Formats an instant in the operator&#x27;s display time zone. See AsUtc for how the value&#x27;s DateTime.Kind is read. |
+| <code>public static string FormatDisplayTimestamp(DateTimeOffset? value, string fallback) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FormatHelpers.cs:155](../../../../src/Meridian.Ui.Services/Services/FormatHelpers.cs#L155) | Formats an optional instant in the display time zone, or returns fallback. |
+| <code>public static string FormatDisplayTimestamp(DateTime? value, string fallback) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FormatHelpers.cs:159](../../../../src/Meridian.Ui.Services/Services/FormatHelpers.cs#L159) | Formats an optional instant in the display time zone, or returns fallback. |
+| <code>public static string FormatDisplayTimeRange(DateTimeOffset start, DateTimeOffset end, string pattern = &quot;HH:mm&quot;);</code> | [src/Meridian.Ui.Services/Services/FormatHelpers.cs:166](../../../../src/Meridian.Ui.Services/Services/FormatHelpers.cs#L166) | The label for a span of two instants on one line, e.g. &quot;13:00 - 14:30 UTC+01:00&quot;: both times in the display time zone with pattern, and the zone label once (from the start). |
+| <code>public static bool TryParseDisplayTimestamp(string? text, out DateTimeOffset value);</code> | [src/Meridian.Ui.Services/Services/FormatHelpers.cs:180](../../../../src/Meridian.Ui.Services/Services/FormatHelpers.cs#L180) | Reads back a label written by FormatDisplayTimestamp(DateTimeOffset, string) with the default pattern, in either zone form (&quot;2026-07-05 12:00 UTC&quot; or &quot;2026-07-05 13:00 UTC+01:00&quot;), to minute precision. Returns false for any other text. |
+| <code>public static DateTime AsUtc(DateTime value) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FormatHelpers.cs:215](../../../../src/Meridian.Ui.Services/Services/FormatHelpers.cs#L215) | The UTC instant of a DateTime. A local value is converted. A value with no kind is read as UTC, because the API&#x27;s timestamps are UTC and a JSON value without an offset carries no local meaning. |
 
 ## GapAnalysisOptions
 
@@ -1124,24 +1156,3 @@ Declared public members:
 | <code>public double UptimePercent { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:462](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L462) |  |
 | <code>public double MessagesPerSecond { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:463](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L463) |  |
 | <code>public int ErrorsLastHour { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:464](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L464) |  |
-
-## HealthScoreBreakdown
-
-Qualified name: <code>Meridian.Ui.Services.HealthScoreBreakdown</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:470](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L470).
-
-Groups the stability, latency, completeness, and reconnection components of a health score.
-
-```csharp
-public sealed class HealthScoreBreakdown
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ScoreComponent ConnectionStability { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:472](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L472) |  |
-| <code>public ScoreComponent LatencyConsistency { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:473](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L473) |  |
-| <code>public ScoreComponent DataCompleteness { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:474](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L474) |  |
-| <code>public ScoreComponent ReconnectionFrequency { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:475](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L475) |  |

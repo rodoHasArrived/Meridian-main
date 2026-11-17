@@ -6,6 +6,89 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BatchBacktestViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.BatchBacktestViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:81](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L81).
+
+ViewModel for real batch backtest execution with request parameter sweeps.
+
+```csharp
+public sealed class BatchBacktestViewModel : BindableBase, IDisposable, IDataErrorInfo
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public BatchBacktestViewModel(IBatchBacktestService batchBacktestService);</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:111](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L111) |  |
+| <code>public ObservableCollection&lt;BatchSweepParameterOption&gt; SweepParameters { get; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:132](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L132) |  |
+| <code>public ObservableCollection&lt;BatchRunResultItem&gt; Results { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:133](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L133) |  |
+| <code>public IAsyncRelayCommand StartBatchCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:135](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L135) |  |
+| <code>public IRelayCommand CancelCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:136](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L136) |  |
+| <code>public IRelayCommand ClearResultsCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:137](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L137) |  |
+| <code>public string SymbolsText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:139](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L139) |  |
+| <code>public DateTime FromDate { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:151](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L151) |  |
+| <code>public DateTime ToDate { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:163](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L163) |  |
+| <code>public decimal InitialCash { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:175](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L175) |  |
+| <code>public double AnnualMarginRate { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:187](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L187) |  |
+| <code>public string DataRoot { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:199](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L199) |  |
+| <code>public BatchSweepParameterOption? SelectedSweepParameter { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:211](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L211) |  |
+| <code>public decimal SweepStart { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:227](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L227) |  |
+| <code>public decimal SweepStop { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:240](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L240) |  |
+| <code>public decimal SweepStep { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:253](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L253) |  |
+| <code>public int MaxConcurrency { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:266](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L266) |  |
+| <code>public int TotalRuns { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:278](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L278) |  |
+| <code>public int CompletedRuns { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:290](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L290) |  |
+| <code>public int SucceededRuns { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:302](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L302) |  |
+| <code>public int FailedRuns { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:308](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L308) |  |
+| <code>public double ProgressPercent { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:314](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L314) |  |
+| <code>public string CurrentLabel { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:320](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L320) |  |
+| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:332](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L332) |  |
+| <code>public string SummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:344](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L344) |  |
+| <code>public string ValidationSummary { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:356](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L356) |  |
+| <code>public string TotalDurationText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:368](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L368) |  |
+| <code>public bool IsRunning { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:374](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L374) |  |
+| <code>public bool CanStartBatch =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:390](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L390) |  |
+| <code>public bool HasResults =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:392](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L392) |  |
+| <code>public bool IsResultsEmptyStateVisible =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:394](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L394) |  |
+| <code>public string ResultsEmptyStateTitle { get; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:396](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L396) |  |
+| <code>public string ResultsEmptyStateDetail { get; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:424](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L424) |  |
+| <code>public string ParameterPreviewText { get; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:455](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L455) |  |
+| <code>public string Error =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:474](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L474) |  |
+| <code>public string this[string columnName] =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:476](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L476) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:757](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L757) |  |
+
+## BatchRunResultItem
+
+Qualified name: <code>Meridian.Wpf.ViewModels.BatchRunResultItem</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:24](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L24).
+
+Result item for display in the batch backtest results grid.
+
+```csharp
+public sealed class BatchRunResultItem
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public required string ParametersSummary { get; init; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:26](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L26) |  |
+| <code>public required string Status { get; init; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:27](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L27) |  |
+| <code>public required string TotalReturnText { get; init; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:28](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L28) |  |
+| <code>public required string SharpeRatioText { get; init; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:29](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L29) |  |
+| <code>public required string MaxDrawdownText { get; init; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:30](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L30) |  |
+| <code>public required string NetPnlText { get; init; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:31](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L31) |  |
+| <code>public required string TradesText { get; init; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:32](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L32) |  |
+| <code>public required string EventsText { get; init; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:33](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L33) |  |
+| <code>public required string DurationText { get; init; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:34](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L34) |  |
+| <code>public required string ErrorMessage { get; init; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:35](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L35) |  |
+| <code>public bool HasError =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:36](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L36) |  |
+| <code>public static BatchRunResultItem FromRun(BatchBacktestRun run);</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:38](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L38) |  |
+
 ## BatchSweepParameterOption
 
 Qualified name: <code>Meridian.Wpf.ViewModels.BatchSweepParameterOption</code>. Kind: `record`.
@@ -1709,130 +1792,3 @@ Declared public members:
 | <code>public void StartReplay();</code> | [src/Meridian.Wpf/ViewModels/EventReplayViewModel.cs:122](../../../../src/Meridian.Wpf/ViewModels/EventReplayViewModel.cs#L122) |  |
 | <code>public void PauseReplay();</code> | [src/Meridian.Wpf/ViewModels/EventReplayViewModel.cs:135](../../../../src/Meridian.Wpf/ViewModels/EventReplayViewModel.cs#L135) |  |
 | <code>public void StopReplay();</code> | [src/Meridian.Wpf/ViewModels/EventReplayViewModel.cs:147](../../../../src/Meridian.Wpf/ViewModels/EventReplayViewModel.cs#L147) |  |
-
-## EvidenceAttestationDocumentChoice
-
-Qualified name: <code>Meridian.Wpf.ViewModels.EvidenceAttestationDocumentChoice</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs:369](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs#L369).
-
-```csharp
-public sealed record EvidenceAttestationDocumentChoice(string VaultId, string DocumentId, string Label)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string SubjectId =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs:371](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs#L371) |  |
-
-## EvidenceWorkbenchViewModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.EvidenceWorkbenchViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs:9](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs#L9).
-
-```csharp
-public sealed partial class EvidenceWorkbenchViewModel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IAsyncRelayCommand PreviewAttestationCommand { get; private set; } = null !;</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs:27](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs#L27) |  |
-| <code>public IAsyncRelayCommand ToggleAttestationDeclarationCommand { get; private set; } = null !;</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs:28](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs#L28) |  |
-| <code>public IAsyncRelayCommand RecordAttestationCommand { get; private set; } = null !;</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs:29](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs#L29) |  |
-| <code>public IAsyncRelayCommand RevokeAttestationCommand { get; private set; } = null !;</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs:30](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs#L30) |  |
-| <code>public IAsyncRelayCommand RetryAttestationCommand { get; private set; } = null !;</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs:31](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs#L31) |  |
-| <code>public IAsyncRelayCommand ExportAttestationProofCommand { get; private set; } = null !;</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs:32](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs#L32) |  |
-| <code>public ObservableCollection&lt;EvidenceAttestationDocumentChoice&gt; AttestationDocuments { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs:33](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs#L33) |  |
-| <code>public ObservableCollection&lt;string&gt; AttestationChecks { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs:34](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs#L34) |  |
-| <code>public ObservableCollection&lt;string&gt; PacketAttestationDisclosures { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs:35](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs#L35) |  |
-| <code>public string PacketAttestationSummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs:36](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs#L36) |  |
-| <code>public string AttestationConfirmationText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs:37](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs#L37) |  |
-| <code>public string DeclarationActionText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs:38](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs#L38) |  |
-| <code>public string AttestationExportText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs:42](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs#L42) |  |
-| <code>public string AttestationActionStatus { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs:43](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs#L43) |  |
-| <code>public string AttestationPreviewText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs:44](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs#L44) |  |
-| <code>public bool HasPendingAttestationCommand =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs:45](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs#L45) |  |
-| <code>public bool CanEditAttestationInputs =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs:46](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs#L46) |  |
-| <code>public string PendingAttestationCommandText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs:47](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs#L47) |  |
-| <code>public bool IsAttestationBusy { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs:55](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs#L55) |  |
-| <code>public bool IsAttestationConfirmed { get; set; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs:61](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs#L61) |  |
-| <code>public string AttestationReason { get; set; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs:67](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs#L67) |  |
-| <code>public string DeclarationReason { get; set; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs:73](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs#L73) |  |
-| <code>public string AttestationRevocationReason { get; set; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs:79](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs#L79) |  |
-| <code>public EvidenceAttestationDocumentChoice? SelectedAttestationDocument { get; set; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs:85](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs#L85) |  |
-| <code>public PreparerAttestationHistoryRowModel? SelectedAttestationReceipt { get; set; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs:95](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs#L95) |  |
-| <code>public async Task PreviewAttestationAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs:227](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs#L227) |  |
-| <code>public Task ChangeAttestationDeclarationAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs:262](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs#L262) |  |
-| <code>public Task RecordAttestationAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs:270](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs#L270) |  |
-| <code>public Task RevokeAttestationAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs:278](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs#L278) |  |
-| <code>public Task RetryAttestationAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs:285](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs#L285) |  |
-| <code>public async Task ReadAttestationProofExportAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs:288](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs#L288) |  |
-
-Source: [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:17](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L17).
-
-Presentation-only desktop workbench over the shared workstation evidence endpoints. It projects server-owned evidence subjects, packets, proof chains, vault request lists, and retained documents; it never evaluates completeness, SLA, or retention policy locally. Deep links arrive as EvidenceWorkbench:{subjectKind}/{subjectId} navigation parameters.
-
-```csharp
-public sealed partial class EvidenceWorkbenchViewModel : BindableBase, IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public EvidenceWorkbenchViewModel(IEvidenceWorkbenchApiClient apiClient);</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:54](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L54) |  |
-| <code>public IAsyncRelayCommand RefreshCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:72](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L72) |  |
-| <code>public IAsyncRelayCommand ValidateCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:74](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L74) |  |
-| <code>public IAsyncRelayCommand ExportManifestCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:76](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L76) |  |
-| <code>public IRelayCommand&lt;EvidencePacketActionRowModel&gt; OpenPacketActionCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:78](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L78) |  |
-| <code>public ObservableCollection&lt;EvidenceWorkbenchSubjectRowModel&gt; Subjects { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:80](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L80) |  |
-| <code>public ObservableCollection&lt;EvidenceWorkbenchSummaryFactModel&gt; SummaryItems { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:82](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L82) |  |
-| <code>public ObservableCollection&lt;EvidenceProofChainLayerRowModel&gt; ProofChainRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:84](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L84) |  |
-| <code>public ObservableCollection&lt;EvidenceNodeRowModel&gt; NodeRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:86](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L86) |  |
-| <code>public ObservableCollection&lt;EvidenceLineageRowModel&gt; LineageRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:88](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L88) |  |
-| <code>public ObservableCollection&lt;EvidenceRequestListRowModel&gt; RequestListRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:90](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L90) |  |
-| <code>public ObservableCollection&lt;EvidencePacketActionRowModel&gt; PacketActions { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:92](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L92) |  |
-| <code>public ObservableCollection&lt;string&gt; MissingEvidence { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:94](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L94) |  |
-| <code>public ObservableCollection&lt;string&gt; StaleEvidence { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:96](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L96) |  |
-| <code>public ObservableCollection&lt;string&gt; OrphanEvidence { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:98](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L98) |  |
-| <code>public ObservableCollection&lt;string&gt; SlaBreaches { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:100](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L100) |  |
-| <code>public ObservableCollection&lt;string&gt; Warnings { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:102](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L102) |  |
-| <code>public ObservableCollection&lt;PreparerAttestationHistoryRowModel&gt; AttestationRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:104](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L104) |  |
-| <code>public string AttestationStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:106](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L106) |  |
-| <code>public string AttestationScopeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:112](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L112) |  |
-| <code>public object? Parameter { get; set; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:123](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L123) | Navigation parameter applied by the shell. A string in the form {subjectKind}/{subjectId} (optionally still carrying the EvidenceWorkbench: prefix) focuses the workbench on that subject. |
-| <code>public EvidenceWorkbenchSubjectRowModel? SelectedSubject { get; set; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:135](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L135) |  |
-| <code>public string Title { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:149](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L149) |  |
-| <code>public string Subtitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:155](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L155) |  |
-| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:161](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L161) |  |
-| <code>public string ErrorText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:167](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L167) |  |
-| <code>public bool HasError =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:179](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L179) |  |
-| <code>public bool IsRefreshing { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:181](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L181) |  |
-| <code>public bool IsValidating { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:193](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L193) |  |
-| <code>public bool IsExporting { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:205](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L205) |  |
-| <code>public bool IsBusy =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:217](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L217) |  |
-| <code>public bool HasPacket =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:219](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L219) |  |
-| <code>public bool HasSubjects =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:221](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L221) |  |
-| <code>public string ScoreText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:223](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L223) |  |
-| <code>public string CompletenessStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:229](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L229) |  |
-| <code>public WorkstationReadinessTone CompletenessTone { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:235](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L235) |  |
-| <code>public string CompletenessToneText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:241](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L241) |  |
-| <code>public string GeneratedText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:247](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L247) |  |
-| <code>public string ProofChainSummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:253](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L253) |  |
-| <code>public string ProofChainCoverageText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:259](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L259) |  |
-| <code>public string ExportResultText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:265](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L265) |  |
-| <code>public bool HasExportResult =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:277](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L277) |  |
-| <code>public string RequestListErrorText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:279](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L279) |  |
-| <code>public bool HasRequestListError =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:291](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L291) |  |
-| <code>public string DocumentQueueErrorText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:293](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L293) |  |
-| <code>public bool HasDocumentQueueError =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:305](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L305) |  |
-| <code>public EvidenceVaultDocumentQueuePresentationModel DocumentQueue { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:307](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L307) |  |
-| <code>public void Activate();</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:313](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L313) |  |
-| <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:321](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L321) |  |
-| <code>public async Task RefreshAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:344](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L344) |  |
-| <code>public async Task ValidateAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:424](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L424) |  |
-| <code>public async Task ExportManifestAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs:466](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs#L466) |  |

@@ -22,17 +22,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static IServiceProvider Services { get; private set; } = null !;</code> | [src/Meridian.Wpf/App.xaml.cs:77](../../../../src/Meridian.Wpf/App.xaml.cs#L77) | Gets the service provider for dependency injection. |
-| <code>public static bool IsFixtureMode =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:83](../../../../src/Meridian.Wpf/App.xaml.cs#L83) | Gets whether the application is running in fixture mode (offline mock data). Activated via --fixture command-line argument or MDC_FIXTURE_MODE=1 environment variable. |
-| <code>public static new MainWindow? MainWindow =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:88](../../../../src/Meridian.Wpf/App.xaml.cs#L88) | Gets the main application window. |
-| <code>public static bool IsFirstRun =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:93](../../../../src/Meridian.Wpf/App.xaml.cs#L93) | Gets whether this is the first run of the application. |
-| <code>public static string[] GetLaunchArgs() =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:99](../../../../src/Meridian.Wpf/App.xaml.cs#L99) | Gets the command-line arguments passed at launch. Used by MainWindow to handle jump-list and deep-link args. |
-| <code>public static WpfServices.NotificationService Notifications =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:104](../../../../src/Meridian.Wpf/App.xaml.cs#L104) | Gets the notification service instance. |
-| <code>public static WpfServices.ConnectionService Connection =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:109](../../../../src/Meridian.Wpf/App.xaml.cs#L109) | Gets the connection service instance. |
-| <code>public static WpfServices.ThemeService Theme =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:114](../../../../src/Meridian.Wpf/App.xaml.cs#L114) | Gets the theme service instance. |
-| <code>public static WpfServices.OfflineTrackingPersistenceService OfflineTracking =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:119](../../../../src/Meridian.Wpf/App.xaml.cs#L119) | Gets the offline tracking persistence service instance. |
-| <code>public static WpfServices.BackgroundTaskSchedulerService Scheduler =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:124](../../../../src/Meridian.Wpf/App.xaml.cs#L124) | Gets the background task scheduler service instance. |
-| <code>public static WpfServices.PendingOperationsQueueService OperationsQueue =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:129](../../../../src/Meridian.Wpf/App.xaml.cs#L129) | Gets the pending operations queue service instance. |
+| <code>public static IServiceProvider Services { get; private set; } = null !;</code> | [src/Meridian.Wpf/App.xaml.cs:119](../../../../src/Meridian.Wpf/App.xaml.cs#L119) | Gets the service provider for dependency injection. |
+| <code>public static bool IsFixtureMode =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:125](../../../../src/Meridian.Wpf/App.xaml.cs#L125) | Gets whether the application is running in fixture mode (offline mock data). Activated via --fixture command-line argument or MDC_FIXTURE_MODE=1 environment variable. |
+| <code>public static new MainWindow? MainWindow =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:130](../../../../src/Meridian.Wpf/App.xaml.cs#L130) | Gets the main application window. |
+| <code>public static bool IsFirstRun =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:135](../../../../src/Meridian.Wpf/App.xaml.cs#L135) | Gets whether this is the first run of the application. |
+| <code>public static string[] GetLaunchArgs() =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:141](../../../../src/Meridian.Wpf/App.xaml.cs#L141) | Gets the command-line arguments passed at launch. Used by MainWindow to handle jump-list and deep-link args. |
+| <code>public static WpfServices.NotificationService Notifications =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:146](../../../../src/Meridian.Wpf/App.xaml.cs#L146) | Gets the notification service instance. |
+| <code>public static WpfServices.ConnectionService Connection =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:151](../../../../src/Meridian.Wpf/App.xaml.cs#L151) | Gets the connection service instance. |
+| <code>public static WpfServices.ThemeService Theme =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:156](../../../../src/Meridian.Wpf/App.xaml.cs#L156) | Gets the theme service instance. |
+| <code>public static WpfServices.OfflineTrackingPersistenceService OfflineTracking =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:161](../../../../src/Meridian.Wpf/App.xaml.cs#L161) | Gets the offline tracking persistence service instance. |
+| <code>public static WpfServices.BackgroundTaskSchedulerService Scheduler =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:166](../../../../src/Meridian.Wpf/App.xaml.cs#L166) | Gets the background task scheduler service instance. |
+| <code>public static WpfServices.PendingOperationsQueueService OperationsQueue =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:171](../../../../src/Meridian.Wpf/App.xaml.cs#L171) | Gets the pending operations queue service instance. |
 
 ## AvalonEditNotebookBehavior
 
@@ -923,6 +923,25 @@ Declared public members:
 | <code>public object Convert(object value, Type targetType, object parameter, CultureInfo culture);</code> | [src/Meridian.Wpf/Converters/ConsoleEntryKindToBrushConverter.cs:18](../../../../src/Meridian.Wpf/Converters/ConsoleEntryKindToBrushConverter.cs#L18) |  |
 | <code>public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =&gt; …;</code> | [src/Meridian.Wpf/Converters/ConsoleEntryKindToBrushConverter.cs:33](../../../../src/Meridian.Wpf/Converters/ConsoleEntryKindToBrushConverter.cs#L33) |  |
 
+## DisplayTimestampConverter
+
+Qualified name: <code>Meridian.Wpf.Converters.DisplayTimestampConverter</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Converters/DisplayTimestampConverter.cs:16](../../../../src/Meridian.Wpf/Converters/DisplayTimestampConverter.cs#L16).
+
+Formats a DateTime or DateTimeOffset instant in the operator&#x27;s display time zone with FormatHelpers.FormatDisplayTimestamp(DateTimeOffset, string), e.g. &quot;2026-07-05 13:00 UTC+01:00&quot;. The converter parameter, when given, is the date and time pattern. Any other value passes through unchanged.
+
+```csharp
+public sealed class DisplayTimestampConverter : IValueConverter
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture);</code> | [src/Meridian.Wpf/Converters/DisplayTimestampConverter.cs:18](../../../../src/Meridian.Wpf/Converters/DisplayTimestampConverter.cs#L18) |  |
+| <code>public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =&gt; …;</code> | [src/Meridian.Wpf/Converters/DisplayTimestampConverter.cs:29](../../../../src/Meridian.Wpf/Converters/DisplayTimestampConverter.cs#L29) |  |
+
 ## IntToVisibilityConverter
 
 Qualified name: <code>Meridian.Wpf.Converters.IntToVisibilityConverter</code>. Kind: `class`.
@@ -1233,25 +1252,3 @@ Declared public members:
 | <code>public static readonly WorkspaceDescriptorCopy Descriptor = new (WorkspaceId, WorkstationWorkspaceCatalog.SettingsLabel, WorkstationWorkspaceCatalog.SettingsDesktopDescription, WorkstationWorkspaceCatalog.SettingsDesktopSummary, WorkstationWorkspaceCatalog.SettingsDesktopTileSummary, WorkstationWorkspaceCatalog.SettingsDesktopShellDisplayName);</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:156](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L156) |  |
 | <code>public const string ShellTitle = &quot;Settings Workspace&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:164](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L164) |  |
 | <code>public const string ShellSubtitle = &quot;Pick the setup task you need.&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:165](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L165) |  |
-
-## Strategy
-
-Qualified name: <code>Meridian.Wpf.Copy.WorkspaceCopyCatalog.Strategy</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:113](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L113).
-
-Provides titles, descriptions, and scope copy for the strategy workspace.
-
-```csharp
-public static class Strategy
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string WorkspaceId = WorkstationWorkspaceCatalog.StrategyKey;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:115](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L115) |  |
-| <code>public static readonly WorkspaceDescriptorCopy Descriptor = new (WorkspaceId, WorkstationWorkspaceCatalog.StrategyLabel, WorkstationWorkspaceCatalog.StrategyDesktopDescription, WorkstationWorkspaceCatalog.StrategyDesktopSummary, WorkstationWorkspaceCatalog.StrategyDesktopTileSummary, WorkstationWorkspaceCatalog.StrategyDesktopShellDisplayName);</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:116](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L116) |  |
-| <code>public const string ShellTitle = &quot;Strategy Workspace&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:124](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L124) |  |
-| <code>public const string ShellSubtitle = &quot;Review recent strategy runs and open the one you want to work on.&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:125](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L125) |  |
-| <code>public const string PrimaryScopeLabel = &quot;Strategy&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:126](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L126) |  |

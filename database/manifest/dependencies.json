@@ -19192,6 +19192,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OperatorDesktopShortcutDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.OperatorInboxDto"
     },
     {
@@ -19199,6 +19205,36 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.OperatorInboxTriageDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OperatorNotificationPreferencesDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OperatorPreferenceValuesDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OperatorPreferenceVocabulary"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OperatorPreferencesDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OperatorPreferencesSaveRequest"
     },
     {
       "kind": "contract-set-member",
@@ -53055,6 +53091,30 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OperatorPreferenceValuesDto",
+      "target": "contract:Meridian.Contracts.Workstation.OperatorDesktopShortcutDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OperatorPreferenceValuesDto",
+      "target": "contract:Meridian.Contracts.Workstation.OperatorNotificationPreferencesDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OperatorPreferencesDto",
+      "target": "contract:Meridian.Contracts.Workstation.OperatorPreferenceValuesDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OperatorPreferencesSaveRequest",
+      "target": "contract:Meridian.Contracts.Workstation.OperatorPreferenceValuesDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.OperatorScopePreferenceDto",
       "target": "contract:Meridian.Contracts.Workstation.OperatingScopeValuesDto"
     },
@@ -68307,7 +68367,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "a4d727061db423d8d2441c2efdffe1a5d88a90774e600efc0ef11d0bf6bd22d1",
+  "fingerprint": "566c5321a4a0672b09bb250e239df4e73e963adf14749a60ff84f6d6022ed9fb",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -87550,6 +87610,12 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OperatorDesktopShortcutDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OperatorDesktopShortcutDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.OperatorInboxDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.OperatorInboxDto"
@@ -87559,6 +87625,36 @@
       "id": "contract:Meridian.Contracts.Workstation.OperatorInboxTriageDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.OperatorInboxTriageDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OperatorNotificationPreferencesDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OperatorNotificationPreferencesDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OperatorPreferenceValuesDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OperatorPreferenceValuesDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Workstation.OperatorPreferenceVocabulary",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OperatorPreferenceVocabulary"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OperatorPreferencesDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OperatorPreferencesDto"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Workstation.OperatorPreferencesSaveRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OperatorPreferencesSaveRequest"
     },
     {
       "classification": "dto",
@@ -100331,11 +100427,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4216,
-    "contract_set_memberships": 5477,
-    "edges": 11347,
+    "contract_references": 4220,
+    "contract_set_memberships": 5483,
+    "edges": 11357,
     "foreign_keys": 208,
     "logical_references": 6,
-    "nodes": 5569
+    "nodes": 5575
   }
 }

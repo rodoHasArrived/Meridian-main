@@ -665,13 +665,13 @@ public sealed partial class EvidenceWorkbenchViewModel : BindableBase, IDisposab
             AttestationRows.Add(new PreparerAttestationHistoryRowModel(
                 receipt.ReceiptId.ToString("D"),
                 knownClassification ? receipt.Disclosure : "Review classification unavailable; retained record does not establish approval.",
-                $"{receipt.AttestedBy} · {receipt.RecordedAt.UtcDateTime:yyyy-MM-dd HH:mm} UTC",
+                $"{receipt.AttestedBy} · {Meridian.Ui.Services.FormatHelpers.FormatDisplayTimestamp(receipt.RecordedAt)}",
                 $"{receipt.SubjectKind}/{receipt.SubjectId} · revision {receipt.SubjectRevision}",
                 $"Subject hash: {receipt.SubjectHash} · Source hash: {receipt.SourceHash}",
                 $"Source provenance: {receipt.SourceProvenance} · Source actor: {receipt.SourceActor ?? "unavailable"}",
                 revocation is null
                     ? "Recorded assertion; current support has not been reassessed."
-                    : $"Revoked at revision {revocation.Revision} by {revocation.Actor} · {revocation.RecordedAt.UtcDateTime:yyyy-MM-dd HH:mm} UTC: {revocation.Reason}. Original assertion retained.",
+                    : $"Revoked at revision {revocation.Revision} by {revocation.Actor} · {Meridian.Ui.Services.FormatHelpers.FormatDisplayTimestamp(revocation.RecordedAt)}: {revocation.Reason}. Original assertion retained.",
                 receipt.Reason));
         }
     }

@@ -36,7 +36,7 @@ public sealed class SettingsWorkspaceShellPresentationService : ISettingsWorkspa
                 WorkspaceSubtitle = WorkspaceCopyCatalog.Settings.ShellSubtitle,
                 PrimaryScopeLabel = "Shell density",
                 PrimaryScopeValue = snapshot.ShellDensityLabel,
-                AsOfValue = UtcFormat.FormatUtcTimestamp(snapshot.AsOfUtc),
+                AsOfValue = UtcFormat.FormatDisplayTimestamp(snapshot.AsOfUtc),
                 FreshnessValue = "Local workstation",
                 ReviewStateLabel = "Credential posture",
                 ReviewStateValue = postureLabel,

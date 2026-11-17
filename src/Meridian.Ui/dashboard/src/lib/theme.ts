@@ -1,3 +1,5 @@
+import { notifyOperatorPreferenceChanged } from "@/lib/operator-preference-events";
+
 export type Appearance = "system" | "light" | "dark";
 
 export const APPEARANCE_STORAGE_KEY = "meridian.workstation.appearance.v1";
@@ -15,11 +17,18 @@ export function readStoredAppearance(storage: Storage | null = getLocalStorage()
   }
 }
 
-export function writeStoredAppearance(appearance: Appearance, storage: Storage | null = getLocalStorage()) {
+export function writeStoredAppearance(
+  appearance: Appearance,
+  storage: Storage | null = getLocalStorage(),
+  announce = true
+) {
   try {
     storage?.setItem(APPEARANCE_STORAGE_KEY, appearance);
   } catch {
     // Appearance persistence is best-effort when browser storage is blocked.
+  }
+  if (announce) {
+    notifyOperatorPreferenceChanged();
   }
 }
 
