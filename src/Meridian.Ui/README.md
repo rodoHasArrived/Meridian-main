@@ -100,7 +100,9 @@ route-first workspace screens with the sidebar as the only sub-navigation, and a
 with Control Tower attention counts. Accounting's sidebar keeps seven daily-use destinations and
 puts the rest behind "More"; Options screening is a Data sidebar entry, not a Market Data desk
 tab. Labels use light caps in the body face, monospace stays on figures and IDs, and Ledger
-Explorer closes with a debit and credit totals row. No shared contract changed.
+Explorer closes with a debit and credit totals row. Close Cockpit detail tiles keep dates on one
+line and monospace on figures only, and its checklist-progress and break-aging charts render in
+view. No shared contract changed.
 
 The host-served bundle carries the design-system consolidation. It includes one status
 component; one formatting module (year-bearing UTC timestamps; accounting negatives in

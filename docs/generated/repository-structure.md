@@ -9860,6 +9860,7 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.account-close-prices.tsx
 │   │   │   │   │   ├── accounting-screen.account-oversight.test.tsx
 │   │   │   │   │   ├── accounting-screen.account-oversight.tsx
+│   │   │   │   │   ├── accounting-screen.accounting-value.test.tsx
 │   │   │   │   │   ├── accounting-screen.accounting-value.tsx
 │   │   │   │   │   ├── accounting-screen.approvals-workstream.tsx
 │   │   │   │   │   ├── accounting-screen.approvals.ts

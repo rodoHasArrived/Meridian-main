@@ -259,6 +259,13 @@ in five screens), with `rawSelects` at zero across `src/`. Ledger Explorer has t
 row with a debit, credit and balance check. Status badges are still uppercase monospace (V3), and
 the font decision is still open.
 
+**Progress on P2/V1 and P9 (2026-11-17).** Close Cockpit's `AccountingValue` tile no longer
+wraps dates onto three lines: the row wraps as a unit, and only figures keep monospace. The "Close
+task progress" and "Break aging" charts now render in view (after the queue and after the
+reconciliation workbench) rather than inside collapsed disclosures. Headline-KPI sparklines
+remain blocked because workspace metrics carry no history series; adding one is a shared-contract
+change.
+
 #### C4 🔴 Speak operator language, not system language (follows the 11-10 copy pass)
 
 **Problem.**

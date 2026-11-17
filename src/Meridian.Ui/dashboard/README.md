@@ -1396,6 +1396,10 @@ headers name the book currency. Short labels (`type-label--caps`, `eyebrow-label
 headers and toolbar chips) use light caps in the body face; monospace stays on figures, IDs and
 code. Every dropdown uses `Select` from `@/components/ui/select`. The `monoCapsLabels` and
 `rawSelects` ratchets in `scripts/design-system-ratchets.mjs` keep both from growing back.
+Close Cockpit's `AccountingValue` tiles wrap a long value below its label rather than breaking
+it across lines, and only figures (`isAccountingFigure`) use the data face. The close checklist
+progress chart follows the case queue on the landing, and Reconciliation shows the break
+occurrence-age chart below its workbench; neither sits behind a collapsed disclosure.
 
 `src/lib/workstation-features.ts` supplies wired browser destinations to both sidebar navigation
 and local command search. Purpose descriptions and search-only aliases expose intents such as
