@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationalCaseException
+
+Qualified name: <code>Meridian.Contracts.Operations.OperationalCaseException</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:25](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L25).
+
+```csharp
+public sealed record OperationalCaseException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public required string ExceptionType { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:27](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L27) |  |
+| <code>public required string Message { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:28](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L28) |  |
+| <code>public string? StackTrace { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:29](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L29) |  |
+| <code>public required DateTimeOffset OccurredAtUtc { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:30](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L30) |  |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceIds { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:31](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L31) |  |
+
 ## OperationalCaseHistoryAppendRequest
 
 Qualified name: <code>Meridian.Contracts.Operations.OperationalCaseHistoryAppendRequest</code>. Kind: `record`.
@@ -906,13 +926,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;PlaidTransferResult&gt; CreateSandboxTransferAsync(PlaidTransferRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:396](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L396) |  |
-
-## PlaidAccountDto
-
-Qualified name: <code>Meridian.Contracts.Plaid.PlaidAccountDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:158](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L158).
-
-```csharp
-public sealed record PlaidAccountDto(string PlaidAccountId, string ItemId, string Name, string? OfficialName, string? Mask, string Type, string? Subtype, string? PersistentAccountId, Guid? MeridianAccountId, Guid? EntityId, string? VerificationStatus);
-```

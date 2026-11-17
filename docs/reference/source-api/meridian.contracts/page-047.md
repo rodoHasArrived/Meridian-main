@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ISecurityMasterService
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityMasterService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs#L6).
+
+Creates securities and applies governed changes to their reference terms and lifecycle.
+
+```csharp
+public interface ISecurityMasterService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;SecurityDetailDto&gt; CreateAsync(CreateSecurityRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs#L8) |  |
+| <code>Task&lt;SecurityDetailDto&gt; AmendTermsAsync(AmendSecurityTermsRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs#L9) |  |
+| <code>Task&lt;SecurityDetailDto&gt; AmendPreferredEquityTermsAsync(Guid securityId, AmendPreferredEquityTermsRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs#L10) |  |
+| <code>Task&lt;SecurityDetailDto&gt; AmendConvertibleEquityTermsAsync(Guid securityId, AmendConvertibleEquityTermsRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs#L11) |  |
+| <code>Task&lt;SecurityDetailDto&gt; AmendTermBlockAsync(Guid securityId, string blockKey, AmendSecurityTermBlockRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs#L18) | Replaces one nested term block declared by the security&#x27;s asset class (see SecurityTermBlocks), carrying every other term unchanged. Implementations that predate the generic block route refuse it rather than fail to compile. |
+| <code>Task DeactivateAsync(DeactivateSecurityRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs#L21) |  |
+| <code>Task&lt;SecurityAliasDto&gt; UpsertAliasAsync(UpsertSecurityAliasRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs#L22) |  |
+
 ## ISecurityMasterStructuredCreditReclassificationService
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityMasterStructuredCreditReclassificationService</code>. Kind: `interface`.
@@ -815,24 +839,3 @@ Enum declarations:
 | --- | --- | --- |
 | <code>Complete</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:125](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L125) |  |
 | <code>Incomplete</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:126](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L126) |  |
-
-## OtcMarginCallAction
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcMarginCallAction</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:55](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L55).
-
-The lifecycle actions an operator takes on a margin call.
-
-```csharp
-public enum OtcMarginCallAction
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Agree</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:57](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L57) |  |
-| <code>Dispute</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L58) |  |
-| <code>Settle</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:59](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L59) |  |
-| <code>Cancel</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:60](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L60) |  |

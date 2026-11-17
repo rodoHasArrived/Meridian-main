@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityAssetProfilePromotionReadinessDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfilePromotionReadinessDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:172](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L172).
+
+```csharp
+public enum SecurityAssetProfilePromotionReadinessDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Watchlist</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:174](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L174) |  |
+| <code>Candidate</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:175](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L175) |  |
+| <code>ReadyForFirstClassPackage</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:176](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L176) |  |
+
 ## SecurityAssetProfilePromotionSignalDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfilePromotionSignalDto</code>. Kind: `record`.
@@ -862,16 +880,4 @@ Provides source-generated JSON metadata for security curve definitions, versions
 
 ```csharp
 public sealed partial class SecurityCurvesJsonContext : JsonSerializerContext;
-```
-
-## SecurityCurveVersionDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCurveVersionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:77](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L77).
-
-One immutable published version of a curve. AsOf is the economic date the points describe, RecordedAt the knowledge time the version was stored, SourcedAt the vendor timestamp when known, and ContentSha256 the canonical hash of the as-of and sorted points.
-
-```csharp
-public sealed record SecurityCurveVersionDto(Guid CurveVersionId, Guid CurveId, string CurveKey, long Version, DateOnly AsOf, DateTimeOffset RecordedAt, DateTimeOffset? SourcedAt, string Source, string PublishedBy, IReadOnlyList<SecurityCurvePointDto> Points, string ContentSha256);
 ```

@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ResolveSourceConflictRequest
+
+Qualified name: <code>Meridian.Contracts.Workstation.ResolveSourceConflictRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:58](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L58).
+
+Records an operator&#x27;s resolution of a Security Master source conflict. When ChosenWinnerSource diverges from the policy winner, AcknowledgePolicyDeviation must be set and the deviation is retained as the audited artifact.
+
+```csharp
+public sealed record ResolveSourceConflictRequest(Guid SecurityId, Guid ConflictId, long ExpectedVersion, string ChosenWinnerSource, string Actor, string Reason, bool AcknowledgePolicyDeviation = false, string? CorrelationId = null);
+```
+
 ## RestatementCandidateDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.RestatementCandidateDto</code>. Kind: `record`.
@@ -601,14 +613,4 @@ Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:
 
 ```csharp
 public sealed record SecurityMasterOpenLotProvenanceDto(string ProvenanceId, string RunId, string PortfolioId, string? AccountScopeId, string? AccountScopeDisplayName, string SourceSystem, string? SourceRecordId, DateTimeOffset AsOfUtc, string Summary);
-```
-
-## SecurityMasterOpenLotReadModelDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterOpenLotReadModelDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:343](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L343).
-
-```csharp
-public sealed record SecurityMasterOpenLotReadModelDto(string QuantityModel, decimal? LotSize, decimal? ContractMultiplier, bool UsesFaceValue, bool SupportsFactorAdjustedExposure, bool RequiresResolvedSecurityId, decimal? CurrentFactor, DateOnly? CurrentFactorDate, DateTimeOffset AsOfUtc, string Summary, IReadOnlyList<SecurityMasterOpenLotDto> Lots, IReadOnlyList<SecurityMasterOpenLotProvenanceDto> ProvenanceHistory);
 ```

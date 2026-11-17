@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StructuredCashFlowScheduleEntry
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCashFlowScheduleEntry</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:117](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L117).
+
+A single period in a structured cash flow schedule.
+
+```csharp
+public sealed record StructuredCashFlowScheduleEntry(DateTimeOffset PeriodDate, decimal PrincipalAmount, decimal InterestAmount, decimal Factor)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public DateOnly? UnadjustedStart { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:124](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L124) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public DateOnly? UnadjustedEnd { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:126](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L126) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public DateOnly? AccrualStart { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:128](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L128) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public DateOnly? AccrualEnd { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:130](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L130) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public Meridian.Contracts.FixedIncome.BondFloatingRateEvidence? RateEvidence { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:132](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L132) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public int RowVersion { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:140](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L140) | Stored row contract. Zero denotes the frozen legacy shape; version 1 retains measured interest intervals and version 2 retains interest-basis segments. Calculated projections explicitly stamp their output version. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public DateOnly? InterestMeasuredFrom { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:144](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L144) | The measured interest interval on calculated rows without declared accrual dates. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public DateOnly? InterestMeasuredTo { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:146](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L146) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;StructuredCashFlowInterestSegment&gt;? InterestSegments { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:153](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L153) | Version-2 row evidence for allocating interest against dated holdings without applying a pool factor twice. Null on historical rows and on calculations without segment evidence. |
+| <code>[JsonIgnore] public DateOnly? InterestAccrualStart =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:157](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L157) | The start of the interval this row&#x27;s interest accrues over, when it is known. |
+| <code>[JsonIgnore] public DateOnly? InterestAccrualEnd =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:161](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L161) | The end of the interval this row&#x27;s interest accrues over, when it is known. |
+| <code>public bool Equals(StructuredCashFlowScheduleEntry? other) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:163](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L163) |  |
+| <code>public override int GetHashCode();</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:174](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L174) |  |
+
 ## StructuredCashFlowScheduleEvidence
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCashFlowScheduleEvidence</code>. Kind: `record`.
@@ -839,36 +869,3 @@ Represents a trading session.
 ```csharp
 public sealed record TradingSession(string Exchange, string Market, string SessionType, DateTimeOffset OpenTime, DateTimeOffset CloseTime);
 ```
-
-## CollectionSession
-
-Qualified name: <code>Meridian.Contracts.Session.CollectionSession</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Session/CollectionSession.cs:8](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L8).
-
-Represents a discrete data collection session with comprehensive tracking.
-
-```csharp
-public sealed class CollectionSession
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;id&quot;)] public string Id { get; set; } = Guid.NewGuid().ToString();</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:14](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L14) | Gets or sets the unique session identifier. |
-| <code>[JsonPropertyName(&quot;name&quot;)] public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:20](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L20) | Gets or sets the human-readable session name. |
-| <code>[JsonPropertyName(&quot;description&quot;)] public string? Description { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:26](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L26) | Gets or sets the session description. |
-| <code>[JsonPropertyName(&quot;status&quot;)] public string Status { get; set; } = SessionStatus.Pending;</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:32](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L32) | Gets or sets the current session status. |
-| <code>[JsonPropertyName(&quot;startedAt&quot;)] public DateTime? StartedAt { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:38](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L38) | Gets or sets the timestamp when data collection started. |
-| <code>[JsonPropertyName(&quot;endedAt&quot;)] public DateTime? EndedAt { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:44](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L44) | Gets or sets the timestamp when data collection ended. |
-| <code>[JsonPropertyName(&quot;symbols&quot;)] public string[] Symbols { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:50](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L50) | Gets or sets the array of symbols being collected. |
-| <code>[JsonPropertyName(&quot;eventTypes&quot;)] public string[] EventTypes { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:56](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L56) | Gets or sets the array of event types being collected. |
-| <code>[JsonPropertyName(&quot;provider&quot;)] public string? Provider { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:62](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L62) | Gets or sets the data provider name. |
-| <code>[JsonPropertyName(&quot;tags&quot;)] public string[]? Tags { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:68](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L68) | Gets or sets the session tags for categorization. |
-| <code>[JsonPropertyName(&quot;notes&quot;)] public string? Notes { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:74](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L74) | Gets or sets additional notes about the session. |
-| <code>[JsonPropertyName(&quot;statistics&quot;)] public CollectionSessionStatistics? Statistics { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:80](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L80) | Gets or sets the session statistics. |
-| <code>[JsonPropertyName(&quot;qualityScore&quot;)] public float QualityScore { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:86](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L86) | Gets or sets the data quality score (0.0 to 1.0). |
-| <code>[JsonPropertyName(&quot;manifestPath&quot;)] public string? ManifestPath { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:92](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L92) | Gets or sets the path to the session manifest file. |
-| <code>[JsonPropertyName(&quot;createdAt&quot;)] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:98](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L98) | Gets or sets the timestamp when the session was created. |
-| <code>[JsonPropertyName(&quot;updatedAt&quot;)] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:104](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L104) | Gets or sets the timestamp when the session was last updated. |

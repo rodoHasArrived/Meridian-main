@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TradingPromotionReadinessDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.TradingPromotionReadinessDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:240](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L240).
+
+```csharp
+public sealed record TradingPromotionReadinessDto(string State, string Reason, bool RequiresReview, string? SourceRunId, string? TargetRunId, string? SuggestedNextMode, string? AuditReference, string? ApprovalStatus, string? ManualOverrideId, string? ApprovedBy, IReadOnlyList<string>? ApprovalChecklist = null, IReadOnlyList<string>? EvidenceReferences = null);
+```
+
 ## TradingReplayReadinessDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.TradingReplayReadinessDto</code>. Kind: `record`.
@@ -561,21 +571,3 @@ Compact provider diagnostic row embedded in the Data workspace provider center.
 ```csharp
 public sealed record WorkstationDataProviderDiagnostic(string Id, string Label, string Status, string StatusLabel, string Detail);
 ```
-
-## WorkstationDataProviderRecord
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationDataProviderRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1115](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1115).
-
-Provider-center row returned by the Data workspace bootstrap payload.
-
-```csharp
-public sealed record WorkstationDataProviderRecord(string ProviderId, string DisplayName, string Status, string Capability, string Latency, string Note, string TrustScore, string SignalSource, string ReasonCode, string RecommendedAction, string GateImpact, ProviderConnectionRowDto? ConnectionSummary, WorkstationDataProviderRoutingSummary? RoutingSummary, IReadOnlyList<WorkstationDataProviderDiagnostic> Diagnostics)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Provider =&gt; …;</code> | [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1131](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1131) |  |

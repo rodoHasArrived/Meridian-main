@@ -9124,6 +9124,7 @@ Meridian-main
 │   │   │   │   │   │   ├── income-movement-waterfall.tsx
 │   │   │   │   │   │   ├── inline-fund-account-picker.test.tsx
 │   │   │   │   │   │   ├── inline-fund-account-picker.tsx
+│   │   │   │   │   │   ├── journal-execution-lineage.tsx
 │   │   │   │   │   │   ├── keyboard-shortcuts-sheet.test.tsx
 │   │   │   │   │   │   ├── keyboard-shortcuts-sheet.tsx
 │   │   │   │   │   │   ├── layout-switcher.test.tsx
@@ -14817,6 +14818,7 @@ Meridian-main
 │   │   │   ├── LedgerAndCompliancePermissionSplitTests.cs
 │   │   │   ├── LedgerDisposalTaxEndpointTests.cs
 │   │   │   ├── LedgerDisposalTaxReadServiceTests.cs
+│   │   │   ├── LedgerJournalExecutionLineageTests.cs
 │   │   │   ├── LedgerMarkToMarketCarryingValueSourceTests.cs
 │   │   │   ├── LedgerReportingAuthoritativeSourceSuccessorTests.cs
 │   │   │   ├── LedgerReportingAuthoritativeSourceTests.cs

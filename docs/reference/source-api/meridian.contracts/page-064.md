@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationsContinuityWorkflowSummaryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsContinuityWorkflowSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1006](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1006).
+
+```csharp
+public sealed record OperationsContinuityWorkflowSummaryDto(Guid WorkflowId, Guid FundAccountId, string PeriodId, Guid? SecurityMasterSnapshotId, string BrokerSource, OperationsWorkflowStatusDto Status, long Version, DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc, IReadOnlyList<OperationsGateDto> Gates, IReadOnlyList<OperationsNextActionDto> NextActions, Guid? LedgerBookId = null);
+```
+
 ## OperationsDashboardMetricDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsDashboardMetricDto</code>. Kind: `record`.
@@ -708,14 +718,4 @@ Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:18](../../../.
 
 ```csharp
 public sealed record OperatorTriageBulkItem(string WorkItemId, long ExpectedVersion, long? ExpectedSourceVersion = null);
-```
-
-## OperatorTriageBulkResult
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageBulkResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:46](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L46).
-
-```csharp
-public sealed record OperatorTriageBulkResult(IReadOnlyList<OperatorTriageResult> Results);
 ```

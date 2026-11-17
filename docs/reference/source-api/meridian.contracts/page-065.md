@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperatorTriageBulkResult
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageBulkResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:46](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L46).
+
+```csharp
+public sealed record OperatorTriageBulkResult(IReadOnlyList<OperatorTriageResult> Results);
+```
+
 ## OperatorTriageCapabilities
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageCapabilities</code>. Kind: `record`.
@@ -702,19 +712,3 @@ Declared public members:
 | <code>public IReadOnlyList&lt;PrivateCapitalCloseCockpitApprovalDto&gt; ApprovalHistory { get; init; } = ApprovalHistory??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1516](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1516) |  |
 | <code>public IReadOnlyList&lt;PrivateCapitalNavSupportPackageDto&gt; NavSupportPackages { get; init; } = NavSupportPackages??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1519](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1519) |  |
 | <code>public IReadOnlyList&lt;OperationsEvidencePackageSummaryDto&gt; EvidencePackages { get; init; } = EvidencePackages??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1522](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1522) |  |
-
-## PrivateCapitalCloseCockpitLaneDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.PrivateCapitalCloseCockpitLaneDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1408](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1408).
-
-```csharp
-public sealed record PrivateCapitalCloseCockpitLaneDto(string LaneId, string Label, EvidenceStatusDto Status, bool IsReady, string Summary, string? Route, int EvidenceLinkCount, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, IReadOnlyList<string>? RequiredActions = null, bool RequiredForClose = true)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; RequiredActions { get; init; } = RequiredActions??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1420](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1420) |  |

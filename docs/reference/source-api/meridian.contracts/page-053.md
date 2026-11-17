@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityStatusDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityStatusDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L7).
+
+```csharp
+public enum SecurityStatusDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Active</code> | [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L9) |  |
+| <code>Inactive</code> | [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L10) |  |
+| <code>Unknown</code> | [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L16) | Read-tolerance member: a status written by a newer node that this node does not recognize. Treated as not-Active by filters, so unrecognized states degrade to conservative visibility instead of failing every read of the row. |
+
 ## SecuritySummaryDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecuritySummaryDto</code>. Kind: `record`.
@@ -876,33 +894,3 @@ Enum declarations:
 | <code>Down200</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:35](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L35) |  |
 | <code>Down300</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L36) |  |
 | <code>Stress</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:37](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L37) |  |
-
-## StructuredCashFlowScheduleEntry
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCashFlowScheduleEntry</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:117](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L117).
-
-A single period in a structured cash flow schedule.
-
-```csharp
-public sealed record StructuredCashFlowScheduleEntry(DateTimeOffset PeriodDate, decimal PrincipalAmount, decimal InterestAmount, decimal Factor)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public DateOnly? UnadjustedStart { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:124](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L124) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public DateOnly? UnadjustedEnd { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:126](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L126) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public DateOnly? AccrualStart { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:128](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L128) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public DateOnly? AccrualEnd { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:130](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L130) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public Meridian.Contracts.FixedIncome.BondFloatingRateEvidence? RateEvidence { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:132](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L132) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public int RowVersion { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:140](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L140) | Stored row contract. Zero denotes the frozen legacy shape; version 1 retains measured interest intervals and version 2 retains interest-basis segments. Calculated projections explicitly stamp their output version. |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public DateOnly? InterestMeasuredFrom { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:144](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L144) | The measured interest interval on calculated rows without declared accrual dates. |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public DateOnly? InterestMeasuredTo { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:146](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L146) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;StructuredCashFlowInterestSegment&gt;? InterestSegments { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:153](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L153) | Version-2 row evidence for allocating interest against dated holdings without applying a pool factor twice. Null on historical rows and on calculations without segment evidence. |
-| <code>[JsonIgnore] public DateOnly? InterestAccrualStart =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:157](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L157) | The start of the interval this row&#x27;s interest accrues over, when it is known. |
-| <code>[JsonIgnore] public DateOnly? InterestAccrualEnd =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:161](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L161) | The end of the interval this row&#x27;s interest accrues over, when it is known. |
-| <code>public bool Equals(StructuredCashFlowScheduleEntry? other) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:163](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L163) |  |
-| <code>public override int GetHashCode();</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:174](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L174) |  |

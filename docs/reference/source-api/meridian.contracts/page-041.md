@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PlaidAccountDto
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidAccountDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:158](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L158).
+
+```csharp
+public sealed record PlaidAccountDto(string PlaidAccountId, string ItemId, string Name, string? OfficialName, string? Mask, string Type, string? Subtype, string? PersistentAccountId, Guid? MeridianAccountId, Guid? EntityId, string? VerificationStatus);
+```
+
 ## PlaidAccountLinkRequest
 
 Qualified name: <code>Meridian.Contracts.Plaid.PlaidAccountLinkRequest</code>. Kind: `record`.
@@ -574,13 +584,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;ReportingGovernanceActionAvailabilityDto&gt; ActionAvailability { get; init; } = ActionAvailability??[];</code> | [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:166](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L166) |  |
-
-## ReportingGovernanceAccessPrincipalDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceAccessPrincipalDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:48](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L48).
-
-```csharp
-public sealed record ReportingGovernanceAccessPrincipalDto(string Kind, string PrincipalId);
-```

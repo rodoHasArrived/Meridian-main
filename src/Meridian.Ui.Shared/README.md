@@ -615,6 +615,10 @@ queue (which keeps every status), with today's live count as the last point. A c
 resolution time, or any day before a reopen (reopen clears the earlier resolution time), is null,
 not guessed. No metric snapshots are stored.
 
+Journal-entry DTOs carry `Execution` lineage from the posting's own metadata: the order id from the
+retained `source.orderId` tag (the execution journal's identifier) before the GUID `OrderId`, the
+`FillId`, and the `strategy.runId` tag. Nothing is matched by symbol, amount or time.
+
 The posted-account running-balance read requires the same authenticated tenant/company and
 retained book ownership, including exact returned period, book and fund identities. Its optional
 `accountingBasis` selector filters retained journal records before aggregation; the posted-row

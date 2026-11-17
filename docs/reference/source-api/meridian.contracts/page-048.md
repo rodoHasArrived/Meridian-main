@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OtcMarginCallAction
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcMarginCallAction</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:55](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L55).
+
+The lifecycle actions an operator takes on a margin call.
+
+```csharp
+public enum OtcMarginCallAction
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Agree</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:57](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L57) |  |
+| <code>Dispute</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L58) |  |
+| <code>Settle</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:59](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L59) |  |
+| <code>Cancel</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:60](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L60) |  |
+
 ## OtcMarginCallDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcMarginCallDto</code>. Kind: `record`.
@@ -771,24 +792,3 @@ Enum declarations:
 | --- | --- | --- |
 | <code>Anchored</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L21) | Every grid date is the anchor plus k tenors, so month-end clamping never accumulates. |
 | <code>Compounded</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L28) | Every grid date is the previous grid date plus one tenor, so a clamp into a short month carries forward. This reproduces the legacy compounded generators and is restricted to forward, anchor-day, short-stub schedules without explicit regular dates. |
-
-## ScheduleCalendarPurpose
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleCalendarPurpose</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:81](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L81).
-
-What a calendar was used for while generating a schedule.
-
-```csharp
-public enum ScheduleCalendarPurpose
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Accrual</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:84](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L84) | Adjusting inner accrual boundaries. |
-| <code>EffectiveDate</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:87](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L87) | Adjusting the effective date. |
-| <code>TerminationDate</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:90](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L90) | Adjusting the termination date. |
-| <code>Payment</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:93](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L93) | Adjusting or lagging payment dates. |

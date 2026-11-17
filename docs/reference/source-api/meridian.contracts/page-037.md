@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerReportSignatureDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.LedgerReportSignatureDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:422](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L422).
+
+```csharp
+public sealed record LedgerReportSignatureDto(string Algorithm, string PayloadChecksumSha256, string SignedBy, DateTimeOffset SignedAtUtc);
+```
+
 ## LedgerToleranceConstants
 
 Qualified name: <code>Meridian.Contracts.Ledger.LedgerToleranceConstants</code>. Kind: `class`.
@@ -29,7 +39,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Ledger.LedgerTrialBalanceReportDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:420](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L420).
+Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:428](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L428).
 
 ```csharp
 public sealed record LedgerTrialBalanceReportDto(Guid PeriodId, Guid LedgerBookId, int FiscalYear, int PeriodNo, string Label, bool IsPeriodLocked, decimal TotalDebits, decimal TotalCredits, decimal NetIncome, decimal? PeriodOnPeriodVariance, int OpenBreakCount, LedgerPeriodSignoffStatusDto SignoffStatus, DateTimeOffset CompletedAt, IReadOnlyList<LedgerPeriodTrialBalanceLineDto> Lines, LedgerReportSignatureDto Signature, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, string AccountingPolicyId = "legacy-v1", string AccountingPolicyVersion = "legacy-v1");
@@ -775,21 +785,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;ManualJournalEntryLineDto&gt; ExpectedLines { get; init; } = ExpectedLines??[];</code> | [src/Meridian.Contracts/Ledger/PriorPeriodAdjustmentDtos.cs:15](../../../../src/Meridian.Contracts/Ledger/PriorPeriodAdjustmentDtos.cs#L15) |  |
 | <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public PriorPeriodAdjustmentCorrectionDto? Correction { get; init; }</code> | [src/Meridian.Contracts/Ledger/PriorPeriodAdjustmentDtos.cs:22](../../../../src/Meridian.Contracts/Ledger/PriorPeriodAdjustmentDtos.cs#L22) | Server-retained immediate predecessor of a correction to an already posted adjustment. The original closed-period source above remains the root of the accounting lineage. |
-
-## PrivateCapitalActivityProjectionDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.PrivateCapitalActivityProjectionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:410](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L410).
-
-```csharp
-public sealed record PrivateCapitalActivityProjectionDto(string FundProfileId, Guid? LedgerBookId, DateTimeOffset ProjectedAtUtc, int FundEventCount, int CapitalAccountCount, int SubmittedFundEventCount, int ApprovalQueueCount, int PostedFundEventCount, int PublishedReportOutputCount, decimal NetCapitalActivity, string Currency, IReadOnlyList<PrivateCapitalFundEventDto> FundEvents, IReadOnlyList<PrivateCapitalCapitalAccountActivityDto> CapitalAccounts, IReadOnlyList<PrivateCapitalCapitalAccountSubledgerEntryDto> CapitalAccountSubledgerEntries, IReadOnlyList<PrivateCapitalLedgerImpactDto> LedgerImpacts, IReadOnlyList<PrivateCapitalReportOutputDto> ReportOutputs, IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues, IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto>? FundEventRecords = null, IReadOnlyList<PrivateCapitalCapitalAccountSubledgerDto>? CapitalAccountSubledgers = null, IReadOnlyList<PaymentIntentWorkflowDto>? PaymentIntents = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;PrivateCapitalFundEventLedgerRecordDto&gt; FundEventRecords { get; init; } = FundEventRecords??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:432](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L432) |  |
-| <code>public IReadOnlyList&lt;PrivateCapitalCapitalAccountSubledgerDto&gt; CapitalAccountSubledgers { get; init; } = CapitalAccountSubledgers??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:435](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L435) |  |
-| <code>public IReadOnlyList&lt;PaymentIntentWorkflowDto&gt; PaymentIntents { get; init; } = PaymentIntents??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:438](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L438) |  |

@@ -1421,6 +1421,9 @@ Headline KPIs draw a sparkline only from a producer-supplied `history` (`MetricS
 strip, `lib/metric-history.ts`): the latest run of established days, at least two, never bridging a
 gap, with a screen-reader description. The open-breaks KPI carries the history only when its last
 point equals the count it shows.
+A posted journal entry recorded from an execution shows its lineage on the journal-entry detail
+(`JournalExecutionLineage`): strategy run (Run Ledger link), order (Trading › Orders `?orderId=`),
+fill (identifier only; it has no page) and the entry itself.
 The Data overview's provider verification history is linkable: `?verificationConnection=`
 selects an exact connection and `?providerFamily=` its family's first connection (matched on
 `providerFamilyId`, never on display names; otherwise the first loaded connection), anchored at

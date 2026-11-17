@@ -2,7 +2,7 @@
 
 # `ledger-contracts` data objects - page 5 of 6
 
-Objects 321-400 of 456. References crossing pages remain available in the dependency manifest.
+Objects 321-400 of 457. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -137,9 +137,9 @@ classDiagram
         +Guid? CorrelationId
         +DateTimeOffset CreatedAt
         +string Description
+        +LedgerJournalExecutionLineageDto? Execution
         +long GlobalSequence
         +bool IsBalanced
-        +Guid JournalEntryId
     }
     class Meridian_Contracts_Ledger_LedgerJournalEntryLineDto["LedgerJournalEntryLineDto"] {
         +string AccountName
@@ -153,6 +153,11 @@ classDiagram
         +Guid JournalEntryId
         +string? Symbol
         +DateTimeOffset Timestamp
+    }
+    class Meridian_Contracts_Ledger_LedgerJournalExecutionLineageDto["LedgerJournalExecutionLineageDto"] {
+        +Guid? FillId
+        +string? OrderId
+        +string? StrategyRunId
     }
     class Meridian_Contracts_Ledger_LedgerJournalTaxResultsDto["LedgerJournalTaxResultsDto"] {
         +IReadOnlyList~LedgerDisposalTaxResultDto~ Disposals
@@ -727,14 +732,13 @@ classDiagram
         +Guid? LedgerBookId
         +IReadOnlyList~PrivateCapitalLedgerImpactDto~ LedgerImpacts
     }
-    class Meridian_Contracts_Ledger_PrivateCapitalActivityRoutes["PrivateCapitalActivityRoutes"] {
-    }
     Meridian_Contracts_Ledger_LedgerCrossPeriodPnlReportDto --> Meridian_Contracts_Ledger_LedgerPeriodPnlSummaryDto
     Meridian_Contracts_Ledger_LedgerCrossPeriodTrialBalanceLineDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
     Meridian_Contracts_Ledger_LedgerCrossPeriodTrialBalanceReportDto --> Meridian_Contracts_Ledger_LedgerCrossPeriodTrialBalanceLineDto
     Meridian_Contracts_Ledger_LedgerCrossPeriodTrialBalanceReportDto --> Meridian_Contracts_Ledger_LedgerPeriodDto
     Meridian_Contracts_Ledger_LedgerDisposalTaxResultDto --> Meridian_Contracts_Ledger_LedgerDisposalTaxParcelDto
     Meridian_Contracts_Ledger_LedgerJournalEntryDto --> Meridian_Contracts_Ledger_LedgerJournalEntryLineDto
+    Meridian_Contracts_Ledger_LedgerJournalEntryDto --> Meridian_Contracts_Ledger_LedgerJournalExecutionLineageDto
     Meridian_Contracts_Ledger_LedgerJournalEntryDto --> Meridian_Contracts_Ledger_LedgerPostingKindDto
     Meridian_Contracts_Ledger_LedgerJournalEntryLineDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
     Meridian_Contracts_Ledger_LedgerJournalTaxResultsDto --> Meridian_Contracts_Ledger_LedgerDisposalTaxResultDto

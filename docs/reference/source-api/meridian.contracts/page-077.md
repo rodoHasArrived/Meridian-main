@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationReportWriterMetricPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportWriterMetricPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:480](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L480).
+
+Template metadata exposed to browser and desktop Reporting operator surfaces.
+
+```csharp
+public sealed record WorkstationReportWriterMetricPayload(string Name, string SourceField, string Function, string? Label = null);
+```
+
 ## WorkstationRiskGuardrail
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationRiskGuardrail</code>. Kind: `record`.

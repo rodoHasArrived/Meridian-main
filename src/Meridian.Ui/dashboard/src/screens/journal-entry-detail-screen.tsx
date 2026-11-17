@@ -1,3 +1,4 @@
+import { JournalExecutionLineage } from "@/components/meridian/journal-execution-lineage";
 import { DetailFieldItem } from "@/components/meridian/detail-pane";
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
@@ -288,6 +289,14 @@ export function JournalEntryDetailScreen() {
           )}
         </CardContent>
       </Card>
+
+      {postedEntry?.execution ? (
+        <Card className="panel-surface">
+          <CardContent className="pt-4">
+            <JournalExecutionLineage lineage={postedEntry.execution} journalEntryId={journalEntryId} />
+          </CardContent>
+        </Card>
+      ) : null}
 
       {view.dataCompleteness === "summary-only" ? (
         <Card className="panel-surface">

@@ -10708,6 +10708,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerJournalExecutionLineageDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.LedgerJournalTaxResultsDto"
     },
     {
@@ -28318,6 +28324,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerJournalExecutionLineageDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.LedgerJournalTaxResultsDto"
     },
     {
@@ -43829,6 +43841,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.LedgerJournalEntryDto",
       "target": "contract:Meridian.Contracts.Ledger.LedgerJournalEntryLineDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.LedgerJournalEntryDto",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerJournalExecutionLineageDto"
     },
     {
       "kind": "contract-reference",
@@ -68091,7 +68109,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "cf448e2d3983ac531e34bf23757fac1d7e96969d734bf8e0fa25139f19f2d853",
+  "fingerprint": "05531b7e8842a818410e6a5bff8e004e2d9c85bd17b2e45f74e7da8d618b92f3",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -78847,6 +78865,12 @@
       "id": "contract:Meridian.Contracts.Ledger.LedgerJournalEntryLineDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.LedgerJournalEntryLineDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.LedgerJournalExecutionLineageDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.LedgerJournalExecutionLineageDto"
     },
     {
       "classification": "dto",
@@ -99983,11 +100007,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4209,
-    "contract_set_memberships": 5456,
-    "edges": 11311,
+    "contract_references": 4210,
+    "contract_set_memberships": 5458,
+    "edges": 11314,
     "foreign_keys": 208,
     "logical_references": 6,
-    "nodes": 5545
+    "nodes": 5546
   }
 }

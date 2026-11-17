@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PrivateCapitalActivityProjectionDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.PrivateCapitalActivityProjectionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:410](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L410).
+
+```csharp
+public sealed record PrivateCapitalActivityProjectionDto(string FundProfileId, Guid? LedgerBookId, DateTimeOffset ProjectedAtUtc, int FundEventCount, int CapitalAccountCount, int SubmittedFundEventCount, int ApprovalQueueCount, int PostedFundEventCount, int PublishedReportOutputCount, decimal NetCapitalActivity, string Currency, IReadOnlyList<PrivateCapitalFundEventDto> FundEvents, IReadOnlyList<PrivateCapitalCapitalAccountActivityDto> CapitalAccounts, IReadOnlyList<PrivateCapitalCapitalAccountSubledgerEntryDto> CapitalAccountSubledgerEntries, IReadOnlyList<PrivateCapitalLedgerImpactDto> LedgerImpacts, IReadOnlyList<PrivateCapitalReportOutputDto> ReportOutputs, IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues, IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto>? FundEventRecords = null, IReadOnlyList<PrivateCapitalCapitalAccountSubledgerDto>? CapitalAccountSubledgers = null, IReadOnlyList<PaymentIntentWorkflowDto>? PaymentIntents = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;PrivateCapitalFundEventLedgerRecordDto&gt; FundEventRecords { get; init; } = FundEventRecords??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:432](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L432) |  |
+| <code>public IReadOnlyList&lt;PrivateCapitalCapitalAccountSubledgerDto&gt; CapitalAccountSubledgers { get; init; } = CapitalAccountSubledgers??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:435](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L435) |  |
+| <code>public IReadOnlyList&lt;PaymentIntentWorkflowDto&gt; PaymentIntents { get; init; } = PaymentIntents??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:438](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L438) |  |
+
 ## PrivateCapitalActivityRoutes
 
 Qualified name: <code>Meridian.Contracts.Ledger.PrivateCapitalActivityRoutes</code>. Kind: `class`.
@@ -702,13 +720,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:350](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L350) |  |
-
-## SubmitManualJournalEntryApprovalRequest
-
-Qualified name: <code>Meridian.Contracts.Ledger.SubmitManualJournalEntryApprovalRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:966](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L966).
-
-```csharp
-public sealed record SubmitManualJournalEntryApprovalRequest(Guid JournalEntryId, string FundProfileId, string Actor, int Version, string? Notes = null, string? CorrelationId = null, IReadOnlyList<string>? EvidenceLinks = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator, bool PeriodIsLocked = false, Guid? LedgerBookId = null, string? TenantId = null, string? CompanyId = null, IReadOnlyList<string>? ReportGroupPrincipalIds = null);
-```
