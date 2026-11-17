@@ -3,7 +3,7 @@ import { CalendarCheck, ChevronRight } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import "@/styles/workspace-nav.css";
 import { useWorkspaceExpansion } from "@/components/meridian/use-workspace-expansion";
-import { buildWorkspaceNavViewModel } from "@/components/meridian/workspace-nav.view-model";
+import { buildWorkspaceNavViewModel, type WorkspaceNavViewModel } from "@/components/meridian/workspace-nav.view-model";
 import { meridianWorkspaceIconAssets } from "@/design-system/assets";
 import { DesignSystemNavRail, designSystemNavRailClasses } from "@/design-system/primitives";
 import { FOCUS_VISIBLE_RING_CLASS } from "@/lib/focus-classes";
@@ -167,22 +167,20 @@ export function WorkspaceNav({
               >
                 {expanded ? (
                   item.subItemGroups.length > 0
-                    ? item.subItemGroups.map((group) => {
-                      const groupLabelId = `${subMenuId}-${group.id}-label`;
-                      return (
-                        <div
-                          key={group.id}
-                          className="operator-nav-subgroup"
-                          role="group"
-                          aria-labelledby={groupLabelId}
-                        >
-                          <div id={groupLabelId} className="operator-nav-subgroup-label" title={group.label}>
-                            {group.label}
-                          </div>
-                          {group.items.map(renderSubItem)}
-                        </div>
-                      );
-                    })
+                    ? (
+                      <>
+                        {item.subItemGroups.map((group) => renderSubItemGroup(group, subMenuId, renderSubItem))}
+                        {item.moreItemGroups.length > 0 ? (
+                          <MoreDestinations
+                            id={`${subMenuId}-more`}
+                            workspaceLabel={item.label}
+                            groups={item.moreItemGroups}
+                            forceOpen={item.moreActive}
+                            renderGroup={(group) => renderSubItemGroup(group, `${subMenuId}-more`, renderSubItem)}
+                          />
+                        ) : null}
+                      </>
+                    )
                     : item.subItems.map(renderSubItem)
                 ) : null}
               </div>
@@ -191,6 +189,70 @@ export function WorkspaceNav({
         );
       })}
     </DesignSystemNavRail>
+  );
+}
+
+type SubItemGroup = WorkspaceNavViewModel["items"][number]["subItemGroups"][number];
+type SubItem = SubItemGroup["items"][number];
+
+function renderSubItemGroup(group: SubItemGroup, idPrefix: string, renderSubItem: (sub: SubItem) => React.ReactNode) {
+  const groupLabelId = `${idPrefix}-${group.id}-label`;
+  return (
+    <div
+      key={group.id}
+      className="operator-nav-subgroup"
+      role="group"
+      aria-labelledby={groupLabelId}
+    >
+      <div id={groupLabelId} className="operator-nav-subgroup-label" title={group.label}>
+        {group.label}
+      </div>
+      {group.items.map(renderSubItem)}
+    </div>
+  );
+}
+
+/**
+ * Less-used destinations behind one disclosure, so a long workspace list does not push the
+ * workspaces below it off screen. It opens by itself when the current page is one of them, and
+ * every destination stays in the command palette.
+ */
+function MoreDestinations({
+  id,
+  workspaceLabel,
+  groups,
+  forceOpen,
+  renderGroup
+}: {
+  id: string;
+  workspaceLabel: string;
+  groups: SubItemGroup[];
+  forceOpen: boolean;
+  renderGroup: (group: SubItemGroup) => React.ReactNode;
+}) {
+  const [open, setOpen] = React.useState(forceOpen);
+  React.useEffect(() => {
+    if (forceOpen) setOpen(true);
+  }, [forceOpen]);
+  const count = groups.reduce((total, group) => total + group.items.length, 0);
+  return (
+    <div className="operator-nav-more">
+      <button
+        type="button"
+        className={cn(designSystemNavRailClasses.subItem, "operator-nav-more-toggle", FOCUS_VISIBLE_RING_CLASS)}
+        aria-expanded={open}
+        aria-controls={id}
+        // The visible text stays the accessible name (WCAG 2.5.3); aria-expanded carries the state.
+        title={`${count} more ${workspaceLabel} pages`}
+        onClick={() => setOpen((current) => !current)}
+      >
+        <ChevronRight className={cn("h-3 w-3 shrink-0 transition-transform", open && "rotate-90")} aria-hidden="true" />
+        <span className="operator-nav-label truncate">More ({count})</span>
+      </button>
+      <div id={id} hidden={!open}>
+        {open ? groups.map(renderGroup) : null}
+      </div>
+    </div>
   );
 }
 

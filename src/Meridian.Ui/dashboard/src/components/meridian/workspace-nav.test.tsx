@@ -10,6 +10,29 @@ import { renderWithRouter } from "@/test/render";
 const WORKSPACE_ITEM = ".operator-nav-item:not(.operator-nav-today)";
 
 describe("WorkspaceNav", () => {
+  it("keeps less-used Accounting pages behind More until the operator opens it", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<WorkspaceNav />, { initialEntries: ["/accounting/ledger"] });
+
+    const pages = screen.getByRole("group", { name: "Accounting pages" });
+    expect(within(pages).getByRole("link", { name: /Ledger explorer/ })).toBeInTheDocument();
+    expect(within(pages).queryByRole("link", { name: /Capital calls/ })).not.toBeInTheDocument();
+
+    const more = within(pages).getByRole("button", { name: "More (10)" });
+    expect(more).toHaveAttribute("aria-expanded", "false");
+    await user.click(more);
+    expect(more).toHaveAttribute("aria-expanded", "true");
+    expect(within(pages).getByRole("link", { name: /Capital calls/ })).toBeInTheDocument();
+  });
+
+  it("opens More by itself when the current page is behind it", () => {
+    renderWithRouter(<WorkspaceNav />, { initialEntries: ["/accounting/capital-calls"] });
+
+    const pages = screen.getByRole("group", { name: "Accounting pages" });
+    expect(within(pages).getByRole("button", { name: "More (10)" })).toHaveAttribute("aria-expanded", "true");
+    expect(within(pages).getByRole("link", { name: /Capital calls, current page/ })).toHaveAttribute("aria-current", "page");
+  });
+
   it("renders decorative canonical workspace icons as masks that inherit navigation colors", () => {
     renderWithRouter(<WorkspaceNav />, { initialEntries: ["/trading"] });
 
@@ -177,11 +200,15 @@ describe("WorkspaceNav", () => {
     await user.click(screen.getByRole("button", { name: "Expand Accounting pages" }));
 
     expect(accountingSections).toHaveAttribute("aria-hidden", "false");
-    ["Close", "Records", "Reconciliation", "Review", "Administration"].forEach((label) => {
+    ["Close", "Records", "Reconciliation", "Review"].forEach((label) => {
       expect(within(accountingSections!).getByRole("group", { name: label })).toBeInTheDocument();
     });
     expect(within(accountingSections!).getByLabelText("Open Ledger explorer")).toHaveAttribute("href", "/accounting/ledger");
     expect(within(accountingSections!).getByLabelText("Open Close calendar")).toHaveAttribute("href", "/accounting/close-calendar");
+    // Capital accounts is behind More, one click away.
+    expect(within(accountingSections!).queryByLabelText("Open Capital accounts")).not.toBeInTheDocument();
+    await user.click(within(accountingSections!).getByRole("button", { name: "More (10)" }));
+    expect(within(accountingSections!).getByRole("group", { name: "Administration" })).toBeInTheDocument();
     expect(within(accountingSections!).getByLabelText("Open Capital accounts")).toHaveAttribute("href", "/accounting/capital-accounts");
     expect(within(accountingSections!).getByLabelText("Open Approvals")).toHaveAttribute("href", "/accounting/approvals");
     expect(screen.getByRole("button", { name: "Collapse Accounting pages" })).toHaveAttribute("aria-expanded", "true");

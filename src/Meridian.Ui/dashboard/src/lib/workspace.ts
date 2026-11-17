@@ -429,7 +429,20 @@ export const WORKSTATION_ROUTE_SEGMENT_LABELS: Readonly<Record<string, string>> 
   watchlist: "Watchlist"
 };
 
-export function resolveWorkstationRouteBreadcrumbLabel(pathname: string, workspace: WorkspaceSummary): string {
+/**
+ * Views of one route that the sidebar lists as their own destination. The page heading names the
+ * view the operator opened, not the route that hosts it.
+ */
+const WORKSTATION_ROUTE_VIEW_LABELS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+  "/data/quotes": { options: "Options screening" }
+};
+
+export function resolveWorkstationRouteBreadcrumbLabel(pathname: string, workspace: WorkspaceSummary, search = ""): string {
+  const view = new URLSearchParams(search).get("view");
+  const viewLabel = view ? WORKSTATION_ROUTE_VIEW_LABELS[pathname.replace(/\/+$/, "")]?.[view] : undefined;
+  if (viewLabel) {
+    return viewLabel;
+  }
   const segments = pathname.split("/").filter(Boolean);
   const routeSegments = segments[0] === workspace.key ? segments.slice(1) : segments.slice(2);
   if (routeSegments.length === 0) {

@@ -243,6 +243,14 @@ Today, Operations continuity, Casework and Exceptions/Approvals.
 
 **Benefit:** less to scan, and one answer to "what do I work on next?"
 
+**Progress (2026-11-17).** The sidebar now lists seven daily-use Accounting destinations (Close
+cockpit, Close calendar, Ledger explorer, Adjustments, Casework, Exceptions, Approvals). The other
+ten sit behind a "More (10)" disclosure that opens by itself when the current page is one of them.
+`primary: true` in `lib/accounting-navigation.ts` marks the seven, and every destination stays in
+the command palette. Separately, Options screening is no longer also a Market data in-page tab. It
+keeps its Data sidebar entry, its `?view=options` deep link, and a page heading of its own. The
+merged Accounting work queue and the in-page secondary rail remain open.
+
 #### C4 🔴 Speak operator language, not system language (follows the 11-10 copy pass)
 
 **Problem.**

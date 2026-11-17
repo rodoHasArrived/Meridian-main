@@ -53,8 +53,14 @@ export interface WorkspaceNavItemViewModel {
   attentionCount: number;
   /** Names the badge's unit in the link tooltip (the badge itself takes no pointer events); null when there is no badge. */
   attentionTitle: string | null;
+  /** Every destination, primary and "More" alike, in browse order. */
   subItems: WorkspaceNavSubItemViewModel[];
+  /** Grouped destinations the sidebar always lists. */
   subItemGroups: WorkspaceNavSubItemGroupViewModel[];
+  /** Grouped destinations behind the sidebar's "More" disclosure; empty when there is none. */
+  moreItemGroups: WorkspaceNavSubItemGroupViewModel[];
+  /** True when the current page is behind "More", so the disclosure opens to show it. */
+  moreActive: boolean;
   attentionSeverity: "blocked" | "review" | "info" | null;
 }
 
@@ -154,7 +160,7 @@ export function buildWorkspaceNavViewModel(
     ): WorkspaceNavSubItemViewModel => {
       const subActive = workspace.key === "accounting"
         ? isAccountingNavigationItemActive(pathname, sub as AccountingNavigationItemDefinition)
-        : isSubRouteActive(pathname, sub.route, sub.match);
+        : isSubRouteActiveForView(pathname, search, sub.route, sub.match, visibleWorkspaceSubroutes(workspace.key));
       const subRoute = buildWorkspaceNavigationRoute(workspace.key, sub.route, operatingScope, search);
       const subScopeSummary = summarizeOperatingScopeForRoute(sub.route, operatingScope);
       return {
@@ -168,14 +174,28 @@ export function buildWorkspaceNavViewModel(
       };
     };
     const rawSubRouteGroups = visibleWorkspaceSubrouteGroups(workspace.key);
-    const subItemGroups = rawSubRouteGroups.map<WorkspaceNavSubItemGroupViewModel>((group) => ({
+    const allItemGroups = rawSubRouteGroups.map((group) => ({
       id: group.id,
       label: group.label,
-      items: group.items.map(buildSubItem)
+      items: group.items.map((sub) => ({ sub, view: buildSubItem(sub) }))
     }));
-    const subItems = subItemGroups.length > 0
-      ? subItemGroups.flatMap((group) => group.items)
+    const pickGroups = (primary: boolean) => allItemGroups
+      .map<WorkspaceNavSubItemGroupViewModel>((group) => ({
+        id: group.id,
+        label: group.label,
+        items: group.items.filter(({ sub }) => Boolean((sub as AccountingNavigationItemDefinition).primary) === primary).map(({ view }) => view)
+      }))
+      .filter((group) => group.items.length > 0);
+    // Only Accounting marks primary destinations; a workspace without them lists everything.
+    const hasPrimaryTier = allItemGroups.some((group) => group.items.some(({ sub }) => (sub as AccountingNavigationItemDefinition).primary));
+    const subItemGroups = hasPrimaryTier
+      ? pickGroups(true)
+      : allItemGroups.map((group) => ({ id: group.id, label: group.label, items: group.items.map(({ view }) => view) }));
+    const moreItemGroups = hasPrimaryTier ? pickGroups(false) : [];
+    const subItems = allItemGroups.length > 0
+      ? allItemGroups.flatMap((group) => group.items.map(({ view }) => view))
       : visibleWorkspaceSubroutes(workspace.key).map(buildSubItem);
+    const moreActive = moreItemGroups.some((group) => group.items.some((sub) => sub.active));
 
     return {
       key: workspace.key,
@@ -198,6 +218,8 @@ export function buildWorkspaceNavViewModel(
         : null,
       subItems,
       subItemGroups,
+      moreItemGroups,
+      moreActive,
       attentionSeverity
     };
   });
@@ -276,7 +298,7 @@ function buildContextItems(
   return visibleWorkspaceSubroutes(workspaceKey).map((sub) => {
     const active = workspaceKey === "accounting"
       ? isAccountingNavigationItemActive(pathname, sub as AccountingNavigationItemDefinition)
-      : isSubRouteActive(pathname, sub.route, sub.match);
+      : isSubRouteActiveForView(pathname, search, sub.route, sub.match, visibleWorkspaceSubroutes(workspaceKey));
     const route = buildWorkspaceNavigationRoute(workspaceKey, sub.route, operatingScope, search);
     const scopeSummary = summarizeOperatingScopeForRoute(sub.route, operatingScope);
     return {
@@ -343,6 +365,37 @@ function workspaceContextDescription(workspaceKey: WorkspaceKey): string {
     default:
       return "Workspace routes.";
   }
+}
+
+/**
+ * Some destinations are one route with a `view` query (Data > Market data is `/data/quotes`,
+ * Data > Options screening is `/data/quotes?view=options`). The one whose view matches the page
+ * is active; the bare route is active only when no sibling claims the page's view.
+ */
+function isSubRouteActiveForView(
+  pathname: string,
+  search: string,
+  route: string,
+  match: "exact" | "prefix" | undefined,
+  siblings: readonly WorkspaceSubrouteDefinition[]
+): boolean {
+  const routeView = routeQueryView(route);
+  const pageView = new URLSearchParams(search).get("view");
+  if (!isSubRouteActive(pathname, route.split(/[?#]/)[0] ?? route, match)) {
+    return false;
+  }
+  if (routeView !== null) {
+    return routeView === pageView;
+  }
+  const routePath = route.split(/[?#]/)[0];
+  return !siblings.some((sibling) => sibling.route.split(/[?#]/)[0] === routePath
+    && routeQueryView(sibling.route) !== null
+    && routeQueryView(sibling.route) === pageView);
+}
+
+function routeQueryView(route: string): string | null {
+  const queryIndex = route.indexOf("?");
+  return queryIndex < 0 ? null : new URLSearchParams(route.slice(queryIndex).split("#")[0]).get("view");
 }
 
 function isSubRouteActive(pathname: string, route: string, match: "exact" | "prefix" = "prefix"): boolean {
