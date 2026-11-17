@@ -199,7 +199,7 @@ concurrency boundary is processes sharing the same filesystem data root; separat
 separate authorities.
 
 The PostgreSQL store keeps its document in one `recurring_journal_state` row
-(`V_ledger_073__recurring_journal_state`). Initialization creates that row and the table rejects
+(`V_ledger_074__recurring_journal_state`). Initialization creates that row and the table rejects
 deletes and truncation, so lost state cannot read as empty. Each commit advances a row revision by
 compare-and-swap; a session whose connection, and therefore lease, was lost faults instead of
 overwriting a newer commit. When a host that already retained file state moves to the ledger

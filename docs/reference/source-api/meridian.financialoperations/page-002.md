@@ -375,7 +375,7 @@ Qualified name: <code>Meridian.FinancialOperations.FundAdministration.PostgresRe
 
 Source: [src/Meridian.FinancialOperations/FundAdministration/PostgresRecurringJournalStore.cs:23](../../../../src/Meridian.FinancialOperations/FundAdministration/PostgresRecurringJournalStore.cs#L23).
 
-Retains recurring journal definitions, activations and occurrence claims in the ledger database (V_ledger_073__recurring_journal_state), so runners on different processes and hosts share one lease instead of one filesystem root. The retained document, its validation and its session semantics are identical to FileRecurringJournalStore.
+Retains recurring journal definitions, activations and occurrence claims in the ledger database (V_ledger_074__recurring_journal_state), so runners on different processes and hosts share one lease instead of one filesystem root. The retained document, its validation and its session semantics are identical to FileRecurringJournalStore.
 
 ```csharp
 public sealed class PostgresRecurringJournalStore : IRecurringJournalStore, IRecurringJournalStoreProvisioning
@@ -666,6 +666,48 @@ Declared public members:
 | <code>public static string? VerifyPrincipal(IntercompanyAccrualEvidenceDto evidence, IReadOnlyList&lt;LedgerJournalEntryRecord&gt; principalJournals);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs:213](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs#L213) | Null when posted principal still reads exactly as retained; otherwise why the accrual must be recomputed. A backdated repayment or correction after drafting changes the interest the window should carry. |
 | <code>public static IntercompanyAccrualProposalDto BuildDraft(IntercompanyAccrualRequestDto request, string tenantId, string? companyId, string actor, LedgerBookRecord book, LedgerAccountingPeriod period, ResolvedIntercompanyAccountingArrangementDto posting, IntercompanyAccrualPreviewDto computation, IntercompanyAccrualPrincipalEvidenceDto principal, IReadOnlyList&lt;IntercompanyAccountBindingDto&gt; bindings, IReadOnlyList&lt;ChartOfAccountsNodeDto&gt; chart, ConsolidationFxAmountDto? fx, DateTimeOffset now, int generation = 0);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs:230](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs#L230) | The source-side draft: the lender debits interest receivable and credits interest income; the borrower debits interest expense and credits interest payable. It is a draft for the source book&#x27;s ordinary review. Its counterpart is produced only by the existing proposal pipeline after the source posts. |
 
+## IntercompanyBalanceConfirmationRules
+
+Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyBalanceConfirmationRules</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationRules.cs:12](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationRules.cs#L12).
+
+Pure transitions for a reciprocal intercompany balance confirmation. Every step is checked against the exact retained version and balance digest. Nothing here reads a store, posts a journal or blocks close.
+
+```csharp
+public static class IntercompanyBalanceConfirmationRules
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string Digest(Guid arrangementId, DateOnly asOf, IntercompanyBalanceConfirmationSideDto one, IntercompanyBalanceConfirmationSideDto two);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationRules.cs:18](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationRules.cs#L18) | The digest both sides confirm: each side&#x27;s book, currency, signed balances, retained journal identities and balance schedule hash. A change to any posted amount or contributing journal changes the digest. |
+| <code>public static IntercompanyBalanceConfirmationDto Propose(IntercompanyBalanceConfirmationDto? current, Guid confirmationId, Guid requestId, string tenantId, string? companyId, Guid arrangementId, Guid agreementId, DateOnly asOf, IntercompanyBalanceConfirmationSideDto one, IntercompanyBalanceConfirmationSideDto two, string actor, DateTimeOffset at);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationRules.cs:35](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationRules.cs#L35) | Pins both sides&#x27; current balances. A prior record for the same profile and date may be superseded only when its balances moved, or after a dispute was resolved; an unresolved dispute or a matching full confirmation stands. |
+| <code>public static IntercompanyBalanceConfirmationDto Apply(IntercompanyBalanceConfirmationDto current, IntercompanyBalanceConfirmationActionRequest request, string actor, DateTimeOffset at);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationRules.cs:57](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationRules.cs#L57) | Applies a confirmation, dispute or resolution to the exact retained version. |
+| <code>public static IntercompanyBalanceConfirmationFindingDto? Finding(Guid arrangementId, IntercompanyBalanceConfirmationDto? current, string? currentDigest);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationRules.cs:140](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationRules.cs#L140) | The advisory finding for one approved profile at the date, or null when both sides confirmed balances that have not moved since. currentDigest is the digest of today&#x27;s posted balances, when known. |
+
+## IntercompanyBalanceConfirmationService
+
+Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyBalanceConfirmationService</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs:14](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs#L14).
+
+Reciprocal intercompany balance confirmation. Each side&#x27;s balance is summed from its own book&#x27;s posted balance schedule for the approved accounting profile; nothing is entered by an operator. Each side is confirmed or disputed only by a caller whose scope holds that side&#x27;s book. Advisory only: no result gates close.
+
+```csharp
+public sealed class IntercompanyBalanceConfirmationService(IIntercompanyBalanceConfirmationStore store, IIntercompanyBalanceScheduleSource schedules, IntercompanyAccountingArrangementService profiles, IIntercompanyAccountingArrangementStore profileStore, ILedgerJournalStore journals, IFundProfileTenancyRegistry owners, TimeProvider? clock = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;IntercompanyBalanceConfirmationDto?&gt; GetAsync(string tenant, string? company, Guid confirmationId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs:21](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs#L21) |  |
+| <code>public async Task&lt;IntercompanyBalanceConfirmationDto&gt; ProposeAsync(string tenant, string? company, string actor, ProposeIntercompanyBalanceConfirmationRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs:25](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs#L25) | Pins both sides&#x27; current posted balances for the profile at the date. |
+| <code>public async Task&lt;IntercompanyBalanceConfirmationDto&gt; ActAsync(string tenant, string? company, string actor, Guid confirmationId, IntercompanyBalanceConfirmationActionRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs:42](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs#L42) | Confirms, disputes or resolves the exact retained version the caller saw. |
+| <code>public async Task&lt;IntercompanyBalanceConfirmationSummaryDto&gt; SummaryAsync(string tenant, string? company, Guid ledgerBookId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs:67](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs#L67) | The confirmation position for every approved profile that maps the book at the date. Advisory findings only; a profile whose balances cannot be read reports Unavailable rather than being treated as confirmed. |
+
 ## IntercompanyBalanceScheduleService
 
 Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyBalanceScheduleService</code>. Kind: `class`.
@@ -858,23 +900,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public AccountingBasisProjectionSetService(IAccountingPostingCandidateService candidateService);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingBasisProjectionSetService.cs:23](../../../../src/Meridian.FinancialOperations/Ledger/AccountingBasisProjectionSetService.cs#L23) |  |
 | <code>public async Task&lt;AccountingBasisProjectionSetDto&gt; BuildProjectionSetAsync(AccountingBasisProjectionSetRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingBasisProjectionSetService.cs:28](../../../../src/Meridian.FinancialOperations/Ledger/AccountingBasisProjectionSetService.cs#L28) |  |
-
-## AccountingJournalDraftLineRequest
-
-Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingJournalDraftLineRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs:19](../../../../src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs#L19).
-
-```csharp
-public sealed record AccountingJournalDraftLineRequest(LedgerAccount Account, decimal Debit, decimal Credit, string? Description = null, IReadOnlyList<string>? EvidenceLinks = null, LedgerDimensionSetDto? Dimensions = null);
-```
-
-## AccountingJournalDraftRequest
-
-Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingJournalDraftRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs:27](../../../../src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs#L27).
-
-```csharp
-public sealed record AccountingJournalDraftRequest(Guid AggregateId, Guid PeriodId, DateTimeOffset AccountingTimestamp, string Description, IReadOnlyList<AccountingJournalDraftLineRequest> Lines, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, DateOnly? EffectiveDate = null, Guid? CommandId = null, Guid? CorrelationId = null, Guid? SourceEventId = null, Guid? SourceJournalEntryId = null, string? FundProfileId = null, Guid? FundStructureNodeId = null, string? InstrumentId = null, string? PolicyId = null, string? RuleId = null, AccountingTreatmentKindDto? TreatmentKind = null, string? SourceEventType = null, Guid? LedgerBookId = null, LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating, LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null, TreasuryLedgerContextDto? TreasuryContext = null, IReadOnlyList<string>? EvidenceLinks = null, string? PostingRuleId = null, string? PostingRuleVersion = null, string? DryRunCorrelationId = null, string? PolicyVersion = null);
-```

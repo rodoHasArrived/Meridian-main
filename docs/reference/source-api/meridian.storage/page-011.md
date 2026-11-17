@@ -6,6 +6,47 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PostgresEquityReferenceProjectionStore
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresEquityReferenceProjectionStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/PostgresEquityReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/PostgresEquityReferenceProjectionStore.cs#L9).
+
+Reads equity reference projections from PostgreSQL by security, exchange, and issuer.
+
+```csharp
+public sealed class PostgresEquityReferenceProjectionStore : IEquityReferenceProjectionStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PostgresEquityReferenceProjectionStore(SecurityMasterOptions options);</code> | [src/Meridian.Storage/SecurityMaster/PostgresEquityReferenceProjectionStore.cs:27](../../../../src/Meridian.Storage/SecurityMaster/PostgresEquityReferenceProjectionStore.cs#L27) |  |
+| <code>public Task&lt;EquityProjectionRow?&gt; GetEquityAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresEquityReferenceProjectionStore.cs:35](../../../../src/Meridian.Storage/SecurityMaster/PostgresEquityReferenceProjectionStore.cs#L35) |  |
+| <code>public Task&lt;IReadOnlyList&lt;EquityProjectionRow&gt;&gt; GetByExchangeAsync(string exchangeCode, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresEquityReferenceProjectionStore.cs:38](../../../../src/Meridian.Storage/SecurityMaster/PostgresEquityReferenceProjectionStore.cs#L38) |  |
+| <code>public Task&lt;IReadOnlyList&lt;EquityProjectionRow&gt;&gt; GetByIssuerAsync(string issuerName, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresEquityReferenceProjectionStore.cs:41](../../../../src/Meridian.Storage/SecurityMaster/PostgresEquityReferenceProjectionStore.cs#L41) |  |
+
+## PostgresFutureReferenceProjectionStore
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresFutureReferenceProjectionStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/PostgresFutureReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/PostgresFutureReferenceProjectionStore.cs#L9).
+
+Reads futures reference projections from PostgreSQL by security and root symbol.
+
+```csharp
+public sealed class PostgresFutureReferenceProjectionStore : IFutureReferenceProjectionStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PostgresFutureReferenceProjectionStore(SecurityMasterOptions options);</code> | [src/Meridian.Storage/SecurityMaster/PostgresFutureReferenceProjectionStore.cs:21](../../../../src/Meridian.Storage/SecurityMaster/PostgresFutureReferenceProjectionStore.cs#L21) |  |
+| <code>public Task&lt;FutureProjectionRow?&gt; GetFutureAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresFutureReferenceProjectionStore.cs:29](../../../../src/Meridian.Storage/SecurityMaster/PostgresFutureReferenceProjectionStore.cs#L29) |  |
+| <code>public Task&lt;IReadOnlyList&lt;FutureProjectionRow&gt;&gt; GetByRootSymbolAsync(string rootSymbol, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresFutureReferenceProjectionStore.cs:32](../../../../src/Meridian.Storage/SecurityMaster/PostgresFutureReferenceProjectionStore.cs#L32) |  |
+
 ## PostgresFxSpotReferenceProjectionStore
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresFxSpotReferenceProjectionStore</code>. Kind: `class`.
@@ -1057,26 +1098,4 @@ One projected structured-credit tranche. FactorScheduleReference is the free-tex
 
 ```csharp
 public sealed record StructuredCreditProjectionRow(Guid SecurityId, string DisplayName, string Currency, string Tranche, string? PoolId, string CollateralType, decimal OriginalFace, decimal? CurrentFactor, string CouponOrIndex, string? FactorScheduleReference, DateOnly? MaturityDate, string PrimaryIdentifierValue, long Version, string? StructuredCreditKind = null, string? Seniority = null, decimal? AttachmentPoint = null, decimal? DetachmentPoint = null, decimal? WeightedAverageCoupon = null, int? WeightedAverageMaturityMonths = null, int? WeightedAverageLoanAgeMonths = null, DateOnly? ReinvestmentPeriodEnd = null, DateOnly? NonCallPeriodEnd = null);
-```
-
-## SwapProjectionRow
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.SwapProjectionRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/ISwapReferenceProjectionStore.cs:13](../../../../src/Meridian.Storage/SecurityMaster/ISwapReferenceProjectionStore.cs#L13).
-
-```csharp
-public sealed record SwapProjectionRow(Guid SecurityId, string DisplayName, string Currency, string? SwapType, DateOnly EffectiveDate, DateOnly MaturityDate, string LifecycleStat, string PrimaryIdentifierValue, long Version);
-```
-
-## UnderlyingLinkDeclaredPayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.UnderlyingLinkDeclaredPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:85](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L85).
-
-UnderlyingGraph / UnderlyingLinkDeclared or UnderlyingLinkAmended.
-
-```csharp
-public sealed record UnderlyingLinkDeclaredPayload(UnderlyingLinkPayload Link, UnderlyingLinkPayload? Previous, IReadOnlyList<string> Changes) : ISecurityGovernancePayload;
 ```

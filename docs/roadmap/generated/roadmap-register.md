@@ -2739,6 +2739,57 @@ W12-ICAGREE-001: accepted; health green; evidence complete. Accepted by the repo
 - `SRC-STORAGE`
 - `SRC-UI-SHARED`
 
+## W12-ICCONFIRM-001 - Reciprocal intercompany balance confirmation, advisory
+| Field | Value |
+| --- | --- |
+| Wave | W12 |
+| Status | in_progress |
+| Health | yellow |
+| Priority | high |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-11-17 |
+
+### Current Summary
+
+W12-ICCONFIRM-001: in_progress; health yellow; evidence in_progress. Per-period reciprocal confirmation pins both sides' posted balances; each side confirms or disputes through its own book. Status joins the close advisory and never blocks close. Opt-in close blocking is a separate later decision.
+
+### Status References
+
+- Decisions: DEC-IC-CONFIRM-001
+- PR references (not inferred acceptance): none recorded
+- Evidence: [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationRules.cs](../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationRules.cs)
+- Evidence: [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs](../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs)
+- Evidence: [src/Meridian.Storage/Ledger/Migrations/V_ledger_073__intercompany_balance_confirmations.sql](../../../src/Meridian.Storage/Ledger/Migrations/V_ledger_073__intercompany_balance_confirmations.sql)
+- Evidence: [src/Meridian.Ui.Shared/Endpoints/IntercompanyBalanceConfirmationEndpoints.cs](../../../src/Meridian.Ui.Shared/Endpoints/IntercompanyBalanceConfirmationEndpoints.cs)
+- Evidence: [tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyBalanceConfirmationRulesTests.cs](../../../tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyBalanceConfirmationRulesTests.cs)
+- Evidence: [tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyBalanceConfirmationServiceTests.cs](../../../tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyBalanceConfirmationServiceTests.cs)
+- Evidence: [tests/Meridian.Tests/Storage/IntercompanyBalanceConfirmationStoreTests.cs](../../../tests/Meridian.Tests/Storage/IntercompanyBalanceConfirmationStoreTests.cs)
+- Evidence: [tests/Meridian.Tests/Ui/IntercompanyBalanceConfirmationEndpointTests.cs](../../../tests/Meridian.Tests/Ui/IntercompanyBalanceConfirmationEndpointTests.cs)
+- Evidence: [src/Meridian.Ui/dashboard/src/screens/accounting-screen.entity-confirmations.tsx](../../../src/Meridian.Ui/dashboard/src/screens/accounting-screen.entity-confirmations.tsx)
+- Evidence: [src/Meridian.Wpf/Views/IntercompanyBalanceConfirmationControl.xaml](../../../src/Meridian.Wpf/Views/IntercompanyBalanceConfirmationControl.xaml)
+- Evidence: [tests/Meridian.Ui.Tests/Services/IntercompanyBalanceConfirmationWorkspaceTests.cs](../../../tests/Meridian.Ui.Tests/Services/IntercompanyBalanceConfirmationWorkspaceTests.cs)
+
+
+### Exit Criteria
+
+- For one approved accounting profile and as-of date, both sides' due-to/due-from balances are pinned from each book's posted balance schedule; no amount is entered by an operator.
+- Each side is confirmed or disputed only by a caller whose tenant and company scope holds that side's book; the same person cannot confirm both sides; a pair that does not net to zero cannot be confirmed.
+- A dispute needs a reason and is resolved only by someone other than the disputer, with a reason; balances that move after pinning void earlier sign-offs and require a fresh proposal.
+- Every step pins the exact version and balance digest it acted on, is retained append-only on durable storage, and an identical retry returns the retained step.
+- Confirmation status contributes advisory findings to close readiness and never changes close eligibility; an unreadable status is reported, not treated as confirmed.
+- Browser and WPF surfaces load, pin, confirm, dispute and resolve over the same routes and render exact decimal strings.
+
+### Source Modules
+
+- `SRC-CONTRACTS`
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-STORAGE`
+- `SRC-UI-SHARED`
+- `SRC-UI-SERVICES`
+- `SRC-WPF`
+- `SRC-UI-DASHBOARD`
+
 ## W12-ICINCOME-001 - Policy-governed intercompany revenue and expense elimination
 | Field | Value |
 | --- | --- |

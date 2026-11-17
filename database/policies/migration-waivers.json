@@ -223,6 +223,12 @@
       "review_after": "2027-05-13"
     },
     {
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_073__intercompany_balance_confirmations.sql",
+      "rule_id": "migration-truncate",
+      "reason": "The lexical TRUNCATE matches declare only BEFORE TRUNCATE rejection triggers protecting the new reciprocal intercompany balance confirmation versions. They execute no TRUNCATE command and remove no table, column, row or retained fact. Preserve these rejection triggers and the UPDATE/DELETE protections. This exact path/rule exception follows V_ledger_030 and V_ledger_031 and covers only these truncation-rejection declarations; it does not authorize data truncation or a history-removing downgrade.",
+      "review_after": "2027-05-13"
+    },
+    {
       "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_065__consolidation_transitions.sql",
       "rule_id": "migration-truncate",
       "reason": "The lexical TRUNCATE matches declare only BEFORE TRUNCATE rejection triggers protecting the new consolidation transition previews and approved cutover receipts. They execute no TRUNCATE command and remove no table, column, row or retained fact. Preserve these rejection triggers and the UPDATE/DELETE protections. This exact path/rule exception follows V_ledger_030 and V_ledger_031 and covers only these truncation-rejection declarations; it does not authorize data truncation or a history-removing downgrade.",
@@ -253,6 +259,12 @@
       "review_after": "2027-05-13"
     },
     {
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_073__intercompany_balance_confirmations.sql",
+      "rule_id": "migration-drop-object",
+      "reason": "Each DROP TRIGGER IF EXISTS is immediately followed by recreation of the same named protection trigger on the same table, making the new balance-confirmation version-history rejection triggers reapply-idempotent. The migration runner executes the DDL and migration-ledger change in its transaction under the advisory migration lock, so failed recreation restores the prior protections. No table, column, row, retained receipt or history is removed. This exact path/rule exception follows V_ledger_030/V_ledger_031's drop-and-recreate idiom and does not authorize omission of any replacement trigger.",
+      "review_after": "2027-05-13"
+    },
+    {
       "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_066__dedicated_consolidation_book_slots.sql",
       "rule_id": "migration-drop-object",
       "reason": "Functional, row-preserving index replacement: drops only ux_ledger_books_fund_node_basis and recreates it in the same migration transaction as a partial unique index. Ordinary source/entity and Fund/Primary books retain the existing per-fund/node/basis uniqueness; the sole exclusion is Fund/Primary books with one of the four exact consolidation-v1/w10-v1 through consolidation-v4/w10-v4 policy pairs. A second unique index preserves distinct normalized reporting-book names within that excluded population. Every row satisfying the old unique index also satisfies both new indexes on first apply. No table, column, book, journal, overlay or receipt is removed or rewritten. The shared PostgreSQL migration runner holds its advisory migration lock and transaction through replacement and migration-ledger recording; failed creation rolls back the drop. DDL can wait for ledger_books users and requires a reviewed operational window. After multiple approved reporting books exist, do not restore the old all-books index by deleting books or history: retain them and use a reviewed forward correction. Exact policy-pair creation validation and reviewed cutover routing remain independent application controls; this exception does not widen them.",
@@ -271,7 +283,7 @@
       "review_after": "2027-02-14"
     },
     {
-      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_073__recurring_journal_state.sql",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_074__recurring_journal_state.sql",
       "rule_id": "migration-truncate",
       "reason": "Authorized by the repository owner on 2026-11-17. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects truncation of the retained recurring journal state (W10-JRNL-001); this migration executes no data truncation. Without it, a truncated table would read as unprovisioned and explicit re-initialization would start from empty state, reissuing occurrence claims and draft identities. PostgreSQL regression coverage attempts delete and truncate, requires the guard SQLSTATE 55000, and verifies the retained document is unchanged.",
       "review_after": "2027-05-17"

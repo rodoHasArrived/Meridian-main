@@ -9,7 +9,7 @@ namespace Meridian.FinancialOperations.FundAdministration;
 
 /// <summary>
 /// Retains recurring journal definitions, activations and occurrence claims in the ledger database
-/// (<c>V_ledger_073__recurring_journal_state</c>), so runners on different processes and hosts share one
+/// (<c>V_ledger_074__recurring_journal_state</c>), so runners on different processes and hosts share one
 /// lease instead of one filesystem root. The retained document, its validation and its session
 /// semantics are identical to <see cref="FileRecurringJournalStore"/>.
 /// </summary>

@@ -3449,3 +3449,60 @@ items:
       - type: test
         path: tests/Meridian.Tests/Storage/IntercompanyAccrualPostAndDeliverPostgresTests.cs
     last_reviewed: 2026-11-17
+  - id: W12-ICCONFIRM-001
+    title: Reciprocal intercompany balance confirmation, advisory
+    wave: W12
+    stage_gates:
+      - AccountingRecords
+    workspace:
+      - Accounting
+    owner_lane: Accounting and Ledger
+    status: in_progress
+    health: yellow
+    priority: high
+    evidence_posture: in_progress
+    status_note: Per-period reciprocal confirmation pins both sides' posted balances; each side confirms or disputes through its own book. Status joins the close advisory and never blocks close. Opt-in close blocking is a separate later decision.
+    decision_ids:
+      - DEC-IC-CONFIRM-001
+    pr_references: []
+    exit_criteria:
+      - For one approved accounting profile and as-of date, both sides' due-to/due-from balances are pinned from each book's posted balance schedule; no amount is entered by an operator.
+      - Each side is confirmed or disputed only by a caller whose tenant and company scope holds that side's book; the same person cannot confirm both sides; a pair that does not net to zero cannot be confirmed.
+      - A dispute needs a reason and is resolved only by someone other than the disputer, with a reason; balances that move after pinning void earlier sign-offs and require a fresh proposal.
+      - Every step pins the exact version and balance digest it acted on, is retained append-only on durable storage, and an identical retry returns the retained step.
+      - Confirmation status contributes advisory findings to close readiness and never changes close eligibility; an unreadable status is reported, not treated as confirmed.
+      - Browser and WPF surfaces load, pin, confirm, dispute and resolve over the same routes and render exact decimal strings.
+    source_modules:
+      - SRC-CONTRACTS
+      - SRC-DESIGN-FINANCIAL-OPERATIONS
+      - SRC-STORAGE
+      - SRC-UI-SHARED
+      - SRC-UI-SERVICES
+      - SRC-WPF
+      - SRC-UI-DASHBOARD
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    evidence:
+      - type: source
+        path: src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationRules.cs
+      - type: source
+        path: src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs
+      - type: source
+        path: src/Meridian.Storage/Ledger/Migrations/V_ledger_073__intercompany_balance_confirmations.sql
+      - type: source
+        path: src/Meridian.Ui.Shared/Endpoints/IntercompanyBalanceConfirmationEndpoints.cs
+      - type: test
+        path: tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyBalanceConfirmationRulesTests.cs
+      - type: test
+        path: tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyBalanceConfirmationServiceTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Storage/IntercompanyBalanceConfirmationStoreTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Ui/IntercompanyBalanceConfirmationEndpointTests.cs
+      - type: source
+        path: src/Meridian.Ui/dashboard/src/screens/accounting-screen.entity-confirmations.tsx
+      - type: source
+        path: src/Meridian.Wpf/Views/IntercompanyBalanceConfirmationControl.xaml
+      - type: test
+        path: tests/Meridian.Ui.Tests/Services/IntercompanyBalanceConfirmationWorkspaceTests.cs
+    last_reviewed: 2026-11-17

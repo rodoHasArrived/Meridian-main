@@ -148,6 +148,28 @@ round-trip in retained PostgreSQL JSONB payloads without replacing tables or mig
 payload hashes. It adds no new consolidation rule version: existing `w10-v1` through `w10-v4`
 evidence, reporting transitions and roadmap statuses retain their established meanings.
 
+## Reciprocal balance confirmation
+
+Each side of an intercompany pair confirms, per period, the due-to/due-from balance the other side
+holds. A proposal pins both sides' posted balances for one approved accounting profile and as-of date:
+each side's balance is summed from its own book's balance schedule rows for that profile and
+counterparty, so amounts always come from posted journals and never from an operator or the legal
+terms. A confirmation is one record per tenant, company, profile and date, retained append-only.
+
+- Each side confirms or disputes only through its own book, under the caller's tenant and company
+  scope. The same person cannot confirm both sides.
+- A pair whose transaction-currency balances do not net to zero cannot be confirmed; it is disputed
+  or the books are corrected first.
+- A dispute needs a reason. It is resolved, with a reason, by someone other than the disputer; the
+  corrected balances are then proposed again.
+- Every step pins the version and balance digest it acted on. Balances that move after pinning are
+  reported as changed, and a fresh proposal voids earlier sign-offs.
+
+Confirmation status is advisory. It joins the intercompany close advisory as
+`intercompany.confirmation.*` warnings and never changes close eligibility; an unreadable status is
+reported as unavailable, not treated as confirmed. Policy-governed close blocking and pairs that span
+two companies of one tenant are not implemented.
+
 ## Reporting perimeter and implementation owners
 
 A **reporting perimeter transition** is a reviewed cutover into a new empty dedicated elimination
