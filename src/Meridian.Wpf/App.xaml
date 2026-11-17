@@ -32,7 +32,6 @@
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
             <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
             <converters:IntToVisibilityConverter x:Key="IntToVisibilityConverter" />
-            <converters:DisplayTimestampConverter x:Key="DisplayTimestampConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

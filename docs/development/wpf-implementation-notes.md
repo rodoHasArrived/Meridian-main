@@ -505,7 +505,8 @@ and whenever the desktop saves preferences; it is UTC when unset, when the host 
 when this machine cannot resolve the zone. UTC labels are unchanged ("2026-07-05 12:00 UTC"); other
 zones show local time with the offset for that instant ("2026-07-05 13:00 UTC+01:00"). Code that
 parses a formatted label back uses `TryParseDisplayTimestamp`. Open screens reformat on their next
-refresh. This is display only: stored, audit and ledger values stay UTC.
+refresh. This is display only: stored, audit and ledger values stay UTC. A page that uses `DisplayTimestampConverter` declares it in its own resources, like the other
+page converters, because pages also load without `App.xaml`.
 
 ### One refresh control
 
