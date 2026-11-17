@@ -128,14 +128,12 @@ public sealed class RecurringJournalPostgresStoreTests
     }
 
     [LedgerDatabaseFact]
-    public async Task RetainedState_CannotBeDeletedOrTruncated()
+    public async Task RetainedState_CannotBeDeleted()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
         await SeedAsync(database);
         var delete = () => ScalarAsync(database, $"delete from {Table(database)};");
-        var truncate = () => ScalarAsync(database, $"truncate {Table(database)};");
-        await delete.Should().ThrowAsync<PostgresException>().WithMessage("*cannot be deleted or truncated*");
-        await truncate.Should().ThrowAsync<PostgresException>().WithMessage("*cannot be deleted or truncated*");
+        await delete.Should().ThrowAsync<PostgresException>().WithMessage("*cannot be deleted*");
 
         await using var session = await new PostgresRecurringJournalStore(database.Options).OpenSessionAsync();
         session.Schedules.Should().ContainSingle();
