@@ -6,6 +6,22 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LimitStyle
+
+Qualified name: <code>Meridian.Execution.Sdk.OrderPricing.LimitStyle</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution.Sdk/ValidatedOrder.cs:120](../../../../src/Meridian.Execution.Sdk/ValidatedOrder.cs#L120).
+
+```csharp
+public sealed class LimitStyle : OrderPricing
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal LimitPrice { get; }</code> | [src/Meridian.Execution.Sdk/ValidatedOrder.cs:123](../../../../src/Meridian.Execution.Sdk/ValidatedOrder.cs#L123) |  |
+
 ## MarketStyle
 
 Qualified name: <code>Meridian.Execution.Sdk.OrderPricing.MarketStyle</code>. Kind: `class`.
@@ -85,7 +101,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Sdk.OrderReplaceCommand</code>. Kind: `class`.
 
-Source: [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:389](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L389).
+Source: [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:407](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L407).
 
 A cancel/replace command for one working order.
 
@@ -97,10 +113,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public OrderReplaceCommand(string orderId, OrderModification modification, OrderSubmissionAuthority authority);</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:391](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L391) |  |
-| <code>public string OrderId { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:399](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L399) |  |
-| <code>public OrderModification Modification { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:401](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L401) |  |
-| <code>public OrderSubmissionAuthority Authority { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:403](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L403) |  |
+| <code>public OrderReplaceCommand(string orderId, OrderModification modification, OrderSubmissionAuthority authority);</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:409](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L409) |  |
+| <code>public string OrderId { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:417](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L417) |  |
+| <code>public OrderModification Modification { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:419](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L419) |  |
+| <code>public OrderSubmissionAuthority Authority { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:421](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L421) |  |
 
 ## OrderRequest
 

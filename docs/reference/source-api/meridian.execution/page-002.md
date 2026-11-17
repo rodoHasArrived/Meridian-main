@@ -767,7 +767,7 @@ Source: [src/Meridian.Execution/OrderManagementSystem.Journal.cs:9](../../../../
 public sealed partial class OrderManagementSystem
 ```
 
-Source: [src/Meridian.Execution/OrderManagementSystem.KillSwitch.cs:17](../../../../src/Meridian.Execution/OrderManagementSystem.KillSwitch.cs#L17).
+Source: [src/Meridian.Execution/OrderManagementSystem.KillSwitch.cs:18](../../../../src/Meridian.Execution/OrderManagementSystem.KillSwitch.cs#L18).
 
 The kill-switch sweep: cancelling the open book and reporting what actually happened to it. Separated from the main partial because the sweep&#x27;s correctness argument is about evidence rather than about order flow. The exit criterion says activation cancels open orders; a sweep that reports success by completing establishes only that it ran.
 
@@ -779,7 +779,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;KillSwitchSweepResult&gt; CancelAllAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/OrderManagementSystem.KillSwitch.cs:20](../../../../src/Meridian.Execution/OrderManagementSystem.KillSwitch.cs#L20) |  |
+| <code>public Task&lt;KillSwitchSweepResult&gt; CancelAllAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystem.KillSwitch.cs:21](../../../../src/Meridian.Execution/OrderManagementSystem.KillSwitch.cs#L21) |  |
+| <code>public Task&lt;KillSwitchSweepResult&gt; CancelAllAsync(OrderCancelAllCommand command, CancellationToken ct = default);</code> | [src/Meridian.Execution/OrderManagementSystem.KillSwitch.cs:30](../../../../src/Meridian.Execution/OrderManagementSystem.KillSwitch.cs#L30) |  |
 
 Source: [src/Meridian.Execution/OrderManagementSystem.Lifecycle.cs:3](../../../../src/Meridian.Execution/OrderManagementSystem.Lifecycle.cs#L3).
 

@@ -564,7 +564,8 @@ Declared public members:
 | <code>OrderState? GetOrder(string orderId);</code> | [src/Meridian.Execution.Sdk/IOrderManager.cs:61](../../../../src/Meridian.Execution.Sdk/IOrderManager.cs#L61) | Gets order state by ID. |
 | <code>bool WasRiskApprovalDeclined(string orderId) =&gt; …;</code> | [src/Meridian.Execution.Sdk/IOrderManager.cs:71](../../../../src/Meridian.Execution.Sdk/IOrderManager.cs#L71) | True when orderId was parked for governed risk approval and that approval ended without the order ever routing. A released order re-enters the report stream under the same id, but a declined one produces no further report at all, so callers holding per-order bookkeeping need this to retire it instead of waiting for a terminal report that never arrives. Implementations without a governed approval queue never park orders and report false. |
 | <code>Task&lt;KillSwitchSweepResult&gt; CancelAllAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IOrderManager.cs:83](../../../../src/Meridian.Execution.Sdk/IOrderManager.cs#L83) | Cancels all open orders and reports what the sweep achieved. The result is the point: a kill-switch sweep that returns without throwing establishes only that it ran, and a broker refusing a single cancellation leaves that order working. Callers that surface or audit the kill switch must read KillSwitchSweepResult.RequiresOperatorAction rather than treating a completed call as an emptied book. |
-| <code>IReadOnlyList&lt;OrderState&gt; GetCompletedOrders(int take = 20);</code> | [src/Meridian.Execution.Sdk/IOrderManager.cs:89](../../../../src/Meridian.Execution.Sdk/IOrderManager.cs#L89) | Gets the most recently completed orders (filled, cancelled, rejected, expired) for display in the trading cockpit fills feed. Ordered by completion time, most recent first. |
+| <code>Task&lt;KillSwitchSweepResult&gt; CancelAllAsync(OrderCancelAllCommand command, CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IOrderManager.cs:90](../../../../src/Meridian.Execution.Sdk/IOrderManager.cs#L90) | The same kill-switch sweep as CancelAllAsync(CancellationToken), under the kill-switch authority that invoked it. Implementations that record authority attach it to every cancellation the sweep makes; the default runs the unattributed sweep. |
+| <code>IReadOnlyList&lt;OrderState&gt; GetCompletedOrders(int take = 20);</code> | [src/Meridian.Execution.Sdk/IOrderManager.cs:100](../../../../src/Meridian.Execution.Sdk/IOrderManager.cs#L100) | Gets the most recently completed orders (filled, cancelled, rejected, expired) for display in the trading cockpit fills feed. Ordered by completion time, most recent first. |
 
 ## IOrderMarketReferenceSource
 
@@ -817,6 +818,25 @@ Declared public members:
 | <code>public string? TradingClass { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:129](../../../../src/Meridian.Execution.Sdk/Models.cs#L129) |  |
 | <code>public string? LocalSymbol { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:130](../../../../src/Meridian.Execution.Sdk/Models.cs#L130) |  |
 
+## OrderCancelAllCommand
+
+Qualified name: <code>Meridian.Execution.Sdk.OrderCancelAllCommand</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:393](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L393).
+
+A kill-switch sweep of the whole book: every working order cancelled, every parked escalation withdrawn. Only OrderCommandOrigin.KillSwitch authority may sweep; the authority is recorded on each cancellation the sweep makes. It is never used to refuse a cancellation.
+
+```csharp
+public sealed class OrderCancelAllCommand
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public OrderCancelAllCommand(OrderSubmissionAuthority authority);</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:395](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L395) |  |
+| <code>public OrderSubmissionAuthority Authority { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:403](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L403) |  |
+
 ## OrderCancelCommand
 
 Qualified name: <code>Meridian.Execution.Sdk.OrderCancelCommand</code>. Kind: `class`.
@@ -976,19 +996,3 @@ Closed pricing shapes: required price limbs cannot be absent in a validated orde
 ```csharp
 public abstract class OrderPricing
 ```
-
-## LimitStyle
-
-Qualified name: <code>Meridian.Execution.Sdk.OrderPricing.LimitStyle</code>. Kind: `class`.
-
-Source: [src/Meridian.Execution.Sdk/ValidatedOrder.cs:120](../../../../src/Meridian.Execution.Sdk/ValidatedOrder.cs#L120).
-
-```csharp
-public sealed class LimitStyle : OrderPricing
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public decimal LimitPrice { get; }</code> | [src/Meridian.Execution.Sdk/ValidatedOrder.cs:123](../../../../src/Meridian.Execution.Sdk/ValidatedOrder.cs#L123) |  |
