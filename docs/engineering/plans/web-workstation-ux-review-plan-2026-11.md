@@ -903,3 +903,52 @@ Close Calendar grid. All of it is browser-only. No shared contract changed.
 - **Follow-up (deferred): Portfolio NAV and exposure trend.** No NAV or exposure history read
   model exists. It needs one in `Meridian.Ui.Services`, consumed by both the browser and WPF
   (a `W8-WPF-PARITY-001` item), before a trend chart can be drawn.
+
+## Phase E: workflow features (2026-11-17)
+
+Review proposals 11 (features finance users expect next) and 12 (split large screens as they are
+touched). Phase E went out in slices E1–E5, each pushed separately.
+
+- **Due urgency (E1).**
+  - `lib/due-urgency.ts` and `DueChip` show "Overdue 3 days", "Due today" or "Due in 2 days", in UTC
+    calendar days; done work is never overdue.
+  - The chip is on Today, the triage inbox, close cockpit tasks and the Close Calendar list.
+  - Today and the Close Calendar list sort overdue first, and "Why ranked here" says so.
+  - Reporting production already flagged and sorted overdue runs; break SLAs keep their own state.
+- **New since you last looked (E1).** Per-viewer markers from the server's visit record, now also on
+  Today (`today-queue`), Approvals (`approvals`) and Reporting triage (`reporting-triage`, by
+  publication time). Casework reuses the break queue's baseline. The Approval Inbox has no timestamp
+  and is not marked.
+- **Bulk Acknowledge and Snooze on Today (E1).** Each checked item is confirmed in the dialog, sent as
+  its own command with its own command ID and versions (one activity entry each), and reported
+  separately. Ineligible items are listed as skipped with the reason.
+- **Export as shown (E2).** `TableWorkbench` adds "Export as shown · CSV" and "· XLSX": visible
+  columns in screen order, the table's formatting (`exportDisplay`), and totals (`footerExport`).
+  XLSX keeps numbers numeric and puts the source context on an About sheet. The raw source CSV is
+  unchanged; server-paged tables stay CSV-only. `write-excel-file` (MIT) loads only on export.
+- **Strategy comparison (E3).** Up to four runs. A fifth is refused with a message, not swapped in.
+  A tray lists the selection. After a compare, equity (rebased to 100) and drawdown are overlaid over
+  the dates every run shares, each with a data table. Diff stays two-run. Comparison code moved to
+  `strategy-screen.comparison*.ts(x)`.
+- **Variance (E4, E5).**
+  - One rule everywhere: variance = current − prior; variance % = variance ÷ |prior| × 100, none
+    for a zero prior. `PeriodChange` in `Meridian.Contracts`, mirrored exactly in `lib/variance.ts`.
+  - `varianceColumns` adds Prior, Variance and Variance % columns and flags variances past the
+    materiality policy with a "Material" chip.
+  - Trial balance: the posted-period comparison uses them (Accounting policy). The never-enabled
+    "Compare prior period" button is gone. Comparison figures stay period movements and are not
+    merged into the cumulative trial balance rows.
+  - NAV (`/portfolio/nav`): ledger NAV now against a prior date (default the end of last month), in
+    total and by asset class, both rebuilt from the posted ledger as of their own date.
+  - Attribution: the selected run's per-symbol P&L for its last month against the month before,
+    from its daily snapshots.
+  - Cash ladder: "Vs end of last month" rebuilds the ladder from the ledger's cash at that date and
+    compares opening cash, flows, the lowest cumulative cash, breaches and each bucket by position.
+- **Follow-ups.**
+  - The report-pack portfolio cut hard-codes `PriorTotalPnl: 0` and `PnlChange: totalPnl`
+    (`ReportPackRunReadService.cs`); it should read the prior published report version.
+  - Attribution does not split commissions or margin interest by period; a closed symbol keeps its
+    last marked cumulative P&L rather than its exact closing trade.
+  - The cash ladder comparison uses current instrument terms for both dates.
+  - The NAV trend chart (Phase D follow-up) can now build on the NAV comparison seam.
+  - WPF parity items are listed in `wpf-web-ui-alignment-plan.md` (Phase E delta).

@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ServicerStatementPreviewDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.ServicerStatementPreviewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:319](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L319).
+
+```csharp
+public sealed record ServicerStatementPreviewDto(Guid? BatchId, ServicerStatementKind Kind, string ServicerName, DateOnly StatementDate, string SourceFormat, string? SourceFileName, string RawPayloadHash, int RowCount, int MappedRowCount, int UnmappedRowCount, int DuplicateRowCount, int ReadyToApplyRowCount, int AppliedRowCount, string Status, IReadOnlyList<ServicerStatementRowDto> Rows, IReadOnlyList<ServicerStatementValidationIssueDto> Issues, IReadOnlyList<string> SuggestedActions, string? EvidenceRoute = null, string? StatementRunId = null);
+```
+
 ## ServicerStatementRowDto
 
 Qualified name: <code>Meridian.Contracts.DirectLending.ServicerStatementRowDto</code>. Kind: `record`.
@@ -1040,36 +1050,3 @@ Declared public members:
 | <code>public decimal ChangePercent =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:151](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L151) | Gets the percentage change from Open to Close. Positive values indicate price increase, negative values indicate decrease. |
 | <code>public decimal TypicalPrice =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:157](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L157) | Gets the typical price, calculated as (High + Low + Close) / 3. This is a common technical analysis value used in many indicators. |
 | <code>public decimal Notional =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:163](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L163) | Gets the approximate dollar volume (Close price multiplied by Volume). Useful for liquidity analysis and position sizing. |
-
-## HistoricalQuote
-
-Qualified name: <code>Meridian.Contracts.Domain.Models.HistoricalQuote</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs:9](../../../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs#L9).
-
-Historical NBBO (National Best Bid and Offer) quote data from Alpaca Markets API. Represents the best bid and ask prices available across all exchanges at a point in time.
-
-```csharp
-public sealed record HistoricalQuote : MarketEventPayload
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Symbol { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs:14](../../../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs#L14) | Gets the ticker symbol for the security. |
-| <code>public DateTimeOffset Timestamp { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs:19](../../../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs#L19) | Gets the timestamp of the quote. |
-| <code>public string AskExchange { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs:24](../../../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs#L24) | Gets the exchange code for the best ask price. |
-| <code>public decimal AskPrice { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs:29](../../../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs#L29) | Gets the best ask (offer) price. |
-| <code>public long AskSize { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs:34](../../../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs#L34) | Gets the size available at the ask price. |
-| <code>public string BidExchange { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs:39](../../../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs#L39) | Gets the exchange code for the best bid price. |
-| <code>public decimal BidPrice { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs:44](../../../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs#L44) | Gets the best bid price. |
-| <code>public long BidSize { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs:49](../../../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs#L49) | Gets the size available at the bid price. |
-| <code>public string[]? Conditions { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs:54](../../../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs#L54) | Gets the quote condition codes. |
-| <code>public string? Tape { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs:59](../../../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs#L59) | Gets the tape identifier (A, B, or C). |
-| <code>public string Source { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs:64](../../../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs#L64) | Gets the data source identifier (e.g., &quot;alpaca&quot;). |
-| <code>public long SequenceNumber { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs:69](../../../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs#L69) | Gets the sequence number for ordering events. |
-| <code>public HistoricalQuote(string Symbol, DateTimeOffset Timestamp, string AskExchange, decimal AskPrice, long AskSize, string BidExchange, decimal BidPrice, long BidSize, string[]? Conditions = null, string? Tape = null, string Source = &quot;alpaca&quot;, long SequenceNumber = 0);</code> | [src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs:86](../../../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs#L86) | Initializes a new instance of the HistoricalQuote record. |
-| <code>public decimal Spread =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs:132](../../../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs#L132) | Calculated spread (Ask - Bid). |
-| <code>public decimal MidPrice =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs:137](../../../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs#L137) | Calculated mid-price ((Ask + Bid) / 2). |
-| <code>public decimal? SpreadBps =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs:142](../../../../src/Meridian.Contracts/Domain/Models/HistoricalQuote.cs#L142) | Spread as a percentage of the mid-price in basis points. |

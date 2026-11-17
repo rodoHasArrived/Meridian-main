@@ -79,3 +79,11 @@ export function varianceMagnitude(change: string | null): number | null {
   const value = Number(change);
   return Number.isFinite(value) ? Math.abs(value) : null;
 }
+
+/** Rounds decimal text to `places`, half away from zero, without floating point; null for non-decimal text. */
+export function roundDecimal(value: string, places: number): string | null {
+  const parsed = parseDecimal(value);
+  if (!parsed) return null;
+  if (parsed.scale <= places) return formatScaled(parsed.units * 10n ** BigInt(places - parsed.scale), places);
+  return formatScaled(divideRounded(parsed.units, 10n ** BigInt(parsed.scale - places)), places);
+}

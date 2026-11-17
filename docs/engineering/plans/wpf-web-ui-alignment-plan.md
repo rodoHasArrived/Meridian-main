@@ -42,6 +42,18 @@ WPF changes in this delta were compile-checked with the full WPF build; WPF test
 | Position surfaces name their source | Not ported. The WPF position blotter should state paper session vs live holdings vs retained run. |
 | Status bar freshness never says "up to date" over a stale source | Not ported. |
 
+## Browser UX Phase E delta — workflow features — 2026-11-17
+
+| Browser change | WPF state |
+| --- | --- |
+| Prior-period comparisons for NAV, run attribution and the cash ladder | Shared seams ready, not consumed. All three return `PeriodComparisonDto` (`src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs`): `GET /api/fund-structure/nav-comparison`, `GET /api/workstation/runs/{runId}/attribution/period-comparison` and `GET /api/portfolio/cash-ladder/comparison`. WPF NAV, attribution and cash-ladder views should read them rather than compute a prior figure locally. |
+| One variance rule (`PeriodChange`: change ÷ \|prior\| × 100, none for a zero prior) | Shared in `Meridian.Contracts`; the posted-ledger comparison already uses it. WPF variance columns should show the server's percent. |
+| Export of visible columns as shown (CSV and XLSX) with totals | Not ported. |
+| Due-date urgency chips, overdue first | Not ported. |
+| "New since you last looked" on Today, Approvals and Reporting triage | Shared seam exists (`/api/workstation/operator/visits/{surface}`, surfaces `today-queue`, `approvals`, `reporting-triage`). Not consumed by WPF. |
+| Bulk Acknowledge and Snooze with a confirmation per item | Not ported; WPF can loop the same per-item triage command. |
+| Strategy comparison of up to four runs with overlaid curves | Not ported. |
+
 This plan operationalizes the v0.25 design-charter decision to reactivate the WPF desktop
 workstation as an active, co-equal operator UI lane and bring it up to parity with the browser
 workstation. It is the working companion to roadmap item `W8-WPF-PARITY-001`.

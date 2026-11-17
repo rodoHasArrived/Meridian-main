@@ -362,6 +362,18 @@ It also carries UX Phase D (navigation and overviews):
 
 No shared contract changed.
 
+It also carries UX Phase E (workflow features):
+- Due dates read as urgency ("Overdue 3 days"), and overdue work sorts first on Today.
+- "New since you last looked" markers on Today, Approvals and Reporting triage.
+- Bulk Acknowledge and Snooze on Today, confirmed per item.
+- Tables export visible columns as shown, as CSV or XLSX, with totals.
+- Strategy compares up to four runs with overlaid equity and drawdown.
+- Prior-period variance on the trial balance comparison, a new Portfolio NAV page, run attribution
+  and the cash ladder.
+
+The new shared contract is `PeriodComparisonDto` with three read endpoints (see
+`src/Meridian.Ui.Shared/README.md`).
+
 ## Change rules
 
 Do not create mobile product surfaces here. Keep browser operator UI work under `dashboard/` and shared behavior in contracts/services consumed by the browser workstation and retained WPF compatibility surfaces.

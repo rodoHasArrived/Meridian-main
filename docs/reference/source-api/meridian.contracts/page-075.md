@@ -6,6 +6,94 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TradingLiveOperationRequirementDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.TradingLiveOperationRequirementDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:141](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L141).
+
+```csharp
+public sealed record TradingLiveOperationRequirementDto(string RequirementId, string Label, TradingAcceptanceGateStatusDto Status, string Detail, string ChecklistItem, string? EvidenceReference, bool ChecklistSatisfied, bool EvidenceSatisfied, string? BlockerCode = null);
+```
+
+## TradingOperatorReadinessDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.TradingOperatorReadinessDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:347](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L347).
+
+```csharp
+public sealed record TradingOperatorReadinessDto(DateTimeOffset AsOf, TradingPaperSessionReadinessDto? ActiveSession, IReadOnlyList<TradingPaperSessionReadinessDto> Sessions, TradingReplayReadinessDto? Replay, TradingControlReadinessDto Controls, TradingPromotionReadinessDto? Promotion, TradingTrustGateReadinessDto TrustGate, WorkstationBrokerageSyncStatusDto? BrokerageSync, IReadOnlyList<OperatorWorkItemDto> WorkItems, IReadOnlyList<string> Warnings)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TradingAcceptanceGateStatusDto OverallStatus { get; init; } = TradingAcceptanceGateStatusDto.ReviewRequired;</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:359](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L359) |  |
+| <code>public bool ReadyForPaperOperation { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:361](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L361) |  |
+| <code>public bool ReadyForLiveOperation { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:363](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L363) |  |
+| <code>public IReadOnlyList&lt;string&gt; LiveOperationBlockers { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:365](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L365) |  |
+| <code>public IReadOnlyList&lt;TradingLiveOperationRequirementDto&gt; LiveOperationRequirements { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:367](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L367) |  |
+| <code>public IReadOnlyList&lt;TradingAcceptanceGateDto&gt; AcceptanceGates { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:369](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L369) |  |
+| <code>public TradingReportPackReadinessDto? ReportPack { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:371](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L371) |  |
+| <code>public EvidenceCompletenessSummaryDto? EvidenceCompleteness { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:373](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L373) |  |
+| <code>public DateTimeOffset SnapshotMaterializedAt { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:375](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L375) |  |
+| <code>public string SnapshotVersion { get; init; } = string.Empty;</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:377](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L377) |  |
+| <code>public ProviderPromotionChecklistDto? ProviderPromotionChecklist { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:379](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L379) |  |
+| <code>public PortfolioLedgerWorkflowStatusSnapshotDto? PortfolioLedgerWorkflowStatus { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:381](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L381) |  |
+| <code>public TradingExecutionReconciliationReadinessDto? ExecutionReconciliation { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:383](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L383) |  |
+| <code>public TradingBrokerageRecoveryDto? BrokerageRecovery { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:385](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L385) |  |
+
+## TradingOperatorSignoffReadinessDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.TradingOperatorSignoffReadinessDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:254](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L254).
+
+```csharp
+public sealed record TradingOperatorSignoffReadinessDto(string Status, bool RequiredBeforeDk1Exit, IReadOnlyList<string> RequiredOwners, IReadOnlyList<string> SignedOwners, IReadOnlyList<string> MissingOwners, DateTimeOffset? CompletedAt, string? SourcePath);
+```
+
+## TradingPaperSessionReadinessDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.TradingPaperSessionReadinessDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:169](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L169).
+
+```csharp
+public sealed record TradingPaperSessionReadinessDto(string SessionId, string StrategyId, string? StrategyName, bool IsActive, decimal InitialCash, DateTimeOffset CreatedAt, DateTimeOffset? ClosedAt, int SymbolCount, int OrderCount, int PositionCount, decimal? PortfolioValue)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int FillCount { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:182](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L182) |  |
+| <code>public int LedgerEntryCount { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:184](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L184) |  |
+| <code>public DateTimeOffset? LastFillAt { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:186](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L186) |  |
+| <code>public DateTimeOffset? LastOrderUpdatedAt { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:188](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L188) |  |
+
+## TradingPromotionReadinessDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.TradingPromotionReadinessDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:240](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L240).
+
+```csharp
+public sealed record TradingPromotionReadinessDto(string State, string Reason, bool RequiresReview, string? SourceRunId, string? TargetRunId, string? SuggestedNextMode, string? AuditReference, string? ApprovalStatus, string? ManualOverrideId, string? ApprovedBy, IReadOnlyList<string>? ApprovalChecklist = null, IReadOnlyList<string>? EvidenceReferences = null);
+```
+
+## TradingReplayReadinessDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.TradingReplayReadinessDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:191](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L191).
+
+```csharp
+public sealed record TradingReplayReadinessDto(string SessionId, string ReplaySource, bool IsConsistent, int ComparedFillCount, int ComparedOrderCount, int ComparedLedgerEntryCount, DateTimeOffset VerifiedAt, DateTimeOffset? LastPersistedFillAt, DateTimeOffset? LastPersistedOrderUpdateAt, string? VerificationAuditId, IReadOnlyList<string> MismatchReasons, string DriftStatus, string RequiredNextAction);
+```
+
 ## TradingReportPackReadinessDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.TradingReportPackReadinessDto</code>. Kind: `record`.
@@ -502,82 +590,4 @@ Counts that appear on more than one workstation screen (Trading, Data, Settings,
 
 ```csharp
 public sealed record WorkstationCrossScreenCountsDto(DateTimeOffset AsOf, WorkstationCrossScreenCount? OpenOrders, WorkstationProviderHealthCount? Providers, WorkstationCrossScreenCount? OpenBreaks);
-```
-
-## WorkstationDataBackfillRecord
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationDataBackfillRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1128](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1128).
-
-Backfill row returned by the Data workspace bootstrap payload.
-
-```csharp
-public sealed record WorkstationDataBackfillRecord(string JobId, string Scope, string Provider, string Status, string Progress, string UpdatedAt);
-```
-
-## WorkstationDataExportRecord
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationDataExportRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1139](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1139).
-
-Export row returned by the Data workspace bootstrap payload.
-
-```csharp
-public sealed record WorkstationDataExportRecord(string ExportId, string Profile, string Target, string Status, string Rows, string UpdatedAt);
-```
-
-## WorkstationDataPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationDataPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1151](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1151).
-
-Typed payload returned by GET /api/workstation/data and GET /api/workstation/data-operations.
-
-```csharp
-public sealed record WorkstationDataPayload(IReadOnlyList<WorkstationMetricCard> Metrics, IReadOnlyList<WorkstationDataProviderRecord> Providers, IReadOnlyList<WorkstationDataBackfillRecord> Backfills, IReadOnlyList<WorkstationDataExportRecord> Exports, DataUploadTemplateCatalogDto UploadTemplates, WorkstationKernelObservabilityPayload KernelObservability);
-```
-
-## WorkstationDataProviderDiagnostic
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationDataProviderDiagnostic</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1084](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1084).
-
-Compact provider diagnostic row embedded in the Data workspace provider center.
-
-```csharp
-public sealed record WorkstationDataProviderDiagnostic(string Id, string Label, string Status, string StatusLabel, string Detail);
-```
-
-## WorkstationDataProviderRecord
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationDataProviderRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1106](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1106).
-
-Provider-center row returned by the Data workspace bootstrap payload.
-
-```csharp
-public sealed record WorkstationDataProviderRecord(string ProviderId, string DisplayName, string Status, string Capability, string Latency, string Note, string TrustScore, string SignalSource, string ReasonCode, string RecommendedAction, string GateImpact, ProviderConnectionRowDto? ConnectionSummary, WorkstationDataProviderRoutingSummary? RoutingSummary, IReadOnlyList<WorkstationDataProviderDiagnostic> Diagnostics)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Provider =&gt; …;</code> | [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1122](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1122) |  |
-
-## WorkstationDataProviderRoutingSummary
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationDataProviderRoutingSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1094](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1094).
-
-Compact routing summary embedded in a Data workspace provider row.
-
-```csharp
-public sealed record WorkstationDataProviderRoutingSummary(string? ConnectionId, string? ProviderFamilyId, bool? ProductionReady, bool? CertificationFresh, int BindingCount, int FallbackRouteCount, string? HealthStatus);
 ```

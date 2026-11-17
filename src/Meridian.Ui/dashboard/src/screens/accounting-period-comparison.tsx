@@ -9,6 +9,7 @@ import { TableWorkbench } from "@/components/meridian/table-workbench";
 import { formatTaxDecimal } from "@/lib/ledger-tax-results-format";
 import { getPostedPeriodComparison, type PostedComparisonLine, type PostedComparisonQuery, type PostedPeriodComparison } from "@/lib/posted-period-comparison-api";
 import { varianceColumns } from "@/components/meridian/variance-columns";
+import { roundDecimal } from "@/lib/variance";
 import { defaultMaterialityPolicyForClass } from "@/lib/reporting-materiality";
 import { formatCurrency } from "@/lib/format";
 
@@ -99,7 +100,7 @@ export function AccountingPeriodComparison({ bookId, periodId, expectedBasis, en
                 // materiality policy (UX Phase E).
                 ...varianceColumns<PostedComparisonLine>({
                   prior: (line) => line.priorBalance, change: (line) => line.change, percent: (line) => line.percentChange,
-                  formatAmount: accountingDecimal, formatPercent: (value) => `${formatTaxDecimal(value)}%`,
+                  formatAmount: accountingDecimal, formatPercent: (value) => `${formatTaxDecimal(roundDecimal(value, 2) ?? value, 2)}%`,
                   unit: result.currency, priorLabel: "Prior movement", policy: COMPARISON_MATERIALITY
                 })
               ]} />

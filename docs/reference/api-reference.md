@@ -941,7 +941,7 @@ This source reference records literal `MapGet`, `MapPost`, `MapPut`, `MapDelete`
 
 Handler parameters retain C# binding types, including injected services and infrastructure parameters; they are not all request-body fields. Body-read operations list explicitly decoded types. Response entries quote declared `.Produces*` metadata and observed `Results`/`TypedResults` factories, not an exhaustive response schema or status guarantee. A dash means the declaration supplies no extractable metadata; follow the source and detailed contracts above.
 
-**474 declarations** from **58 source files**.
+**476 declarations** from **58 source files**.
 
 
 ### HostAdapters
@@ -1351,10 +1351,11 @@ Source: [src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingCompat
 | Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
 | --- | --- | --- | --- | --- | --- |
 | `/workspace-view` (relative declaration on `group`)<br>Caller-derived mounts: `/api/fund-structure/workspace-view` | GET | `async (HttpContext context) => …` | `Produces<FundOperationsWorkspaceDto>(StatusCodes.Status200OK)`; `Produces(StatusCodes.Status400BadRequest)`; `Produces(StatusCodes.Status403Forbidden)`; `Results.Problem`; `Results.Json` | `WithName("GetFundOperationsWorkspaceView")` | [L23](../../src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingCompatibility.cs#L23) |
-| `/report-pack-preview` (relative declaration on `legacyReportingGroup`)<br>Caller-derived mounts: `/api/fund-structure/report-pack-preview` | POST | `(HttpContext context) => …` | `ProducesProblem(StatusCodes.Status410Gone)` | `WithName("PreviewFundReportPack")` | [L60](../../src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingCompatibility.cs#L60) |
-| `/report-packs` (relative declaration on `legacyReportingGroup`)<br>Caller-derived mounts: `/api/fund-structure/report-packs` | POST | `(HttpContext context) => …` | `ProducesProblem(StatusCodes.Status410Gone)` | `WithName("GenerateFundReportPack")` | [L69](../../src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingCompatibility.cs#L69) |
-| `/report-packs` (relative declaration on `legacyReportingGroup`)<br>Caller-derived mounts: `/api/fund-structure/report-packs` | GET | `async (HttpContext context) => …` | `Produces<IReadOnlyList<FundReportPackHistoryItemDto>>(StatusCodes.Status200OK)`; `Produces(StatusCodes.Status400BadRequest)`; `ProducesProblem(StatusCodes.Status410Gone)`; `Results.Problem`; `Results.Json` | `WithName("GetFundReportPackHistory")` | [L78](../../src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingCompatibility.cs#L78) |
-| `/structured-exports/{exportId}` (relative declaration on `reportingGroup`)<br>Caller-derived mounts: `/api/fund-structure/reporting/structured-exports/{exportId}` | GET | `async (string exportId, string fundProfileId, DateTimeOffset? asOf, string? currency, string? format, HttpContext context) => …` | `Produces<StructuredReportingExportPayloadDto>(StatusCodes.Status200OK)`; `Produces(StatusCodes.Status200OK, contentType : "application/json")`; `Produces(StatusCodes.Status200OK, contentType : "text/csv")`; `Produces(StatusCodes.Status200OK, contentType : StructuredXlsxContentType)`; `Produces(StatusCodes.Status400BadRequest)`; `Produces(StatusCodes.Status403Forbidden)`; `Produces(StatusCodes.Status404NotFound)`; `Results.Problem`; `Results.File`; `Results.Json` | `WithName("GetStructuredReportingExport")` | [L125](../../src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingCompatibility.cs#L125) |
+| `/nav-comparison` (relative declaration on `group`)<br>Caller-derived mounts: `/api/fund-structure/nav-comparison` | GET | `async (HttpContext context) => …` | `Produces<PeriodComparisonDto>(StatusCodes.Status200OK)`; `Produces(StatusCodes.Status400BadRequest)`; `Produces(StatusCodes.Status403Forbidden)`; `Results.Problem`; `Results.Json` | `WithName("GetFundNavComparison")` | [L61](../../src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingCompatibility.cs#L61) |
+| `/report-pack-preview` (relative declaration on `legacyReportingGroup`)<br>Caller-derived mounts: `/api/fund-structure/report-pack-preview` | POST | `(HttpContext context) => …` | `ProducesProblem(StatusCodes.Status410Gone)` | `WithName("PreviewFundReportPack")` | [L90](../../src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingCompatibility.cs#L90) |
+| `/report-packs` (relative declaration on `legacyReportingGroup`)<br>Caller-derived mounts: `/api/fund-structure/report-packs` | POST | `(HttpContext context) => …` | `ProducesProblem(StatusCodes.Status410Gone)` | `WithName("GenerateFundReportPack")` | [L99](../../src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingCompatibility.cs#L99) |
+| `/report-packs` (relative declaration on `legacyReportingGroup`)<br>Caller-derived mounts: `/api/fund-structure/report-packs` | GET | `async (HttpContext context) => …` | `Produces<IReadOnlyList<FundReportPackHistoryItemDto>>(StatusCodes.Status200OK)`; `Produces(StatusCodes.Status400BadRequest)`; `ProducesProblem(StatusCodes.Status410Gone)`; `Results.Problem`; `Results.Json` | `WithName("GetFundReportPackHistory")` | [L108](../../src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingCompatibility.cs#L108) |
+| `/structured-exports/{exportId}` (relative declaration on `reportingGroup`)<br>Caller-derived mounts: `/api/fund-structure/reporting/structured-exports/{exportId}` | GET | `async (string exportId, string fundProfileId, DateTimeOffset? asOf, string? currency, string? format, HttpContext context) => …` | `Produces<StructuredReportingExportPayloadDto>(StatusCodes.Status200OK)`; `Produces(StatusCodes.Status200OK, contentType : "application/json")`; `Produces(StatusCodes.Status200OK, contentType : "text/csv")`; `Produces(StatusCodes.Status200OK, contentType : StructuredXlsxContentType)`; `Produces(StatusCodes.Status400BadRequest)`; `Produces(StatusCodes.Status403Forbidden)`; `Produces(StatusCodes.Status404NotFound)`; `Results.Problem`; `Results.File`; `Results.Json` | `WithName("GetStructuredReportingExport")` | [L155](../../src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingCompatibility.cs#L155) |
 
 ### FundStructureEndpoints.ReportingGovernance
 
@@ -1645,8 +1646,9 @@ Source: [src/Meridian.Ui.Shared/Endpoints/PortfolioCashLadderEndpoints.cs](../..
 
 | Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
 | --- | --- | --- | --- | --- | --- |
-| `/api/portfolio/cash-ladder` | GET | `async (HttpContext context, CancellationToken ct) => …` | `Produces<PortfolioCashLadderDto>(StatusCodes.Status200OK)`; `Results.Json` | `WithName("GetPortfolioCashLadder")` | [L33](../../src/Meridian.Ui.Shared/Endpoints/PortfolioCashLadderEndpoints.cs#L33) |
-| `/api/portfolio/cash-ladder/scenarios` | GET | `(HttpContext _) => …` | `Produces<IReadOnlyList<PortfolioCashScenarioDto>>(StatusCodes.Status200OK)`; `Results.Json` | `WithName("GetPortfolioCashLadderScenarios")` | [L56](../../src/Meridian.Ui.Shared/Endpoints/PortfolioCashLadderEndpoints.cs#L56) |
+| `/api/portfolio/cash-ladder` | GET | `async (HttpContext context, CancellationToken ct) => …` | `Produces<PortfolioCashLadderDto>(StatusCodes.Status200OK)`; `Results.Json` | `WithName("GetPortfolioCashLadder")` | [L34](../../src/Meridian.Ui.Shared/Endpoints/PortfolioCashLadderEndpoints.cs#L34) |
+| `/api/portfolio/cash-ladder/comparison` | GET | `async (HttpContext context, CancellationToken ct) => …` | `Produces<PeriodComparisonDto>(StatusCodes.Status200OK)`; `Produces(StatusCodes.Status400BadRequest)`; `Produces(StatusCodes.Status501NotImplemented)`; `Results.Problem`; `Results.Json` | `WithName("GetPortfolioCashLadderComparison")` | [L57](../../src/Meridian.Ui.Shared/Endpoints/PortfolioCashLadderEndpoints.cs#L57) |
+| `/api/portfolio/cash-ladder/scenarios` | GET | `(HttpContext _) => …` | `Produces<IReadOnlyList<PortfolioCashScenarioDto>>(StatusCodes.Status200OK)`; `Results.Json` | `WithName("GetPortfolioCashLadderScenarios")` | [L98](../../src/Meridian.Ui.Shared/Endpoints/PortfolioCashLadderEndpoints.cs#L98) |
 
 ### PortfolioImportEndpoints
 
@@ -1800,8 +1802,8 @@ Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs](../../src/Mer
 
 | Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
 | --- | --- | --- | --- | --- | --- |
-| `/workstation` | GET | `(IWebHostEnvironment environment) => …` | — | — | [L1210](../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs#L1210) |
-| `/workstation/{*path}` | GET | `(string? path, IWebHostEnvironment environment) => …` | `Results.NotFound`; `Results.File` | — | [L1213](../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs#L1213) |
+| `/workstation` | GET | `(IWebHostEnvironment environment) => …` | — | — | [L1247](../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs#L1247) |
+| `/workstation/{*path}` | GET | `(string? path, IWebHostEnvironment environment) => …` | `Results.NotFound`; `Results.File` | — | [L1250](../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs#L1250) |
 
 ### WorkstationEndpoints.OperatorTriage
 

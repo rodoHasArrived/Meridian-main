@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BorrowerInfoDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.BorrowerInfoDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:102](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L102).
+
+```csharp
+public sealed record BorrowerInfoDto(Guid BorrowerId, string BorrowerName, Guid? LegalEntityId);
+```
+
 ## CapitalizePikRequest
 
 Qualified name: <code>Meridian.Contracts.DirectLending.CapitalizePikRequest</code>. Kind: `record`.
@@ -658,19 +668,3 @@ Unconverted totals in the retained loan or collateral currency. Portfolio scalar
 ```csharp
 public sealed record LoanPortfolioCurrencyTotalsDto(CurrencyCode Currency, decimal? TotalCommitment, decimal? TotalPrincipalOutstanding, decimal? TotalInterestAccruedUnpaid, decimal? TotalPenaltyAccruedUnpaid, decimal? TotalAvailableToDraw, decimal? TotalCollateralValue);
 ```
-
-## LoanPortfolioSummaryDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.LoanPortfolioSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:379](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L379).
-
-```csharp
-public sealed record LoanPortfolioSummaryDto(int TotalLoans, int ActiveLoans, int DefaultedLoans, int NonPerformingLoans, int WorkoutLoans, decimal? TotalCommitment, decimal? TotalPrincipalOutstanding, decimal? TotalInterestAccruedUnpaid, decimal? TotalPenaltyAccruedUnpaid, decimal? TotalAvailableToDraw, decimal? TotalCollateralValue, IReadOnlyList<LoanSummaryDto> Loans, IReadOnlyList<LoanPortfolioCurrencyTotalsDto>? CurrencyTotals = null, CurrencyCode? TotalCurrency = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;LoanMaturityBucketDto&gt;? MaturityBuckets { get; init; }</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:397](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L397) | Current principal grouped by contractual maturity, never scheduled repayments. |

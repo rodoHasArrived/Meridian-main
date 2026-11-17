@@ -903,6 +903,18 @@ Source: [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Mode
 public sealed partial class FundOperationsWorkspaceReadService
 ```
 
+Source: [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.NavComparison.cs:6](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.NavComparison.cs#L6).
+
+```csharp
+public sealed partial class FundOperationsWorkspaceReadService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;PeriodComparisonDto&gt; GetNavComparisonAsync(string fundProfileId, DateTimeOffset? asOf, DateTimeOffset? baselineAsOf, string? currency, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.NavComparison.cs:14](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.NavComparison.cs#L14) | Ledger NAV at asOf against NAV at baselineAsOf (default: the end of the calendar month before asOf), in total and by asset class. Both sides are rebuilt from the posted ledger as of their own date through the same NAV attribution the workspace uses, so the prior figure is what the ledger said then, not a stored snapshot. |
+
 Source: [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.PortfolioReporting.cs:26](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.PortfolioReporting.cs#L26).
 
 ```csharp

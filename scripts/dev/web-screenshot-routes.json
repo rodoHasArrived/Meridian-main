@@ -207,6 +207,21 @@
       ]
     },
     {
+      "id": "W02N",
+      "name": "web-portfolio-nav",
+      "path": "/portfolio/nav?fundProfileId=alpha-income",
+      "docLabel": "Portfolio \u2014 NAV vs prior period",
+      "waitForText": "NAV vs prior period",
+      "requiredApiRoutes": [
+        "/api/fund-structure/nav-comparison"
+      ],
+      "waitForTexts": [
+        "Total NAV",
+        "Fixed income",
+        "Material"
+      ]
+    },
+    {
       "id": "W02C",
       "name": "web-portfolio-family-office",
       "path": "/portfolio/family-office",

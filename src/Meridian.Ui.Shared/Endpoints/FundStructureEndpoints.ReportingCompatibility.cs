@@ -57,6 +57,36 @@ public static partial class FundStructureEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .RequireWorkstationTenantCompanyScope();
 
+        // Ledger NAV now against NAV at a prior date (default: the end of the previous month).
+        group.MapGet("/nav-comparison", async (HttpContext context) =>
+        {
+            var service = ResolveWorkspaceService(context);
+            if (service is null)
+            {
+                return WorkspaceServiceUnavailable();
+            }
+
+            var q = context.Request.Query;
+            var fundProfileId = q["fundProfileId"].FirstOrDefault();
+            if (string.IsNullOrWhiteSpace(fundProfileId))
+            {
+                return Results.Problem("fundProfileId is required.", statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            var result = await service.GetNavComparisonAsync(
+                fundProfileId,
+                ParseDateTimeOffset(q["asOf"]),
+                ParseDateTimeOffset(q["baselineAsOf"]),
+                q["currency"].FirstOrDefault(),
+                context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("GetFundNavComparison").RequireAnyPermission(UserPermission.ManageFundStructure, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance)
+        .Produces<PeriodComparisonDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequireWorkstationTenantCompanyScope();
+
         legacyReportingGroup.MapPost("/report-pack-preview", (HttpContext context) =>
             LegacyReportingRouteGone(
                 context,

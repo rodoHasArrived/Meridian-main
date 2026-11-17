@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountingPolicyRulePackDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.AccountingPolicyRulePackDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:106](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L106).
+
+```csharp
+public sealed record AccountingPolicyRulePackDto(string RulePackId, string RulePackVersion, IReadOnlyList<AccountingPolicyRuleDto> Rules, string? Description = null);
+```
+
 ## AccountingPostingApprovalStateDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.AccountingPostingApprovalStateDto</code>. Kind: `enum`.
@@ -757,14 +767,4 @@ Source: [src/Meridian.Contracts/Ledger/CanonicalAmortizationPreparationDtos.cs:2
 
 ```csharp
 public sealed record CanonicalAmortizationOccurrenceDto(DateOnly Date, decimal TransactionCostBasis, decimal FunctionalCostBasis);
-```
-
-## CanonicalAmortizationPreparationDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.CanonicalAmortizationPreparationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/CanonicalAmortizationPreparationDtos.cs:15](../../../../src/Meridian.Contracts/Ledger/CanonicalAmortizationPreparationDtos.cs#L15).
-
-```csharp
-public sealed record CanonicalAmortizationPreparationDto(OpenLotAmortizationInstructionDto Instruction, OpenLotAmortizationProjectionDto Projection, string PreparationFingerprint, IReadOnlyList<ProjectedAccountingEffectLineDto> Lines, AssetAccountingEventScopeDto Scope, IReadOnlyList<CanonicalAmortizationOccurrenceDto> Occurrences);
 ```

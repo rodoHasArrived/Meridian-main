@@ -1,4 +1,5 @@
 import { formatNumber } from "@/lib/format";
+import { CashLadderPeriodComparison } from "@/screens/cash-ladder-screen.comparison";
 import { AccountBondPlanningPanel } from "@/components/meridian/account-bond-planning-panel";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
@@ -581,6 +582,7 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
               </CardContent>
             </Card>
           </div>
+          <CashLadderPeriodComparison scenario={scenarioId} minimumCash={appliedMinimumCash} fundAccountId={fundAccountId} />
         </>
       ) : null}
     </div>

@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MarginCallStatusDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.MarginCallStatusDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:297](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L297).
+
+Provider-reported margin-call posture for a margin snapshot.
+
+```csharp
+public enum MarginCallStatusDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>None = 0</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:299](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L299) |  |
+| <code>Potential = 1</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:300](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L300) |  |
+| <code>Active = 2</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:301](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L301) |  |
+| <code>Satisfied = 3</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:302](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L302) |  |
+| <code>Waived = 4</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:303](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L303) |  |
+
 ## MarginModelTypeDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.MarginModelTypeDto</code>. Kind: `enum`.
@@ -672,14 +694,4 @@ Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:230
 
 ```csharp
 public sealed record ProviderIntegrationActivationPolicyDto(bool RequiresAuthenticationTest, bool RequiresEndpointTest, bool RequiresDryRun, bool RequiresApproval, bool ProductionWriteCapabilitiesAllowed, IReadOnlyList<string> RequiredIssueCodes);
-```
-
-## ProviderIntegrationActivationReadinessDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationActivationReadinessDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:245](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L245).
-
-```csharp
-public sealed record ProviderIntegrationActivationReadinessDto(bool IsReady, IReadOnlyList<ProviderIntegrationActivationIssueDto> Issues, IReadOnlyList<string> RequiredEvidence);
 ```

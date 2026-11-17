@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CreateIntercompanyAccountingArrangementRequest
+
+Qualified name: <code>Meridian.Contracts.FundStructure.CreateIntercompanyAccountingArrangementRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:75](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L75).
+
+```csharp
+public sealed record CreateIntercompanyAccountingArrangementRequest(Guid RequestId, Guid ArrangementId, Guid OrganizationId, string ArrangementReference, IntercompanyAccountingTemplateKindDto TemplateKind, Guid CanonicalAgreementId, int CanonicalAgreementVersion, string CanonicalPayloadHash, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, IReadOnlyList<IntercompanyPartyMappingDto> PartyMappings);
+```
+
 ## CreateInvestmentPortfolioRequest
 
 Qualified name: <code>Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest</code>. Kind: `record`.
@@ -594,14 +604,4 @@ Source: [src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs:
 
 ```csharp
 public sealed record FundStructureSetupVehicleDraftDto(Guid? VehicleId, string Code, string Name, string BaseCurrency, string? Description = null);
-```
-
-## FundStructureSharedDataAccessDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:295](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L295).
-
-```csharp
-public sealed record FundStructureSharedDataAccessDto(SecurityMasterAccessSummaryDto SecurityMaster, HistoricalPriceAccessSummaryDto HistoricalPrices, BackfillAccessSummaryDto Backfill);
 ```

@@ -602,7 +602,8 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         # 82 includes dedicated Factor Paydown and Consolidation child workflows.
         # 85 after adding 1024px captures of Close Cockpit, Ledger Explorer and Trading
         # (UX Phase C), which check the narrow layout of the finance grid.
-        self.assertEqual(85, len(captures))
+        # 86 after adding W02N (web-portfolio-nav) for the NAV prior-period comparison (UX Phase E).
+        self.assertEqual(86, len(captures))
         self.assertEqual("/accounting/factor-paydown", captures["W03FP"].get("path"))
         self.assertEqual("/accounting/consolidation", captures["W03CO"].get("path"))
         self.assertNotIn("W05E", captures)

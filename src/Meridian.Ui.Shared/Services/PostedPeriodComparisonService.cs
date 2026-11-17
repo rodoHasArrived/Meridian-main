@@ -199,7 +199,7 @@ public sealed class PostedPeriodComparisonService(
             return new PostedPeriodComparisonLineDto(Sha256Digest.ComputeUtf8(group.Key), identity.AccountName,
                 identity.AccountType, identity.Symbol, identity.FinancialAccountId, currentDebit, currentCredit,
                 currentBalance, priorDebit, priorCredit, priorBalance, change,
-                priorBalance == 0 ? null : change / Math.Abs(priorBalance) * 100m, identity.Dimensions);
+                Meridian.Contracts.Workstation.PeriodChange.Percent(currentBalance, priorBalance), identity.Dimensions);
         }).OrderBy(line => line.AccountType, StringComparer.Ordinal)
             .ThenBy(line => line.AccountName, StringComparer.Ordinal).ThenBy(line => line.AccountKey, StringComparer.Ordinal).ToArray();
     }

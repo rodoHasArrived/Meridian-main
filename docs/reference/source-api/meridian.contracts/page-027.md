@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FundStructureSharedDataAccessDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:295](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L295).
+
+```csharp
+public sealed record FundStructureSharedDataAccessDto(SecurityMasterAccessSummaryDto SecurityMaster, HistoricalPriceAccessSummaryDto HistoricalPrices, BackfillAccessSummaryDto Backfill);
+```
+
 ## FundSummaryDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.FundSummaryDto</code>. Kind: `record`.
@@ -692,14 +702,4 @@ Advisory, source-backed coverage; amounts are exact invariant decimal text in ea
 
 ```csharp
 public sealed record IntercompanyAgreementJournalLineDto(Guid JournalEntryId, Guid LineId, Guid PeriodId, long Sequence, DateOnly AccountingDate, Guid PostingEntityId, Guid? CounterpartyId, string AccountName, string Description, string FunctionalCurrency, string Debit, string Credit, string TransactionCurrency, string TransactionDebit, string TransactionCredit, Guid? IntercompanyAgreementId, int? IntercompanyAgreementVersion, string CoverageState, string? Warning, string SourceReference);
-```
-
-## IntercompanyAgreementJournalLinesDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementJournalLinesDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementJournalLineDtos.cs:12](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementJournalLineDtos.cs#L12).
-
-```csharp
-public sealed record IntercompanyAgreementJournalLinesDto(Guid AgreementId, Guid LedgerBookId, DateOnly AsOf, string CoverageState, IReadOnlyList<IntercompanyAgreementJournalLineDto> Lines, string? NextCursor);
 ```

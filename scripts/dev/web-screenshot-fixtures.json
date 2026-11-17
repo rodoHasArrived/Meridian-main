@@ -6947,6 +6947,67 @@
     "/api/workstation/operator/scope-preference": {
       "defaultScope": null,
       "updatedAt": null
+    },
+    "/api/fund-structure/nav-comparison": {
+      "status": "Ready",
+      "reason": null,
+      "subject": "Alpha Income Fund",
+      "currency": "USD",
+      "current": {
+        "label": "As of Jul 13, 2026",
+        "start": null,
+        "end": "2026-07-13",
+        "isPartial": true
+      },
+      "baseline": {
+        "label": "As of Jun 30, 2026",
+        "start": null,
+        "end": "2026-06-30",
+        "isPartial": false
+      },
+      "lines": [
+        {
+          "key": "total",
+          "label": "Total NAV",
+          "current": 12450000,
+          "prior": 12010000,
+          "change": 440000,
+          "percentChange": 3.6636136553,
+          "isTotal": true
+        },
+        {
+          "key": "asset-class:Cash",
+          "label": "Cash",
+          "current": 1250000,
+          "prior": 1610000,
+          "change": -360000,
+          "percentChange": -22.3602484472,
+          "isTotal": false
+        },
+        {
+          "key": "asset-class:Equity",
+          "label": "Equity",
+          "current": 8900000,
+          "prior": 8200000,
+          "change": 700000,
+          "percentChange": 8.5365853659,
+          "isTotal": false
+        },
+        {
+          "key": "asset-class:Fixed income",
+          "label": "Fixed income",
+          "current": 2300000,
+          "prior": 2200000,
+          "change": 100000,
+          "percentChange": 4.5454545455,
+          "isTotal": false
+        }
+      ],
+      "notes": [
+        "NAV is rebuilt from the posted ledger as of each date. Cash, financing and strategy cuts that do not take a date are not included.",
+        "Asset classes come from the ledger's NAV attribution; a class present on only one side is compared with zero."
+      ],
+      "generatedAt": "2026-07-13T18:55:00Z"
     }
   }
 }

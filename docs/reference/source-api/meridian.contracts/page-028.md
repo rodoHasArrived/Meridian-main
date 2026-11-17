@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyAgreementJournalLinesDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementJournalLinesDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementJournalLineDtos.cs:12](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementJournalLineDtos.cs#L12).
+
+```csharp
+public sealed record IntercompanyAgreementJournalLinesDto(Guid AgreementId, Guid LedgerBookId, DateOnly AsOf, string CoverageState, IReadOnlyList<IntercompanyAgreementJournalLineDto> Lines, string? NextCursor);
+```
+
 ## IntercompanyAgreementListDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementListDto</code>. Kind: `record`.
@@ -724,25 +734,3 @@ Source: [src/Meridian.Contracts/FundStructure/FundStructureCommands.cs:113](../.
 ```csharp
 public sealed record LinkFundStructureNodesRequest(Guid OwnershipLinkId, Guid ParentNodeId, Guid ChildNodeId, OwnershipRelationshipTypeDto RelationshipType, DateTimeOffset EffectiveFrom, string CreatedBy, decimal? OwnershipPercent = null, bool IsPrimary = false, string? Notes = null);
 ```
-
-## MarginCallStatusDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.MarginCallStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:297](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L297).
-
-Provider-reported margin-call posture for a margin snapshot.
-
-```csharp
-public enum MarginCallStatusDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>None = 0</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:299](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L299) |  |
-| <code>Potential = 1</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:300](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L300) |  |
-| <code>Active = 2</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:301](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L301) |  |
-| <code>Satisfied = 3</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:302](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L302) |  |
-| <code>Waived = 4</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:303](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L303) |  |

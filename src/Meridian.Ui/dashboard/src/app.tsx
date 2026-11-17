@@ -148,6 +148,7 @@ const EvidenceWorkbenchScreen = lazy(() => import("@/screens/evidence-workbench-
 const AccountingScreen = lazy(() => import("@/screens/accounting-screen").then((module) => ({ default: memo(module.AccountingScreen) })));
 const FamilyOfficeScreen = lazy(() => import("@/screens/family-office-screen").then((module) => ({ default: module.FamilyOfficeScreen })));
 const LoanBookScreen = lazy(() => import("@/screens/loan-book-screen").then((module) => ({ default: module.LoanBookScreen })));
+const NavComparisonScreen = lazy(() => import("@/screens/nav-comparison-screen").then((module) => ({ default: module.NavComparisonScreen })));
 const CashLadderScreen = lazy(() => import("@/screens/cash-ladder-screen").then((module) => ({ default: module.CashLadderScreen })));
 const MarketDataScreen = lazy(() => import("@/screens/market-data-screen").then((module) => ({ default: module.MarketDataScreen })));
 const OperatorReadinessConsole = lazy(() => import("@/screens/operator-readiness-console").then((module) => ({ default: memo(module.OperatorReadinessConsole) })));
@@ -1070,6 +1071,7 @@ function AppShell({
                   <Route path="/trading/*" element={<TradingScreen data={trading} fundAccountId={operatingScopeInput.fundAccountId} />} />
                   <Route path="/portfolio/family-office" element={<FamilyOfficeScreen />} />
                   <Route path="/portfolio/loan-book" element={<LoanBookScreen />} />
+                  <Route path="/portfolio/nav" element={<NavComparisonScreen defaultFundProfileId={reporting?.selectedFundProfileId ?? reporting?.fundProfileId ?? null} />} />
                   <Route path="/portfolio/cash-ladder" element={<CashLadderScreen fundAccountId={operatingScopeInput.fundAccountId ?? undefined} />} />
                   <Route path="/portfolio/asset-detail" element={<AssetDetailScreen />} />
                   <Route path="/portfolio/*" element={(

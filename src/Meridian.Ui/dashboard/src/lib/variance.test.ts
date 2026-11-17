@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { computeVariance, varianceMagnitude } from "./variance";
+import { computeVariance, roundDecimal, varianceMagnitude } from "./variance";
 
 describe("computeVariance", () => {
   it("is current minus prior, exactly, in decimal strings", () => {
@@ -44,5 +44,15 @@ describe("varianceMagnitude", () => {
   it("is the absolute value for threshold tests", () => {
     expect(varianceMagnitude("-150000.25")).toBe(150000.25);
     expect(varianceMagnitude(null)).toBeNull();
+  });
+});
+
+describe("roundDecimal", () => {
+  it("rounds half away from zero without floating point", () => {
+    expect(roundDecimal("31.818181818", 2)).toBe("31.82");
+    expect(roundDecimal("-0.005", 2)).toBe("-0.01");
+    expect(roundDecimal("2.5", 0)).toBe("3");
+    expect(roundDecimal("7", 2)).toBe("7.00");
+    expect(roundDecimal("n/a", 2)).toBeNull();
   });
 });

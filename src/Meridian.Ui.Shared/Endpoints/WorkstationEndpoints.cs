@@ -732,6 +732,43 @@ public static partial class WorkstationEndpoints
         .Produces(501)
         .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
 
+        group.MapGet(WorkstationSubroute(UiApiRoutes.RunsAttributionPeriodComparison), async (string runId, HttpContext context) =>
+        {
+            var readService = context.RequestServices.GetService<StrategyRunReadService>();
+            if (readService is null)
+            {
+                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var rawPeriodEnd = context.Request.Query["periodEnd"].FirstOrDefault();
+            DateOnly? periodEnd = null;
+            if (!string.IsNullOrWhiteSpace(rawPeriodEnd))
+            {
+                if (!DateOnly.TryParseExact(rawPeriodEnd, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parsed))
+                {
+                    return Results.Problem("periodEnd must be a date in yyyy-MM-dd form.", statusCode: StatusCodes.Status400BadRequest);
+                }
+
+                periodEnd = parsed;
+            }
+
+            var comparison = await readService.GetAttributionPeriodComparisonAsync(
+                    runId,
+                    periodEnd,
+                    ResolveStrategyRunReadScope(context),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
+            return comparison is null
+                ? Results.NotFound()
+                : Results.Json(comparison, jsonOptions);
+        })
+        .WithName("GetRunAttributionPeriodComparison").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
+        .Produces<PeriodComparisonDto>(200)
+        .Produces(400)
+        .Produces(404)
+        .Produces(501)
+        .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
+
         group.MapGet(WorkstationSubroute(UiApiRoutes.RunsLedgerTrialBalance), async (
             string runId,
             DateTimeOffset? asOf,

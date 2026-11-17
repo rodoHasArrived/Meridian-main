@@ -13,8 +13,8 @@ export interface VarianceColumnsOptions<T> {
   change: (row: T) => string | null;
   /** Variance % (change ÷ |prior| × 100), null when prior is zero. */
   percent: (row: T) => string | null;
-  /** Formats an amount for display, e.g. accounting parentheses with two places. */
-  formatAmount: (value: string) => string;
+  /** Formats an amount for display, e.g. accounting parentheses with two places. Gets the row for per-row units. */
+  formatAmount: (value: string, row: T) => string;
   /** Formats a percentage for display; defaults to the value with a % sign. */
   formatPercent?: (value: string) => string;
   /** Unit shown in the headers, e.g. "USD". */
@@ -23,6 +23,8 @@ export interface VarianceColumnsOptions<T> {
   policy?: MaterialityPolicy;
   /** The figure a variance is measured against for the percentage-of-portfolio threshold. */
   portfolioValue?: (row: T) => number | null;
+  /** Whether a row is measured against the policy at all (e.g. not for counts). Defaults to every row. */
+  assessRow?: (row: T) => boolean;
   /** Header for the prior column, e.g. "Prior movement". */
   priorLabel?: string;
   idPrefix?: string;
@@ -35,17 +37,17 @@ export interface VarianceColumnsOptions<T> {
  */
 export function varianceColumns<T>({
   prior, change, percent, formatAmount, formatPercent = (value) => `${value}%`, unit, policy, portfolioValue,
-  priorLabel = "Prior", idPrefix = ""
+  assessRow = () => true, priorLabel = "Prior", idPrefix = ""
 }: VarianceColumnsOptions<T>): TableWorkbenchColumn<T>[] {
   const suffix = unit ? ` · ${unit}` : "";
-  const assess = (row: T) => policy
+  const assess = (row: T) => policy && assessRow(row)
     ? assessVariance({ variance: varianceMagnitude(change(row)), portfolioValue: portfolioValue?.(row) ?? null }, policy)
     : null;
   return [
     {
       id: `${idPrefix}prior`, label: `${priorLabel}${suffix}`, align: "right", className: "tabular-nums",
-      render: (row) => { const value = prior(row); return value === null ? "—" : formatAmount(value); },
-      exportType: "decimal", exportValue: (row) => prior(row), exportDisplay: (row) => { const value = prior(row); return value === null ? "" : formatAmount(value); }
+      render: (row) => { const value = prior(row); return value === null ? "—" : formatAmount(value, row); },
+      exportType: "decimal", exportValue: (row) => prior(row), exportDisplay: (row) => { const value = prior(row); return value === null ? "" : formatAmount(value, row); }
     },
     {
       id: `${idPrefix}change`, label: `Variance${suffix}`, align: "right", className: "tabular-nums",
@@ -57,11 +59,11 @@ export function varianceColumns<T>({
         return (
           <span className="inline-flex items-center justify-end gap-1.5" data-variance-material={material || undefined}>
             {material ? <StatusBadge status="action" label="Material" title={assessment!.reason} /> : null}
-            <span>{formatAmount(value)}</span>
+            <span>{formatAmount(value, row)}</span>
           </span>
         );
       },
-      exportType: "decimal", exportValue: (row) => change(row), exportDisplay: (row) => { const value = change(row); return value === null ? "" : formatAmount(value); }
+      exportType: "decimal", exportValue: (row) => change(row), exportDisplay: (row) => { const value = change(row); return value === null ? "" : formatAmount(value, row); }
     },
     {
       id: `${idPrefix}percent`, label: "Variance %", align: "right", className: "tabular-nums",

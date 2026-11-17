@@ -1,4 +1,5 @@
 import { InfoNote } from "@/components/ui/info-note";
+import { RunAttributionPeriodComparison } from "@/screens/portfolio-screen.attribution-comparison";
 import { PageHeading } from "@/components/ui/page-heading";
 import { DetailFields, DetailPane } from "@/components/meridian/detail-pane";
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
@@ -1449,6 +1450,7 @@ function PortfolioScreenContent({
                       ))}
                     </div>
                   ) : null}
+                  <RunAttributionPeriodComparison runId={vm.selectedRun?.id} />
                   {vm.runDrillInSummary.tradeEvidenceRows.length > 0 ? (
                     <div className="mt-3 overflow-hidden rounded-md border border-border/60 bg-background/45">
                       <div className="border-b border-border/60 px-3 py-2">

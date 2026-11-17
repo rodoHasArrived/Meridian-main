@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecuritySummaryDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecuritySummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L19).
+
+```csharp
+public sealed record SecuritySummaryDto(Guid SecurityId, string AssetClass, SecurityStatusDto Status, string DisplayName, string PrimaryIdentifier, string Currency, long Version);
+```
+
 ## SecurityTermBinding
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityTermBinding</code>. Kind: `record`.
@@ -896,15 +906,3 @@ Declared public members:
 | <code>[JsonIgnore] public DateOnly? InterestAccrualEnd =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:161](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L161) | The end of the interval this row&#x27;s interest accrues over, when it is known. |
 | <code>public bool Equals(StructuredCashFlowScheduleEntry? other) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:163](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L163) |  |
 | <code>public override int GetHashCode();</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:174](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L174) |  |
-
-## StructuredCashFlowScheduleEvidence
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCashFlowScheduleEvidence</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:335](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L335).
-
-How a projection&#x27;s schedule was generated from declared schedule conventions (ADR-025): the kernel and mapping versions, the calendars used and any coverage gaps, so the schedule can be reproduced and its calendar data identified.
-
-```csharp
-public sealed record StructuredCashFlowScheduleEvidence(string KernelVersion, string DeclaredMappingVersion, IReadOnlyList<StructuredCashFlowCalendarEvidence> Calendars, IReadOnlyList<StructuredCashFlowCoverageGap> CoverageGaps);
-```

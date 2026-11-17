@@ -11,7 +11,7 @@ namespace Meridian.Ui.Shared.Services;
 /// surface, joins opening cash and capital-schedule rows from optional providers,
 /// and hands the assembled inputs to <see cref="PortfolioCashLadderEngine"/>.
 /// </summary>
-public sealed class PortfolioCashLadderReadService : IPortfolioCashLadderQueryService
+public sealed partial class PortfolioCashLadderReadService : IPortfolioCashLadderQueryService
 {
     private const int MaxSecurities = 500;
     private const int ProjectionBatchSize = 16;
@@ -43,7 +43,7 @@ public sealed class PortfolioCashLadderReadService : IPortfolioCashLadderQuerySe
         _calendars = calendars;
     }
 
-    public async Task<PortfolioCashLadderDto> GetCashLadderAsync(
+    public Task<PortfolioCashLadderDto> GetCashLadderAsync(
         PortfolioCashLadderQuery query,
         CancellationToken ct = default)
     {
@@ -52,6 +52,25 @@ public sealed class PortfolioCashLadderReadService : IPortfolioCashLadderQuerySe
 
         var now = _clock.GetUtcNow();
         var asOfDate = DateOnly.FromDateTime(now.UtcDateTime.Date);
+        return BuildLadderAsync(
+            query,
+            now,
+            asOfDate,
+            _cashBalanceProvider is null ? null : _cashBalanceProvider.GetCashBalancesAsync,
+            ct);
+    }
+
+    /// <summary>
+    /// Builds the ladder as of <paramref name="asOfDate"/>. <paramref name="loadCash"/> reads the
+    /// opening cash for that date; null means no authoritative provider can.
+    /// </summary>
+    private async Task<PortfolioCashLadderDto> BuildLadderAsync(
+        PortfolioCashLadderQuery query,
+        DateTimeOffset now,
+        DateOnly asOfDate,
+        Func<CancellationToken, Task<IReadOnlyList<PortfolioCashBalanceDto>>>? loadCash,
+        CancellationToken ct)
+    {
         var horizonDays = Math.Max(1, query.HorizonDays);
         var windowEnd = asOfDate.AddDays(horizonDays);
 
@@ -73,14 +92,14 @@ public sealed class PortfolioCashLadderReadService : IPortfolioCashLadderQuerySe
                 $"Fund-account scope '{query.FundAccountId}' cannot be certified because the holdings source is not fund-account scoped.");
         }
 
-        var cashBalances = _cashBalanceProvider is null
+        var cashBalances = loadCash is null
             ? []
-            : await _cashBalanceProvider.GetCashBalancesAsync(ct).ConfigureAwait(false);
+            : await loadCash(ct).ConfigureAwait(false);
         var capitalActivity = _capitalScheduleProvider is null
             ? (IReadOnlyList<PortfolioCapitalActivityDto>)[]
             : await _capitalScheduleProvider.GetCapitalActivityAsync(asOfDate, windowEnd, ct).ConfigureAwait(false);
 
-        if (_cashBalanceProvider is null)
+        if (loadCash is null)
         {
             decisionBlockers.Add("No authoritative cash-balance provider is registered.");
         }

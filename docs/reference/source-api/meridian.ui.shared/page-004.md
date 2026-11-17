@@ -1194,7 +1194,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.PortfolioCashLadderEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/PortfolioCashLadderEndpoints.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/PortfolioCashLadderEndpoints.cs#L18).
+Source: [src/Meridian.Ui.Shared/Endpoints/PortfolioCashLadderEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/PortfolioCashLadderEndpoints.cs#L19).
 
 Minimal API endpoint group for the portfolio-wide cash ladder: aggregated projected inflows/outflows by source over a forward horizon, with a cumulative cash line, minimum-balance breaches, and stress scenarios.
 
@@ -1206,4 +1206,4 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapPortfolioCashLadderEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/PortfolioCashLadderEndpoints.cs:23](../../../../src/Meridian.Ui.Shared/Endpoints/PortfolioCashLadderEndpoints.cs#L23) |  |
+| <code>public static void MapPortfolioCashLadderEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/PortfolioCashLadderEndpoints.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/PortfolioCashLadderEndpoints.cs#L24) |  |

@@ -894,6 +894,7 @@ public static class UiApiRoutes
     public const string RunsEquityCurve = "/api/workstation/runs/{runId}/equity-curve";
     public const string RunsFills = "/api/workstation/runs/{runId}/fills";
     public const string RunsAttribution = "/api/workstation/runs/{runId}/attribution";
+    public const string RunsAttributionPeriodComparison = "/api/workstation/runs/{runId}/attribution/period-comparison";
     public const string RunHistory = "/api/workstation/runs/history";
     public const string RunsTimeline = "/api/workstation/runs/timeline";
     public const string RunsLineageTimeline = "/api/workstation/runs/lineage-timeline";
@@ -1186,6 +1187,7 @@ public static class UiApiRoutes
     public const string FundStructureSetupDraftCreate = "/api/fund-structure/setup-drafts/create";
     public const string FundStructureLegalEntityProfile = "/api/fund-structure/entities/{entityId}";
     public const string FundStructureLedgerMappingAssignments = "/api/fund-structure/ledger-mapping-assignments";
+    public const string FundStructureNavComparison = "/api/fund-structure/nav-comparison";
 
     // Fund account brokerage read-side sync endpoints
     public const string FundAccountBrokerageSyncAccounts = "/api/fund-accounts/brokerage-sync/accounts";
@@ -1203,6 +1205,7 @@ public static class UiApiRoutes
     // Portfolio-wide cash ladder and liquidity scenarios
     public const string PortfolioCashLadder = "/api/portfolio/cash-ladder";
     public const string PortfolioCashLadderScenarios = "/api/portfolio/cash-ladder/scenarios";
+    public const string PortfolioCashLadderComparison = "/api/portfolio/cash-ladder/comparison";
 
     // Resilience endpoints
     public const string ResilienceCircuitBreakers = "/api/resilience/circuit-breakers";

@@ -6,6 +6,22 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LoanPortfolioSummaryDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.LoanPortfolioSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:379](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L379).
+
+```csharp
+public sealed record LoanPortfolioSummaryDto(int TotalLoans, int ActiveLoans, int DefaultedLoans, int NonPerformingLoans, int WorkoutLoans, decimal? TotalCommitment, decimal? TotalPrincipalOutstanding, decimal? TotalInterestAccruedUnpaid, decimal? TotalPenaltyAccruedUnpaid, decimal? TotalAvailableToDraw, decimal? TotalCollateralValue, IReadOnlyList<LoanSummaryDto> Loans, IReadOnlyList<LoanPortfolioCurrencyTotalsDto>? CurrencyTotals = null, CurrencyCode? TotalCurrency = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;LoanMaturityBucketDto&gt;? MaturityBuckets { get; init; }</code> | [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:397](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L397) | Current principal grouped by contractual maturity, never scheduled repayments. |
+
 ## LoanServicingSchedulePreviewDto
 
 Qualified name: <code>Meridian.Contracts.DirectLending.LoanServicingSchedulePreviewDto</code>. Kind: `record`.
@@ -676,13 +692,3 @@ Enum declarations:
 | <code>Position = 0</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:281](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L281) |  |
 | <code>Remittance = 1</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:282](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L282) |  |
 | <code>Mixed = 2</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:283](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L283) |  |
-
-## ServicerStatementPreviewDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.ServicerStatementPreviewDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:319](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L319).
-
-```csharp
-public sealed record ServicerStatementPreviewDto(Guid? BatchId, ServicerStatementKind Kind, string ServicerName, DateOnly StatementDate, string SourceFormat, string? SourceFileName, string RawPayloadHash, int RowCount, int MappedRowCount, int UnmappedRowCount, int DuplicateRowCount, int ReadyToApplyRowCount, int AppliedRowCount, string Status, IReadOnlyList<ServicerStatementRowDto> Rows, IReadOnlyList<ServicerStatementValidationIssueDto> Issues, IReadOnlyList<string> SuggestedActions, string? EvidenceRoute = null, string? StatementRunId = null);
-```

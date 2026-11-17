@@ -1215,6 +1215,16 @@ registered figure's label, the population it counts and what a change in it is m
 `lib/kpi-registry.ts` mirrors it, and `tests/fixtures/kpi-definitions/kpi-definitions.json` holds the
 two to the same values. The catalog describes figures, not data.
 
+Prior-period comparisons (UX Phase E) all return `PeriodComparisonDto`:
+- `GET /api/fund-structure/nav-comparison` (`FundOperationsWorkspaceReadService.NavComparison.cs`)
+  rebuilds ledger NAV as of now and as of a prior date (default the end of last month) through the
+  same NAV attribution the workspace uses, in total and by asset class.
+- `GET /api/workstation/runs/{runId}/attribution/period-comparison` (in `Meridian.Strategies`)
+  compares a run's per-symbol P&L for one month with the month before, from its daily snapshots.
+- `GET /api/portfolio/cash-ladder/comparison` (`PortfolioCashLadderReadService.Comparison.cs`)
+  rebuilds the ladder from the ledger's cash at the prior date (`PortfolioLedgerCashBalanceProvider`
+  implements `IPortfolioCashBalanceHistoryProvider`); instrument flows use current terms.
+
 The providers the Data workspace lists are the providers in use: those with metrics, a saved
 connection, a routing connection or a trust snapshot. Each one's status comes from
 `ResolveProviderStatus`: the worse of its listed status (connection health, or the trust rationale)
