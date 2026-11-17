@@ -6,7 +6,7 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-17
 ---
 
 # src/Meridian.Wpf
@@ -23,6 +23,15 @@ The existing agreement and entity controls expose native structured terms, date 
 external-review attestations, advisory obligations and reviewed legacy coverage successors.
 They consume shared APIs and preserve drafts on failed commands. WPF runtime verification requires
 Windows; cross-compilation alone does not establish that proof.
+
+`KeyboardShortcutService` reapplies the operator's saved shortcut overrides at startup
+(`App.xaml.cs` attaches the shared desktop shell preference store) and saves only differences from
+the defaults after `UpdateShortcut`, `SetShortcutEnabled` or `ResetToDefaults`. Loading skips an
+override for an unknown action, an unparseable key or modifier, a collision with another shortcut,
+or a binding that would leave Start/Stop Collector, Toggle Connection or Delete Selected without
+Ctrl or Alt. `KeyboardShortcutsPage` reports how many shortcuts differ from their defaults and
+offers Reset to defaults; there is no in-app rebinding editor yet.
+`KeyboardShortcutServicePersistenceTests` covers this on isolated instances and requires Windows.
 
 Settings workspace and Preferences include a shared activation-status banner reading the host's
 `GET /api/config/changes` contract. It refreshes on entry, every 15 seconds, on demand and after

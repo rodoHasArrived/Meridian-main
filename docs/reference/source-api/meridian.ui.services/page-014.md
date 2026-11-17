@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SkippedFileInfo
+
+Qualified name: <code>Meridian.Ui.Services.SkippedFileInfo</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:140](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L140).
+
+File that was skipped.
+
+```csharp
+public sealed class SkippedFileInfo
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Path { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:142](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L142) |  |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:143](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L143) |  |
+| <code>public string Reason { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:144](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L144) |  |
+| <code>public long Size { get; set; }</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:145](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L145) |  |
+
 ## SmartRecommendationsService
 
 Qualified name: <code>Meridian.Ui.Services.SmartRecommendationsService</code>. Kind: `class`.
@@ -1192,23 +1213,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public string Symbol { get; init; } = &quot;&quot;;</code> | [src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs:642](../../../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs#L642) |  |
 | <code>public List&lt;BrowserArchiveFileInfo&gt; Files { get; init; } = new ();</code> | [src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs:643](../../../../src/Meridian.Ui.Services/Services/ArchiveBrowserService.cs#L643) |  |
-
-## SymbolOperationResponse
-
-Qualified name: <code>Meridian.Ui.Services.SymbolOperationResponse</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:671](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L671).
-
-Carries API single-symbol operation success, message, and error.
-
-```csharp
-public sealed class SymbolOperationResponse
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:673](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L673) |  |
-| <code>public string? Message { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:674](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L674) |  |
-| <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:675](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L675) |  |

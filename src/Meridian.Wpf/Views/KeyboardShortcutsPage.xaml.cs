@@ -27,6 +27,26 @@ public partial class KeyboardShortcutsPage : Page
     private void OnPageLoaded(object sender, RoutedEventArgs e)
     {
         PopulateDynamicShortcuts();
+        UpdateOverrideStatus();
+    }
+
+    private void OnResetShortcutsClick(object sender, RoutedEventArgs e)
+    {
+        _keyboardShortcutService.ResetToDefaults();
+        PopulateDynamicShortcuts();
+        UpdateOverrideStatus();
+    }
+
+    private void UpdateOverrideStatus()
+    {
+        var overrideCount = _keyboardShortcutService.GetOverrides().Count;
+        ShortcutOverrideStatusText.Text = overrideCount switch
+        {
+            0 => "All shortcuts use their default bindings.",
+            1 => "1 shortcut differs from its default and is saved for this machine.",
+            _ => $"{overrideCount} shortcuts differ from their defaults and are saved for this machine."
+        };
+        ResetShortcutsButton.IsEnabled = overrideCount > 0;
     }
 
     /// <summary>

@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntegrityVerificationResult
+
+Qualified name: <code>Meridian.Ui.Services.Services.IntegrityVerificationResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:205](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L205).
+
+Reports data integrity validity, score, issues, and recommended remediation.
+
+```csharp
+public sealed class IntegrityVerificationResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsValid { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:207](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L207) |  |
+| <code>public double Score { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:208](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L208) |  |
+| <code>public List&lt;string&gt; Issues { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:209](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L209) |  |
+| <code>public List&lt;string&gt; Recommendations { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:210](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L210) |  |
+| <code>public DateTime CheckedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:211](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L211) |  |
+
 ## IQualityArchiveStore
 
 Qualified name: <code>Meridian.Ui.Services.Services.IQualityArchiveStore</code>. Kind: `interface`.
@@ -298,7 +320,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.Services.ProviderCatalogEntry</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:622](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L622).
+Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:729](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L729).
 
 Provider catalog entry for the provider marketplace display.
 
@@ -310,13 +332,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string[] RequiredEnvVars =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:635](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L635) |  |
+| <code>public string[] RequiredEnvVars =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:742](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L742) |  |
 
 ## ProviderCredentialStatus
 
 Qualified name: <code>Meridian.Ui.Services.Services.ProviderCredentialStatus</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:669](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L669).
+Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:776](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L776).
 
 Credential status for a specific provider.
 
@@ -328,7 +350,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool HasServiceFieldSchema =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:684](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L684) | True when the authenticated credential service reported this provider together with the field names its vault accepts. Editors must use these names; the local provider catalog&#x27;s field names are not the vault schema. |
+| <code>public bool HasServiceFieldSchema =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:791](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L791) | True when the authenticated credential service reported this provider together with the field names its vault accepts. Editors must use these names; the local provider catalog&#x27;s field names are not the vault schema. |
 
 ## ProviderInfo
 
@@ -356,7 +378,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.Services.ProviderTier</code>. Kind: `enum`.
 
-Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:643](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L643).
+Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:750](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L750).
 
 Provider tier classification.
 
@@ -368,10 +390,10 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Free</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:645](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L645) |  |
-| <code>FreeWithAccount</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:646](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L646) |  |
-| <code>LimitedFree</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:647](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L647) |  |
-| <code>Premium</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:648](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L648) |  |
+| <code>Free</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:752](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L752) |  |
+| <code>FreeWithAccount</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:753](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L753) |  |
+| <code>LimitedFree</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:754](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L754) |  |
+| <code>Premium</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:755](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L755) |  |
 
 ## QualityAlert
 
@@ -656,16 +678,18 @@ Declared public members:
 | <code>public DesktopShellPreferences GetDesktopShellPreferences();</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:302](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L302) | Gets the persisted desktop shell preferences, migrating any legacy compact-mode payloads on first load. |
 | <code>public ShellDensityMode GetShellDensityMode() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:314](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L314) | Gets the current workstation shell density mode. |
 | <code>public void SetShellDensityMode(ShellDensityMode densityMode);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:319](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L319) | Persists a new workstation shell density mode and raises a change event for live shell surfaces. |
-| <code>public IReadOnlyList&lt;ConfigProfile&gt; GetProfiles() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:398](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L398) | Gets all configuration profiles (built-in + custom). |
-| <code>public ConfigProfile CreateProfile(string name, string description);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:401](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L401) | Creates a new custom configuration profile. |
-| <code>public bool RemoveProfile(string profileId);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:410](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L410) | Removes a custom profile (built-in profiles cannot be removed). |
-| <code>public string EstimateDailyStorageSize(int symbolCount, bool trades, bool quotes, bool depth);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:421](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L421) | Estimates daily storage size based on symbol count and data types. |
+| <code>public IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; GetShortcutOverrides() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:347](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L347) | Gets the operator&#x27;s persisted desktop keyboard shortcut overrides, keyed by action id. |
+| <code>public void SetShortcutOverrides(IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; overrides);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:354](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L354) | Replaces the persisted desktop keyboard shortcut overrides. An empty set restores every shortcut to its default binding. Density and other shell preferences are preserved. |
+| <code>public IReadOnlyList&lt;ConfigProfile&gt; GetProfiles() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:458](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L458) | Gets all configuration profiles (built-in + custom). |
+| <code>public ConfigProfile CreateProfile(string name, string description);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:461](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L461) | Creates a new custom configuration profile. |
+| <code>public bool RemoveProfile(string profileId);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:470](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L470) | Removes a custom profile (built-in profiles cannot be removed). |
+| <code>public string EstimateDailyStorageSize(int symbolCount, bool trades, bool quotes, bool depth);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:481](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L481) | Estimates daily storage size based on symbol count and data types. |
 
 ## ShellDensityMode
 
 Qualified name: <code>Meridian.Ui.Services.Services.ShellDensityMode</code>. Kind: `enum`.
 
-Source: [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:6](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L6).
+Source: [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:9](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L9).
 
 Shared shell density modes for the desktop workstation chrome.
 
@@ -677,8 +701,8 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Standard = 0</code> | [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:8](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L8) |  |
-| <code>Compact = 1</code> | [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:9](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L9) |  |
+| <code>Standard = 0</code> | [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:11](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L11) |  |
+| <code>Compact = 1</code> | [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:12](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L12) |  |
 
 ## SimpleStatus
 
@@ -1107,24 +1131,3 @@ Declared public members:
 | <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:672](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L672) |  |
 | <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:673](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L673) |  |
 | <code>public List&lt;ConfigSection&gt; Sections { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:674](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L674) |  |
-
-## SkippedFileInfo
-
-Qualified name: <code>Meridian.Ui.Services.SkippedFileInfo</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:140](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L140).
-
-File that was skipped.
-
-```csharp
-public sealed class SkippedFileInfo
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Path { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:142](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L142) |  |
-| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:143](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L143) |  |
-| <code>public string Reason { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:144](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L144) |  |
-| <code>public long Size { get; set; }</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:145](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L145) |  |
