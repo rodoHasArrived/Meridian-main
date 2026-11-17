@@ -188,9 +188,10 @@ list. It now fails only that proposal and is classified `AgreementAuthorityUnava
 
 - Three- and ten-entity populations are proven for `w10-v2` in memory. Translated (`w10-v3`,
   `w10-v4`) and PostgreSQL-backed populations of that size are not.
-- Inside the delivery service, repricing preview/apply and the aged-break list check the tenant
-  of the book owner, not the company; the HTTP endpoints check both before calling it. Delivery
-  and linking check both in the service.
+- The delivery service checks both tenant and company on every path: delivery, linking, repricing
+  preview/apply and the aged-break list. A company-bound book owner must match the caller's
+  company, the same rule the HTTP endpoints apply; a book with no company binding is open to any
+  company of its tenant. Covered by `IntercompanyProposalDestinationAuthorityTests`.
 - In-memory delivery tests use a recording stand-in for agreement journal validation; real
   ledger authority is exercised only by the PostgreSQL tests.
 - Guarantee posting, indirect or partial ownership, investment/equity elimination, live FX

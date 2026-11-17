@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-14
+last_reviewed: 2026-11-16
 ---
 
 # src/Meridian.Ui.Shared
@@ -189,6 +189,9 @@ server-authoritative gross/proposed/posted/actual/preview values and separate FX
 Browser and WPF consume the same seams; destination permissions remain authoritative.
 An accounting arrangement the tenant registry no longer returns fails only its own proposal in
 counterpart delivery and is classified `AgreementAuthorityUnavailable` in the aged-break list.
+Delivery, linking, repricing preview/apply and the aged-break list each check tenant and company
+inside `IntercompanyProposalDeliveryService`, not only at the endpoint: a company-bound book owner
+must match the caller's company, and a book with no company binding is open to its tenant.
 A delivered counterpart's treasury label `IntercompanyMirror` is a classification, not a fund event:
 on a draft with a server-retained proposal identity the workbench does not require a fund event
 identity or capital account for it, keeps it as the posting's source event type and does not write

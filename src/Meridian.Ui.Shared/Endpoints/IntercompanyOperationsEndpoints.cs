@@ -96,7 +96,7 @@ public static class IntercompanyOperationsEndpoints
                 || proposal.TargetBookId is not { } target || !await BookAllowedAsync(context, target).ConfigureAwait(false))
                 return EndpointHelpers.Forbidden();
             try
-            { return Results.Json(await service.RefreshPreviewAsync(tenant.TenantId!, proposalId, context.RequestAborted).ConfigureAwait(false), options); }
+            { return Results.Json(await service.RefreshPreviewAsync(tenant.TenantId!, tenant.CompanyId, proposalId, context.RequestAborted).ConfigureAwait(false), options); }
             catch (Exception error) when (error is InvalidOperationException or ArgumentException)
             { return Results.Conflict(new { error = error.Message }); }
         }).RequireAuthenticatedSession().RequireWorkstationTenantCompanyScope()
@@ -117,7 +117,7 @@ public static class IntercompanyOperationsEndpoints
             if (!EndpointAuthorization.TryResolveActor(context, out var actor))
                 return Results.Unauthorized();
             try
-            { return Results.Json(await service.RefreshAsync(tenant.TenantId!, proposalId, request, actor, context.RequestAborted).ConfigureAwait(false), options); }
+            { return Results.Json(await service.RefreshAsync(tenant.TenantId!, tenant.CompanyId, proposalId, request, actor, context.RequestAborted).ConfigureAwait(false), options); }
             catch (Exception error) when (error is InvalidOperationException or ArgumentException)
             { return Results.Conflict(new { error = error.Message }); }
         }).RequireAuthenticatedSession().RequireWorkstationTenantCompanyScope().RequireFundScopedWriteTenant()
@@ -178,7 +178,7 @@ public static class IntercompanyOperationsEndpoints
             if (delivery is null)
                 return Unavailable();
             var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-            return Results.Json(await delivery.BreaksAsync(tenant.TenantId!, sourceBookId,
+            return Results.Json(await delivery.BreaksAsync(tenant.TenantId!, tenant.CompanyId, sourceBookId,
                 asOf ?? DateOnly.FromDateTime(DateTime.UtcNow), context.RequestAborted).ConfigureAwait(false), options);
         }).RequireWorkstationTenantCompanyScope().RequireAnyPermission(UserPermission.ViewLedgerReports,
             UserPermission.ManageLedgerReports, UserPermission.AdminMaintenance);
