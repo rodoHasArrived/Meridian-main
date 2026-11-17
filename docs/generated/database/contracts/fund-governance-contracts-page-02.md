@@ -2,7 +2,7 @@
 
 # `fund-governance-contracts` data objects - page 2 of 3
 
-Objects 81-160 of 229. References crossing pages remain available in the dependency manifest.
+Objects 81-160 of 230. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -391,7 +391,10 @@ classDiagram
     class Meridian_Contracts_FundStructure_IntercompanyAccrualComputationInput["IntercompanyAccrualComputationInput"] {
         +DateOnly AccrualFrom
         +DateOnly AccrualTo
+        +IReadOnlyList~IntercompanyAccrualPrincipalSegmentDto~ AccruedInterest
         +IReadOnlyList~IntercompanyAccrualAuthoritySegment~ Authority
+        +DateOnly? FirstPrincipalDate
+        +IReadOnlyList~IntercompanyAccrualWindowDto~ PostedAccrualWindows
         +IReadOnlyList~IntercompanyAccrualPrincipalSegmentDto~ Principal
     }
     class Meridian_Contracts_FundStructure_IntercompanyAccrualPreviewDto["IntercompanyAccrualPreviewDto"] {
@@ -421,6 +424,7 @@ classDiagram
         +string AgreementPayloadHash
         +int AgreementVersion
         +decimal AnnualRate
+        +decimal? CompoundedInterest
         +string DayCount
         +DateOnly From
         +decimal Principal
@@ -428,7 +432,10 @@ classDiagram
         +int SchedulePeriodSequence
         +int Sequence
         +DateOnly To
-        +decimal UnroundedAmount
+    }
+    class Meridian_Contracts_FundStructure_IntercompanyAccrualWindowDto["IntercompanyAccrualWindowDto"] {
+        +DateOnly From
+        +DateOnly To
     }
     class Meridian_Contracts_FundStructure_IntercompanyAgreementActionDto["IntercompanyAgreementActionDto"] {
     }
@@ -602,15 +609,6 @@ classDiagram
     }
     class Meridian_Contracts_FundStructure_IntercompanyAgreementStatusDto["IntercompanyAgreementStatusDto"] {
     }
-    class Meridian_Contracts_FundStructure_IntercompanyAgreementTermsDto["IntercompanyAgreementTermsDto"] {
-        +string? AllocationDescription
-        +decimal? FixedAnnualRate
-        +string? Notes
-        +string? RateDescription
-        +string? ScheduleDescription
-        +int? SettlementDays
-        +IntercompanyStructuredTermsDto? StructuredTerms
-    }
     Meridian_Contracts_FundStructure_FundStructureGraphDto --> Meridian_Contracts_FundStructure_FundStructureNodeDto
     Meridian_Contracts_FundStructure_FundStructureNodeDto --> Meridian_Contracts_FundStructure_FundStructureNodeKindDto
     Meridian_Contracts_FundStructure_FundStructureQuery --> Meridian_Contracts_FundStructure_FundStructureNodeKindDto
@@ -651,6 +649,7 @@ classDiagram
     Meridian_Contracts_FundStructure_IntercompanyAccrualAuthoritySegment --> Meridian_Contracts_FundStructure_IntercompanyAgreementRevisionDto
     Meridian_Contracts_FundStructure_IntercompanyAccrualComputationInput --> Meridian_Contracts_FundStructure_IntercompanyAccrualAuthoritySegment
     Meridian_Contracts_FundStructure_IntercompanyAccrualComputationInput --> Meridian_Contracts_FundStructure_IntercompanyAccrualPrincipalSegmentDto
+    Meridian_Contracts_FundStructure_IntercompanyAccrualComputationInput --> Meridian_Contracts_FundStructure_IntercompanyAccrualWindowDto
     Meridian_Contracts_FundStructure_IntercompanyAccrualPreviewDto --> Meridian_Contracts_FundStructure_IntercompanyAccrualCalendarPinDto
     Meridian_Contracts_FundStructure_IntercompanyAccrualPreviewDto --> Meridian_Contracts_FundStructure_IntercompanyAccrualSliceDto
     Meridian_Contracts_FundStructure_IntercompanyAgreementAuditDto --> Meridian_Contracts_FundStructure_IntercompanyAgreementDraftDto
@@ -665,7 +664,6 @@ classDiagram
     Meridian_Contracts_FundStructure_IntercompanyAgreementDetailDto --> Meridian_Contracts_FundStructure_IntercompanyAgreementStatusDto
     Meridian_Contracts_FundStructure_IntercompanyAgreementDraftDto --> Meridian_Contracts_FundStructure_IntercompanyAgreementActionDto
     Meridian_Contracts_FundStructure_IntercompanyAgreementDraftDto --> Meridian_Contracts_FundStructure_IntercompanyAgreementEvidenceDto
-    Meridian_Contracts_FundStructure_IntercompanyAgreementDraftDto --> Meridian_Contracts_FundStructure_IntercompanyAgreementTermsDto
     Meridian_Contracts_FundStructure_IntercompanyAgreementJournalLinesDto --> Meridian_Contracts_FundStructure_IntercompanyAgreementJournalLineDto
     Meridian_Contracts_FundStructure_IntercompanyAgreementListDto --> Meridian_Contracts_FundStructure_IntercompanyAgreementDetailDto
     Meridian_Contracts_FundStructure_IntercompanyAgreementProposalDto --> Meridian_Contracts_FundStructure_IntercompanyAgreementActionDto

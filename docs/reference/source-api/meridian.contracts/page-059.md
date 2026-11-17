@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ExplainOnboardingDifferenceRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ExplainOnboardingDifferenceRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:85](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L85).
+
+```csharp
+public sealed record ExplainOnboardingDifferenceRequestDto(int ExpectedVersion, string ComparisonId, string Classification, string Notes, IReadOnlyList<string> EvidenceIds, DateOnly? ExpectedReversalDate = null);
+```
+
+## ExposureSnapshotDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ExposureSnapshotDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs:3](../../../../src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs#L3).
+
+```csharp
+public sealed record ExposureSnapshotDto(DateTimeOffset AsOfUtc, string IngestionMode, IReadOnlyList<CounterpartyExposureDto> Counterparties, IReadOnlyList<ThresholdBreachDto> Breaches, IReadOnlyList<CollateralCallDto> CollateralCalls, IReadOnlyList<ExposureTrendPointDto> Trend);
+```
+
 ## ExposureTrendPointDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ExposureTrendPointDto</code>. Kind: `record`.
@@ -553,36 +573,3 @@ Query for Accounting-first fund ledger views.
 ```csharp
 public sealed record FundLedgerQuery(string FundProfileId, DateTimeOffset? AsOf = null, FundLedgerScope ScopeKind = FundLedgerScope.Consolidated, string? ScopeId = null, IReadOnlyList<string>? SelectedLedgerIds = null);
 ```
-
-## FundLedgerReconciliationSnapshot
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundLedgerReconciliationSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundLedgerDtos.cs:135](../../../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs#L135).
-
-Reconciliation snapshot of one fund ledger book, including consolidated totals and per-dimension breakdowns.
-
-```csharp
-public sealed record FundLedgerReconciliationSnapshot(string FundProfileId, DateTimeOffset AsOf, FundLedgerDimensionSnapshot Consolidated, IReadOnlyDictionary<string, FundLedgerDimensionSnapshot> Entities, IReadOnlyDictionary<string, FundLedgerDimensionSnapshot> Sleeves, IReadOnlyDictionary<string, FundLedgerDimensionSnapshot> Vehicles);
-```
-
-## FundLedgerScope
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundLedgerScope</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/FundLedgerDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs#L8).
-
-Fund-level ledger drill-in scope.
-
-```csharp
-public enum FundLedgerScope : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Consolidated</code> | [src/Meridian.Contracts/Workstation/FundLedgerDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs#L10) |  |
-| <code>Entity</code> | [src/Meridian.Contracts/Workstation/FundLedgerDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs#L11) |  |
-| <code>Sleeve</code> | [src/Meridian.Contracts/Workstation/FundLedgerDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs#L12) |  |
-| <code>Vehicle</code> | [src/Meridian.Contracts/Workstation/FundLedgerDtos.cs:13](../../../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs#L13) |  |

@@ -6,6 +6,46 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategyRunPromotionState
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunPromotionState</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:50](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L50).
+
+Promotion-oriented readiness signal derived from the current run state.
+
+```csharp
+public enum StrategyRunPromotionState : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>None</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:52](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L52) |  |
+| <code>RequiresCompletion</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:53](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L53) |  |
+| <code>CandidateForPaper</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:54](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L54) |  |
+| <code>CandidateForLive</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:55](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L55) |  |
+| <code>LiveManaged</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:56](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L56) |  |
+
+## StrategyRunPromotionSummary
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunPromotionSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:156](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L156).
+
+Shared promotion summary used by Strategy, Trading, and Accounting workflows.
+
+```csharp
+public sealed record StrategyRunPromotionSummary(StrategyRunPromotionState State, StrategyRunMode? SuggestedNextMode, bool RequiresReview, string Reason, string? SourceRunId = null, string? TargetRunId = null, string? AuditReference = null, StrategyRunIdentity? Identity = null, string? ApprovalStatus = null, string? ManualOverrideId = null, string? ApprovedBy = null, IReadOnlyList<string>? ApprovalChecklist = null, IReadOnlyList<string>? EvidenceReferences = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DateTimeOffset? PromotedAt { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:175](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L175) | Timestamp from the durable promotion decision, when one exists. This remains outside the primary constructor so established constructor and deconstruction signatures stay stable. |
+
 ## StrategyRunReviewPacketDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunReviewPacketDto</code>. Kind: `record`.
@@ -614,23 +654,3 @@ Declared public members:
 | <code>public int LedgerEntryCount { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:184](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L184) |  |
 | <code>public DateTimeOffset? LastFillAt { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:186](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L186) |  |
 | <code>public DateTimeOffset? LastOrderUpdatedAt { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:188](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L188) |  |
-
-## TradingPromotionReadinessDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.TradingPromotionReadinessDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:240](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L240).
-
-```csharp
-public sealed record TradingPromotionReadinessDto(string State, string Reason, bool RequiresReview, string? SourceRunId, string? TargetRunId, string? SuggestedNextMode, string? AuditReference, string? ApprovalStatus, string? ManualOverrideId, string? ApprovedBy, IReadOnlyList<string>? ApprovalChecklist = null, IReadOnlyList<string>? EvidenceReferences = null);
-```
-
-## TradingReplayReadinessDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.TradingReplayReadinessDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:191](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L191).
-
-```csharp
-public sealed record TradingReplayReadinessDto(string SessionId, string ReplaySource, bool IsConsistent, int ComparedFillCount, int ComparedOrderCount, int ComparedLedgerEntryCount, DateTimeOffset VerifiedAt, DateTimeOffset? LastPersistedFillAt, DateTimeOffset? LastPersistedOrderUpdateAt, string? VerificationAuditId, IReadOnlyList<string> MismatchReasons, string DriftStatus, string RequiredNextAction);
-```

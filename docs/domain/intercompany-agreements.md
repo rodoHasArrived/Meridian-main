@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** Accounting and Ledger
-**Reviewed:** 2026-11-14
+**Reviewed:** 2026-11-17
 
 An intercompany agreement records the reviewed terms between two legal entities in one tenant.
 It explains the contractual source of intercompany activity; it is not a journal, a payment or
@@ -89,11 +89,22 @@ the posted journal.
 
 Nothing is estimated. The accrual is unavailable, with no amount, when any day lacks a single approved
 profile revision, falls outside the declared schedule or lacks provable principal; when terms are
-unstructured, floating-rate or compounding; when the calendar is missing; when a posted, unreversed
+unstructured or floating-rate; when compounding does not match the schedule frequency; when the calendar is missing; when a posted, unreversed
 accrual already covers part of the window; or when the source book has no single open period
 containing the posting date. A cross-currency loan converts through the governed FX authority or is
 unavailable. Fees are not calculated: a fixed fee has no declared amount period and a percentage fee
 has no measured base in terms schema v1.
+
+### Periodic compounding
+
+A loan whose compounding frequency equals its schedule frequency accrues under rule `intercompany-accrual-v3`
+([ADR-030](../adr/030-intercompany-interest-compounding.md)). Each period earns interest on posted principal
+plus the accrued interest already posted on the loan-interest profile at the period start: posted accruals and
+delivered counterparts, net of settlements and reversals. Interest stays simple within a period. A window is
+refused unless posted, unreversed accruals cover every earlier day, and one request covers one period, so each
+period must be accrued and posted before the next can compound on it. The facts read are retained with the
+draft and read again before review or posting; a reversal, settlement or late accrual since drafting stops the
+draft until it is recomputed.
 
 ## External-review attestation
 

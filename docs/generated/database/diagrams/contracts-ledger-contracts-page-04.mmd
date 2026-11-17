@@ -107,9 +107,16 @@ classDiagram
     }
     class Meridian_Contracts_Ledger_IntercompanyAccountRoleDto["IntercompanyAccountRoleDto"] {
     }
+    class Meridian_Contracts_Ledger_IntercompanyAccrualCompoundingEvidenceDto["IntercompanyAccrualCompoundingEvidenceDto"] {
+        +IntercompanyAccrualPrincipalEvidenceDto? AccruedInterest
+        +DateOnly BalanceFrom
+        +DateOnly FirstPrincipalDate
+        +IReadOnlyList~IntercompanyAccrualWindowDto~ PostedWindows
+    }
     class Meridian_Contracts_Ledger_IntercompanyAccrualEvidenceDto["IntercompanyAccrualEvidenceDto"] {
         +Guid AccountingArrangementId
         +Guid AgreementId
+        +IntercompanyAccrualCompoundingEvidenceDto? Compounding
         +IntercompanyAccrualPreviewDto Computation
         +Guid CounterpartyEntityId
         +Guid DraftId
@@ -119,7 +126,6 @@ classDiagram
         +string MonetaryAccountNodeId
         +string OperatingAccountNodeId
         +string PostingAgreementPayloadHash
-        +int PostingAgreementVersion
     }
     class Meridian_Contracts_Ledger_IntercompanyAccrualEvidenceGuard["IntercompanyAccrualEvidenceGuard"] {
     }
@@ -506,17 +512,10 @@ classDiagram
         +int OpenPeriodCount
         +int PeriodCount
     }
-    class Meridian_Contracts_Ledger_LedgerBookRolloutIssueDto["LedgerBookRolloutIssueDto"] {
-        +AccountingBasisKindDto? AccountingBasis
-        +string Code
-        +Guid? FundStructureNodeId
-        +Guid? LedgerBookId
-        +string Message
-        +string? Scope
-        +LedgerBookRolloutIssueSeverityDto Severity
-    }
     Meridian_Contracts_Ledger_IntercompanyAccountBindingDto --> Meridian_Contracts_Ledger_IntercompanyAccountRoleDto
+    Meridian_Contracts_Ledger_IntercompanyAccrualCompoundingEvidenceDto --> Meridian_Contracts_Ledger_IntercompanyAccrualPrincipalEvidenceDto
     Meridian_Contracts_Ledger_IntercompanyAccrualEvidenceDto --> Meridian_Contracts_Ledger_IntercompanyAccountRoleDto
+    Meridian_Contracts_Ledger_IntercompanyAccrualEvidenceDto --> Meridian_Contracts_Ledger_IntercompanyAccrualCompoundingEvidenceDto
     Meridian_Contracts_Ledger_IntercompanyAccrualEvidenceDto --> Meridian_Contracts_Ledger_IntercompanyAccrualPrincipalEvidenceDto
     Meridian_Contracts_Ledger_IntercompanyAccrualPrincipalEvidenceDto --> Meridian_Contracts_Ledger_IntercompanyAccountRoleDto
     Meridian_Contracts_Ledger_IntercompanyAccrualPrincipalEvidenceDto --> Meridian_Contracts_Ledger_IntercompanyAccrualPrincipalMovementDto
@@ -539,5 +538,4 @@ classDiagram
     Meridian_Contracts_Ledger_LedgerAdjustmentApprovalMetadataDto --> Meridian_Contracts_Ledger_LedgerAdjustmentApprovalStatusDto
     Meridian_Contracts_Ledger_LedgerBookControlProfileDto --> Meridian_Contracts_Ledger_LedgerBookControlModeDto
     Meridian_Contracts_Ledger_LedgerBookRolloutAssessmentDto --> Meridian_Contracts_Ledger_LedgerBookRolloutBookStatusDto
-    Meridian_Contracts_Ledger_LedgerBookRolloutAssessmentDto --> Meridian_Contracts_Ledger_LedgerBookRolloutIssueDto
     Meridian_Contracts_Ledger_LedgerBookRolloutAssessmentRequest --> Meridian_Contracts_Ledger_LedgerBookRequiredScopeDto

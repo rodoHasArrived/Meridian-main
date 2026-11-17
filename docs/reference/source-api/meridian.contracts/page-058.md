@@ -6,6 +6,38 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EvidenceDocumentIntakeSourceKindDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.EvidenceDocumentIntakeSourceKindDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:263](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L263).
+
+```csharp
+public enum EvidenceDocumentIntakeSourceKindDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>UploadedContent = 0</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:265](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L265) |  |
+| <code>LocalFile = 1</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:266](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L266) |  |
+| <code>ImportedFileReference = 2</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:267](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L267) |  |
+| <code>Email = 3</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:268](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L268) |  |
+| <code>Sftp = 4</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:269](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L269) |  |
+| <code>Api = 5</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:270](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L270) |  |
+| <code>PortalDownload = 6</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:271](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L271) |  |
+
+## EvidenceDocumentLinkDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.EvidenceDocumentLinkDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:131](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L131).
+
+```csharp
+public sealed record EvidenceDocumentLinkDto(EvidenceDocumentLinkKindDto LinkKind, string ObjectId, string? Label = null, string? Route = null, string? Relationship = null);
+```
+
 ## EvidenceDocumentLinkKindDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.EvidenceDocumentLinkKindDto</code>. Kind: `enum`.
@@ -764,24 +796,4 @@ Preview line for a balanced journal candidate generated from an expected event.
 
 ```csharp
 public sealed record ExpectedJournalPreviewLineDto(string AccountName, string AccountType, string? Symbol, decimal Debit, decimal Credit);
-```
-
-## ExplainOnboardingDifferenceRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ExplainOnboardingDifferenceRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:85](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L85).
-
-```csharp
-public sealed record ExplainOnboardingDifferenceRequestDto(int ExpectedVersion, string ComparisonId, string Classification, string Notes, IReadOnlyList<string> EvidenceIds, DateOnly? ExpectedReversalDate = null);
-```
-
-## ExposureSnapshotDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ExposureSnapshotDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs:3](../../../../src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs#L3).
-
-```csharp
-public sealed record ExposureSnapshotDto(DateTimeOffset AsOfUtc, string IngestionMode, IReadOnlyList<CounterpartyExposureDto> Counterparties, IReadOnlyList<ThresholdBreachDto> Breaches, IReadOnlyList<CollateralCallDto> CollateralCalls, IReadOnlyList<ExposureTrendPointDto> Trend);
 ```

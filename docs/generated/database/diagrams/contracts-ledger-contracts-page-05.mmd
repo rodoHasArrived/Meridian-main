@@ -1,5 +1,14 @@
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_LedgerBookRolloutIssueDto["LedgerBookRolloutIssueDto"] {
+        +AccountingBasisKindDto? AccountingBasis
+        +string Code
+        +Guid? FundStructureNodeId
+        +Guid? LedgerBookId
+        +string Message
+        +string? Scope
+        +LedgerBookRolloutIssueSeverityDto Severity
+    }
     class Meridian_Contracts_Ledger_LedgerBookRolloutIssueSeverityDto["LedgerBookRolloutIssueSeverityDto"] {
     }
     class Meridian_Contracts_Ledger_LedgerBookSetupCandidateDto["LedgerBookSetupCandidateDto"] {
@@ -720,13 +729,7 @@ classDiagram
     }
     class Meridian_Contracts_Ledger_PrivateCapitalActivityRoutes["PrivateCapitalActivityRoutes"] {
     }
-    class Meridian_Contracts_Ledger_PrivateCapitalBankObservationImportResultDto["PrivateCapitalBankObservationImportResultDto"] {
-        +BankTransactionDto BankTransaction
-        +string DocumentId
-        +string EvidenceLink
-        +bool IsReplay
-        +string SourceHashSha256
-    }
+    Meridian_Contracts_Ledger_LedgerBookRolloutIssueDto --> Meridian_Contracts_Ledger_LedgerBookRolloutIssueSeverityDto
     Meridian_Contracts_Ledger_LedgerCrossPeriodPnlReportDto --> Meridian_Contracts_Ledger_LedgerPeriodPnlSummaryDto
     Meridian_Contracts_Ledger_LedgerCrossPeriodTrialBalanceLineDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
     Meridian_Contracts_Ledger_LedgerCrossPeriodTrialBalanceReportDto --> Meridian_Contracts_Ledger_LedgerCrossPeriodTrialBalanceLineDto

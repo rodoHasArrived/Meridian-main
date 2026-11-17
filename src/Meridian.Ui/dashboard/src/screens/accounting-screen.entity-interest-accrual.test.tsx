@@ -82,6 +82,17 @@ describe("Intercompany interest accrual", () => {
     expect(postEntityOperation).toHaveBeenCalledTimes(1);
   });
 
+  it("shows the posted accrued interest a compounding period adds, and Simple for a simple slice", async () => {
+    const [slice] = readyProposal.computation.slices;
+    vi.mocked(postEntityOperation).mockResolvedValue({ ...readyProposal, computation: { ...readyProposal.computation, ruleVersion: "intercompany-accrual-v3",
+      slices: [{ ...slice, compoundedInterest: "4166.6700000000000000000000001" }] } });
+    renderWithRouter(<IntercompanyInterestAccrual scope={scope} arrangement={interest} arrangements={[interest, principal]} />);
+    enterWindow();
+    fireEvent.click(screen.getByRole("button", { name: "Preview interest accrual" }));
+    expect(await screen.findByText("4166.6700000000000000000000001")).toBeVisible();
+    expect(screen.getByRole("columnheader", { name: "Compounded interest" })).toBeVisible();
+  });
+
   it("shows the server's refusal and offers no draft when the accrual is unavailable", async () => {
     vi.mocked(postEntityOperation).mockResolvedValue({ computation: { ...readyProposal.computation, status: "Unavailable", amount: null, unroundedAmount: null, slices: [], diagnostics: [] },
       diagnostics: ["Exactly one open source period must contain the last accrued day; no date is moved automatically."] });

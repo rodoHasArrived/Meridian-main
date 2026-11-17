@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-17
 ---
 
 # src/Meridian.Ui/dashboard
@@ -221,6 +221,9 @@ commands explain their existing blockers. Controlled-close receipt navigation re
 response's journal, book, profile and version even when the next request is edited; incomplete
 receipt identities provide no journal link. Active FX edits retain their as-of scope until save or
 explicit cancel, and pending saves retain the mounted editor.
+
+The interest accrual preview shows a Compounded interest column for rule `intercompany-accrual-v3`; see
+[periodic compounding](../../../docs/domain/intercompany-agreements.md#periodic-compounding).
 
 Settings provider runtime evidence and integration setup components are owned by
 `settings-provider-integration.tsx`; the Settings screen composes them without changing routes

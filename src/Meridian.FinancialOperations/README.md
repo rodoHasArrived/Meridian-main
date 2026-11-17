@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-14
+last_reviewed: 2026-11-17
 ---
 
 # src/Meridian.FinancialOperations
@@ -65,6 +65,9 @@ directions separate, and reports missing mappings explicitly. Terms supply no ba
 The close cockpit consumes this structured schedule instead of intercompany keywords.
 NetSuite guarded export review retains its schedule hash and rechecks mapping completeness
 and freshness alongside the existing external NetSuite evidence requirements.
+
+`IntercompanyAccrualSourceBuilder` reads compounding facts (posted accrued-interest balance and standing
+accrual windows) and re-verifies them before review or posting. See [periodic compounding](../../docs/domain/intercompany-agreements.md#periodic-compounding).
 
 Intercompany services own approved accounting-profile revisions and governed counterpart templates;
 canonical legal terms and independent review remain in Application/FundStructure.

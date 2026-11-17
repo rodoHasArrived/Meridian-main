@@ -201,7 +201,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.FundStructure.IIntercompanyAccrualPreviewService</code>. Kind: `interface`.
 
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:56](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L56).
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:82](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L82).
 
 Pure amount calculation over server-resolved legal, profile and principal facts.
 
@@ -213,7 +213,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>IntercompanyAccrualPreviewDto Preview(IntercompanyAccrualComputationInput input);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:58](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L58) |  |
+| <code>IntercompanyAccrualPreviewDto Preview(IntercompanyAccrualComputationInput input);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:84](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L84) |  |
 
 ## IIntercompanyStructuredTermsPreviewService
 
@@ -429,7 +429,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAccrualAuthoritySegment</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:16](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L16).
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:22](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L22).
 
 One approved accounting-profile revision and its pinned legal revision over &#91;From, To).
 
@@ -441,7 +441,7 @@ public sealed record IntercompanyAccrualAuthoritySegment(DateOnly From, DateOnly
 
 Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAccrualCalendarPinDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:39](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L39).
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:65](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L65).
 
 ```csharp
 public sealed record IntercompanyAccrualCalendarPinDto(string CalendarId, string ContentHash);
@@ -451,19 +451,27 @@ public sealed record IntercompanyAccrualCalendarPinDto(string CalendarId, string
 
 Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAccrualComputationInput</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:25](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L25).
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:31](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L31).
 
 Server-resolved facts only; no caller-supplied rate, day count or amount participates.
 
 ```csharp
-public sealed record IntercompanyAccrualComputationInput(DateOnly AccrualFrom, DateOnly AccrualTo, IReadOnlyList<IntercompanyAccrualAuthoritySegment> Authority, IReadOnlyList<IntercompanyAccrualPrincipalSegmentDto> Principal);
+public sealed record IntercompanyAccrualComputationInput(DateOnly AccrualFrom, DateOnly AccrualTo, IReadOnlyList<IntercompanyAccrualAuthoritySegment> Authority, IReadOnlyList<IntercompanyAccrualPrincipalSegmentDto> Principal)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;IntercompanyAccrualPrincipalSegmentDto&gt; AccruedInterest { get; init; } = [];</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:36](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L36) | Compounding loans: posted accrued-interest balance of the loan-interest profile by day, from the schedule start. |
+| <code>public IReadOnlyList&lt;IntercompanyAccrualWindowDto&gt; PostedAccrualWindows { get; init; } = [];</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:38](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L38) | Compounding loans: windows of posted, unreversed accruals of the loan-interest profile in this book. |
+| <code>public DateOnly? FirstPrincipalDate { get; init; }</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:40](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L40) | Compounding loans: effective date of the first posted principal movement, where accrual coverage must start. |
 
 ## IntercompanyAccrualPreviewDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAccrualPreviewDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:45](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L45).
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:71](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L71).
 
 A calculated amount is a proposal input, never a posting. Unavailable carries no amount: a partial window, an undeclared term or a missing authority is refused rather than estimated.
 
@@ -475,13 +483,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonIgnore] public bool IsReady =&gt; …;</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:52](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L52) |  |
+| <code>[JsonIgnore] public bool IsReady =&gt; …;</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:78](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L78) |  |
 
 ## IntercompanyAccrualPrincipalSegmentDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAccrualPrincipalSegmentDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:20](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L20).
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:26](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L26).
 
 Outstanding principal over &#91;From, To) with the retained source that established it.
 
@@ -506,20 +514,40 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public const string RuleVersion = &quot;intercompany-accrual-v1&quot;;</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:8](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L8) |  |
-| <code>public const string StatusReady = &quot;Ready&quot;;</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:9](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L9) |  |
-| <code>public const string StatusUnavailable = &quot;Unavailable&quot;;</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:10](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L10) |  |
-| <code>public const int MaximumWindowDays = 366;</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:12](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L12) | A single request never spans more than one year of daily authority resolution. |
+| <code>public const string CompoundingRuleVersion = &quot;intercompany-accrual-v3&quot;;</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:13](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L13) | v1 plus periodic compounding: each schedule period&#x27;s base is posted principal plus the accrued-interest balance posted on the loan-interest profile at the period start, once every earlier day has a posted accrual. |
+| <code>public static bool IsSupported(string? ruleVersion) =&gt; …;</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:14](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L14) |  |
+| <code>public const string StatusReady = &quot;Ready&quot;;</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:15](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L15) |  |
+| <code>public const string StatusUnavailable = &quot;Unavailable&quot;;</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:16](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L16) |  |
+| <code>public const int MaximumWindowDays = 366;</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:18](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L18) | A single request never spans more than one year of daily authority resolution. |
 
 ## IntercompanyAccrualSliceDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAccrualSliceDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:30](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L30).
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:47](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L47).
 
 One homogeneous slice: one legal revision, one profile revision, one schedule period, one principal.
 
 ```csharp
-public sealed record IntercompanyAccrualSliceDto(int Sequence, DateOnly From, DateOnly To, Guid AccountingArrangementRevisionId, int AgreementVersion, string AgreementPayloadHash, int SchedulePeriodSequence, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal Principal, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal AnnualRate, string DayCount, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal YearFraction, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal UnroundedAmount, string PrincipalEvidenceReference);
+public sealed record IntercompanyAccrualSliceDto(int Sequence, DateOnly From, DateOnly To, Guid AccountingArrangementRevisionId, int AgreementVersion, string AgreementPayloadHash, int SchedulePeriodSequence, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal Principal, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal AnnualRate, string DayCount, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal YearFraction, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal UnroundedAmount, string PrincipalEvidenceReference)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)][JsonNumberHandling(JsonNumberHandling.AllowReadingFromString &#124; JsonNumberHandling.WriteAsString)] public decimal? CompoundedInterest { get; init; }</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:62](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L62) | Compounding slices only (rule v3): the posted accrued interest added to principal at the period start. The slice earns (Principal + CompoundedInterest) x AnnualRate x YearFraction. Absent on simple slices. |
+
+## IntercompanyAccrualWindowDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAccrualWindowDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:44](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L44).
+
+One posted accrual&#x27;s half-open window.
+
+```csharp
+public sealed record IntercompanyAccrualWindowDto(DateOnly From, DateOnly To);
 ```
 
 ## IntercompanyAgreementActionDto
@@ -692,14 +720,4 @@ Advisory, source-backed coverage; amounts are exact invariant decimal text in ea
 
 ```csharp
 public sealed record IntercompanyAgreementJournalLineDto(Guid JournalEntryId, Guid LineId, Guid PeriodId, long Sequence, DateOnly AccountingDate, Guid PostingEntityId, Guid? CounterpartyId, string AccountName, string Description, string FunctionalCurrency, string Debit, string Credit, string TransactionCurrency, string TransactionDebit, string TransactionCredit, Guid? IntercompanyAgreementId, int? IntercompanyAgreementVersion, string CoverageState, string? Warning, string SourceReference);
-```
-
-## IntercompanyAgreementJournalLinesDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementJournalLinesDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementJournalLineDtos.cs:12](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementJournalLineDtos.cs#L12).
-
-```csharp
-public sealed record IntercompanyAgreementJournalLinesDto(Guid AgreementId, Guid LedgerBookId, DateOnly AsOf, string CoverageState, IReadOnlyList<IntercompanyAgreementJournalLineDto> Lines, string? NextCursor);
 ```

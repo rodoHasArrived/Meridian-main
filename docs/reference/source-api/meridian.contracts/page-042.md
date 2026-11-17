@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingGovernanceAccessPrincipalDto
+
+Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceAccessPrincipalDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:48](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L48).
+
+```csharp
+public sealed record ReportingGovernanceAccessPrincipalDto(string Kind, string PrincipalId);
+```
+
+## ReportingGovernanceAccessScopeDto
+
+Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceAccessScopeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:39](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L39).
+
+```csharp
+public sealed record ReportingGovernanceAccessScopeDto(string PolicyId, string PolicyVersion, string Mode, string? OwnerPrincipalId, bool AllowOwnerAccess, IReadOnlyList<ReportingGovernanceAccessPrincipalDto> Principals, string PolicyHash);
+```
+
 ## ReportingGovernanceActionAvailabilityDto
 
 Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceActionAvailabilityDto</code>. Kind: `record`.
@@ -651,23 +671,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;AssetPackClassTermsSchema&gt; AssetClassTerms { get; init; } = AssetClassTerms??[];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs:886](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs#L886) | The executable per-class writable schema; the preceding prose lists are descriptions only. |
-
-## AssetPackJournalTemplateRule
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.AssetPackJournalTemplateRule</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs:896](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs#L896).
-
-```csharp
-public sealed record AssetPackJournalTemplateRule(string LifecycleEvent, string TemplateId, IReadOnlyList<string> AccountingBases, IReadOnlyList<string> CurrencyScopes, IReadOnlyList<string> EntityScopes);
-```
-
-## AssetPackLifecycleCoverage
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.AssetPackLifecycleCoverage</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs:863](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs#L863).
-
-```csharp
-public sealed record AssetPackLifecycleCoverage(string LifecycleEvent, string CapturePolicy, string AccountingAutomationStatus, IReadOnlyList<string> JournalTemplateIds);
-```

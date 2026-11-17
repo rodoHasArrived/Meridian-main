@@ -127,6 +127,10 @@ public sealed partial class ManualJournalEntryWorkbenchService
                 LineDimensions: new() { AccountingArrangementId = evidence.Principal.PrincipalArrangementId.ToString("D") }), ct).ConfigureAwait(false);
             if (Meridian.FinancialOperations.Intercompany.IntercompanyAccrualSourceBuilder.VerifyPrincipal(evidence, principal) is { } stale)
                 throw new InvalidOperationException(stale);
+            // A compounding base was read from posted accrued interest; a reversal or payment since then changes it.
+            if (evidence.Compounding is not null && Meridian.FinancialOperations.Intercompany.IntercompanyAccrualSourceBuilder.VerifyCompounding(evidence,
+                    posted) is { } staleInterest)
+                throw new InvalidOperationException(staleInterest);
         }
     }
 }

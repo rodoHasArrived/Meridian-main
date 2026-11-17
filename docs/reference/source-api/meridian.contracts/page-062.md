@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerAmountSecurityMasterLinkDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.LedgerAmountSecurityMasterLinkDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:634](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L634).
+
+```csharp
+public sealed record LedgerAmountSecurityMasterLinkDto(string Symbol, string? Route, IReadOnlyList<string> RelatedEvidenceIds, int EvidenceCount, DateTimeOffset? CapturedAt = null, Guid? SecurityId = null, string? DisplayName = null, string? SourceSystem = null, string? EvidenceId = null);
+```
+
+## LedgerAmountStrategyRunLinkDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.LedgerAmountStrategyRunLinkDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:699](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L699).
+
+```csharp
+public sealed record LedgerAmountStrategyRunLinkDto(string RunId, string? DisplayLabel = null, string? Route = null, string? SourceSystem = null, DateTimeOffset? CapturedAt = null, bool IsLineScoped = false);
+```
+
 ## LedgerImpactPreviewDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.LedgerImpactPreviewDto</code>. Kind: `record`.
@@ -590,26 +610,4 @@ A frozen support artifact, never an accounting-authority transition.
 
 ```csharp
 public sealed record OnboardingReadinessPacketDto(string PacketId, DateTimeOffset FrozenAtUtc, string FrozenBy, OnboardingPacketContentDto Content, string ContentHash, string HashAlgorithm);
-```
-
-## OnboardingReviewDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OnboardingReviewDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:92](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L92).
-
-```csharp
-public sealed record OnboardingReviewDto(string ReviewId, int DataRevision, string ReviewerId, string Decision, string Notes, IReadOnlyList<string> EvidenceIds, DateTimeOffset RecordedAtUtc);
-```
-
-## OnboardingScopeDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OnboardingScopeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L6).
-
-Fixed scope of a bounded, read-only accounting onboarding exercise.
-
-```csharp
-public sealed record OnboardingScopeDto(string TenantId, string CompanyId, string EntityId, string FundProfileId, Guid LedgerBookId, IReadOnlyList<string> AccountIds, DateOnly StartDate, DateOnly EndDate);
 ```

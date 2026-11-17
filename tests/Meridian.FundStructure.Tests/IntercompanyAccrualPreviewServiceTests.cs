@@ -136,7 +136,7 @@ public sealed class IntercompanyAccrualPreviewServiceTests
 
     [Theory]
     [InlineData("floating", "fixing authority")]
-    [InlineData("compounding", "simple interest")]
+    [InlineData("compounding", "only at each schedule period start")]
     [InlineData("unstructured", "unstructured terms")]
     [InlineData("terminated", "unterminated loan")]
     [InlineData("fee", "unterminated loan")]
@@ -147,7 +147,7 @@ public sealed class IntercompanyAccrualPreviewServiceTests
         var draft = variant switch
         {
             "floating" => loan.Terms with { Terms = new() { StructuredTerms = structured with { RateBasis = IntercompanyRateBasisDto.Floating, FixedAnnualRate = null, FloatingIndexReference = "SOFR", SpreadBps = 150m } } },
-            "compounding" => loan.Terms with { Terms = new() { StructuredTerms = structured with { Compounding = IntercompanyCompoundingDto.Monthly } } },
+            "compounding" => loan.Terms with { Terms = new() { StructuredTerms = structured with { Compounding = IntercompanyCompoundingDto.Quarterly } } },
             "unstructured" => loan.Terms with { Terms = new(RateDescription: "Five percent, monthly") },
             "fee" => loan.Terms with { AgreementType = IntercompanyAgreementTypeDto.ManagementFee },
             _ => loan.Terms

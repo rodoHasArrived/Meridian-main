@@ -328,6 +328,8 @@ public sealed class IntercompanyInterestAccrualSliceRow(IntercompanyAccrualSlice
 {
     public string Days => $"{slice.From:yyyy-MM-dd} up to {slice.To:yyyy-MM-dd}";
     public string Principal => IntercompanyExactAmount.Text(slice.Principal);
+    /// <summary>Posted accrued interest added at the period start (rule v3), or "Simple".</summary>
+    public string CompoundedInterest => slice.CompoundedInterest is { } compounded ? IntercompanyExactAmount.Text(compounded) : "Simple";
     public string AnnualRate => IntercompanyExactAmount.Text(slice.AnnualRate);
     public string DayCount => $"{slice.DayCount} · {IntercompanyExactAmount.Text(slice.YearFraction)}";
     public string UnroundedAmount => IntercompanyExactAmount.Text(slice.UnroundedAmount);

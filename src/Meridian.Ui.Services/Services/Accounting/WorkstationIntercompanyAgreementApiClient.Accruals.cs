@@ -28,7 +28,7 @@ public sealed partial class WorkstationIntercompanyAgreementApiClient
         return response.Data is not { Computation: { } computation, Diagnostics: not null } proposal
             || computation.AccrualFrom != request.AccrualFrom || computation.AccrualTo != request.AccrualTo
             || computation.Slices is null || computation.Diagnostics is null
-            || computation.RuleVersion != IntercompanyAccrualRules.RuleVersion
+            || !IntercompanyAccrualRules.IsSupported(computation.RuleVersion)
             || (computation.IsReady && (computation.Amount is null || string.IsNullOrWhiteSpace(computation.Currency)
                 || proposal.Evidence is not { } evidence || proposal.Draft is not { } draft || string.IsNullOrWhiteSpace(proposal.EvidenceDigest)
                 || evidence.SourceBookId != request.SourceBookId || evidence.AccountingArrangementId != request.InterestArrangementId

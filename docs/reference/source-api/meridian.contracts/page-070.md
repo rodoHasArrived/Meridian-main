@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ResolveSourceConflictRequest
+
+Qualified name: <code>Meridian.Contracts.Workstation.ResolveSourceConflictRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:58](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L58).
+
+Records an operator&#x27;s resolution of a Security Master source conflict. When ChosenWinnerSource diverges from the policy winner, AcknowledgePolicyDeviation must be set and the deviation is retained as the audited artifact.
+
+```csharp
+public sealed record ResolveSourceConflictRequest(Guid SecurityId, Guid ConflictId, long ExpectedVersion, string ChosenWinnerSource, string Actor, string Reason, bool AcknowledgePolicyDeviation = false, string? CorrelationId = null);
+```
+
+## RestatementCandidateDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.RestatementCandidateDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:184](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L184).
+
+A report pack proposed for restatement because an upstream reference-data edit affected a closed period it consumed. The operator approves the restatement via the existing report-pack path.
+
+```csharp
+public sealed record RestatementCandidateDto(Guid ReportId, Guid PriorVersionReportId, string PeriodLabel, string Summary, IReadOnlyList<ReportPackChangedLineDto> ChangedLines);
+```
+
 ## RetainedLedgerAmountDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.RetainedLedgerAmountDto</code>. Kind: `record`.
@@ -589,24 +613,4 @@ Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:
 
 ```csharp
 public sealed record SecurityMasterOpenLotProvenanceDto(string ProvenanceId, string RunId, string PortfolioId, string? AccountScopeId, string? AccountScopeDisplayName, string SourceSystem, string? SourceRecordId, DateTimeOffset AsOfUtc, string Summary);
-```
-
-## SecurityMasterOpenLotReadModelDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterOpenLotReadModelDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:343](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L343).
-
-```csharp
-public sealed record SecurityMasterOpenLotReadModelDto(string QuantityModel, decimal? LotSize, decimal? ContractMultiplier, bool UsesFaceValue, bool SupportsFactorAdjustedExposure, bool RequiresResolvedSecurityId, decimal? CurrentFactor, DateOnly? CurrentFactorDate, DateTimeOffset AsOfUtc, string Summary, IReadOnlyList<SecurityMasterOpenLotDto> Lots, IReadOnlyList<SecurityMasterOpenLotProvenanceDto> ProvenanceHistory);
-```
-
-## SecurityMasterOperatingModelDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterOperatingModelDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:519](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L519).
-
-```csharp
-public sealed record SecurityMasterOperatingModelDto(Guid SecurityId, string? ClientId, string? AccountId, string? FundProfileId, string Status, string Summary, IReadOnlyList<SecurityMasterOperatingModelStageDto> Stages, IReadOnlyList<SecurityMasterEntitlementApplicabilityDto> EntitlementApplicability, IReadOnlyList<SecurityMasterOperatorMetadataDto> OperatorMetadata, SecurityMasterManualChangeApprovalPostureDto ManualChangeApproval, IReadOnlyList<InstrumentPassportReferenceDataWorkbenchSectionDto> Controls, DateTimeOffset RetrievedAtUtc);
 ```

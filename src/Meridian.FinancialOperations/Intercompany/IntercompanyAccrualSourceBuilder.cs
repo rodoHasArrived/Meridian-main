@@ -135,6 +135,48 @@ public static class IntercompanyAccrualSourceBuilder
     }
 
     /// <summary>
+    /// Windows of the profile's posted accruals that still stand: corrections, reversed originals and reversed
+    /// counterparts are excluded, so a compounding base never relies on interest that was reversed.
+    /// </summary>
+    public static IReadOnlyList<IntercompanyAccrualWindowDto> PostedWindows(IReadOnlyList<LedgerJournalEntryRecord> records, Guid interestArrangementId)
+        => PostedAccruals(records, interestArrangementId)
+            .Where(item => !IsInverse(item.Record, records) && !IsReversed(item.Record, records, 0) && !IsReversedCounterpart(item.Record, records))
+            .Select(item => IntercompanyAccrualEvidenceGuard.TryParseWindow(item.Transaction, out var from, out var to) ? new IntercompanyAccrualWindowDto(from, to) : null)
+            .OfType<IntercompanyAccrualWindowDto>().Distinct().OrderBy(item => item.From).ThenBy(item => item.To).ToArray();
+
+    /// <summary>
+    /// Compounding facts for a loan: the posted accrued-interest balance on the loan-interest profile's monetary nodes
+    /// from <paramref name="balanceFrom"/>, the windows of posted accruals, and the first principal date. No posted
+    /// interest yet is an empty balance, not a refusal; an ambiguous or negative balance is refused.
+    /// </summary>
+    public static (IntercompanyAccrualCompoundingEvidenceDto? Evidence, IReadOnlyList<IntercompanyAccrualPrincipalSegmentDto> Balance, string? Refusal)
+        BuildCompounding(IReadOnlyList<LedgerJournalEntryRecord> interestJournals, Guid interestArrangementId, Guid sourceBookId,
+            IReadOnlySet<string> receivableNodes, IReadOnlySet<string> payableNodes, string agreementCurrency, string functionalCurrency,
+            DateOnly balanceFrom, DateOnly to, DateOnly firstPrincipalDate)
+    {
+        var windows = PostedWindows(interestJournals, interestArrangementId);
+        var balance = BuildPrincipal(interestJournals, interestArrangementId, sourceBookId, receivableNodes, payableNodes,
+            agreementCurrency, functionalCurrency, balanceFrom, to);
+        if (balance.Evidence is null && balance.Refusal is { } refusal && !refusal.StartsWith("No posted principal", StringComparison.Ordinal))
+            return (null, [], "Posted accrued interest: " + refusal.Replace("principal", "accrued interest", StringComparison.Ordinal));
+        return (new(balance.Evidence, windows, firstPrincipalDate, balanceFrom), balance.Segments, null);
+    }
+
+    /// <summary>Null when the retained compounding facts still read exactly as posted; otherwise why the accrual must be recomputed.</summary>
+    public static string? VerifyCompounding(IntercompanyAccrualEvidenceDto evidence, IReadOnlyList<LedgerJournalEntryRecord> interestJournals)
+    {
+        if (evidence.Compounding is not { } retained)
+            return null;
+        var nodes = retained.AccruedInterest;
+        var current = BuildCompounding(interestJournals, evidence.AccountingArrangementId, evidence.SourceBookId,
+            (nodes?.ReceivableAccountNodeIds ?? []).ToHashSet(StringComparer.Ordinal), (nodes?.PayableAccountNodeIds ?? []).ToHashSet(StringComparer.Ordinal),
+            evidence.Computation.Currency!, evidence.FunctionalCurrency, retained.BalanceFrom, evidence.Computation.AccrualTo, retained.FirstPrincipalDate);
+        return current.Evidence is not null && System.Text.Json.JsonSerializer.Serialize(current.Evidence, IntercompanyAccrualJsonContext.Default.IntercompanyAccrualCompoundingEvidenceDto)
+            == System.Text.Json.JsonSerializer.Serialize(retained, IntercompanyAccrualJsonContext.Default.IntercompanyAccrualCompoundingEvidenceDto) ? null
+            : "Posted accrued interest changed after this compounding accrual was computed. Recompute the accrual before review or posting.";
+    }
+
+    /// <summary>
     /// How many accrual journals, originals and their corrections, are already posted for exactly this window.
     /// It only grows when a journal posts, so it is stable across retries and gives a recomputation after a
     /// reversal its own identity while the immutable original keeps its own.
@@ -231,10 +273,13 @@ public static class IntercompanyAccrualSourceBuilder
         string? companyId, string actor, LedgerBookRecord book, LedgerAccountingPeriod period,
         ResolvedIntercompanyAccountingArrangementDto posting, IntercompanyAccrualPreviewDto computation,
         IntercompanyAccrualPrincipalEvidenceDto principal, IReadOnlyList<IntercompanyAccountBindingDto> bindings,
-        IReadOnlyList<ChartOfAccountsNodeDto> chart, ConsolidationFxAmountDto? fx, DateTimeOffset now, int generation = 0)
+        IReadOnlyList<ChartOfAccountsNodeDto> chart, ConsolidationFxAmountDto? fx, DateTimeOffset now, int generation = 0,
+        IntercompanyAccrualCompoundingEvidenceDto? compounding = null)
     {
         if (computation is not { IsReady: true, Amount: { } amount, Currency: { } currency })
             throw new InvalidOperationException("Only a ready computation can become an accrual draft.");
+        if ((computation.RuleVersion == IntercompanyAccrualRules.CompoundingRuleVersion) != (compounding is not null))
+            throw new InvalidOperationException("A compounding accrual retains the posted accrued-interest facts it was computed from.");
         if (posting.TemplateKind != IntercompanyAccountingTemplateKindDto.LoanInterest
             || posting.ArrangementId != request.InterestArrangementId || posting.Currency != currency
             || posting.CanonicalAgreementId != computation.AgreementId)
@@ -301,10 +346,11 @@ public static class IntercompanyAccrualSourceBuilder
                 EntityId: entity.ToString("D"), Dimensions: Dimensions(contra, contraBinding)) { TransactionCurrency = original }
         };
         var draftId = DraftId(tenantId, request, generation);
-        var evidence = new IntercompanyAccrualEvidenceDto(IntercompanyAccrualRules.RuleVersion, draftId, tenantId,
+        var evidence = new IntercompanyAccrualEvidenceDto(computation.RuleVersion, draftId, tenantId,
             book.LedgerBookId, entity, counterparty, posting.ArrangementId, posting.RevisionId,
             posting.CanonicalAgreementId, posting.CanonicalAgreementVersion, posting.CanonicalPayloadHash,
-            transaction, postingDate, principal.Role, main.NodeId, contra.NodeId, book.BaseCurrency, functional, computation, principal, fx);
+            transaction, postingDate, principal.Role, main.NodeId, contra.NodeId, book.BaseCurrency, functional, computation, principal, fx)
+        { Compounding = compounding };
         var evidenceJson = IntercompanyAccrualEvidenceGuard.Serialize(evidence);
         var digest = IntercompanyAccrualEvidenceGuard.Digest(evidenceJson);
         var versions = string.Join(", ", computation.Slices.Select(slice => slice.AgreementVersion).Distinct().Order()

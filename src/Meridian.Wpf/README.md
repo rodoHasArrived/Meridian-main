@@ -138,6 +138,9 @@ responses preserve local edits. The desktop surface does not maintain its own ag
 posting authority. Native WPF interaction validation requires Windows; Linux checks do not establish
 native acceptance. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
 
+The Interest accrual tab shows a Compounded interest column for compounding loans. See
+[periodic compounding](../../docs/domain/intercompany-agreements.md#periodic-compounding).
+
 A Counterpart proposals tab (`Views/IntercompanyCounterpartProposalsControl.xaml`) binds the shared
 `IntercompanyCounterpartQueueWorkspace`: delivery records and aged booking breaks for a source
 book, retained source lines and provenance, delivery retry, explicit FX repricing with a

@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterEventEnvelope
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs#L14).
+
+```csharp
+public sealed record SecurityMasterEventEnvelope(long? GlobalSequence, Guid SecurityId, long StreamVersion, string EventType, DateTimeOffset EventTimestamp, string Actor, Guid? CorrelationId, Guid? CausationId, JsonElement Payload, JsonElement Metadata, string? PayloadType = null, int? PayloadVersion = null);
+```
+
+## SecurityMasterEventPayloadDescriptor
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterEventPayloadDescriptor</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs#L29).
+
+A resolved event payload family and version.
+
+```csharp
+public readonly record struct SecurityMasterEventPayloadDescriptor(string PayloadType, int PayloadVersion);
+```
+
 ## SecurityMasterEventPayloads
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterEventPayloads</code>. Kind: `class`.
@@ -836,32 +858,4 @@ Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:121](../../../../
 
 ```csharp
 public sealed record SecuritySnapshotRecord(Guid SecurityId, long Version, DateTimeOffset SnapshotTimestamp, JsonElement Payload);
-```
-
-## SecurityStatusDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L7).
-
-```csharp
-public enum SecurityStatusDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Active</code> | [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L9) |  |
-| <code>Inactive</code> | [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L10) |  |
-| <code>Unknown</code> | [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L16) | Read-tolerance member: a status written by a newer node that this node does not recognize. Treated as not-Active by filters, so unrecognized states degrade to conservative visibility instead of failing every read of the row. |
-
-## SecuritySummaryDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecuritySummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L19).
-
-```csharp
-public sealed record SecuritySummaryDto(Guid SecurityId, string AssetClass, SecurityStatusDto Status, string DisplayName, string PrimaryIdentifier, string Currency, long Version);
 ```

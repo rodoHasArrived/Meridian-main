@@ -6,6 +6,32 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationsContinuityWorkflowSummaryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsContinuityWorkflowSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1006](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1006).
+
+```csharp
+public sealed record OperationsContinuityWorkflowSummaryDto(Guid WorkflowId, Guid FundAccountId, string PeriodId, Guid? SecurityMasterSnapshotId, string BrokerSource, OperationsWorkflowStatusDto Status, long Version, DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc, IReadOnlyList<OperationsGateDto> Gates, IReadOnlyList<OperationsNextActionDto> NextActions, Guid? LedgerBookId = null);
+```
+
+## OperationsDashboardMetricDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsDashboardMetricDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1110](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1110).
+
+```csharp
+public sealed record OperationsDashboardMetricDto(string MetricId, string Label, string Value, EvidenceStatusDto Status, string Detail, string? RouteHint, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, IReadOnlyList<string>? RequiredActions = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt; RequiredActions { get; init; } = RequiredActions??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1120](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1120) |  |
+
 ## OperationsDashboardSummaryDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsDashboardSummaryDto</code>. Kind: `record`.
@@ -690,24 +716,4 @@ Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:18](../../../.
 
 ```csharp
 public sealed record OperatorTriageBulkItem(string WorkItemId, long ExpectedVersion, long? ExpectedSourceVersion = null);
-```
-
-## OperatorTriageBulkResult
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageBulkResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:40](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L40).
-
-```csharp
-public sealed record OperatorTriageBulkResult(IReadOnlyList<OperatorTriageResult> Results);
-```
-
-## OperatorTriageCapabilities
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageCapabilities</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:26](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L26).
-
-```csharp
-public sealed record OperatorTriageCapabilities(bool CanAssign, bool CanAcknowledge, bool CanSnooze, bool CanUnsnooze, string? DisabledReason);
 ```

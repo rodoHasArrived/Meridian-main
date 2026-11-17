@@ -4,7 +4,7 @@
 
 **Owner:** Accounting and Ledger
 
-**Reviewed:** 2026-11-15
+**Reviewed:** 2026-11-17
 
 The adopted scope is P1–P5: an agreement registry, effective entity controls, stable account roles
 and N-entity consolidation, reviewed counterpart proposals, and full reporting-currency
@@ -138,6 +138,20 @@ retained counterpart as a classification: it is kept as the posting's source eve
 written as treasury fund-event metadata. The exemption needs the server-retained proposal identity
 and applies only when no fund event identity, capital account or investor is stated; the ledger
 guard is unchanged. `IntercompanyProposalDeliveryRetryTests` covers this in memory.
+
+### Periodic compounding extension (2026-11-17)
+
+`DEC-IC-COMPOUND-001` and [ADR-030](../../adr/030-intercompany-interest-compounding.md) add rule
+`intercompany-accrual-v3`; roadmap row `W12-ICCOMPOUND-001` carries its status. Development verification only.
+
+| Piece | Decision and boundary | Verification |
+| --- | --- | --- |
+| Base | Posted principal plus the posted accrued-interest balance of the loan-interest profile at each period start; settlements and reversals reduce it. | `IntercompanyCompoundingAccrualPreviewTests`, `IntercompanyCompoundingSourceTests` (real journals, reversal) |
+| Coverage | Posted, unreversed accruals must cover every earlier day; one request stays in one period; frequency must equal the schedule. | `IntercompanyCompoundingAccrualPreviewTests` |
+| Evidence | The balance, posted windows and first principal date are retained; the guard refuses v3 without them; the workbench re-reads them before review or posting. | `IntercompanyAccrualDraftServiceTests.Compounding` |
+| Surfaces | Browser and WPF slice tables show compounded interest. | browser accrual test, `IntercompanyCompoundingSliceRowTests` |
+
+Daily compounding and compounding that differs from the schedule frequency remain out of scope.
 
 ## Verification record (2026-11-14)
 

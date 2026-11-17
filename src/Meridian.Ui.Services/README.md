@@ -54,6 +54,9 @@ input, server capabilities, exact approved versions, evidence and review history
 agreement authority in the desktop client. Source-line responses verify agreement/book/date identity
 and retain exact amount strings. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
 
+The interest accrual workspace shows each slice's compounded interest for rule v3 previews. See
+[periodic compounding](../../docs/domain/intercompany-agreements.md#periodic-compounding).
+
 `IntercompanyCounterpartQueueWorkspace` is the desktop state for counterpart delivery records and
 booking breaks over the same `/api/ledger/intercompany/proposals` and `/breaks` routes as the
 browser queue. Retry, explicit linking and FX repricing send a reasoned request whose identity is

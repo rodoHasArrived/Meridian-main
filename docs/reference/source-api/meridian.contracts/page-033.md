@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CanonicalAmortizationPreparationDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.CanonicalAmortizationPreparationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/CanonicalAmortizationPreparationDtos.cs:15](../../../../src/Meridian.Contracts/Ledger/CanonicalAmortizationPreparationDtos.cs#L15).
+
+```csharp
+public sealed record CanonicalAmortizationPreparationDto(OpenLotAmortizationInstructionDto Instruction, OpenLotAmortizationProjectionDto Projection, string PreparationFingerprint, IReadOnlyList<ProjectedAccountingEffectLineDto> Lines, AssetAccountingEventScopeDto Scope, IReadOnlyList<CanonicalAmortizationOccurrenceDto> Occurrences);
+```
+
 ## CapitalAccountWorkbenchAllocationInputDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.CapitalAccountWorkbenchAllocationInputDto</code>. Kind: `record`.
@@ -674,19 +684,3 @@ Source: [src/Meridian.Contracts/Ledger/ConsolidationFxDtos.cs:54](../../../../sr
 ```csharp
 public sealed record ConsolidationFxAmountDto([property : JsonNumberHandling(JsonNumberHandling.WriteAsString | JsonNumberHandling.AllowReadingFromString)] decimal Amount, string Currency, [property : JsonNumberHandling(JsonNumberHandling.WriteAsString | JsonNumberHandling.AllowReadingFromString)] decimal Rate, Guid? RateId, bool Inverted, Guid RateSetId, int RateSetRevision, string PolicyId, string PolicyRevision, string ConfigurationHash);
 ```
-
-## ConsolidationFxBookConfigurationDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.ConsolidationFxBookConfigurationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/ConsolidationFxDtos.cs:38](../../../../src/Meridian.Contracts/Ledger/ConsolidationFxDtos.cs#L38).
-
-```csharp
-public sealed record ConsolidationFxBookConfigurationDto(Guid LedgerBookId, int Revision, string TenantId, string CompanyId, DateOnly EffectiveFrom, DateOnly? EffectiveTo, Guid RateSetId, int RateSetRevision, ConsolidationFxPolicyDto Policy, string ApprovedBy, DateTimeOffset ApprovedAt, string? PreviousHash = null, string? ContentHash = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;ConsolidationFxHistoricalFactDto&gt;? HistoricalFacts { get; init; }</code> | [src/Meridian.Contracts/Ledger/ConsolidationFxDtos.cs:44](../../../../src/Meridian.Contracts/Ledger/ConsolidationFxDtos.cs#L44) |  |

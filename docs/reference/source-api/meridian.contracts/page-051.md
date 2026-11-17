@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityCurveVersionDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCurveVersionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:77](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L77).
+
+One immutable published version of a curve. AsOf is the economic date the points describe, RecordedAt the knowledge time the version was stored, SourcedAt the vendor timestamp when known, and ContentSha256 the canonical hash of the as-of and sorted points.
+
+```csharp
+public sealed record SecurityCurveVersionDto(Guid CurveVersionId, Guid CurveId, string CurveKey, long Version, DateOnly AsOf, DateTimeOffset RecordedAt, DateTimeOffset? SourcedAt, string Source, string PublishedBy, IReadOnlyList<SecurityCurvePointDto> Points, string ContentSha256);
+```
+
+## SecurityDeclaredConventionsRead
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityDeclaredConventionsRead</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs#L29).
+
+The result of SecurityVersionedTerms.ReadDeclaredScheduleConventions or SecurityVersionedTerms.ReadDeclaredLegScheduleConventions.
+
+```csharp
+public sealed record SecurityDeclaredConventionsRead(SecurityDeclaredConventionsStatus Status, ScheduleConventionTerms Block, string? UnreadableReason)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;ScheduleConventionTerms&gt; ElementBlocks { get; init; } = [];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs#L39) | On an element read (SecurityVersionedTerms.ReadDeclaredLegScheduleConventions): the non-empty blocks of the selected container&#x27;s object elements, in element order. Empty on a root read. |
+
 ## SecurityDeclaredConventionsStatus
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityDeclaredConventionsStatus</code>. Kind: `enum`.
@@ -859,25 +889,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static TEnum ParseOrFallback&lt;TEnum&gt;(string? raw, TEnum fallback) where TEnum : struct, Enum =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterEnumReads.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterEnumReads.cs#L18) | Parses raw case-insensitively into TEnum, returning fallback for null, unrecognized, or numerically-undefined input. Numeric strings that do not name a defined member also degrade (bare Enum.TryParse would happily produce an undefined value for them). |
-
-## SecurityMasterEventEnvelope
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs#L14).
-
-```csharp
-public sealed record SecurityMasterEventEnvelope(long? GlobalSequence, Guid SecurityId, long StreamVersion, string EventType, DateTimeOffset EventTimestamp, string Actor, Guid? CorrelationId, Guid? CausationId, JsonElement Payload, JsonElement Metadata, string? PayloadType = null, int? PayloadVersion = null);
-```
-
-## SecurityMasterEventPayloadDescriptor
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterEventPayloadDescriptor</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs#L29).
-
-A resolved event payload family and version.
-
-```csharp
-public readonly record struct SecurityMasterEventPayloadDescriptor(string PayloadType, int PayloadVersion);
-```

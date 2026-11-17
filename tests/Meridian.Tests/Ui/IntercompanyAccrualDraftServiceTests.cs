@@ -13,7 +13,7 @@ using Data = Meridian.Tests.FinancialOperations.Intercompany.IntercompanyProposa
 namespace Meridian.Tests.Ui;
 
 /// <summary>Resolve, compute and draft over synthetic authorities; nothing here approves or posts.</summary>
-public sealed class IntercompanyAccrualDraftServiceTests
+public sealed partial class IntercompanyAccrualDraftServiceTests
 {
     private static readonly Guid Interest = Guid.Parse("f1111111-1111-1111-1111-111111111111");
     private static readonly Guid Principal = Guid.Parse("f2222222-2222-2222-2222-222222222222");
@@ -153,14 +153,14 @@ public sealed class IntercompanyAccrualDraftServiceTests
 
     private static IntercompanyAccrualDraftService Service(bool openPeriod = true,
         IReadOnlyList<LedgerJournalEntryRecord>? principalJournals = null,
-        IReadOnlyList<LedgerJournalEntryRecord>? interestJournals = null, bool structured = true)
+        IReadOnlyList<LedgerJournalEntryRecord>? interestJournals = null, bool structured = true, bool compounding = false)
     {
         var interest = Profile(Interest, IntercompanyAccountingTemplateKindDto.LoanInterest,
             [new(Data.EntityA, Data.BookA, "a-int-recv", "a-int-pay", null, "a-int-income", "a-int-expense"),
-             new(Data.EntityB, Data.BookB, "b-int-recv", "b-int-pay", null, "b-int-income", "b-int-expense")], structured);
+             new(Data.EntityB, Data.BookB, "b-int-recv", "b-int-pay", null, "b-int-income", "b-int-expense")], structured, compounding);
         var principal = Profile(Principal, IntercompanyAccountingTemplateKindDto.Loan,
             [new(Data.EntityA, Data.BookA, "a-receivable", "a-payable", "a-cash"),
-             new(Data.EntityB, Data.BookB, "b-receivable", "b-payable", "b-cash")], structured);
+             new(Data.EntityB, Data.BookB, "b-receivable", "b-payable", "b-cash")], structured, compounding);
         var store = new Mock<IIntercompanyAccountingArrangementStore>();
         store.Setup(x => x.GetAsync("tenant-a", Interest, It.IsAny<CancellationToken>())).ReturnsAsync(History(interest));
         store.Setup(x => x.GetAsync("tenant-a", Principal, It.IsAny<CancellationToken>())).ReturnsAsync(History(principal));
@@ -193,7 +193,7 @@ public sealed class IntercompanyAccrualDraftServiceTests
     }
 
     private static ResolvedIntercompanyAccountingArrangementDto Profile(Guid id, IntercompanyAccountingTemplateKindDto kind,
-        IReadOnlyList<IntercompanyPartyMappingDto> mappings, bool structured)
+        IReadOnlyList<IntercompanyPartyMappingDto> mappings, bool structured, bool compounding = false)
     {
         var profile = IntercompanyArrangementTestData.Create(id, Organization, kind, Data.EntityA, Data.EntityB, "USD", mappings,
             Guid.NewGuid(), Effective);
@@ -201,7 +201,8 @@ public sealed class IntercompanyAccrualDraftServiceTests
             ? new IntercompanyAgreementTermsDto
             {
                 StructuredTerms = new(new(From, new(2027, 6, 1), IntercompanyFrequencyDto.Monthly, "WEEKENDS", BusinessDayConvention.Following),
-                    IntercompanyRateBasisDto.Fixed, 0.05m, DayCount: IntercompanyDayCountDto.Actual360, Compounding: IntercompanyCompoundingDto.Simple)
+                    IntercompanyRateBasisDto.Fixed, 0.05m, DayCount: IntercompanyDayCountDto.Actual360,
+                    Compounding: compounding ? IntercompanyCompoundingDto.Monthly : IntercompanyCompoundingDto.Simple)
             }
             : new IntercompanyAgreementTermsDto(RateDescription: "Five percent, monthly");
         return profile with { LegalRevision = profile.LegalRevision with { Terms = profile.LegalRevision.Terms with { PartyOneRole = "Lender", PartyTwoRole = "Borrower", Terms = terms } } };

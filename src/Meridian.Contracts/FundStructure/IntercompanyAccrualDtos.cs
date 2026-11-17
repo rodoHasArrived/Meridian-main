@@ -6,6 +6,12 @@ namespace Meridian.Contracts.FundStructure;
 public static class IntercompanyAccrualRules
 {
     public const string RuleVersion = "intercompany-accrual-v1";
+    /// <summary>
+    /// v1 plus periodic compounding: each schedule period's base is posted principal plus the accrued-interest
+    /// balance posted on the loan-interest profile at the period start, once every earlier day has a posted accrual.
+    /// </summary>
+    public const string CompoundingRuleVersion = "intercompany-accrual-v3";
+    public static bool IsSupported(string? ruleVersion) => ruleVersion is RuleVersion or CompoundingRuleVersion;
     public const string StatusReady = "Ready";
     public const string StatusUnavailable = "Unavailable";
     /// <summary>A single request never spans more than one year of daily authority resolution.</summary>
@@ -24,7 +30,18 @@ public sealed record IntercompanyAccrualPrincipalSegmentDto(DateOnly From, DateO
 /// <summary>Server-resolved facts only; no caller-supplied rate, day count or amount participates.</summary>
 public sealed record IntercompanyAccrualComputationInput(DateOnly AccrualFrom, DateOnly AccrualTo,
     IReadOnlyList<IntercompanyAccrualAuthoritySegment> Authority,
-    IReadOnlyList<IntercompanyAccrualPrincipalSegmentDto> Principal);
+    IReadOnlyList<IntercompanyAccrualPrincipalSegmentDto> Principal)
+{
+    /// <summary>Compounding loans: posted accrued-interest balance of the loan-interest profile by day, from the schedule start.</summary>
+    public IReadOnlyList<IntercompanyAccrualPrincipalSegmentDto> AccruedInterest { get; init; } = [];
+    /// <summary>Compounding loans: windows of posted, unreversed accruals of the loan-interest profile in this book.</summary>
+    public IReadOnlyList<IntercompanyAccrualWindowDto> PostedAccrualWindows { get; init; } = [];
+    /// <summary>Compounding loans: effective date of the first posted principal movement, where accrual coverage must start.</summary>
+    public DateOnly? FirstPrincipalDate { get; init; }
+}
+
+/// <summary>One posted accrual's half-open window.</summary>
+public sealed record IntercompanyAccrualWindowDto(DateOnly From, DateOnly To);
 
 /// <summary>One homogeneous slice: one legal revision, one profile revision, one schedule period, one principal.</summary>
 public sealed record IntercompanyAccrualSliceDto(int Sequence, DateOnly From, DateOnly To,
@@ -34,7 +51,16 @@ public sealed record IntercompanyAccrualSliceDto(int Sequence, DateOnly From, Da
     string DayCount,
     [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal YearFraction,
     [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal UnroundedAmount,
-    string PrincipalEvidenceReference);
+    string PrincipalEvidenceReference)
+{
+    /// <summary>
+    /// Compounding slices only (rule v3): the posted accrued interest added to principal at the period start. The
+    /// slice earns <c>(Principal + CompoundedInterest) x AnnualRate x YearFraction</c>. Absent on simple slices.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)]
+    public decimal? CompoundedInterest { get; init; }
+}
 
 public sealed record IntercompanyAccrualCalendarPinDto(string CalendarId, string ContentHash);
 

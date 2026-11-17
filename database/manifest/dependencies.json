@@ -8002,6 +8002,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccrualWindowDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementActionDto"
     },
     {
@@ -10307,6 +10313,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccountRoleDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualCompoundingEvidenceDto"
     },
     {
       "kind": "contract-set-member",
@@ -25414,6 +25426,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccrualWindowDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
       "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementActionDto"
     },
     {
@@ -27905,6 +27923,12 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccountRoleDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualCompoundingEvidenceDto"
     },
     {
       "kind": "contract-set-member",
@@ -40377,6 +40401,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAccrualComputationInput",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccrualWindowDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAccrualPreviewDto",
       "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccrualCalendarPinDto"
     },
@@ -43401,6 +43431,18 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualCompoundingEvidenceDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccrualWindowDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualCompoundingEvidenceDto",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualPrincipalEvidenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualEvidenceDto",
       "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccrualPreviewDto"
     },
@@ -43415,6 +43457,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualEvidenceDto",
       "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccountRoleDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualEvidenceDto",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualCompoundingEvidenceDto"
     },
     {
       "kind": "contract-reference",
@@ -68061,7 +68109,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "34130e763e0273bc86c5a90ff01bda298f008c7b9ac8adbc6536f751864d2f05",
+  "fingerprint": "f250794e064bfe5c4408c2f55a0d016fe408906e45c9174eae55be672f939cdc",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -76113,6 +76161,12 @@
       "label": "Meridian.Contracts.FundStructure.IntercompanyAccrualSliceDto"
     },
     {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAccrualWindowDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyAccrualWindowDto"
+    },
+    {
       "classification": "enum",
       "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementActionDto",
       "kind": "contract-type",
@@ -78421,6 +78475,12 @@
       "id": "contract:Meridian.Contracts.Ledger.IntercompanyAccountRoleDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.IntercompanyAccountRoleDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualCompoundingEvidenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyAccrualCompoundingEvidenceDto"
     },
     {
       "classification": "dto",
@@ -99941,11 +100001,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4207,
-    "contract_set_memberships": 5453,
-    "edges": 11306,
+    "contract_references": 4211,
+    "contract_set_memberships": 5457,
+    "edges": 11314,
     "foreign_keys": 208,
     "logical_references": 6,
-    "nodes": 5543
+    "nodes": 5545
   }
 }

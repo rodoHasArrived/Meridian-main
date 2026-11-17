@@ -3447,3 +3447,47 @@ items:
       - type: test
         path: tests/Meridian.Tests/Storage/IntercompanyAccrualPostAndDeliverPostgresTests.cs
     last_reviewed: 2026-11-17
+  - id: W12-ICCOMPOUND-001
+    title: Periodic compounding of governed intercompany interest on posted accruals
+    wave: W12
+    stage_gates:
+      - AccountingRecords
+    workspace:
+      - Accounting
+    owner_lane: Accounting and Ledger
+    status: in_progress
+    health: yellow
+    priority: medium
+    evidence_posture: in_progress
+    status_note: Rule intercompany-accrual-v3 compounds at each schedule period start on posted accrued interest, once every earlier day is posted; facts are pinned and re-checked. No capitalisation journal. Daily and mismatched compounding stay open.
+    decision_ids:
+      - DEC-IC-COMPOUND-001
+    pr_references: []
+    exit_criteria:
+      - A loan compounding at its schedule frequency accrues each period on posted principal plus the accrued interest posted on its loan-interest profile at the period start, net of settlements and reversals.
+      - A window is refused unless posted, unreversed accruals cover every earlier day, and one request stays inside one period.
+      - The accrued-interest balance, posted windows and first principal date are retained as evidence and re-read before review or posting.
+      - Simple loans still compute under intercompany-accrual-v1 with unchanged evidence and draft identity.
+      - Browser and WPF accrual previews show each slice's compounded interest as exact decimal strings.
+    source_modules:
+      - SRC-CONTRACTS
+      - SRC-APP
+      - SRC-DESIGN-FINANCIAL-OPERATIONS
+      - SRC-UI-SHARED
+      - SRC-UI-SERVICES
+      - SRC-WPF
+      - SRC-UI-DASHBOARD
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    evidence:
+      - type: source
+        path: src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs
+      - type: source
+        path: src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs
+      - type: test
+        path: tests/Meridian.FundStructure.Tests/IntercompanyCompoundingAccrualPreviewTests.cs
+      - type: test
+        path: tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyCompoundingSourceTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Ui/IntercompanyAccrualDraftServiceTests.Compounding.cs
+    last_reviewed: 2026-11-17

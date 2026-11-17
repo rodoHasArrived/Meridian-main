@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IDailyValuationScheduleStatusSource
+
+Qualified name: <code>Meridian.Contracts.Workstation.IDailyValuationScheduleStatusSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:88](../../../../src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs#L88).
+
+Read-only scheduler projection consumed by close-cockpit surfaces without taking a dependency on the workstation scheduler implementation.
+
+```csharp
+public interface IDailyValuationScheduleStatusSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;DailyValuationScheduleStatusDto&gt; GetStatusAsync(string? fundProfileId, Guid? ledgerBookId, string? periodId, CancellationToken ct = default, string? entityId = null, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:90](../../../../src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs#L90) |  |
+
+## IFinancialOperationsCommandCenterReadService
+
+Qualified name: <code>Meridian.Contracts.Workstation.IFinancialOperationsCommandCenterReadService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs:87](../../../../src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs#L87).
+
+Builds the scoped Financial Operations command center read model.
+
+```csharp
+public interface IFinancialOperationsCommandCenterReadService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;FinancialOperationsCommandCenterDto&gt; GetCommandCenterAsync(string? fundProfileId = null, Guid? ledgerBookId = null, Guid? fundAccountId = null, string? periodId = null, string? entityId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs:89](../../../../src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs#L89) |  |
+
 ## IIntercompanyCloseAdvisorySource
 
 Qualified name: <code>Meridian.Contracts.Workstation.IIntercompanyCloseAdvisorySource</code>. Kind: `interface`.
@@ -624,24 +660,4 @@ The complete retained accounting boundary for an amount proof.
 
 ```csharp
 public sealed record LedgerAmountScopeDto(string TenantId, string CompanyId, string FundProfileId, Guid LedgerBookId, Guid PeriodId);
-```
-
-## LedgerAmountSecurityMasterLinkDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.LedgerAmountSecurityMasterLinkDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:634](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L634).
-
-```csharp
-public sealed record LedgerAmountSecurityMasterLinkDto(string Symbol, string? Route, IReadOnlyList<string> RelatedEvidenceIds, int EvidenceCount, DateTimeOffset? CapturedAt = null, Guid? SecurityId = null, string? DisplayName = null, string? SourceSystem = null, string? EvidenceId = null);
-```
-
-## LedgerAmountStrategyRunLinkDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.LedgerAmountStrategyRunLinkDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:699](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L699).
-
-```csharp
-public sealed record LedgerAmountStrategyRunLinkDto(string RunId, string? DisplayLabel = null, string? Route = null, string? SourceSystem = null, DateTimeOffset? CapturedAt = null, bool IsLineScoped = false);
 ```

@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterOpenLotReadModelDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterOpenLotReadModelDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:343](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L343).
+
+```csharp
+public sealed record SecurityMasterOpenLotReadModelDto(string QuantityModel, decimal? LotSize, decimal? ContractMultiplier, bool UsesFaceValue, bool SupportsFactorAdjustedExposure, bool RequiresResolvedSecurityId, decimal? CurrentFactor, DateOnly? CurrentFactorDate, DateTimeOffset AsOfUtc, string Summary, IReadOnlyList<SecurityMasterOpenLotDto> Lots, IReadOnlyList<SecurityMasterOpenLotProvenanceDto> ProvenanceHistory);
+```
+
+## SecurityMasterOperatingModelDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterOperatingModelDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:519](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L519).
+
+```csharp
+public sealed record SecurityMasterOperatingModelDto(Guid SecurityId, string? ClientId, string? AccountId, string? FundProfileId, string Status, string Summary, IReadOnlyList<SecurityMasterOperatingModelStageDto> Stages, IReadOnlyList<SecurityMasterEntitlementApplicabilityDto> EntitlementApplicability, IReadOnlyList<SecurityMasterOperatorMetadataDto> OperatorMetadata, SecurityMasterManualChangeApprovalPostureDto ManualChangeApproval, IReadOnlyList<InstrumentPassportReferenceDataWorkbenchSectionDto> Controls, DateTimeOffset RetrievedAtUtc);
+```
+
 ## SecurityMasterOperatingModelStageDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterOperatingModelStageDto</code>. Kind: `record`.
@@ -640,26 +660,4 @@ Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:33](../../
 
 ```csharp
 public sealed record StatementMappingProfileCsvOptionsDto(string Delimiter, string Quote, bool HasHeader);
-```
-
-## StatementMappingProfileDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementMappingProfileDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L19).
-
-Declarative statement mapping profile shared with workstation clients.
-
-```csharp
-public sealed record StatementMappingProfileDto(int SchemaVersion, string ProfileId, string DisplayName, string Format, StatementMappingProfileCsvOptionsDto? Csv, string? Culture, IReadOnlyList<string>? DateFormats, IReadOnlyList<StatementMappingProfileFieldDto> Fields, IReadOnlyList<StatementMappingProfileActivityCodeDto> ActivityCodes, string? LastAcceptedFingerprint, bool IsBuiltIn, string? Notes);
-```
-
-## StatementMappingProfileFieldDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementMappingProfileFieldDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:38](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L38).
-
-```csharp
-public sealed record StatementMappingProfileFieldDto(string CanonicalField, string SourceColumn, IReadOnlyList<string>? Aliases, bool Required);
 ```

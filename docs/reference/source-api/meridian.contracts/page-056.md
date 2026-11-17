@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccrualCalculationResultDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AccrualCalculationResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:267](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L267).
+
+Result of a Security Master accrual calculation.
+
+```csharp
+public sealed record AccrualCalculationResultDto(string EventId, Guid SecurityId, string Symbol, string AccountId, DateOnly AccrualStartDate, DateOnly AccrualEndDate, int AccrualDays, decimal DayCountFraction, decimal AccruedAmount, string Currency, AccrualInputSnapshotDto InputSnapshot);
+```
+
+## AccrualInputSnapshotDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AccrualInputSnapshotDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:249](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L249).
+
+Deterministic input snapshot used to generate an expected accounting event.
+
+```csharp
+public sealed record AccrualInputSnapshotDto(Guid SecurityId, string Symbol, string AccountId, DateOnly PeriodStart, DateOnly PeriodEnd, decimal ParAmount, decimal? CouponRate, string? CouponType, string? DayCountConvention, int? PaymentFrequencyPerYear, decimal? PriorFactor, decimal? CurrentFactor, string SourceHash);
+```
+
 ## ActivationOutcomeDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ActivationOutcomeDto</code>. Kind: `record`.
@@ -599,26 +623,4 @@ Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:6](../../../..
 
 ```csharp
 public sealed record CashSyncWindow(string Region, string TimeZoneId, TimeOnly WindowStart, TimeOnly WindowEnd, IReadOnlyDictionary<string, CashSyncSourceAvailability> SourceAvailability, IReadOnlyList<Guid> AccountIds);
-```
-
-## ChangeSinglePrincipalDeclarationRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ChangeSinglePrincipalDeclarationRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:22](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L22).
-
-```csharp
-public sealed record ChangeSinglePrincipalDeclarationRequestDto(Guid CommandId, long ExpectedRevision, bool Enabled, string PrincipalId, string PolicyVersion, string Reason, OperationsActionOriginDto Origin = OperationsActionOriginDto.HumanOperator);
-```
-
-## ClosedLotSummary
-
-Qualified name: <code>Meridian.Contracts.Workstation.ClosedLotSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1152](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1152).
-
-Workstation-facing summary of a closed lot for a strategy run.
-
-```csharp
-public sealed record ClosedLotSummary(Guid LotId, string Symbol, long Quantity, decimal EntryPrice, decimal ClosePrice, DateTimeOffset OpenedAt, DateTimeOffset ClosedAt, decimal RealizedPnl, bool IsLongTerm, string? AccountId = null);
 ```

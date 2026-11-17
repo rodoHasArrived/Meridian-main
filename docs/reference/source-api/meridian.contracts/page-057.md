@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ChangeSinglePrincipalDeclarationRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ChangeSinglePrincipalDeclarationRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:22](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L22).
+
+```csharp
+public sealed record ChangeSinglePrincipalDeclarationRequestDto(Guid CommandId, long ExpectedRevision, bool Enabled, string PrincipalId, string PolicyVersion, string Reason, OperationsActionOriginDto Origin = OperationsActionOriginDto.HumanOperator);
+```
+
+## ClosedLotSummary
+
+Qualified name: <code>Meridian.Contracts.Workstation.ClosedLotSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1152](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1152).
+
+Workstation-facing summary of a closed lot for a strategy run.
+
+```csharp
+public sealed record ClosedLotSummary(Guid LotId, string Symbol, long Quantity, decimal EntryPrice, decimal ClosePrice, DateTimeOffset OpenedAt, DateTimeOffset ClosedAt, decimal RealizedPnl, bool IsLongTerm, string? AccountId = null);
+```
+
 ## CloseReadinessBlockerDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.CloseReadinessBlockerDto</code>. Kind: `record`.
@@ -651,36 +673,4 @@ Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:274](../../.
 
 ```csharp
 public sealed record EvidenceDocumentIntakeSourceDto(EvidenceDocumentIntakeSourceKindDto SourceKind, string? Path = null, string? Uri = null, string? DisplayName = null, string? ExpectedContentHashSha256 = null);
-```
-
-## EvidenceDocumentIntakeSourceKindDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.EvidenceDocumentIntakeSourceKindDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:263](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L263).
-
-```csharp
-public enum EvidenceDocumentIntakeSourceKindDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>UploadedContent = 0</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:265](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L265) |  |
-| <code>LocalFile = 1</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:266](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L266) |  |
-| <code>ImportedFileReference = 2</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:267](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L267) |  |
-| <code>Email = 3</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:268](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L268) |  |
-| <code>Sftp = 4</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:269](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L269) |  |
-| <code>Api = 5</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:270](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L270) |  |
-| <code>PortalDownload = 6</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:271](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L271) |  |
-
-## EvidenceDocumentLinkDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.EvidenceDocumentLinkDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:131](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L131).
-
-```csharp
-public sealed record EvidenceDocumentLinkDto(EvidenceDocumentLinkKindDto LinkKind, string ObjectId, string? Label = null, string? Route = null, string? Relationship = null);
 ```

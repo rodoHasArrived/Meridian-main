@@ -83,12 +83,37 @@ public sealed class IntercompanyAccrualDraftService(IntercompanyAccountingArrang
             if (principal.Evidence is null)
                 return Unavailable(principal.Refusal ?? "Posted principal is unavailable.");
 
-            var computation = calculator.Preview(new(request.AccrualFrom, request.AccrualTo, authority, principal.Segments));
-            if (!computation.IsReady)
-                return new(computation, computation.Diagnostics);
-
             var interestJournals = await journals.QueryAsync(new(LedgerBookId: book.LedgerBookId,
                 LineDimensions: new() { AccountingArrangementId = request.InterestArrangementId.ToString("D") }), ct).ConfigureAwait(false);
+            // Compounding loans read the posted accrued interest of the loan-interest profile; nothing is estimated.
+            IntercompanyAccrualCompoundingEvidenceDto? compounding = null;
+            IReadOnlyList<IntercompanyAccrualPrincipalSegmentDto> accruedInterest = [];
+            var compoundingTerms = authority.Select(item => item.LegalRevision.Terms.Terms?.StructuredTerms)
+                .Where(item => item is { Compounding: not IntercompanyCompoundingDto.Simple, Schedule: not null }).ToArray();
+            if (compoundingTerms.Length > 0)
+            {
+                var interestMap = posting.PartyMappings.SingleOrDefault(item => item.EntityId == book.FundStructureNodeId && item.LedgerBookId == book.LedgerBookId)
+                    ?? throw new InvalidOperationException("The loan-interest profile does not map the source book.");
+                var firstPrincipal = principalJournals.Select(Meridian.FinancialOperations.Intercompany.IntercompanyJournalFamily.EffectiveDate).DefaultIfEmpty(request.AccrualFrom).Min();
+                var built = IntercompanyAccrualSourceBuilder.BuildCompounding(interestJournals, request.InterestArrangementId, book.LedgerBookId,
+                    new HashSet<string>(StringComparer.Ordinal) { interestMap.ReceivableAccountNodeId },
+                    new HashSet<string>(StringComparer.Ordinal) { interestMap.PayableAccountNodeId },
+                    posting.Currency, book.BaseCurrency, compoundingTerms.Min(item => item!.Schedule!.StartDate), request.AccrualTo, firstPrincipal);
+                if (built.Refusal is { } refusal)
+                    return Unavailable(refusal);
+                if (built.Evidence?.AccruedInterest is { } interestFacts && interestFacts.Role != principal.Evidence.Role)
+                    return Unavailable("Posted accrued interest and principal disagree on the lending direction.");
+                (compounding, accruedInterest) = (built.Evidence, built.Balance);
+            }
+
+            var computation = calculator.Preview(new(request.AccrualFrom, request.AccrualTo, authority, principal.Segments)
+            {
+                AccruedInterest = accruedInterest,
+                PostedAccrualWindows = compounding?.PostedWindows ?? [],
+                FirstPrincipalDate = compounding?.FirstPrincipalDate
+            });
+            if (!computation.IsReady)
+                return new(computation, computation.Diagnostics);
             if (IntercompanyAccrualSourceBuilder.FindPostedOverlap(interestJournals, request.InterestArrangementId,
                 request.AccrualFrom, request.AccrualTo) is { } overlap)
                 return Unavailable($"Posted accrual {overlap} already covers part of this window; reverse it before accruing those days again.", computation);
@@ -115,7 +140,8 @@ public sealed class IntercompanyAccrualDraftService(IntercompanyAccountingArrang
             var workspace = await configuration.GetWorkspaceAsync(book.FundProfileId, book.LedgerBookId, ct,
                 tenantId, companyId).ConfigureAwait(false);
             return IntercompanyAccrualSourceBuilder.BuildDraft(request, tenantId, companyId, actor, book, periods[0], posting,
-                computation, principal.Evidence, accounts, workspace.ChartOfAccounts, conversion, _clock.GetUtcNow(), generation);
+                computation, principal.Evidence, accounts, workspace.ChartOfAccounts, conversion, _clock.GetUtcNow(), generation,
+                computation.RuleVersion == IntercompanyAccrualRules.CompoundingRuleVersion ? compounding : null);
         }
         catch (Exception error) when (error is InvalidOperationException or ArgumentException or KeyNotFoundException)
         {

@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-11-14
+last_reviewed: 2026-11-17
 ---
 
 # src/Meridian.Application
@@ -19,6 +19,10 @@ revisions and principal; it reads no ledger and authorizes no journal. An explic
 record external legal review while ordinary independent review remains available; legal lifecycle
 revisions retain the same separate audit facts. See
 [terms and review boundaries](../../docs/domain/intercompany-agreements.md).
+
+`IntercompanyAccrualPreviewService` compounds at each schedule period start on posted accrued interest under
+rule `intercompany-accrual-v3`, refusing uncovered earlier days and multi-period windows. See
+[periodic compounding](../../docs/domain/intercompany-agreements.md#periodic-compounding).
 
 Structured decimal normalization preserves representable declarations when canonical formatting
 uses an exponent. Retrying an externally reviewed lifecycle append repairs an interrupted local

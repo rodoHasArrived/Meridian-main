@@ -1413,6 +1413,7 @@ Meridian-main
 │   │   ├── 026-stored-curves-and-valuation-seam.md
 │   │   ├── 027-single-economic-model-consolidation.md
 │   │   ├── 028-governed-intercompany-interest-accrual.md
+│   │   ├── 030-intercompany-interest-compounding.md
 │   │   ├── _template.md
 │   │   └── README.md
 │   ├── ai
@@ -12580,6 +12581,7 @@ Meridian-main
 │   │   ├── IntercompanyAgreementServiceTests.cs
 │   │   ├── IntercompanyAgreementServiceTests.ExternalReview.cs
 │   │   ├── IntercompanyAgreementServiceTests.Lifecycle.cs
+│   │   ├── IntercompanyCompoundingAccrualPreviewTests.cs
 │   │   ├── IntercompanyStructuredDecimalTests.cs
 │   │   ├── IntercompanyStructuredTermsTests.cs
 │   │   ├── LedgerGroupingRulesTests.cs
@@ -13322,6 +13324,7 @@ Meridian-main
 │   │   │   ├── Intercompany
 │   │   │   │   ├── IntercompanyAccrualSourceBuilderTests.cs
 │   │   │   │   ├── IntercompanyBalanceScheduleTests.cs
+│   │   │   │   ├── IntercompanyCompoundingSourceTests.cs
 │   │   │   │   ├── IntercompanyCounterpartReversalBuilderTests.cs
 │   │   │   │   ├── IntercompanyObligationExpiryChronologyTests.cs
 │   │   │   │   ├── IntercompanyObligationMonitorServiceTests.cs
@@ -14780,6 +14783,7 @@ Meridian-main
 │   │   │   ├── FundProfileScopeEndpointFilterTests.cs
 │   │   │   ├── FundStructureEndpointAuthorizationTests.cs
 │   │   │   ├── InMemoryFundStructureTenancyGuardTests.cs
+│   │   │   ├── IntercompanyAccrualDraftServiceTests.Compounding.cs
 │   │   │   ├── IntercompanyAccrualDraftServiceTests.cs
 │   │   │   ├── IntercompanyAgreementAuthorityTests.cs
 │   │   │   ├── IntercompanyAgreementEndpointTests.cs
@@ -15141,6 +15145,7 @@ Meridian-main
 │   │   │   ├── IntercompanyAgreementWorkspaceTests.cs
 │   │   │   ├── IntercompanyAgreementWorkspaceTests.Structured.cs
 │   │   │   ├── IntercompanyBookChoiceTests.cs
+│   │   │   ├── IntercompanyCompoundingSliceRowTests.cs
 │   │   │   ├── IntercompanyCounterpartQueueWorkspaceTests.cs
 │   │   │   ├── IntercompanyInterestAccrualWorkspaceTests.cs
 │   │   │   ├── LeanIntegrationServiceTests.cs

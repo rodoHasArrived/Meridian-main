@@ -6,6 +6,39 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ScheduleCalendarPurpose
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleCalendarPurpose</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:81](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L81).
+
+What a calendar was used for while generating a schedule.
+
+```csharp
+public enum ScheduleCalendarPurpose
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Accrual</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:84](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L84) | Adjusting inner accrual boundaries. |
+| <code>EffectiveDate</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:87](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L87) | Adjusting the effective date. |
+| <code>TerminationDate</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:90](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L90) | Adjusting the termination date. |
+| <code>Payment</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:93](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L93) | Adjusting or lagging payment dates. |
+
+## ScheduleCalendarUsage
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleCalendarUsage</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:100](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L100).
+
+Evidence of one calendar, identified by id and content hash, used for one purpose.
+
+```csharp
+public sealed record ScheduleCalendarUsage(string CalendarId, string ContentHash, ScheduleCalendarPurpose Purpose);
+```
+
 ## ScheduleDayCount
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleDayCount</code>. Kind: `class`.
@@ -982,32 +1015,4 @@ Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:193](../
 
 ```csharp
 public sealed record SecurityAssetProfilePromotionCandidateDto(string ProfileId, int Version, string Name, string Category, string? SubType, SecurityAssetProfilePromotionReadinessDto Readiness, int Score, bool IsCandidate, string RecommendedPackageId, string RecommendedPackageName, IReadOnlyList<string> DedicatedBehaviorNeeds, IReadOnlyList<SecurityAssetProfilePromotionSignalDto> Signals, string PromotionRationale);
-```
-
-## SecurityAssetProfilePromotionReadinessDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfilePromotionReadinessDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:172](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L172).
-
-```csharp
-public enum SecurityAssetProfilePromotionReadinessDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Watchlist</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:174](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L174) |  |
-| <code>Candidate</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:175](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L175) |  |
-| <code>ReadyForFirstClassPackage</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:176](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L176) |  |
-
-## SecurityAssetProfilePromotionSignalDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfilePromotionSignalDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:187](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L187).
-
-```csharp
-public sealed record SecurityAssetProfilePromotionSignalDto(string Code, string Label, string Detail, SecurityAssetProfilePromotionSignalSeverityDto Severity);
 ```
