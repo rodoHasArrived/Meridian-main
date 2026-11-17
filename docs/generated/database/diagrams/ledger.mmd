@@ -658,6 +658,14 @@ erDiagram
         uuid journal_entry_id FK
         date effective_date
     }
+    ledger_recurring_journal_state {
+        text store_id PK
+        bigint revision
+        text content_hash
+        text envelope_json
+        timestamp_with_time_zone initialized_at
+        timestamp_with_time_zone updated_at
+    }
     ledger_tax_lot_mutations {
         uuid mutation_record_id PK
         uuid mutation_batch_id FK

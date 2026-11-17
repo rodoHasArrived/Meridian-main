@@ -1351,6 +1351,15 @@
       "sha256": "9305e1acd0d4f9042339a16a40189f9f7c2a86f01e75b51a057011c709f17daf"
     },
     {
+      "filename": "V_ledger_074__recurring_journal_state.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_074__recurring_journal_state.sql",
+      "schema": "ledger",
+      "sha256": "9aa86de3db9ff19067d68bc714646c4df3baf0f101b1fbd74f39b82d68a4fa2e"
+    },
+    {
       "filename": "001_fund_structure.sql",
       "immutable": true,
       "migration_set_id": "fund-structure",
@@ -1694,7 +1703,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "7f6e8cbb6b1921e3e217b2a268470fd5e8e0bf14c253d84d9fceba60040745bf",
+  "fingerprint": "d077d747fa5c63ae1341c25493da3922be1249c1eba3555f4552b9268a1be783",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1956,9 +1965,9 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 188,
+    "files": 189,
     "migration_sets": 11,
-    "waivers": 50,
+    "waivers": 51,
     "warnings": 0
   },
   "waivers": [
@@ -2198,6 +2207,13 @@
       "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_073__intercompany_balance_confirmations.sql",
       "reason": "The lexical TRUNCATE matches declare only BEFORE TRUNCATE rejection triggers protecting the new reciprocal intercompany balance confirmation versions. They execute no TRUNCATE command and remove no table, column, row or retained fact. Preserve these rejection triggers and the UPDATE/DELETE protections. This exact path/rule exception follows V_ledger_030 and V_ledger_031 and covers only these truncation-rejection declarations; it does not authorize data truncation or a history-removing downgrade.",
       "review_after": "2027-05-13",
+      "rule_id": "migration-truncate"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_074__recurring_journal_state.sql",
+      "reason": "Authorized by the repository owner on 2026-11-17. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects truncation of the retained recurring journal state (W10-JRNL-001); this migration executes no data truncation. Without it, a truncated table would read as unprovisioned and explicit re-initialization would start from empty state, reissuing occurrence claims and draft identities. PostgreSQL regression coverage attempts delete and truncate, requires the guard SQLSTATE 55000, and verifies the retained document is unchanged.",
+      "review_after": "2027-05-17",
       "rule_id": "migration-truncate"
     },
     {

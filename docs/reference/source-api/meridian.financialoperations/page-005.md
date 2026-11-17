@@ -6,6 +6,43 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationsWorkflowAuditHashing
+
+Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.OperationsWorkflowAuditHashing</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowAuditHashing.cs:12](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowAuditHashing.cs#L12).
+
+Creates audit hashes and validates operations workflow timelines and hash chains.
+
+```csharp
+public static class OperationsWorkflowAuditHashing
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static OperationsWorkflowAuditDto Create(OperationsWorkflowAuditDraft draft, string? previousHash, DateTimeOffset occurredAtUtc);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowAuditHashing.cs:14](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowAuditHashing.cs#L14) |  |
+| <code>public static bool TryValidateTimeline(IReadOnlyList&lt;OperationsTimelineEntryDto&gt; timeline, out string blockerCode, out string message) =&gt; …;</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowAuditHashing.cs:75](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowAuditHashing.cs#L75) |  |
+| <code>public static bool TryValidateChain(IReadOnlyList&lt;OperationsWorkflowAuditDto&gt; timeline, out string blockerCode, out string message);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowAuditHashing.cs:101](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowAuditHashing.cs#L101) |  |
+
+## OperationsWorkflowChecklistSnapshots
+
+Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.OperationsWorkflowChecklistSnapshots</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowChecklistSnapshots.cs:5](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowChecklistSnapshots.cs#L5).
+
+```csharp
+public static class OperationsWorkflowChecklistSnapshots
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static OperationsWorkflowAuditDraft ForCommit(OperationsWorkflowAuditDraft draft, OperationsContinuityWorkflow workflow);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowChecklistSnapshots.cs:8](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowChecklistSnapshots.cs#L8) | Called only at a boundary committing this exact workflow state and audit together. |
+| <code>public static void Validate(OperationsCloseChecklistSnapshotDto snapshot);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowChecklistSnapshots.cs:20](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowChecklistSnapshots.cs#L20) |  |
+
 ## PostgresOperationsContinuityStore
 
 Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.PostgresOperationsContinuityStore</code>. Kind: `class`.
@@ -839,39 +876,3 @@ Declared public members:
 | <code>public async Task&lt;StatementSourceDocument&gt; FetchAsync(StatementFetchRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexStatementConnector.cs:62](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexStatementConnector.cs#L62) |  |
 | <code>public bool CanHandle(StatementSourceDocument document);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexStatementConnector.cs:87](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexStatementConnector.cs#L87) |  |
 | <code>public async Task&lt;StatementParseResult&gt; ParseAsync(StatementSourceDocument document, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexStatementConnector.cs:98](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexStatementConnector.cs#L98) |  |
-
-## IbFlexWebServiceClient
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.IbFlex.IbFlexWebServiceClient</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexWebServiceClient.cs:23](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexWebServiceClient.cs#L23).
-
-Implements the IB Flex Web Service v3 send-and-retrieve protocol. Retrieval is polled only for IB&#x27;s documented generation-in-progress response; every other error fails closed.
-
-```csharp
-public sealed class IbFlexWebServiceClient(HttpClient httpClient, TimeSpan? pollDelay = null, int maxRetrieveAttempts = 12) : IIbFlexWebServiceClient
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;ReadOnlyMemory&lt;byte&gt;&gt; FetchStatementAsync(string token, string queryId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexWebServiceClient.cs:38](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexWebServiceClient.cs#L38) |  |
-
-## IIbFlexWebServiceClient
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.IbFlex.IIbFlexWebServiceClient</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexWebServiceClient.cs:11](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexWebServiceClient.cs#L11).
-
-Fetches Interactive Brokers Flex statement payloads for the configured query request.
-
-```csharp
-public interface IIbFlexWebServiceClient
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;ReadOnlyMemory&lt;byte&gt;&gt; FetchStatementAsync(string token, string queryId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexWebServiceClient.cs:13](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexWebServiceClient.cs#L13) |  |

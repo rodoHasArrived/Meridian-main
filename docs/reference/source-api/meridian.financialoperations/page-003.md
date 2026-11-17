@@ -6,6 +6,35 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountingBasisProjectionSetService
+
+Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingBasisProjectionSetService</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingBasisProjectionSetService.cs:19](../../../../src/Meridian.FinancialOperations/Ledger/AccountingBasisProjectionSetService.cs#L19).
+
+Uses the candidate service to assemble projections for multiple accounting bases.
+
+```csharp
+public sealed class AccountingBasisProjectionSetService : IAccountingBasisProjectionSetService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public AccountingBasisProjectionSetService(IAccountingPostingCandidateService candidateService);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingBasisProjectionSetService.cs:23](../../../../src/Meridian.FinancialOperations/Ledger/AccountingBasisProjectionSetService.cs#L23) |  |
+| <code>public async Task&lt;AccountingBasisProjectionSetDto&gt; BuildProjectionSetAsync(AccountingBasisProjectionSetRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingBasisProjectionSetService.cs:28](../../../../src/Meridian.FinancialOperations/Ledger/AccountingBasisProjectionSetService.cs#L28) |  |
+
+## AccountingJournalDraftLineRequest
+
+Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingJournalDraftLineRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs:19](../../../../src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs#L19).
+
+```csharp
+public sealed record AccountingJournalDraftLineRequest(LedgerAccount Account, decimal Debit, decimal Credit, string? Description = null, IReadOnlyList<string>? EvidenceLinks = null, LedgerDimensionSetDto? Dimensions = null);
+```
+
 ## AccountingJournalDraftRequest
 
 Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingJournalDraftRequest</code>. Kind: `record`.
@@ -924,39 +953,3 @@ Request to distribute one normalized file to a set of recipients. ContentLocatio
 ```csharp
 public sealed record FileDistributionRequest(string FileName, string ContentType, string ContentSha256, long ContentLength, string ContentLocation, IReadOnlyList<DistributionRecipient> Recipients, string DistributedBy, string? SubjectId = null, DateTimeOffset? DistributedAtUtc = null);
 ```
-
-## IFileDistributionTransport
-
-Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.IFileDistributionTransport</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:344](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L344).
-
-Transport seam that actually dispatches a distributed file to one recipient. A production transport retrieves the deliverable from FileDistributionRequest.ContentLocation, verifies it against FileDistributionRequest.ContentSha256, and dispatches it over the recipient&#x27;s channel. The middle-office service records Delivered only when the transport reports success, so a real (SFTP/email/portal) transport injected in production yields honest delivery evidence.
-
-```csharp
-public interface IFileDistributionTransport
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>FileDeliveryOutcome Deliver(DistributionRecipient recipient, FileDistributionRequest request);</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:346](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L346) |  |
-
-## LoopbackFileDistributionTransport
-
-Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.LoopbackFileDistributionTransport</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:354](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L354).
-
-Default in-process transport that assumes success without performing real I/O. Suitable for tests and local development; production hosts inject a transport that dispatches over the recipient&#x27;s channel and reports genuine success or failure.
-
-```csharp
-public sealed class LoopbackFileDistributionTransport : IFileDistributionTransport
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FileDeliveryOutcome Deliver(DistributionRecipient recipient, FileDistributionRequest request) =&gt; …;</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:356](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L356) |  |

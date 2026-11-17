@@ -151,6 +151,55 @@ public sealed class LifecyclePolicyEngineTests : IDisposable
             Times.Never);
     }
 
+    [Theory]
+    [InlineData(LifecycleActionType.TierMigration)]
+    [InlineData(LifecycleActionType.Archive)]
+    public async Task ExecuteAsync_MigrationThatReportsFailure_IsCountedAsFailedNotExecuted(LifecycleActionType actionType)
+    {
+        // MigrateAsync reports per-file failures in its result instead of throwing. Counting such a
+        // result as executed told operators the data had moved when the source was still in place.
+        _tierMigrationMock
+            .Setup(m => m.MigrateAsync(It.IsAny<string>(), It.IsAny<StorageTier>(), It.IsAny<MigrationOptions>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new MigrationResult(
+                Success: false, FilesProcessed: 0, FilesFailed: 1, BytesProcessed: 0, BytesSaved: 0,
+                Duration: TimeSpan.Zero, Errors: ["test.jsonl: Refusing to migrate and delete a file that is open for writing"]));
+        var actions = new List<LifecycleAction>
+        {
+            new(
+                FilePath: Path.Combine(_tempDir, "test.jsonl"),
+                ActionType: actionType,
+                CurrentTier: StorageTier.Hot,
+                TargetTier: StorageTier.Cold,
+                Reason: "test",
+                EstimatedSizeBytes: 1000)
+        };
+
+        var result = await _engine.ExecuteAsync(actions, dryRun: false);
+
+        result.ActionsExecuted.Should().Be(0);
+        result.ActionsFailed.Should().Be(1);
+        result.BytesMigrated.Should().Be(0);
+        result.Errors.Should().ContainSingle(error => error.Contains("open for writing"));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_SuccessfulMigration_IsCountedAsExecuted()
+    {
+        _tierMigrationMock
+            .Setup(m => m.MigrateAsync(It.IsAny<string>(), It.IsAny<StorageTier>(), It.IsAny<MigrationOptions>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new MigrationResult(true, 1, 0, 1000, 0, TimeSpan.Zero, []));
+        var actions = new List<LifecycleAction>
+        {
+            new(Path.Combine(_tempDir, "test.jsonl"), LifecycleActionType.TierMigration, StorageTier.Hot, StorageTier.Warm, "test", 1000)
+        };
+
+        var result = await _engine.ExecuteAsync(actions, dryRun: false);
+
+        result.ActionsExecuted.Should().Be(1);
+        result.ActionsFailed.Should().Be(0);
+        result.BytesMigrated.Should().Be(1000);
+    }
+
     [Fact]
     public async Task ExecuteAsync_Delete_ShouldRemoveFile()
     {
