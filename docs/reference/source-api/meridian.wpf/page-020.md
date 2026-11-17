@@ -6,6 +6,62 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkspaceCommandAdapters
+
+Qualified name: <code>Meridian.Wpf.Workstation.Commands.WorkspaceCommandAdapters</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Commands/WorkspaceCommandAdapters.cs:8](../../../../src/Meridian.Wpf/Workstation/Commands/WorkspaceCommandAdapters.cs#L8).
+
+Converts workspace command groups into executable desktop command descriptors.
+
+```csharp
+public static class WorkspaceCommandAdapters
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;CommandViewModel&gt; ToCommandDescriptors(WorkspaceCommandGroup? group);</code> | [src/Meridian.Wpf/Workstation/Commands/WorkspaceCommandAdapters.cs:10](../../../../src/Meridian.Wpf/Workstation/Commands/WorkspaceCommandAdapters.cs#L10) |  |
+
+## WorkspaceCompositionDefinition
+
+Qualified name: <code>Meridian.Wpf.Workstation.Composition.WorkspaceCompositionDefinition</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Composition/WorkspaceCompositionDefinition.cs:15](../../../../src/Meridian.Wpf/Workstation/Composition/WorkspaceCompositionDefinition.cs#L15).
+
+Maps a workspace identity to the module assigned to each composition slot.
+
+```csharp
+public sealed class WorkspaceCompositionDefinition
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string WorkspaceId { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/Composition/WorkspaceCompositionDefinition.cs:17](../../../../src/Meridian.Wpf/Workstation/Composition/WorkspaceCompositionDefinition.cs#L17) |  |
+| <code>public IReadOnlyList&lt;WorkspaceCompositionSlot&gt; Slots { get; init; } = Array.Empty&lt;WorkspaceCompositionSlot&gt;();</code> | [src/Meridian.Wpf/Workstation/Composition/WorkspaceCompositionDefinition.cs:18](../../../../src/Meridian.Wpf/Workstation/Composition/WorkspaceCompositionDefinition.cs#L18) |  |
+
+## WorkspaceCompositionSlot
+
+Qualified name: <code>Meridian.Wpf.Workstation.Composition.WorkspaceCompositionSlot</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Composition/WorkspaceCompositionDefinition.cs:6](../../../../src/Meridian.Wpf/Workstation/Composition/WorkspaceCompositionDefinition.cs#L6).
+
+Associates a named workspace slot with its contributing module.
+
+```csharp
+public sealed class WorkspaceCompositionSlot
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string SlotId { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/Composition/WorkspaceCompositionDefinition.cs:8](../../../../src/Meridian.Wpf/Workstation/Composition/WorkspaceCompositionDefinition.cs#L8) |  |
+| <code>public string ModuleId { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/Composition/WorkspaceCompositionDefinition.cs:9](../../../../src/Meridian.Wpf/Workstation/Composition/WorkspaceCompositionDefinition.cs#L9) |  |
+
 ## ActivityLogGridControl
 
 Qualified name: <code>Meridian.Wpf.Workstation.Controls.ActivityLogGridControl</code>. Kind: `class`.
@@ -841,33 +897,3 @@ Declared public members:
 | <code>public static bool IsChecklistTaskReady(OperationsCloseChecklistTaskDto task);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:390](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L390) |  |
 | <code>public static bool IsChecklistTaskBlocked(OperationsCloseChecklistTaskDto task);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:397](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L397) |  |
 | <code>public static string FormatTimestamp(DateTimeOffset value) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:404](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L404) |  |
-
-## OperationsContinuityNextActionModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.OperationsContinuityNextActionModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:30](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L30).
-
-```csharp
-public sealed record OperationsContinuityNextActionModel(string Label, string StatusText, string RouteText, string? DisabledReason, WorkstationReadinessTone ReadinessTone, string Tone);
-```
-
-## OperationsContinuityPanelRowModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.OperationsContinuityPanelRowModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:21](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L21).
-
-```csharp
-public sealed record OperationsContinuityPanelRowModel(string Id, string Label, string Value, string Detail, string Meta, WorkstationReadinessTone ReadinessTone, string Tone);
-```
-
-## OperationsContinuityQueueRollupModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.OperationsContinuityQueueRollupModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:38](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L38).
-
-```csharp
-public sealed record OperationsContinuityQueueRollupModel(string StatusLabel, int BlockedCount, int ReviewCount, WorkstationReadinessTone ReadinessTone, string Tone);
-```
