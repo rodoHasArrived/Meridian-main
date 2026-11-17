@@ -102,7 +102,8 @@ puts the rest behind "More"; Options screening is a Data sidebar entry, not a Ma
 tab. Labels use light caps in the body face, monospace stays on figures and IDs, and Ledger
 Explorer closes with a debit and credit totals row. Close Cockpit detail tiles keep dates on one
 line and monospace on figures only, and its checklist-progress and break-aging charts render in
-view. No shared contract changed.
+view. The shared inbox filters by owner (Everyone, Mine, Unassigned) and adds acknowledge and
+snooze keys beside assign. No shared contract changed.
 
 The host-served bundle carries the design-system consolidation. It includes one status
 component; one formatting module (year-bearing UTC timestamps; accounting negatives in

@@ -266,6 +266,11 @@ reconciliation workbench) rather than inside collapsed disclosures. Headline-KPI
 remain blocked because workspace metrics carry no history series; adding one is a shared-contract
 change.
 
+**Progress on F1/P3 (2026-11-17).** The shared inbox's "My items" checkbox is now an Owner
+switch (Everyone, Mine, Unassigned). Keyboard triage covers acknowledge (c) and snooze (s) as well
+as assign (a), through the same reviewed, reason-required dialogs, and the `?` sheet lists those
+keys. Bulk acknowledge and snooze still need a server bulk endpoint; only bulk assign has one.
+
 #### C4 🔴 Speak operator language, not system language (follows the 11-10 copy pass)
 
 **Problem.**

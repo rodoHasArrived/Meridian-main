@@ -13,6 +13,8 @@ export interface PendingTriageCommand {
 export type OperatorTriageCapability = "canAssign" | "canAcknowledge" | "canSnooze" | "canUnsnooze";
 export type OperatorTriageDialogAction = OperatorTriageAction | "BulkAssign";
 export type OperatorTriageVisibility = "active" | "all" | "snoozed";
+/** Whose items the inbox shows: everyone's, the signed-in operator's, or nobody's yet. */
+export type OperatorTriageOwnerFilter = "all" | "mine" | "unassigned";
 
 /** The shared inbox searchable text; Today's merged grid reuses it for inbox rows. */
 export function triageSearchText(item: OperatorTriageItem): string {
@@ -34,7 +36,11 @@ export function useOperatorTriageInbox({ fundAccountId, refreshKey = false }: {
   const [notice, setNotice] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [checkedIds, setCheckedIds] = useState<string[]>([]);
-  const [mineOnly, setMineOnly] = useState(false);
+  const [owner, setOwnerState] = useState<OperatorTriageOwnerFilter>("all");
+  const setOwner = (value: string) => setOwnerState(value === "mine" || value === "unassigned" ? value : "all");
+  // Kept for callers and saved views that predate the owner switch.
+  const mineOnly = owner === "mine";
+  const setMineOnly = (value: boolean) => setOwnerState(value ? "mine" : "all");
   const [visibility, setVisibilityState] = useState<OperatorTriageVisibility>("active");
   const [search, setSearch] = useState("");
   const [action, setAction] = useState<OperatorTriageDialogAction | null>(null);
@@ -124,7 +130,7 @@ export function useOperatorTriageInbox({ fundAccountId, refreshKey = false }: {
   /** Inbox rows after the inbox-owned filters (My items, visibility, search). */
   const rows = (inbox?.items ?? []).filter((item) => {
     const snoozed = isActiveTriageSnooze(item);
-    return (!mineOnly || item.ownerId === inbox?.actorId)
+    return (owner === "all" || (owner === "mine" ? item.ownerId === inbox?.actorId : !item.ownerId))
       && (visibility === "all" || (visibility === "snoozed" ? snoozed : !snoozed))
       && (!search.trim() || triageSearchText(item).toLowerCase().includes(search.trim().toLowerCase()));
   });
@@ -203,7 +209,7 @@ export function useOperatorTriageInbox({ fundAccountId, refreshKey = false }: {
     inbox, loading, error, notice, busy, uncertain, reload, retryUncertain,
     rows, selectedId, setSelectedId, selected,
     checkedIds, toggleChecked, clearChecked: () => setCheckedIds([]),
-    mineOnly, setMineOnly, visibility, setVisibility, search, setSearch,
+    owner, setOwner, mineOnly, setMineOnly, visibility, setVisibility, search, setSearch,
     actionsAvailable, capability,
     action, actionTarget, openAction, closeAction,
     reason, setReason, assignee, setAssignee, until, setUntil, canSubmit, submit

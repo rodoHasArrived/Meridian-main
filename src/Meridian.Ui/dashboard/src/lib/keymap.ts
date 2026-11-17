@@ -16,6 +16,24 @@ export const GLOBAL_KEY_BINDINGS: readonly GlobalKeyBinding[] = [
   { id: "keyboard-help", keys: "?", label: "Show keyboard shortcuts" }
 ];
 
+/**
+ * Shared-inbox triage keys (Today and the operator inbox). Active while focus is in the queue, not
+ * in a field. Reconciliation's break queue has its own map (`lib/queue-keyboard-map.ts`, where `e`
+ * opens evidence), so these avoid its letters for different actions.
+ */
+export interface QueueKeyBinding {
+  keys: string;
+  label: string;
+}
+
+export const QUEUE_KEY_BINDINGS = {
+  next: { keys: "j", label: "Next queue item" },
+  previous: { keys: "k", label: "Previous queue item" },
+  assign: { keys: "a", label: "Assign the selected item" },
+  acknowledge: { keys: "c", label: "Acknowledge the selected item" },
+  snooze: { keys: "s", label: "Snooze the selected item" }
+} as const satisfies Record<string, QueueKeyBinding>;
+
 export interface KeyEventLike {
   key: string;
   ctrlKey?: boolean;

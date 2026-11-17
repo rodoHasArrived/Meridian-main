@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { QUEUE_KEY_BINDINGS } from "@/lib/keymap";
 import { useOnGlobalRefresh } from "@/lib/global-refresh";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,7 +27,11 @@ export function OperatorTriageQueue({ fundAccountId, fallback, refreshKey = fals
   const keyboard = useQueueKeyboard({
     rows, selectedId: selected?.workItemId ?? null, getId: (item: OperatorTriageItem) => item.workItemId,
     onSelect: (item: OperatorTriageItem) => triage.setSelectedId(item.workItemId),
-    actions: [{ key: "a", label: "Assign", enabled: capability(selected, "canAssign"), run: () => openAction("Assign", selected) }]
+    actions: [
+      { key: QUEUE_KEY_BINDINGS.assign.keys, label: "Assign", enabled: capability(selected, "canAssign"), run: () => openAction("Assign", selected) },
+      { key: QUEUE_KEY_BINDINGS.acknowledge.keys, label: "Acknowledge", enabled: capability(selected, "canAcknowledge"), run: () => openAction("Acknowledge", selected) },
+      { key: QUEUE_KEY_BINDINGS.snooze.keys, label: "Snooze", enabled: capability(selected, "canSnooze"), run: () => openAction("Snooze", selected) }
+    ]
   });
 
   const columns: TableWorkbenchColumn<OperatorTriageItem>[] = [
@@ -54,12 +59,12 @@ export function OperatorTriageQueue({ fundAccountId, fallback, refreshKey = fals
         <TableWorkbench key={`${inbox.actorId}:${fundAccountId ?? "all"}`} workbenchId="operator-inbox" completePopulation={!loading && !error}
           sourceDescription={`Authorized ranked inbox as of ${inbox.asOf}; filters apply to this inbox population, not historical work records.`}
           searchText={triage.search} onSearchTextChange={triage.setSearch} getSearchText={triageSearchText}
-          filterState={{ visibility: triage.visibility, mineOnly: String(triage.mineOnly) }} onRestoreFilters={(filters) => restoreTriageFilters(triage, filters)}
+          filterState={{ visibility: triage.visibility, owner: triage.owner }} onRestoreFilters={(filters) => restoreTriageFilters(triage, filters)}
           filters={<OperatorTriageInboxFilters triage={triage} />} selection={triageSelection(triage)}
           tableId="operator-triage-queue" columns={columns} rows={rows} getRowId={(item) => item.workItemId} selectedRowId={selected?.workItemId}
           onRowSelect={(item) => { triage.setSelectedId(item.workItemId); triage.closeAction(); }} getRowSelectAriaLabel={(item) => item.label}
           getRowAriaControls={() => detailId} getRowAriaExpanded={(item) => item.workItemId === selected?.workItemId}
-          ariaLabel="Authorized ranked operator queue" emptyText={triage.mineOnly ? "No items are assigned to you in these filters." : "No authorized items match these filters."} />
+          ariaLabel="Authorized ranked operator queue" emptyText={triage.owner === "mine" ? "No items are assigned to you in these filters." : triage.owner === "unassigned" ? "No unassigned items match these filters." : "No authorized items match these filters."} />
         {selected ? <OperatorTriageDetailRail id={detailId} triage={triage} item={selected} /> : null}
       </div>
       <OperatorTriageActionDialog triage={triage} />
@@ -98,7 +103,7 @@ export function triageSelection(triage: OperatorTriageInboxState): TableWorkbenc
  */
 export function OperatorTriageInboxActions() {
   return <div className="flex flex-wrap items-center gap-2">
-    <details className="text-xs"><summary className="cursor-pointer">Shortcuts</summary><p className="mt-1">j/k select; a opens assignment. Acknowledgement and snooze never clear source blockers.</p></details>
+    <details className="text-xs"><summary className="cursor-pointer">Shortcuts</summary><p className="mt-1">j/k select; a assigns, c acknowledges, s snoozes (each asks for a reason). Acknowledgement and snooze never clear source blockers.</p></details>
   </div>;
 }
 
@@ -123,13 +128,14 @@ export function OperatorTriageInboxFilters({ triage, visibilityLabel = "Visibili
 }) {
   return <>
     <label className="text-xs">{visibilityLabel}<Select aria-label={visibilityLabel} value={triage.visibility} onChange={(event) => triage.setVisibility(event.target.value)}><option value="active">{activeLabel}</option><option value="all">All items</option><option value="snoozed">Snoozed items</option></Select></label>
-    {showMine ? <label className="flex min-h-9 items-center gap-2 text-sm"><input type="checkbox" checked={triage.mineOnly} onChange={(event) => triage.setMineOnly(event.target.checked)} />{mineLabel}</label> : null}
+    {showMine ? <label className="text-xs">Owner<Select aria-label="Owner" value={triage.owner} onChange={(event) => triage.setOwner(event.target.value)}><option value="all">Everyone</option><option value="mine">{mineLabel}</option><option value="unassigned">Unassigned</option></Select></label> : null}
   </>;
 }
 
 export function restoreTriageFilters(triage: OperatorTriageInboxState, filters: Record<string, string>) {
   triage.setVisibility(filters.visibility);
-  triage.setMineOnly(filters.mineOnly === "true");
+  // Views saved before the owner switch carry only `mineOnly`.
+  triage.setOwner(filters.owner ?? (filters.mineOnly === "true" ? "mine" : "all"));
 }
 
 export function TriageAssignCheckbox({ triage, item }: { triage: OperatorTriageInboxState; item: OperatorTriageItem }) {
