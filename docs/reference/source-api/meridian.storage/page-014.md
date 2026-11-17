@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationalState
+
+Qualified name: <code>Meridian.Storage.Services.OperationalState</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1691](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1691).
+
+```csharp
+public sealed record OperationalState(bool IsRealTimeCollectionActive, TradingSession? CurrentSession, MaintenanceWindow? CurrentMaintenanceWindow, int RunningMaintenanceJobs, ScheduledJob[] PendingJobs, DateTimeOffset NextMaintenanceWindowStart);
+```
+
+## OrphanedFile
+
+Qualified name: <code>Meridian.Storage.Services.OrphanedFile</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:977](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L977).
+
+```csharp
+public sealed record OrphanedFile(string Path, string Reason, long SizeBytes, DateTime LastModified);
+```
+
 ## OrphanReport
 
 Qualified name: <code>Meridian.Storage.Services.OrphanReport</code>. Kind: `record`.
@@ -755,23 +775,3 @@ Declared public members:
 | <code>public StorageQuery? ParseNaturalLanguageQuery(string naturalQuery);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:305](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L305) |  |
 | <code>public async Task UpdateIndexAsync(string filePath, IndexUpdateType updateType, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:366](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L366) |  |
 | <code>public async Task&lt;IndexRebuildVerification&gt; RebuildIndexAsync(string[] paths, RebuildOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:399](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L399) |  |
-
-## StorageSymbolCatalogEntry
-
-Qualified name: <code>Meridian.Storage.Services.StorageSymbolCatalogEntry</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/StorageSearchService.cs:827](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L827).
-
-```csharp
-public sealed record StorageSymbolCatalogEntry(string Symbol, DateTimeOffset FirstDate, DateTimeOffset LastDate, long TotalEvents, long TotalBytes, HashSet<string> Sources, HashSet<string> EventTypes);
-```
-
-## SymbolIndex
-
-Qualified name: <code>Meridian.Storage.Services.SymbolIndex</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/StorageSearchService.cs:840](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L840).
-
-```csharp
-public sealed record SymbolIndex(string Symbol, List<string> Files);
-```

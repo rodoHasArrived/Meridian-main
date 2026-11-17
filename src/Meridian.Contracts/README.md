@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-17
 ---
 
 # src/Meridian.Contracts
@@ -101,6 +101,10 @@ stable account-role bindings, approved FX sets and exact legacy-attribution dige
 ledger dimensions omit null fields to preserve legacy evidence hashes. Consolidation evidence pins
 participating policy versions; shared browser/WPF contracts carry translation and rounding separately.
 See [intercompany domain guidance](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md).
+
+`IntercompanyBalanceConfirmationDtos` define the advisory reciprocal confirmation record (both pinned
+sides, net, balance digest and append-only events), its propose/action requests, summary findings and
+`IIntercompanyBalanceConfirmationStore`. See [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
 
 `SecurityMasterLedgerSymbol` resolves a dated, unambiguous active ticker that the existing native
 lineage grammar can represent. It supplies server-owned instrument context for new non-lot

@@ -6,6 +6,31 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FileAccountingConfigurationStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.FileAccountingConfigurationStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:123](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L123).
+
+Persists accounting workspaces and audit history with audit-chain verification.
+
+```csharp
+public sealed class FileAccountingConfigurationStore : JsonFileSnapshotStore<FileAccountingConfigurationStore.AccountingConfigurationSnapshot>, IAccountingConfigurationStore, IAccountingActionAuditStore, IAccountingAuditChainVerifier
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileAccountingConfigurationStore(string snapshotPath) : this(snapshotPath, anchorPath : null);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:160](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L160) |  |
+| <code>public FileAccountingConfigurationStore(string snapshotPath, string? anchorPath) : base(string.IsNullOrWhiteSpace(snapshotPath)? throw new ArgumentException(&quot;Accounting configuration snapshot path is required.&quot;, nameof(snapshotPath)) : snapshotPath, JsonOptions);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:170](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L170) |  |
+| <code>public string AuditChainAnchorPath =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:185](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L185) | Path of the head journal that anchors this store&#x27;s audit chain. |
+| <code>public async Task&lt;AccountingConfigurationWorkspaceDto?&gt; GetAsync(string fundProfileId, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:190](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L190) |  |
+| <code>public async Task SaveAsync(AccountingConfigurationWorkspaceDto workspace, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:217](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L217) |  |
+| <code>public async Task AppendAsync(AccountingActionAuditEventDto auditEvent, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:277](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L277) | Appends an audit event and extends the tamper-evident chain over it. |
+| <code>public async Task&lt;AccountingAuditChainVerification&gt; VerifyAuditChainAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:408](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L408) | Verifies the retained audit chain against its events and its external head. |
+| <code>public async Task&lt;IReadOnlyList&lt;AccountingActionAuditEventDto&gt;&gt; ListAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:424](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L424) |  |
+
 ## AccountingConfigurationSnapshot
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FileAccountingConfigurationStore.AccountingConfigurationSnapshot</code>. Kind: `record`.
@@ -1097,13 +1122,3 @@ Declared public members:
 | <code>public IReadOnlyList&lt;ReportingTemplateMetadata&gt; ListTemplates(ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:104](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L104) |  |
 | <code>public ReportAccessEvaluationDto EvaluateAccess(string templateId, ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:124](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L124) |  |
 | <code>public ReportAccessEvaluationDto EvaluateAccess(VersionedReportTemplateIdDto templateId, ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:153](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L153) |  |
-
-## HaircutRule
-
-Qualified name: <code>Meridian.Ui.Shared.Services.HaircutRule</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:29](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L29).
-
-```csharp
-public sealed record HaircutRule(string Counterparty, string CollateralType, decimal HaircutPercent);
-```

@@ -6,6 +6,35 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountingJournalDraftResult
+
+Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingJournalDraftResult</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs:56](../../../../src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs#L56).
+
+```csharp
+public sealed record AccountingJournalDraftResult(AccountingPolicyDto Policy, AccountingPolicyRuleDto? Rule, JournalEntry? DraftEntry, LedgerJournalEntryWrite? Write, decimal TotalDebits, decimal TotalCredits, decimal Imbalance, bool IsBalanced, bool HasCriticalIssues, bool CanSubmitForApproval, bool CanPostWithoutAdditionalApproval, IReadOnlyList<string> EvidenceLinks, IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues);
+```
+
+## AccountingJournalDraftService
+
+Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingJournalDraftService</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs:74](../../../../src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs#L74).
+
+Builds journal drafts using accounting policy and supplied line evidence.
+
+```csharp
+public sealed class AccountingJournalDraftService : IAccountingJournalDraftService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public AccountingJournalDraftService(IAccountingPolicyService accountingPolicyService, IAccountingBasisProjectionService projectionService);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs:79](../../../../src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs#L79) |  |
+| <code>public async Task&lt;AccountingJournalDraftResult&gt; BuildDraftAsync(AccountingJournalDraftRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs:87](../../../../src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs#L87) |  |
+
 ## AccountingPolicyService
 
 Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingPolicyService</code>. Kind: `class`.
@@ -948,41 +977,3 @@ Declared public members:
 | <code>public IReadOnlyList&lt;TrueBreakEscalation&gt; OpenEscalations { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeOperationsService.cs:354](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeOperationsService.cs#L354) | All open escalations, most severe first. |
 | <code>public IReadOnlyList&lt;FileDeliveryRecord&gt; Distribute(FileDistributionRequest request);</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeOperationsService.cs:377](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeOperationsService.cs#L377) | Distributes one normalized file to each recipient, appending an immutable delivery-log entry and a FundAdministrationEventKind.FileDelivered event per recipient. Returns the delivery records produced for this distribution. |
 | <code>public IReadOnlyList&lt;FileDeliveryRecord&gt; DeliveryLog { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeOperationsService.cs:469](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeOperationsService.cs#L469) | The full archived delivery log, oldest first. |
-
-## ReconciliationDimension
-
-Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.ReconciliationDimension</code>. Kind: `enum`.
-
-Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:131](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L131).
-
-The reconciliation dimension a middle-office activity applies to.
-
-```csharp
-public enum ReconciliationDimension
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Trade</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:134](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L134) | Trade / transaction reconciliation. |
-| <code>Cash</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:137](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L137) | Cash balance reconciliation. |
-| <code>Position</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:140](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L140) | Security position reconciliation. |
-
-## TradeBooking
-
-Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.TradeBooking</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:161](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L161).
-
-A trade booked on trade date (T+0), carrying the settlement date derived from the instrument&#x27;s settlement cycle and the T+1 date its reconciliation is due.
-
-```csharp
-public sealed record TradeBooking(string BookingId, string AccountId, string Symbol, ReconciliationDimension Dimension, decimal Quantity, decimal Amount, string Currency, DateOnly TradeDate, DateOnly SettlementDate, int SettlementCycleDays, DateTimeOffset BookedAtUtc, string BookedBy)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DateOnly ReconciliationDueDate =&gt; …;</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:179](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L179) | The T+1 date on which this booking&#x27;s trade/cash/position reconciliation is due, counted in business days (a Friday trade reconciles the following Monday). |

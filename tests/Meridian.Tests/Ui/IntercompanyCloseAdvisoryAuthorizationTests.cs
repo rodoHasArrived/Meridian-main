@@ -3,10 +3,12 @@ using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
+using Meridian.FinancialOperations.Intercompany;
 using Meridian.Identity;
 using Meridian.Identity.Auth;
 using Meridian.Storage.FundStructure;
 using Meridian.Storage.Ledger;
+using Meridian.Tests.TestSupport;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Http;
@@ -29,6 +31,40 @@ public sealed class IntercompanyCloseAdvisoryAuthorizationTests
         fixture.Monitor.VerifyNoOtherCalls();
         fixture.Journals.VerifyNoOtherCalls();
         fixture.Ownership.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task UnconfirmedReciprocalBalancesJoinTheAdvisoryAsWarnings_WithoutChangingItsStatus()
+    {
+        using var confirmations = await IntercompanyBalanceConfirmationFixture.CreateAsync();
+        using var fixture = new Fixture(UserPermission.ViewLedgerReports | UserPermission.ManageLedgerReports,
+            IntercompanyBalanceConfirmationFixture.LenderBook, confirmations.Service);
+        fixture.Grant = (_, _) => true;
+        fixture.UseActualScopedAuthority();
+
+        var result = await fixture.Adapter.GetAsync(fixture.Scope, Fixture.Tenant, Fixture.Company);
+
+        Assert.Equal(("Current", true), (result.Status, result.IsComplete));
+        var finding = Assert.Single(result.Findings, item => item.Code.StartsWith("intercompany.confirmation.", StringComparison.Ordinal));
+        Assert.Equal(("intercompany.confirmation.not-proposed", "Warning"), (finding.Code, finding.Severity));
+        Assert.Equal(IntercompanyBalanceConfirmationFixture.LenderBook, finding.LedgerBookId);
+        Assert.Contains(IntercompanyBalanceConfirmationFixture.Profile.ToString("D"), finding.Message);
+    }
+
+    [Fact]
+    public async Task UnreadableConfirmationStatusIsReportedAsOneUnavailableWarning()
+    {
+        using var confirmations = await IntercompanyBalanceConfirmationFixture.CreateAsync();
+        // The close book is not one the confirmation authority can resolve, so its status cannot be read.
+        using var fixture = new Fixture(UserPermission.ViewLedgerReports | UserPermission.ManageLedgerReports, confirmations: confirmations.Service);
+        fixture.Grant = (_, _) => true;
+        fixture.UseActualScopedAuthority();
+
+        var result = await fixture.Adapter.GetAsync(fixture.Scope, Fixture.Tenant, Fixture.Company);
+
+        Assert.Equal("Current", result.Status);
+        Assert.Equal("intercompany.confirmation.unavailable",
+            Assert.Single(result.Findings, item => item.Code.StartsWith("intercompany.confirmation.", StringComparison.Ordinal)).Code);
     }
 
     [Fact]
@@ -116,10 +152,10 @@ public sealed class IntercompanyCloseAdvisoryAuthorizationTests
         public CloseReadinessScopeDto Scope => new(Book.FundProfileId, Book.LedgerBookId, Guid.NewGuid(),
             EntityId.ToString("D"), Period.PeriodId.ToString("D"));
 
-        public Fixture(UserPermission permissions)
+        public Fixture(UserPermission permissions, Guid? bookId = null, IntercompanyBalanceConfirmationService? confirmations = null)
         {
             var now = DateTimeOffset.Parse("2026-11-13T00:00:00Z");
-            Book = new(Guid.NewGuid(), "fund-a", EntityId, FundStructureNodeKindDto.Entity, "Synthetic source", "USD", now, now);
+            Book = new(bookId ?? Guid.NewGuid(), "fund-a", EntityId, FundStructureNodeKindDto.Entity, "Synthetic source", "USD", now, now);
             Period = new(Guid.NewGuid(), Book.LedgerBookId, 2026, 11, "November", new(2026, 11, 1), new(2026, 11, 30), "Open", now, null, 1);
             var accessor = new HttpContextAccessor { HttpContext = Http };
             var services = new ServiceCollection();
@@ -128,6 +164,8 @@ public sealed class IntercompanyCloseAdvisoryAuthorizationTests
             services.AddSingleton(Ownership.Object);
             services.AddSingleton(Monitor.Object);
             services.AddSingleton(Authorization.Object);
+            if (confirmations is not null)
+                services.AddSingleton(confirmations);
             _services = services.BuildServiceProvider();
             Http.RequestServices = _services;
             Http.Items[LoginSessionMiddleware.CurrentUserKey] = Actor;
