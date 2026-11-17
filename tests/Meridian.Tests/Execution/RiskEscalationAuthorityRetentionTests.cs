@@ -64,6 +64,45 @@ public sealed class RiskEscalationAuthorityRetentionTests : IDisposable
         Queue().TryAttachAuthority("missing", Authority()).Should().BeFalse();
     }
 
+    [Fact]
+    public void Park_WhileAuthorityStaged_RetainsItWithTheEntry()
+    {
+        var authority = Authority();
+        var queue = Queue();
+
+        RiskEscalationEntry entry;
+        using (queue.StageAuthority("order-1", authority))
+        {
+            entry = queue.Park(Order() with { ClientOrderId = "order-1" }, "notional above limit", actor: "ops");
+        }
+
+        entry.Authority.Should().BeEquivalentTo(authority, "the park itself retains the staged authority");
+        Queue().TryGet(entry.EscalationId)!.Authority.Should().BeEquivalentTo(authority,
+            "it is persisted in the entry's own durable write, with no window in which it is missing");
+    }
+
+    [Fact]
+    public void Park_OfAnotherOrder_DoesNotTakeTheStagedAuthority()
+    {
+        var queue = Queue();
+        using var staged = queue.StageAuthority("order-1", Authority());
+
+        var entry = queue.Park(Order() with { ClientOrderId = "order-2" }, "notional above limit", actor: "ops");
+
+        entry.Authority.Should().BeNull();
+    }
+
+    [Fact]
+    public void Park_AfterStagingEnds_RetainsNoAuthority()
+    {
+        var queue = Queue();
+        queue.StageAuthority("order-1", Authority()).Dispose();
+
+        var entry = queue.Park(Order() with { ClientOrderId = "order-1" }, "notional above limit", actor: "ops");
+
+        entry.Authority.Should().BeNull();
+    }
+
     private RiskEscalationQueueService Queue() => new(
         NullLogger<RiskEscalationQueueService>.Instance,
         options: new RiskEscalationQueueOptions(Path.Combine(_root, "escalations.json")));

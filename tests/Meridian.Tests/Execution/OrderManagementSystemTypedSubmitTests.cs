@@ -146,6 +146,42 @@ public sealed class OrderManagementSystemTypedSubmitTests : IDisposable
     }
 
     [Fact]
+    public async Task SubmitAsync_ParkedAndApprovedBeforeThePostParkStep_StillRetainsItsAuthority()
+    {
+        var queue = new RiskEscalationQueueService(
+            NullLogger<RiskEscalationQueueService>.Instance,
+            options: new RiskEscalationQueueOptions(
+                Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json")));
+
+        // The validator parks the order, and the desk approves it before the OMS's post-park step
+        // runs. Attaching authority afterwards is refused for an entry no longer pending, so only
+        // retention at park time keeps the authority.
+        var riskValidator = RiskValidatorSubstitute.Create();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                var parked = queue.Park(call.Arg<OrderRequest>(), "above band", actor: "ops");
+                queue.Approve(parked.EscalationId, "risk-desk");
+                return RiskValidationResult.Escalated($"Parked for governed approval ({parked.EscalationId})", parked.EscalationId);
+            });
+
+        using var oms = new OrderManagementSystem(
+            new ExecutionGateway(NullLogger<ExecutionGateway>.Instance),
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator,
+            escalationQueue: queue);
+        await oms.StartAsync();
+
+        var result = await oms.SubmitAsync(new OrderSubmitCommand(LimitOrder() with { ClientOrderId = "park-race" }, Ticket()));
+
+        result.RequiresApproval.Should().BeTrue();
+        var entry = queue.TryGet(result.EscalationId!)!;
+        entry.Status.Should().Be(RiskEscalationStatus.Approved);
+        entry.Authority.Should().NotBeNull("the park retained the order's typed authority in its own write");
+        entry.Authority!.Origin.Should().Be(OrderCommandOrigin.OperatorTicket);
+    }
+
+    [Fact]
     public void OrderOrigin_SerializesByName()
     {
         var json = System.Text.Json.JsonSerializer.Serialize(new AuthorityDecisionSummary(

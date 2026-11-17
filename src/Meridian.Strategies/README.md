@@ -129,6 +129,9 @@ policy outcome names and legacy cell kinds remain compatibility inputs.
 run's retained fund account. A run without a fund account (paper only) keeps the untyped path.
 `StrategyRunAuthoritySource` gives the OMS read-only access to the run record and its approved live
 promotion, so a live order routes only for an active run that an approved live promotion targets.
+The OMS asks at preflight and again at dispatch, inside its pre-trade gate. The run record is read
+every time; an approved live promotion found for a run is remembered, because promotion history is
+append-only, so the promotion file is not re-read for every order.
 
 ### Shared SMA reference and retained comparison
 

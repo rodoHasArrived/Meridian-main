@@ -124,7 +124,7 @@ internal sealed class OrderAuthorityResolver
                     "Kill-switch authority can cancel orders but cannot submit them.");
         }
 
-        if (EvaluateGrant(root, prepared.SafeRequest) is { } grantRefusal)
+        if (EvaluateGrant(prepared.Authority, root, prepared.SafeRequest) is { } grantRefusal)
             return grantRefusal;
 
         switch (root.Origin)
@@ -166,7 +166,7 @@ internal sealed class OrderAuthorityResolver
         if (root.Origin is OrderCommandOrigin.Unattributed or OrderCommandOrigin.KillSwitch)
             return null;
 
-        if (EvaluateGrant(root, prepared.SafeRequest) is { Refusal: { } grantRefusal })
+        if (EvaluateGrant(prepared.Authority, root, prepared.SafeRequest) is { Refusal: { } grantRefusal })
             return grantRefusal with { Source = DispatchSource };
 
         if (root.Origin == OrderCommandOrigin.StrategyRun && _executionMode is ExecutionMode.Live)
@@ -208,17 +208,23 @@ internal sealed class OrderAuthorityResolver
         return current;
     }
 
-    private OrderAuthorityDecision? EvaluateGrant(OrderSubmissionAuthority root, OrderRequest order)
+    /// <summary>
+    /// The account comes from the root (parked) authority. Freshness comes from the outermost
+    /// grant: on a release that is the approver's grant, resolved when the release was made, so an
+    /// approval given long after the order was parked is judged by its own age.
+    /// </summary>
+    private OrderAuthorityDecision? EvaluateGrant(OrderSubmissionAuthority authority, OrderSubmissionAuthority root, OrderRequest order)
     {
         if (root.AccountGrant is not { } grant)
             return Refuse(OrderAuthorityReasonCodes.AccountGrantMissing,
                 "The order carries no execution account grant.");
 
-        if (order.FundAccountId != grant.FundAccountId)
+        var current = authority.AccountGrant ?? grant;
+        if (order.FundAccountId != grant.FundAccountId || current.FundAccountId != grant.FundAccountId)
             return Refuse(OrderAuthorityReasonCodes.AccountGrantMismatch,
                 "The order's fund account does not match the account the submitter was granted.");
 
-        if (_clock.GetUtcNow() - grant.ResolvedAt > _options.MaxGrantAge)
+        if (_clock.GetUtcNow() - current.ResolvedAt > _options.MaxGrantAge)
             return Refuse(OrderAuthorityReasonCodes.AccountGrantStale,
                 "The execution account grant is older than the configured maximum age.");
 

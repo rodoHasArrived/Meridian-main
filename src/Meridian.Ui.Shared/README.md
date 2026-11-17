@@ -1442,8 +1442,10 @@ Order authority: the order ticket and position actions submit under typed author
 (`OperatorTicket`, `PositionAction`) with an account grant once the operator is verified for the
 named account; accountless operator orders stay untyped, which live routing refuses. Client
 metadata naming `runId`, `sessionId` or `orderOrigin` is refused with 403 on submit and preview, and
-removed from broker-reported position metadata. A risk-escalation release submits under the
-authority retained with the parked entry. Live manual orders, position actions included, are
+removed from broker-reported position metadata. The order ticket's `correlationId` is minted by the
+server; a client's value is kept as `clientCorrelationId`. A risk-escalation release submits under
+the authority retained with the parked entry, plus the approver's grant for the account, which the
+approve endpoint verifies, so an approval given long after parking can still release the order. Live manual orders, position actions included, are
 refused until a reviewed manual-intent contract exists. The workstation registers
 `StrategyRunAuthoritySource` for the OMS. The trading workspace payload carries
 `ManualOrderEntry`, which mirrors the OMS's mode for the active gateway so the order ticket can

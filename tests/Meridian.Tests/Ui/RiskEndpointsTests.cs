@@ -634,6 +634,63 @@ public sealed class RiskEndpointsTests
         adminEntries!.Should().HaveCount(3);
     }
 
+    [Fact]
+    public async Task RiskEscalations_ApprovalLongAfterParking_ReleasesUnderTheApproversFreshGrant()
+    {
+        // The parked ticket's grant is older than the default 8h maximum. The approve endpoint
+        // verifies the approver for the account and releases under that fresh grant, so a late
+        // decision still routes; the parked authority still fixes the account and origin.
+        var accountId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(new RiskEscalationQueueService(
+                NullLogger<RiskEscalationQueueService>.Instance,
+                options: new RiskEscalationQueueOptions(
+                    Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json"))));
+            services.AddSingleton<IScopedAuthorizationService>(_ => new AccountScopedAuthorizationService(accountId));
+            services.AddSingleton<IOrderManager>(sp =>
+            {
+                var queue = sp.GetRequiredService<RiskEscalationQueueService>();
+                var oms = new OrderManagementSystem(
+                    new Meridian.Execution.PaperTradingGateway(NullLogger<Meridian.Execution.PaperTradingGateway>.Instance),
+                    NullLogger<OrderManagementSystem>.Instance,
+                    riskValidator: new Meridian.Risk.CompositeRiskValidator(
+                        [], NullLogger<Meridian.Risk.CompositeRiskValidator>.Instance, escalationQueue: queue),
+                    escalationQueue: queue);
+                oms.StartAsync().GetAwaiter().GetResult();
+                return oms;
+            });
+        });
+
+        var queue = app.Services.GetRequiredService<RiskEscalationQueueService>();
+        var staleGrant = new ExecutionAccountGrant(
+            accountId, "submitter", ExecutionAccountGrantSources.HttpPrincipal, DateTimeOffset.UtcNow - TimeSpan.FromHours(9));
+        var parked = queue.Park(
+            CreateParkedOrder(accountId) with
+            {
+                ClientOrderId = "late-approval",
+                Metadata = new Dictionary<string, string> { ["actor"] = "submitter" }
+            },
+            "above band",
+            actor: "submitter");
+        queue.TryAttachAuthority(
+            parked.EscalationId,
+            OrderSubmissionAuthority.ForOperatorTicket("submitter", staleGrant, "corr-late").ToRecord()).Should().BeTrue();
+
+        var approve = new HttpRequestMessage(HttpMethod.Post, $"/api/risk/escalations/{parked.EscalationId}/approve")
+        {
+            Content = JsonContent(new { reason = "reviewed the next morning" })
+        };
+        approve.Headers.Add("X-Test-User", "risk-desk");
+        var response = await app.GetTestClient().SendAsync(approve);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var approval = JsonSerializer.Deserialize<RiskEscalationApprovalResponse>(
+            await response.Content.ReadAsStringAsync(), JsonOptions());
+        approval!.ReleaseResult!.Success.Should().BeTrue(approval.ReleaseResult.ErrorMessage);
+        approval.ReleaseResult.AuthorityDecision!.Origin.Should().Be(OrderCommandOrigin.EscalationRelease);
+    }
+
     private static OrderRequest CreateParkedOrder(Guid? fundAccountId = null) => new()
     {
         Symbol = "AAPL",

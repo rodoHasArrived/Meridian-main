@@ -312,6 +312,11 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
 
             if (_riskValidator is not null)
             {
+                // A rule that parks this order retains its typed authority in the same durable
+                // write as the escalation entry (see RiskEscalationQueueService.StageAuthority).
+                using var stagedAuthority = RetainedAuthority(prepared) is { } authorityToStage && _escalationQueue is not null
+                    ? _escalationQueue.StageAuthority(orderId, authorityToStage)
+                    : null;
                 var riskResult = await _riskValidator.ValidateResolvedOrderAsync(resolvedOrder, ct).ConfigureAwait(false);
                 riskDecision = riskResult;
                 if (!riskResult.IsApproved)

@@ -17,7 +17,9 @@ Order authority (`OrderCommandAuthority.cs`): `OrderSubmissionAuthority` records
 originated an order (`OrderCommandOrigin`), the `ExecutionAccountGrant` an endpoint verified, and
 for strategy orders the run id. It is built only by validating factories and has no public or
 JSON constructor; `OrderSubmissionAuthorityRecord` is its server-retained form, restored through
-the same factories. `IOrderManager.SubmitAsync(OrderSubmitCommand)` submits under it. `OrderState.Origin` and
+the same factories. `ForEscalationRelease` takes an optional `releaseGrant`: the approver's grant,
+which must cover the parked order's account. When present, grant age is judged from it, so a late
+approval can still release the order. `IOrderManager.SubmitAsync(OrderSubmitCommand)` submits under it. `OrderState.Origin` and
 `OrderResult.AuthorityDecision` carry the origin and the authority outcome back to callers;
 `OrderCommandOrigin` serializes by name.
 `ExecutionOrderMetadataPolicy` treats `runId`, `run_id`, `sessionId`, `session_id` and

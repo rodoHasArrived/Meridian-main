@@ -596,10 +596,22 @@ between preflight and dispatch using the same hook pattern as the existing opera
 - [x] Targeted validation ran: `dotnet test tests/Meridian.Execution.Tests`, `--filter "FullyQualifiedName~Risk|FullyQualifiedName~ExecutionGovernance"` in `tests/Meridian.Tests`, and `npm --prefix src/Meridian.Ui/dashboard run test`. The sources under `tests/Meridian.Tests/Execution/`, where most authority suites live, compile into `Meridian.Execution.Tests` through `ExecutionTestSources.props`, so the full execution suite covers them. Results are in the PR.
 - [x] Independent AI critique (a separate review agent given the code, not this design's conclusions). Its findings:
   - **Fixed:** if the dispatch recheck threw after risk validation consumed a release approval, the approval stayed spent and the order never routed. The recheck threw because readiness and Security Master are read without a guard and cancellation reaches both. The recheck now re-arms the approval before the exception propagates, as a refusal does. Regression test: `SubmitAsync_DispatchRecheckThrows_RearmsTheConsumedApproval`. The same gap predates this design for the journal write in that block, and it is left as is.
-  - **Open:** a release is judged by the parked grant's original age, so an approval given more than `MaxGrantAge` after parking can never release the order. It is refused as `ACCOUNT_GRANT_STALE`, fail-closed, before any approval is consumed. This sharpens Open Question 3.
-  - **Open:** `Park` persists the entry before `TryAttachAuthority` runs. An approval, crash or failed snapshot write between the two leaves a parked live order with no retained authority, so it cannot be released. This fails closed. Passing the authority into `Park` would make it atomic.
-  - **Open:** the ticket's `correlationId` is client-chosen and flows into authority, journal and audit records. A client could send a value shaped like `risk-escalation-<id>`. Minting it server-side, or recording the client value under its own key, would close this.
-  - **Open (cost):** the run lookup and readiness reads at preflight and dispatch run inside `_preTradeReservationGate`, so submissions queue behind that I/O.
+  - **Fixed (follow-up):** an approval given more than `MaxGrantAge` after parking could never release the order, because the release was judged by the parked grant's original age.
+    - The approve endpoint already verifies the approver's account-scoped access. The release now carries the approver's grant, resolved at release time: `ForEscalationRelease(..., releaseGrant)`, which must cover the parked account.
+    - The resolver takes the account binding from the parked root and the grant age from the outermost grant.
+    - Tests: `Live_Release_ApprovedLongAfterParking_IsJudgedByTheApproversFreshGrant`, `Release_StaleApproverGrant_IsRefused`, `Release_GrantForAnotherAccount_IsRejectedByTheFactory`, `Release_ApproverGrant_SurvivesTheRetainedRecord`, and the end-to-end `RiskEscalations_ApprovalLongAfterParking_ReleasesUnderTheApproversFreshGrant`.
+  - **Fixed (follow-up):** previously `Park` persisted the entry before the OMS attached authority, so an approval, crash or failed write in between left a parked typed order unreleasable.
+    - The OMS now stages the order's authority with the queue (`RiskEscalationQueueService.StageAuthority`, keyed by client order id) while risk validation runs, and `Park` writes it in the entry's own durable snapshot.
+    - `TryAttachAuthority` stays only as a fallback for a validator that parks without staging.
+    - Tests: `SubmitAsync_ParkedAndApprovedBeforeThePostParkStep_StillRetainsItsAuthority` and three queue staging tests in `RiskEscalationAuthorityRetentionTests`.
+  - **Fixed (follow-up):** the ticket's `correlationId` was client-chosen.
+    - The endpoint now mints it, and keeps a client's value as `clientCorrelationId` metadata.
+    - Test: `SubmitOrder_ClientCorrelationId_IsKeptAsClientTraceButNeverNamesTheOrder`.
+    - Position actions already minted theirs.
+  - **Reduced (follow-up):** gate I/O.
+    - `StrategyRunAuthoritySource` now remembers an approved live promotion per run. Promotion history is append-only, so a found approval cannot be withdrawn. The promotion file is therefore read once per run instead of at every preflight and dispatch.
+    - The run record, readiness and Security Master are still read on every check, inside the gate at dispatch, because the recheck exists to observe their changes. Moving them out of the gate would reopen the window the recheck closes.
+    - Tests: two caching tests in `StrategyRunAuthoritySourceTests`.
   - The review found no live route without strategy-run authority, no client path into identity or the account grant, no lease or sweep race, no segregation-of-duties regression on release, and no unvalidated restore of persisted authority.
 - The developer owns acceptance and the merge.
 
@@ -611,7 +623,7 @@ between preflight and dispatch using the same hook pattern as the existing opera
 | --- | --- | --- | --- |
 | 1 | What is the reviewed manual-intent authority contract for live tickets: a time-boxed operator mandate per account, a per-order second approver, or none (paper-only manual tickets)? | Product owner | No manual live ticket path. This is fail-closed and matches the roadmap |
 | 2 | Should `PositionAction` (close position) be allowed in Live under a narrower rule, for example reduce-only with an account grant, since closing exposure is a safety action? | Product owner | Operators can't close a live position from the workstation without the kill switch |
-| 3 | Is 8 hours the right `MaxGrantAge`, given that escalations can park overnight? | Product owner | Parked orders either expire unexpectedly or carry stale grants |
+| 3 | Is 8 hours the right `MaxGrantAge`? A late approval no longer expires a parked order, because a release is judged by the approver's grant, resolved when the release is made. The limit still bounds tickets, strategy-run grants and the approver's grant itself. | Product owner | Orders submitted under a grant older than the limit are refused at preflight or dispatch |
 | 4 | Does `ISecurityMasterGate` have a version stamp, so the dispatch check can be skipped when nothing changed? | Implementer | One extra Security Master call per order at dispatch |
 | 5 | Should a paused strategy run keep live order authority? `StrategyRunAuthoritySource` treats a run as active until it ends or reaches a terminal status, so a paused run still passes the run binding check. | Product owner | Orders a paused run already queued can still route |
 | 6 | Should every operator order name an account? Accountless tickets and position actions stay on the untyped path, which works in paper and is refused live. Requiring an account changes the browser ticket. | Product owner | Paper tickets without an account carry no typed authority |

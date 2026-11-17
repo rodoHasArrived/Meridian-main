@@ -65,6 +65,36 @@ public sealed class StrategyRunAuthoritySourceTests
         (await source.GetAsync(run.RunId))!.IsActive.Should().BeFalse();
     }
 
+    [Fact]
+    public async Task GetAsync_ApprovedPromotion_IsReadFromTheStoreOnce_WhileTheRunIsReadEveryTime()
+    {
+        var run = await RecordLiveRunAsync();
+        await _promotions.AppendAsync(Promotion(run.RunId, RunType.Live, PromotionDecisionKinds.Approved));
+        var source = new StrategyRunAuthoritySource(_runs, _promotions);
+
+        (await source.GetAsync(run.RunId))!.PromotionTargetRunId.Should().Be(run.RunId);
+        await _runs.RecordRunAsync(run with { EndedAt = DateTimeOffset.UtcNow });
+        var afterEnd = await source.GetAsync(run.RunId);
+
+        _promotions.Loads.Should().Be(1, "an approval found for a run is remembered; promotion history is append-only");
+        afterEnd!.IsActive.Should().BeFalse("whether the run is still active is read on every check");
+        afterEnd.PromotionTargetRunId.Should().Be(run.RunId);
+    }
+
+    [Fact]
+    public async Task GetAsync_RunWithoutApproval_IsLookedUpAgainUntilApproved()
+    {
+        var run = await RecordLiveRunAsync();
+        var source = new StrategyRunAuthoritySource(_runs, _promotions);
+
+        (await source.GetAsync(run.RunId))!.PromotionTargetRunId.Should().BeNull();
+        await _promotions.AppendAsync(Promotion(run.RunId, RunType.Live, PromotionDecisionKinds.Approved));
+
+        (await source.GetAsync(run.RunId))!.PromotionTargetRunId.Should().Be(run.RunId,
+            "a missing approval is never remembered");
+        _promotions.Loads.Should().Be(2);
+    }
+
     private async Task<StrategyRunEntry> RecordLiveRunAsync(bool ended = false)
     {
         var run = StrategyRunEntry.Start("authority-strategy", "Authority Strategy", RunType.Live) with
@@ -96,8 +126,13 @@ public sealed class StrategyRunAuthoritySourceTests
     {
         private readonly List<StrategyPromotionRecord> _records = [];
 
-        public Task<IReadOnlyList<StrategyPromotionRecord>> LoadAllAsync(CancellationToken ct = default) =>
-            Task.FromResult<IReadOnlyList<StrategyPromotionRecord>>(_records.ToArray());
+        public int Loads { get; private set; }
+
+        public Task<IReadOnlyList<StrategyPromotionRecord>> LoadAllAsync(CancellationToken ct = default)
+        {
+            Loads++;
+            return Task.FromResult<IReadOnlyList<StrategyPromotionRecord>>(_records.ToArray());
+        }
 
         public Task<PromotionDecisionReservation> ReserveFirstDecisionAsync(
             StrategyPromotionRecord record,

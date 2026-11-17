@@ -596,6 +596,44 @@ public sealed class ExecutionGovernanceEndpointsTests
     }
 
     [Fact]
+    public async Task SubmitOrder_ClientCorrelationId_IsKeptAsClientTraceButNeverNamesTheOrder()
+    {
+        // A client-chosen correlation id would flow into the authority, journal, audit and any
+        // escalation; one shaped like a governed release's would make the order's records look
+        // like a release. The server mints the order's correlation and keeps the client's value
+        // under its own key.
+        OrderSubmitCommand? submitted = null;
+        var oms = Substitute.For<IOrderManager>();
+        oms.SubmitAsync(Arg.Do<OrderSubmitCommand>(command => submitted = command), Arg.Any<CancellationToken>())
+            .Returns(new OrderResult { Success = true, OrderId = "ticket-corr" });
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterFundAccountScope(services, LiveFundAccountId);
+            services.AddSingleton(oms);
+        });
+        var client = app.GetTestClient();
+        client.DefaultRequestHeaders.Add("X-Meridian-Actor", "ops");
+
+        var response = await client.PostAsync("/api/execution/orders/submit", JsonContent(new
+        {
+            clientOrderId = "ticket-corr",
+            symbol = "AAPL",
+            side = 0,
+            type = 1,
+            quantity = 1,
+            limitPrice = 190.25m,
+            fundAccountId = LiveFundAccountId,
+            metadata = new Dictionary<string, string> { ["correlationId"] = "risk-escalation-forged" }
+        }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        submitted.Should().NotBeNull();
+        submitted!.Authority.CorrelationId.Should().NotBe("risk-escalation-forged");
+        submitted.Order.Metadata!["correlationId"].Should().Be(submitted.Authority.CorrelationId);
+        submitted.Order.Metadata["clientCorrelationId"].Should().Be("risk-escalation-forged");
+    }
+
+    [Fact]
     public async Task SubmitOrder_WithRestrictedBrokerRoutingMetadataAlias_ReturnsForbidden()
     {
         var tempRoot = CreateTempRoot();

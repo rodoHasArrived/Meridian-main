@@ -212,6 +212,60 @@ public sealed class OrderAuthorityResolverTests
         (await resolver.EvaluatePreflightAsync(Prepared(releasedRun), default)).IsApproved.Should().BeTrue();
     }
 
+    [Fact]
+    public async Task Live_Release_ApprovedLongAfterParking_IsJudgedByTheApproversFreshGrant()
+    {
+        var resolver = Resolver(ExecutionMode.Live, new RecordingReadinessGate(approve: true),
+            new StubRunAuthority(_ => Promoted()));
+        var parked = OrderSubmissionAuthority.ForStrategyRun(
+            "strategy-runtime", Grant("strategy-runtime", Now - TimeSpan.FromHours(9)), "run-live");
+
+        var withApproverGrant = OrderSubmissionAuthority.ForEscalationRelease(
+            parked, "risk-approver", releaseGrant: Grant("risk-approver", Now - TimeSpan.FromMinutes(1)));
+        var withoutApproverGrant = OrderSubmissionAuthority.ForEscalationRelease(parked, "risk-approver");
+
+        (await resolver.EvaluatePreflightAsync(Prepared(withApproverGrant), default)).IsApproved.Should().BeTrue(
+            "the approval was made with a grant resolved at release time");
+        (await resolver.EvaluateDispatchAsync(Prepared(withApproverGrant), default)).Should().BeNull();
+        (await resolver.EvaluatePreflightAsync(Prepared(withoutApproverGrant), default))
+            .Refusal!.ReasonCode.Should().Be(OrderAuthorityReasonCodes.AccountGrantStale,
+                "without a release grant the parked grant's age still applies");
+    }
+
+    [Fact]
+    public async Task Release_StaleApproverGrant_IsRefused()
+    {
+        var resolver = Resolver(ExecutionMode.Paper, new RecordingReadinessGate(approve: true));
+        var release = OrderSubmissionAuthority.ForEscalationRelease(
+            Ticket(), "risk-approver", releaseGrant: Grant("risk-approver", Now - TimeSpan.FromHours(9)));
+
+        (await resolver.EvaluatePreflightAsync(Prepared(release), default))
+            .Refusal!.ReasonCode.Should().Be(OrderAuthorityReasonCodes.AccountGrantStale);
+    }
+
+    [Fact]
+    public void Release_GrantForAnotherAccount_IsRejectedByTheFactory()
+    {
+        var otherAccountGrant = new ExecutionAccountGrant(OtherAccountId, "risk-approver", ExecutionAccountGrantSources.HttpPrincipal, Now);
+
+        var build = () => OrderSubmissionAuthority.ForEscalationRelease(Ticket(), "risk-approver", releaseGrant: otherAccountGrant);
+
+        build.Should().Throw<ArgumentException>().Which.ParamName.Should().Be("releaseGrant");
+    }
+
+    [Fact]
+    public void Release_ApproverGrant_SurvivesTheRetainedRecord()
+    {
+        var release = OrderSubmissionAuthority.ForEscalationRelease(
+            Ticket(), "risk-approver", "risk-escalation-esc-1", Grant("risk-approver", Now));
+
+        var restored = OrderSubmissionAuthority.FromRetainedRecord(release.ToRecord());
+
+        restored.AccountGrant!.GrantedTo.Should().Be("risk-approver");
+        restored.AccountGrant.ResolvedAt.Should().Be(Now);
+        restored.ReleasedFrom!.AccountGrant!.GrantedTo.Should().Be("ops");
+    }
+
     // ---- Dispatch recheck (Phase 3) ----
 
     [Fact]

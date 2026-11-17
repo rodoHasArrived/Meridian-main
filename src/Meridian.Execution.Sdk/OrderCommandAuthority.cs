@@ -190,23 +190,32 @@ public sealed class OrderSubmissionAuthority
 
     /// <summary>
     /// Authority for releasing a risk-escalated order. The parked authority is carried unchanged,
-    /// so the OMS rechecks the original account grant and run binding rather than re-deriving them
-    /// from the approver. <paramref name="correlationId"/> names the release itself; it defaults
-    /// to the parked order's correlation.
+    /// so the OMS rechecks the original account binding and run binding rather than re-deriving
+    /// them from the approver. <paramref name="correlationId"/> names the release itself; it
+    /// defaults to the parked order's correlation.
     /// </summary>
+    /// <param name="releaseGrant">
+    /// The approver's grant for the parked order's account, resolved when the release is made. It
+    /// must cover the same account as the parked grant. When present, the OMS judges the grant's
+    /// age from it, so an approval given long after the order was parked can still release it;
+    /// without it the parked grant's age applies.
+    /// </param>
     public static OrderSubmissionAuthority ForEscalationRelease(
         OrderSubmissionAuthority parked,
         string approver,
-        string? correlationId = null)
+        string? correlationId = null,
+        ExecutionAccountGrant? releaseGrant = null)
     {
         ArgumentNullException.ThrowIfNull(parked);
         if (parked.Origin == OrderCommandOrigin.KillSwitch)
             throw new ArgumentException("Kill-switch cancellations are never parked for approval.", nameof(parked));
+        if (releaseGrant is not null && releaseGrant.FundAccountId != parked.AccountGrant?.FundAccountId)
+            throw new ArgumentException("A release grant must cover the parked order's fund account.", nameof(releaseGrant));
 
         return new OrderSubmissionAuthority(
             OrderCommandOrigin.EscalationRelease,
             RequireText(approver, nameof(approver)),
-            parked.AccountGrant,
+            releaseGrant ?? parked.AccountGrant,
             parked.RunId,
             parked.StrategyArtifactId,
             NormalizeOptional(correlationId) ?? parked.CorrelationId,
@@ -259,7 +268,8 @@ public sealed class OrderSubmissionAuthority
                 FromRetainedRecord(record.ReleasedFrom
                     ?? throw new ArgumentException("A release record must carry the authority it released.", nameof(record))),
                 record.Actor,
-                record.CorrelationId),
+                record.CorrelationId,
+                grant),
             _ => throw new ArgumentException(
                 $"Retained authority with origin '{record.Origin}' cannot be restored.", nameof(record))
         };

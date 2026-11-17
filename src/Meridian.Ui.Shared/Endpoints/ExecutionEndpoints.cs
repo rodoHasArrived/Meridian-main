@@ -192,15 +192,20 @@ public static partial class ExecutionEndpoints
                 return accountScopeFailure;
             }
 
-            string? correlationId = null;
-            request.Metadata?.TryGetValue("correlationId", out correlationId);
-            var ticketCorrelationId = string.IsNullOrWhiteSpace(correlationId) ? GenerateActionId() : correlationId;
+            // The correlation id is minted here: it identifies the order in the authority, journal,
+            // audit and any escalation, so a client must not choose it (for example one shaped like
+            // a governed release's "risk-escalation-<id>"). A client's own trace id is kept, under
+            // its own key.
+            string? clientCorrelationId = null;
+            request.Metadata?.TryGetValue("correlationId", out clientCorrelationId);
+            var ticketCorrelationId = GenerateActionId();
             var normalizedRequest = request with
             {
                 Metadata = MergeMetadata(
                     request.Metadata,
                     ("actor", actor),
-                    ("correlationId", ticketCorrelationId))
+                    ("correlationId", ticketCorrelationId),
+                    ("clientCorrelationId", string.IsNullOrWhiteSpace(clientCorrelationId) ? null : clientCorrelationId.Trim()))
             };
 
             // The account check above verified this operator for the named account, which is the

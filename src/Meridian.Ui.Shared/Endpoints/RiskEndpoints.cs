@@ -384,7 +384,10 @@ public static class RiskEndpoints
                 var releaseRequest = approved.Request with { Metadata = metadata };
 
                 // An order parked under typed authority is released under that same authority, so
-                // the OMS rechecks the original account grant and run binding, not the approver's.
+                // the OMS rechecks the original account binding and run binding, not the
+                // approver's. The approver's account access was verified above, so the release
+                // also carries the approver's grant resolved now: the OMS judges grant age from
+                // it, and an approval given hours after parking can still release the order.
                 // Orders parked through the untyped path (or before typed authority existed) keep
                 // the untyped release, which live routing refuses.
                 OrderSubmissionAuthority? releaseAuthority = null;
@@ -392,10 +395,14 @@ public static class RiskEndpoints
                 {
                     try
                     {
+                        var releaseGrant = approved.Request.FundAccountId is { } releaseAccount
+                            ? new ExecutionAccountGrant(releaseAccount, actor, ExecutionAccountGrantSources.HttpPrincipal, DateTimeOffset.UtcNow)
+                            : null;
                         releaseAuthority = OrderSubmissionAuthority.ForEscalationRelease(
                             OrderSubmissionAuthority.FromRetainedRecord(parkedAuthority),
                             actor,
-                            metadata["correlationId"]);
+                            metadata["correlationId"],
+                            releaseGrant);
                     }
                     catch (ArgumentException)
                     {

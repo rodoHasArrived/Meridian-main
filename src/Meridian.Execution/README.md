@@ -275,7 +275,7 @@ identity the caller put in metadata (`actor`, `runId`, `correlationId`, `session
 | `OperatorTicket` | Order ticket endpoint, after verifying the operator's access to the named account | Refused (`MANUAL_LIVE_INTENT_CONTRACT_NOT_REVIEWED`) until a reviewed manual-intent contract exists |
 | `PositionAction` | Position close and upsize endpoints, same account check | Refused as a manual live order. Broker-reported position metadata never grants run authority |
 | `StrategyRun` | `LiveStrategyRunSession`, using the run's retained fund account | Routes only for an active, live-promoted run whose artifact matches, and then only if readiness approves |
-| `EscalationRelease` | Risk escalation release, from the authority retained with the parked entry (`RiskEscalationEntry.Authority`) | Judged by the parked authority |
+| `EscalationRelease` | Risk escalation release, from the authority retained with the parked entry (`RiskEscalationEntry.Authority`) plus the approver's grant resolved at release time | Judged by the parked authority. Grant age is taken from the approver's grant, so a late approval can still release |
 | `KillSwitch` | Kill-switch sweep | Cancel-only; any submit is refused (`KILL_SWITCH_SUBMIT_NOT_ALLOWED`) |
 | `Unattributed` | Legacy `PlaceOrderAsync`, and operator orders that name no account | Paper routes unchanged. Live is refused before readiness (`ORDER_ORIGIN_UNATTRIBUTED_LIVE`) |
 
@@ -298,6 +298,12 @@ identity the caller put in metadata (`actor`, `runId`, `correlationId`, `session
 
 Retention and reporting:
 
+- A parked order keeps its typed authority in the escalation entry's own durable write. The OMS
+  stages it with the queue (`RiskEscalationQueueService.StageAuthority`, keyed by client order id)
+  while risk validation runs. `TryAttachAuthority` is only a fallback for validators that park
+  without staging.
+- The order ticket's `correlationId` is minted server-side. A client's value is kept as
+  `clientCorrelationId` metadata and never names the order in authority, journal or audit records.
 - Typed authority is retained on journal intents (`ExecutionJournalEntry.Authority`) and in
   `OrderSubmitted` audit metadata (`orderOrigin`, `accountGrant`, `accountGrantSource`,
   `releasedFromOrigin`). Untyped records are unchanged.

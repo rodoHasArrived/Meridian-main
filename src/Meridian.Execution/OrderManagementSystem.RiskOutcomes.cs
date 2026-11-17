@@ -36,10 +36,12 @@ public sealed partial class OrderManagementSystem
     {
         var parkedState = CreateRejectedState(orderId, request, riskResult.RejectReason, authority?.Origin ?? OrderCommandOrigin.Unattributed);
 
-        // Retain the typed authority with the parked entry so its release is judged by it. Best
-        // effort like the rest of post-park bookkeeping: without it the release stays on the
-        // untyped path, which refuses live orders.
+        // The park normally retained the typed authority already: the OMS staged it with the
+        // queue before risk validation. Attaching afterwards is only a fallback for a validator
+        // that parks into the queue without that staging. Best effort like the rest of post-park
+        // bookkeeping: without it the release stays on the untyped path, which refuses live orders.
         if (authority is not null && riskResult.EscalationId is { } parkedEscalationId && _escalationQueue is not null
+            && _escalationQueue.TryGet(parkedEscalationId)?.Authority is null
             && !_escalationQueue.TryAttachAuthority(parkedEscalationId, authority))
         {
             _logger.LogWarning(
