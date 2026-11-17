@@ -1,5 +1,5 @@
 using System.Globalization;
-using System.Security.Cryptography;
+using Meridian.Contracts.Integrity;
 using System.Text;
 using Meridian.Contracts.Ledger;
 
@@ -25,7 +25,7 @@ public static class IntercompanyBalanceConfirmationRules
                 .Append(side.TransactionCurrency).Append(':').Append(side.TransactionSignedBalance.ToString(CultureInfo.InvariantCulture)).Append(':')
                 .Append(side.FunctionalCurrency).Append(':').Append(side.FunctionalSignedBalance.ToString(CultureInfo.InvariantCulture)).Append(':')
                 .Append(string.Join(',', side.JournalEntryIds.Order().Select(id => id.ToString("D"))));
-        return Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(text.ToString())));
+        return Sha256Digest.ComputeUtf8(text.ToString());
     }
 
     /// <summary>

@@ -4,6 +4,7 @@ import { FormGrid } from "@/components/ui/form";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { entityOperationEndpoints as endpoints } from "@/lib/api/entity-operations.api";
+import { formatTimestamp } from "@/lib/format";
 import type { EntityOperationScope, IntercompanyAccountingArrangement } from "@/types/entity-operations";
 import type {
   IntercompanyBalanceConfirmation, IntercompanyConfirmationAction, IntercompanyConfirmationParty, IntercompanyConfirmationSummary
@@ -83,7 +84,7 @@ export function EntityBalanceConfirmations({ scope }: { scope: EntityOperationSc
               disabledReason="Enter a reason; only a disputed record can be resolved." onClick={() => void act(row, "Resolve")}>Resolve dispute</Button>
           </div> },
           { id: "history", label: "History", render: (row) => <TechnicalDetails label={`${row.events.length} retained step(s)`}><ul className="space-y-1 break-all text-sm">{row.events.map((step) =>
-            <li key={step.eventId}>{step.recordedAt} · {step.action}{step.party ? ` · ${step.party}` : ""} · {step.actor}{step.reason ? ` · ${step.reason}` : ""}</li>)}</ul><p className="break-all text-sm">Balance digest {row.balanceDigest}</p></TechnicalDetails> }
+            <li key={step.eventId}>{formatTimestamp(step.recordedAt)} · {step.action}{step.party ? ` · ${step.party}` : ""} · {step.actor}{step.reason ? ` · ${step.reason}` : ""}</li>)}</ul><p className="break-all text-sm">Balance digest {row.balanceDigest}</p></TechnicalDetails> }
         ]} />
       {scope.capabilities.canManageLedger ? <div className="space-y-3">
         <OperationField label="Dispute or resolution reason" value={reason} onChange={setReason} hint="Required to dispute or resolve; recorded with the step." />
