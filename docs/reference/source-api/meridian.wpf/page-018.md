@@ -117,6 +117,22 @@ Declared public members:
 | --- | --- | --- |
 | <code>public IntercompanyInterestAccrualControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/IntercompanyInterestAccrualControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/IntercompanyInterestAccrualControl.xaml.cs#L7) |  |
 
+## IntercompanyRateFixingsControl
+
+Qualified name: <code>Meridian.Wpf.Views.IntercompanyRateFixingsControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/IntercompanyRateFixingsControl.xaml.cs:5](../../../../src/Meridian.Wpf/Views/IntercompanyRateFixingsControl.xaml.cs#L5).
+
+```csharp
+public partial class IntercompanyRateFixingsControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyRateFixingsControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/IntercompanyRateFixingsControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/IntercompanyRateFixingsControl.xaml.cs#L7) |  |
+
 ## IssueDisplayItem
 
 Qualified name: <code>Meridian.Wpf.Views.IssueDisplayItem</code>. Kind: `class`.
@@ -1079,27 +1095,3 @@ Declared public members:
 | <code>public string RevealToolTip { get; set; }</code> | [src/Meridian.Wpf/Views/SecretInputControl.xaml.cs:121](../../../../src/Meridian.Wpf/Views/SecretInputControl.xaml.cs#L121) |  |
 | <code>public double InputMinHeight { get; set; }</code> | [src/Meridian.Wpf/Views/SecretInputControl.xaml.cs:127](../../../../src/Meridian.Wpf/Views/SecretInputControl.xaml.cs#L127) |  |
 | <code>public void ClearSecret();</code> | [src/Meridian.Wpf/Views/SecretInputControl.xaml.cs:133](../../../../src/Meridian.Wpf/Views/SecretInputControl.xaml.cs#L133) |  |
-
-## SecurityMasterPage
-
-Qualified name: <code>Meridian.Wpf.Views.SecurityMasterPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:83](../../../../src/Meridian.Wpf/Views/Pages.cs#L83).
-
-```csharp
-public partial class SecurityMasterPage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/SecurityMasterPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/SecurityMasterPage.xaml.cs#L10).
-
-Hosts security-master discovery, trust review, and conflict workflows.
-
-```csharp
-public partial class SecurityMasterPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterPage(SecurityMasterViewModel viewModel);</code> | [src/Meridian.Wpf/Views/SecurityMasterPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/SecurityMasterPage.xaml.cs#L14) |  |

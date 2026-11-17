@@ -6,6 +6,50 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OmsIntegrationApiHandler
+
+Qualified name: <code>Meridian.Ui.Services.Services.Integrations.OmsIntegrationApiHandler</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:12](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L12).
+
+Handles OMS/EMS ingestion with bounded in-memory deduplication, diagnostics, signing keys, and audit history.
+
+```csharp
+public sealed class OmsIntegrationApiHandler : IOmsIntegrationApiHandler
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public OmsIntegrationApiHandler(TimeProvider? timeProvider = null);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:26](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L26) |  |
+| <code>public OmsIngestionResult Ingest(OmsInboundMessage message, OmsRequestSignatureInput? signature = null);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:32](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L32) |  |
+| <code>public IReadOnlyCollection&lt;OmsInboundMessage&gt; Snapshot() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:68](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L68) |  |
+| <code>public IReadOnlyCollection&lt;OmsAdapterDiagnostics&gt; AdapterDiagnostics();</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:70](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L70) |  |
+| <code>public OmsSyncConflictResult ResolveSyncConflict(OmsSyncRequest request, OmsRequestSignatureInput? signature = null);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:112](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L112) |  |
+| <code>public IReadOnlyCollection&lt;OmsIntegrationAuditEntry&gt; AuditTrail(int take = 200) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:136](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L136) |  |
+| <code>public OmsRequestSignatureResult VerifyRequestSignature(OmsRequestSignatureInput signature);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:139](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L139) |  |
+| <code>public OmsKeyRotationResult RotateSigningKey(OmsKeyRotationRequest request);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:161](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L161) |  |
+| <code>public static string ComputeSignature(byte[] key, string timestampUtc, string canonicalPayload);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:234](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L234) |  |
+
+## OmsIntegrationServiceCollectionExtensions
+
+Qualified name: <code>Meridian.Ui.Services.Services.Integrations.OmsIntegrationServiceCollectionExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationServiceCollectionExtensions.cs:10](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationServiceCollectionExtensions.cs#L10).
+
+Registers the shared OMS/EMS integration API handler with dependency injection.
+
+```csharp
+public static class OmsIntegrationServiceCollectionExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IServiceCollection AddOmsIntegrationApiHandlers(this IServiceCollection services);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationServiceCollectionExtensions.cs:12](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationServiceCollectionExtensions.cs#L12) |  |
+
 ## IntegrityVerificationResult
 
 Qualified name: <code>Meridian.Ui.Services.Services.IntegrityVerificationResult</code>. Kind: `class`.
@@ -1093,41 +1137,3 @@ Declared public members:
 | <code>public IReadOnlyList&lt;SetupPreset&gt; GetSetupPresets();</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:511](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L511) | Gets available setup presets for quick configuration. |
 | <code>public async Task ApplyPresetAsync(SetupPreset preset, string provider, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:611](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L611) | Applies a setup preset to the configuration. |
 | <code>public async Task SaveCredentialsAsync(string provider, Dictionary&lt;string, string&gt; credentials, CancellationToken ct = default, string? connectionId = null);</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:638](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L638) | Saves provider credentials securely. |
-
-## ShowConfigResponse
-
-Qualified name: <code>Meridian.Ui.Services.ShowConfigResponse</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:680](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L680).
-
-Carries API configuration sections for diagnostic display.
-
-```csharp
-public sealed class ShowConfigResponse
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public List&lt;ConfigSection&gt;? Sections { get; set; }</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:682](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L682) |  |
-
-## ShowConfigResult
-
-Qualified name: <code>Meridian.Ui.Services.ShowConfigResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:670](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L670).
-
-Reports configuration-query success and the resulting configuration sections.
-
-```csharp
-public sealed class ShowConfigResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:672](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L672) |  |
-| <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:673](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L673) |  |
-| <code>public List&lt;ConfigSection&gt; Sections { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:674](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L674) |  |

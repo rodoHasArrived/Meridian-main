@@ -35,6 +35,7 @@ public static class IntercompanyEntityServiceRegistration
         {
             services.TryAddSingleton<IEntityLifecycleStore, PostgresEntityLifecycleStore>();
             services.TryAddSingleton<IIntercompanyAccountingArrangementStore, PostgresIntercompanyAccountingArrangementStore>();
+            services.TryAddSingleton<IIntercompanyRateFixingStore, PostgresIntercompanyRateFixingStore>();
         }
         else
         {
@@ -42,6 +43,8 @@ public static class IntercompanyEntityServiceRegistration
                 Path.Combine(Root(sp), "governance", "entity-lifecycle")));
             services.TryAddSingleton<IIntercompanyAccountingArrangementStore>(sp => new FileIntercompanyAccountingArrangementStore(
                 Path.Combine(Root(sp), "governance", "intercompany-accounting-arrangements")));
+            services.TryAddSingleton<IIntercompanyRateFixingStore>(sp => new FileIntercompanyRateFixingStore(
+                Path.Combine(Root(sp), "governance", "intercompany-rate-fixings"), sp.GetRequiredService<IFundScopeTenantAccessor>()));
         }
 
         if (hasLedgerDatabase)
@@ -108,6 +111,7 @@ public static class IntercompanyEntityServiceRegistration
                 timeProvider: sp.GetRequiredService<TimeProvider>());
         });
         services.TryAddSingleton<IntercompanyAccountingArrangementService>();
+        services.TryAddSingleton<IntercompanyRateFixingService>();
         services.TryAddSingleton<IntercompanyBalanceScheduleService>(sp =>
             sp.GetService<ILedgerJournalStore>() is { } journals &&
             sp.GetService<IIntercompanyAccountBindingStore>() is { } bindings &&

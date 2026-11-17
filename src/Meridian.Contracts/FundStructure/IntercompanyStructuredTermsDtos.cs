@@ -34,7 +34,11 @@ public sealed record IntercompanyStructuredTermsDto(
     [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? FixedFeeAmount = null,
     [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? AnnualFeeRate = null,
     string? CalculationBaseReference = null, IReadOnlyList<IntercompanyAllocationDto>? Allocations = null,
-    string? AllocationDriverReference = null, IntercompanyGuaranteeTermsDto? Guarantee = null, int SchemaVersion = 1);
+    string? AllocationDriverReference = null, IntercompanyGuaranteeTermsDto? Guarantee = null, int SchemaVersion = 1,
+    // Floating loans only: the index fixing is observed this many business days (schedule calendar) before each
+    // schedule period's accrual start and holds for the whole period (set in advance). Null-omitted, so retained
+    // revisions without it keep their exact review hashes; without it no fixing date is inferred.
+    int? FixingLagBusinessDays = null);
 
 public sealed record IntercompanyStructuredTermsPreviewRequestDto(Guid AgreementId, int? AgreementVersion = null, Guid? ProposalId = null);
 public sealed record IntercompanyDatePeriodDto(int Sequence, DateOnly AccrualStart, DateOnly AccrualEnd, DateOnly PaymentDate);

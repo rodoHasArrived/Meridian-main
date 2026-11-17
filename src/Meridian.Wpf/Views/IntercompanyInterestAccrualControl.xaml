@@ -30,7 +30,7 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="16">
             <TextBlock Text="Accrue interest" FontSize="20" FontWeight="SemiBold" />
-            <TextBlock Text="Fixed-rate simple interest is calculated by the server from the approved legal terms, the loan-interest profile's approved revisions and the posted loan principal. No rate, principal or amount is entered here. Fees, floating rates and compounding are not calculated. The calculation and its evidence are shared with the browser workstation and nothing posts automatically."
+            <TextBlock Text="Simple interest is calculated by the server from the approved legal terms, the loan-interest profile's approved revisions and the posted loan principal. A floating rate uses the approved index fixing for each period (see the Rate fixings tab) plus the declared spread; a missing fixing refuses the window. No rate, principal or amount is entered here. Fees and compounding are not calculated. The calculation and its evidence are shared with the browser workstation and nothing posts automatically."
                        Margin="0,5,0,12" TextWrapping="Wrap" />
             <WrapPanel>
                 <StackPanel><TextBlock Text="Source ledger book ID" /><TextBox Text="{Binding SourceBook, UpdateSourceTrigger=PropertyChanged}" Width="300" AutomationProperties.Name="Accrual source ledger book" /></StackPanel>
@@ -56,6 +56,7 @@
                     <DataGridTextColumn Header="Days" Binding="{Binding Days}" Width="220" />
                     <DataGridTextColumn Header="Posted principal" Binding="{Binding Principal}" Width="180" />
                     <DataGridTextColumn Header="Annual rate" Binding="{Binding AnnualRate}" Width="110" />
+                    <DataGridTextColumn Header="Fixing" Binding="{Binding Fixing}" Width="230" />
                     <DataGridTextColumn Header="Day count" Binding="{Binding DayCount}" Width="300" />
                     <DataGridTextColumn Header="Unrounded interest" Binding="{Binding UnroundedAmount}" Width="260" />
                     <DataGridTextColumn Header="Authority" Binding="{Binding Authority}" Width="420" />

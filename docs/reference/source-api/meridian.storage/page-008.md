@@ -6,6 +6,78 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PackageCompressionLevel
+
+Qualified name: <code>Meridian.Storage.Packaging.PackageCompressionLevel</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/Packaging/PackageOptions.cs:178](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L178).
+
+Compression level for package archives.
+
+```csharp
+public enum PackageCompressionLevel : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>None</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:181](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L181) | No compression - fastest, largest files. |
+| <code>Fast</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:184](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L184) | Fast compression - good speed, moderate size. |
+| <code>Balanced</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:187](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L187) | Balanced compression - good balance of speed and size. |
+| <code>Maximum</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:190](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L190) | Maximum compression - slowest, smallest files. |
+
+## PackageContents
+
+Qualified name: <code>Meridian.Storage.Packaging.PackageContents</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Packaging/PortableDataPackager.cs:453](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L453).
+
+Summary of package contents.
+
+```csharp
+public sealed class PackageContents
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string PackageId { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:455](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L455) |  |
+| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:456](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L456) |  |
+| <code>public string? Description { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:457](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L457) |  |
+| <code>public DateTime CreatedAt { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:458](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L458) |  |
+| <code>public int TotalFiles { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:459](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L459) |  |
+| <code>public long TotalEvents { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:460](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L460) |  |
+| <code>public long PackageSizeBytes { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:461](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L461) |  |
+| <code>public long UncompressedSizeBytes { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:462](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L462) |  |
+| <code>public string[] Symbols { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:463](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L463) |  |
+| <code>public string[] EventTypes { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:464](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L464) |  |
+| <code>public PackageDateRange? DateRange { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:465](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L465) |  |
+| <code>public PackageFileEntry[] Files { get; set; } = Array.Empty&lt;PackageFileEntry&gt;();</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:466](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L466) |  |
+| <code>public PackageQualityMetrics? Quality { get; set; }</code> | [src/Meridian.Storage/Packaging/PortableDataPackager.cs:467](../../../../src/Meridian.Storage/Packaging/PortableDataPackager.cs#L467) |  |
+
+## PackageDataFormat
+
+Qualified name: <code>Meridian.Storage.Packaging.PackageDataFormat</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/Packaging/PackageOptions.cs:196](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L196).
+
+Data format conversion options.
+
+```csharp
+public enum PackageDataFormat : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Original</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:199](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L199) | Keep original format (JSONL, Parquet, etc.). |
+| <code>Jsonl</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:202](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L202) | Convert to JSONL for universal compatibility. |
+| <code>Csv</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:205](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L205) | Convert to CSV for spreadsheet compatibility. |
+| <code>Parquet</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:208](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L208) | Convert to Parquet for analytics. |
+
 ## PackageDateRange
 
 Qualified name: <code>Meridian.Storage.Packaging.PackageDateRange</code>. Kind: `class`.
@@ -1072,67 +1144,3 @@ Declared public members:
 | <code>public const string BinaryMigrationAssetUnavailableFailureCode = &quot;REPORTING_BINARY_MIGRATION_ASSET_UNAVAILABLE&quot;;</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs:52](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs#L52) |  |
 | <code>public PostgresReportingDeploymentProbe(ReportingArtifactStoreOptions options);</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs:693](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs#L693) |  |
 | <code>public ReportingDeploymentProbeResult Probe();</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs:711](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs#L711) |  |
-
-## PostgresReportingGovernanceRepository
-
-Qualified name: <code>Meridian.Storage.Reporting.PostgresReportingGovernanceRepository</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Reporting/PostgresReportingGovernanceRepository.cs:19](../../../../src/Meridian.Storage/Reporting/PostgresReportingGovernanceRepository.cs#L19).
-
-PostgreSQL implementation of the governed-reporting transaction boundary. Current aggregate state is versioned optimistically while audit events are appended to a separately protected hash chain in the same database transaction.
-
-```csharp
-public sealed partial class PostgresReportingGovernanceRepository : IReportingGovernanceRepository
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostgresReportingGovernanceRepository(ReportingArtifactStoreOptions options);</code> | [src/Meridian.Storage/Reporting/PostgresReportingGovernanceRepository.cs:26](../../../../src/Meridian.Storage/Reporting/PostgresReportingGovernanceRepository.cs#L26) |  |
-| <code>public async ValueTask&lt;TResult&gt; ExecuteTransactionAsync&lt;TResult&gt;(Func&lt;IReportingGovernanceTransaction, CancellationToken, ValueTask&lt;TResult&gt;&gt; operation, CancellationToken cancellationToken = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingGovernanceRepository.cs:38](../../../../src/Meridian.Storage/Reporting/PostgresReportingGovernanceRepository.cs#L38) |  |
-
-Source: [src/Meridian.Storage/Reporting/PostgresReportingGovernanceRepository.RunBatches.cs:7](../../../../src/Meridian.Storage/Reporting/PostgresReportingGovernanceRepository.RunBatches.cs#L7).
-
-```csharp
-public sealed partial class PostgresReportingGovernanceRepository
-```
-
-## PostgresReportingReconciliationEvidenceStore
-
-Qualified name: <code>Meridian.Storage.Reporting.PostgresReportingReconciliationEvidenceStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Reporting/PostgresReportingReconciliationEvidenceStore.cs:15](../../../../src/Meridian.Storage/Reporting/PostgresReportingReconciliationEvidenceStore.cs#L15).
-
-Production append-only PostgreSQL receipt store. Every read verifies the database key, payload hash, canonical receipt hash, and exact source scope before returning evidence to certification.
-
-```csharp
-public sealed class PostgresReportingReconciliationEvidenceStore : IReportingReconciliationEvidenceRetentionStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostgresReportingReconciliationEvidenceStore(ReportingArtifactStoreOptions options);</code> | [src/Meridian.Storage/Reporting/PostgresReportingReconciliationEvidenceStore.cs:22](../../../../src/Meridian.Storage/Reporting/PostgresReportingReconciliationEvidenceStore.cs#L22) |  |
-| <code>public async ValueTask&lt;ReportingReconciliationEvidenceReceipt?&gt; GetExactAsync(string tenantId, string organizationId, string? companyId, string fundId, string ledgerBookId, string accountingPeriodId, string accountingBasis, DateOnly asOfDate, string sourceCheckpointId, string sourceCheckpointHash, CancellationToken cancellationToken = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingReconciliationEvidenceStore.cs:31](../../../../src/Meridian.Storage/Reporting/PostgresReportingReconciliationEvidenceStore.cs#L31) |  |
-| <code>public async ValueTask&lt;bool&gt; RetainAsync(ReportingReconciliationEvidenceReceipt receipt, CancellationToken cancellationToken = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingReconciliationEvidenceStore.cs:103](../../../../src/Meridian.Storage/Reporting/PostgresReportingReconciliationEvidenceStore.cs#L103) |  |
-
-## PostgresReportingReleaseConsistencyGate
-
-Qualified name: <code>Meridian.Storage.Reporting.PostgresReportingReleaseConsistencyGate</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Reporting/PostgresReportingReleaseConsistencyGate.cs:15](../../../../src/Meridian.Storage/Reporting/PostgresReportingReleaseConsistencyGate.cs#L15).
-
-PostgreSQL transaction-scoped advisory lock shared by final reporting release and governed ledger-period reopen. The lock is independent of a reporting schema migration and remains effective across all hosts that use the same reporting authority database.
-
-```csharp
-public sealed class PostgresReportingReleaseConsistencyGate : IReportingReleaseConsistencyGate
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostgresReportingReleaseConsistencyGate(ReportingArtifactStoreOptions options);</code> | [src/Meridian.Storage/Reporting/PostgresReportingReleaseConsistencyGate.cs:20](../../../../src/Meridian.Storage/Reporting/PostgresReportingReleaseConsistencyGate.cs#L20) |  |
-| <code>public async ValueTask&lt;IAsyncDisposable&gt; AcquireAsync(string accountingPeriodId, CancellationToken cancellationToken = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingReleaseConsistencyGate.cs:26](../../../../src/Meridian.Storage/Reporting/PostgresReportingReleaseConsistencyGate.cs#L26) |  |

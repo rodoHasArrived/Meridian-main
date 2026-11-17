@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-17
 ---
 
 # src/Meridian.Ui/dashboard
@@ -221,6 +221,15 @@ commands explain their existing blockers. Controlled-close receipt navigation re
 response's journal, book, profile and version even when the next request is edited; incomplete
 receipt identities provide no journal link. Active FX edits retain their as-of scope until save or
 explicit cancel, and pending saves retain the mounted editor.
+Floating-rate loan interest (rule `intercompany-accrual-v2`) uses the entity view's Rate fixings
+tab: operators load an index and inclusive date range, propose an exact decimal fraction with its
+source and justification, and a different person approves or rejects (with a reason) the exact
+pending value; read-only operators only inspect values and history. Only approved fixings set
+accrual rates; a missing fixing is never inferred and nothing is fetched from a market feed. The
+accrual preview's Fixing column shows each slice's index, fixing date, index rate and spread as exact
+text (`Fixed` otherwise), and structured Floating loan terms declare a whole-number fixing lag in
+business days before each period start. Focused coverage: `accounting-screen.entity-rate-fixings.test.tsx`,
+`accounting-screen.entity-interest-accrual.test.tsx` and `intercompany-agreement-editor.test.tsx`.
 
 Settings provider runtime evidence and integration setup components are owned by
 `settings-provider-integration.tsx`; the Settings screen composes them without changing routes

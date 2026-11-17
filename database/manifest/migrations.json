@@ -1414,6 +1414,15 @@
       "sha256": "1e740f559da78d0e04311b42baf60923189824ec45c977382cf2676cfee475ef"
     },
     {
+      "filename": "009_intercompany_rate_fixings.sql",
+      "immutable": true,
+      "migration_set_id": "fund-structure",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/FundStructure/Migrations/009_intercompany_rate_fixings.sql",
+      "schema": "fund_structure",
+      "sha256": "7fe2953738b221fba55970204a6b9137370bfe499eb7ae55dfd84a2219a4d91c"
+    },
+    {
       "filename": "001_fund_accounts.sql",
       "immutable": true,
       "migration_set_id": "fund-accounts",
@@ -1676,7 +1685,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "0fd847198feddb33de03ce79d85bf5bddd2ea78a90d50e246ba1fc544c8324af",
+  "fingerprint": "fd7c4c06be696c2dad3b60b736909ad7c8dd1f68af9bff57225936f06cb47335",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1938,9 +1947,9 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 186,
+    "files": 187,
     "migration_sets": 11,
-    "waivers": 46,
+    "waivers": 48,
     "warnings": 0
   },
   "waivers": [
@@ -1984,6 +1993,20 @@
       "path": "src/Meridian.Storage/FundStructure/Migrations/008_intercompany_accounting_arrangements.sql",
       "reason": "The lexical TRUNCATE matches declare only BEFORE TRUNCATE rejection triggers protecting the new accounting-arrangement event history. They execute no TRUNCATE command and remove no table, column, row or retained fact. Preserve these rejection triggers and the UPDATE/DELETE protections. This exact path/rule exception follows V_ledger_030 and V_ledger_031 and covers only these truncation-rejection declarations; it does not authorize data truncation or a history-removing downgrade.",
       "review_after": "2027-05-13",
+      "rule_id": "migration-truncate"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/FundStructure/Migrations/009_intercompany_rate_fixings.sql",
+      "reason": "Each DROP TRIGGER IF EXISTS is immediately followed by recreation of the same named protection trigger on the same table, making the new intercompany rate-fixing version-history rejection triggers reapply-idempotent. The migration runner executes the DDL and migration-ledger change in its transaction under the advisory migration lock, so failed recreation restores the prior protections. No table, column, row, retained receipt or history is removed. This exact path/rule exception follows 008's drop-and-recreate idiom and does not authorize omission of any replacement trigger.",
+      "review_after": "2027-05-17",
+      "rule_id": "migration-drop-object"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/FundStructure/Migrations/009_intercompany_rate_fixings.sql",
+      "reason": "The lexical TRUNCATE matches declare only BEFORE TRUNCATE rejection triggers protecting the new intercompany rate-fixing version history. They execute no TRUNCATE command and remove no table, column, row or retained fact. Preserve these rejection triggers and the UPDATE/DELETE protections. This exact path/rule exception follows 008 and covers only these truncation-rejection declarations; it does not authorize data truncation or a history-removing downgrade.",
+      "review_after": "2027-05-17",
       "rule_id": "migration-truncate"
     },
     {

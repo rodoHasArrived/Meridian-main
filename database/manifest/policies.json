@@ -2,8 +2,8 @@
   "counts": {
     "error": 0,
     "info": 0,
-    "total": 306,
-    "warning": 306
+    "total": 307,
+    "warning": 307
   },
   "failed": false,
   "findings": [
@@ -404,6 +404,16 @@
       },
       "message": "Business table fund_structure.intercompany_agreement_command_receipt does not have a table comment.",
       "object": "fund_structure.intercompany_agreement_command_receipt",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "fund_structure",
+        "table": "intercompany_rate_fixings"
+      },
+      "message": "Business table fund_structure.intercompany_rate_fixings does not have a table comment.",
+      "object": "fund_structure.intercompany_rate_fixings",
       "rule_id": "business-table-must-have-comment",
       "severity": "warning"
     },
@@ -3418,5 +3428,5 @@
       "severity": "warning"
     }
   ],
-  "fingerprint": "8d7285a3def10d2f44f9000cc57e563974234c229b4a606973581a29df4f5839"
+  "fingerprint": "a728cfa03dfe8c29a6a100ea405259bcf99675761a14a7bb87645b6b9adc9c3b"
 }

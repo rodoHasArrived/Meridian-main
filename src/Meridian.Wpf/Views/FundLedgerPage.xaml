@@ -2080,6 +2080,9 @@
                 <TabItem Header="Interest accrual">
                     <agreementViews:IntercompanyInterestAccrualControl DataContext="{Binding InterestAccrual}" />
                 </TabItem>
+                <TabItem Header="Rate fixings">
+                    <agreementViews:IntercompanyRateFixingsControl DataContext="{Binding RateFixings}" />
+                </TabItem>
             </TabControl>
         </StackPanel>
     </ScrollViewer>

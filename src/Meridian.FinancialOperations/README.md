@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-14
+last_reviewed: 2026-11-17
 ---
 
 # src/Meridian.FinancialOperations
@@ -65,6 +65,10 @@ directions separate, and reports missing mappings explicitly. Terms supply no ba
 The close cockpit consumes this structured schedule instead of intercompany keywords.
 NetSuite guarded export review retains its schedule hash and rechecks mapping completeness
 and freshness alongside the existing external NetSuite evidence requirements.
+
+`IntercompanyLedgerPostingAuthority` also re-reads every fixing a floating accrual pinned, so a value
+re-approved after drafting stops the draft before review or posting; the source builder retains the
+computation's own rule version. See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
 
 Intercompany services own approved accounting-profile revisions and governed counterpart templates;
 canonical legal terms and independent review remain in Application/FundStructure.

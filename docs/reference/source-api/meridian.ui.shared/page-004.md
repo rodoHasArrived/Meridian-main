@@ -511,6 +511,24 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static void MapIntercompanyOperationsEndpoints(this WebApplication app, JsonSerializerOptions options);</code> | [src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L17) |  |
 
+## IntercompanyRateFixingEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.IntercompanyRateFixingEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/IntercompanyRateFixingEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/IntercompanyRateFixingEndpoints.cs#L16).
+
+Reviewed index fixings for floating-rate intercompany accrual (rule intercompany-accrual-v2). An operator records what a publisher showed; a second person approves it before any accrual can use it. Tenant-scoped.
+
+```csharp
+public static class IntercompanyRateFixingEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapIntercompanyRateFixingEndpoints(this WebApplication app, JsonSerializerOptions endpointOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/IntercompanyRateFixingEndpoints.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/IntercompanyRateFixingEndpoints.cs#L20) |  |
+
 ## IWorkstationTenantContextAccessor
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.IWorkstationTenantContextAccessor</code>. Kind: `interface`.
@@ -1189,21 +1207,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static void MapPlaidEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs#L18) |  |
-
-## PortfolioCashLadderEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.PortfolioCashLadderEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/PortfolioCashLadderEndpoints.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/PortfolioCashLadderEndpoints.cs#L18).
-
-Minimal API endpoint group for the portfolio-wide cash ladder: aggregated projected inflows/outflows by source over a forward horizon, with a cumulative cash line, minimum-balance breaches, and stress scenarios.
-
-```csharp
-public static class PortfolioCashLadderEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapPortfolioCashLadderEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/PortfolioCashLadderEndpoints.cs:23](../../../../src/Meridian.Ui.Shared/Endpoints/PortfolioCashLadderEndpoints.cs#L23) |  |

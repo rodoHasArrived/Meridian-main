@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationsContinuityQueueRollupModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.OperationsContinuityQueueRollupModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:38](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L38).
+
+```csharp
+public sealed record OperationsContinuityQueueRollupModel(string StatusLabel, int BlockedCount, int ReviewCount, WorkstationReadinessTone ReadinessTone, string Tone);
+```
+
 ## OperationsContinuityWorkflowRowModel
 
 Qualified name: <code>Meridian.Wpf.Workstation.Models.OperationsContinuityWorkflowRowModel</code>. Kind: `record`.
@@ -766,21 +776,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public void ReplaceAll(IEnumerable&lt;T&gt; items);</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/BatchedObservableCollection.cs:14](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/BatchedObservableCollection.cs#L14) |  |
-
-## DataQualityViewModelBase
-
-Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.DataQualityViewModelBase</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/ViewModels/Base/DataQualityViewModelBase.cs:6](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/DataQualityViewModelBase.cs#L6).
-
-Adds an observable quality summary to workspace view models.
-
-```csharp
-public abstract class DataQualityViewModelBase : WorkspaceViewModelBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string QualitySummary { get; protected set; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/DataQualityViewModelBase.cs:10](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/DataQualityViewModelBase.cs#L10) |  |

@@ -6,6 +6,51 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StorageSearchService
+
+Qualified name: <code>Meridian.Storage.Services.StorageSearchService</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/StorageSearchService.cs:17](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L17).
+
+Service for searching and discovering data across storage. Provides multi-level indexing and faceted search capabilities.
+
+```csharp
+public sealed class StorageSearchService : IStorageSearchService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StorageSearchService(StorageOptions options, ISourceRegistry? sourceRegistry = null, JsonlStoragePolicy? pathParser = null);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:30](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L30) |  |
+| <code>public async Task&lt;SearchResult&lt;FileSearchResult&gt;&gt; SearchFilesAsync(FileSearchQuery query, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:38](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L38) |  |
+| <code>public async Task&lt;SearchResult&lt;EventSearchResult&gt;&gt; SearchEventsAsync(EventSearchQuery query, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:125](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L125) |  |
+| <code>public async Task&lt;DataCatalog&gt; DiscoverAsync(DiscoveryQuery query, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:183](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L183) |  |
+| <code>public async Task&lt;FacetedSearchResult&gt; SearchWithFacetsAsync(FacetedSearchQuery query, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:252](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L252) |  |
+| <code>public StorageQuery? ParseNaturalLanguageQuery(string naturalQuery);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:305](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L305) |  |
+| <code>public async Task UpdateIndexAsync(string filePath, IndexUpdateType updateType, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:366](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L366) |  |
+| <code>public async Task&lt;IndexRebuildVerification&gt; RebuildIndexAsync(string[] paths, RebuildOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:399](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L399) |  |
+
+## StorageSymbolCatalogEntry
+
+Qualified name: <code>Meridian.Storage.Services.StorageSymbolCatalogEntry</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/StorageSearchService.cs:827](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L827).
+
+```csharp
+public sealed record StorageSymbolCatalogEntry(string Symbol, DateTimeOffset FirstDate, DateTimeOffset LastDate, long TotalEvents, long TotalBytes, HashSet<string> Sources, HashSet<string> EventTypes);
+```
+
+## SymbolIndex
+
+Qualified name: <code>Meridian.Storage.Services.SymbolIndex</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/StorageSearchService.cs:840](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L840).
+
+```csharp
+public sealed record SymbolIndex(string Symbol, List<string> Files);
+```
+
 ## SymbolRegistryService
 
 Qualified name: <code>Meridian.Storage.Services.SymbolRegistryService</code>. Kind: `class`.

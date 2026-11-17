@@ -54,6 +54,10 @@ input, server capabilities, exact approved versions, evidence and review history
 agreement authority in the desktop client. Source-line responses verify agreement/book/date identity
 and retain exact amount strings. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
 
+`IntercompanyRateFixingWorkspace` is the desktop state for reviewed fixings over the client's
+list, propose and decide calls; the agreement workspace carries the fixing lag and accrual slices
+name their pinned fixing. See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
+
 `IntercompanyCounterpartQueueWorkspace` is the desktop state for counterpart delivery records and
 booking breaks over the same `/api/ledger/intercompany/proposals` and `/breaks` routes as the
 browser queue. Retry, explicit linking and FX repricing send a reasoned request whose identity is

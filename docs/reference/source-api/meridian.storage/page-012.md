@@ -6,6 +6,40 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StructuredCreditProjectionRow
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.StructuredCreditProjectionRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IStructuredCreditReferenceProjectionStore.cs:32](../../../../src/Meridian.Storage/SecurityMaster/IStructuredCreditReferenceProjectionStore.cs#L32).
+
+One projected structured-credit tranche. FactorScheduleReference is the free-text trustee-report pointer, never factor data — dated factors live in the factor schedule.
+
+```csharp
+public sealed record StructuredCreditProjectionRow(Guid SecurityId, string DisplayName, string Currency, string Tranche, string? PoolId, string CollateralType, decimal OriginalFace, decimal? CurrentFactor, string CouponOrIndex, string? FactorScheduleReference, DateOnly? MaturityDate, string PrimaryIdentifierValue, long Version, string? StructuredCreditKind = null, string? Seniority = null, decimal? AttachmentPoint = null, decimal? DetachmentPoint = null, decimal? WeightedAverageCoupon = null, int? WeightedAverageMaturityMonths = null, int? WeightedAverageLoanAgeMonths = null, DateOnly? ReinvestmentPeriodEnd = null, DateOnly? NonCallPeriodEnd = null);
+```
+
+## SwapProjectionRow
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.SwapProjectionRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/ISwapReferenceProjectionStore.cs:13](../../../../src/Meridian.Storage/SecurityMaster/ISwapReferenceProjectionStore.cs#L13).
+
+```csharp
+public sealed record SwapProjectionRow(Guid SecurityId, string DisplayName, string Currency, string? SwapType, DateOnly EffectiveDate, DateOnly MaturityDate, string LifecycleStat, string PrimaryIdentifierValue, long Version);
+```
+
+## UnderlyingLinkDeclaredPayload
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.UnderlyingLinkDeclaredPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:85](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L85).
+
+UnderlyingGraph / UnderlyingLinkDeclared or UnderlyingLinkAmended.
+
+```csharp
+public sealed record UnderlyingLinkDeclaredPayload(UnderlyingLinkPayload Link, UnderlyingLinkPayload? Previous, IReadOnlyList<string> Changes) : ISecurityGovernancePayload;
+```
+
 ## UnderlyingLinkPayload
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.UnderlyingLinkPayload</code>. Kind: `record`.
@@ -789,34 +823,4 @@ Source: [src/Meridian.Storage/Services/StorageSearchService.cs:740](../../../../
 
 ```csharp
 public sealed record FileSearchQuery(string[]? Symbols = null, MarketEventType[]? Types = null, string[]? Sources = null, DateTimeOffset? From = null, DateTimeOffset? To = null, long? MinSize = null, long? MaxSize = null, double? MinQualityScore = null, string? PathPattern = null, SortField SortBy = SortField.Date, bool Descending = true, int Skip = 0, int Take = 100);
-```
-
-## FileSearchResult
-
-Qualified name: <code>Meridian.Storage.Services.FileSearchResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/StorageSearchService.cs:789](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L789).
-
-```csharp
-public sealed record FileSearchResult(string Path, string Symbol, string EventType, string Source, DateTimeOffset Date, long SizeBytes, long EventCount, double QualityScore);
-```
-
-## HealthCheckOptions
-
-Qualified name: <code>Meridian.Storage.Services.HealthCheckOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:835](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L835).
-
-```csharp
-public sealed record HealthCheckOptions(bool ValidateChecksums = true, bool CheckSequenceContinuity = true, bool ValidateSchemas = true, bool CheckFilePermissions = true, bool IdentifyCorruption = true, bool CheckManifestConsistency = false, string[]? Paths = null, int ParallelChecks = 4);
-```
-
-## HealthIssue
-
-Qualified name: <code>Meridian.Storage.Services.HealthIssue</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:881](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L881).
-
-```csharp
-public sealed record HealthIssue(IssueSeverity Severity, IssueType Type, string Path, string? ExpectedChecksum = null, string? ActualChecksum = null, string? Details = null, string RecommendedAction = "", bool AutoRepairable = false);
 ```

@@ -18,6 +18,68 @@ Server-resolved permissions for the signed-in account; never inferred on the wor
 public sealed record IntercompanyOperationCapabilities(bool CanManageAgreements = false, bool CanManageLifecycle = false, bool CanManageLedger = false, bool CanViewLedger = false);
 ```
 
+## IntercompanyRateFixingRow
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyRateFixingRow</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs:238](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs#L238).
+
+One retained fixing; rates are the server&#x27;s exact decimals.
+
+```csharp
+public sealed class IntercompanyRateFixingRow(IntercompanyRateFixingDto fixing)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyRateFixingDto Fixing { get; } = fixing;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs:240](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs#L240) |  |
+| <code>public string Date =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs:241](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs#L241) |  |
+| <code>public string Approved =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs:242](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs#L242) |  |
+| <code>public string Pending =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs:243](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs#L243) |  |
+| <code>public string Source =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs:244](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs#L244) |  |
+| <code>public string StatusText =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs:245](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs#L245) |  |
+| <code>public string History =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs:252](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs#L252) |  |
+
+## IntercompanyRateFixingWorkspace
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyRateFixingWorkspace</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs:15](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs#L15).
+
+Desktop state for reviewed index fixings over the routes the browser uses. An operator records what a publisher showed; a second person approves it. Only approved values set floating accrual rates; nothing is fetched, interpolated or carried forward here, and a missing fixing is never inferred.
+
+```csharp
+public sealed partial class IntercompanyRateFixingWorkspace : ObservableObject, IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyRateFixingWorkspace(IWorkstationIntercompanyAgreementApiClient client);</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs:29](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs#L29) |  |
+| <code>public ObservableCollection&lt;IntercompanyRateFixingRow&gt; Fixings { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs:43](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs#L43) |  |
+| <code>public IAsyncRelayCommand LoadCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs:44](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs#L44) |  |
+| <code>public IAsyncRelayCommand ProposeCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs:45](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs#L45) |  |
+| <code>public IAsyncRelayCommand ApproveCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs:46](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs#L46) |  |
+| <code>public IAsyncRelayCommand RejectCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs:47](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs#L47) |  |
+| <code>public bool IsBusy { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs:48](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs#L48) |  |
+| <code>public bool CanManageLedger { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs:49](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs#L49) |  |
+| <code>public string PermissionNote =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs:50](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs#L50) |  |
+| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs:53](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs#L53) |  |
+| <code>public string IndexReference { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs:55](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs#L55) | Index reference as agreements declare it, for example SOFR. Matched ignoring case. |
+| <code>public string From { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs:56](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs#L56) |  |
+| <code>public string To { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs:57](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs#L57) |  |
+| <code>public string FixingDate { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs:58](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs#L58) |  |
+| <code>public string RateFraction { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs:60](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs#L60) | Annual decimal fraction typed exactly: 0.0425 means 4.25%. |
+| <code>public string SourceReference { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs:61](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs#L61) |  |
+| <code>public string Justification { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs:62](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs#L62) |  |
+| <code>public string Reason { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs:63](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs#L63) |  |
+| <code>public IntercompanyRateFixingRow? SelectedFixing { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs:64](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs#L64) |  |
+| <code>public void ResetSession();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs:191](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs#L191) | Clear prior-session evidence and invalidate every outstanding response on account changes. |
+| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs:206](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs#L206) |  |
+
 ## IWorkstationAccountingCloseApiClient
 
 Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IWorkstationAccountingCloseApiClient</code>. Kind: `interface`.
@@ -145,6 +207,20 @@ Declared public members:
 | <code>Task&lt;ApiResponse&lt;IntercompanyProposalDto&gt;&gt; LinkCounterpartProposalAsync(Guid proposalId, LinkIntercompanyCounterpartRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs:21](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs#L21) |  |
 | <code>Task&lt;ApiResponse&lt;IntercompanyRefreshPreviewDto&gt;&gt; PreviewCounterpartRefreshAsync(Guid proposalId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs:23](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs#L23) |  |
 | <code>Task&lt;ApiResponse&lt;ManualJournalEntryDraftDto&gt;&gt; RefreshCounterpartProposalAsync(Guid proposalId, RefreshIntercompanyProposalRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs:25](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs#L25) |  |
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.RateFixings.cs:6](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.RateFixings.cs#L6).
+
+```csharp
+public partial interface IWorkstationIntercompanyAgreementApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ApiResponse&lt;IntercompanyRateFixingDto[]&gt;&gt; GetRateFixingsAsync(string indexReference, DateOnly from, DateOnly to, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.RateFixings.cs:9](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.RateFixings.cs#L9) | Reviewed fixings of one index over an inclusive date range, as retained by the server. |
+| <code>Task&lt;ApiResponse&lt;IntercompanyRateFixingDto&gt;&gt; ProposeRateFixingAsync(ProposeIntercompanyRateFixingRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.RateFixings.cs:12](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.RateFixings.cs#L12) | Proposes a first value or a correction; it sets no rate until a second person approves it. |
+| <code>Task&lt;ApiResponse&lt;IntercompanyRateFixingDto&gt;&gt; DecideRateFixingAsync(Guid fixingId, DecideIntercompanyRateFixingRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.RateFixings.cs:15](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.RateFixings.cs#L15) | Approves or rejects exactly the pending value the reviewer saw. |
 
 ## IWorkstationManualJournalApiClient
 
@@ -468,6 +544,20 @@ Declared public members:
 | <code>public async Task&lt;ApiResponse&lt;IntercompanyProposalDto&gt;&gt; LinkCounterpartProposalAsync(Guid proposalId, LinkIntercompanyCounterpartRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs:54](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs#L54) |  |
 | <code>public async Task&lt;ApiResponse&lt;IntercompanyRefreshPreviewDto&gt;&gt; PreviewCounterpartRefreshAsync(Guid proposalId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs:62](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs#L62) |  |
 | <code>public async Task&lt;ApiResponse&lt;ManualJournalEntryDraftDto&gt;&gt; RefreshCounterpartProposalAsync(Guid proposalId, RefreshIntercompanyProposalRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs:70](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs#L70) |  |
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.RateFixings.cs:19](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.RateFixings.cs#L19).
+
+```csharp
+public sealed partial class WorkstationIntercompanyAgreementApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;ApiResponse&lt;IntercompanyRateFixingDto[]&gt;&gt; GetRateFixingsAsync(string indexReference, DateOnly from, DateOnly to, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.RateFixings.cs:23](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.RateFixings.cs#L23) |  |
+| <code>public async Task&lt;ApiResponse&lt;IntercompanyRateFixingDto&gt;&gt; ProposeRateFixingAsync(ProposeIntercompanyRateFixingRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.RateFixings.cs:33](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.RateFixings.cs#L33) |  |
+| <code>public async Task&lt;ApiResponse&lt;IntercompanyRateFixingDto&gt;&gt; DecideRateFixingAsync(Guid fixingId, DecideIntercompanyRateFixingRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.RateFixings.cs:37](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.RateFixings.cs#L37) |  |
 
 ## WorkstationManualJournalApiClient
 
@@ -1291,47 +1381,3 @@ Enum declarations:
 | <code>Success</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:10](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L10) |  |
 | <code>Warning</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:11](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L11) |  |
 | <code>Error</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:12](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L12) |  |
-
-## OmsIntegrationApiHandler
-
-Qualified name: <code>Meridian.Ui.Services.Services.Integrations.OmsIntegrationApiHandler</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:12](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L12).
-
-Handles OMS/EMS ingestion with bounded in-memory deduplication, diagnostics, signing keys, and audit history.
-
-```csharp
-public sealed class OmsIntegrationApiHandler : IOmsIntegrationApiHandler
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public OmsIntegrationApiHandler(TimeProvider? timeProvider = null);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:26](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L26) |  |
-| <code>public OmsIngestionResult Ingest(OmsInboundMessage message, OmsRequestSignatureInput? signature = null);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:32](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L32) |  |
-| <code>public IReadOnlyCollection&lt;OmsInboundMessage&gt; Snapshot() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:68](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L68) |  |
-| <code>public IReadOnlyCollection&lt;OmsAdapterDiagnostics&gt; AdapterDiagnostics();</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:70](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L70) |  |
-| <code>public OmsSyncConflictResult ResolveSyncConflict(OmsSyncRequest request, OmsRequestSignatureInput? signature = null);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:112](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L112) |  |
-| <code>public IReadOnlyCollection&lt;OmsIntegrationAuditEntry&gt; AuditTrail(int take = 200) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:136](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L136) |  |
-| <code>public OmsRequestSignatureResult VerifyRequestSignature(OmsRequestSignatureInput signature);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:139](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L139) |  |
-| <code>public OmsKeyRotationResult RotateSigningKey(OmsKeyRotationRequest request);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:161](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L161) |  |
-| <code>public static string ComputeSignature(byte[] key, string timestampUtc, string canonicalPayload);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:234](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L234) |  |
-
-## OmsIntegrationServiceCollectionExtensions
-
-Qualified name: <code>Meridian.Ui.Services.Services.Integrations.OmsIntegrationServiceCollectionExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationServiceCollectionExtensions.cs:10](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationServiceCollectionExtensions.cs#L10).
-
-Registers the shared OMS/EMS integration API handler with dependency injection.
-
-```csharp
-public static class OmsIntegrationServiceCollectionExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IServiceCollection AddOmsIntegrationApiHandlers(this IServiceCollection services);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationServiceCollectionExtensions.cs:12](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationServiceCollectionExtensions.cs#L12) |  |

@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-17
 ---
 
 # src/Meridian.Contracts
@@ -22,6 +22,11 @@ strings; omitted companions preserve retained legal command/review hashes. Separ
 attestations retain reviewer and operator identities, while obligation-monitor DTOs carry advisory
 source/freshness evidence outside blocking close contributors. See
 [the native legal contract](../../docs/domain/intercompany-agreements.md).
+
+Floating loan terms add a null-omitted `FixingLagBusinessDays`. `IntercompanyRateFixingDtos` define
+the reviewed fixing record, its propose and decide requests and `IIntercompanyRateFixingStore`; accrual
+slices gain a null-omitted `Fixing` pin, and `IntercompanyAccrualRules` adds `intercompany-accrual-v2`.
+See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
 
 Governed loan-interest accrual contracts (ADR-028) carry the computation input, slices and preview
 under rule `intercompany-accrual-v1`, plus the retained `IntercompanyAccrualEvidenceDto` and its

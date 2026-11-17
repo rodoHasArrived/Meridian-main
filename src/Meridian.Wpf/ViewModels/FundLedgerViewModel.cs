@@ -101,6 +101,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     public IntercompanyCounterpartQueueWorkspace? CounterpartProposals { get; }
     /// <summary>Governed loan-interest accrual request over the same shared accrual API as the browser workstation.</summary>
     public IntercompanyInterestAccrualWorkspace? InterestAccrual { get; }
+    /// <summary>Reviewed index fixings that floating-rate intercompany accruals read; null when no client is available.</summary>
+    public IntercompanyRateFixingWorkspace? RateFixings { get; }
 
     public FundLedgerViewModel(
         FundLedgerReadService fundLedgerReadService,
@@ -132,6 +134,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         Agreements = intercompanyAgreementClient is null ? null : new IntercompanyAgreementWorkspace(intercompanyAgreementClient);
         CounterpartProposals = intercompanyAgreementClient is null ? null : new IntercompanyCounterpartQueueWorkspace(intercompanyAgreementClient);
         InterestAccrual = intercompanyAgreementClient is null ? null : new IntercompanyInterestAccrualWorkspace(intercompanyAgreementClient);
+        RateFixings = intercompanyAgreementClient is null ? null : new IntercompanyRateFixingWorkspace(intercompanyAgreementClient);
         if (_authenticationSession is not null)
         {
             _authenticationSession.SignedOut += OnAgreementSessionChanged;
@@ -1074,6 +1077,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         Agreements?.Dispose();
         CounterpartProposals?.Dispose();
         InterestAccrual?.Dispose();
+        RateFixings?.Dispose();
         _fundContextService.ActiveFundProfileChanged -= OnActiveFundProfileChanged;
         DisposeReconciliationWorkbench();
     }
@@ -1092,6 +1096,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         Agreements?.ResetSession();
         CounterpartProposals?.ResetSession();
         InterestAccrual?.ResetSession();
+        RateFixings?.ResetSession();
     }
 
     private async Task<FundProfileDetail?> ResolveActiveFundAsync(

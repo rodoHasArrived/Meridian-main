@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataQualityViewModelBase
+
+Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.DataQualityViewModelBase</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/ViewModels/Base/DataQualityViewModelBase.cs:6](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/DataQualityViewModelBase.cs#L6).
+
+Adds an observable quality summary to workspace view models.
+
+```csharp
+public abstract class DataQualityViewModelBase : WorkspaceViewModelBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string QualitySummary { get; protected set; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/DataQualityViewModelBase.cs:10](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/DataQualityViewModelBase.cs#L10) |  |
+
 ## DetailWorkspaceViewModelBase (generic arity 1)
 
 Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.DetailWorkspaceViewModelBase</code>. Kind: `class`.

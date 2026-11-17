@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-11-14
+last_reviewed: 2026-11-17
 ---
 
 # src/Meridian.Application
@@ -19,6 +19,12 @@ revisions and principal; it reads no ledger and authorizes no journal. An explic
 record external legal review while ordinary independent review remains available; legal lifecycle
 revisions retain the same separate audit facts. See
 [terms and review boundaries](../../docs/domain/intercompany-agreements.md).
+
+`IntercompanyAccrualPreviewService` computes floating slices under rule `intercompany-accrual-v2` from
+the approved fixing of each period plus the spread, and refuses a window with a missing fixing.
+`IntercompanyRateFixingRules` and `IntercompanyRateFixingService` own maker-checker fixing history;
+`IntercompanyEntityServiceRegistration` composes its PostgreSQL or file store. See
+[floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
 
 Structured decimal normalization preserves representable declarations when canonical formatting
 uses an exponent. Retrying an externally reviewed lifecycle append repairs an interrupted local
