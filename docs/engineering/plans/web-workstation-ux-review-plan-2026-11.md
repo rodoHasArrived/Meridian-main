@@ -868,3 +868,38 @@ density). What changed:
   - Close Cockpit, Ledger and Trading are also captured at 1024px.
   - All 85 captures pass.
 
+
+## Phase D: navigation and overviews (2026-11-17)
+
+Review proposals 8 (charts that answer finance questions) and 9 (Accounting navigation), plus the
+Close Calendar grid. All of it is browser-only. No shared contract changed.
+
+- **Accounting navigation.**
+  - Expanding Accounting adds 5 sidebar rows, one per group (Close, Records, Reconciliation,
+    Review, Administration), instead of 22. A group row is active when any of its pages is.
+  - The group's pages appear as a secondary menu under the page header ("{group} pages"),
+    carrying the fund, book, period and status query as the sidebar did.
+  - The command palette lists pinned and recent pages first. They are stored in this browser
+    only, and the palette works without storage. "Pin {page}" toggles the current page.
+- **Close Calendar.** It opens on a month grid (Monday-first weeks, previous, today and next
+  month) at the month of the earliest upcoming due date. Overdue items are marked. The existing
+  list follows as "List view", and undated workflows are listed once.
+- **Charts.**
+  - Close Cockpit's "Close task progress" and Reconciliation's "Break aging" are shown open.
+  - Provider evidence age uses one readable unit for the chart and lists every provider in use;
+    one with no timestamp reads "No timestamp".
+  - Every chart's section carries a table alternative (`data-chart-table`).
+  - The provider capability matrix has a Freshness column (Current, Stale or No evidence, with
+    the age), joined by provider id. The Data overview's evidence-age chart is the compact view;
+    the matrix stays under "Review data diagnostics".
+  - The Strategy overview has a run leaderboard: the top 5 runs by Sharpe with P&L, then runs
+    with no Sharpe as "Not ranked". Drawdown and trend columns show only when a run retains them.
+- **Screenshot harness.**
+  - `nav-row-budget`: a capture that declares `maxSidebarSubRows` fails when more sidebar
+    sub-rows are visible (Accounting, Reconciliation and Close Calendar declare 7).
+  - `chart-without-table`: a capture that declares `chartTables` fails when a chart's section has
+    no table alternative (Accounting, Reconciliation, Close Calendar, Data and Strategy).
+  - Close Calendar declares the month grid as its primary task.
+- **Follow-up (deferred): Portfolio NAV and exposure trend.** No NAV or exposure history read
+  model exists. It needs one in `Meridian.Ui.Services`, consumed by both the browser and WPF
+  (a `W8-WPF-PARITY-001` item), before a trend chart can be drawn.

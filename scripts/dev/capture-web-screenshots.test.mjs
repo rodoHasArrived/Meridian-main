@@ -16,6 +16,7 @@ import {
   findRepeatedUnavailableLines,
   describePrimaryTaskPosition,
   describeFailureNotices,
+  describeNavRowBudget,
   checkSeverityLabelConsistency,
   loadKpiDefinitions,
   collectKpiSnapshots,
@@ -1087,4 +1088,19 @@ test("wrapped figures, uncued overflow and monospace prose are reported", () => 
       { kind: "monospace-prose", excerpt: "Select a row to inspect" }
     ]
   );
+});
+
+test("an expanded workspace stays within the sidebar row budget", () => {
+  assert.deepEqual(describeNavRowBudget(7, 5), []);
+  assert.deepEqual(describeNavRowBudget(7, 22), ["22 sidebar sub-rows (limit 7)"]);
+  assert.deepEqual(describeNavRowBudget(undefined, 22), []);
+  assert.deepEqual(findCaptureContentIssues("Accounting", { navRowIssues: ["22 sidebar sub-rows (limit 7)"] }),
+    [{ kind: "nav-row-budget", excerpt: "22 sidebar sub-rows (limit 7)" }]);
+});
+
+test("a chart without a table alternative is reported", () => {
+  assert.deepEqual(findCaptureContentIssues("Data", { chartsWithoutTables: ["Provider evidence age", ""] }), [
+    { kind: "chart-without-table", excerpt: "Provider evidence age" },
+    { kind: "chart-without-table", excerpt: "(unlabelled chart)" }
+  ]);
 });

@@ -399,6 +399,10 @@ export interface DataOperationsProviderRow {
   note: string;
   /** Why a provider reported healthy is shown as review: its newest evidence is past the staleness threshold. */
   staleEvidenceReason: string | null;
+  /** Newest timestamped evidence for the provider, or null when none carries a time. */
+  latestEvidenceAt: string | null;
+  /** Whether that newest evidence is past the staleness threshold. */
+  evidenceStale: boolean;
   statusTone: "success" | "warning" | "danger";
   trustFields: DataOperationsDetailField[];
   reasonLabelText: string;
@@ -2425,6 +2429,8 @@ export function buildProviderRow(
     signalSourceText,
     note: recommendedActionText ?? providerRecord?.note ?? "No operator action reported",
     staleEvidenceReason: cappedByStaleEvidence ? staleness.reason : null,
+    latestEvidenceAt: staleness.latestEvidenceAt,
+    evidenceStale: staleness.stale,
     statusTone,
     trustFields: [
       {

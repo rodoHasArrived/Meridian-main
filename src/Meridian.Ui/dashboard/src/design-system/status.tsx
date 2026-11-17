@@ -31,7 +31,7 @@ const SEVERITY_ALIASES: Record<string, DesignSystemSeverity> = {
   livelinked: "ready", reviewerassigned: "review", sourcebacked: "review",
   exceptionsopen: "action", reviewrequiredsoon: "action", danger: "blocked", default: "info",
   // Labels the cross-route severity check found rendering in more than one colour (UX Phase C).
-  open: "action", restated: "review", notloaded: "info", periodconfirmationrequired: "action"
+  open: "action", restated: "review", notloaded: "info", periodconfirmationrequired: "action", overdue: "blocked"
 };
 
 /**

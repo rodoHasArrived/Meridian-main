@@ -792,7 +792,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
           <ReconciliationWorkbench reconciliation={reconciliation} resolveDialog={resolveDialog} controls={reconciliationViewState} selectionNotice={reconciliation.selectionNotice}
             runSelector={<ReconciliationStatementRuns reconciliation={reconciliation} initiallyOpen={hash === "#statement-runs"} />}
           />
-          <TechnicalDetails label="Break aging"><ReconciliationAgingChart breaks={reconciliation.sourceRows} /></TechnicalDetails>
+          <section aria-label="Break aging" className="space-y-2"><h3 className="text-sm font-semibold">Break aging</h3><ReconciliationAgingChart breaks={reconciliation.sourceRows} /></section>
           <TechnicalDetails label="Account oversight"><AccountOversightPanel /></TechnicalDetails>
           <TechnicalDetails id="accounting-history" label="Calibration and history"><CalibrationSummaryPanel view={reconciliation.calibrationView} /></TechnicalDetails>
         </ThreeWayReconciliationWorkbench>
@@ -803,7 +803,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
 
       {sectionVisibility.showCloseCockpitLanding ? (
         <>
-          {closeWorkflow?.closeChecklist ? <TechnicalDetails label="Close task progress"><CloseChecklistProgressChart tasks={closeWorkflow.closeChecklist} /></TechnicalDetails> : null}
+          {closeWorkflow?.closeChecklist ? <section aria-label="Close task progress" className="space-y-2"><h3 className="text-sm font-semibold">Close task progress</h3><CloseChecklistProgressChart tasks={closeWorkflow.closeChecklist} /></section> : null}
           <AccountingCaseWorkbench
             breakRows={reconciliation.rows}
             selectedBreakId={reconciliation.selectedBreakId}

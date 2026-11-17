@@ -1,4 +1,5 @@
 import { FileSearch } from "lucide-react";
+import { MonthCalendar, type MonthCalendarItem } from "@/components/meridian/month-calendar";
 import { useEffect, useMemo, useState } from "react";
 import { TableWorkbench } from "@/components/meridian/table-workbench";
 import { DesignSystemStatus } from "@/design-system/status";
@@ -936,6 +937,23 @@ export function CloseCalendarScreen({ data: _data }: FinanceStandardScreenProps)
     return { item, summary };
   });
   const calendarFreshness = buildFinanceFreshness(calendar?.generatedAtUtc);
+  // The month grid (UX Phase D): each workflow on the day its next task is due, opening on the
+  // month with the earliest upcoming due date. Workflows with no due date are listed once below.
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const calendarItems: MonthCalendarItem[] = items
+    .filter((item) => item.nextDueDate)
+    .map((item) => ({
+      id: item.workflowId,
+      date: item.nextDueDate!.slice(0, 10),
+      label: `${presentFinancePeriod(item.periodId)}: ${item.nextDueLabel ?? "Next task"}`,
+      detail: [item.nextDueOwner ? `Owner ${item.nextDueOwner}` : "Unassigned", item.blockerCount > 0 ? pluralizeCount(item.blockerCount, "blocker") : null, `${item.completedApprovalCount}/${item.requiredApprovalCount} approvals`].filter(Boolean).join(" · "),
+      status: item.isReadyToClose ? "Ready" : item.blockerCount > 0 ? "Blocked" : presentStatusLabel(item.status),
+      href: resolveCloseWorkflowHref(item)
+    }));
+  const dueDates = calendarItems.map((item) => item.date).sort();
+  const firstMonth = (dueDates.find((date) => date >= todayIso) ?? dueDates[0] ?? todayIso).slice(0, 7);
+  const undatedWorkflows = items.filter((item) => !item.nextDueDate);
+  const readyWorkflowIds = new Set(items.filter((item) => item.isReadyToClose).map((item) => item.workflowId));
 
   return (
     <div className="space-y-3">
@@ -971,9 +989,25 @@ export function CloseCalendarScreen({ data: _data }: FinanceStandardScreenProps)
             <CardTitle className="text-base">Close workflow queue</CardTitle>
             <SectionDescription descriptionKey="close-calendar:queue" label="About the close workflow queue">Open a period to acknowledge tasks, submit approvals, or close from the close workflow.</SectionDescription>
           </CardHeader>
-          <CardContent className="p-3">
+          <CardContent className="space-y-4 p-3">
+            {calendarItems.length > 0 ? (
+              <MonthCalendar
+                key={firstMonth}
+                items={calendarItems}
+                initialMonth={firstMonth}
+                today={todayIso}
+                ariaLabel="Close calendar"
+                isDone={(item) => readyWorkflowIds.has(item.id)}
+              />
+            ) : null}
+            {undatedWorkflows.length > 0 && calendarItems.length > 0 ? (
+              <p className="text-xs text-muted-foreground" data-testid="close-calendar-undated">
+                No due date: {undatedWorkflows.map((item) => presentFinancePeriod(item.periodId)).join(", ")}
+              </p>
+            ) : null}
+            {calendarItems.length > 0 ? <h3 className="text-sm font-semibold">List view</h3> : null}
             {closeRows.length > 0 ? (
-              <ul className="space-y-2" aria-label="Close workflow queue">
+              <ul className="space-y-2" aria-label="Close workflow queue" data-chart-table="close-calendar">
                 {closeRows.map(({ item, summary }) => (
                   <li
                     key={item.workflowId}

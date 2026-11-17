@@ -620,7 +620,9 @@ export const CAPTURE_CONTENT_ISSUE_KINDS = [
   "single-failure-notice",
   "detail-value-wraps",
   "table-overflow-without-cue",
-  "monospace-prose"
+  "monospace-prose",
+  "nav-row-budget",
+  "chart-without-table"
 ];
 
 /** How often the same "… unavailable" line may repeat in a route's main content. */
@@ -688,9 +690,16 @@ export function isSlugIdentifier(token) {
  *   - monospace-prose: on routes that declare `monospaceProse: true`, visible text set in a
  *     monospace face that is more than three words with no digits. The data face is for
  *     figures, IDs and code; labels and sentences use the body face. Measured by the caller.
+ *   - nav-row-budget: the route declares `maxSidebarSubRows` and the sidebar shows more visible
+ *     sub-rows than that. An expanded workspace adds a handful of rows (Accounting adds one per
+ *     group); the rest of the workspaces stay on screen. Counted by the caller.
+ *   - chart-without-table: on routes that declare `chartTables: true`, a visible chart graphic
+ *     (`[role="img"]` at least 200px wide) whose section holds neither a table nor a
+ *     `[data-chart-table]` alternative. Every chart has a table a screen reader or a copy-paste can
+ *     use. Read from the DOM by the caller.
  * Returns one entry per distinct offending excerpt.
  */
-export function findCaptureContentIssues(text, { unexplainedDisabledActions = [], statusContradictions = [], truncatedBadges = [], unsourcedPositionTables = [], primaryTaskIssues = [], failureNoticeIssues = [], wrappedDetailValues = [], uncuedOverflowTables = [], monospaceProse = [] } = {}) {
+export function findCaptureContentIssues(text, { unexplainedDisabledActions = [], statusContradictions = [], truncatedBadges = [], unsourcedPositionTables = [], primaryTaskIssues = [], failureNoticeIssues = [], wrappedDetailValues = [], uncuedOverflowTables = [], monospaceProse = [], navRowIssues = [], chartsWithoutTables = [] } = {}) {
   const issues = [];
   const seen = new Set();
   const record = (kind, excerpt) => {
@@ -760,6 +769,12 @@ export function findCaptureContentIssues(text, { unexplainedDisabledActions = []
   }
   for (const text of monospaceProse) {
     record("monospace-prose", String(text));
+  }
+  for (const issue of navRowIssues) {
+    record("nav-row-budget", String(issue));
+  }
+  for (const chart of chartsWithoutTables) {
+    record("chart-without-table", String(chart || "(unlabelled chart)"));
   }
   for (const line of findRepeatedUnavailableLines(content)) {
     record("repeated-unavailable", line);
@@ -925,6 +940,12 @@ export function describePrimaryTaskPosition(primaryTask, measuredTop) {
 }
 
 /** More alerts or Retry buttons than the route allows, as issue lines. */
+/** The sidebar row budget: one issue when more sub-rows are visible than the route allows. */
+export function describeNavRowBudget(maxSidebarSubRows, visibleSubRows) {
+  if (!Number.isInteger(maxSidebarSubRows) || !Number.isInteger(visibleSubRows)) return [];
+  return visibleSubRows > maxSidebarSubRows ? [`${visibleSubRows} sidebar sub-rows (limit ${maxSidebarSubRows})`] : [];
+}
+
 export function describeFailureNotices(maxAlerts, counts) {
   if (!Number.isInteger(maxAlerts)) return [];
   return [
@@ -1440,7 +1461,24 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
     })
     : [];
   const monospaceProse = Array.isArray(monospaceProseProbe) ? monospaceProseProbe : [];
-  const contentIssues = partitionCaptureContentIssues(mainText, capture, { unexplainedDisabledActions, statusContradictions, truncatedBadges, unsourcedPositionTables, primaryTaskIssues, failureNoticeIssues, wrappedDetailValues, uncuedOverflowTables, monospaceProse });
+  // An expanded workspace keeps the others on screen: visible sidebar sub-rows, on routes that opt in.
+  const visibleSubRows = Number.isInteger(capture.maxSidebarSubRows)
+    ? await page.evaluate(() => Array.from(document.querySelectorAll(".operator-nav-subitem")).filter((row) => row.getClientRects().length > 0).length)
+    : null;
+  const navRowIssues = describeNavRowBudget(capture.maxSidebarSubRows, Number.isInteger(visibleSubRows) ? visibleSubRows : null);
+  // Every chart has a table alternative in its section, on routes that opt in.
+  const chartsWithoutTablesProbe = capture.chartTables
+    ? await page.evaluate(() =>
+      Array.from(document.querySelectorAll("main [role='img']"))
+        .filter((chart) => chart.getClientRects().length > 0 && chart.getBoundingClientRect().width >= 200)
+        .filter((chart) => {
+          const scope = chart.closest("section, [data-chart-card]") ?? chart.parentElement;
+          return !(scope?.querySelector("table, [data-chart-table]") || chart.closest("[data-chart-table]"));
+        })
+        .map((chart) => chart.getAttribute("aria-label") ?? ""))
+    : [];
+  const chartsWithoutTables = Array.isArray(chartsWithoutTablesProbe) ? chartsWithoutTablesProbe : [];
+  const contentIssues = partitionCaptureContentIssues(mainText, capture, { unexplainedDisabledActions, statusContradictions, truncatedBadges, unsourcedPositionTables, primaryTaskIssues, failureNoticeIssues, wrappedDetailValues, uncuedOverflowTables, monospaceProse, navRowIssues, chartsWithoutTables });
   if (contentIssues.blocking.length > 0) {
     throw new Error(describeCaptureContentIssues(capture.name, contentIssues.blocking));
   }

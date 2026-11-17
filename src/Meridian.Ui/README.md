@@ -352,6 +352,16 @@ It also carries UX Phase C (accounting grid and visual system):
 
 No shared contract changed.
 
+It also carries UX Phase D (navigation and overviews):
+- Accounting shows one sidebar row per group and a secondary menu of the group's pages.
+- The command palette offers pinned and recent pages.
+- Close Calendar opens on a month grid.
+- Charts have table alternatives.
+- The capability matrix shows provider freshness.
+- Strategy has a run leaderboard.
+
+No shared contract changed.
+
 ## Change rules
 
 Do not create mobile product surfaces here. Keep browser operator UI work under `dashboard/` and shared behavior in contracts/services consumed by the browser workstation and retained WPF compatibility surfaces.

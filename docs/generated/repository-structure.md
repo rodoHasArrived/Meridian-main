@@ -9135,6 +9135,8 @@ Meridian-main
 │   │   │   │   │   │   ├── metric-card.view-model.ts
 │   │   │   │   │   │   ├── metric-passport.test.tsx
 │   │   │   │   │   │   ├── metric-passport.tsx
+│   │   │   │   │   │   ├── month-calendar.test.tsx
+│   │   │   │   │   │   ├── month-calendar.tsx
 │   │   │   │   │   │   ├── notification-center.test.tsx
 │   │   │   │   │   │   ├── notification-center.tsx
 │   │   │   │   │   │   ├── number-passport.test.ts
@@ -9250,6 +9252,8 @@ Meridian-main
 │   │   │   │   │   │   ├── workspace-nav.view-model.ts
 │   │   │   │   │   │   ├── workspace-primitives.test.tsx
 │   │   │   │   │   │   ├── workspace-primitives.tsx
+│   │   │   │   │   │   ├── workspace-section-nav.test.tsx
+│   │   │   │   │   │   ├── workspace-section-nav.tsx
 │   │   │   │   │   │   ├── workspace-status.test.tsx
 │   │   │   │   │   │   ├── workspace-status.tsx
 │   │   │   │   │   │   ├── workspace-task-workbench.test.tsx
@@ -9749,6 +9753,8 @@ Meridian-main
 │   │   │   │   │   ├── queue-keyboard-map.ts
 │   │   │   │   │   ├── quotes-stream.test.ts
 │   │   │   │   │   ├── quotes-stream.ts
+│   │   │   │   │   ├── recent-pages.test.ts
+│   │   │   │   │   ├── recent-pages.ts
 │   │   │   │   │   ├── reference-data-probe.ts
 │   │   │   │   │   ├── report-amount-proof-api.test.ts
 │   │   │   │   │   ├── report-amount-proof-api.ts
@@ -10335,7 +10341,10 @@ Meridian-main
 │   │   │   │   │   ├── strategy-designer-screen.tsx
 │   │   │   │   │   ├── strategy-designer-screen.view-model.test.ts
 │   │   │   │   │   ├── strategy-designer-screen.view-model.ts
+│   │   │   │   │   ├── strategy-overview-hub.test.tsx
 │   │   │   │   │   ├── strategy-overview-hub.tsx
+│   │   │   │   │   ├── strategy-run-leaderboard.test.ts
+│   │   │   │   │   ├── strategy-run-leaderboard.ts
 │   │   │   │   │   ├── strategy-run-ledger-screen.test.tsx
 │   │   │   │   │   ├── strategy-run-ledger-screen.tsx
 │   │   │   │   │   ├── strategy-screen.a11y.test.tsx

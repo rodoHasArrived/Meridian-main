@@ -244,6 +244,8 @@
     {
       "id": "W03",
       "name": "web-accounting-workspace",
+      "maxSidebarSubRows": 7,
+      "chartTables": true,
       "variant": "1440px",
       "path": "/accounting",
       "docLabel": "Accounting \u2014 Ledger",
@@ -255,12 +257,15 @@
         "/api/accounting-system/reconciliation/latest"
       ],
       "waitForTexts": [
-        "Accounting case workbench"
+        "Accounting case workbench",
+        "Close task progress"
       ]
     },
     {
       "id": "W03A",
       "name": "web-accounting-reconciliation",
+      "maxSidebarSubRows": 7,
+      "chartTables": true,
       "path": "/accounting/reconciliation",
       "docLabel": "Accounting \u2014 Reconciliation",
       "waitForText": "Reconciliation break queue",
@@ -602,6 +607,8 @@
     {
       "id": "W03I3",
       "name": "web-accounting-close-calendar",
+      "maxSidebarSubRows": 7,
+      "chartTables": true,
       "path": "/accounting/close-calendar",
       "docLabel": "Accounting \u2014 Close Calendar",
       "waitForText": "Close Calendar",
@@ -612,8 +619,13 @@
       "waitForTexts": [
         "Close workflow queue",
         "Run trial balance",
-        "Open Operations Continuity"
-      ]
+        "Open Operations Continuity",
+        "List view"
+      ],
+      "waitForSelectors": [
+        "section[aria-label=\"Close calendar\"] [role=\"grid\"]"
+      ],
+      "primaryTask": { "selector": "section[aria-label=\"Close calendar\"]", "maxTop": 600 }
     },
     {
       "id": "W03I4",
@@ -1006,6 +1018,7 @@
     {
       "id": "W05",
       "name": "web-strategy-workspace",
+      "chartTables": true,
       "path": "/strategy",
       "docLabel": "Strategy",
       "waitForText": "Strategy overview",
@@ -1022,7 +1035,8 @@
         "Retained strategy runs",
         "Index Momentum",
         "Mean Reversion FX",
-        "Promotions"
+        "Promotions",
+        "Run leaderboard"
       ]
     },
     {
@@ -1128,6 +1142,7 @@
     {
       "id": "W06",
       "name": "web-data-workspace",
+      "chartTables": true,
       "path": "/data",
       "docLabel": "Data",
       "waitForText": "Data overview",

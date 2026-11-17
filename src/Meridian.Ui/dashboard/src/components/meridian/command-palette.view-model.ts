@@ -28,7 +28,7 @@ import type {
   WorkspaceSummary
 } from "@/types";
 
-export type CommandPaletteItemKind = "focus" | "action" | "entity" | "workspace" | "route" | "workflow" | "preset";
+export type CommandPaletteItemKind = "pinned" | "recent" | "focus" | "action" | "entity" | "workspace" | "route" | "workflow" | "preset";
 export type CommandPaletteItemStatusTone = "blocked" | "review" | "ready" | "current" | "neutral";
 export type CommandPaletteFocusBoundary = "first" | "last" | "middle" | "outside" | "none";
 export type CommandPaletteFocusTarget = "search" | "command" | "other";
@@ -92,6 +92,9 @@ export interface CommandPaletteWorkflowData {
   actionItems?: CommandPaletteActionItem[] | null;
   entitySearchStatus?: "idle" | "searching" | "ready" | "degraded" | "error" | null;
   entitySearchError?: string | null;
+  /** Pages this viewer pinned, then the ones they visited recently, newest first (UX Phase D). */
+  pinnedPages?: readonly { route: string; label: string }[] | null;
+  recentPages?: readonly { route: string; label: string }[] | null;
 }
 
 export interface CommandPaletteFocusAction {
@@ -145,6 +148,8 @@ export interface CommandPaletteViewModel {
 }
 
 const COMMAND_KIND_LABELS: Record<CommandPaletteItemKind, string> = {
+  pinned: "Pinned pages",
+  recent: "Recent pages",
   focus: "Focus actions",
   action: "Actions",
   entity: "Entities",
@@ -155,6 +160,8 @@ const COMMAND_KIND_LABELS: Record<CommandPaletteItemKind, string> = {
 };
 
 const COMMAND_KIND_SINGULAR_LABELS: Record<CommandPaletteItemKind, string> = {
+  pinned: "pinned page",
+  recent: "recent page",
   focus: "focus action",
   action: "action",
   entity: "entity",
@@ -165,6 +172,8 @@ const COMMAND_KIND_SINGULAR_LABELS: Record<CommandPaletteItemKind, string> = {
 };
 
 const COMMAND_KIND_PLURAL_LABELS: Record<CommandPaletteItemKind, string> = {
+  pinned: "pinned pages",
+  recent: "recent pages",
   focus: "focus actions",
   action: "actions",
   entity: "entities",
@@ -174,7 +183,7 @@ const COMMAND_KIND_PLURAL_LABELS: Record<CommandPaletteItemKind, string> = {
   workflow: "workflows"
 };
 
-const COMMAND_KIND_ORDER: CommandPaletteItemKind[] = ["focus", "action", "entity", "workspace", "route", "preset", "workflow"];
+const COMMAND_KIND_ORDER: CommandPaletteItemKind[] = ["pinned", "recent", "focus", "action", "entity", "workspace", "route", "preset", "workflow"];
 const COMMAND_PALETTE_FILTER_COUNT_ID = "command-palette-filter-count";
 const COMMAND_PALETTE_EMPTY_STATE_ID = "command-palette-empty-state";
 const COMMAND_PALETTE_EMPTY_STATE_TITLE_ID = "command-palette-empty-state-title";
@@ -213,7 +222,11 @@ export function buildCommandPaletteViewModel(
   const routeItems = buildRouteItems(pathname, operatingScope);
   const presetItems = buildPresetItems(workflowData.workflowPresets?.presets ?? [], pathname, operatingScope);
   const workflowItems = buildWorkflowItems(workflowData.workflowLibrary?.workflows ?? [], pathname, operatingScope);
-  const items = [...focusItems, ...actionItems, ...entityItems, ...workspaceItems, ...routeItems, ...presetItems, ...workflowItems];
+  const pinnedItems = buildSavedPageItems("pinned", workflowData.pinnedPages ?? [], pathname);
+  const pinnedRoutes = new Set(pinnedItems.map((item) => item.route));
+  const recentItems = buildSavedPageItems("recent", (workflowData.recentPages ?? []).filter((page) => !pinnedRoutes.has(page.route)), pathname)
+    .filter((item) => !item.active);
+  const items = [...pinnedItems, ...recentItems, ...focusItems, ...actionItems, ...entityItems, ...workspaceItems, ...routeItems, ...presetItems, ...workflowItems];
   const normalizedQuery = query.trim();
   const filteredItems = filterCommandItems(items, normalizedQuery);
   const commandGroups = buildCommandPaletteGroups(filteredItems);
@@ -489,6 +502,32 @@ function buildWorkspaceItems(
       commandLabel: active ? `Stay in ${workspace.label}` : `Open ${workspace.label}`,
       ariaLabel: active ? `${workspace.label}, current workspace` : `Open ${workspace.label} workspace`,
       presetId: null,
+      active
+    };
+  });
+}
+
+function buildSavedPageItems(
+  kind: "pinned" | "recent",
+  pages: readonly { route: string; label: string }[],
+  pathname: string
+): CommandPaletteItem[] {
+  return pages.map<CommandPaletteItem>((page) => {
+    const active = page.route === pathname;
+    return {
+      id: `${kind}:${page.route}`,
+      kind,
+      label: page.label,
+      description: kind === "pinned" ? "Pinned page" : "Recently visited page",
+      route: page.route,
+      routeLabel: page.route.split(/[?#]/)[0] ?? page.route,
+      statusLabel: active ? "Current page" : kind === "pinned" ? "Pinned" : "Recent",
+      statusTone: active ? "current" : "neutral",
+      statusVisible: active,
+      commandLabel: `Open ${page.label}`,
+      ariaLabel: `${active ? "Current page" : "Open"} ${page.label}, ${kind === "pinned" ? "pinned" : "recently visited"}`,
+      presetId: null,
+      action: null,
       active
     };
   });

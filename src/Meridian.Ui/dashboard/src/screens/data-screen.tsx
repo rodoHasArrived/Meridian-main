@@ -25,6 +25,7 @@ import {
   WorkspaceInspectorHost
 } from "@/components/meridian/workspace-primitives";
 import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/design-system/status";
 import { Button } from "@/components/ui/button";
 import { PanelReload } from "@/components/ui/panel-reload";
 import { useOnGlobalRefresh } from "@/lib/global-refresh";
@@ -51,7 +52,9 @@ import {
 } from "@/screens/data-screen.data-quality.view-model";
 import {
   CAPABILITY_LEGEND,
+  buildCapabilityFreshnessIndex,
   useCapabilityMatrixPanel,
+  type CapabilityFreshnessModel,
   type CapabilityMatrixViewModel,
   type CapabilityMatrixRowModel
 } from "@/screens/data-screen.capability-matrix.view-model";
@@ -259,6 +262,7 @@ function DataScreenContent({
   const queryPanel = useDataQueryPanel();
   const qualityPanel = useDataQualityPanel(dataQualityFetcher);
   const capabilityMatrixPanel = useCapabilityMatrixPanel();
+  const capabilityFreshness = useMemo(() => buildCapabilityFreshnessIndex(vm.providerSection.rows), [vm.providerSection.rows]);
   const corporateActionInboxPanel = useCorporateActionInboxPanel();
   const coverageGapsPanel = useCoverageGapsPanel();
   const [savedQueryName, setSavedQueryName] = useState("");
@@ -348,7 +352,7 @@ function DataScreenContent({
                 />
               ) : null}
 
-              {!analyticsUnavailable.has("capability-matrix") ? <CapabilityMatrixRegion panel={capabilityMatrixPanel} /> : null}
+              {!analyticsUnavailable.has("capability-matrix") ? <CapabilityMatrixRegion panel={capabilityMatrixPanel} freshness={capabilityFreshness} /> : null}
 
               {!analyticsUnavailable.has("corporate-actions") ? <CorporateActionInboxRegion panel={corporateActionInboxPanel} /> : null}
 
@@ -2048,7 +2052,9 @@ function BackfillLiveProgress({ state }: { state: BackfillLiveProgressState }) {
   );
 }
 
-function CapabilityMatrixRegion({ panel }: { panel: CapabilityMatrixViewModel }) {
+const FRESHNESS_SEVERITY: Record<CapabilityFreshnessModel["state"], string> = { current: "ready", stale: "stale", "no-evidence": "unknown" };
+
+function CapabilityMatrixRegion({ panel, freshness }: { panel: CapabilityMatrixViewModel; freshness: (providerId: string) => CapabilityFreshnessModel }) {
   return (
     <section aria-labelledby="capability-matrix-title" className="workspace-region capability-matrix-region">
       <Card>
@@ -2056,7 +2062,7 @@ function CapabilityMatrixRegion({ panel }: { panel: CapabilityMatrixViewModel })
           <div>
             <CardTitle id="capability-matrix-title">Provider capability matrix</CardTitle>
             <CardDescription>
-              Declared provider coverage per instrument type.
+              Declared provider coverage per instrument type, with how fresh each provider's newest evidence is.
               {panel.model ? ` ${panel.model.summary}` : null}
             </CardDescription>
           </div>
@@ -2076,6 +2082,12 @@ function CapabilityMatrixRegion({ panel }: { panel: CapabilityMatrixViewModel })
                   completePopulation={panel.model.failures.length === 0}
                   rows={panel.model.rows} getRowId={(row) => row.providerId} getSearchText={(row) => `${row.providerId} ${row.cells.map((cell) => cell.description).join(" ")}`}
                   columns={[{ id: "provider", label: "Provider", rowHeader: true, render: (row) => <span className="font-mono font-semibold">{row.providerId}</span>, exportValue: (row) => row.providerId },
+                    { id: "freshness", label: "Freshness", render: (row: CapabilityMatrixRowModel) => { const fresh = freshness(row.providerId); return (
+                      <span className="inline-flex flex-wrap items-center gap-1.5" data-freshness={fresh.state}>
+                        <StatusBadge status={FRESHNESS_SEVERITY[fresh.state]} label={fresh.label} />
+                        {fresh.ageText ? <span className="text-xs tabular-nums text-muted-foreground">{fresh.ageText}</span> : null}
+                      </span>); },
+                      exportValue: (row: CapabilityMatrixRowModel) => { const fresh = freshness(row.providerId); return fresh.ageText ? `${fresh.label} (${fresh.ageText})` : fresh.label; } },
                     ...panel.model.columns.map((column) => ({ id: column, label: column,
                       render: (row: CapabilityMatrixRowModel) => { const cell = row.cells.find((item) => item.instrumentType === column); return cell ? <span aria-label={cell.description} title={cell.description}>{cell.marks}</span> : "Unavailable"; },
                       exportValue: (row: CapabilityMatrixRowModel) => row.cells.find((cell) => cell.instrumentType === column)?.description ?? "Unavailable" }))]}

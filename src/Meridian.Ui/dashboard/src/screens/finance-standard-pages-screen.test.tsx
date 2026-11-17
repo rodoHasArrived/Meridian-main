@@ -1398,6 +1398,12 @@ describe("finance standard pages", () => {
     expect(await screen.findByText(/June 2026: Run trial balance · Ledger Posting Draft · owner Controller · due Jul 3, 2026/)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Open close workflow for June 2026" })).toHaveAttribute("href", "/accounting/operations-continuity");
     expect(screen.getByRole("link", { name: "Open Operations Continuity" })).toHaveAttribute("href", "/accounting/operations-continuity");
+    // The month grid shows the workflow on the day its next task is due, above the list view.
+    const calendar = screen.getByRole("region", { name: "Close calendar" });
+    expect(within(calendar).getByRole("grid", { name: "July 2026" })).toBeInTheDocument();
+    const dueDay = within(calendar).getByRole("gridcell", { name: /^3 July 2026/ });
+    expect(within(dueDay).getByRole("link", { name: /June 2026: Run trial balance/ })).toHaveAttribute("href", "/accounting/operations-continuity");
+    expect(screen.getByRole("heading", { name: "List view" })).toBeInTheDocument();
   });
 
   describe("close calendar fund narrowing", () => {
