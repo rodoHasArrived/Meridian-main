@@ -79,6 +79,40 @@ public sealed partial class FundOperationsWorkspaceReadServiceTests
         comparison.Lines.Should().BeEmpty();
     }
 
+    [Fact]
+    public async Task GetNavTrendAsync_ListsMonthEndsAscendingAndEndsWithTheCurrentNav()
+    {
+        var fundProfileId = $"fund-nav-{Guid.NewGuid():N}";
+        var repository = new StrategyRunStore();
+        await repository.RecordRunAsync(BuildRun("run-nav-trend-1", "nav-t", "Nav Strategy", fundProfileId, "Nav Fund", realizedPnl: 40m, unrealizedPnl: 60m));
+        var service = CreateNavComparisonService(repository);
+        var asOf = new DateTimeOffset(2026, 7, 15, 0, 0, 0, TimeSpan.Zero);
+
+        var trend = await service.GetNavTrendAsync(fundProfileId, months: 6, asOf: asOf, currency: "USD");
+        var comparison = await service.GetNavComparisonAsync(fundProfileId, asOf, new DateTimeOffset(2026, 6, 30, 23, 59, 59, TimeSpan.Zero), "USD");
+
+        trend.Subject.Should().Be("Nav Fund");
+        trend.Points.Should().NotBeEmpty();
+        trend.Points.Select(static point => point.AsOf).Should().BeInAscendingOrder();
+        trend.Points[^1].AsOf.Should().Be(new DateOnly(2026, 7, 15));
+        trend.Points[^1].TotalNav.Should().Be(comparison.Lines.Single(static line => line.IsTotal).Current);
+        // The run's ledger starts in April 2026, so February and March are left out with a note.
+        trend.Points.Select(static point => point.AsOf).Should().Equal(new DateOnly(2026, 4, 30), new DateOnly(2026, 5, 31), new DateOnly(2026, 6, 30), new DateOnly(2026, 7, 15));
+        trend.Notes.Should().Contain(static note => note.Contains("left out", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task GetNavTrendAsync_ClampsTheWindowAndReportsAnEmptyLedger()
+    {
+        var service = CreateNavComparisonService(new StrategyRunStore());
+
+        var trend = await service.GetNavTrendAsync("fund-nav-empty", months: 500, asOf: new DateTimeOffset(2026, 7, 15, 0, 0, 0, TimeSpan.Zero));
+
+        trend.Points.Should().BeEmpty();
+        trend.Notes.Should().Contain("The ledger has no NAV components in this window.");
+        FundOperationsWorkspaceReadService.MaxNavTrendMonths.Should().Be(24);
+    }
+
     [Theory]
     [InlineData("2026-11-17T12:00:00Z", "2026-10-31T23:59:59.9999999Z")]
     [InlineData("2026-01-01T00:00:00Z", "2025-12-31T23:59:59.9999999Z")]

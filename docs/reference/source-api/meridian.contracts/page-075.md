@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TradingExecutionReconciliationBreakDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.TradingExecutionReconciliationBreakDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:119](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L119).
+
+```csharp
+public sealed record TradingExecutionReconciliationBreakDto(string Kind, string Description, string? LocalOrderId, string? BrokerOrderId, string? ClientOrderId, string? Symbol, string? LocalValue, string? BrokerValue);
+```
+
+## TradingExecutionReconciliationReadinessDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.TradingExecutionReconciliationReadinessDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:129](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L129).
+
+```csharp
+public sealed record TradingExecutionReconciliationReadinessDto(TradingAcceptanceGateStatusDto Status, string GatewayId, string BrokerDisplayName, bool BrokerHealthy, bool BrokerConnected, int MatchedOpenOrderCount, int BreakCount, DateTimeOffset ReconciledAt, string Detail, IReadOnlyList<TradingExecutionReconciliationBreakDto> Breaks);
+```
+
 ## TradingLiveOperationRequirementDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.TradingLiveOperationRequirementDto</code>. Kind: `record`.
@@ -566,28 +586,4 @@ Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:69](../../../..
 
 ```csharp
 public sealed record WorkstationBrokerageSyncStatusDto(Guid FundAccountId, string? ProviderId, string? ExternalAccountId, WorkstationBrokerageSyncHealth Health, bool IsLinked, bool IsStale, DateTimeOffset? LastAttemptedSyncAt, DateTimeOffset? LastSuccessfulSyncAt, string? LastError, int PositionCount, int OpenOrderCount, int FillCount, int CashTransactionCount, int SecurityMissingCount, IReadOnlyList<string> Warnings, BrokerageAccountKindDto AccountKind = BrokerageAccountKindDto.Unknown);
-```
-
-## WorkstationCrossScreenCount
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationCrossScreenCount</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CrossScreenCountsDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/CrossScreenCountsDtos.cs#L16).
-
-A single cross-screen count and the plain-language definition it was counted with.
-
-```csharp
-public sealed record WorkstationCrossScreenCount(int Count, string Definition);
-```
-
-## WorkstationCrossScreenCountsDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationCrossScreenCountsDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CrossScreenCountsDtos.cs:9](../../../../src/Meridian.Contracts/Workstation/CrossScreenCountsDtos.cs#L9).
-
-Counts that appear on more than one workstation screen (Trading, Data, Settings, Accounting and the WPF desktop), each computed once with the definition its Definition text states, so every surface shows the same number for the same quantity. A count is null when its source is not registered or the caller may not read it; clients then show &quot;—&quot;, never a substitute number.
-
-```csharp
-public sealed record WorkstationCrossScreenCountsDto(DateTimeOffset AsOf, WorkstationCrossScreenCount? OpenOrders, WorkstationProviderHealthCount? Providers, WorkstationCrossScreenCount? OpenBreaks);
 ```

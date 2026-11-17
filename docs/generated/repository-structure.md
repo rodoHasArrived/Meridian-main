@@ -6304,6 +6304,7 @@ Meridian-main
 │   │   │   ├── FinancialRecordExplorerDtos.cs
 │   │   │   ├── FirstRunDtos.cs
 │   │   │   ├── FundLedgerDtos.cs
+│   │   │   ├── FundNavTrendDtos.cs
 │   │   │   ├── FundOperationsDtos.cs
 │   │   │   ├── FundOperationsWorkspaceDtos.cs
 │   │   │   ├── FundWorkflowCommands.cs
@@ -9141,6 +9142,7 @@ Meridian-main
 │   │   │   │   │   │   ├── metric-passport.tsx
 │   │   │   │   │   │   ├── month-calendar.test.tsx
 │   │   │   │   │   │   ├── month-calendar.tsx
+│   │   │   │   │   │   ├── nav-trend-chart.tsx
 │   │   │   │   │   │   ├── notification-center.test.tsx
 │   │   │   │   │   │   ├── notification-center.tsx
 │   │   │   │   │   │   ├── number-passport.test.ts
@@ -11181,6 +11183,7 @@ Meridian-main
 │   │   │   ├── FundOperationsWorkspaceReadService.LiveViews.cs
 │   │   │   ├── FundOperationsWorkspaceReadService.Models.cs
 │   │   │   ├── FundOperationsWorkspaceReadService.NavComparison.cs
+│   │   │   ├── FundOperationsWorkspaceReadService.NavTrend.cs
 │   │   │   ├── FundOperationsWorkspaceReadService.PortfolioReporting.cs
 │   │   │   ├── FundOperationsWorkspaceReadService.Reconciliation.cs
 │   │   │   ├── FundOperationsWorkspaceReadService.ReconciliationReadCut.cs

@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PreparerAttestationReceiptDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.PreparerAttestationReceiptDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:63](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L63).
+
+The assertion has its own task identity; source creator/importer is retained separately.
+
+```csharp
+public sealed record PreparerAttestationReceiptDto(Guid ReceiptId, Guid CommandId, Guid AssertionId, int SchemaVersion, string DecisionKind, string Disclosure, SinglePrincipalAttestationScopeDto Scope, string ActionId, string SubjectKind, string SubjectId, string SubjectRevision, string SubjectHash, string SourceArtifactId, string SourceHash, string? SourceActor, string SourceProvenance, string PreparedBy, string AttestedBy, OperationsActionOriginDto Origin, Guid DeclarationId, long DeclarationRevision, string PolicyVersion, string PolicyHash, DateTimeOffset RecordedAt, string Reason, string Confirmation, IReadOnlyList<string> Checks, string? SourceSubjectKind = null, string? SourceSubjectId = null, string? SubjectSnapshotJson = null);
+```
+
+## PreparerAttestationRevocationDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.PreparerAttestationRevocationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:95](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L95).
+
+```csharp
+public sealed record PreparerAttestationRevocationDto(Guid CommandId, Guid ReceiptId, long Revision, string Actor, DateTimeOffset RecordedAt, string Reason);
+```
+
 ## PreparerEvidenceAcknowledgmentDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.PreparerEvidenceAcknowledgmentDto</code>. Kind: `record`.
@@ -675,36 +697,3 @@ Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:765](../../../
 ```csharp
 public sealed record ReconciliationBulkCaseworkCaseResult(string BreakId, bool Succeeded, bool WouldSucceed, string? Error, ReconciliationBreakQueueItem? Item);
 ```
-
-## ReconciliationBulkCaseworkRequest
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationBulkCaseworkRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:731](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L731).
-
-```csharp
-public sealed record ReconciliationBulkCaseworkRequest(IReadOnlyList<string> BreakIds, ReconciliationCaseworkAction Action, string Actor, string CommandId, string CorrelationId, string Source, string IdempotencyKey, bool DryRun, bool AllowPartialSuccess, string? Reason = null, string? Assignee = null, ReconciliationCasePriority? Priority = null, ReconciliationCaseLifecycleState? Status = null, string? Note = null, string? RootCauseCode = null, string? ResolutionCode = null, int MaxCaseCount = 100, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator, IReadOnlyList<string>? EvidenceLinks = null, string? ApprovalActor = null, string? ApprovalReference = null, string? SupersedingBreakId = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public bool AssignToCurrentOperator { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:762](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L762) | Bulk &quot;assign to me&quot;: the endpoint replaces Assignee with the authenticated operator, because a client knows its display name but not its login identity. It is cleared before the request reaches the queue, and skipped when false, so retained input hashes keep their shape. Init-only preserves the positional constructor and deconstruction ABI. |
-
-## ReconciliationBulkCaseworkResult
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationBulkCaseworkResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:772](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L772).
-
-```csharp
-public sealed record ReconciliationBulkCaseworkResult(string BulkActionId, string IdempotencyKey, bool DryRun, int RequestedCount, int SucceededCount, int FailedCount, IReadOnlyList<ReconciliationBulkCaseworkCaseResult> Results)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string InputHashSha256 { get; init; } = ComputeCompatibilityInputHash(BulkActionId, IdempotencyKey, DryRun, RequestedCount, SucceededCount, FailedCount);</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:782](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L782) | Canonical hash of the complete admitted bulk request. |
-| <code>public VerifiedOperationOutcome Outcome { get; init; } = CreateCompatibilityOutcome(BulkActionId, IdempotencyKey, DryRun, RequestedCount, SucceededCount, FailedCount);</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:794](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L794) | Verified terminal receipt. Queue implementations replace this compatibility receipt with one bound to the full request, persisted receipt, and retained audit evidence. |

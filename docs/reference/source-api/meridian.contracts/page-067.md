@@ -6,6 +6,39 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReconciliationBulkCaseworkRequest
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationBulkCaseworkRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:731](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L731).
+
+```csharp
+public sealed record ReconciliationBulkCaseworkRequest(IReadOnlyList<string> BreakIds, ReconciliationCaseworkAction Action, string Actor, string CommandId, string CorrelationId, string Source, string IdempotencyKey, bool DryRun, bool AllowPartialSuccess, string? Reason = null, string? Assignee = null, ReconciliationCasePriority? Priority = null, ReconciliationCaseLifecycleState? Status = null, string? Note = null, string? RootCauseCode = null, string? ResolutionCode = null, int MaxCaseCount = 100, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator, IReadOnlyList<string>? EvidenceLinks = null, string? ApprovalActor = null, string? ApprovalReference = null, string? SupersedingBreakId = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public bool AssignToCurrentOperator { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:762](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L762) | Bulk &quot;assign to me&quot;: the endpoint replaces Assignee with the authenticated operator, because a client knows its display name but not its login identity. It is cleared before the request reaches the queue, and skipped when false, so retained input hashes keep their shape. Init-only preserves the positional constructor and deconstruction ABI. |
+
+## ReconciliationBulkCaseworkResult
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationBulkCaseworkResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:772](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L772).
+
+```csharp
+public sealed record ReconciliationBulkCaseworkResult(string BulkActionId, string IdempotencyKey, bool DryRun, int RequestedCount, int SucceededCount, int FailedCount, IReadOnlyList<ReconciliationBulkCaseworkCaseResult> Results)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string InputHashSha256 { get; init; } = ComputeCompatibilityInputHash(BulkActionId, IdempotencyKey, DryRun, RequestedCount, SucceededCount, FailedCount);</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:782](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L782) | Canonical hash of the complete admitted bulk request. |
+| <code>public VerifiedOperationOutcome Outcome { get; init; } = CreateCompatibilityOutcome(BulkActionId, IdempotencyKey, DryRun, RequestedCount, SucceededCount, FailedCount);</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:794](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L794) | Verified terminal receipt. Queue implementations replace this compatibility receipt with one bound to the full request, persisted receipt, and retained audit evidence. |
+
 ## ReconciliationCalibrationProfileSummaryDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCalibrationProfileSummaryDto</code>. Kind: `record`.
@@ -685,35 +718,3 @@ Enum declarations:
 | <code>User = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1658](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1658) |  |
 | <code>Group = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1659](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1659) |  |
 | <code>Company = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1660](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1660) |  |
-
-## ReportBrandingThemeDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportBrandingThemeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:138](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L138).
-
-Branding and styling options applied to governed report-pack documents.
-
-```csharp
-public sealed record ReportBrandingThemeDto(string ThemeId, string Name, string FirmName, string PrimaryColor, string AccentColor, string TextColor, string BackgroundColor, string? LogoUri = null, string? FooterText = null, string? Disclaimer = null, bool IsBuiltIn = true);
-```
-
-## ReportingAccountingBasisDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportingAccountingBasisDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1269](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1269).
-
-```csharp
-public enum ReportingAccountingBasisDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Gaap = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1271](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1271) |  |
-| <code>Tax = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1272](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1272) |  |
-| <code>Management = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1273](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1273) |  |
-| <code>Cash = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1274](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1274) |  |
-| <code>Statutory = 4</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1275](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1275) |  |

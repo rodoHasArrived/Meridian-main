@@ -7008,6 +7008,78 @@
         "Asset classes come from the ledger's NAV attribution; a class present on only one side is compared with zero."
       ],
       "generatedAt": "2026-07-13T18:55:00Z"
+    },
+    "/api/fund-structure/nav-trend": {
+      "fundProfileId": "alpha-income",
+      "subject": "Alpha Income Fund",
+      "currency": "USD",
+      "points": [
+        {
+          "asOf": "2025-08-31",
+          "totalNav": 10850000,
+          "componentCount": 6
+        },
+        {
+          "asOf": "2025-09-30",
+          "totalNav": 10920000,
+          "componentCount": 6
+        },
+        {
+          "asOf": "2025-10-31",
+          "totalNav": 11140000,
+          "componentCount": 6
+        },
+        {
+          "asOf": "2025-11-30",
+          "totalNav": 11080000,
+          "componentCount": 6
+        },
+        {
+          "asOf": "2025-12-31",
+          "totalNav": 11310000,
+          "componentCount": 6
+        },
+        {
+          "asOf": "2026-01-31",
+          "totalNav": 11460000,
+          "componentCount": 6
+        },
+        {
+          "asOf": "2026-02-28",
+          "totalNav": 11390000,
+          "componentCount": 6
+        },
+        {
+          "asOf": "2026-03-31",
+          "totalNav": 11620000,
+          "componentCount": 6
+        },
+        {
+          "asOf": "2026-04-30",
+          "totalNav": 11810000,
+          "componentCount": 6
+        },
+        {
+          "asOf": "2026-05-31",
+          "totalNav": 11940000,
+          "componentCount": 6
+        },
+        {
+          "asOf": "2026-06-30",
+          "totalNav": 12010000,
+          "componentCount": 6
+        },
+        {
+          "asOf": "2026-07-13",
+          "totalNav": 12450000,
+          "componentCount": 6
+        }
+      ],
+      "notes": [
+        "Each point is ledger NAV rebuilt as of that date, at the end of each month; the last point is NAV now.",
+        "Cash, financing and strategy cuts that do not take a date are not included."
+      ],
+      "generatedAt": "2026-07-13T18:55:00Z"
     }
   }
 }

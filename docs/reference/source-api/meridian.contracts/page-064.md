@@ -6,6 +6,32 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationsContinuityWorkflowDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsContinuityWorkflowDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1056](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1056).
+
+```csharp
+public sealed record OperationsContinuityWorkflowDto(Guid WorkflowId, Guid FundAccountId, string PeriodId, Guid? SecurityMasterSnapshotId, string BrokerSource, DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc, long Version, OperationsWorkflowStatusDto Status, OperationsBrokerIntakeStateDto BrokerIntakeState, OperationsSecurityMasterStateDto SecurityMasterState, OperationsLedgerPostingStateDto LedgerPostingState, OperationsReconciliationStateDto ReconciliationState, OperationsApprovalStateDto ApprovalState, IReadOnlyList<OperationsGateDto> Gates, IReadOnlyList<OperationsTimelineEntryDto> Timeline, IReadOnlyList<OperationsBreakCaseDto> BreakCases, OperationsLedgerPreviewDto? LedgerPreview, IReadOnlyList<OperationsApprovalDto> Approvals, OperationsReportPackReadinessDto ReportPackReadiness, IReadOnlyList<OperationsCloseChecklistTaskDto> CloseChecklist, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, IReadOnlyList<OperationsWorkflowBlockerDto> Blockers, IReadOnlyList<OperationsNextActionDto> NextActions, OperationsCloseReadinessDto? CloseReadiness = null, OperationsClosePackagePublicationDto? ClosePackage = null, OperationsAccountingRecordSummaryDto? AccountingRecordSummary = null, IReadOnlyList<OperationsReconciliationLaneSummaryDto>? ReconciliationLanes = null, OperationsDashboardSummaryDto? DashboardSummary = null, IReadOnlyList<OperationsEvidencePackageSummaryDto>? EvidencePackages = null, OperationsReviewedAutomationSummaryDto? ReviewedAutomation = null, Guid? LedgerBookId = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;OperationsEvidencePackageSummaryDto&gt; EvidencePackages { get; init; } = EvidencePackages??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1090](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1090) |  |
+
+## OperationsContinuityWorkflowSummaryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsContinuityWorkflowSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1006](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1006).
+
+```csharp
+public sealed record OperationsContinuityWorkflowSummaryDto(Guid WorkflowId, Guid FundAccountId, string PeriodId, Guid? SecurityMasterSnapshotId, string BrokerSource, OperationsWorkflowStatusDto Status, long Version, DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc, IReadOnlyList<OperationsGateDto> Gates, IReadOnlyList<OperationsNextActionDto> NextActions, Guid? LedgerBookId = null);
+```
+
 ## OperationsDashboardMetricDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsDashboardMetricDto</code>. Kind: `record`.
@@ -696,24 +722,4 @@ Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:19](../../../.
 
 ```csharp
 public sealed record OperatorTriageBulkCommand(string CommandId, OperatorTriageAction Action, string Reason, string AssigneeId, IReadOnlyList<OperatorTriageBulkItem> Items, Guid? FundAccountId = null);
-```
-
-## OperatorTriageBulkItem
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageBulkItem</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:18](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L18).
-
-```csharp
-public sealed record OperatorTriageBulkItem(string WorkItemId, long ExpectedVersion, long? ExpectedSourceVersion = null);
-```
-
-## OperatorTriageBulkResult
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageBulkResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:40](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L40).
-
-```csharp
-public sealed record OperatorTriageBulkResult(IReadOnlyList<OperatorTriageResult> Results);
 ```

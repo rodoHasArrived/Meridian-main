@@ -209,16 +209,19 @@
     {
       "id": "W02N",
       "name": "web-portfolio-nav",
+      "chartTables": true,
       "path": "/portfolio/nav?fundProfileId=alpha-income",
       "docLabel": "Portfolio \u2014 NAV vs prior period",
       "waitForText": "NAV vs prior period",
       "requiredApiRoutes": [
-        "/api/fund-structure/nav-comparison"
+        "/api/fund-structure/nav-comparison",
+        "/api/fund-structure/nav-trend"
       ],
       "waitForTexts": [
         "Total NAV",
         "Fixed income",
-        "Material"
+        "Material",
+        "NAV, last 12 month-ends"
       ]
     },
     {

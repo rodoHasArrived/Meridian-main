@@ -6,6 +6,38 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportBrandingThemeDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportBrandingThemeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:138](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L138).
+
+Branding and styling options applied to governed report-pack documents.
+
+```csharp
+public sealed record ReportBrandingThemeDto(string ThemeId, string Name, string FirmName, string PrimaryColor, string AccentColor, string TextColor, string BackgroundColor, string? LogoUri = null, string? FooterText = null, string? Disclaimer = null, bool IsBuiltIn = true);
+```
+
+## ReportingAccountingBasisDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportingAccountingBasisDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1269](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1269).
+
+```csharp
+public enum ReportingAccountingBasisDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Gaap = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1271](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1271) |  |
+| <code>Tax = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1272](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1272) |  |
+| <code>Management = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1273](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1273) |  |
+| <code>Cash = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1274](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1274) |  |
+| <code>Statutory = 4</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1275](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1275) |  |
+
 ## ReportingConsolidationLevelDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportingConsolidationLevelDto</code>. Kind: `enum`.
@@ -602,23 +634,3 @@ Enum declarations:
 | <code>Failed = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:858](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L858) |  |
 | <code>Retried = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:859](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L859) |  |
 | <code>Blocked = 4</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:860](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L860) |  |
-
-## ReportPackEvidenceLinkDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportPackEvidenceLinkDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1757](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1757).
-
-```csharp
-public sealed record ReportPackEvidenceLinkDto(string EvidenceId, string Label, string? Route, string Source, DateTimeOffset? CapturedAtUtc = null);
-```
-
-## ReportPackLineProvenanceDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportPackLineProvenanceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1759](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1759).
-
-```csharp
-public sealed record ReportPackLineProvenanceDto(string LineKey, string SourceKind, string SourceId, string EvidenceId, string? RunId = null, string? LedgerEntryId = null, string? ReconciliationCaseId = null, string? ReportValue = null, string? SourceSessionId = null, string? ReconciliationRunId = null, string? ProviderEventId = null, string? SecurityMasterId = null, string? SecurityDefinitionId = null, string? ReconciliationOutcome = null, string? ApprovalId = null, string? FinancialRecordExplorerId = null, string? FinancialRecordHref = null);
-```

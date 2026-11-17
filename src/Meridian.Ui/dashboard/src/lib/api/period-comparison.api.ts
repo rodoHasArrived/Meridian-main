@@ -99,3 +99,34 @@ export async function getCashLadderComparison(query: { scenario?: string | null;
   }), { ...options, allowDevelopmentFallback: false });
   return normalizePeriodComparison(raw);
 }
+
+export interface FundNavTrendPoint {
+  asOf: string;
+  /** Ledger NAV at the end of that day, as decimal text. */
+  totalNav: string;
+  componentCount: number;
+}
+
+export interface FundNavTrend {
+  fundProfileId: string;
+  subject: string;
+  currency: string;
+  points: FundNavTrendPoint[];
+  notes: string[];
+  generatedAt: string;
+}
+
+type RawNavTrend = Omit<FundNavTrend, "points"> & { points: Array<Omit<FundNavTrendPoint, "totalNav"> & { totalNav: RawAmount }> };
+
+/** Ledger NAV at each recent month-end, ending with NAV now. */
+export async function getNavTrend(query: { fundProfileId: string; months?: number }, options: ApiRequestOptions = {}): Promise<FundNavTrend> {
+  const raw = await getJson<RawNavTrend>(withQuery(UI_API_ROUTES.FundStructureNavTrend, {
+    fundProfileId: query.fundProfileId,
+    months: query.months === undefined ? null : String(query.months)
+  }), { ...options, allowDevelopmentFallback: false });
+  if (!raw || !Array.isArray(raw.points) || !Array.isArray(raw.notes)) throw new Error("The NAV trend response is not recognised.");
+  return {
+    ...raw,
+    points: raw.points.map((point) => ({ asOf: point.asOf, componentCount: point.componentCount, totalNav: amountText(point.totalNav, "NAV") }))
+  };
+}

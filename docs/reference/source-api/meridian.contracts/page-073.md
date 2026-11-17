@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StorageMaintenanceResultDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StorageMaintenanceResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:199](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L199).
+
+```csharp
+public sealed record StorageMaintenanceResultDto(string RunId, StorageMaintenanceActionDto Action, DateTimeOffset StartedAt, DateTimeOffset CompletedAt, string Status, long AffectedBytes, IReadOnlyList<StorageMaintenanceItemResultDto> Items, IReadOnlyList<string> Warnings, string? EvidenceVaultId, string? EvidenceRoute);
+```
+
+## StorageQualityAlertDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StorageQualityAlertDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:140](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L140).
+
+```csharp
+public sealed record StorageQualityAlertDto(string AlertId, string Severity, string Subject, string Message, DateTimeOffset DetectedAt);
+```
+
 ## StorageQualitySummaryDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StorageQualitySummaryDto</code>. Kind: `record`.
@@ -658,37 +678,3 @@ Filter options used for workstation run history retrieval.
 ```csharp
 public sealed record StrategyRunHistoryQuery(IReadOnlyList<StrategyRunMode>? Modes = null, StrategyRunStatus? Status = null, string? StrategyId = null, int Limit = 50);
 ```
-
-## StrategyRunIdentity
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunIdentity</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:195](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L195).
-
-Canonical run identity and provenance contract shared by run projections.
-
-```csharp
-public sealed record StrategyRunIdentity(string CanonicalRunKey, string? ParentCanonicalRunKey, IReadOnlyList<string> DerivedCanonicalRunKeys, StrategyRunMode Mode, string? PromotionSourceRunId, string? PromotionTargetRunId, string? PromotionDecision, string? ReplayAuditReference, DateTimeOffset? ReplayVerifiedAt, bool HasReplayAudit);
-```
-
-## StrategyRunLineageEventType
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunLineageEventType</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:713](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L713).
-
-Promotion/lineage event type emitted on strategy run timelines.
-
-```csharp
-public enum StrategyRunLineageEventType : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>RunStarted</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:715](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L715) |  |
-| <code>RunCompleted</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:716](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L716) |  |
-| <code>PromotionDecision</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:717](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L717) |  |
-| <code>CrossModeTransition</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:718](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L718) |  |
-| <code>ReplayVerified</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:719](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L719) |  |

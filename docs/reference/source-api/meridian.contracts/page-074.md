@@ -6,6 +6,40 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategyRunIdentity
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunIdentity</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:195](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L195).
+
+Canonical run identity and provenance contract shared by run projections.
+
+```csharp
+public sealed record StrategyRunIdentity(string CanonicalRunKey, string? ParentCanonicalRunKey, IReadOnlyList<string> DerivedCanonicalRunKeys, StrategyRunMode Mode, string? PromotionSourceRunId, string? PromotionTargetRunId, string? PromotionDecision, string? ReplayAuditReference, DateTimeOffset? ReplayVerifiedAt, bool HasReplayAudit);
+```
+
+## StrategyRunLineageEventType
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunLineageEventType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:713](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L713).
+
+Promotion/lineage event type emitted on strategy run timelines.
+
+```csharp
+public enum StrategyRunLineageEventType : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>RunStarted</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:715](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L715) |  |
+| <code>RunCompleted</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:716](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L716) |  |
+| <code>PromotionDecision</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:717](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L717) |  |
+| <code>CrossModeTransition</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:718](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L718) |  |
+| <code>ReplayVerified</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:719](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L719) |  |
+
 ## StrategyRunLineageTimelineEntry
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunLineageTimelineEntry</code>. Kind: `record`.
@@ -622,23 +656,3 @@ Declared public members:
 | <code>public int ExplainableEvidenceCount { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:233](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L233) |  |
 | <code>public int UnexplainedEvidenceCount { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:235](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L235) |  |
 | <code>public IReadOnlyList&lt;string&gt; ExplainabilityWarnings { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:237](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L237) |  |
-
-## TradingExecutionReconciliationBreakDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.TradingExecutionReconciliationBreakDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:119](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L119).
-
-```csharp
-public sealed record TradingExecutionReconciliationBreakDto(string Kind, string Description, string? LocalOrderId, string? BrokerOrderId, string? ClientOrderId, string? Symbol, string? LocalValue, string? BrokerValue);
-```
-
-## TradingExecutionReconciliationReadinessDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.TradingExecutionReconciliationReadinessDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:129](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L129).
-
-```csharp
-public sealed record TradingExecutionReconciliationReadinessDto(TradingAcceptanceGateStatusDto Status, string GatewayId, string BrokerDisplayName, bool BrokerHealthy, bool BrokerConnected, int MatchedOpenOrderCount, int BreakCount, DateTimeOffset ReconciledAt, string Detail, IReadOnlyList<TradingExecutionReconciliationBreakDto> Breaks);
-```

@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerAmountScopeDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.LedgerAmountScopeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L4).
+
+The complete retained accounting boundary for an amount proof.
+
+```csharp
+public sealed record LedgerAmountScopeDto(string TenantId, string CompanyId, string FundProfileId, Guid LedgerBookId, Guid PeriodId);
+```
+
+## LedgerAmountSecurityMasterLinkDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.LedgerAmountSecurityMasterLinkDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:634](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L634).
+
+```csharp
+public sealed record LedgerAmountSecurityMasterLinkDto(string Symbol, string? Route, IReadOnlyList<string> RelatedEvidenceIds, int EvidenceCount, DateTimeOffset? CapturedAt = null, Guid? SecurityId = null, string? DisplayName = null, string? SourceSystem = null, string? EvidenceId = null);
+```
+
 ## LedgerAmountStrategyRunLinkDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.LedgerAmountStrategyRunLinkDto</code>. Kind: `record`.
@@ -588,26 +610,4 @@ Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:99](../../../../sr
 
 ```csharp
 public sealed record OnboardingReadinessDto(string Status, bool IsReady, int UnresolvedDifferenceCount, IReadOnlyList<DateOnly> MissingDates, IReadOnlyList<OnboardingMissingSourceDto> MissingSources, IReadOnlyList<string> Blockers, int ApprovedReviewers, int RequiredReviewers, IReadOnlyList<OnboardingPeriodDifferenceDto> UnresolvedDifferences, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<OnboardingPeriodSummaryDto>? Periods = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] OnboardingOpeningBalanceReportDto? Opening = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] int ExplainedDifferenceCount = 0);
-```
-
-## OnboardingReadinessPacketDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OnboardingReadinessPacketDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:121](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L121).
-
-A frozen support artifact, never an accounting-authority transition.
-
-```csharp
-public sealed record OnboardingReadinessPacketDto(string PacketId, DateTimeOffset FrozenAtUtc, string FrozenBy, OnboardingPacketContentDto Content, string ContentHash, string HashAlgorithm);
-```
-
-## OnboardingReviewDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OnboardingReviewDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:92](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L92).
-
-```csharp
-public sealed record OnboardingReviewDto(string ReviewId, int DataRevision, string ReviewerId, string Decision, string Notes, IReadOnlyList<string> EvidenceIds, DateTimeOffset RecordedAtUtc);
 ```

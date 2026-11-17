@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { FormRow } from "@/components/ui/form";
 import { PeriodComparisonPanel } from "@/components/meridian/period-comparison-panel";
-import { getNavComparison, type PeriodComparison } from "@/lib/api/period-comparison.api";
+import { getNavComparison, getNavTrend, type PeriodComparison } from "@/lib/api/period-comparison.api";
+import { NavTrendChart } from "@/components/meridian/nav-trend-chart";
 import type { ApiRequestOptions } from "@/lib/api";
 import { defaultMaterialityPolicyForClass } from "@/lib/reporting-materiality";
 import { usePeriodComparison } from "@/lib/use-period-comparison";
@@ -18,9 +19,10 @@ const NAV_MATERIALITY = defaultMaterialityPolicyForClass("Portfolio");
  * own date, in total and by asset class. The fund comes from the link or the reporting selection;
  * the prior date defaults to the end of the previous month.
  */
-export function NavComparisonScreen({ defaultFundProfileId = null, service = getNavComparison }: {
+export function NavComparisonScreen({ defaultFundProfileId = null, service = getNavComparison, trendService = getNavTrend }: {
   defaultFundProfileId?: string | null;
   service?: NavComparisonService;
+  trendService?: typeof getNavTrend;
 }) {
   const fundId = useId();
   const dateId = useId();
@@ -56,6 +58,7 @@ export function NavComparisonScreen({ defaultFundProfileId = null, service = get
               <Input id={dateId} type="date" value={baselineDate} onChange={(event) => update("baselineAsOf", event.target.value)} />
             </FormRow>
           </div>
+          {fundProfileId ? <NavTrendChart fundProfileId={fundProfileId} service={trendService} /> : null}
           {fundProfileId
             ? <PeriodComparisonPanel title="NAV comparison" workbenchId="portfolio-nav-comparison" state={comparison} onRetry={comparison.retry} policy={NAV_MATERIALITY} currentLabel="Now" />
             : <p role="status" className="text-sm text-muted-foreground">Choose a fund profile to compare its NAV with a prior date.</p>}

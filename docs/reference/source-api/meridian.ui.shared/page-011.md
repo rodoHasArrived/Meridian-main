@@ -915,6 +915,19 @@ Declared public members:
 | --- | --- | --- |
 | <code>public async Task&lt;PeriodComparisonDto&gt; GetNavComparisonAsync(string fundProfileId, DateTimeOffset? asOf, DateTimeOffset? baselineAsOf, string? currency, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.NavComparison.cs:14](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.NavComparison.cs#L14) | Ledger NAV at asOf against NAV at baselineAsOf (default: the end of the calendar month before asOf), in total and by asset class. Both sides are rebuilt from the posted ledger as of their own date through the same NAV attribution the workspace uses, so the prior figure is what the ledger said then, not a stored snapshot. |
 
+Source: [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.NavTrend.cs:5](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.NavTrend.cs#L5).
+
+```csharp
+public sealed partial class FundOperationsWorkspaceReadService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int MaxNavTrendMonths = 24;</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.NavTrend.cs:8](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.NavTrend.cs#L8) | Most month-ends a NAV trend may span. |
+| <code>public async Task&lt;FundNavTrendDto&gt; GetNavTrendAsync(string fundProfileId, int months = 12, DateTimeOffset? asOf = null, string? currency = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.NavTrend.cs:16](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.NavTrend.cs#L16) | Ledger NAV at the end of each of the last months months, ending with NAV at asOf (default now). The ledger is built once, as of the latest date; each point is its NAV attribution as of that point, which reads only entries timestamped on or before it. Months before the ledger&#x27;s first NAV component are left out. |
+
 Source: [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.PortfolioReporting.cs:26](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.PortfolioReporting.cs#L26).
 
 ```csharp

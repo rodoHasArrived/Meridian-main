@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperatorTriageBulkItem
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageBulkItem</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:18](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L18).
+
+```csharp
+public sealed record OperatorTriageBulkItem(string WorkItemId, long ExpectedVersion, long? ExpectedSourceVersion = null);
+```
+
+## OperatorTriageBulkResult
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageBulkResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:40](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L40).
+
+```csharp
+public sealed record OperatorTriageBulkResult(IReadOnlyList<OperatorTriageResult> Results);
+```
+
 ## OperatorTriageCapabilities
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageCapabilities</code>. Kind: `record`.
@@ -232,7 +252,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Workstation.PeriodComparisonDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs:62](../../../../src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs#L62).
+Source: [src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs:65](../../../../src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs#L65).
 
 A prior-period comparison for a workstation surface (NAV, run attribution, cash ladder). Notes states what the figures do and do not include; a surface shows them beside the table rather than implying more than the source supports.
 
@@ -244,7 +264,7 @@ public sealed record PeriodComparisonDto(string Status, string? Reason, string S
 
 Qualified name: <code>Meridian.Contracts.Workstation.PeriodComparisonLineDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs:43](../../../../src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs#L43).
+Source: [src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs:46](../../../../src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs#L46).
 
 One compared figure.
 
@@ -256,7 +276,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static PeriodComparisonLineDto Create(string key, string label, decimal current, decimal prior, bool isTotal = false) =&gt; …;</code> | [src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs:53](../../../../src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs#L53) | Builds a line with change and percent from PeriodChange. |
+| <code>public static PeriodComparisonLineDto Create(string key, string label, decimal current, decimal prior, bool isTotal = false) =&gt; …;</code> | [src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs:56](../../../../src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs#L56) | Builds a line with change and percent from PeriodChange. |
 
 ## PeriodComparisonStatus
 
@@ -710,26 +730,4 @@ Frozen evidence of a preparer assertion. The original command results remain JSO
 
 ```csharp
 public sealed record PreparerAttestationProofExportDto(int SchemaVersion, string Kind, string Disclosure, DateTimeOffset RecordedAt, string ReceiptReference, JsonElement Receipt, JsonElement Declaration, string AuthorityBoundary);
-```
-
-## PreparerAttestationReceiptDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.PreparerAttestationReceiptDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:63](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L63).
-
-The assertion has its own task identity; source creator/importer is retained separately.
-
-```csharp
-public sealed record PreparerAttestationReceiptDto(Guid ReceiptId, Guid CommandId, Guid AssertionId, int SchemaVersion, string DecisionKind, string Disclosure, SinglePrincipalAttestationScopeDto Scope, string ActionId, string SubjectKind, string SubjectId, string SubjectRevision, string SubjectHash, string SourceArtifactId, string SourceHash, string? SourceActor, string SourceProvenance, string PreparedBy, string AttestedBy, OperationsActionOriginDto Origin, Guid DeclarationId, long DeclarationRevision, string PolicyVersion, string PolicyHash, DateTimeOffset RecordedAt, string Reason, string Confirmation, IReadOnlyList<string> Checks, string? SourceSubjectKind = null, string? SourceSubjectId = null, string? SubjectSnapshotJson = null);
-```
-
-## PreparerAttestationRevocationDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.PreparerAttestationRevocationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:95](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L95).
-
-```csharp
-public sealed record PreparerAttestationRevocationDto(Guid CommandId, Guid ReceiptId, long Revision, string Actor, DateTimeOffset RecordedAt, string Reason);
 ```

@@ -99,6 +99,30 @@ Accounting-facing NAV attribution summary for one fund workspace.
 public sealed record FundNavAttributionSummaryDto(string Currency, decimal TotalNav, int ComponentCount, int EntityCount, int SleeveCount, int VehicleCount, IReadOnlyList<FundNavAssetClassExposureDto> AssetClassExposure);
 ```
 
+## FundNavTrendDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FundNavTrendDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundNavTrendDtos.cs:17](../../../../src/Meridian.Contracts/Workstation/FundNavTrendDtos.cs#L17).
+
+A fund&#x27;s ledger NAV at each month-end over a recent window, ending with NAV at the as-of date. Every point is the posted ledger as it stood on that date, through the same NAV attribution the workspace and the NAV comparison use.
+
+```csharp
+public sealed record FundNavTrendDto(string FundProfileId, string Subject, string Currency, IReadOnlyList<FundNavTrendPointDto> Points, IReadOnlyList<string> Notes, DateTimeOffset GeneratedAt);
+```
+
+## FundNavTrendPointDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FundNavTrendPointDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundNavTrendDtos.cs:7](../../../../src/Meridian.Contracts/Workstation/FundNavTrendDtos.cs#L7).
+
+Ledger NAV at one date.
+
+```csharp
+public sealed record FundNavTrendPointDto(DateOnly AsOf, decimal TotalNav, int ComponentCount);
+```
+
 ## FundOperationsNavigationContext
 
 Qualified name: <code>Meridian.Contracts.Workstation.FundOperationsNavigationContext</code>. Kind: `record`.
@@ -737,39 +761,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;IReadOnlyList&lt;OperationsWorkflowBlockerDto&gt;&gt; ValidateAsync(Guid workflowId, long expectedVersion, CloseReadinessScopeDto? scope, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Workstation/IClosePublicationReadinessGuard.cs:6](../../../../src/Meridian.Contracts/Workstation/IClosePublicationReadinessGuard.cs#L6) |  |
-
-## ICloseReadinessSubjectSource
-
-Qualified name: <code>Meridian.Contracts.Workstation.ICloseReadinessSubjectSource</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs:22](../../../../src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs#L22).
-
-Resolves the subject information needed to evaluate readiness for a scoped accounting close.
-
-```csharp
-public interface ICloseReadinessSubjectSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;CloseReadinessSubjectDto?&gt; GetSubjectAsync(CloseReadinessScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs:24](../../../../src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs#L24) |  |
-
-## IDailyValuationScheduleStatusSource
-
-Qualified name: <code>Meridian.Contracts.Workstation.IDailyValuationScheduleStatusSource</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:88](../../../../src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs#L88).
-
-Read-only scheduler projection consumed by close-cockpit surfaces without taking a dependency on the workstation scheduler implementation.
-
-```csharp
-public interface IDailyValuationScheduleStatusSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;DailyValuationScheduleStatusDto&gt; GetStatusAsync(string? fundProfileId, Guid? ledgerBookId, string? periodId, CancellationToken ct = default, string? entityId = null, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:90](../../../../src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs#L90) |  |

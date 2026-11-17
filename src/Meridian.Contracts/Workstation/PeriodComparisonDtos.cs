@@ -38,6 +38,9 @@ public sealed record PeriodComparisonWindowDto(
 /// <summary>One compared figure.</summary>
 /// <param name="Key">Stable identifier, e.g. "total" or an asset class or symbol.</param>
 /// <param name="Label">Operator label.</param>
+/// <param name="Current">The figure for the current period or date.</param>
+/// <param name="Prior">The figure for the prior period or date.</param>
+/// <param name="Change">Current minus Prior.</param>
 /// <param name="PercentChange">Change ÷ |Prior| × 100; null when Prior is zero.</param>
 /// <param name="IsTotal">True for the line that totals the others.</param>
 public sealed record PeriodComparisonLineDto(

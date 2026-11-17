@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ResearchSavedComparison
+
+Qualified name: <code>Meridian.Contracts.Workstation.ResearchSavedComparison</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:84](../../../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs#L84).
+
+Saved comparison summary surfaced from the briefing home.
+
+```csharp
+public sealed record ResearchSavedComparison(string ComparisonId, string StrategyName, string ModeSummary, string Summary, string? AnchorRunId, IReadOnlyList<ResearchSavedComparisonMode> Modes);
+```
+
+## ResearchSavedComparisonMode
+
+Qualified name: <code>Meridian.Contracts.Workstation.ResearchSavedComparisonMode</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:73](../../../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs#L73).
+
+Single mode participating in a saved comparison package.
+
+```csharp
+public sealed record ResearchSavedComparisonMode(string RunId, StrategyRunMode Mode, StrategyRunStatus Status, decimal? NetPnl, decimal? TotalReturn, ResearchRunDrillInLinks DrillIn);
+```
+
 ## ResearchWhatChangedItem
 
 Qualified name: <code>Meridian.Contracts.Workstation.ResearchWhatChangedItem</code>. Kind: `record`.
@@ -582,33 +606,3 @@ Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:
 ```csharp
 public sealed record SecurityMasterIdentifierSummaryDto(string? PrimaryIdentifierKind, string? PrimaryIdentifierValue, int ActiveIdentifierCount, int ActiveAliasCount, int ProviderMappingCount, int DistinctProviderCount, bool HasPrimaryIdentifier, bool HasProviderMappings, string Summary, IReadOnlyList<SecurityMasterProviderSymbolMappingDto> ProviderMappings);
 ```
-
-## SecurityMasterImpactLinkDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterImpactLinkDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:419](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L419).
-
-```csharp
-public sealed record SecurityMasterImpactLinkDto(string Target, string Label, string Summary, SecurityMasterImpactSeverity Severity, bool IsActive);
-```
-
-## SecurityMasterImpactSeverity
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterImpactSeverity</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L16).
-
-```csharp
-public enum SecurityMasterImpactSeverity
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unknown = 0</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:18](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L18) |  |
-| <code>None = 1</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L19) |  |
-| <code>Low = 2</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:20](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L20) |  |
-| <code>Medium = 3</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:21](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L21) |  |
-| <code>High = 4</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:22](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L22) |  |

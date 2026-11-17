@@ -39,10 +39,11 @@ public sealed partial class FundOperationsWorkspaceReadService
                 displayName, baseCurrency, current, baseline, [], [], generatedAt);
         }
 
-        var currentBook = await BuildLedgerBookAsync(normalizedFundProfileId, runs, currentAsOf, ct).ConfigureAwait(false);
-        var baselineBook = await BuildLedgerBookAsync(normalizedFundProfileId, runs, baselineAt, ct).ConfigureAwait(false);
-        var currentNav = await BuildNavSummaryAsync(normalizedFundProfileId, baseCurrency, currentBook, currentAsOf, ct).ConfigureAwait(false);
-        var baselineNav = await BuildNavSummaryAsync(normalizedFundProfileId, baseCurrency, baselineBook, baselineAt, ct).ConfigureAwait(false);
+        // One ledger book as of the current date serves both sides: NAV attribution reads only the
+        // entries timestamped on or before the date it is asked for.
+        var book = await BuildLedgerBookAsync(normalizedFundProfileId, runs, currentAsOf, ct).ConfigureAwait(false);
+        var currentNav = await BuildNavSummaryAsync(normalizedFundProfileId, baseCurrency, book, currentAsOf, ct).ConfigureAwait(false);
+        var baselineNav = await BuildNavSummaryAsync(normalizedFundProfileId, baseCurrency, book, baselineAt, ct).ConfigureAwait(false);
 
         var notes = new List<string>
         {

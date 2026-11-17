@@ -87,6 +87,39 @@ public static partial class FundStructureEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .RequireWorkstationTenantCompanyScope();
 
+        // Ledger NAV at each recent month-end, ending with NAV now.
+        group.MapGet("/nav-trend", async (HttpContext context) =>
+        {
+            var service = ResolveWorkspaceService(context);
+            if (service is null)
+            {
+                return WorkspaceServiceUnavailable();
+            }
+
+            var q = context.Request.Query;
+            var fundProfileId = q["fundProfileId"].FirstOrDefault();
+            if (string.IsNullOrWhiteSpace(fundProfileId))
+            {
+                return Results.Problem("fundProfileId is required.", statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            var months = int.TryParse(q["months"].FirstOrDefault(), System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var parsed)
+                ? parsed
+                : 12;
+            var result = await service.GetNavTrendAsync(
+                fundProfileId,
+                months,
+                ParseDateTimeOffset(q["asOf"]),
+                q["currency"].FirstOrDefault(),
+                context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("GetFundNavTrend").RequireAnyPermission(UserPermission.ManageFundStructure, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance)
+        .Produces<FundNavTrendDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .RequireWorkstationTenantCompanyScope();
+
         legacyReportingGroup.MapPost("/report-pack-preview", (HttpContext context) =>
             LegacyReportingRouteGone(
                 context,

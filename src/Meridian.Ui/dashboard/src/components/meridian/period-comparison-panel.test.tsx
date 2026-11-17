@@ -8,6 +8,13 @@ import { defaultMaterialityPolicyForClass } from "@/lib/reporting-materiality";
 import { NavComparisonScreen } from "@/screens/nav-comparison-screen";
 import { CashLadderPeriodComparison } from "@/screens/cash-ladder-screen.comparison";
 import { RunAttributionPeriodComparison } from "@/screens/portfolio-screen.attribution-comparison";
+import { NavTrendChart } from "@/components/meridian/nav-trend-chart";
+import type { FundNavTrend } from "@/lib/api/period-comparison.api";
+
+function trend(points: Array<[string, number]>, notes: string[] = []): FundNavTrend {
+  return { fundProfileId: "fund-alpha", subject: "Alpha Fund", currency: "USD", generatedAt: "2026-11-17T12:00:00Z", notes,
+    points: points.map(([asOf, nav]) => ({ asOf, totalNav: String(nav), componentCount: 3 })) };
+}
 
 vi.mock("@/lib/table-workbench", async (load) => ({ ...await load<typeof import("@/lib/table-workbench")>(), loadTableViews: vi.fn(async () => []), saveTableView: vi.fn() }));
 
@@ -67,16 +74,38 @@ describe("PeriodComparisonPanel", () => {
 describe("prior-period surfaces", () => {
   it("NAV loads for the reporting fund and the chosen prior date", async () => {
     const service = vi.fn(async () => comparison());
-    renderWithRouter(<NavComparisonScreen defaultFundProfileId="fund-alpha" service={service} />, { initialEntries: ["/portfolio/nav?baselineAsOf=2026-09-30"] });
+    const trendService = vi.fn(async () => trend([["2026-09-30", 1_100_000], ["2026-10-31", 1_250_000], ["2026-11-17", 1_450_000]]));
+    renderWithRouter(<NavComparisonScreen defaultFundProfileId="fund-alpha" service={service} trendService={trendService} />, { initialEntries: ["/portfolio/nav?baselineAsOf=2026-09-30"] });
     expect(await screen.findByRole("table", { name: "NAV comparison" })).toBeInTheDocument();
     expect(service).toHaveBeenCalledWith({ fundProfileId: "fund-alpha", baselineAsOf: "2026-09-30T23:59:59Z" }, expect.objectContaining({ signal: expect.any(AbortSignal) }));
+    const trendSection = await screen.findByRole("region", { name: "NAV trend" });
+    expect(trendSection).toHaveAttribute("data-chart-table", "nav-trend");
+    expect(within(trendSection).getByRole("img", { name: "Ledger NAV from 2026-09-30 to 2026-11-17" })).toBeInTheDocument();
+    expect(trendService).toHaveBeenCalledWith({ fundProfileId: "fund-alpha", months: 12 }, expect.anything());
   });
 
   it("NAV asks for a fund profile when none is known", () => {
     const service = vi.fn();
-    renderWithRouter(<NavComparisonScreen service={service} />, { initialEntries: ["/portfolio/nav"] });
+    const trendService = vi.fn();
+    renderWithRouter(<NavComparisonScreen service={service} trendService={trendService} />, { initialEntries: ["/portfolio/nav"] });
     expect(screen.getByText("Choose a fund profile to compare its NAV with a prior date.")).toBeInTheDocument();
     expect(service).not.toHaveBeenCalled();
+    expect(trendService).not.toHaveBeenCalled();
+  });
+
+  it("the NAV trend needs two dated points and lists its notes", async () => {
+    const service = vi.fn(async () => trend([["2026-11-17", 1_450_000]], ["Months before the ledger's first NAV component are left out."]));
+    renderWithRouter(<NavTrendChart fundProfileId="fund-alpha" service={service} />);
+    expect(await screen.findByText("At least two dates with ledger NAV are needed for a trend.")).toBeInTheDocument();
+    expect(screen.getByText("Months before the ledger's first NAV component are left out.")).toBeInTheDocument();
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
+  });
+
+  it("the NAV trend offers a retry when it fails", async () => {
+    const service = vi.fn().mockRejectedValueOnce(new Error("Ledger unavailable")).mockResolvedValue(trend([["2026-10-31", 1], ["2026-11-17", 2]]));
+    renderWithRouter(<NavTrendChart fundProfileId="fund-alpha" service={service} />);
+    await userEvent.setup().click(await screen.findByRole("button", { name: "Retry NAV trend" }));
+    expect(await screen.findByRole("img", { name: /Ledger NAV from 2026-10-31/ })).toBeInTheDocument();
   });
 
   it("the cash ladder comparison loads only when asked for", async () => {

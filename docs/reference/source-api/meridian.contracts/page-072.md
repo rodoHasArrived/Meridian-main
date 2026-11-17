@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementImportIssueDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementImportIssueDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:65](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L65).
+
+```csharp
+public sealed record StatementImportIssueDto(string Code, string Severity, int? RowNumber, string? Field, string Message);
+```
+
+## StatementImportPreviewDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementImportPreviewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:144](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L144).
+
+```csharp
+public sealed record StatementImportPreviewDto(string ConnectorId, string ConnectorDisplayName, string? ProfileId, string FileName, long FileSizeBytes, IReadOnlyList<string> DetectedColumns, IReadOnlyList<StatementColumnMappingDto> ColumnMappings, int RecordCount, IReadOnlyList<StatementKindSummaryDto> KindSummaries, IReadOnlyList<StatementImportIssueDto> Issues, IReadOnlyList<StatementProfileSuggestionDto> ProfileSuggestions, string Status, string NextAction = default !)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;StatementAccountSnapshotPreviewDto&gt;? AccountSnapshots { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:159](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L159) |  |
+| <code>public IReadOnlyList&lt;StatementActivitySubtypeSummaryDto&gt;? ActivitySubtypeSummaries { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:160](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L160) |  |
+| <code>public IReadOnlyList&lt;StatementActivityCompletenessDto&gt;? ActivityCompleteness { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:161](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L161) |  |
+| <code>public int? TaxLotCount { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:162](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L162) |  |
+| <code>public int? BorrowPositionCount { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:163](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L163) |  |
+
 ## StatementImportReconciliationCaseLinkDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementImportReconciliationCaseLinkDto</code>. Kind: `record`.
@@ -618,24 +648,4 @@ Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:161](
 
 ```csharp
 public sealed record StorageMaintenancePreviewRequestDto(StorageMaintenanceActionDto Action, string? RelativePath = null, string? TargetTier = null);
-```
-
-## StorageMaintenanceResultDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StorageMaintenanceResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:199](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L199).
-
-```csharp
-public sealed record StorageMaintenanceResultDto(string RunId, StorageMaintenanceActionDto Action, DateTimeOffset StartedAt, DateTimeOffset CompletedAt, string Status, long AffectedBytes, IReadOnlyList<StorageMaintenanceItemResultDto> Items, IReadOnlyList<string> Warnings, string? EvidenceVaultId, string? EvidenceRoute);
-```
-
-## StorageQualityAlertDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StorageQualityAlertDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:140](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L140).
-
-```csharp
-public sealed record StorageQualityAlertDto(string AlertId, string Severity, string Subject, string Message, DateTimeOffset DetectedAt);
 ```

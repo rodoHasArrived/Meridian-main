@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportPackEvidenceLinkDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportPackEvidenceLinkDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1757](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1757).
+
+```csharp
+public sealed record ReportPackEvidenceLinkDto(string EvidenceId, string Label, string? Route, string Source, DateTimeOffset? CapturedAtUtc = null);
+```
+
+## ReportPackLineProvenanceDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportPackLineProvenanceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1759](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1759).
+
+```csharp
+public sealed record ReportPackLineProvenanceDto(string LineKey, string SourceKind, string SourceId, string EvidenceId, string? RunId = null, string? LedgerEntryId = null, string? ReconciliationCaseId = null, string? ReportValue = null, string? SourceSessionId = null, string? ReconciliationRunId = null, string? ProviderEventId = null, string? SecurityMasterId = null, string? SecurityDefinitionId = null, string? ReconciliationOutcome = null, string? ApprovalId = null, string? FinancialRecordExplorerId = null, string? FinancialRecordHref = null);
+```
+
 ## ReportPackPublicationManifestDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportPackPublicationManifestDto</code>. Kind: `record`.
@@ -602,28 +622,4 @@ Drill-in links attached to research run cards and comparisons.
 
 ```csharp
 public sealed record ResearchRunDrillInLinks(string EquityCurve, string Fills, string Attribution, string? Ledger, string CashFlows, string? Continuity);
-```
-
-## ResearchSavedComparison
-
-Qualified name: <code>Meridian.Contracts.Workstation.ResearchSavedComparison</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:84](../../../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs#L84).
-
-Saved comparison summary surfaced from the briefing home.
-
-```csharp
-public sealed record ResearchSavedComparison(string ComparisonId, string StrategyName, string ModeSummary, string Summary, string? AnchorRunId, IReadOnlyList<ResearchSavedComparisonMode> Modes);
-```
-
-## ResearchSavedComparisonMode
-
-Qualified name: <code>Meridian.Contracts.Workstation.ResearchSavedComparisonMode</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:73](../../../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs#L73).
-
-Single mode participating in a saved comparison package.
-
-```csharp
-public sealed record ResearchSavedComparisonMode(string RunId, StrategyRunMode Mode, StrategyRunStatus Status, decimal? NetPnl, decimal? TotalReturn, ResearchRunDrillInLinks DrillIn);
 ```

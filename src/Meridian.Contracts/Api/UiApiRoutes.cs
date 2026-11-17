@@ -1188,6 +1188,7 @@ public static class UiApiRoutes
     public const string FundStructureLegalEntityProfile = "/api/fund-structure/entities/{entityId}";
     public const string FundStructureLedgerMappingAssignments = "/api/fund-structure/ledger-mapping-assignments";
     public const string FundStructureNavComparison = "/api/fund-structure/nav-comparison";
+    public const string FundStructureNavTrend = "/api/fund-structure/nav-trend";
 
     // Fund account brokerage read-side sync endpoints
     public const string FundAccountBrokerageSyncAccounts = "/api/fund-accounts/brokerage-sync/accounts";
