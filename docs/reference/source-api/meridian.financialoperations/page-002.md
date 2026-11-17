@@ -106,10 +106,10 @@ Qualified name: <code>Meridian.FinancialOperations.FundAdministration.FileRecurr
 
 Source: [src/Meridian.FinancialOperations/FundAdministration/FileRecurringJournalStore.cs:14](../../../../src/Meridian.FinancialOperations/FundAdministration/FileRecurringJournalStore.cs#L14).
 
-Durable recurring definitions and claims. All processes sharing this directory serialize their entire intake cycle using an OS-exclusive lease, not an instance-only semaphore. The snapshot is flushed before atomic replacement. Missing/corrupt state never becomes empty state.
+Durable recurring definitions and claims. All processes sharing this directory serialize their entire intake cycle using an OS-exclusive lease, not an instance-only semaphore. The snapshot is flushed before atomic replacement. Missing/corrupt state never becomes empty state. Hosts with a ledger database use PostgresRecurringJournalStore instead, whose lease spans processes and hosts rather than one shared filesystem root.
 
 ```csharp
-public sealed class FileRecurringJournalStore : IRecurringJournalStore
+public sealed class FileRecurringJournalStore : IRecurringJournalStore, IRecurringJournalStoreProvisioning
 ```
 
 Declared public members:
@@ -216,7 +216,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.FinancialOperations.FundAdministration.IRecurringJournalSession</code>. Kind: `interface`.
 
-Source: [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:109](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L109).
+Source: [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:118](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L118).
 
 The lease covers planning, claim retention, intake and completion. Dispose before reentering the store. Every mutating method commits before returning; disposal does not commit changes.
 
@@ -228,20 +228,20 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>IReadOnlyList&lt;RecurringTemplateDefinition&gt; Templates { get; }</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:111](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L111) |  |
-| <code>IReadOnlyList&lt;RecurringScheduleDefinition&gt; Schedules { get; }</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:112](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L112) |  |
-| <code>IReadOnlyList&lt;RecurringScheduleDefinition&gt; CurrentSchedules { get; }</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:113](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L113) |  |
-| <code>IReadOnlyList&lt;RecurringOccurrenceRecord&gt; Occurrences { get; }</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:114](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L114) |  |
-| <code>IReadOnlyList&lt;RecurringDefinitionActivation&gt; Activations { get; }</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:115](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L115) |  |
-| <code>RecurringScheduleDefinition GetCurrentSchedule(string scheduleId);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:116](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L116) |  |
-| <code>RecurringTemplateDefinition GetCurrentTemplate(string templateId);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:117](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L117) |  |
-| <code>Task ActivateDefinitionsAsync(string scheduleId, int scheduleVersion, int templateVersion, string actor, string reason, DateTimeOffset now, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:118](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L118) |  |
-| <code>Task&lt;RecurringScheduleDefinition&gt; ConfigureAsync(RecurringJournalSchedule schedule, JournalTemplate template, RecurringJournalScope scope, IReadOnlyList&lt;JournalEvidenceReference&gt; evidence, string actor, int expectedScheduleVersion, int expectedTemplateVersion, DateTimeOffset now, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:120](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L120) |  |
-| <code>Task&lt;RecurringTemplateDefinition&gt; RegisterTemplateAsync(JournalTemplate template, string actor, int expectedVersion, DateTimeOffset now, CancellationToken ct = default, RecurringJournalScope? scope = null);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:123](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L123) |  |
-| <code>Task&lt;RecurringScheduleDefinition&gt; RegisterScheduleAsync(RecurringJournalSchedule schedule, RecurringJournalScope scope, IReadOnlyList&lt;JournalEvidenceReference&gt; evidence, string actor, int expectedVersion, DateTimeOffset now, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:125](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L125) |  |
-| <code>Task&lt;RecurringOccurrenceRecord&gt; ClaimAsync(string scheduleId, DateOnly date, int expectedScheduleVersion, int expectedTemplateVersion, DateTimeOffset now, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:128](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L128) |  |
-| <code>Task&lt;RecurringOccurrenceRecord&gt; PinDraftEvidenceAsync(string key, string digest, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:130](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L130) |  |
-| <code>Task&lt;RecurringOccurrenceRecord&gt; SetOutcomeAsync(string key, RecurringOccurrenceState state, string? reason, string? periodId, string? lockOwner, string? reopenPath, DateTimeOffset now, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:132](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L132) |  |
+| <code>IReadOnlyList&lt;RecurringTemplateDefinition&gt; Templates { get; }</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:120](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L120) |  |
+| <code>IReadOnlyList&lt;RecurringScheduleDefinition&gt; Schedules { get; }</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:121](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L121) |  |
+| <code>IReadOnlyList&lt;RecurringScheduleDefinition&gt; CurrentSchedules { get; }</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:122](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L122) |  |
+| <code>IReadOnlyList&lt;RecurringOccurrenceRecord&gt; Occurrences { get; }</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:123](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L123) |  |
+| <code>IReadOnlyList&lt;RecurringDefinitionActivation&gt; Activations { get; }</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:124](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L124) |  |
+| <code>RecurringScheduleDefinition GetCurrentSchedule(string scheduleId);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:125](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L125) |  |
+| <code>RecurringTemplateDefinition GetCurrentTemplate(string templateId);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:126](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L126) |  |
+| <code>Task ActivateDefinitionsAsync(string scheduleId, int scheduleVersion, int templateVersion, string actor, string reason, DateTimeOffset now, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:127](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L127) |  |
+| <code>Task&lt;RecurringScheduleDefinition&gt; ConfigureAsync(RecurringJournalSchedule schedule, JournalTemplate template, RecurringJournalScope scope, IReadOnlyList&lt;JournalEvidenceReference&gt; evidence, string actor, int expectedScheduleVersion, int expectedTemplateVersion, DateTimeOffset now, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:129](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L129) |  |
+| <code>Task&lt;RecurringTemplateDefinition&gt; RegisterTemplateAsync(JournalTemplate template, string actor, int expectedVersion, DateTimeOffset now, CancellationToken ct = default, RecurringJournalScope? scope = null);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:132](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L132) |  |
+| <code>Task&lt;RecurringScheduleDefinition&gt; RegisterScheduleAsync(RecurringJournalSchedule schedule, RecurringJournalScope scope, IReadOnlyList&lt;JournalEvidenceReference&gt; evidence, string actor, int expectedVersion, DateTimeOffset now, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:134](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L134) |  |
+| <code>Task&lt;RecurringOccurrenceRecord&gt; ClaimAsync(string scheduleId, DateOnly date, int expectedScheduleVersion, int expectedTemplateVersion, DateTimeOffset now, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:137](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L137) |  |
+| <code>Task&lt;RecurringOccurrenceRecord&gt; PinDraftEvidenceAsync(string key, string digest, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:139](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L139) |  |
+| <code>Task&lt;RecurringOccurrenceRecord&gt; SetOutcomeAsync(string key, RecurringOccurrenceState state, string? reason, string? periodId, string? lockOwner, string? reopenPath, DateTimeOffset now, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:141](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L141) |  |
 
 ## IRecurringJournalStore
 
@@ -260,6 +260,24 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;IRecurringJournalSession&gt; OpenSessionAsync(CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:102](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L102) |  |
+
+## IRecurringJournalStoreProvisioning
+
+Qualified name: <code>Meridian.FinancialOperations.FundAdministration.IRecurringJournalStoreProvisioning</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:109](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L109).
+
+Explicit, administrator-only provisioning of a recurring journal store. Runners never call it, and an initialized store whose retained state is later lost refuses to reinitialize as empty.
+
+```csharp
+public interface IRecurringJournalStoreProvisioning
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:111](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L111) |  |
 
 ## OnboardingPlan
 
@@ -351,6 +369,27 @@ Declared public members:
 | <code>public const string Account = &quot;Account&quot;;</code> | [src/Meridian.FinancialOperations/FundAdministration/FundAdministrationModels.cs:25](../../../../src/Meridian.FinancialOperations/FundAdministration/FundAdministrationModels.cs#L25) |  |
 | <code>public const string Book = &quot;Book&quot;;</code> | [src/Meridian.FinancialOperations/FundAdministration/FundAdministrationModels.cs:26](../../../../src/Meridian.FinancialOperations/FundAdministration/FundAdministrationModels.cs#L26) |  |
 
+## PostgresRecurringJournalStore
+
+Qualified name: <code>Meridian.FinancialOperations.FundAdministration.PostgresRecurringJournalStore</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/FundAdministration/PostgresRecurringJournalStore.cs:23](../../../../src/Meridian.FinancialOperations/FundAdministration/PostgresRecurringJournalStore.cs#L23).
+
+Retains recurring journal definitions, activations and occurrence claims in the ledger database (V_ledger_074__recurring_journal_state), so runners on different processes and hosts share one lease instead of one filesystem root. The retained document, its validation and its session semantics are identical to FileRecurringJournalStore.
+
+```csharp
+public sealed class PostgresRecurringJournalStore : IRecurringJournalStore, IRecurringJournalStoreProvisioning
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PostgresRecurringJournalStore(LedgerJournalStoreOptions options);</code> | [src/Meridian.FinancialOperations/FundAdministration/PostgresRecurringJournalStore.cs:30](../../../../src/Meridian.FinancialOperations/FundAdministration/PostgresRecurringJournalStore.cs#L30) |  |
+| <code>public Task InitializeAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/FundAdministration/PostgresRecurringJournalStore.cs:44](../../../../src/Meridian.FinancialOperations/FundAdministration/PostgresRecurringJournalStore.cs#L44) | Explicit provisioning only; never called by the runner. Creates the empty retained document when none exists and otherwise verifies the existing one without replacing it. |
+| <code>public async Task InitializeAsync(FileRecurringJournalStore? legacy, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/FundAdministration/PostgresRecurringJournalStore.cs:52](../../../../src/Meridian.FinancialOperations/FundAdministration/PostgresRecurringJournalStore.cs#L52) | Explicit provisioning that carries a host&#x27;s earlier file-retained state forward. When no row exists yet and legacy was provisioned, its verified document becomes the initial state, so retained claims, outcomes and draft identities are not reissued. Unverifiable legacy state fails closed. Once a row exists it is authoritative and the file is not read. |
+| <code>public async Task&lt;IRecurringJournalSession&gt; OpenSessionAsync(CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/FundAdministration/PostgresRecurringJournalStore.cs:82](../../../../src/Meridian.FinancialOperations/FundAdministration/PostgresRecurringJournalStore.cs#L82) |  |
+
 ## RecurringDefinitionActivation
 
 Qualified name: <code>Meridian.FinancialOperations.FundAdministration.RecurringDefinitionActivation</code>. Kind: `record`.
@@ -377,7 +416,7 @@ public sealed class RecurringJournalDefinitionChangedException(string message) :
 
 Qualified name: <code>Meridian.FinancialOperations.FundAdministration.RecurringJournalIdentity</code>. Kind: `class`.
 
-Source: [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:160](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L160).
+Source: [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:169](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L169).
 
 Produces canonical serialized identities for recurring journal definitions and occurrences.
 
@@ -389,11 +428,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static string SerializeSchedule(RecurringScheduleDefinition definition) =&gt; …;</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:162](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L162) |  |
-| <code>public static string SerializeTemplate(RecurringTemplateDefinition definition) =&gt; …;</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:165](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L165) |  |
-| <code>public static RecurringTemplateDefinition DeserializeTemplate(string json) =&gt; …;</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:168](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L168) |  |
-| <code>public static string OccurrenceKey(string scheduleId, DateOnly date);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:172](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L172) |  |
-| <code>public static Guid DraftId(string occurrenceKey) =&gt; …;</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:180](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L180) |  |
+| <code>public static string SerializeSchedule(RecurringScheduleDefinition definition) =&gt; …;</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:171](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L171) |  |
+| <code>public static string SerializeTemplate(RecurringTemplateDefinition definition) =&gt; …;</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:174](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L174) |  |
+| <code>public static RecurringTemplateDefinition DeserializeTemplate(string json) =&gt; …;</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:177](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L177) |  |
+| <code>public static string OccurrenceKey(string scheduleId, DateOnly date);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:181](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L181) |  |
+| <code>public static Guid DraftId(string occurrenceKey) =&gt; …;</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:189](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L189) |  |
 
 ## RecurringJournalScheduleSnapshot
 
@@ -861,23 +900,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public AccountingBasisProjectionSetService(IAccountingPostingCandidateService candidateService);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingBasisProjectionSetService.cs:23](../../../../src/Meridian.FinancialOperations/Ledger/AccountingBasisProjectionSetService.cs#L23) |  |
 | <code>public async Task&lt;AccountingBasisProjectionSetDto&gt; BuildProjectionSetAsync(AccountingBasisProjectionSetRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingBasisProjectionSetService.cs:28](../../../../src/Meridian.FinancialOperations/Ledger/AccountingBasisProjectionSetService.cs#L28) |  |
-
-## AccountingJournalDraftLineRequest
-
-Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingJournalDraftLineRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs:19](../../../../src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs#L19).
-
-```csharp
-public sealed record AccountingJournalDraftLineRequest(LedgerAccount Account, decimal Debit, decimal Credit, string? Description = null, IReadOnlyList<string>? EvidenceLinks = null, LedgerDimensionSetDto? Dimensions = null);
-```
-
-## AccountingJournalDraftRequest
-
-Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingJournalDraftRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs:27](../../../../src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs#L27).
-
-```csharp
-public sealed record AccountingJournalDraftRequest(Guid AggregateId, Guid PeriodId, DateTimeOffset AccountingTimestamp, string Description, IReadOnlyList<AccountingJournalDraftLineRequest> Lines, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, DateOnly? EffectiveDate = null, Guid? CommandId = null, Guid? CorrelationId = null, Guid? SourceEventId = null, Guid? SourceJournalEntryId = null, string? FundProfileId = null, Guid? FundStructureNodeId = null, string? InstrumentId = null, string? PolicyId = null, string? RuleId = null, AccountingTreatmentKindDto? TreatmentKind = null, string? SourceEventType = null, Guid? LedgerBookId = null, LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating, LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null, TreasuryLedgerContextDto? TreasuryContext = null, IReadOnlyList<string>? EvidenceLinks = null, string? PostingRuleId = null, string? PostingRuleVersion = null, string? DryRunCorrelationId = null, string? PolicyVersion = null);
-```

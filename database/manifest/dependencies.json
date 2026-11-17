@@ -61757,6 +61757,30 @@
       "target": "database:ledger.private_capital_calls_pkey"
     },
     {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.recurring_journal_state_content_hash_check on ledger.recurring_journal_state",
+      "target": "database:ledger.recurring_journal_state.content_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.recurring_journal_state_envelope_json_check on ledger.recurring_journal_state",
+      "target": "database:ledger.recurring_journal_state.envelope_json"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.recurring_journal_state_revision_check on ledger.recurring_journal_state",
+      "target": "database:ledger.recurring_journal_state.revision"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.recurring_journal_state_store_id_check on ledger.recurring_journal_state",
+      "target": "database:ledger.recurring_journal_state.store_id"
+    },
+    {
       "constraint": "tax_lot_mutations_corrects_mutation_batch_id_fkey",
       "kind": "foreign-key",
       "label": "corrects_mutation_batch_id",
@@ -67261,6 +67285,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:ledger",
+      "target": "database:ledger.recurring_journal_state"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
       "target": "database:ledger.tax_lot_mutations"
     },
     {
@@ -68337,7 +68367,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "0ecc548592a1b9395dec537f43ed75f6e825b927c72f11d09c341d56de96e28d",
+  "fingerprint": "566c5321a4a0672b09bb250e239df4e73e963adf14749a60ff84f6d6022ed9fb",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -95107,6 +95137,52 @@
       "label": "ledger.private_capital_postings_tenant_id_company_id_fund_profile_fkey on ledger.private_capital_postings"
     },
     {
+      "id": "database:ledger.recurring_journal_state",
+      "kind": "database-table",
+      "label": "ledger.recurring_journal_state",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.recurring_journal_state.content_hash",
+      "kind": "database-object",
+      "label": "ledger.recurring_journal_state.content_hash"
+    },
+    {
+      "id": "database:ledger.recurring_journal_state.envelope_json",
+      "kind": "database-object",
+      "label": "ledger.recurring_journal_state.envelope_json"
+    },
+    {
+      "id": "database:ledger.recurring_journal_state.revision",
+      "kind": "database-object",
+      "label": "ledger.recurring_journal_state.revision"
+    },
+    {
+      "id": "database:ledger.recurring_journal_state.store_id",
+      "kind": "database-object",
+      "label": "ledger.recurring_journal_state.store_id"
+    },
+    {
+      "id": "database:ledger.recurring_journal_state_content_hash_check on ledger.recurring_journal_state",
+      "kind": "database-object",
+      "label": "ledger.recurring_journal_state_content_hash_check on ledger.recurring_journal_state"
+    },
+    {
+      "id": "database:ledger.recurring_journal_state_envelope_json_check on ledger.recurring_journal_state",
+      "kind": "database-object",
+      "label": "ledger.recurring_journal_state_envelope_json_check on ledger.recurring_journal_state"
+    },
+    {
+      "id": "database:ledger.recurring_journal_state_revision_check on ledger.recurring_journal_state",
+      "kind": "database-object",
+      "label": "ledger.recurring_journal_state_revision_check on ledger.recurring_journal_state"
+    },
+    {
+      "id": "database:ledger.recurring_journal_state_store_id_check on ledger.recurring_journal_state",
+      "kind": "database-object",
+      "label": "ledger.recurring_journal_state_store_id_check on ledger.recurring_journal_state"
+    },
+    {
       "id": "database:ledger.tax_lot_mutations",
       "kind": "database-table",
       "label": "ledger.tax_lot_mutations",
@@ -100353,9 +100429,9 @@
   "summary": {
     "contract_references": 4220,
     "contract_set_memberships": 5483,
-    "edges": 11352,
+    "edges": 11357,
     "foreign_keys": 208,
     "logical_references": 6,
-    "nodes": 5566
+    "nodes": 5575
   }
 }
