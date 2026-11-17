@@ -124,6 +124,19 @@ status joins and catalog deduplication. Aliases resolve to one canonical status 
 service field schema; ambiguous duplicate service rows remain unavailable. Status projections retain
 verification state and timestamp so callers can distinguish configured from verified credentials.
 
+`DesktopOperatorPreferenceSync` keeps the desktop theme and density in step with the operator's
+host preferences (`/api/workstation/operator/preferences`, the set the browser workstation syncs).
+`DesktopOperatorPreferenceMapping` maps the shared vocabulary to `AppTheme` and `ShellDensityMode`:
+`default` and `spacious` both show as Standard, and a desktop Standard save keeps a stored
+`spacious`. On start the host values are applied and nothing is saved, because the desktop does not
+persist its theme and its startup theme is a default rather than a choice. An operator change on the
+desktop re-reads the host set and saves it with only appearance and density replaced, so the time
+zone, page-descriptions setting and browser shortcut overrides are kept. A host that cannot be read at
+start leaves the desktop local for the run; a failed save keeps the local change and the next change
+retries. The display time zone is resolved with this machine's zone data and exposed as
+`DisplayTimeZone`; desktop formatters do not apply it yet. `OperatorPreferencesApiClient` is the HTTP
+client and `IDesktopPreferenceSurface` the seam the WPF shell implements.
+
 `DesktopShellPreferences` holds the desktop shell density and the operator's keyboard shortcut
 overrides (`ShortcutOverrides`, keyed by action id, with keys and modifiers stored as WPF enum
 names so this contract stays free of WPF types). `SettingsConfigurationService` persists both in

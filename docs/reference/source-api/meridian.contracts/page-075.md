@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TradingOperatorSignoffReadinessDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.TradingOperatorSignoffReadinessDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:254](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L254).
+
+```csharp
+public sealed record TradingOperatorSignoffReadinessDto(string Status, bool RequiredBeforeDk1Exit, IReadOnlyList<string> RequiredOwners, IReadOnlyList<string> SignedOwners, IReadOnlyList<string> MissingOwners, DateTimeOffset? CompletedAt, string? SourcePath);
+```
+
 ## TradingPaperSessionReadinessDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.TradingPaperSessionReadinessDto</code>. Kind: `record`.
@@ -565,16 +575,4 @@ Export row returned by the Data workspace bootstrap payload.
 
 ```csharp
 public sealed record WorkstationDataExportRecord(string ExportId, string Profile, string Target, string Status, string Rows, string UpdatedAt);
-```
-
-## WorkstationDataPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationDataPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1151](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1151).
-
-Typed payload returned by GET /api/workstation/data and GET /api/workstation/data-operations.
-
-```csharp
-public sealed record WorkstationDataPayload(IReadOnlyList<WorkstationMetricCard> Metrics, IReadOnlyList<WorkstationDataProviderRecord> Providers, IReadOnlyList<WorkstationDataBackfillRecord> Backfills, IReadOnlyList<WorkstationDataExportRecord> Exports, DataUploadTemplateCatalogDto UploadTemplates, WorkstationKernelObservabilityPayload KernelObservability);
 ```

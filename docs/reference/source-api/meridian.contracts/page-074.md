@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategyRunMode
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunMode</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:11](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L11).
+
+Shared workstation-facing mode for a strategy run.
+
+```csharp
+public enum StrategyRunMode : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Backtest</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:13](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L13) |  |
+| <code>Paper</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:14](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L14) |  |
+| <code>Live</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:15](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L15) |  |
+
 ## StrategyRunPaperStatus
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunPaperStatus</code>. Kind: `record`.
@@ -637,13 +657,3 @@ Declared public members:
 | <code>public PortfolioLedgerWorkflowStatusSnapshotDto? PortfolioLedgerWorkflowStatus { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:381](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L381) |  |
 | <code>public TradingExecutionReconciliationReadinessDto? ExecutionReconciliation { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:383](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L383) |  |
 | <code>public TradingBrokerageRecoveryDto? BrokerageRecovery { get; init; }</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:385](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L385) |  |
-
-## TradingOperatorSignoffReadinessDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.TradingOperatorSignoffReadinessDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:254](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L254).
-
-```csharp
-public sealed record TradingOperatorSignoffReadinessDto(string Status, bool RequiredBeforeDk1Exit, IReadOnlyList<string> RequiredOwners, IReadOnlyList<string> SignedOwners, IReadOnlyList<string> MissingOwners, DateTimeOffset? CompletedAt, string? SourcePath);
-```

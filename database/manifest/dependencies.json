@@ -19138,6 +19138,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OperatorPreferenceVocabulary"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.OperatorPreferencesDto"
     },
     {
@@ -68091,7 +68097,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "8178a9ff4fbc58b3adaec5be9bc53bc99fb40aaf3a2d0161a30baa6f6ac04758",
+  "fingerprint": "1184a48fbe5fc105841a5f94e65e17b3ef26a871e9a40d94e06f0dc8d62fe2b7",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -87279,6 +87285,12 @@
       "label": "Meridian.Contracts.Workstation.OperatorPreferenceValuesDto"
     },
     {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Workstation.OperatorPreferenceVocabulary",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OperatorPreferenceVocabulary"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.OperatorPreferencesDto",
       "kind": "contract-type",
@@ -99990,10 +100002,10 @@
   ],
   "summary": {
     "contract_references": 4209,
-    "contract_set_memberships": 5456,
-    "edges": 11311,
+    "contract_set_memberships": 5457,
+    "edges": 11312,
     "foreign_keys": 208,
     "logical_references": 6,
-    "nodes": 5546
+    "nodes": 5547
   }
 }

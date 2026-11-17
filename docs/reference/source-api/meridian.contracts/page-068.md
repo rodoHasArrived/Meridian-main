@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingDeploymentComponentDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportingDeploymentComponentDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReportingDeploymentDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/ReportingDeploymentDtos.cs#L6).
+
+One deployment-owned prerequisite for authoritative reporting.
+
+```csharp
+public sealed record ReportingDeploymentComponentDto(string ComponentId = default !, string DisplayName = default !, bool IsReady = default, string Summary = default !);
+```
+
 ## ReportingDueScheduleRunResultDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportingDueScheduleRunResultDto</code>. Kind: `record`.
@@ -600,16 +612,4 @@ Request payload for publishing an approved report pack into retained evidence st
 
 ```csharp
 public sealed record ReportPackPublishRequestDto(string SignedOffBy, string EvidenceHash, string ManifestId, string RetainedManifestPath, IReadOnlyList<ReportPackEvidenceLinkDto> EvidenceLinks, string? Note = null, ReportBrandingThemeDto? BrandingTheme = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
-```
-
-## ReportPackRejectionMetadataDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportPackRejectionMetadataDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1823](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1823).
-
-Durable rejection decision retained on a report pack after review-state rejection.
-
-```csharp
-public sealed record ReportPackRejectionMetadataDto(string Reason, string Actor, string ActorRole, DateTimeOffset RejectedAt, IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null);
 ```

@@ -6,6 +6,29 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ShellPageRegistryBuilder
+
+Qualified name: <code>Meridian.Wpf.Shell.Services.ShellPageRegistryBuilder</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:10](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L10).
+
+Combines feature-module page and workspace declarations into a desktop shell registry.
+
+```csharp
+public sealed class ShellPageRegistryBuilder
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ShellPageRegistryBuilder Contribute(IEnumerable&lt;ShellPageDescriptor&gt; pages);</code> | [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:15](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L15) |  |
+| <code>public ShellPageRegistryBuilder ContributeCapability(WorkspaceCapabilityDescriptor capability);</code> | [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:23](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L23) |  |
+| <code>public IShellPageRegistry Build();</code> | [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:31](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L31) |  |
+| <code>public static IShellPageRegistry BuildDefault();</code> | [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:87](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L87) |  |
+| <code>public static ShellPageDescriptor Page&lt;TPage&gt;(string pageTag, string title, string subtitle, string workspaceId, string sectionLabel, string glyph, int order, ShellNavigationVisibilityTier visibilityTier, IReadOnlyList&lt;string&gt;? searchKeywords = null, IReadOnlyList&lt;string&gt;? relatedPageTags = null, IReadOnlyList&lt;string&gt;? aliases = null, bool hideFromDefaultPalette = false) where TPage : class;</code> | [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:115](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L115) |  |
+| <code>public static WorkspacePaneDefinition Pane(string pageTag, PaneDropAction action, WorkspacePaneParameterBinding parameterBinding = WorkspacePaneParameterBinding.None, bool openWithoutBoundParameter = false, string? fallbackPageTag = null, PaneDropAction? fallbackAction = null) =&gt; …;</code> | [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:146](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L146) |  |
+
 ## ShellRouteRegistry
 
 Qualified name: <code>Meridian.Wpf.Shell.Services.ShellRouteRegistry</code>. Kind: `class`.
@@ -2118,32 +2141,3 @@ Declared public members:
 | <code>public string Error =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:474](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L474) |  |
 | <code>public string this[string columnName] =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:476](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L476) |  |
 | <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:757](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L757) |  |
-
-## BatchRunResultItem
-
-Qualified name: <code>Meridian.Wpf.ViewModels.BatchRunResultItem</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:24](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L24).
-
-Result item for display in the batch backtest results grid.
-
-```csharp
-public sealed class BatchRunResultItem
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public required string ParametersSummary { get; init; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:26](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L26) |  |
-| <code>public required string Status { get; init; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:27](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L27) |  |
-| <code>public required string TotalReturnText { get; init; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:28](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L28) |  |
-| <code>public required string SharpeRatioText { get; init; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:29](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L29) |  |
-| <code>public required string MaxDrawdownText { get; init; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:30](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L30) |  |
-| <code>public required string NetPnlText { get; init; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:31](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L31) |  |
-| <code>public required string TradesText { get; init; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:32](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L32) |  |
-| <code>public required string EventsText { get; init; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:33](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L33) |  |
-| <code>public required string DurationText { get; init; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:34](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L34) |  |
-| <code>public required string ErrorMessage { get; init; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:35](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L35) |  |
-| <code>public bool HasError =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:36](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L36) |  |
-| <code>public static BatchRunResultItem FromRun(BatchBacktestRun run);</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:38](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L38) |  |

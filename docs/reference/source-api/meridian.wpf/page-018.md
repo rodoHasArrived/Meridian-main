@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## HomeWorkspacePage
+
+Qualified name: <code>Meridian.Wpf.Views.HomeWorkspacePage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/HomeWorkspacePage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/HomeWorkspacePage.xaml.cs#L11).
+
+Hosts the desktop workspace overview and recent activity.
+
+```csharp
+public partial class HomeWorkspacePage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public HomeWorkspacePage(HomeWorkspaceViewModel viewModel);</code> | [src/Meridian.Wpf/Views/HomeWorkspacePage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/HomeWorkspacePage.xaml.cs#L15) |  |
+
 ## IndexSubscriptionPage
 
 Qualified name: <code>Meridian.Wpf.Views.IndexSubscriptionPage</code>. Kind: `class`.
@@ -1079,27 +1097,3 @@ Declared public members:
 | <code>public string RevealToolTip { get; set; }</code> | [src/Meridian.Wpf/Views/SecretInputControl.xaml.cs:121](../../../../src/Meridian.Wpf/Views/SecretInputControl.xaml.cs#L121) |  |
 | <code>public double InputMinHeight { get; set; }</code> | [src/Meridian.Wpf/Views/SecretInputControl.xaml.cs:127](../../../../src/Meridian.Wpf/Views/SecretInputControl.xaml.cs#L127) |  |
 | <code>public void ClearSecret();</code> | [src/Meridian.Wpf/Views/SecretInputControl.xaml.cs:133](../../../../src/Meridian.Wpf/Views/SecretInputControl.xaml.cs#L133) |  |
-
-## SecurityMasterPage
-
-Qualified name: <code>Meridian.Wpf.Views.SecurityMasterPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:83](../../../../src/Meridian.Wpf/Views/Pages.cs#L83).
-
-```csharp
-public partial class SecurityMasterPage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/SecurityMasterPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/SecurityMasterPage.xaml.cs#L10).
-
-Hosts security-master discovery, trust review, and conflict workflows.
-
-```csharp
-public partial class SecurityMasterPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterPage(SecurityMasterViewModel viewModel);</code> | [src/Meridian.Wpf/Views/SecurityMasterPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/SecurityMasterPage.xaml.cs#L14) |  |

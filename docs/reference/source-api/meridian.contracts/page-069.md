@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportPackRejectionMetadataDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportPackRejectionMetadataDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1823](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1823).
+
+Durable rejection decision retained on a report pack after review-state rejection.
+
+```csharp
+public sealed record ReportPackRejectionMetadataDto(string Reason, string Actor, string ActorRole, DateTimeOffset RejectedAt, IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null);
+```
+
 ## ReportPackRejectRequestDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportPackRejectRequestDto</code>. Kind: `record`.
@@ -614,16 +626,4 @@ Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:27](../../..
 
 ```csharp
 public sealed record ResolveBreakCase(Guid WorkflowId, FundWorkflowCommandMetadata Metadata);
-```
-
-## ResolveReconciliationBreakRequest
-
-Qualified name: <code>Meridian.Contracts.Workstation.ResolveReconciliationBreakRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1035](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1035).
-
-Request to resolve or dismiss a break with audit metadata.
-
-```csharp
-public sealed record ResolveReconciliationBreakRequest(string BreakId, ReconciliationBreakQueueStatus Status, string ResolvedBy, string ResolutionNote, string OperatorRationale, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 ```

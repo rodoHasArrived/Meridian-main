@@ -22,17 +22,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static IServiceProvider Services { get; private set; } = null !;</code> | [src/Meridian.Wpf/App.xaml.cs:77](../../../../src/Meridian.Wpf/App.xaml.cs#L77) | Gets the service provider for dependency injection. |
-| <code>public static bool IsFixtureMode =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:83](../../../../src/Meridian.Wpf/App.xaml.cs#L83) | Gets whether the application is running in fixture mode (offline mock data). Activated via --fixture command-line argument or MDC_FIXTURE_MODE=1 environment variable. |
-| <code>public static new MainWindow? MainWindow =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:88](../../../../src/Meridian.Wpf/App.xaml.cs#L88) | Gets the main application window. |
-| <code>public static bool IsFirstRun =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:93](../../../../src/Meridian.Wpf/App.xaml.cs#L93) | Gets whether this is the first run of the application. |
-| <code>public static string[] GetLaunchArgs() =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:99](../../../../src/Meridian.Wpf/App.xaml.cs#L99) | Gets the command-line arguments passed at launch. Used by MainWindow to handle jump-list and deep-link args. |
-| <code>public static WpfServices.NotificationService Notifications =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:104](../../../../src/Meridian.Wpf/App.xaml.cs#L104) | Gets the notification service instance. |
-| <code>public static WpfServices.ConnectionService Connection =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:109](../../../../src/Meridian.Wpf/App.xaml.cs#L109) | Gets the connection service instance. |
-| <code>public static WpfServices.ThemeService Theme =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:114](../../../../src/Meridian.Wpf/App.xaml.cs#L114) | Gets the theme service instance. |
-| <code>public static WpfServices.OfflineTrackingPersistenceService OfflineTracking =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:119](../../../../src/Meridian.Wpf/App.xaml.cs#L119) | Gets the offline tracking persistence service instance. |
-| <code>public static WpfServices.BackgroundTaskSchedulerService Scheduler =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:124](../../../../src/Meridian.Wpf/App.xaml.cs#L124) | Gets the background task scheduler service instance. |
-| <code>public static WpfServices.PendingOperationsQueueService OperationsQueue =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:129](../../../../src/Meridian.Wpf/App.xaml.cs#L129) | Gets the pending operations queue service instance. |
+| <code>public static IServiceProvider Services { get; private set; } = null !;</code> | [src/Meridian.Wpf/App.xaml.cs:116](../../../../src/Meridian.Wpf/App.xaml.cs#L116) | Gets the service provider for dependency injection. |
+| <code>public static bool IsFixtureMode =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:122](../../../../src/Meridian.Wpf/App.xaml.cs#L122) | Gets whether the application is running in fixture mode (offline mock data). Activated via --fixture command-line argument or MDC_FIXTURE_MODE=1 environment variable. |
+| <code>public static new MainWindow? MainWindow =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:127](../../../../src/Meridian.Wpf/App.xaml.cs#L127) | Gets the main application window. |
+| <code>public static bool IsFirstRun =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:132](../../../../src/Meridian.Wpf/App.xaml.cs#L132) | Gets whether this is the first run of the application. |
+| <code>public static string[] GetLaunchArgs() =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:138](../../../../src/Meridian.Wpf/App.xaml.cs#L138) | Gets the command-line arguments passed at launch. Used by MainWindow to handle jump-list and deep-link args. |
+| <code>public static WpfServices.NotificationService Notifications =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:143](../../../../src/Meridian.Wpf/App.xaml.cs#L143) | Gets the notification service instance. |
+| <code>public static WpfServices.ConnectionService Connection =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:148](../../../../src/Meridian.Wpf/App.xaml.cs#L148) | Gets the connection service instance. |
+| <code>public static WpfServices.ThemeService Theme =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:153](../../../../src/Meridian.Wpf/App.xaml.cs#L153) | Gets the theme service instance. |
+| <code>public static WpfServices.OfflineTrackingPersistenceService OfflineTracking =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:158](../../../../src/Meridian.Wpf/App.xaml.cs#L158) | Gets the offline tracking persistence service instance. |
+| <code>public static WpfServices.BackgroundTaskSchedulerService Scheduler =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:163](../../../../src/Meridian.Wpf/App.xaml.cs#L163) | Gets the background task scheduler service instance. |
+| <code>public static WpfServices.PendingOperationsQueueService OperationsQueue =&gt; …;</code> | [src/Meridian.Wpf/App.xaml.cs:168](../../../../src/Meridian.Wpf/App.xaml.cs#L168) | Gets the pending operations queue service instance. |
 
 ## AvalonEditNotebookBehavior
 

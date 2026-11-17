@@ -31,8 +31,8 @@ public sealed partial class FileOperatorPreferenceStore
     private const int MaxKeyBindingIdLength = 64;
     private const int MaxKeyBindingComboLength = 64;
 
-    private static readonly HashSet<string> Appearances = new(StringComparer.Ordinal) { "system", "light", "dark" };
-    private static readonly HashSet<string> Densities = new(StringComparer.Ordinal) { "compact", "default", "spacious" };
+    private static readonly HashSet<string> Appearances = new(OperatorPreferenceVocabulary.Appearances, StringComparer.Ordinal);
+    private static readonly HashSet<string> Densities = new(OperatorPreferenceVocabulary.Densities, StringComparer.Ordinal);
 
     private readonly ILogger<FileOperatorPreferenceStore> _logger;
     private readonly TimeProvider _timeProvider;

@@ -1250,7 +1250,7 @@ zone, page-descriptions setting and browser shortcut overrides. `Workflows/FileO
 keeps one record per tenant, company and user (the same key as the default scope) under
 `workstation/operators/preferences.json`, through the snapshot store's atomic replace. A save
 replaces the whole set; an empty set clears it. Values are validated: appearance and density from
-fixed sets, the zone by IANA-name shape (at most 64 characters; the browser confirms it against its
+the shared `OperatorPreferenceVocabulary` sets, the zone by IANA-name shape (at most 64 characters; the browser confirms it against its
 own zone data), and at most 32 shortcut overrides with hyphenated lowercase ids and printable combos
 of at most 64 characters. An invalid value returns 400 naming the field and keeps the stored set.
 Both routes require an authenticated session, only touch the caller's record, and return 501 when

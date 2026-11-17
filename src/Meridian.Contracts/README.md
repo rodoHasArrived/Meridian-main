@@ -482,7 +482,9 @@ with no scope in its link or local storage.
 (`/api/workstation/operator/preferences`): appearance, density, display time zone, the
 page-descriptions setting and browser shortcut overrides keyed by binding id. Every value is
 optional; null means nothing is stored and the client keeps its own value. The values are
-display-only.
+display-only. `OperatorPreferenceVocabulary` holds the shared appearance (`system`, `light`, `dark`)
+and density (`compact`, `default`, `spacious`) values that the host store validates against and both
+clients map to their own types.
 
 `Workstation/WorkstationScopeOptionsDtos.cs` carries the entities, funds and fund accounts the
 calling operator may scope to (`GET /api/workstation/scope-options`), with each fund's visible

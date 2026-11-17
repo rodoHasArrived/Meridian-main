@@ -1,6 +1,28 @@
 namespace Meridian.Contracts.Workstation;
 
 /// <summary>
+/// The shared value sets for <see cref="OperatorPreferenceValuesDto"/>, used by the host store and by
+/// both operator clients so the browser and WPF read one vocabulary. Clients map these to their own
+/// presentation types (the WPF shell has fewer density levels than the browser).
+/// </summary>
+public static class OperatorPreferenceVocabulary
+{
+    public const string AppearanceSystem = "system";
+    public const string AppearanceLight = "light";
+    public const string AppearanceDark = "dark";
+
+    public const string DensityCompact = "compact";
+    public const string DensityDefault = "default";
+    public const string DensitySpacious = "spacious";
+
+    /// <summary>Every appearance the host accepts.</summary>
+    public static IReadOnlyList<string> Appearances { get; } = [AppearanceSystem, AppearanceLight, AppearanceDark];
+
+    /// <summary>Every density the host accepts, from tightest to loosest.</summary>
+    public static IReadOnlyList<string> Densities { get; } = [DensityCompact, DensityDefault, DensitySpacious];
+}
+
+/// <summary>
 /// The signed-in operator's presentation preferences, kept on the host so they follow the operator
 /// to another browser or machine. Every value is optional: null means "no preference stored", and
 /// the client keeps its own default. Values are display-only and never change stored or ledger data.

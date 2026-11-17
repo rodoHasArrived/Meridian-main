@@ -6,6 +6,52 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategyRunDetailViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.StrategyRunDetailViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:14](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L14).
+
+Presents the selected strategy run and its parameters with summary and parameter inspectors.
+
+```csharp
+public sealed class StrategyRunDetailViewModel : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public object? Parameter { get; set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:27](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L27) |  |
+| <code>public ObservableCollection&lt;ParameterItemViewModel&gt; Parameters { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:39](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L39) |  |
+| <code>public WorkstationTableModel&lt;ParameterItemViewModel&gt; ParametersTable { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:41](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L41) |  |
+| <code>public ParameterItemViewModel? SelectedParameter { get; set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:43](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L43) |  |
+| <code>public InspectorPanelModel RunSummaryInspector { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:58](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L58) |  |
+| <code>public InspectorPanelModel SelectedParameterInspector { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:64](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L64) |  |
+| <code>public bool HasSelectedParameter =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:70](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L70) |  |
+| <code>public string Title { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:73](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L73) |  |
+| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:80](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L80) |  |
+| <code>public string ModeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:87](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L87) |  |
+| <code>public string EngineText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:94](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L94) |  |
+| <code>public string StartedAtText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:101](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L101) |  |
+| <code>public string CompletedAtText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:108](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L108) |  |
+| <code>public string NetPnlText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:115](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L115) |  |
+| <code>public string ReturnText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:122](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L122) |  |
+| <code>public string EquityText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:129](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L129) |  |
+| <code>public string FillCountText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:136](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L136) |  |
+| <code>public string PortfolioReferenceText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:143](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L143) |  |
+| <code>public string LedgerReferenceText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:150](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L150) |  |
+| <code>public bool CanOpenRunDrillIns =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:156](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L156) |  |
+| <code>public string RunDrillInTooltip =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:158](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L158) |  |
+| <code>public string RunActionStateTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:162](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L162) |  |
+| <code>public string RunActionStateDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:168](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L168) |  |
+| <code>public IRelayCommand OpenBrowserCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:174](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L174) |  |
+| <code>public IRelayCommand OpenPortfolioCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:175](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L175) |  |
+| <code>public IRelayCommand OpenLedgerCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:176](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L176) |  |
+| <code>public IRelayCommand OpenCashFlowCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:177](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L177) |  |
+| <code>public IRelayCommand OpenRiskCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:178](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L178) |  |
+| <code>public Task LoadRunAsync(string? runId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs:203](../../../../src/Meridian.Wpf/ViewModels/StrategyRunDetailViewModel.cs#L203) |  |
+
 ## StrategyRunLedgerViewModel
 
 Qualified name: <code>Meridian.Wpf.ViewModels.StrategyRunLedgerViewModel</code>. Kind: `class`.
@@ -1462,23 +1508,3 @@ Declared public members:
 | <code>public double Height { get; set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:816](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L816) |  |
 | <code>public Brush BarBrush { get; set; } = Brushes.Gray;</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:817](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L817) |  |
 | <code>public string Tooltip { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:818](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L818) |  |
-
-## WpfVolumeProfileBarVm
-
-Qualified name: <code>Meridian.Wpf.ViewModels.WpfVolumeProfileBarVm</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:824](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L824).
-
-Carries a price-volume bucket&#x27;s price label, rendered width, and brush.
-
-```csharp
-public sealed class WpfVolumeProfileBarVm
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string PriceLabel { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:826](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L826) |  |
-| <code>public double BarWidth { get; set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:827](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L827) |  |
-| <code>public Brush BarBrush { get; set; } = Brushes.Blue;</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:828](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L828) |  |

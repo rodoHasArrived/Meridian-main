@@ -6,6 +6,76 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## InfoBarConstants
+
+Qualified name: <code>Meridian.Ui.Services.Services.InfoBarConstants</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:19](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L19).
+
+Duration configuration for different severity levels. Shared across InfoBarService implementations.
+
+```csharp
+public static class InfoBarConstants
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int InfoDurationMs = 4000;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:22](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L22) | Informational messages - 4 seconds (user acknowledgment optional). |
+| <code>public const int SuccessDurationMs = 3000;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:25](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L25) | Success messages - 3 seconds (quick confirmation). |
+| <code>public const int WarningDurationMs = 6000;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:28](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L28) | Warning messages - 6 seconds (user should notice). |
+| <code>public const int ErrorDurationMs = 10000;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:31](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L31) | Error messages - 10 seconds (requires attention). |
+| <code>public const int CriticalDurationMs = 0;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:34](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L34) | Critical errors - no auto-dismiss (manual close required). |
+| <code>public static int GetDurationForSeverity(InfoBarSeverityLevel severity) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:37](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L37) | Gets the recommended duration for a severity level. |
+
+## InfoBarSeverityLevel
+
+Qualified name: <code>Meridian.Ui.Services.Services.InfoBarSeverityLevel</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:7](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L7).
+
+Platform-agnostic severity levels for info bar notifications. Shared across desktop platforms.
+
+```csharp
+public enum InfoBarSeverityLevel : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Informational</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:9](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L9) |  |
+| <code>Success</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:10](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L10) |  |
+| <code>Warning</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:11](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L11) |  |
+| <code>Error</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:12](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L12) |  |
+
+## OmsIntegrationApiHandler
+
+Qualified name: <code>Meridian.Ui.Services.Services.Integrations.OmsIntegrationApiHandler</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:12](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L12).
+
+Handles OMS/EMS ingestion with bounded in-memory deduplication, diagnostics, signing keys, and audit history.
+
+```csharp
+public sealed class OmsIntegrationApiHandler : IOmsIntegrationApiHandler
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public OmsIntegrationApiHandler(TimeProvider? timeProvider = null);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:26](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L26) |  |
+| <code>public OmsIngestionResult Ingest(OmsInboundMessage message, OmsRequestSignatureInput? signature = null);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:32](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L32) |  |
+| <code>public IReadOnlyCollection&lt;OmsInboundMessage&gt; Snapshot() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:68](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L68) |  |
+| <code>public IReadOnlyCollection&lt;OmsAdapterDiagnostics&gt; AdapterDiagnostics();</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:70](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L70) |  |
+| <code>public OmsSyncConflictResult ResolveSyncConflict(OmsSyncRequest request, OmsRequestSignatureInput? signature = null);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:112](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L112) |  |
+| <code>public IReadOnlyCollection&lt;OmsIntegrationAuditEntry&gt; AuditTrail(int take = 200) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:136](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L136) |  |
+| <code>public OmsRequestSignatureResult VerifyRequestSignature(OmsRequestSignatureInput signature);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:139](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L139) |  |
+| <code>public OmsKeyRotationResult RotateSigningKey(OmsKeyRotationRequest request);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:161](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L161) |  |
+| <code>public static string ComputeSignature(byte[] key, string timestampUtc, string canonicalPayload);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:234](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L234) |  |
+
 ## OmsIntegrationServiceCollectionExtensions
 
 Qualified name: <code>Meridian.Ui.Services.Services.Integrations.OmsIntegrationServiceCollectionExtensions</code>. Kind: `class`.
@@ -45,6 +115,25 @@ Declared public members:
 | <code>public List&lt;string&gt; Issues { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:209](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L209) |  |
 | <code>public List&lt;string&gt; Recommendations { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:210](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L210) |  |
 | <code>public DateTime CheckedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:211](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L211) |  |
+
+## IOperatorPreferencesApi
+
+Qualified name: <code>Meridian.Ui.Services.Services.IOperatorPreferencesApi</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:78](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L78).
+
+Reads and replaces the signed-in operator&#x27;s presentation preferences on the host.
+
+```csharp
+public interface IOperatorPreferencesApi
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;OperatorPreferencesDto?&gt; GetAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:81](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L81) | The stored set, or null when the host could not be read (no session, older host, offline). |
+| <code>Task&lt;OperatorPreferencesDto?&gt; SaveAsync(OperatorPreferenceValuesDto preferences, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:84](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L84) | Replaces the stored set. Returns the saved set, or null when the save failed. |
 
 ## IQualityArchiveStore
 
@@ -313,6 +402,26 @@ Declared public members:
 | <code>public string Content { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:24](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L24) |  |
 | <code>public string TargetElement { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:25](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L25) |  |
 | <code>public int Order { get; set; }</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:26](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L26) |  |
+
+## OperatorPreferencesApiClient
+
+Qualified name: <code>Meridian.Ui.Services.Services.OperatorPreferencesApiClient</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:88](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L88).
+
+Desktop client for UiApiRoutes.WorkstationOperatorPreferences.
+
+```csharp
+public sealed class OperatorPreferencesApiClient : IOperatorPreferencesApi
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public OperatorPreferencesApiClient(ApiClientService apiClient);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:92](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L92) |  |
+| <code>public async Task&lt;OperatorPreferencesDto?&gt; GetAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:97](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L97) |  |
+| <code>public async Task&lt;OperatorPreferencesDto?&gt; SaveAsync(OperatorPreferenceValuesDto preferences, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:105](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L105) |  |
 
 ## PeriodicRefreshScheduler
 
@@ -1012,120 +1121,3 @@ Declared public members:
 | <code>public static ValidationResult Error(string message) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:234](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L234) | Creates a failed validation result with an error message. |
 | <code>public static ValidationResult Warning(string message) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:240](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L240) | Creates a warning validation result (valid but with advisory message). |
 | <code>public static implicit operator bool(ValidationResult result) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:245](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L245) | Implicit conversion to bool for convenient checking. |
-
-## ServiceUrlChangedEventArgs
-
-Qualified name: <code>Meridian.Ui.Services.ServiceUrlChangedEventArgs</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/ApiClientService.cs:791](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L791).
-
-Event args for service URL changes.
-
-```csharp
-public sealed class ServiceUrlChangedEventArgs : EventArgs
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string OldUrl { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:793](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L793) |  |
-| <code>public string NewUrl { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:794](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L794) |  |
-
-## SessionState
-
-Qualified name: <code>Meridian.Ui.Services.SessionState</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:112](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L112).
-
-Session state for restore.
-
-```csharp
-public sealed class SessionState
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ActivePageTag { get; set; } = &quot;Dashboard&quot;;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:114](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L114) |  |
-| <code>public List&lt;WorkspacePage&gt; OpenPages { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:115](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L115) |  |
-| <code>public List&lt;string&gt; RecentPages { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:116](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L116) |  |
-| <code>public Dictionary&lt;string, WidgetPosition&gt; WidgetLayout { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:117](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L117) |  |
-| <code>public Dictionary&lt;string, string&gt; ActiveFilters { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:118](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L118) |  |
-| <code>public Dictionary&lt;string, string&gt; WorkspaceContext { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:119](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L119) |  |
-| <code>public WindowBounds? WindowBounds { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:120](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L120) |  |
-| <code>public DateTime SavedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:121](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L121) |  |
-| <code>public string? ActiveWorkspaceId { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:122](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L122) |  |
-| <code>public WorkstationLayoutState? WorkstationLayout { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:123](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L123) |  |
-| <code>public WorkspaceSummaryStats? CachedSummaryStats { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:126](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L126) |  |
-
-## SetupPreset
-
-Qualified name: <code>Meridian.Ui.Services.SetupPreset</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/SetupWizardService.cs:736](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L736).
-
-Setup preset for quick configuration.
-
-```csharp
-public sealed class SetupPreset
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Id { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:738](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L738) |  |
-| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:739](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L739) |  |
-| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:740](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L740) |  |
-| <code>public string Icon { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:741](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L741) |  |
-| <code>public string[] RecommendedProviders { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:742](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L742) |  |
-| <code>public string[] DefaultSymbols { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:743](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L743) |  |
-| <code>public bool SubscribeTrades { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:744](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L744) |  |
-| <code>public bool SubscribeDepth { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:745](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L745) |  |
-| <code>public bool SubscribeQuotes { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:746](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L746) |  |
-| <code>public int DepthLevels { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:747](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L747) |  |
-| <code>public bool EnableBackfill { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:748](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L748) |  |
-| <code>public string StorageTier { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:749](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L749) |  |
-
-## SetupWizardService
-
-Qualified name: <code>Meridian.Ui.Services.SetupWizardService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/SetupWizardService.cs:13](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L13).
-
-Service for guided setup wizard with preflight connectivity checks. Validates provider credentials and connectivity before enabling services.
-
-```csharp
-public sealed class SetupWizardService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SetupWizardService(ConnectivityProbeOptions? probeOptions = null, ApiClientService? apiClient = null);</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:21](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L21) |  |
-| <code>public async Task&lt;PreflightCheckResult&gt; RunPreflightChecksAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:36](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L36) | Performs preflight checks for all configured providers. |
-| <code>public async Task&lt;ProviderTestResult&gt; TestProviderConnectivityAsync(string provider, Dictionary&lt;string, string&gt; credentials, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:58](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L58) | Tests connectivity to a specific provider. |
-| <code>public IReadOnlyList&lt;SetupPreset&gt; GetSetupPresets();</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:511](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L511) | Gets available setup presets for quick configuration. |
-| <code>public async Task ApplyPresetAsync(SetupPreset preset, string provider, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:611](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L611) | Applies a setup preset to the configuration. |
-| <code>public async Task SaveCredentialsAsync(string provider, Dictionary&lt;string, string&gt; credentials, CancellationToken ct = default, string? connectionId = null);</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:638](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L638) | Saves provider credentials securely. |
-
-## ShowConfigResponse
-
-Qualified name: <code>Meridian.Ui.Services.ShowConfigResponse</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:680](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L680).
-
-Carries API configuration sections for diagnostic display.
-
-```csharp
-public sealed class ShowConfigResponse
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public List&lt;ConfigSection&gt;? Sections { get; set; }</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:682](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L682) |  |

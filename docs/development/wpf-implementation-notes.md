@@ -458,6 +458,17 @@ leaves the binding unchanged and shows why: a modifier pressed on its own, a cho
 already uses (named), or a high-consequence action without Ctrl or Alt. Escape can't be bound from
 the editor because it cancels capture.
 
+### Theme and density follow the operator
+
+The shell theme and density come from the operator's host preferences
+(`/api/workstation/operator/preferences`), the same set the browser workstation syncs, through
+`DesktopOperatorPreferenceSync` (`Meridian.Ui.Services`) and `WpfDesktopPreferenceSurface`. Values
+the host holds are applied at startup; a desktop change saves only appearance and density and keeps
+the browser's other values. The browser's `spacious` density shows as Standard here and is not
+narrowed by a desktop save. With no reachable host (or in fixture mode) theme and density stay
+local; the theme then starts as Light as before. The operator's display time zone is read but not yet
+applied to desktop timestamps, and desktop shortcut overrides remain per machine.
+
 ### One refresh control
 
 The shell toolbar Refresh button and `F5` are the single refresh control. `MainPageViewModel`

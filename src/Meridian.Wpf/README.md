@@ -39,6 +39,13 @@ guardrail violations with an operator-facing reason. Escape cannot be bound thro
 `KeyboardShortcutServicePersistenceTests` and `KeyboardShortcutRebindingTests` cover this on isolated
 instances and require Windows.
 
+The shell theme and density follow the operator's host preferences, the same set the browser
+workstation uses: `App.xaml.cs` starts `DesktopOperatorPreferenceSync` after the theme service is
+initialized (not in fixture mode) over `WpfDesktopPreferenceSurface`, which marshals host-applied
+theme changes onto the UI thread and reports only theme and density changes (shortcut overrides
+share the desktop shell preference store but stay per machine). Desktop timestamps do not use the
+operator's display time zone yet. `WpfDesktopPreferenceSurfaceTests` require Windows.
+
 Settings workspace and Preferences include a shared activation-status banner reading the host's
 `GET /api/config/changes` contract. It refreshes on entry, every 15 seconds, on demand and after
 successful desktop configuration saves. Page unload cancels reads; stale responses cannot restore

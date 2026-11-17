@@ -6,6 +6,123 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ServiceUrlChangedEventArgs
+
+Qualified name: <code>Meridian.Ui.Services.ServiceUrlChangedEventArgs</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/ApiClientService.cs:791](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L791).
+
+Event args for service URL changes.
+
+```csharp
+public sealed class ServiceUrlChangedEventArgs : EventArgs
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string OldUrl { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:793](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L793) |  |
+| <code>public string NewUrl { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:794](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L794) |  |
+
+## SessionState
+
+Qualified name: <code>Meridian.Ui.Services.SessionState</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:112](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L112).
+
+Session state for restore.
+
+```csharp
+public sealed class SessionState
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string ActivePageTag { get; set; } = &quot;Dashboard&quot;;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:114](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L114) |  |
+| <code>public List&lt;WorkspacePage&gt; OpenPages { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:115](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L115) |  |
+| <code>public List&lt;string&gt; RecentPages { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:116](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L116) |  |
+| <code>public Dictionary&lt;string, WidgetPosition&gt; WidgetLayout { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:117](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L117) |  |
+| <code>public Dictionary&lt;string, string&gt; ActiveFilters { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:118](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L118) |  |
+| <code>public Dictionary&lt;string, string&gt; WorkspaceContext { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:119](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L119) |  |
+| <code>public WindowBounds? WindowBounds { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:120](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L120) |  |
+| <code>public DateTime SavedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:121](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L121) |  |
+| <code>public string? ActiveWorkspaceId { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:122](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L122) |  |
+| <code>public WorkstationLayoutState? WorkstationLayout { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:123](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L123) |  |
+| <code>public WorkspaceSummaryStats? CachedSummaryStats { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:126](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L126) |  |
+
+## SetupPreset
+
+Qualified name: <code>Meridian.Ui.Services.SetupPreset</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/SetupWizardService.cs:736](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L736).
+
+Setup preset for quick configuration.
+
+```csharp
+public sealed class SetupPreset
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Id { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:738](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L738) |  |
+| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:739](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L739) |  |
+| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:740](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L740) |  |
+| <code>public string Icon { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:741](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L741) |  |
+| <code>public string[] RecommendedProviders { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:742](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L742) |  |
+| <code>public string[] DefaultSymbols { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:743](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L743) |  |
+| <code>public bool SubscribeTrades { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:744](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L744) |  |
+| <code>public bool SubscribeDepth { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:745](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L745) |  |
+| <code>public bool SubscribeQuotes { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:746](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L746) |  |
+| <code>public int DepthLevels { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:747](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L747) |  |
+| <code>public bool EnableBackfill { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:748](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L748) |  |
+| <code>public string StorageTier { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:749](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L749) |  |
+
+## SetupWizardService
+
+Qualified name: <code>Meridian.Ui.Services.SetupWizardService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/SetupWizardService.cs:13](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L13).
+
+Service for guided setup wizard with preflight connectivity checks. Validates provider credentials and connectivity before enabling services.
+
+```csharp
+public sealed class SetupWizardService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SetupWizardService(ConnectivityProbeOptions? probeOptions = null, ApiClientService? apiClient = null);</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:21](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L21) |  |
+| <code>public async Task&lt;PreflightCheckResult&gt; RunPreflightChecksAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:36](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L36) | Performs preflight checks for all configured providers. |
+| <code>public async Task&lt;ProviderTestResult&gt; TestProviderConnectivityAsync(string provider, Dictionary&lt;string, string&gt; credentials, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:58](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L58) | Tests connectivity to a specific provider. |
+| <code>public IReadOnlyList&lt;SetupPreset&gt; GetSetupPresets();</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:511](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L511) | Gets available setup presets for quick configuration. |
+| <code>public async Task ApplyPresetAsync(SetupPreset preset, string provider, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:611](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L611) | Applies a setup preset to the configuration. |
+| <code>public async Task SaveCredentialsAsync(string provider, Dictionary&lt;string, string&gt; credentials, CancellationToken ct = default, string? connectionId = null);</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:638](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L638) | Saves provider credentials securely. |
+
+## ShowConfigResponse
+
+Qualified name: <code>Meridian.Ui.Services.ShowConfigResponse</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:680](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L680).
+
+Carries API configuration sections for diagnostic display.
+
+```csharp
+public sealed class ShowConfigResponse
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public List&lt;ConfigSection&gt;? Sections { get; set; }</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:682](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L682) |  |
+
 ## ShowConfigResult
 
 Qualified name: <code>Meridian.Ui.Services.ShowConfigResult</code>. Kind: `class`.
@@ -1077,142 +1194,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public SymbolInfo[]? Symbols { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:664](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L664) |  |
 | <code>public int TotalCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:665](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L665) |  |
-
-## SymbolListResult
-
-Qualified name: <code>Meridian.Ui.Services.SymbolListResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:488](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L488).
-
-Reports symbol-query success, symbol rows, total count, and whether local configuration supplied them.
-
-```csharp
-public sealed class SymbolListResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:490](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L490) |  |
-| <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:491](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L491) |  |
-| <code>public List&lt;SymbolInfo&gt; Symbols { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:492](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L492) |  |
-| <code>public int TotalCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:493](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L493) |  |
-| <code>public bool FromLocalConfig { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:494](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L494) |  |
-
-## SymbolManagementService
-
-Qualified name: <code>Meridian.Ui.Services.SymbolManagementService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:14](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L14).
-
-Comprehensive service for symbol management including monitoring status, archive status, dynamic add/remove, and detailed status information. Provides CLI-equivalent functionality through the desktop UI.
-
-```csharp
-public sealed class SymbolManagementService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static SymbolManagementService Instance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:20](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L20) |  |
-| <code>public async Task&lt;SymbolListResult&gt; GetAllSymbolsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:31](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L31) | Gets all configured symbols (equivalent to --symbols CLI command). |
-| <code>public async Task&lt;SymbolListResult&gt; GetMonitoredSymbolsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:75](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L75) | Gets currently monitored (active) symbols (equivalent to --symbols-monitored). |
-| <code>public async Task&lt;SymbolListResult&gt; GetArchivedSymbolsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:101](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L101) | Gets symbols with archived data (equivalent to --symbols-archived). |
-| <code>public async Task&lt;SymbolDetailedStatus&gt; GetSymbolStatusAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:127](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L127) | Gets detailed status for a specific symbol (equivalent to --symbol-status). |
-| <code>public async Task&lt;SymbolOperationResult&gt; AddSymbolAsync(string symbol, bool subscribeTrades = true, bool subscribeDepth = false, int depthLevels = 10, string? exchange = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:148](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L148) | Dynamically adds a symbol at runtime (equivalent to --symbols-add). |
-| <code>public async Task&lt;SymbolOperationResult&gt; RemoveSymbolAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:205](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L205) | Dynamically removes a symbol at runtime (equivalent to --symbols-remove). |
-| <code>public async Task&lt;SymbolOperationResult&gt; ToggleTradesAsync(string symbol, bool enabled, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:236](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L236) | Enables or disables trades subscription for a symbol. |
-| <code>public async Task&lt;SymbolOperationResult&gt; ToggleDepthAsync(string symbol, bool enabled, int depthLevels = 10, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:264](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L264) | Enables or disables depth subscription for a symbol. |
-| <code>public async Task&lt;SymbolStatistics&gt; GetSymbolStatisticsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:292](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L292) | Gets symbol statistics summary. |
-| <code>public async Task&lt;SymbolValidationResult&gt; ValidateSymbolAsync(string symbol, string? exchange = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:304](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L304) | Validates a symbol format and availability. |
-| <code>public async Task&lt;SymbolArchiveInfo&gt; GetSymbolArchiveInfoAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:322](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L322) | Gets archive information for a symbol. |
-| <code>public async Task&lt;BulkSymbolOperationResult&gt; BulkAddSymbolsAsync(IEnumerable&lt;string&gt; symbols, bool subscribeTrades = true, bool subscribeDepth = false, int depthLevels = 10, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:334](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L334) | Bulk adds multiple symbols at once. |
-| <code>public async Task&lt;BulkSymbolOperationResult&gt; BulkRemoveSymbolsAsync(IEnumerable&lt;string&gt; symbols, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:390](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L390) | Bulk removes multiple symbols at once. |
-| <code>public async Task&lt;SymbolSearchResponse&gt; SearchSymbolsAsync(string query, int limit = 10, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:432](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L432) | Searches for symbols matching the query using the backend symbol search service. |
-
-## SymbolMapping
-
-Qualified name: <code>Meridian.Ui.Services.SymbolMapping</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:700](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L700).
-
-A symbol mapping entry with provider-specific symbols.
-
-```csharp
-public sealed class SymbolMapping
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string CanonicalSymbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:705](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L705) | The canonical (internal) symbol representation. |
-| <code>public string? DisplayName { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:710](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L710) | Display name for the symbol. |
-| <code>public string SecurityType { get; set; } = &quot;STK&quot;;</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:715](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L715) | Security type (STK, OPT, FUT, etc.). |
-| <code>public string? PrimaryExchange { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:720](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L720) | Primary exchange. |
-| <code>public string Currency { get; set; } = &quot;USD&quot;;</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:725](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L725) | Currency. |
-| <code>public string? Figi { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:730](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L730) | FIGI identifier for cross-provider resolution. |
-| <code>public string? Isin { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:735](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L735) | ISIN identifier. |
-| <code>public string? Cusip { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:740](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L740) | CUSIP identifier. |
-| <code>public Dictionary&lt;string, string&gt;? ProviderSymbols { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:747](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L747) | Provider-specific symbol representations. Key: Provider ID (e.g., &quot;IB&quot;, &quot;Alpaca&quot;) Value: Provider-specific symbol |
-| <code>public string? Notes { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:752](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L752) | Notes about this symbol mapping. |
-| <code>public bool IsCustomMapping { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:757](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L757) | Whether this is a custom/override mapping vs auto-generated. |
-| <code>public DateTime CreatedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:762](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L762) | When this mapping was created. |
-| <code>public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:767](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L767) | When this mapping was last updated. |
-
-## SymbolMappingsConfig
-
-Qualified name: <code>Meridian.Ui.Services.SymbolMappingsConfig</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:690](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L690).
-
-Symbol mapping configuration stored on disk.
-
-```csharp
-public sealed class SymbolMappingsConfig
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Version { get; set; } = &quot;1.0&quot;;</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:692](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L692) |  |
-| <code>public DateTime LastUpdated { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:693](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L693) |  |
-| <code>public SymbolMapping[]? Mappings { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:694](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L694) |  |
-
-## SymbolMappingService
-
-Qualified name: <code>Meridian.Ui.Services.SymbolMappingService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:14](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L14).
-
-Service for managing provider-specific symbol mappings. Handles symbol translation between canonical format and provider-specific formats.
-
-```csharp
-public sealed class SymbolMappingService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static SymbolMappingService Instance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:17](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L17) |  |
-| <code>public static readonly IReadOnlyList&lt;MappingProviderInfo&gt; KnownProviders = new List&lt;MappingProviderInfo&gt;{ new (&quot;IB&quot;, &quot;Interactive Brokers&quot;, &quot;Dots to spaces (BRK.B → BRK B)&quot;, SymbolTransform.DotsToSpaces), new (&quot;Alpaca&quot;, &quot;Alpaca Markets&quot;, &quot;Uppercase (identity)&quot;, SymbolTransform.Uppercase), new (&quot;Polygon&quot;, &quot;Polygon.io&quot;, &quot;Uppercase (identity)&quot;, SymbolTransform.Uppercase), new (&quot;Yahoo&quot;, &quot;Yahoo Finance&quot;, &quot;Dots to dashes (BRK.B → BRK-B)&quot;, SymbolTransform.DotsToDashes), new (&quot;Stooq&quot;, &quot;Stooq&quot;, &quot;Lowercase + .us suffix (AAPL → aapl.us)&quot;, SymbolTransform.StooqFormat), new (&quot;Tiingo&quot;, &quot;Tiingo&quot;, &quot;Dots to dashes (BRK.B → BRK-B)&quot;, SymbolTransform.DotsToDashes), new (&quot;Finnhub&quot;, &quot;Finnhub&quot;, &quot;Uppercase (identity)&quot;, SymbolTransform.Uppercase), new (&quot;AlphaVantage&quot;, &quot;Alpha Vantage&quot;, &quot;Uppercase (identity)&quot;, SymbolTransform.Uppercase), new (&quot;NYSE&quot;, &quot;NYSE&quot;, &quot;Uppercase (identity)&quot;, SymbolTransform.Uppercase), };</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:33](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L33) | Known data providers with their display names and default transformations. |
-| <code>public event EventHandler? MappingsChanged;</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:46](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L46) |  |
-| <code>public SymbolMappingService(ICanonicalSymbolRegistry registry, IConfigService? configService = null) : this(configService?? new ConfigService());</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:63](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L63) | Creates the production adapter over the shared canonical registry. Legacy files are read only as idempotent migration and rollback inputs. |
-| <code>public async Task LoadAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:72](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L72) | Loads symbol mappings from disk. |
-| <code>public async Task SaveAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:120](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L120) | Saves symbol mappings to disk. |
-| <code>public IReadOnlyList&lt;SymbolMapping&gt; GetMappings();</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:151](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L151) | Gets all symbol mappings. |
-| <code>public SymbolMapping? GetMapping(string canonicalSymbol);</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:159](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L159) | Gets a specific symbol mapping by canonical symbol. |
-| <code>public async Task AddOrUpdateMappingAsync(SymbolMapping mapping, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:168](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L168) | Adds or updates a symbol mapping. |
-| <code>public async Task RemoveMappingAsync(string canonicalSymbol, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:219](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L219) | Removes a symbol mapping. |
-| <code>public string MapToProvider(string canonicalSymbol, string providerId);</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:251](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L251) | Maps a canonical symbol to a provider-specific format. |
-| <code>public string MapToCanonical(string providerSymbol, string providerId);</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:272](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L272) | Maps a provider-specific symbol back to canonical format. |
-| <code>public static string ApplyDefaultTransform(string symbol, string providerId);</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:295](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L295) | Applies the default transformation for a provider. |
-| <code>public static string ApplyReverseTransform(string providerSymbol, string providerId);</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:311](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L311) | Applies the reverse transformation to get canonical symbol. |
-| <code>public Dictionary&lt;string, string&gt; TestMapping(string canonicalSymbol);</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:337](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L337) | Tests symbol mapping across all providers. |
-| <code>public async Task&lt;int&gt; ImportFromCsvAsync(string csvContent, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:350](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L350) | Imports mappings from CSV. |
-| <code>public string ExportToCsv();</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:412](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L412) | Exports mappings to CSV format. |
-| <code>public SymbolMapping EnsureProviderEntries(SymbolMapping mapping);</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:469](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L469) | Gets or creates provider symbol entries for a mapping. |

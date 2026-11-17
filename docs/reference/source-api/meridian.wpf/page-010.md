@@ -823,6 +823,30 @@ Declared public members:
 | <code>public WorkstationStrategyBriefingApiClient(ApiClientService apiClient);</code> | [src/Meridian.Wpf/Services/WorkstationStrategyBriefingService.cs:24](../../../../src/Meridian.Wpf/Services/WorkstationStrategyBriefingService.cs#L24) |  |
 | <code>public async Task&lt;StrategyBriefingDto?&gt; GetBriefingAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkstationStrategyBriefingService.cs:29](../../../../src/Meridian.Wpf/Services/WorkstationStrategyBriefingService.cs#L29) |  |
 
+## WpfDesktopPreferenceSurface
+
+Qualified name: <code>Meridian.Wpf.Services.WpfDesktopPreferenceSurface</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:12](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L12).
+
+The desktop shell&#x27;s theme and density as DesktopOperatorPreferenceSync reads and writes them. Theme changes swap application resources, so values applied from the host are marshalled onto the UI thread; the sync may call in from a background continuation.
+
+```csharp
+public sealed class WpfDesktopPreferenceSurface : IDesktopPreferenceSurface, IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WpfDesktopPreferenceSurface(ThemeService themeService, SettingsConfigurationService settings);</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:18](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L18) |  |
+| <code>public AppTheme Theme =&gt; …;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:27](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L27) |  |
+| <code>public ShellDensityMode Density =&gt; …;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:29](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L29) |  |
+| <code>public event EventHandler? PreferenceChanged;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:31](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L31) |  |
+| <code>public void ApplyTheme(AppTheme theme) =&gt; …;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:33](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L33) |  |
+| <code>public void ApplyDensity(ShellDensityMode density) =&gt; …;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:35](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L35) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:64](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L64) |  |
+
 ## WpfRemoteWorkstationClient
 
 Qualified name: <code>Meridian.Wpf.Services.WpfRemoteWorkstationClient</code>. Kind: `class`.
@@ -1129,26 +1153,3 @@ Declared public members:
 | <code>public IReadOnlyList&lt;PaneContentState&gt; GetVisiblePaneContentStates(PaneHostViewModel paneHost);</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:66](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L66) |  |
 | <code>public FrameworkElement CreatePaneContent(PaneContentState state);</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:72](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L72) |  |
 | <code>public void InitializeNavigationFrame(Frame frame);</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:78](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L78) |  |
-
-## ShellPageRegistryBuilder
-
-Qualified name: <code>Meridian.Wpf.Shell.Services.ShellPageRegistryBuilder</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:10](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L10).
-
-Combines feature-module page and workspace declarations into a desktop shell registry.
-
-```csharp
-public sealed class ShellPageRegistryBuilder
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ShellPageRegistryBuilder Contribute(IEnumerable&lt;ShellPageDescriptor&gt; pages);</code> | [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:15](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L15) |  |
-| <code>public ShellPageRegistryBuilder ContributeCapability(WorkspaceCapabilityDescriptor capability);</code> | [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:23](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L23) |  |
-| <code>public IShellPageRegistry Build();</code> | [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:31](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L31) |  |
-| <code>public static IShellPageRegistry BuildDefault();</code> | [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:87](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L87) |  |
-| <code>public static ShellPageDescriptor Page&lt;TPage&gt;(string pageTag, string title, string subtitle, string workspaceId, string sectionLabel, string glyph, int order, ShellNavigationVisibilityTier visibilityTier, IReadOnlyList&lt;string&gt;? searchKeywords = null, IReadOnlyList&lt;string&gt;? relatedPageTags = null, IReadOnlyList&lt;string&gt;? aliases = null, bool hideFromDefaultPalette = false) where TPage : class;</code> | [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:115](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L115) |  |
-| <code>public static WorkspacePaneDefinition Pane(string pageTag, PaneDropAction action, WorkspacePaneParameterBinding parameterBinding = WorkspacePaneParameterBinding.None, bool openWithoutBoundParameter = false, string? fallbackPageTag = null, PaneDropAction? fallbackAction = null) =&gt; …;</code> | [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:146](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L146) |  |

@@ -1044,6 +1044,51 @@ Declared public members:
 | <code>public DateTime LastChecked { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:21](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L21) |  |
 | <code>public List&lt;SymbolQualitySummary&gt; SymbolSummaries { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:22](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L22) |  |
 
+## DesktopOperatorPreferenceMapping
+
+Qualified name: <code>Meridian.Ui.Services.Services.DesktopOperatorPreferenceMapping</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:17](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L17).
+
+Maps the shared operator preference vocabulary (OperatorPreferenceVocabulary) to the desktop shell&#x27;s own types. The browser has three densities and the desktop shell two, so default and spacious both show as ShellDensityMode.Standard, and a desktop save never narrows an operator&#x27;s browser spacious to default.
+
+```csharp
+public static class DesktopOperatorPreferenceMapping
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static AppTheme? ToAppTheme(string? appearance) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:20](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L20) | The desktop theme for a host appearance, or null for a value the desktop does not know. |
+| <code>public static string ToAppearance(AppTheme theme) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:28](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L28) |  |
+| <code>public static ShellDensityMode? ToShellDensity(string? density) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:36](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L36) | The desktop density for a host density, or null for a value the desktop does not know. |
+| <code>public static string ToHostDensity(ShellDensityMode density, string? currentHostDensity) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:47](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L47) | The host density to save for a desktop density. ShellDensityMode.Standard keeps a stored default or spacious, because both already show as Standard on the desktop. |
+| <code>public static bool TryResolveTimeZone(string? ianaZone, out TimeZoneInfo zone);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:59](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L59) | Resolves an IANA display time zone with this machine&#x27;s time zone data. False for a missing or unknown zone, in which case the desktop keeps showing times as it does today. |
+
+## DesktopOperatorPreferenceSync
+
+Qualified name: <code>Meridian.Ui.Services.Services.DesktopOperatorPreferenceSync</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:149](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L149).
+
+Keeps the desktop shell&#x27;s theme and density in step with the operator&#x27;s host preferences, the same set the browser workstation syncs (OperatorPreferencesDto). On start, the values the host holds are applied. Nothing is saved: the desktop does not persist its theme, so its startup theme is a default, not an operator choice. When the operator changes the theme or density here, the latest host set is re-read and saved with only the appearance and density replaced, so browser-only values (time zone, page descriptions, shortcut overrides, a spacious density) are kept. When the host cannot be read at start (no session, an older host, offline), the desktop stays local for the run and saves nothing. A failed save keeps the local change. The display time zone is read and exposed, but desktop formatters do not apply it yet.
+
+```csharp
+public sealed class DesktopOperatorPreferenceSync : IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DesktopOperatorPreferenceSync(IOperatorPreferencesApi api, IDesktopPreferenceSurface surface);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:159](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L159) |  |
+| <code>public TimeZoneInfo? DisplayTimeZone { get; private set; }</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:166](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L166) | The operator&#x27;s display time zone from the host, when it resolves on this machine. |
+| <code>public bool IsSyncing =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:169](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L169) | True once the host was read and local changes are being saved. |
+| <code>public async Task StartAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:172](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L172) | Reads the host set, applies it, and starts saving operator changes. Safe to call once. |
+| <code>public async Task SaveLocalChangeAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:232](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L232) | Saves the current desktop theme and density into the operator&#x27;s host set, keeping every other stored value. Exposed for tests; the sync calls it after each operator change. |
+| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:278](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L278) |  |
+
 ## DesktopShellPreferences
 
 Qualified name: <code>Meridian.Ui.Services.Services.DesktopShellPreferences</code>. Kind: `record`.
@@ -1282,72 +1327,24 @@ Declared public members:
 | <code>public static ValidationResult ValidateFilePath(string? value);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:170](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L170) | Validates a file path format. |
 | <code>public static ValidationResult ValidateNumericRange(double? value, double min, double max, string fieldName = &quot;Value&quot;);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:193](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L193) | Validates that a numeric value is within a specified range. |
 
-## InfoBarConstants
+## IDesktopPreferenceSurface
 
-Qualified name: <code>Meridian.Ui.Services.Services.InfoBarConstants</code>. Kind: `class`.
+Qualified name: <code>Meridian.Ui.Services.Services.IDesktopPreferenceSurface</code>. Kind: `interface`.
 
-Source: [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:19](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L19).
+Source: [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:121](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L121).
 
-Duration configuration for different severity levels. Shared across InfoBarService implementations.
+The desktop presentation preferences the host sync reads and writes: the shell theme and density. Implemented by the WPF shell over its theme service and desktop shell preferences.
 
 ```csharp
-public static class InfoBarConstants
+public interface IDesktopPreferenceSurface
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const int InfoDurationMs = 4000;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:22](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L22) | Informational messages - 4 seconds (user acknowledgment optional). |
-| <code>public const int SuccessDurationMs = 3000;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:25](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L25) | Success messages - 3 seconds (quick confirmation). |
-| <code>public const int WarningDurationMs = 6000;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:28](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L28) | Warning messages - 6 seconds (user should notice). |
-| <code>public const int ErrorDurationMs = 10000;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:31](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L31) | Error messages - 10 seconds (requires attention). |
-| <code>public const int CriticalDurationMs = 0;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:34](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L34) | Critical errors - no auto-dismiss (manual close required). |
-| <code>public static int GetDurationForSeverity(InfoBarSeverityLevel severity) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:37](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L37) | Gets the recommended duration for a severity level. |
-
-## InfoBarSeverityLevel
-
-Qualified name: <code>Meridian.Ui.Services.Services.InfoBarSeverityLevel</code>. Kind: `enum`.
-
-Source: [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:7](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L7).
-
-Platform-agnostic severity levels for info bar notifications. Shared across desktop platforms.
-
-```csharp
-public enum InfoBarSeverityLevel : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Informational</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:9](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L9) |  |
-| <code>Success</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:10](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L10) |  |
-| <code>Warning</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:11](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L11) |  |
-| <code>Error</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:12](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L12) |  |
-
-## OmsIntegrationApiHandler
-
-Qualified name: <code>Meridian.Ui.Services.Services.Integrations.OmsIntegrationApiHandler</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:12](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L12).
-
-Handles OMS/EMS ingestion with bounded in-memory deduplication, diagnostics, signing keys, and audit history.
-
-```csharp
-public sealed class OmsIntegrationApiHandler : IOmsIntegrationApiHandler
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public OmsIntegrationApiHandler(TimeProvider? timeProvider = null);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:26](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L26) |  |
-| <code>public OmsIngestionResult Ingest(OmsInboundMessage message, OmsRequestSignatureInput? signature = null);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:32](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L32) |  |
-| <code>public IReadOnlyCollection&lt;OmsInboundMessage&gt; Snapshot() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:68](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L68) |  |
-| <code>public IReadOnlyCollection&lt;OmsAdapterDiagnostics&gt; AdapterDiagnostics();</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:70](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L70) |  |
-| <code>public OmsSyncConflictResult ResolveSyncConflict(OmsSyncRequest request, OmsRequestSignatureInput? signature = null);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:112](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L112) |  |
-| <code>public IReadOnlyCollection&lt;OmsIntegrationAuditEntry&gt; AuditTrail(int take = 200) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:136](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L136) |  |
-| <code>public OmsRequestSignatureResult VerifyRequestSignature(OmsRequestSignatureInput signature);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:139](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L139) |  |
-| <code>public OmsKeyRotationResult RotateSigningKey(OmsKeyRotationRequest request);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:161](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L161) |  |
-| <code>public static string ComputeSignature(byte[] key, string timestampUtc, string canonicalPayload);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:234](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L234) |  |
+| <code>AppTheme Theme { get; }</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:123](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L123) |  |
+| <code>ShellDensityMode Density { get; }</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:125](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L125) |  |
+| <code>void ApplyTheme(AppTheme theme);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:127](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L127) |  |
+| <code>void ApplyDensity(ShellDensityMode density);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:129](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L129) |  |
+| <code>event EventHandler? PreferenceChanged;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:132](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L132) | Raised after the operator changes the theme or density on this desktop. |

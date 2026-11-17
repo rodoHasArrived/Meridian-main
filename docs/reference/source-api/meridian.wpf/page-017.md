@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WpfVolumeProfileBarVm
+
+Qualified name: <code>Meridian.Wpf.ViewModels.WpfVolumeProfileBarVm</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:824](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L824).
+
+Carries a price-volume bucket&#x27;s price label, rendered width, and brush.
+
+```csharp
+public sealed class WpfVolumeProfileBarVm
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string PriceLabel { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:826](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L826) |  |
+| <code>public double BarWidth { get; set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:827](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L827) |  |
+| <code>public Brush BarBrush { get; set; } = Brushes.Blue;</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:828](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L828) |  |
+
 ## AccountingClosePage
 
 Qualified name: <code>Meridian.Wpf.Views.AccountingClosePage</code>. Kind: `class`.
@@ -1074,21 +1094,3 @@ Source: [src/Meridian.Wpf/Views/Pages.cs:99](../../../../src/Meridian.Wpf/Views/
 ```csharp
 public partial class HelpPage : Page
 ```
-
-## HomeWorkspacePage
-
-Qualified name: <code>Meridian.Wpf.Views.HomeWorkspacePage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/HomeWorkspacePage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/HomeWorkspacePage.xaml.cs#L11).
-
-Hosts the desktop workspace overview and recent activity.
-
-```csharp
-public partial class HomeWorkspacePage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public HomeWorkspacePage(HomeWorkspaceViewModel viewModel);</code> | [src/Meridian.Wpf/Views/HomeWorkspacePage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/HomeWorkspacePage.xaml.cs#L15) |  |

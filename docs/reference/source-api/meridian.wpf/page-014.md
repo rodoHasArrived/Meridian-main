@@ -6,6 +6,29 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MaintenanceHistoryItem
+
+Qualified name: <code>Meridian.Wpf.ViewModels.MaintenanceHistoryItem</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs:1207](../../../../src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs#L1207).
+
+Presents a retained maintenance run&#x27;s timestamp, operations, duration, and visual status.
+
+```csharp
+public sealed class MaintenanceHistoryItem
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string RunId { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs:1209](../../../../src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs#L1209) |  |
+| <code>public string TimeText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs:1210](../../../../src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs#L1210) |  |
+| <code>public string OperationsText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs:1211](../../../../src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs#L1211) |  |
+| <code>public string DurationText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs:1212](../../../../src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs#L1212) |  |
+| <code>public string StatusIcon { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs:1213](../../../../src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs#L1213) |  |
+| <code>public SolidColorBrush? StatusColor { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs:1214](../../../../src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs#L1214) |  |
+
 ## MainWindowViewModel
 
 Qualified name: <code>Meridian.Wpf.ViewModels.MainWindowViewModel</code>. Kind: `class`.
@@ -1599,25 +1622,3 @@ Declared public members:
 | <code>public void ValidatePolicy();</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:343](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L343) |  |
 | <code>public async Task DryRunAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:362](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L362) |  |
 | <code>public async Task ConfirmCleanupAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:423](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L423) |  |
-
-## RetentionPolicyDisplayItem
-
-Qualified name: <code>Meridian.Wpf.ViewModels.RetentionPolicyDisplayItem</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs:1185](../../../../src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs#L1185).
-
-Presents a retention policy&#x27;s identity, description, duration, and enabled state.
-
-```csharp
-public sealed class RetentionPolicyDisplayItem
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Id { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs:1187](../../../../src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs#L1187) |  |
-| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs:1188](../../../../src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs#L1188) |  |
-| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs:1189](../../../../src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs#L1189) |  |
-| <code>public string RetentionText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs:1190](../../../../src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs#L1190) |  |
-| <code>public bool Enabled { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs:1191](../../../../src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs#L1191) |  |
