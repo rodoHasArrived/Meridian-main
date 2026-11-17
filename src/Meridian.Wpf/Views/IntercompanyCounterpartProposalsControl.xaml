@@ -33,7 +33,14 @@
             <TextBlock Text="Source posting retains a delivery record. The other entity reviews its own draft; source preparers gain no target-book edit rights. Records, permissions and amounts are shared with the browser workstation and nothing posts automatically."
                        Margin="0,5,0,12" TextWrapping="Wrap" />
             <WrapPanel>
-                <StackPanel><TextBlock Text="Source ledger book ID" /><TextBox Text="{Binding SourceBook, UpdateSourceTrigger=PropertyChanged}" Width="300" AutomationProperties.Name="Counterpart source ledger book" /></StackPanel>
+                <Button Content="Load books" Command="{Binding LoadChoicesCommand}" VerticalAlignment="Center" AutomationProperties.Name="Load counterpart books" />
+                <TextBlock Text="{Binding ChoicesStatus}" TextWrapping="Wrap" VerticalAlignment="Center" MaxWidth="640"
+                           AutomationProperties.Name="Counterpart book selection status" AutomationProperties.LiveSetting="Polite" />
+            </WrapPanel>
+            <WrapPanel>
+                <StackPanel><TextBlock Text="Source ledger book" />
+                    <ComboBox ItemsSource="{Binding BookChoices}" DisplayMemberPath="Label" SelectedValuePath="Id" SelectedValue="{Binding SourceBook}"
+                              Style="{StaticResource FormComboBoxStyle}" Width="360" Margin="0,3,12,10" AutomationProperties.Name="Counterpart source ledger book" /></StackPanel>
                 <StackPanel><TextBlock Text="Break as-of date" /><TextBox Text="{Binding AsOf, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Counterpart break as-of date" /></StackPanel>
                 <Button Content="Load counterpart evidence" Command="{Binding LoadCommand}" VerticalAlignment="Center" />
             </WrapPanel>
@@ -108,7 +115,9 @@
                     </WrapPanel>
                     <TextBlock Text="Link an existing counterpart journal" FontWeight="SemiBold" Margin="0,10,0,0" />
                     <WrapPanel>
-                        <StackPanel><TextBlock Text="Existing counterpart book ID" /><TextBox Text="{Binding TargetBook, UpdateSourceTrigger=PropertyChanged}" Width="300" AutomationProperties.Name="Existing counterpart book" /></StackPanel>
+                        <StackPanel><TextBlock Text="Existing counterpart book (counterparty entity's books)" />
+                            <ComboBox ItemsSource="{Binding TargetBookChoices}" DisplayMemberPath="Label" SelectedValuePath="Id" SelectedValue="{Binding TargetBook}"
+                                      Style="{StaticResource FormComboBoxStyle}" Width="360" Margin="0,3,12,10" AutomationProperties.Name="Existing counterpart book" /></StackPanel>
                         <StackPanel><TextBlock Text="Existing counterpart journal ID" /><TextBox Text="{Binding TargetJournal, UpdateSourceTrigger=PropertyChanged}" Width="300" AutomationProperties.Name="Existing counterpart journal ID" /></StackPanel>
                         <StackPanel><TextBlock Text="Counterpart linking reason" /><TextBox Text="{Binding LinkReason, UpdateSourceTrigger=PropertyChanged}" Width="420" AutomationProperties.Name="Counterpart linking reason" /></StackPanel>
                         <Button Content="Validate and link existing counterpart" Command="{Binding LinkCommand}" VerticalAlignment="Center" />

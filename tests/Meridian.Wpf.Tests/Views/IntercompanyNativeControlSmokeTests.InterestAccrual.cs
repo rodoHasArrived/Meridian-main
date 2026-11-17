@@ -30,9 +30,22 @@ public sealed partial class IntercompanyNativeControlSmokeTests
                 Assert.False(preview.IsEnabled);
                 Assert.False(draft.IsEnabled);
 
-                SetText(Named<TextBox>(control, "Accrual source ledger book"), client.BookId.ToString("D"));
-                SetText(Named<TextBox>(control, "Loan-interest accounting profile"), Guid.NewGuid().ToString("D"));
-                SetText(Named<TextBox>(control, "Loan principal accounting profile"), Guid.NewGuid().ToString("D"));
+                // Books and profiles are chosen from shared reads; nothing is typed as an identifier.
+                await ExecuteAsync(Button(control, "Load books"));
+                await ArrangeAsync(window, control);
+                var book = Named<ComboBox>(control, "Accrual source ledger book");
+                Assert.Equal(BindingStatus.Active, book.GetBindingExpression(System.Windows.Controls.Primitives.Selector.SelectedValueProperty)!.Status);
+                book.SelectedValue = client.BookId.ToString("D");
+                await workspace.ProfileChoicesLoad;
+                await ArrangeAsync(window, control);
+                var interest = Named<ComboBox>(control, "Loan-interest accounting profile");
+                Assert.Single(interest.Items.Cast<object>());
+                interest.SelectedValue = client.InterestId.ToString("D");
+                await ArrangeAsync(window, control);
+                // Only the Loan profile of the same legal agreement is offered, and it is preselected.
+                var principal = Named<ComboBox>(control, "Loan principal accounting profile");
+                Assert.Single(principal.Items.Cast<object>());
+                Assert.Equal(client.PrincipalId.ToString("D"), principal.SelectedValue);
                 SetText(Named<TextBox>(control, "First accrued day"), "2026-06-01");
                 SetText(Named<TextBox>(control, "Accrue up to date"), "2026-07-01");
                 await ArrangeAsync(window, control);
@@ -52,6 +65,8 @@ public sealed partial class IntercompanyNativeControlSmokeTests
                 await ArrangeAsync(window, control);
                 Assert.Equal(AccrualClient.Digest, client.LastDraft!.ExpectedEvidenceDigest);
                 Assert.Equal(client.LastPreview, client.LastDraft.Accrual);
+                Assert.Equal((client.BookId, client.InterestId, client.PrincipalId),
+                    (client.LastPreview!.SourceBookId, client.LastPreview.InterestArrangementId, client.LastPreview.PrincipalArrangementId));
                 Assert.Contains("Draft · version 1", Named<TextBlock>(control, "Interest accrual draft").Text);
                 Assert.False(draft.IsEnabled);
                 Assert.True(control.IsVisible);
@@ -68,11 +83,32 @@ public sealed partial class IntercompanyNativeControlSmokeTests
         public static readonly string Digest = new('d', 64);
         private readonly Guid _draftId = Guid.NewGuid();
         public Guid BookId { get; } = Guid.NewGuid();
+        public Guid InterestId { get; } = Guid.NewGuid();
+        public Guid PrincipalId { get; } = Guid.NewGuid();
+        private readonly Guid _lender = Guid.NewGuid(), _borrower = Guid.NewGuid(), _loan = Guid.NewGuid();
         public IntercompanyAccrualRequestDto? LastPreview { get; private set; }
         public CreateIntercompanyAccrualDraftRequest? LastDraft { get; private set; }
 
         public Task<ApiResponse<IntercompanyOperationCapabilities>> GetIntercompanyCapabilitiesAsync(CancellationToken ct = default)
             => Task.FromResult(ApiResponse<IntercompanyOperationCapabilities>.Ok(new IntercompanyOperationCapabilities(CanManageLedger: true, CanViewLedger: true)));
+
+        public Task<ApiResponse<LedgerBookDto[]>> GetLedgerBooksAsync(CancellationToken ct = default)
+            => Task.FromResult(ApiResponse<LedgerBookDto[]>.Ok([new(BookId, "synthetic-lender-fund", _lender, FundStructureNodeKindDto.Entity, "Synthetic lender book", "USD", RecordedAt, RecordedAt)]));
+
+        public Task<ApiResponse<ResolvedIntercompanyAccountingArrangementDto[]>> GetCoverageProfilesAsync(Guid bookId, DateOnly asOf, CancellationToken ct = default)
+            => Task.FromResult(ApiResponse<ResolvedIntercompanyAccountingArrangementDto[]>.Ok(
+                [Profile(InterestId, IntercompanyAccountingTemplateKindDto.LoanInterest, _loan), Profile(PrincipalId, IntercompanyAccountingTemplateKindDto.Loan, _loan),
+                 Profile(Guid.NewGuid(), IntercompanyAccountingTemplateKindDto.Loan, Guid.NewGuid())]));
+
+        private ResolvedIntercompanyAccountingArrangementDto Profile(Guid id, IntercompanyAccountingTemplateKindDto kind, Guid agreement)
+        {
+            var terms = new IntercompanyAgreementDraftDto("IC-SYN", "Synthetic loan", _lender, "Lender", _borrower, "Borrower", IntercompanyAgreementTypeDto.Loan, "USD", new(2026, 5, 1));
+            var legal = new IntercompanyAgreementRevisionDto(agreement, 1, null, null, IntercompanyAgreementActionDto.Activate, terms, Guid.NewGuid(), "synthetic-legal-hash",
+                ["synthetic-author"], "synthetic-author", "synthetic-reviewer", RecordedAt, "Approved synthetic terms");
+            return new(new(id, Guid.NewGuid(), "Synthetic " + kind, kind, agreement, 1, legal.PayloadHash, RecordedAt, null, Guid.NewGuid(), 1, 3,
+                IntercompanyAccountingArrangementStatusDto.Approved, [new(_lender, BookId, "syn-recv", "syn-pay")],
+                "synthetic-preparer", RecordedAt, "synthetic-reviewer", RecordedAt, "synthetic-reviewer", RecordedAt), legal);
+        }
 
         public Task<ApiResponse<IntercompanyAccrualProposalDto>> PreviewInterestAccrualAsync(IntercompanyAccrualRequestDto request, CancellationToken ct = default)
         {

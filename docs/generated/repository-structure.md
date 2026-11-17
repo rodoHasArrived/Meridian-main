@@ -10592,6 +10592,7 @@ Meridian-main
 │   │   │   │   ├── WorkstationEntityConsolidationApiClient.cs
 │   │   │   │   ├── WorkstationEntityConsolidationApiClient.Lifecycle.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.Accruals.cs
+│   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.Choices.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.LegacyCoverage.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.Obligations.cs
@@ -11880,7 +11881,6 @@ Meridian-main
 │   │   │   ├── HomeWorkspaceViewModel.cs
 │   │   │   ├── IndexSubscriptionViewModel.cs
 │   │   │   ├── IPageActionBarProvider.cs
-│   │   │   ├── KeyboardShortcutsViewModel.cs
 │   │   │   ├── LeanIntegrationViewModel.cs
 │   │   │   ├── LedgerAmountProofDrawerViewModel.cs
 │   │   │   ├── LifecycleControlViewModel.cs
@@ -15136,6 +15136,7 @@ Meridian-main
 │   │   │   ├── IntegrityEventsServiceTests.cs
 │   │   │   ├── IntercompanyAgreementWorkspaceTests.cs
 │   │   │   ├── IntercompanyAgreementWorkspaceTests.Structured.cs
+│   │   │   ├── IntercompanyBookChoiceTests.cs
 │   │   │   ├── IntercompanyCounterpartQueueWorkspaceTests.cs
 │   │   │   ├── IntercompanyInterestAccrualWorkspaceTests.cs
 │   │   │   ├── LeanIntegrationServiceTests.cs
@@ -15171,6 +15172,7 @@ Meridian-main
 │   │   │   ├── WorkstationAccountingCloseApiClientTests.cs
 │   │   │   ├── WorkstationEntityConsolidationApiClientTests.cs
 │   │   │   ├── WorkstationIntercompanyAgreementApiClientTests.Accruals.cs
+│   │   │   ├── WorkstationIntercompanyAgreementApiClientTests.Choices.cs
 │   │   │   ├── WorkstationIntercompanyAgreementApiClientTests.cs
 │   │   │   ├── WorkstationIntercompanyAgreementApiClientTests.Obligations.cs
 │   │   │   ├── WorkstationIntercompanyAgreementApiClientTests.Proposals.cs
@@ -15250,7 +15252,6 @@ Meridian-main
 │   │   │   ├── FundReconciliationWorkbenchServiceTests.cs
 │   │   │   ├── InfoBarServiceTests.cs
 │   │   │   ├── KeyboardShortcutServicePersistenceTests.cs
-│   │   │   ├── KeyboardShortcutServiceRebindingTests.cs
 │   │   │   ├── KeyboardShortcutServiceTests.cs
 │   │   │   ├── MessagingServiceTests.cs
 │   │   │   ├── ModelRoutingPolicyValidatorTests.cs
@@ -15355,7 +15356,6 @@ Meridian-main
 │   │   │   ├── FundLedgerViewModelTests.cs
 │   │   │   ├── FundStructureSetupViewModelTests.cs
 │   │   │   ├── HomeWorkspaceViewModelTests.cs
-│   │   │   ├── KeyboardShortcutsViewModelTests.cs
 │   │   │   ├── LedgerAmountProofInteractionTests.cs
 │   │   │   ├── LifecycleControlViewModelTests.cs
 │   │   │   ├── LiveDataViewerViewModelTests.cs
