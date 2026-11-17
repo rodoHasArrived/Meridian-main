@@ -917,9 +917,9 @@ Declared public members:
 | <code>public void Cancel();</code> | [src/Meridian.Wpf/ViewModels/Accounting/EntityConsolidationViewModel.cs:139](../../../../src/Meridian.Wpf/ViewModels/Accounting/EntityConsolidationViewModel.cs#L139) |  |
 | <code>public void ReportReviewFailure(string message) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Accounting/EntityConsolidationViewModel.cs:146](../../../../src/Meridian.Wpf/ViewModels/Accounting/EntityConsolidationViewModel.cs#L146) |  |
 | <code>public Task LoadChoicesAsync();</code> | [src/Meridian.Wpf/ViewModels/Accounting/EntityConsolidationViewModel.cs:176](../../../../src/Meridian.Wpf/ViewModels/Accounting/EntityConsolidationViewModel.cs#L176) |  |
-| <code>public Task LoadTimelineAsync();</code> | [src/Meridian.Wpf/ViewModels/Accounting/EntityConsolidationViewModel.cs:199](../../../../src/Meridian.Wpf/ViewModels/Accounting/EntityConsolidationViewModel.cs#L199) |  |
-| <code>public Task PreviewAsync();</code> | [src/Meridian.Wpf/ViewModels/Accounting/EntityConsolidationViewModel.cs:242](../../../../src/Meridian.Wpf/ViewModels/Accounting/EntityConsolidationViewModel.cs#L242) |  |
-| <code>public Task CreateDraftsAsync();</code> | [src/Meridian.Wpf/ViewModels/Accounting/EntityConsolidationViewModel.cs:261](../../../../src/Meridian.Wpf/ViewModels/Accounting/EntityConsolidationViewModel.cs#L261) |  |
+| <code>public Task LoadTimelineAsync();</code> | [src/Meridian.Wpf/ViewModels/Accounting/EntityConsolidationViewModel.cs:203](../../../../src/Meridian.Wpf/ViewModels/Accounting/EntityConsolidationViewModel.cs#L203) |  |
+| <code>public Task PreviewAsync();</code> | [src/Meridian.Wpf/ViewModels/Accounting/EntityConsolidationViewModel.cs:246](../../../../src/Meridian.Wpf/ViewModels/Accounting/EntityConsolidationViewModel.cs#L246) |  |
+| <code>public Task CreateDraftsAsync();</code> | [src/Meridian.Wpf/ViewModels/Accounting/EntityConsolidationViewModel.cs:265](../../../../src/Meridian.Wpf/ViewModels/Accounting/EntityConsolidationViewModel.cs#L265) |  |
 
 Source: [src/Meridian.Wpf/ViewModels/Accounting/EntityConsolidationViewModel.Lifecycle.cs:7](../../../../src/Meridian.Wpf/ViewModels/Accounting/EntityConsolidationViewModel.Lifecycle.cs#L7).
 
