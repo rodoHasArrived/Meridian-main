@@ -6,6 +6,32 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementMatchTolerance
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementMatchTolerance</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1031](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1031).
+
+```csharp
+public sealed record StatementMatchTolerance(decimal? Quantity = null, decimal? Amount = null);
+```
+
+## StatementMatchVariance
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementMatchVariance</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1019](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1019).
+
+```csharp
+public sealed record StatementMatchVariance(decimal? Quantity = null, decimal? MarketValue = null, decimal? Amount = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal LargestAbsoluteAmount =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1024](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1024) |  |
+
 ## StatementNormalizedEntities
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementNormalizedEntities</code>. Kind: `record`.

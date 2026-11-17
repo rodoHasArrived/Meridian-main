@@ -17,8 +17,12 @@ neither a worker restart nor a later definition version creates another draft fo
 dimensions, ownership and source references, including their exact versions and content digests.
 Schedule and template versions are part of the claim's provenance, not part of its logical identity.
 
-The file store serializes writers with an OS-exclusive lease across claim, intake and completion.
-It writes each state transition before returning. A stopped process releases the lease; a new
+Every store serializes writers with an exclusive lease across claim, intake and completion. Hosts
+with a ledger database use `PostgresRecurringJournalStore`, whose lease is a PostgreSQL advisory lock
+held for the whole session, so runners on separate processes and hosts share one authority. Hosts
+without one use `FileRecurringJournalStore`, whose lease is an OS-exclusive file lock. Both retain the
+same hashed document through the shared `RecurringJournalDocumentSession`. Each store writes every
+state transition before returning. A stopped process releases the lease; a new
 runner resumes the claim and asks the existing journal-intake path for the same deterministic draft.
 The existing workbench retains draft and audit recovery independently, so interruption after draft
 save does not authorize a second draft. A previously completed occurrence whose draft has been lost
@@ -188,15 +192,26 @@ date and period in that evidence. The workbench verifies their retained source-a
 client-provided correction links cannot substitute for it.
 
 The recurring store requires explicit administrator initialization through the recurring-journal
-initialization endpoint. Runtime reads never initialize it. Its persistent initialization marker
-distinguishes initial provisioning from loss of an existing snapshot; restore the retained snapshot
-and marker together if either becomes unavailable. The supported concurrency boundary is processes
-sharing the same filesystem data root. Separate data roots are separate authorities and are not a
-distributed scheduling deployment.
+initialization endpoint. Runtime reads never initialize it. For the file store, a persistent
+initialization marker distinguishes initial provisioning from loss of an existing snapshot; restore
+the retained snapshot and marker together if either becomes unavailable. The supported file-store
+concurrency boundary is processes sharing the same filesystem data root; separate data roots are
+separate authorities.
+
+The PostgreSQL store keeps its document in one `recurring_journal_state` row
+(`V_ledger_074__recurring_journal_state`). Initialization creates that row and the table rejects
+deletes and truncation, so lost state cannot read as empty. Each commit advances a row revision by
+compare-and-swap; a session whose connection, and therefore lease, was lost faults instead of
+overwriting a newer commit. When a host that already retained file state moves to the ledger
+database, initialization imports the verified file document once, so earlier claims, outcomes and
+draft identities are carried forward rather than reissued; unverifiable file state fails closed and
+creates no row. After the row exists it is the only authority, and the file is not read again.
 
 ## Implementation and regression references
 
-- [Durable definitions and occurrence store](../../src/Meridian.FinancialOperations/FundAdministration/FileRecurringJournalStore.cs)
+- [Shared session semantics](../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalDocumentSession.cs)
+- [PostgreSQL definitions and occurrence store](../../src/Meridian.FinancialOperations/FundAdministration/PostgresRecurringJournalStore.cs)
+- [File definitions and occurrence store](../../src/Meridian.FinancialOperations/FundAdministration/FileRecurringJournalStore.cs)
 - [Runner and shared queue projection](../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs)
 - [Posting calculations](../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs)
 - [Calculated draft scenarios](../../tests/Meridian.Tests/Ui/RecurringJournalCalculationTests.cs)
@@ -207,6 +222,7 @@ distributed scheduling deployment.
 - [Recurring evidence guard](../../src/Meridian.Ledger/RecurringJournalEvidence.cs)
 - [Lifecycle registry and correction ancestry guard](../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.Recurring.cs)
 - [Store regression scenarios](../../tests/Meridian.Tests/FinancialOperations/RecurringJournalStoreTests.cs)
+- [PostgreSQL store, lease and import scenarios](../../tests/Meridian.Tests/Storage/RecurringJournalPostgresStoreTests.cs)
 - [Runner recovery and intake scenarios](../../tests/Meridian.Tests/Ui/RecurringJournalRunnerTests.cs)
 - [Lifecycle durable-state and definition checks](../../tests/Meridian.Tests/Ui/RecurringJournalLifecycleTests.cs)
 - [PostgreSQL period lock recovery](../../tests/Meridian.Tests/Storage/RecurringJournalPeriodAuthorityPostgresTests.cs)
