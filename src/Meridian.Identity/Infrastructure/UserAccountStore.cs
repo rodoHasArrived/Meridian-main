@@ -452,7 +452,22 @@ public sealed class FileUserAccountStore : IUserAccountStore
         }
 
         var json = await File.ReadAllTextAsync(_path, ct).ConfigureAwait(false);
-        return ParseSnapshotSafe(json);
+        try
+        {
+            return JsonSerializer.Deserialize<UserAccountSnapshot>(json, JsonOptions)
+                ?? new UserAccountSnapshot([]);
+        }
+        catch (JsonException ex)
+        {
+            // Reads fail safe to "no accounts", but a mutation built on that empty list would
+            // replace every stored account, so mutation paths refuse instead.
+            _logger?.LogError(
+                ex,
+                "Refusing to write user accounts: governance file at {Path} is corrupt. Manual data-integrity review required.",
+                _path);
+            throw new InvalidOperationException(
+                "The user-account file is corrupt; refusing to overwrite it. Repair or restore the file first.", ex);
+        }
     }
 
     private UserAccountSnapshot ParseSnapshotSafe(string json)

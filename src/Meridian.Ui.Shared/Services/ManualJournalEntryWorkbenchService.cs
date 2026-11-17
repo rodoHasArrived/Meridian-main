@@ -1632,6 +1632,13 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
 
         EnsureLifecycleActorIndependentFromPreparer(posted, request);
 
+        var accrualCorrection = IntercompanyAccrualEvidenceGuard.IsAccrualDraft(posted);
+        if (accrualCorrection && !reverseSides && request.RebookLines.Count > 0)
+        {
+            throw new InvalidOperationException(
+                "A posted intercompany accrual cannot be rebooked with replacement lines; reverse it and recompute from the source facts instead.");
+        }
+
         var correctionId = Guid.NewGuid();
         var correctionLines = request.RebookLines.Count > 0 && !reverseSides
             ? request.RebookLines
@@ -1644,11 +1651,12 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                 })
                 .ToArray();
         var openingCorrection = IsOpeningBalanceDraft(posted) || IsOpeningCorrectionDraft(posted);
-        if (!reverseSides && (posted.PriorPeriodAdjustmentSource is not null || openingCorrection))
+        if (!reverseSides && (posted.PriorPeriodAdjustmentSource is not null || openingCorrection || accrualCorrection))
         {
-            // An opening or prior-period rebook replaces the already posted journal. Retain its exact
-            // inverse and the reviewed replacement in one balanced draft; appending replacement
-            // lines alone would count the earlier adjustment twice. Unchanged terms net to zero.
+            // An opening, prior-period or accrual rebook replaces the already posted journal. Retain its
+            // exact inverse and the reviewed replacement in one balanced draft; appending replacement
+            // lines alone would count the earlier adjustment (or the window's interest) twice.
+            // Unchanged terms net to zero.
             var inverse = posted.Lines.Select((line, index) => line with
             {
                 LineId = $"rebook-inverse-{index + 1}",

@@ -110,6 +110,19 @@ public static class IntercompanyAccrualEvidenceGuard
         catch (JsonException) { return false; }
     }
 
+    private static bool NetsToZeroPerAccount(ManualJournalEntryDraftDto draft)
+    {
+        if (draft.Lines.Count == 0)
+            return false;
+        return draft.Lines
+            .GroupBy(line => (line.AccountPath, line.Dimensions?.ChartAccountNodeId, line.Currency, TransactionCurrency: line.TransactionCurrency?.Currency))
+            .All(group =>
+                group.Sum(line => line.Side == AccountingTemplateLineSideDto.Debit ? line.Amount : -line.Amount) == 0m
+                && group.Sum(line => line.TransactionCurrency is { } original
+                    ? (line.Side == AccountingTemplateLineSideDto.Debit ? original.Amount : -original.Amount)
+                    : 0m) == 0m);
+    }
+
     /// <summary>Null when the draft still states exactly the retained computation; otherwise the refusal.</summary>
     public static string? Validate(ManualJournalEntryDraftDto draft)
     {
@@ -127,8 +140,13 @@ public static class IntercompanyAccrualEvidenceGuard
             return "Accrual provenance uses an unsupported calculation rule.";
         // A reversal or rebook of a posted accrual is a different journal; its inverse is proved by the
         // correction workflow against the immutable original, not by restating the original computation.
+        // A rebook carries the posted accrual's inverse plus its replacement, so it must net to zero on
+        // every account: an amount change is a reversal and a recomputation, never a rebook. Without
+        // this, a rebook would recognize the window's interest again under trusted accrual evidence.
         if (evidence.DraftId != draft.JournalEntryId)
-            return null;
+            return draft.RebookedFromJournalEntryId is not null && !NetsToZeroPerAccount(draft)
+                ? "An accrual rebook restates the posted accrual exactly (its inverse plus an identical replacement); to change the amount, reverse it and recompute from the source facts."
+                : null;
         if (evidence.SourceBookId != draft.LedgerBookId || evidence.PostingDate != draft.AccountingDate
             || !string.Equals(evidence.FunctionalCurrency, draft.Currency, StringComparison.Ordinal)
             || !string.Equals(evidence.TenantId, draft.TenantId, StringComparison.Ordinal))

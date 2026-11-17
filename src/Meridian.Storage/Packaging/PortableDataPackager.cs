@@ -225,7 +225,7 @@ public sealed partial class PortableDataPackager
             ReportProgress(result.JobId, PackageStage.Processing, 0, manifest.TotalFiles, 0, manifest.UncompressedSizeBytes);
 
             var extractionResult = await ExtractPackageAsync(
-                packagePath, destinationDirectory, manifest, format, validateChecksums, ct);
+                packagePath, destinationDirectory, manifest, format, validateChecksums, mergeWithExisting, ct);
 
             result.FilesExtracted = extractionResult.FilesExtracted;
             result.BytesExtracted = extractionResult.BytesExtracted;

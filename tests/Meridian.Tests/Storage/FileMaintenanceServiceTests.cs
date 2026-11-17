@@ -122,6 +122,33 @@ public sealed class FileMaintenanceServiceTests : TempDirectoryAsyncTestBase
             "the salvaged records reproduce the retained checksum");
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RepairAsync_TruncateCorrupted_RefusesAFileASinkStillHasOpen(bool otherProcessWriter)
+    {
+        // Today's file with a half-written last line looks auto-repairable. Rewriting it while a
+        // sink holds it open would leave the sink appending to the replaced file, losing the rest
+        // of the day's events.
+        var dataPath = Path.Combine(TestDataRoot, "AAPL_trade_20260110.jsonl");
+        var content = "{\"seq\":1}\n{\"seq\":2,\"pri";
+        await File.WriteAllTextAsync(dataPath, content);
+
+        IDisposable writer = otherProcessWriter
+            ? await JsonlWriterLock.AcquireSharedAsync(dataPath, TimeSpan.FromSeconds(5), CancellationToken.None)
+            : await JsonlWriteFence.EnterWriteAsync(dataPath, CancellationToken.None);
+        RepairResult result;
+        using (writer)
+        {
+            var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
+            result = await service.RepairAsync(new RepairOptions(RepairStrategy.TruncateCorrupted));
+        }
+
+        result.FilesRepaired.Should().Be(0);
+        result.Errors.Should().ContainSingle(error => error.Contains("open for writing"));
+        (await File.ReadAllTextAsync(dataPath)).Should().Be(content);
+    }
+
     [Fact]
     public async Task RepairAsync_TruncateCorrupted_AlteredRecordsBesideACorruptTail_LeaveTheChecksumMismatchUnresolved()
     {
