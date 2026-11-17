@@ -6,12 +6,21 @@ module_id: SRC-EXECUTION-SDK
 path: src/Meridian.Execution.Sdk
 status: active
 owner_lane: Execution and Fund Accounts
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-17
 ---
 
 # src/Meridian.Execution.Sdk
 
 `IOrderManager.GetUnitReservingOrders` returns the exposure reservations, except that a pending amendment reserves its larger-quantity outcome rather than its larger-value one, for unit limits.
+
+Order authority (`OrderCommandAuthority.cs`): `OrderSubmissionAuthority` records who or what
+originated an order (`OrderCommandOrigin`), the `ExecutionAccountGrant` an endpoint verified, and
+for strategy orders the run id. It is built only by validating factories and has no public or
+JSON constructor; `OrderSubmissionAuthorityRecord` is its server-retained form, restored through
+the same factories. `IOrderManager.SubmitAsync(OrderSubmitCommand)` submits under it.
+`ExecutionOrderMetadataPolicy` treats `runId`, `run_id`, `sessionId`, `session_id` and
+`orderOrigin` as server-owned, so clients cannot supply run or session identity. See
+`docs/engineering/blueprints/governed-order-command-boundary-blueprint.md`.
 
 `CanonicalTaxLotAdapter` now compares explicit retained direction with the execution lot's sign,
 then compares absolute quantity, original date, identity and exact basis. Matching short lots may

@@ -6,7 +6,7 @@ module_id: SRC-STRATEGIES
 path: src/Meridian.Strategies
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-17
 ---
 
 # src/Meridian.Strategies
@@ -122,6 +122,13 @@ policy outcome names and legacy cell kinds remain compatibility inputs.
   promotion support services.
 
 ## Important workflows
+
+### Strategy-run order authority
+
+`LiveStrategyRunSession` submits each order under typed strategy-run authority: the run id and the
+run's retained fund account. A run without a fund account (paper only) keeps the untyped path.
+`StrategyRunAuthoritySource` gives the OMS read-only access to the run record and its approved live
+promotion, so a live order routes only for an active run that an approved live promotion targets.
 
 ### Shared SMA reference and retained comparison
 

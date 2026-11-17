@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-16
+last_reviewed: 2026-11-17
 ---
 
 # src/Meridian.Ui.Shared
@@ -1437,6 +1437,15 @@ without endpoint or workstation orchestration. The larger cross-domain workflows
 ### Account-scoped execution workflows
 
 The shared host composes equity session/coverage policies, authoritative previews, a durable operational journal, reconciliation/notification workers, an independent disabled-by-default webhook outbox, and retained strategy comparison. Browser Orders, Settings and Strategy reuse these authenticated services. Unavailable baseline, activity or cost evidence remains unassessed. See [execution workflows](../../docs/engineering/execution-workflows.md).
+
+Order authority: the order ticket and position actions submit under typed authority
+(`OperatorTicket`, `PositionAction`) with an account grant once the operator is verified for the
+named account; accountless operator orders stay untyped, which live routing refuses. Client
+metadata naming `runId`, `sessionId` or `orderOrigin` is refused with 403 on submit and preview, and
+removed from broker-reported position metadata. A risk-escalation release submits under the
+authority retained with the parked entry. Live manual orders, position actions included, are
+refused until a reviewed manual-intent contract exists. The workstation registers
+`StrategyRunAuthoritySource` for the OMS.
 
 The `execution-webhook` client dials only public addresses: it resolves the host, refuses loopback, private, link-local and other internal addresses at connection time, pins the connection to the validated addresses, follows no redirects and uses no system proxy.
 
