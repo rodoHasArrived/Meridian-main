@@ -614,6 +614,14 @@ count at each UTC day end rebuilt from break detection, resolution and reopen ti
 queue (which keeps every status), with today's live count as the last point. A closed break without a
 resolution time, or any day before a reopen (reopen clears the earlier resolution time), is null,
 not guessed. No metric snapshots are stored.
+The timing-drift card carries a 14-day history from `TimingDriftHistory`: at each UTC day end, the
+workspace's most recent runs (six, newest start first) that had started by then, each judged by its
+latest retained reconciliation created before then (`IReconciliationRunService.GetHistoryForRunAsync`),
+with today's live count as the last point. Run start times never move (a restart is a new run), so the
+population is known from today's list, except when that list may have been cut off by the run read
+limit and holds fewer than six runs started by then; those days are null. Without a reconciliation
+service the card carries no history. The other accounting cards (security gaps, audit ready) have no
+retained timestamped source and carry none.
 
 Journal-entry DTOs carry `Execution` lineage from the posting's own metadata: the order id from the
 retained `source.orderId` tag (the execution journal's identifier) before the GUID `OrderId`, the

@@ -71,7 +71,7 @@ public static partial class WorkstationEndpoints
             return null;
         }
 
-        var runs = allRuns.Take(6).ToArray();
+        var runs = allRuns.Value.Runs.Take(AccountingWorkspaceRunPopulation).ToArray();
         if (runs.Length == 0)
         {
             var reporting = BuildAccountingReportingPayload(context, readScope);
@@ -108,6 +108,19 @@ public static partial class WorkstationEndpoints
         var reconciliations = await Task.WhenAll(reconciliationTasks).ConfigureAwait(false);
 
         var timingDriftRuns = reconciliations.Count(static detail => detail?.Summary.HasTimingDrift == true);
+        // Rebuilt from the same run list and the retained reconciliations behind the headline count,
+        // so its last point equals it. Without a reconciliation service there is nothing to rebuild.
+        var timingDriftHistory = reconciliationService is null
+            ? null
+            : await TimingDriftHistory.BuildAsync(
+                    allRuns.Value.Runs,
+                    allRuns.Value.MayBeTruncated,
+                    AccountingWorkspaceRunPopulation,
+                    timingDriftRuns,
+                    reconciliationService.GetHistoryForRunAsync,
+                    DateTimeOffset.UtcNow,
+                    context.RequestAborted)
+                .ConfigureAwait(false);
         var runsWithBreaks = reconciliations.Count(static detail => (detail?.Summary.BreakCount ?? 0) > 0);
         var runsWithSecurityIssues = details.Count(static detail =>
             (detail?.Portfolio?.SecurityMissingCount ?? 0) > 0 ||
@@ -121,7 +134,8 @@ public static partial class WorkstationEndpoints
             [
                 new WorkstationMetricCard("open-breaks", "Open Breaks", scopedOpenBreaks.ToString(CultureInfo.InvariantCulture), "0%", scopedOpenBreaks == 0 ? "success" : "warning",
                     History: openBreakHistory, HistoryBasis: OpenBreakHistory.Basis),
-                new WorkstationMetricCard("timing-drift", "Timing Drift", timingDriftRuns.ToString(CultureInfo.InvariantCulture), "0%", timingDriftRuns == 0 ? "default" : "warning"),
+                new WorkstationMetricCard("timing-drift", "Timing Drift", timingDriftRuns.ToString(CultureInfo.InvariantCulture), "0%", timingDriftRuns == 0 ? "default" : "warning",
+                    History: timingDriftHistory, HistoryBasis: timingDriftHistory is null ? null : TimingDriftHistory.Basis),
                 new WorkstationMetricCard("security-gaps", "Security Gaps", runsWithSecurityIssues.ToString(CultureInfo.InvariantCulture), "0%", runsWithSecurityIssues == 0 ? "success" : "warning"),
                 new WorkstationMetricCard("audit-ready", "Audit Ready", Math.Max(0, auditReadyRuns).ToString(CultureInfo.InvariantCulture), "0%", auditReadyRuns > 0 ? "success" : "default"),
                 .. readScope.KernelObservability
@@ -140,7 +154,7 @@ public static partial class WorkstationEndpoints
                 : Array.Empty<WorkstationAccountingRunRecord>(),
             BreakQueue: visibleBreakQueueItems,
             Workspace: new WorkstationAccountingWorkspaceSummary(
-                TotalRuns: allRuns.Length,
+                TotalRuns: allRuns.Value.Runs.Length,
                 ReconciledRuns: reconciliations.Count(static detail => detail is not null),
                 LedgerReadyRuns: runs.Count(static run => !string.IsNullOrWhiteSpace(run.LedgerReference)),
                 OpenBreaks: scopedOpenBreaks,
@@ -153,7 +167,14 @@ public static partial class WorkstationEndpoints
             ManualJournalWorkbench: manualJournalWorkbench);
     }
 
-    private static async Task<StrategyRunSummary[]?> GetAuthorizedAccountingRunsAsync(
+    /// <summary>How many of the most recent authorized runs the accounting headline counters cover.</summary>
+    private const int AccountingWorkspaceRunPopulation = 6;
+
+    /// <summary>
+    /// Authorized runs, newest start first, and whether older runs may be missing because the read
+    /// returned its full default limit before authorization filtering.
+    /// </summary>
+    private static async Task<(StrategyRunSummary[] Runs, bool MayBeTruncated)?> GetAuthorizedAccountingRunsAsync(
         HttpContext context,
         StrategyRunReadService readService,
         ReconciliationBreakQueueScope scope,
@@ -168,6 +189,7 @@ public static partial class WorkstationEndpoints
         try
         {
             var runs = await readService.GetRunsAsync(ct: ct).ConfigureAwait(false);
+            var mayBeTruncated = runs.Count >= new StrategyRunHistoryQuery().Limit;
             var ownershipByFund = new Dictionary<string, FundProfileOwnership?>(
                 StringComparer.OrdinalIgnoreCase);
 
@@ -182,7 +204,7 @@ public static partial class WorkstationEndpoints
                     .ConfigureAwait(false);
             }
 
-            return runs
+            var authorized = runs
                 .Where(run =>
                 {
                     if (string.IsNullOrWhiteSpace(run.FundProfileId))
@@ -201,6 +223,7 @@ public static partial class WorkstationEndpoints
                                StringComparison.OrdinalIgnoreCase);
                 })
                 .ToArray();
+            return (authorized, mayBeTruncated);
         }
         catch (Exception) when (!ct.IsCancellationRequested)
         {

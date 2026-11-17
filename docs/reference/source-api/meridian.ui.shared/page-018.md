@@ -772,6 +772,27 @@ Enum declarations:
 | <code>EarlyWarning</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:10](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L10) |  |
 | <code>HardBreach</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:11](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L11) |  |
 
+## TimingDriftHistory
+
+Qualified name: <code>Meridian.Ui.Shared.Services.TimingDriftHistory</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/TimingDriftHistory.cs:18](../../../../src/Meridian.Ui.Shared/Services/TimingDriftHistory.cs#L18).
+
+Rebuilds the accounting workspace&#x27;s Timing Drift count for recent days from retained strategy runs and retained reconciliation history, with no stored snapshots.
+
+```csharp
+public static class TimingDriftHistory
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Basis = &quot;Runs with timing drift at each UTC day end, rebuilt from run start times and retained reconciliation history; today is the live count. Days the retained run list cannot establish are left blank.&quot;;</code> | [src/Meridian.Ui.Shared/Services/TimingDriftHistory.cs:20](../../../../src/Meridian.Ui.Shared/Services/TimingDriftHistory.cs#L20) |  |
+| <code>public static async Task&lt;IReadOnlyList&lt;WorkstationMetricHistoryPointDto&gt;&gt; BuildAsync(IReadOnlyList&lt;StrategyRunSummary&gt; runs, bool runListMayBeTruncated, int populationSize, int liveCount, Func&lt;string, CancellationToken, Task&lt;IReadOnlyList&lt;ReconciliationRunSummary&gt;&gt;&gt; readHistory, DateTimeOffset now, CancellationToken ct, int days = 14);</code> | [src/Meridian.Ui.Shared/Services/TimingDriftHistory.cs:31](../../../../src/Meridian.Ui.Shared/Services/TimingDriftHistory.cs#L31) | days points, oldest first. The last point is liveCount, so it always equals the headline figure; earlier points are each UTC day&#x27;s end. |
+| <code>public static StrategyRunSummary[]? PopulationAt(IReadOnlyList&lt;StrategyRunSummary&gt; runs, bool runListMayBeTruncated, int populationSize, DateTimeOffset moment);</code> | [src/Meridian.Ui.Shared/Services/TimingDriftHistory.cs:80](../../../../src/Meridian.Ui.Shared/Services/TimingDriftHistory.cs#L80) | The most recent runs that had started before moment, or null when the list may be missing some of them. |
+| <code>public static bool HadTimingDriftAt(IReadOnlyList&lt;ReconciliationRunSummary&gt; history, DateTimeOffset moment);</code> | [src/Meridian.Ui.Shared/Services/TimingDriftHistory.cs:93](../../../../src/Meridian.Ui.Shared/Services/TimingDriftHistory.cs#L93) | Whether the run&#x27;s latest reconciliation created before moment reported timing drift. |
+
 ## TradingOperatorLiveOrderReadinessGate
 
 Qualified name: <code>Meridian.Ui.Shared.Services.TradingOperatorLiveOrderReadinessGate</code>. Kind: `class`.
@@ -918,22 +939,3 @@ Source: [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.c
 ```csharp
 public sealed record WorkstationPersonalTableViewRecord(string TenantId, string OperatorId, string TableId, WorkstationTableViewDto View);
 ```
-
-## WorkstationServiceCollectionExtensions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationServiceCollectionExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:87](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L87).
-
-Registers the shared web-workstation service graph consumed by endpoint and host surfaces.
-
-```csharp
-public static class WorkstationServiceCollectionExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:89](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L89) |  |
-| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1565](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1565) |  |

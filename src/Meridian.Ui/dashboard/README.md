@@ -1420,7 +1420,8 @@ calendar due date is listed separately, never placed on a guessed day. No plan, 
 Headline KPIs draw a sparkline only from a producer-supplied `history` (`MetricSparkline` in the stat
 strip, `lib/metric-history.ts`): the latest run of established days, at least two, never bridging a
 gap, with a screen-reader description. The open-breaks KPI carries the history only when its last
-point equals the count it shows.
+point equals the count it shows. Source-metric KPIs (for example timing drift) show the producer's own
+figure and carry its history unchanged; the producer ends the series on that figure.
 A posted journal entry recorded from an execution shows its lineage on the journal-entry detail
 (`JournalExecutionLineage`): strategy run (Run Ledger link), order (Trading › Orders `?orderId=`),
 fill (identifier only; it has no page) and the entry itself. The other way, Trading's order evidence
