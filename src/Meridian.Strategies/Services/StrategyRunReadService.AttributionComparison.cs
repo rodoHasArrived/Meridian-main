@@ -42,7 +42,7 @@ public sealed partial class StrategyRunReadService
         var notes = new List<string>
         {
             "Period P&L is the change in each symbol's cumulative realized plus unrealized P&L between month ends, from the run's daily snapshots.",
-            "A symbol closed before a month end keeps its last recorded cumulative P&L. Commissions and margin interest are not split by period."
+            "A symbol closed before a month end keeps its last recorded cumulative P&L. Margin interest is not split by period."
         };
         var snapshots = run.Metrics?.Snapshots?
             .OrderBy(static snapshot => snapshot.Date)
@@ -86,7 +86,25 @@ public sealed partial class StrategyRunReadService
                 atBaselineEnd.GetValueOrDefault(symbol) - atBaselineStart.GetValueOrDefault(symbol)))
             .Where(static line => line.Current != 0m || line.Prior != 0m)
             .ToList();
-        lines.Insert(0, PeriodComparisonLineDto.Create("total", "Total P&L", lines.Sum(static line => line.Current), lines.Sum(static line => line.Prior), isTotal: true));
+
+        // Position P&L in a backtest is gross: commissions are charged to cash, not to the lot. So
+        // they are shown as their own negative line and deducted once, in the net total.
+        var fills = run.Metrics?.Fills ?? [];
+        var currentCommission = CommissionsWithin(fills, currentStart, end);
+        var priorCommission = CommissionsWithin(fills, baselineStart, baselineEnd);
+        var hasCommissions = currentCommission != 0m || priorCommission != 0m;
+        if (hasCommissions)
+        {
+            lines.Add(PeriodComparisonLineDto.Create("commissions", "Commissions", -currentCommission, -priorCommission));
+            notes.Add("Symbol P&L is before commissions. Commissions are the fills' commissions dated in each month, and the total is net of them.");
+        }
+
+        lines.Insert(0, PeriodComparisonLineDto.Create(
+            "total",
+            hasCommissions ? "Net P&L" : "Total P&L",
+            lines.Sum(static line => line.Current),
+            lines.Sum(static line => line.Prior),
+            isTotal: true));
 
         return new PeriodComparisonDto(PeriodComparisonStatus.Ready, null, subject, null, current, baseline, lines, notes, generatedAt);
     }
@@ -116,6 +134,12 @@ public sealed partial class StrategyRunReadService
 
         return cumulative;
     }
+
+    /// <summary>Commissions on fills dated (UTC) from <paramref name="start"/> to <paramref name="end"/>, inclusive.</summary>
+    private static decimal CommissionsWithin(IReadOnlyList<FillEvent> fills, DateOnly start, DateOnly end) =>
+        fills
+            .Where(fill => DateOnly.FromDateTime(fill.FilledAt.UtcDateTime) is var day && day >= start && day <= end)
+            .Sum(static fill => fill.Commission);
 
     private static PeriodComparisonWindowDto MonthWindow(DateOnly start, DateOnly end, bool isPartial) =>
         new($"{start.ToString("MMM yyyy", CultureInfo.InvariantCulture)}{(isPartial ? " (partial)" : "")}", start, end, isPartial);

@@ -900,9 +900,8 @@ Close Calendar grid. All of it is browser-only. No shared contract changed.
   - `chart-without-table`: a capture that declares `chartTables` fails when a chart's section has
     no table alternative (Accounting, Reconciliation, Close Calendar, Data and Strategy).
   - Close Calendar declares the month grid as its primary task.
-- **Follow-up (deferred): Portfolio NAV and exposure trend.** No NAV or exposure history read
-  model exists. It needs one in `Meridian.Ui.Services`, consumed by both the browser and WPF
-  (a `W8-WPF-PARITY-001` item), before a trend chart can be drawn.
+- **Follow-up: Portfolio NAV and exposure trend.** The NAV trend was delivered with the Phase E
+  follow-ups (`/api/fund-structure/nav-trend`). An exposure trend is still open.
 
 ## Phase E: workflow features (2026-11-17)
 
@@ -944,11 +943,19 @@ touched). Phase E went out in slices E1–E5, each pushed separately.
     from its daily snapshots.
   - Cash ladder: "Vs end of last month" rebuilds the ladder from the ledger's cash at that date and
     compares opening cash, flows, the lowest cumulative cash, breaches and each bucket by position.
-- **Follow-ups.**
-  - The report-pack portfolio cut hard-codes `PriorTotalPnl: 0` and `PnlChange: totalPnl`
-    (`ReportPackRunReadService.cs`); it should read the prior published report version.
-  - Attribution does not split commissions or margin interest by period; a closed symbol keeps its
-    last marked cumulative P&L rather than its exact closing trade.
+- **Follow-ups done (2026-11-17).**
+  - Report-pack prior P&L: portfolio cuts and the report writer read only the latest published or
+    restated version per fund, account, template and period. Cuts use the latest period; Prior is
+    the previous published period's P&L lines, and the browser shows "—" when there is none.
+    This changes the Reporting figures in the compatibility path, which used to sum every record.
+  - NAV trend: `GET /api/fund-structure/nav-trend` returns ledger NAV at up to 24 month-ends plus
+    today, from one ledger book. `/portfolio/nav` draws it above the comparison, with a data table.
+  - Attribution commissions: snapshot P&L is before commissions, so a Commissions line (fills'
+    commissions dated in each month) is shown and the total becomes Net P&L.
+  - Endpoint tests cover the NAV comparison and trend, run attribution comparison (including another
+    tenant's run) and cash ladder comparison routes.
+- **Follow-ups still open.**
+  - Attribution does not split margin interest by period; a closed symbol keeps its last marked
+    cumulative P&L rather than its exact closing trade.
   - The cash ladder comparison uses current instrument terms for both dates.
-  - The NAV trend chart (Phase D follow-up) can now build on the NAV comparison seam.
   - WPF parity items are listed in `wpf-web-ui-alignment-plan.md` (Phase E delta).

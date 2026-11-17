@@ -40,6 +40,35 @@ public sealed class StrategyRunAttributionPeriodComparisonTests
     }
 
     [Fact]
+    public async Task DeductsEachMonthsCommissionsOnceFromTheGrossSymbolPnl()
+    {
+        // Snapshot P&L is gross; commissions are dated by fill (UTC). Sep's fill is outside both windows.
+        var run = BuildRun("attr-period-fees", [
+            (new DateOnly(2026, 9, 30), new() { ["AAPL"] = (0m, 100m) }),
+            (new DateOnly(2026, 10, 31), new() { ["AAPL"] = (0m, 160m) }),
+            (new DateOnly(2026, 11, 20), new() { ["AAPL"] = (0m, 200m) })
+        ], [
+            Fill("AAPL", 7m, new DateTimeOffset(2026, 9, 30, 15, 0, 0, TimeSpan.Zero)),
+            Fill("AAPL", 2m, new DateTimeOffset(2026, 10, 1, 14, 0, 0, TimeSpan.Zero)),
+            Fill("AAPL", 3m, new DateTimeOffset(2026, 10, 31, 20, 0, 0, TimeSpan.Zero)),
+            Fill("AAPL", 1.5m, new DateTimeOffset(2026, 11, 20, 23, 0, 0, TimeSpan.Zero)),
+            Fill("AAPL", 9m, new DateTimeOffset(2026, 11, 21, 0, 30, 0, TimeSpan.FromHours(2)))
+        ]);
+        var service = await CreateServiceAsync(run);
+
+        var comparison = await service.GetAttributionPeriodComparisonAsync("attr-period-fees", periodEnd: null);
+
+        // The last fill is Nov 20 22:30 UTC, so it counts in November: 1.5 + 9 = 10.5. October: 2 + 3 = 5.
+        comparison!.Lines.Should().BeEquivalentTo(new[]
+        {
+            PeriodComparisonLineDto.Create("total", "Net P&L", 29.5m, 55m, isTotal: true),
+            PeriodComparisonLineDto.Create("symbol:AAPL", "AAPL", 40m, 60m),
+            PeriodComparisonLineDto.Create("commissions", "Commissions", -10.5m, -5m)
+        }, options => options.WithStrictOrdering());
+        comparison.Notes.Should().Contain(note => note.Contains("before commissions", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public async Task UsesTheMonthContainingTheRequestedPeriodEnd()
     {
         var run = BuildRun("attr-period-2", [
@@ -84,7 +113,13 @@ public sealed class StrategyRunAttributionPeriodComparisonTests
         return new StrategyRunReadService(store, new PortfolioReadService(), new LedgerReadService());
     }
 
-    private static StrategyRunEntry BuildRun(string runId, IReadOnlyList<(DateOnly Day, Dictionary<string, (decimal Realized, decimal Unrealized)> Pnl)> days)
+    private static FillEvent Fill(string symbol, decimal commission, DateTimeOffset filledAt) =>
+        new(Guid.NewGuid(), Guid.NewGuid(), symbol, 10, 100m, commission, filledAt);
+
+    private static StrategyRunEntry BuildRun(
+        string runId,
+        IReadOnlyList<(DateOnly Day, Dictionary<string, (decimal Realized, decimal Unrealized)> Pnl)> days,
+        IReadOnlyList<FillEvent>? fills = null)
     {
         var snapshots = days.Select(day => new PortfolioSnapshot(
             Timestamp: new DateTimeOffset(day.Day.ToDateTime(new TimeOnly(21, 0)), TimeSpan.Zero),
@@ -113,7 +148,7 @@ public sealed class StrategyRunAttributionPeriodComparisonTests
             Universe: new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "AAPL" },
             Snapshots: snapshots,
             CashFlows: [],
-            Fills: [],
+            Fills: fills ?? [],
             Metrics: metrics,
             Ledger: new Meridian.Ledger.Ledger(),
             ElapsedTime: TimeSpan.FromSeconds(1),

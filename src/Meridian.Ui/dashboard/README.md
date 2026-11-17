@@ -579,6 +579,8 @@ Workflow features (UX Phase E):
   `components/meridian/variance-columns.tsx` adds Prior, Variance and Variance % with materiality
   flags; `components/meridian/period-comparison-panel.tsx` renders any `PeriodComparisonDto`
   (NAV at `/portfolio/nav`, run attribution, cash ladder) from `lib/api/period-comparison.api.ts`.
+- `components/meridian/nav-trend-chart.tsx` draws ledger NAV at the last 12 month-ends above the NAV
+  comparison, with a data table. Reporting P&L slices tagged `no-prior` show "—" for Prior and Change.
 
 The holdings table, the headline figures and the holding detail panel read one model,
 `lib/holdings-model.ts`, so they cannot disagree. Values the source supplies are shown

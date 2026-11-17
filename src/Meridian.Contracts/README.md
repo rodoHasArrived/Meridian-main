@@ -483,6 +483,7 @@ figures include) and `PeriodChange`, the one variance rule every comparison uses
 minus prior, percent divides by the absolute prior, and a zero prior has no percent. The posted
 ledger comparison uses it too. `AssetOperations/PortfolioCashLadderDtos.cs` adds the optional
 `IPortfolioCashBalanceHistoryProvider` for opening cash at an earlier date.
+`Workstation/FundNavTrendDtos.cs` carries ledger NAV at recent month-ends (`FundNavTrendDto`).
 
 `Workstation/OperatorScopePreferenceDtos.cs` carries the signed-in operator's default operating
 scope (symbol, fund account, run, provider and date dimensions, plus the optional legal entity and

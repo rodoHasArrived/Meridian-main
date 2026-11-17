@@ -47,6 +47,8 @@ WPF changes in this delta were compile-checked with the full WPF build; WPF test
 | Browser change | WPF state |
 | --- | --- |
 | Prior-period comparisons for NAV, run attribution and the cash ladder | Shared seams ready, not consumed. All three return `PeriodComparisonDto` (`src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs`): `GET /api/fund-structure/nav-comparison`, `GET /api/workstation/runs/{runId}/attribution/period-comparison` and `GET /api/portfolio/cash-ladder/comparison`. WPF NAV, attribution and cash-ladder views should read them rather than compute a prior figure locally. |
+| NAV trend (ledger NAV at the last 12 month-ends) on `/portfolio/nav` | Shared seam ready, not consumed: `GET /api/fund-structure/nav-trend` returns `FundNavTrendDto` (`src/Meridian.Contracts/Workstation/FundNavTrendDtos.cs`). |
+| Report P&L slices with a prior published period, "—" when there is none | Shared in the Reporting payload (`PriorTotalPnl`, `PnlChange`, tag `no-prior`); WPF Reporting should show the dash for `no-prior`. |
 | One variance rule (`PeriodChange`: change ÷ \|prior\| × 100, none for a zero prior) | Shared in `Meridian.Contracts`; the posted-ledger comparison already uses it. WPF variance columns should show the server's percent. |
 | Export of visible columns as shown (CSV and XLSX) with totals | Not ported. |
 | Due-date urgency chips, overdue first | Not ported. |

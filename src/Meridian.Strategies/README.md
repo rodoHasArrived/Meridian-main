@@ -285,7 +285,9 @@ ledger remains unavailable instead of becoming an empty success.
 `StrategyRunReadService.GetAttributionPeriodComparisonAsync` compares a run's per-symbol P&L for
 one calendar month with the month before (`PeriodComparisonDto`), as the change in cumulative
 realized plus unrealized P&L between month ends from the run's daily snapshots. A run without
-snapshots, or one that starts after the prior month, is reported as unavailable.
+snapshots, or one that starts after the prior month, is reported as unavailable. Snapshot P&L is
+before commissions, so when fills carry commissions a Commissions line (dated by fill, UTC) is added
+and the total becomes Net P&L.
 Promotion requires an explicitly successful completed lifecycle; an end timestamp and qualifying
 metrics on a failed or cancelled attempt never establish eligibility. `PromotionReadiness.isTerminal`
 continues to classify terminal lifecycle states independently of eligibility.

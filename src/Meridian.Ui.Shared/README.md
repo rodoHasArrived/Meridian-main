@@ -1224,6 +1224,15 @@ Prior-period comparisons (UX Phase E) all return `PeriodComparisonDto`:
 - `GET /api/portfolio/cash-ladder/comparison` (`PortfolioCashLadderReadService.Comparison.cs`)
   rebuilds the ladder from the ledger's cash at the prior date (`PortfolioLedgerCashBalanceProvider`
   implements `IPortfolioCashBalanceHistoryProvider`); instrument flows use current terms.
+- `GET /api/fund-structure/nav-trend` (`FundOperationsWorkspaceReadService.NavTrend.cs`) returns
+  `FundNavTrendDto`: ledger NAV at up to 24 month-ends (default 12) plus today, from one ledger book.
+  Months before the first NAV component are left out, with a note.
+
+The report-pack portfolio cuts (`ReportPackRunReadService.ReportedPeriods.cs`) read only the latest
+published or restated version per fund, account, template and period. A fund's cut uses its latest
+period; its prior P&L is the previous published period's P&L lines. With no prior period, Prior is 0,
+the readiness text says so and the slice is tagged `no-prior`. The report writer's dataset sources use
+the same cuts.
 
 The providers the Data workspace lists are the providers in use: those with metrics, a saved
 connection, a routing connection or a trust snapshot. Each one's status comes from
