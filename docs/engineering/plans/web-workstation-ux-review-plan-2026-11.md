@@ -900,8 +900,8 @@ Close Calendar grid. All of it is browser-only. No shared contract changed.
   - `chart-without-table`: a capture that declares `chartTables` fails when a chart's section has
     no table alternative (Accounting, Reconciliation, Close Calendar, Data and Strategy).
   - Close Calendar declares the month grid as its primary task.
-- **Follow-up: Portfolio NAV and exposure trend.** The NAV trend was delivered with the Phase E
-  follow-ups (`/api/fund-structure/nav-trend`). An exposure trend is still open.
+- **Follow-up: Portfolio NAV and exposure trend.** Both were delivered with the Phase E
+  follow-ups (`/api/fund-structure/nav-trend`, with exposure on each point).
 
 ## Phase E: workflow features (2026-11-17)
 
@@ -954,8 +954,19 @@ touched). Phase E went out in slices E1–E5, each pushed separately.
     commissions dated in each month) is shown and the total becomes Net P&L.
   - Endpoint tests cover the NAV comparison and trend, run attribution comparison (including another
     tenant's run) and cash ladder comparison routes.
+- **Second follow-up round (2026-11-17).**
+  - Attribution by month reconciles to the run: a symbol closed mid-month counts its closed lots'
+    realized result; commissions, margin interest, short rebates and cash interest are their own
+    lines; the total, Net P&L, is the change in run equity, and anything unexplained (dividends,
+    corporate-action cash, rounding) is shown as Other.
+  - The cash ladder comparison projects the prior ladder from the instrument terms recorded by the
+    end of the prior date when the asset-operations service supports it
+    (`IAssetOperationsQueryService.SupportsTermsAsOf`).
+  - The NAV trend carries long, short, gross and net securities exposure, and `/portfolio/nav`
+    charts it with a table.
+  - WPF shows the NAV comparison and trend (Fund Operations → Portfolio), the run attribution
+    comparison (Run Risk) and the portfolio cash ladder comparison (Run Cash Flow).
 - **Follow-ups still open.**
-  - Attribution does not split margin interest by period; a closed symbol keeps its last marked
-    cumulative P&L rather than its exact closing trade.
-  - The cash ladder comparison uses current instrument terms for both dates.
+  - Positions merged inside asset operations are still current on the prior cash ladder.
+  - The WPF comparison tests run on Windows CI only.
   - WPF parity items are listed in `wpf-web-ui-alignment-plan.md` (Phase E delta).
