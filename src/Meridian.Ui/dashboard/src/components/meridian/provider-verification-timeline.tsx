@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Select } from "@/components/ui/select";
 import { ChartCard } from "@/components/charts/ChartCard";
 import { StatusTimeline } from "@/components/charts/StatusTimeline";
 import { Button } from "@/components/ui/button";
@@ -27,10 +28,10 @@ export function ProviderVerificationTimeline({ connections }: { connections: Pro
   return <section aria-label="Provider verification history" className="space-y-3">
     <div className="flex flex-wrap items-center justify-between gap-3">
       <h3 className="text-sm font-semibold">Provider verification history</h3>
-      {connections.length > 0 ? <label className="text-xs">Connection <select className="ml-2 border border-border bg-background p-2" aria-label="Verification history connection"
+      {connections.length > 0 ? <label className="text-xs">Connection <Select className="ml-2" aria-label="Verification history connection"
         value={connectionId ?? ""} onChange={(event) => setChosenId(event.target.value)}>
         {connections.map((connection) => <option key={connection.connectionId} value={connection.connectionId}>{connection.displayName}</option>)}
-      </select></label> : null}
+      </Select></label> : null}
     </div>
     {!connectionId ? <p className="text-xs text-muted-foreground">No owned connection is loaded. Select a configured connection to inspect its retained verification events.</p>
       : active?.error ? <div role="status" className="text-sm"><p>{active.error}</p><Button size="sm" variant="outline" onClick={() => setRetry((value) => value + 1)}>Retry verification history</Button></div>

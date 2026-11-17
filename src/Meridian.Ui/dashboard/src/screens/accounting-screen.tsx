@@ -1409,7 +1409,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
           <CardContent className="grid gap-4">
             <div className="min-w-0">
               <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs">
-                <span className={cn("font-medium text-muted-foreground", usesTrackedCaps(reporting.listLabel) && "uppercase tracking-[0.14em]")}>{reporting.listLabel}</span>
+                <span className={cn("font-medium text-muted-foreground", usesTrackedCaps(reporting.listLabel) && "type-label--caps")}>{reporting.listLabel}</span>
                 <span className="font-mono text-muted-foreground">{reporting.visibleCountLabel}</span>
               </div>
               <div role="list" aria-label={reporting.listLabel} className="space-y-2">
@@ -1594,7 +1594,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
               {securityMaster.pageView.metrics.map((metric) => (
                 <div key={metric.id} className="rounded-lg border border-border/60 bg-secondary/25 p-4">
-                  <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(metric.label) && "uppercase tracking-[0.14em]")}>{metric.label}</div>
+                  <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(metric.label) && "type-label--caps")}>{metric.label}</div>
                   <div
                     className={cn(
                       "mt-2 min-w-0 break-words font-mono text-lg font-semibold tabular-nums",
@@ -1828,7 +1828,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
                   <h2 id="security-detail-page-title" className="mt-2 text-xl font-semibold tracking-normal text-foreground">
                     {securityMaster.pageView.detailTitle}
                   </h2>
-                  <p className={cn("mt-1 break-words text-xs text-muted-foreground", usesTrackedCaps(securityMaster.pageView.detailSubtitle) && "font-mono uppercase tracking-[0.12em]")}>
+                  <p className={cn("mt-1 break-words text-xs text-muted-foreground", usesTrackedCaps(securityMaster.pageView.detailSubtitle) && "type-label--caps")}>
                     {securityMaster.pageView.detailSubtitle}
                   </p>
                   <p className="mt-2 max-w-4xl text-sm leading-6 text-muted-foreground">
@@ -1910,7 +1910,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
                         ]}
                       />
                       <div>
-                        <div className={cn("mb-2 text-xs font-semibold text-muted-foreground", usesTrackedCaps(identity.identifiersTitle) && "uppercase tracking-[0.14em]")}>{identity.identifiersTitle}</div>
+                        <div className={cn("mb-2 text-xs font-semibold text-muted-foreground", usesTrackedCaps(identity.identifiersTitle) && "type-label--caps")}>{identity.identifiersTitle}</div>
                         {identity.identifiers.length === 0 ? (
                           <p role="status" className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3 text-sm text-muted-foreground">
                             {identity.identifierEmptyText}
@@ -1929,7 +1929,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
                       </div>
 
                       <div>
-                        <div className={cn("mb-2 text-xs font-semibold text-muted-foreground", usesTrackedCaps(identity.aliasesTitle) && "uppercase tracking-[0.14em]")}>{identity.aliasesTitle}</div>
+                        <div className={cn("mb-2 text-xs font-semibold text-muted-foreground", usesTrackedCaps(identity.aliasesTitle) && "type-label--caps")}>{identity.aliasesTitle}</div>
                         {identity.aliases.length === 0 ? (
                           <p role="status" className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3 text-sm text-muted-foreground">
                             {identity.aliasEmptyText}

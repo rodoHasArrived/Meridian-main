@@ -225,7 +225,7 @@ function DataFetchPanel({ vm }: { vm: QuantNotebookViewModel }) {
           onChange={(value) => vm.setContext({ to: value })}
         />
         <div className="grid gap-1">
-          <label htmlFor={panel.fields.interval.id} className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(panel.fields.interval.label) && "uppercase tracking-[0.14em]")}>
+          <label htmlFor={panel.fields.interval.id} className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(panel.fields.interval.label) && "type-label--caps")}>
             {panel.fields.interval.label}
           </label>
             <Select
@@ -302,7 +302,7 @@ function DataContextInput({
 }) {
   return (
     <div className="grid gap-1">
-      <label htmlFor={field.id} className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(field.label) && "uppercase tracking-[0.14em]")}>
+      <label htmlFor={field.id} className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(field.label) && "type-label--caps")}>
         {field.label}
       </label>
       <Input

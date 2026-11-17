@@ -31,9 +31,10 @@
   border-radius: var(--radius-sm);
   background: var(--ws-surface-subtle);
   color: var(--fg-muted);
-  font-family: var(--font-data, "IBM Plex Mono", ui-monospace, Consolas, monospace);
+  /* A chip's label is text, so it uses the body face; its value (<b>) is data. */
+  font-family: var(--font-body);
   font-size: 0.75rem;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -130,13 +131,20 @@
   background: var(--ws-surface-subtle);
 }
 
+.dense-data-table-footer td {
+  border-top: 1px solid var(--ws-border-strong);
+  background: var(--ws-surface-subtle);
+  font-weight: 600;
+}
+
 .dense-data-table th {
   padding: var(--dense-head-py) var(--dense-cell-px);
   color: var(--fg-muted);
-  font-family: var(--font-data, "IBM Plex Mono", ui-monospace, Consolas, monospace);
+  /* Column headers are labels: body face, light caps. Cells keep the data face for figures. */
+  font-family: var(--font-body);
   font-size: 0.75rem;
   font-weight: 500;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   white-space: nowrap;
 }

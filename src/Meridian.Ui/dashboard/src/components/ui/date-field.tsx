@@ -142,7 +142,7 @@ export function CalendarField(props: CalendarFieldProps) {
   return <div ref={root} className={cn("relative w-full", className)} data-date-field-open={open ? "true" : undefined}
     onBlur={(event) => { if (!(event.relatedTarget instanceof Node) || !event.currentTarget.contains(event.relatedTarget)) setOpen(false); }}
     onKeyDown={(event) => { if (event.key === "Escape" && open) { event.preventDefault(); event.stopPropagation(); close(true); } }}>
-    {label ? <label id={labelId} htmlFor={fieldId} className={cn("mb-1.5 block text-xs font-semibold text-muted-foreground", usesTrackedCaps(label) && "font-mono uppercase tracking-[0.14em]")}>{label}</label> : null}
+    {label ? <label id={labelId} htmlFor={fieldId} className={cn("mb-1.5 block text-xs font-semibold text-muted-foreground", usesTrackedCaps(label) && "type-label--caps")}>{label}</label> : null}
     <button {...ariaProps} ref={trigger} id={fieldId} type="button" disabled={disabled}
       aria-haspopup="dialog" aria-expanded={open} aria-controls={open ? panelId : undefined}
       aria-labelledby={props["aria-label"] ? props["aria-labelledby"] : labelledBy} aria-describedby={description}

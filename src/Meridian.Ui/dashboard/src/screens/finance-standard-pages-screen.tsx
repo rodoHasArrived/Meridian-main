@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import type { ReactNode } from "react";
 import { TableWorkbench } from "@/components/meridian/table-workbench";
 import { DesignSystemStatus } from "@/design-system/status";
 import { EntityLink } from "@/components/meridian/entity-inspector";
@@ -697,13 +698,14 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
                 setTabSearchParams(next, { replace: true });
               }}
               ariaLabel="Ledger Explorer results" rows={ledgerRows} getRowId={(row) => row.id}
+              footerCells={ledgerTotalsFooter(filteredRows, postedMoney)}
               emptyText={postedLedger.view.periodSelector.options.length === 0 ? postedLedger.view.periodSelector.errorText ?? postedLedger.view.periodSelector.loadingText ?? postedLedger.view.periodSelector.emptyText ?? "No ledger periods are available for this accounting scope." : "No posted entries match the current search."}
               columns={[
                 { id: "date", label: "Date", className: "whitespace-nowrap", render: (row) => row.posting ? <span className="sr-only">Posting line of {row.journal.journalEntryId}</span> : formatDateTimeLabel(row.journal.timestamp), exportValue: (row) => row.journal.timestamp },
                 { id: "journalEntryId", label: "Journal ID", sortable: true, render: (row) => row.posting ? null : <EntityLink ariaLabel={`Open journal ${row.journal.journalEntryId}`} record={{ kind: "journal", id: row.journal.journalEntryId, label: row.journal.journalEntryId, workspaceHref: workstationRouteWithQuery("accountingJournalEntryDetail", { journalEntryId: row.journal.journalEntryId, periodId: postedLedger.selectedPeriodId }), summary: [{ label: "Status", value: "Posted" }, { label: "Date", value: formatDateTimeLabel(row.journal.timestamp) }, { label: "Description", value: row.journal.description || "Ledger posting" }] }}>{row.journal.journalEntryId}</EntityLink>, exportValue: (row) => row.journal.journalEntryId },
                 { id: "account", label: "Account", render: (row) => row.posting ? <span className="block pl-4">{`${row.posting.accountName}${row.posting.symbol ? ` - ${row.posting.symbol}` : ""}`}</span> : row.journal.accountScopeId ? <EntityLink record={{ kind: "account", id: row.journal.accountScopeId, label: row.journal.accountScopeDisplayName ?? "Account name unavailable", workspaceHref: sourceLedgerContextHref, summary: [{ label: "Source", value: "Posted ledger dimensions" }, { label: "Workspace destination", value: "Source Ledger context · selected book and period" }] }} /> : row.journal.accountScopeDisplayName ?? "Multiple accounts", exportValue: (row) => row.posting?.accountName ?? row.journal.accountScopeDisplayName },
-                { id: "debit", label: "Debit", align: "right", className: "tabular-nums", render: (row) => postingAmountCell(row, "debit"), exportValue: (row) => row.posting?.debit ?? row.journal.totalDebits },
-                { id: "credit", label: "Credit", align: "right", className: "tabular-nums", render: (row) => postingAmountCell(row, "credit"), exportValue: (row) => row.posting?.credit ?? row.journal.totalCredits },
+                { id: "debit", label: baseCurrency ? `Debit (${baseCurrency})` : "Debit", align: "right", className: "tabular-nums", render: (row) => postingAmountCell(row, "debit"), exportValue: (row) => row.posting?.debit ?? row.journal.totalDebits },
+                { id: "credit", label: baseCurrency ? `Credit (${baseCurrency})` : "Credit", align: "right", className: "tabular-nums", render: (row) => postingAmountCell(row, "credit"), exportValue: (row) => row.posting?.credit ?? row.journal.totalCredits },
                 { id: "entity", label: "Entity", render: (row) => { const entityId = row.posting ? row.posting.dimensions?.entityId : row.journal.entityScopeId; if (row.posting && entityId && entityId === row.journal.entityScopeId) return <span className="sr-only">Same entity as journal</span>; return entityId ? <EntityLink record={{ kind: "entity", id: entityId, label: row.journal.entityScopeDisplayName && row.journal.entityScopeDisplayName !== entityId && row.journal.entityScopeId === entityId ? row.journal.entityScopeDisplayName : "Entity name unavailable", workspaceHref: sourceLedgerContextHref, summary: [{ label: "Source", value: "Posted ledger dimensions" }, { label: "Workspace destination", value: "Source Ledger context · selected book and period" }] }} /> : "Not scoped to one entity"; }, exportValue: (row) => row.posting ? row.posting.dimensions?.entityId : row.journal.entityScopeId },
                 { id: "source", label: "Source", render: (row) => row.posting?.description || row.journal.description || "Ledger posting", exportValue: (row) => row.posting?.description || row.journal.description },
                 { id: "status", label: "Status", render: (row) => row.posting ? null : <DesignSystemStatus status="posted">Posted</DesignSystemStatus>, exportValue: (row) => row.posting ? "Posting line" : "Posted journal summary" }
@@ -735,6 +737,31 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
       </details>
     </div>
   );
+}
+
+/**
+ * The totals row under the ledger: the journal-level debits and credits of the entries shown,
+ * summed once (posting lines are not added again), and whether they balance. Compared in cents so
+ * floating-point noise in the sums cannot report a false break.
+ */
+function ledgerTotalsFooter(
+  journals: readonly { totalDebits: number; totalCredits: number }[],
+  money: (value: number) => string
+): Record<string, ReactNode> | null {
+  if (journals.length === 0) {
+    return null;
+  }
+  const debits = journals.reduce((total, journal) => total + journal.totalDebits, 0);
+  const credits = journals.reduce((total, journal) => total + journal.totalCredits, 0);
+  const differenceCents = Math.round(debits * 100) - Math.round(credits * 100);
+  return {
+    date: `Total · ${journals.length} ${journals.length === 1 ? "entry" : "entries"} shown`,
+    debit: money(debits),
+    credit: money(credits),
+    source: differenceCents === 0
+      ? "Debits equal credits"
+      : <span className="text-danger">Out of balance by {money(Math.abs(differenceCents) / 100)}</span>
+  };
 }
 
 /** Journal entries and their posting lines are separate table rows, so the summary names both counts. */

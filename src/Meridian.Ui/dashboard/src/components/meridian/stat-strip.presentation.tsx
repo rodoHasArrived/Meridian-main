@@ -154,7 +154,7 @@ export function StatStripPresentation({
               title={trust.title ?? undefined}
               data-freshness={trust.freshness}
             >
-              <dt className={cn("whitespace-nowrap text-xs font-medium text-muted-foreground", usesTrackedCaps(metricLabel) && "uppercase tracking-[0.08em]")}>
+              <dt className={cn("whitespace-nowrap text-xs font-medium text-muted-foreground", usesTrackedCaps(metricLabel) && "type-label--caps")}>
                 {metricLabel}
               </dt>
               <dd className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5" aria-describedby={sharedBasisDescription}>

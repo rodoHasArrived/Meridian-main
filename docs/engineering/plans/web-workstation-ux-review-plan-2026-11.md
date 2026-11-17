@@ -251,6 +251,14 @@ the command palette. Separately, Options screening is no longer also a Market da
 keeps its Data sidebar entry, its `?view=options` deep link, and a page heading of its own. The
 merged Accounting work queue and the in-page secondary rail remain open.
 
+**Progress on V2 and V4 (2026-11-17).** The shared label rules (`type-label--caps`,
+`eyebrow-label`, dense-table headers, toolbar chips) moved from tracked monospace to light caps in
+the body face, and 75 inline `font-mono uppercase tracking-…` label classes now use
+`type-label--caps`. The P4 non-numeric monospace ratchet now exists as `monoCapsLabels` (18 left
+in five screens), with `rawSelects` at zero across `src/`. Ledger Explorer has the journal totals
+row with a debit, credit and balance check. Status badges are still uppercase monospace (V3), and
+the font decision is still open.
+
 #### C4 🔴 Speak operator language, not system language (follows the 11-10 copy pass)
 
 **Problem.**

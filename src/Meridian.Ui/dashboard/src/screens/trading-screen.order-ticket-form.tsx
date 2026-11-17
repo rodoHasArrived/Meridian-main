@@ -20,7 +20,7 @@ export function TradingOrderTicketForm({ orderTicket, preview }: {
       <form onSubmit={(event) => { event.preventDefault(); void orderTicket.submitOrder(); }} className="space-y-4" aria-describedby={orderTicket.requirementId}>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <div className="space-y-1">
-            <label htmlFor={orderTicket.controls.symbol.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(orderTicket.controls.symbol.label) && "uppercase tracking-[0.14em]")}>{orderTicket.controls.symbol.label}</label>
+            <label htmlFor={orderTicket.controls.symbol.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(orderTicket.controls.symbol.label) && "type-label--caps")}>{orderTicket.controls.symbol.label}</label>
             <Input
               id={orderTicket.controls.symbol.id}
               type="text"
@@ -36,7 +36,7 @@ export function TradingOrderTicketForm({ orderTicket, preview }: {
             />
           </div>
           <div className="space-y-1">
-            <label htmlFor={orderTicket.controls.side.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(orderTicket.controls.side.label) && "uppercase tracking-[0.14em]")}>{orderTicket.controls.side.label}</label>
+            <label htmlFor={orderTicket.controls.side.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(orderTicket.controls.side.label) && "type-label--caps")}>{orderTicket.controls.side.label}</label>
             <Select
               id={orderTicket.controls.side.id}
               value={orderTicket.controls.side.value}
@@ -51,7 +51,7 @@ export function TradingOrderTicketForm({ orderTicket, preview }: {
             </Select>
           </div>
           <div className="space-y-1">
-            <label htmlFor={orderTicket.controls.type.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(orderTicket.controls.type.label) && "uppercase tracking-[0.14em]")}>{orderTicket.controls.type.label}</label>
+            <label htmlFor={orderTicket.controls.type.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(orderTicket.controls.type.label) && "type-label--caps")}>{orderTicket.controls.type.label}</label>
             <Select
               id={orderTicket.controls.type.id}
               value={orderTicket.controls.type.value}
@@ -66,7 +66,7 @@ export function TradingOrderTicketForm({ orderTicket, preview }: {
             </Select>
           </div>
           <div className="space-y-1">
-            <label htmlFor={orderTicket.controls.quantity.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(orderTicket.controls.quantity.label) && "uppercase tracking-[0.14em]")}>{orderTicket.controls.quantity.label}</label>
+            <label htmlFor={orderTicket.controls.quantity.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(orderTicket.controls.quantity.label) && "type-label--caps")}>{orderTicket.controls.quantity.label}</label>
             <Input
               id={orderTicket.controls.quantity.id}
               type="number"
@@ -83,7 +83,7 @@ export function TradingOrderTicketForm({ orderTicket, preview }: {
           </div>
           {orderTicket.controls.limitPrice && (
             <div className="space-y-1">
-              <label htmlFor={orderTicket.controls.limitPrice.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(orderTicket.controls.limitPrice.label) && "uppercase tracking-[0.14em]")}>
+              <label htmlFor={orderTicket.controls.limitPrice.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(orderTicket.controls.limitPrice.label) && "type-label--caps")}>
                 {orderTicket.controls.limitPrice.label}
               </label>
               <Input

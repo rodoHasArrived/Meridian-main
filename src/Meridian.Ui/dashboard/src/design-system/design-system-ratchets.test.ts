@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { compareWithBaseline, isAdHocBadgeClass, RATCHETS, readBaseline, writeReducedBaseline, type RatchetCounts } from "../../scripts/design-system-ratchets.mjs";
+import { compareWithBaseline, isAdHocBadgeClass, isMonoCapsLabelClass, RATCHETS, readBaseline, writeReducedBaseline, type RatchetCounts } from "../../scripts/design-system-ratchets.mjs";
 
 const temporaryDirectories: string[] = [];
 afterEach(() => {
@@ -23,6 +23,31 @@ function baselineFixture(value: unknown = counts()) {
 }
 
 describe("design-system ratchets", () => {
+  it("counts tracked monospace labels but leaves status chips to the badge ratchet", () => {
+    expect(isMonoCapsLabelClass("font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground")).toBe(true);
+    expect(isMonoCapsLabelClass("rounded-sm border px-2 py-1 font-mono text-xs uppercase tracking-[0.14em]")).toBe(false);
+    expect(isMonoCapsLabelClass("font-mono tabular-nums")).toBe(false);
+    expect(isMonoCapsLabelClass("type-label--caps")).toBe(false);
+    expect(RATCHETS.rawSelects.count("<Select id=\"a\"><option /></Select>")).toBe(0);
+    expect(RATCHETS.rawSelects.count("<select\n  id=\"a\">")).toBe(1);
+  });
+
+  it("keeps hand-styled native selects out of every component, not only screens", () => {
+    const srcRoot = path.resolve(__dirname, "..");
+    const offenders: string[] = [];
+    const walk = (dir: string) => {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) walk(full);
+        else if (/\.tsx$/.test(entry.name) && !/\.test\.tsx$/.test(entry.name)
+          && path.relative(srcRoot, full).split(path.sep).join("/") !== "components/ui/select.tsx"
+          && /<select\b/.test(fs.readFileSync(full, "utf8"))) offenders.push(path.relative(srcRoot, full));
+      }
+    };
+    walk(srcRoot);
+    expect(offenders).toEqual([]);
+  });
+
   // Phase 2 turned these rules on with a baseline of existing offenders: no file may gain an
   // occurrence, no new file may introduce one, and progress must be locked in by lowering the
   // baseline (`npm run ratchets:update`).

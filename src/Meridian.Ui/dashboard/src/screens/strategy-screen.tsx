@@ -1886,7 +1886,7 @@ function PlotToolLegendItem({ item }: { item: StrategyPlotLegendItem }) {
     <div className="plottool-legend-card">
       <div className="flex items-center gap-2 text-xs text-foreground">
         <span className={cn("h-2.5 w-2.5 rounded-full", plotLegendToneClass[item.tone])} aria-hidden="true" />
-        <span className={cn("", usesTrackedCaps(item.label) && "font-mono uppercase tracking-[0.14em]")}>{item.label}</span>
+        <span className={cn("", usesTrackedCaps(item.label) && "type-label--caps")}>{item.label}</span>
       </div>
       <div className="mt-1 text-xs text-muted-foreground">{item.detail}</div>
     </div>

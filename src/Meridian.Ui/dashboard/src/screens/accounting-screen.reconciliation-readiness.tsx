@@ -167,7 +167,7 @@ export function ReconciliationReadinessPanel() {
 function SummaryStat({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex min-w-0 items-baseline gap-2">
-      <dt className={cn("whitespace-nowrap text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.08em]")}>{label}</dt>
+      <dt className={cn("whitespace-nowrap text-muted-foreground", usesTrackedCaps(label) && "type-label--caps")}>{label}</dt>
       <dd className="whitespace-nowrap font-mono text-sm font-semibold text-foreground">{value}</dd>
     </div>
   );

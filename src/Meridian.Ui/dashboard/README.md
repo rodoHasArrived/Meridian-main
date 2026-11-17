@@ -1390,6 +1390,12 @@ The shared dense-row keyboard contract supports row selection, detail focus, and
 right and fades that edge, so wide tables show that more columns sit beyond the visible ones.
 Ledger Explorer nests posting lines under their journal (no date of their own, the journal's
 entity not repeated) and counts entries and posting lines separately.
+It closes with a `footerCells` totals row (the shown entries' journal-level debits and credits,
+compared in cents) that reads "Debits equal credits" or "Out of balance by …", and its amount
+headers name the book currency. Short labels (`type-label--caps`, `eyebrow-label`, dense-table
+headers and toolbar chips) use light caps in the body face; monospace stays on figures, IDs and
+code. Every dropdown uses `Select` from `@/components/ui/select`. The `monoCapsLabels` and
+`rawSelects` ratchets in `scripts/design-system-ratchets.mjs` keep both from growing back.
 
 `src/lib/workstation-features.ts` supplies wired browser destinations to both sidebar navigation
 and local command search. Purpose descriptions and search-only aliases expose intents such as

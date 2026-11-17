@@ -326,7 +326,7 @@ export function CommandPalette({
             >
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">
-                  <div className={cn("inline-flex rounded-sm border border-border/70 bg-background/70 px-2 py-1 text-xs text-muted-foreground", usesTrackedCaps(viewModel.emptyState.statusLabel) && "font-mono uppercase tracking-[0.12em]")}>
+                  <div className={cn("inline-flex rounded-sm border border-border/70 bg-background/70 px-2 py-1 text-xs text-muted-foreground", usesTrackedCaps(viewModel.emptyState.statusLabel) && "type-label--caps")}>
                     {viewModel.emptyState.statusLabel}
                   </div>
                   <div

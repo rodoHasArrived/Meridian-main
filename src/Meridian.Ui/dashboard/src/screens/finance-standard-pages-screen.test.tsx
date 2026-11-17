@@ -628,6 +628,28 @@ describe("finance standard pages", () => {
     // Lines that share the journal's entity do not repeat it; the journal row names it once.
     expect(within(table).getAllByText("Same entity as journal")).toHaveLength(2);
     expect(within(table).getAllByRole("link", { name: "Inspect Entity name unavailable" })).toHaveLength(1);
+    // One totals row: journal-level amounts summed once (not again for their posting lines).
+    const footer = table.querySelector("tfoot")!;
+    expect(footer).toHaveTextContent("Total · 1 entry shown");
+    expect(footer).toHaveTextContent("Debits equal credits");
+    expect(within(footer as HTMLElement).getAllByText("$500.00")).toHaveLength(2);
+    expect(within(table).getByRole("columnheader", { name: /Debit \(USD\)/ })).toBeInTheDocument();
+  });
+
+  it("flags a ledger whose shown debits and credits do not agree", async () => {
+    mockPostedBook();
+    vi.mocked(ledgerReportsApi.getLedgerPeriodJournalEntries).mockResolvedValue([
+      { journalEntryId: "je-a", periodId: LEDGER_PERIOD_ID, ledgerBookId: LEDGER_BOOK_ID, timestamp: "2026-07-30T00:00:00Z",
+        description: "Balanced", totalDebits: 0.1, totalCredits: 0.1, isBalanced: true, lines: [] },
+      { journalEntryId: "je-b", periodId: LEDGER_PERIOD_ID, ledgerBookId: LEDGER_BOOK_ID, timestamp: "2026-07-31T00:00:00Z",
+        description: "Short", totalDebits: 0.2, totalCredits: 0.15, isBalanced: false, lines: [] }
+    ] as never);
+
+    await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger");
+
+    const footer = (await screen.findByRole("table", { name: "Ledger Explorer results" })).querySelector("tfoot")!;
+    expect(footer).toHaveTextContent("Total · 2 entries shown");
+    expect(footer).toHaveTextContent("Out of balance by $0.05");
   });
 
   it("keeps entity workspace destinations in the exact source book, period and route scope", async () => {

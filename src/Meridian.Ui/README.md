@@ -99,7 +99,8 @@ in the trust pill, a provenance banner that becomes a stripe once seen, a two-ro
 route-first workspace screens with the sidebar as the only sub-navigation, and a pinned Today entry
 with Control Tower attention counts. Accounting's sidebar keeps seven daily-use destinations and
 puts the rest behind "More"; Options screening is a Data sidebar entry, not a Market Data desk
-tab. No shared contract changed.
+tab. Labels use light caps in the body face, monospace stays on figures and IDs, and Ledger
+Explorer closes with a debit and credit totals row. No shared contract changed.
 
 The host-served bundle carries the design-system consolidation. It includes one status
 component; one formatting module (year-bearing UTC timestamps; accounting negatives in

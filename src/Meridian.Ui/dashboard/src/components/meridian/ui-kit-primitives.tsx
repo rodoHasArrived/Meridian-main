@@ -153,6 +153,12 @@ export interface DenseDataTableProps<T> {
    */
   maxVisibleRows?: number | null;
   /**
+   * One totals row under the body, keyed by column id; a visible column without an entry gets an
+   * empty cell. It is not a data row: it is not selectable, sortable or counted, and it follows
+   * the column's alignment. Omit it when the table has no totals.
+   */
+  footerCells?: Readonly<Record<string, ReactNode>> | null;
+  /**
    * Enable row windowing for large data sets. When set, only a window of rows is
    * mounted and the table exposes `aria-rowcount`/`aria-rowindex` so assistive
    * tech reports positions across the full set. Requires stable row heights.
@@ -194,6 +200,7 @@ function DenseDataTableComponent<T>({
   defaultSort = null,
   density,
   maxVisibleRows = DEFAULT_DENSE_TABLE_ROW_CAP,
+  footerCells = null,
   virtualization = null,
   getRowTypeaheadText,
   onRowContextMenu,
@@ -553,6 +560,17 @@ function DenseDataTableComponent<T>({
           </>
         )}
       </tbody>
+      {footerCells && rows.length > 0 ? (
+        <tfoot className="dense-data-table-footer">
+          <tr>
+            {columns.map((column) => (
+              <td key={column.id} className={cn(columnCellClassName(column), column.className)}>
+                {footerCells[column.id] ?? null}
+              </td>
+            ))}
+          </tr>
+        </tfoot>
+      ) : null}
     </table>
   );
 
