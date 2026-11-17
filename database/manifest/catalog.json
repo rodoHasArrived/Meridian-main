@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "e902f248be3080592430ddf8f5a6809619745a9c3d47953db770bf3f4f7583a2",
+  "database_fingerprint": "68c769fbae74eba65d219fc43ab9cfef07563e783f66e4ae2127a832ec9f0aef",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -5843,6 +5843,54 @@
       "target": "ledger.private_capital_calls_pkey",
       "target_kind": "index",
       "target_name": "private_capital_calls_pkey",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "586b0bd72680a9fc275aee53b9debfc2c4fc1dd00951817a3af19f2ea5cad4ba",
+      "kind": "normal",
+      "source": "ledger.recurring_journal_state_content_hash_check on ledger.recurring_journal_state",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.recurring_journal_state.content_hash",
+      "target_kind": "table column",
+      "target_name": "recurring_journal_state",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "27a7fc86e8ef1c1b48bdbe7aacffcd830e25e1f28823545850764f22b6a76445",
+      "kind": "normal",
+      "source": "ledger.recurring_journal_state_envelope_json_check on ledger.recurring_journal_state",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.recurring_journal_state.envelope_json",
+      "target_kind": "table column",
+      "target_name": "recurring_journal_state",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "d5eda0dc01fcde793fb7601ee2210535d25d8db776f2d9ac64875886a316c87c",
+      "kind": "normal",
+      "source": "ledger.recurring_journal_state_revision_check on ledger.recurring_journal_state",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.recurring_journal_state.revision",
+      "target_kind": "table column",
+      "target_name": "recurring_journal_state",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "3f9a75fca7b76a526504fb5d8583971f26cd297f8d163542282d25f625375fd4",
+      "kind": "normal",
+      "source": "ledger.recurring_journal_state_store_id_check on ledger.recurring_journal_state",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.recurring_journal_state.store_id",
+      "target_kind": "table column",
+      "target_name": "recurring_journal_state",
       "target_schema": "ledger"
     },
     {
@@ -18247,6 +18295,30 @@
       "object": "column:ledger.private_capital_postings.tenant_id"
     },
     {
+      "fingerprint": "84b2563a6f43b79d536683af424e0b50ea5c047d09ff4a8a716a6c22a092b54e",
+      "object": "column:ledger.recurring_journal_state.content_hash"
+    },
+    {
+      "fingerprint": "0f9ecab2ac8d0ed165462c77beb7940d39f3eab81a0744ab311b12c2f4f14f07",
+      "object": "column:ledger.recurring_journal_state.envelope_json"
+    },
+    {
+      "fingerprint": "0916091582a9bfbe927436e2f8c38253b823c8cbc4b09abe8f5163ac5ec86764",
+      "object": "column:ledger.recurring_journal_state.initialized_at"
+    },
+    {
+      "fingerprint": "bfb1322a3b465ed593716ae9b81be2ae4baf14bef2eff24b6a01c28d05ce16f4",
+      "object": "column:ledger.recurring_journal_state.revision"
+    },
+    {
+      "fingerprint": "3f65839d606b7b85540fa8c996c1aad15d5245dd7ed6a163f14adfbdd55a39dd",
+      "object": "column:ledger.recurring_journal_state.store_id"
+    },
+    {
+      "fingerprint": "e5ac0a2be735e34813994de4464847b9845a4e23d74d60e1ee93be4d2a03b2a1",
+      "object": "column:ledger.recurring_journal_state.updated_at"
+    },
+    {
       "fingerprint": "41baec9eada5ef9e89e52999d295208e1d729e9876392881f2e743a043badba5",
       "object": "column:ledger.tax_lot_mutations.book_position_id"
     },
@@ -25847,6 +25919,10 @@
       "object": "comment:table:ledger.private_capital_postings"
     },
     {
+      "fingerprint": "095ba370bbc99ae16a8e0b7afe5803ac87b476cb478526d761c38a3f050ead29",
+      "object": "comment:table:ledger.recurring_journal_state"
+    },
+    {
       "fingerprint": "b587d5959ceb0d91518f07890eb24e03514a7f5d3939ee3df146970829aa1e9d",
       "object": "comment:table:security_master.cap_floor_projection"
     },
@@ -27489,6 +27565,26 @@
     {
       "fingerprint": "d9bf01bbd4d3e92d14bba1b0cb537006792e247fa8f3970f03dd2987f630e632",
       "object": "constraint:ledger.private_capital_postings.private_capital_postings_tenant_id_company_id_fund_profile_fkey"
+    },
+    {
+      "fingerprint": "618616f3e30524aea94c45bbca862e771b284bd8947c5ebc1e84a84346fb5359",
+      "object": "constraint:ledger.recurring_journal_state.recurring_journal_state_content_hash_check"
+    },
+    {
+      "fingerprint": "dd033d54ce19f4804ed937fc71ab5e67e32bcb7e1a2def3c764fc42e3ecde23e",
+      "object": "constraint:ledger.recurring_journal_state.recurring_journal_state_envelope_json_check"
+    },
+    {
+      "fingerprint": "1984399084765979607bd14f944ba472fd41fad6771fb5ef19c69f4fa6c6f7e6",
+      "object": "constraint:ledger.recurring_journal_state.recurring_journal_state_pkey"
+    },
+    {
+      "fingerprint": "5a77adc58641d217ed99b5039e7ccd519af3e9fc021f1c7a31ba24756e00406d",
+      "object": "constraint:ledger.recurring_journal_state.recurring_journal_state_revision_check"
+    },
+    {
+      "fingerprint": "210aef0ed0489f55b3e313034610ae2c07ef9a876f7f303db724f222ca742273",
+      "object": "constraint:ledger.recurring_journal_state.recurring_journal_state_store_id_check"
     },
     {
       "fingerprint": "75e63431c4a1e19ad8712e316bda32d55e5823e4ebd49d7917a8cd835e7ff37a",
@@ -31847,6 +31943,22 @@
       "object": "dependency:ledger.private_capital_postings_tenant_id_company_id_fund_profile_fkey on ledger.private_capital_postings->ledger.private_capital_calls_pkey:normal"
     },
     {
+      "fingerprint": "586b0bd72680a9fc275aee53b9debfc2c4fc1dd00951817a3af19f2ea5cad4ba",
+      "object": "dependency:ledger.recurring_journal_state_content_hash_check on ledger.recurring_journal_state->ledger.recurring_journal_state.content_hash:normal"
+    },
+    {
+      "fingerprint": "27a7fc86e8ef1c1b48bdbe7aacffcd830e25e1f28823545850764f22b6a76445",
+      "object": "dependency:ledger.recurring_journal_state_envelope_json_check on ledger.recurring_journal_state->ledger.recurring_journal_state.envelope_json:normal"
+    },
+    {
+      "fingerprint": "d5eda0dc01fcde793fb7601ee2210535d25d8db776f2d9ac64875886a316c87c",
+      "object": "dependency:ledger.recurring_journal_state_revision_check on ledger.recurring_journal_state->ledger.recurring_journal_state.revision:normal"
+    },
+    {
+      "fingerprint": "3f9a75fca7b76a526504fb5d8583971f26cd297f8d163542282d25f625375fd4",
+      "object": "dependency:ledger.recurring_journal_state_store_id_check on ledger.recurring_journal_state->ledger.recurring_journal_state.store_id:normal"
+    },
+    {
       "fingerprint": "d86e4f1f1b345a925df5d2a69bb4d7c43ce58b51a2ab1cb62078e591e261ad8c",
       "object": "dependency:ledger.tax_lot_mutations_corrects_mutation_batch_id_fkey on ledger.tax_lot_mutations->ledger.atomic_tax_lot_posting_batches.mutation_batch_id:normal"
     },
@@ -34575,6 +34687,10 @@
       "object": "function:ledger.reject_onboarding_workspace_delete()"
     },
     {
+      "fingerprint": "84ad54e6b2dfeca9ad80de6101d9f6e1c84caf9450fffec2797673b612620fe5",
+      "object": "function:ledger.reject_recurring_journal_state_removal()"
+    },
+    {
       "fingerprint": "e8b6487a2f86bd2d86fda2f5d4ec4383c3de13f5b2ceb8eccc63f8d806d56581",
       "object": "function:ledger.reject_sealed_journal_leg_insert()"
     },
@@ -35817,6 +35933,10 @@
     {
       "fingerprint": "b0e6fb332c1bd9c504274282f6812358235f5ad231f7f5a857e2c0667ce45e57",
       "object": "index:ledger.private_capital_postings_pkey"
+    },
+    {
+      "fingerprint": "b2071ee2cc1bf708d39d62db755fe99c95af56dfbbc0cdaf21b18d017ced186e",
+      "object": "index:ledger.recurring_journal_state_pkey"
     },
     {
       "fingerprint": "2b7dcddfee67951fe7243f25de2742b3e99ae729b17f646da374ac5e06c51790",
@@ -37947,6 +38067,10 @@
       "object": "rls:ledger.private_capital_postings"
     },
     {
+      "fingerprint": "af68d271848d4b6969be6e90dfaf558ee2428439a57d027af3ab4752c122b23d",
+      "object": "rls:ledger.recurring_journal_state"
+    },
+    {
       "fingerprint": "a97fb4800e0175fc28bf05b03566790a42cb8e11cbb808d2c5ae8201a89d8a5f",
       "object": "rls:ledger.tax_lot_mutations"
     },
@@ -38615,7 +38739,7 @@
       "object": "schema:identity_access"
     },
     {
-      "fingerprint": "e49972374d168b9dd84482547190a6092582a46f2a8a6b255899665deff81356",
+      "fingerprint": "4422177753edda047d396c0169cee96f888f8db96eee94770eb58319a53702d2",
       "object": "schema:ledger"
     },
     {
@@ -39109,6 +39233,10 @@
     {
       "fingerprint": "3429a8d1b300e01864aadeb33614dab67b96e7dd2cc8ccc46d662305e9475340",
       "object": "table:ledger.private_capital_postings"
+    },
+    {
+      "fingerprint": "e7d6a6525fbc3aed844d08bfd29044d6ab3ecd11bcbe222e82be131140ce4a9a",
+      "object": "table:ledger.recurring_journal_state"
     },
     {
       "fingerprint": "31a264810b0ab9c5e7ea9f500709a2992df9c68e644b322539db713ba79b722e",
@@ -40089,6 +40217,14 @@
     {
       "fingerprint": "7c85d3cfaebbf44535ee73794441ad845b0604427424c7e5a9f234f1cc58d72f",
       "object": "trigger:ledger.private_capital_postings.protect_private_capital_posting"
+    },
+    {
+      "fingerprint": "99a81938bc40065f5a878a4e0ebda618a864ef5ccae389550c7829b251a09fa7",
+      "object": "trigger:ledger.recurring_journal_state.recurring_journal_state_not_truncated"
+    },
+    {
+      "fingerprint": "66c5761600145a0ea60b238f46d1946b2c4c3f23eec796171839b448f88a1f30",
+      "object": "trigger:ledger.recurring_journal_state.recurring_journal_state_retained"
     },
     {
       "fingerprint": "b1ec04f9fde85b0ab064b7ab1822cdaba188c2f8152d51cda0119ab66d5427e6",
@@ -82025,6 +82161,12 @@
           "fingerprint": "03eafc9992d457a8dee09a7f3b5227310807f7f4a39a860d547a3836a2dbf563",
           "object": "ledger.private_capital_postings",
           "object_type": "table"
+        },
+        {
+          "comment": "Retained recurring journal definitions, activations and occurrence claims (W10-JRNL-001).",
+          "fingerprint": "095ba370bbc99ae16a8e0b7afe5803ac87b476cb478526d761c38a3f050ead29",
+          "object": "ledger.recurring_journal_state",
+          "object_type": "table"
         }
       ],
       "composite_types": [],
@@ -86590,6 +86732,54 @@
           "target_schema": "ledger"
         },
         {
+          "fingerprint": "586b0bd72680a9fc275aee53b9debfc2c4fc1dd00951817a3af19f2ea5cad4ba",
+          "kind": "normal",
+          "source": "ledger.recurring_journal_state_content_hash_check on ledger.recurring_journal_state",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.recurring_journal_state.content_hash",
+          "target_kind": "table column",
+          "target_name": "recurring_journal_state",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "27a7fc86e8ef1c1b48bdbe7aacffcd830e25e1f28823545850764f22b6a76445",
+          "kind": "normal",
+          "source": "ledger.recurring_journal_state_envelope_json_check on ledger.recurring_journal_state",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.recurring_journal_state.envelope_json",
+          "target_kind": "table column",
+          "target_name": "recurring_journal_state",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "d5eda0dc01fcde793fb7601ee2210535d25d8db776f2d9ac64875886a316c87c",
+          "kind": "normal",
+          "source": "ledger.recurring_journal_state_revision_check on ledger.recurring_journal_state",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.recurring_journal_state.revision",
+          "target_kind": "table column",
+          "target_name": "recurring_journal_state",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "3f9a75fca7b76a526504fb5d8583971f26cd297f8d163542282d25f625375fd4",
+          "kind": "normal",
+          "source": "ledger.recurring_journal_state_store_id_check on ledger.recurring_journal_state",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.recurring_journal_state.store_id",
+          "target_kind": "table column",
+          "target_name": "recurring_journal_state",
+          "target_schema": "ledger"
+        },
+        {
           "fingerprint": "d86e4f1f1b345a925df5d2a69bb4d7c43ce58b51a2ab1cb62078e591e261ad8c",
           "kind": "normal",
           "source": "ledger.tax_lot_mutations_corrects_mutation_batch_id_fkey on ledger.tax_lot_mutations",
@@ -86882,7 +87072,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "e49972374d168b9dd84482547190a6092582a46f2a8a6b255899665deff81356",
+      "fingerprint": "4422177753edda047d396c0169cee96f888f8db96eee94770eb58319a53702d2",
       "foreign_tables": [],
       "functions": [
         {
@@ -87781,6 +87971,37 @@
           "security_definer": false,
           "security_labels": [],
           "signature": "reject_onboarding_workspace_delete()",
+          "strict": false,
+          "volatility": "volatile"
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "PUBLIC",
+              "grantor": "meridian",
+              "privilege": "execute"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "execute"
+            }
+          ],
+          "comment": null,
+          "definition_hash": "500830f3a0889b9f88395d5325da673cf7676ff41cac40dbd78bc4762cce890c",
+          "fingerprint": "84ad54e6b2dfeca9ad80de6101d9f6e1c84caf9450fffec2797673b612620fe5",
+          "kind": "function",
+          "language": "plpgsql",
+          "name": "reject_recurring_journal_state_removal",
+          "owner": "meridian",
+          "parallel_safety": "unsafe",
+          "result_type": "trigger",
+          "schema": "ledger",
+          "security_definer": false,
+          "security_labels": [],
+          "signature": "reject_recurring_journal_state_removal()",
           "strict": false,
           "volatility": "volatile"
         },
@@ -110675,6 +110896,331 @@
           ],
           "columns": [
             {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "3f65839d606b7b85540fa8c996c1aad15d5245dd7ed6a163f14adfbdd55a39dd",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "store_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "bfb1322a3b465ed593716ae9b81be2ae4baf14bef2eff24b6a01c28d05ce16f4",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "revision",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "84b2563a6f43b79d536683af424e0b50ea5c047d09ff4a8a716a6c22a092b54e",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "content_hash",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "0f9ecab2ac8d0ed165462c77beb7940d39f3eab81a0744ab311b12c2f4f14f07",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "envelope_json",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "0916091582a9bfbe927436e2f8c38253b823c8cbc4b09abe8f5163ac5ec86764",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "initialized_at",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "e5ac0a2be735e34813994de4464847b9845a4e23d74d60e1ee93be4d2a03b2a1",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "updated_at",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "Retained recurring journal definitions, activations and occurrence claims (W10-JRNL-001).",
+          "constraints": [
+            {
+              "columns": [
+                "content_hash"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (content_hash ~ '^[0-9a-f]{64}$'::text)",
+              "delete_action": null,
+              "fingerprint": "618616f3e30524aea94c45bbca862e771b284bd8947c5ebc1e84a84346fb5359",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "recurring_journal_state_content_hash_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "envelope_json"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (jsonb_typeof(envelope_json::jsonb) = 'object'::text)",
+              "delete_action": null,
+              "fingerprint": "dd033d54ce19f4804ed937fc71ab5e67e32bcb7e1a2def3c764fc42e3ecde23e",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "recurring_journal_state_envelope_json_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "revision"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (revision > 0)",
+              "delete_action": null,
+              "fingerprint": "5a77adc58641d217ed99b5039e7ccd519af3e9fc021f1c7a31ba24756e00406d",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "recurring_journal_state_revision_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "store_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (store_id = 'default'::text)",
+              "delete_action": null,
+              "fingerprint": "210aef0ed0489f55b3e313034610ae2c07ef9a876f7f303db724f222ca742273",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "recurring_journal_state_store_id_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "store_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (store_id)",
+              "delete_action": null,
+              "fingerprint": "1984399084765979607bd14f944ba472fd41fad6771fb5ef19c69f4fa6c6f7e6",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "recurring_journal_state_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "e7d6a6525fbc3aed844d08bfd29044d6ab3ecd11bcbe222e82be131140ce4a9a",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX recurring_journal_state_pkey ON ledger.recurring_journal_state USING btree (store_id)",
+              "expression": null,
+              "fingerprint": "b2071ee2cc1bf708d39d62db755fe99c95af56dfbbc0cdaf21b18d017ced186e",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "store_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "recurring_journal_state_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "recurring_journal_state",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "ledger",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER recurring_journal_state_not_truncated BEFORE TRUNCATE ON ledger.recurring_journal_state FOR EACH STATEMENT EXECUTE FUNCTION ledger.reject_recurring_journal_state_removal()",
+              "definition_hash": "46e3b8e9f05ef7ccc667538eef47aa5e0d977cc20fdacc635a80c81e00b67925",
+              "enabled": "origin",
+              "events": [
+                "truncate"
+              ],
+              "fingerprint": "99a81938bc40065f5a878a4e0ebda618a864ef5ccae389550c7829b251a09fa7",
+              "function_schema": "ledger",
+              "function_signature": "reject_recurring_journal_state_removal()",
+              "level": "statement",
+              "name": "recurring_journal_state_not_truncated",
+              "relation": "recurring_journal_state",
+              "schema": "ledger",
+              "timing": "before"
+            },
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER recurring_journal_state_retained BEFORE DELETE ON ledger.recurring_journal_state FOR EACH ROW EXECUTE FUNCTION ledger.reject_recurring_journal_state_removal()",
+              "definition_hash": "0573aad79a035f7d0481f493e5a4dc401399f5a50b36e5f055494c9cb902e06c",
+              "enabled": "origin",
+              "events": [
+                "delete"
+              ],
+              "fingerprint": "66c5761600145a0ea60b238f46d1946b2c4c3f23eec796171839b448f88a1f30",
+              "function_schema": "ledger",
+              "function_signature": "reject_recurring_journal_state_removal()",
+              "level": "row",
+              "name": "recurring_journal_state_retained",
+              "relation": "recurring_journal_state",
+              "schema": "ledger",
+              "timing": "before"
+            }
+          ]
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
               "collation": null,
               "comment": null,
               "data_type": "uuid",
@@ -114144,6 +114690,14 @@
           "forced": false,
           "policies": [],
           "relation": "private_capital_postings",
+          "schema": "ledger"
+        },
+        {
+          "enabled": false,
+          "fingerprint": "af68d271848d4b6969be6e90dfaf558ee2428439a57d027af3ab4752c122b23d",
+          "forced": false,
+          "policies": [],
+          "relation": "recurring_journal_state",
           "schema": "ledger"
         },
         {
@@ -136741,6 +137295,331 @@
           ],
           "columns": [
             {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "3f65839d606b7b85540fa8c996c1aad15d5245dd7ed6a163f14adfbdd55a39dd",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "store_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "bfb1322a3b465ed593716ae9b81be2ae4baf14bef2eff24b6a01c28d05ce16f4",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "revision",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "84b2563a6f43b79d536683af424e0b50ea5c047d09ff4a8a716a6c22a092b54e",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "content_hash",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "0f9ecab2ac8d0ed165462c77beb7940d39f3eab81a0744ab311b12c2f4f14f07",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "envelope_json",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "0916091582a9bfbe927436e2f8c38253b823c8cbc4b09abe8f5163ac5ec86764",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "initialized_at",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "e5ac0a2be735e34813994de4464847b9845a4e23d74d60e1ee93be4d2a03b2a1",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "updated_at",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "Retained recurring journal definitions, activations and occurrence claims (W10-JRNL-001).",
+          "constraints": [
+            {
+              "columns": [
+                "content_hash"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (content_hash ~ '^[0-9a-f]{64}$'::text)",
+              "delete_action": null,
+              "fingerprint": "618616f3e30524aea94c45bbca862e771b284bd8947c5ebc1e84a84346fb5359",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "recurring_journal_state_content_hash_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "envelope_json"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (jsonb_typeof(envelope_json::jsonb) = 'object'::text)",
+              "delete_action": null,
+              "fingerprint": "dd033d54ce19f4804ed937fc71ab5e67e32bcb7e1a2def3c764fc42e3ecde23e",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "recurring_journal_state_envelope_json_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "revision"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (revision > 0)",
+              "delete_action": null,
+              "fingerprint": "5a77adc58641d217ed99b5039e7ccd519af3e9fc021f1c7a31ba24756e00406d",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "recurring_journal_state_revision_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "store_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (store_id = 'default'::text)",
+              "delete_action": null,
+              "fingerprint": "210aef0ed0489f55b3e313034610ae2c07ef9a876f7f303db724f222ca742273",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "recurring_journal_state_store_id_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "store_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (store_id)",
+              "delete_action": null,
+              "fingerprint": "1984399084765979607bd14f944ba472fd41fad6771fb5ef19c69f4fa6c6f7e6",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "recurring_journal_state_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "e7d6a6525fbc3aed844d08bfd29044d6ab3ecd11bcbe222e82be131140ce4a9a",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX recurring_journal_state_pkey ON ledger.recurring_journal_state USING btree (store_id)",
+              "expression": null,
+              "fingerprint": "b2071ee2cc1bf708d39d62db755fe99c95af56dfbbc0cdaf21b18d017ced186e",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "store_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "recurring_journal_state_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "recurring_journal_state",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "ledger",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER recurring_journal_state_not_truncated BEFORE TRUNCATE ON ledger.recurring_journal_state FOR EACH STATEMENT EXECUTE FUNCTION ledger.reject_recurring_journal_state_removal()",
+              "definition_hash": "46e3b8e9f05ef7ccc667538eef47aa5e0d977cc20fdacc635a80c81e00b67925",
+              "enabled": "origin",
+              "events": [
+                "truncate"
+              ],
+              "fingerprint": "99a81938bc40065f5a878a4e0ebda618a864ef5ccae389550c7829b251a09fa7",
+              "function_schema": "ledger",
+              "function_signature": "reject_recurring_journal_state_removal()",
+              "level": "statement",
+              "name": "recurring_journal_state_not_truncated",
+              "relation": "recurring_journal_state",
+              "schema": "ledger",
+              "timing": "before"
+            },
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER recurring_journal_state_retained BEFORE DELETE ON ledger.recurring_journal_state FOR EACH ROW EXECUTE FUNCTION ledger.reject_recurring_journal_state_removal()",
+              "definition_hash": "0573aad79a035f7d0481f493e5a4dc401399f5a50b36e5f055494c9cb902e06c",
+              "enabled": "origin",
+              "events": [
+                "delete"
+              ],
+              "fingerprint": "66c5761600145a0ea60b238f46d1946b2c4c3f23eec796171839b448f88a1f30",
+              "function_schema": "ledger",
+              "function_signature": "reject_recurring_journal_state_removal()",
+              "level": "row",
+              "name": "recurring_journal_state_retained",
+              "relation": "recurring_journal_state",
+              "schema": "ledger",
+              "timing": "before"
+            }
+          ]
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
               "collation": null,
               "comment": null,
               "data_type": "uuid",
@@ -140844,6 +141723,40 @@
           "level": "row",
           "name": "protect_private_capital_posting",
           "relation": "private_capital_postings",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER recurring_journal_state_not_truncated BEFORE TRUNCATE ON ledger.recurring_journal_state FOR EACH STATEMENT EXECUTE FUNCTION ledger.reject_recurring_journal_state_removal()",
+          "definition_hash": "46e3b8e9f05ef7ccc667538eef47aa5e0d977cc20fdacc635a80c81e00b67925",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "99a81938bc40065f5a878a4e0ebda618a864ef5ccae389550c7829b251a09fa7",
+          "function_schema": "ledger",
+          "function_signature": "reject_recurring_journal_state_removal()",
+          "level": "statement",
+          "name": "recurring_journal_state_not_truncated",
+          "relation": "recurring_journal_state",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER recurring_journal_state_retained BEFORE DELETE ON ledger.recurring_journal_state FOR EACH ROW EXECUTE FUNCTION ledger.reject_recurring_journal_state_removal()",
+          "definition_hash": "0573aad79a035f7d0481f493e5a4dc401399f5a50b36e5f055494c9cb902e06c",
+          "enabled": "origin",
+          "events": [
+            "delete"
+          ],
+          "fingerprint": "66c5761600145a0ea60b238f46d1946b2c4c3f23eec796171839b448f88a1f30",
+          "function_schema": "ledger",
+          "function_signature": "reject_recurring_journal_state_removal()",
+          "level": "row",
+          "name": "recurring_journal_state_retained",
+          "relation": "recurring_journal_state",
           "schema": "ledger",
           "timing": "before"
         },

@@ -321,7 +321,7 @@ public sealed class LedgerJournalStoreTests
     }
 
     [Fact]
-    public void ExecutionLineageFilter_ComparesExactlyTheExpressionsMigration074Indexes()
+    public void ExecutionLineageFilter_ComparesExactlyTheExpressionsMigration075Indexes()
     {
         // The partial expression indexes are used only when the filter compares the identical expression.
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
@@ -329,7 +329,7 @@ public sealed class LedgerJournalStoreTests
         while (directory is not null && migrationPath is null)
         {
             var candidate = Path.Combine(directory.FullName, "src", "Meridian.Storage", "Ledger", "Migrations",
-                "V_ledger_074__journal_execution_lineage_indexes.sql");
+                "V_ledger_075__journal_execution_lineage_indexes.sql");
             migrationPath = File.Exists(candidate) ? candidate : null;
             directory = directory.Parent;
         }

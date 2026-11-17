@@ -72,6 +72,34 @@ public sealed partial class WorkstationEndpointsTests
         finally { Directory.Delete(directory, recursive: true); }
     }
 
+    [Fact]
+    public async Task RecurringInitialize_ProvisionsTheComposedStoreRatherThanAFileFallback()
+    {
+        var store = new ProvisioningRecurringStore();
+        await using var app = await CreateAppAsync(services =>
+            services.AddSingleton<IRecurringJournalStore>(store),
+            mapLedgerApi: true, currentUserPermissions: UserPermission.AdminMaintenance);
+
+        var response = await app.GetTestClient().PostAsync(UiApiRoutes.LedgerJournalAutomationRecurringInitialize, null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK, await response.Content.ReadAsStringAsync());
+        store.Initialized.Should().Be(1);
+    }
+
+    private sealed class ProvisioningRecurringStore : IRecurringJournalStore, IRecurringJournalStoreProvisioning
+    {
+        public int Initialized;
+
+        public Task InitializeAsync(CancellationToken ct = default)
+        {
+            Interlocked.Increment(ref Initialized);
+            return Task.CompletedTask;
+        }
+
+        public Task<IRecurringJournalSession> OpenSessionAsync(CancellationToken ct = default)
+            => throw new InvalidOperationException("Initialization must not open a session.");
+    }
+
     private sealed class CapturingRecurringQueueSource : IRecurringJournalQueueSource
     {
         public (string?, string?) Scope { get; private set; }
