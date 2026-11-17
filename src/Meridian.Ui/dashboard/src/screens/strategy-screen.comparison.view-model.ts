@@ -2,7 +2,9 @@
 // the selection rule for compare and diff, and the overlay model for the selected runs' equity and
 // drawdown. Pure functions only; the view model owns state and requests.
 import type { ChartAccessibleData } from "@/components/charts/chart-a11y";
-import type { EquityCurvePoint } from "@/types";
+import { formatText } from "@/screens/strategy-screen.formatters";
+import type { PromoteState, StrategyCommand, StrategyCommandState } from "@/screens/strategy-screen.view-model";
+import type { EquityCurvePoint, StrategyRunRecord } from "@/types";
 
 /** Compare holds at most this many runs. Diff stays two-run. */
 export const RUN_COMPARE_MAX = 4;
@@ -122,5 +124,120 @@ export function buildRunComparisonOverlay(inputs: readonly RunCurveInput[]): Run
     omitted,
     equityTable: table(equity, `Equity rebased to 100 on ${start}, ${start} to ${end}`),
     drawdownTable: table(drawdown, `Drawdown from each run's peak within ${start} to ${end}, percent`)
+  };
+}
+
+/** The selection as the controls name it, e.g. "A vs B vs C". */
+export function buildSelectionText(selectedRuns: StrategyRunRecord[]): string {
+  if (selectedRuns.length === 0) {
+    return "No runs selected";
+  }
+
+  if (selectedRuns.length === 1) {
+    return `Selected ${selectedRuns[0].strategyName}`;
+  }
+
+  return selectedRuns.map((run) => run.strategyName).join(" vs ");
+}
+
+/** Compare, diff, promote and history command states for the current selection. */
+export function buildStrategyCommandStates({
+  selectedRuns,
+  hasTwoRuns,
+  hasOneBacktestRun,
+  busy,
+  activeCommand,
+  promoteState,
+  promoteBusy
+}: {
+  selectedRuns: StrategyRunRecord[];
+  hasTwoRuns: boolean;
+  hasOneBacktestRun: boolean;
+  busy: boolean;
+  activeCommand: StrategyCommand | null;
+  promoteState: PromoteState;
+  promoteBusy: boolean;
+}): {
+  promotionHistory: StrategyCommandState;
+  compare: StrategyCommandState;
+  diff: StrategyCommandState;
+  promote: StrategyCommandState;
+} {
+  const pairLabel = selectedRuns.length === 2
+    ? `${formatText(selectedRuns[0].strategyName)} and ${formatText(selectedRuns[1].strategyName)}`
+    : null;
+  const compareCount = selectedRuns.length;
+  const canCompareSelection = compareCount >= 2 && compareCount <= RUN_COMPARE_MAX;
+  const compareNames = canCompareSelection ? selectedRuns.map((run) => formatText(run.strategyName)).join(", ") : null;
+  const compareDisabledReason = busy
+    ? "Wait for the current Strategy command to finish."
+    : canCompareSelection
+      ? null
+      : `Select two to ${RUN_COMPARE_MAX} runs before comparing. ${compareCount} selected.`;
+  const compareLabel = `Compare ${canCompareSelection ? compareCount : 2} runs`;
+  const selectedRun = selectedRuns[0] ?? null;
+  const pairDisabledReason = busy
+    ? "Wait for the current Strategy command to finish."
+    : hasTwoRuns
+      ? null
+      : `Select exactly two runs before using this command. ${selectedRuns.length} selected.`;
+  const promoteLabel = promoteState === "evaluating"
+    ? "Evaluating..."
+    : promoteState === "approving"
+      ? "Approving promotion..."
+      : promoteState === "done"
+        ? "Promotion approved"
+        : "Promote to Paper";
+  const promoteDisabledReason = busy
+    ? "Wait for the current Strategy command to finish."
+    : promoteBusy
+      ? "Paper-promotion workflow is already running."
+      : promoteState === "done"
+        ? "A durable Paper promotion was already approved for this run."
+        : hasOneBacktestRun
+          ? null
+          : selectedRuns.length === 1
+            ? "Select one completed backtest run before promoting to paper."
+            : `Select one completed backtest run before promoting to paper. ${selectedRuns.length} selected.`;
+
+  return {
+    promotionHistory: {
+      label: activeCommand === "history" ? "Loading history..." : "Promotion history",
+      ariaLabel: activeCommand === "history" ? "Promotion history: loading" : "Promotion history",
+      disabled: busy,
+      disabledReason: busy ? "Wait for the current Strategy command to finish." : null,
+      busy: activeCommand === "history"
+    },
+    compare: {
+      label: activeCommand === "compare" ? "Comparing..." : compareLabel,
+      ariaLabel: activeCommand === "compare"
+        ? `Comparing selected runs: ${compareNames ?? "current selection"}`
+        : compareNames
+          ? `${compareLabel}: ${compareNames}`
+          : `${compareLabel} unavailable`,
+      disabled: !canCompareSelection || busy,
+      disabledReason: compareDisabledReason,
+      busy: activeCommand === "compare"
+    },
+    diff: {
+      label: activeCommand === "diff" ? "Diffing..." : "Diff 2 runs",
+      ariaLabel: activeCommand === "diff"
+        ? `Diffing selected runs: ${pairLabel ?? "current selection"}`
+        : pairLabel
+          ? `Diff 2 runs: ${pairLabel}`
+          : "Diff 2 runs unavailable",
+      disabled: !hasTwoRuns || busy,
+      disabledReason: pairDisabledReason,
+      busy: activeCommand === "diff"
+    },
+    promote: {
+      label: promoteLabel,
+      ariaLabel: selectedRun
+        ? `${promoteLabel}: evaluate ${formatText(selectedRun.strategyName)} for paper trading`
+        : `${promoteLabel} unavailable`,
+      disabled: !hasOneBacktestRun || busy || promoteBusy || promoteState === "done",
+      disabledReason: promoteDisabledReason,
+      busy: promoteBusy
+    }
   };
 }
