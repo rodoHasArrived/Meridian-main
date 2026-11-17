@@ -1,11 +1,11 @@
 {
-  "total_files": 1274,
+  "total_files": 1275,
   "orphaned_count": 396,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 303,
   "health_score": 85,
-  "signal_digest": "sha256:a430047d6af2ef03b53db32b82b5eea5ed7cf2ff9e0ec133945efe5ba8bfd5e6",
+  "signal_digest": "sha256:e5112c03029f9d2570a1c3f7764dde49f3e91f2c27eee23d6cfc4ccfd209e3e3",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -3604,6 +3604,13 @@
       "path": "docs/product/review-history.md",
       "has_heading": true,
       "todo_count": 1,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/product/settings-preferences-brainstorm-2026-11-16.md",
+      "has_heading": true,
+      "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },

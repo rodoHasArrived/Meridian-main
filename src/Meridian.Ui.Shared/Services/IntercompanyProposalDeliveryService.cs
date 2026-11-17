@@ -150,7 +150,17 @@ public sealed class IntercompanyProposalDeliveryService(IIntercompanyProposalSto
 
     private sealed record RetainedReversal(IntercompanyProposalDto Prior, DateOnly OriginalDate);
 
-    public async Task<IntercompanyRefreshPreviewDto> RefreshPreviewAsync(string tenant, Guid proposalId, CancellationToken ct = default)
+    /// <summary>
+    /// Whether a retained book owner falls inside the caller's tenant and company scope. A company-bound
+    /// owner must match the caller's company; this is the same rule the HTTP endpoints apply, enforced
+    /// again here so a direct caller of the service cannot cross a company inside one tenant.
+    /// </summary>
+    private static bool IsWithinScope(FundProfileOwnership? owner, string tenant, string? company)
+        => owner is not null && owner.IsHeldBy(tenant)
+            && (owner.CompanyId is null || string.Equals(owner.CompanyId, company, StringComparison.OrdinalIgnoreCase));
+
+    public async Task<IntercompanyRefreshPreviewDto> RefreshPreviewAsync(string tenant, string? company, Guid proposalId,
+        CancellationToken ct = default)
     {
         var proposal = await store.GetAsync(tenant, proposalId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException("The retained counterpart source is unavailable.");
@@ -161,8 +171,8 @@ public sealed class IntercompanyProposalDeliveryService(IIntercompanyProposalSto
         var book = await journals.GetLedgerBookAsync(bookId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException("The destination book is unavailable.");
         var owner = await owners.ResolveAsync(book.FundProfileId, ct).ConfigureAwait(false);
-        if (owner is null || !owner.IsHeldBy(tenant))
-            throw new UnauthorizedAccessException("The destination is outside the current tenant.");
+        if (!IsWithinScope(owner, tenant, company))
+            throw new UnauthorizedAccessException("The destination is outside the current tenant or company.");
         var draft = await drafts.GetAsync(book.FundProfileId, journalId, ct, tenant, owner.CompanyId).ConfigureAwait(false)
             ?? throw new InvalidOperationException("The retained destination draft is unavailable.");
         if (draft.Status is not (ManualJournalEntryStatusDto.Draft or ManualJournalEntryStatusDto.NeedsFix or ManualJournalEntryStatusDto.Rejected)
@@ -204,7 +214,7 @@ public sealed class IntercompanyProposalDeliveryService(IIntercompanyProposalSto
         })), draft);
     }
 
-    public async Task<ManualJournalEntryDraftDto> RefreshAsync(string tenant, Guid proposalId,
+    public async Task<ManualJournalEntryDraftDto> RefreshAsync(string tenant, string? company, Guid proposalId,
         RefreshIntercompanyProposalRequest request, string actor, CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(actor);
@@ -216,7 +226,7 @@ public sealed class IntercompanyProposalDeliveryService(IIntercompanyProposalSto
             ?? throw new InvalidOperationException("The proposal is unavailable.");
         var book = proposal.TargetBookId is { } bookId ? await journals.GetLedgerBookAsync(bookId, ct).ConfigureAwait(false) : null;
         var owner = book is null ? null : await owners.ResolveAsync(book.FundProfileId, ct).ConfigureAwait(false);
-        if (book is null || owner is null || !owner.IsHeldBy(tenant))
+        if (book is null || !IsWithinScope(owner, tenant, company))
             throw new UnauthorizedAccessException("The destination book is unavailable.");
         var current = proposal.TargetJournalId is { } journalId
             ? await drafts.GetAsync(book.FundProfileId, journalId, ct, tenant, owner.CompanyId).ConfigureAwait(false) : null;
@@ -227,7 +237,7 @@ public sealed class IntercompanyProposalDeliveryService(IIntercompanyProposalSto
             return current;
         }
         await using var fxLease = await fx.AcquireAuthorityLeaseAsync(ct).ConfigureAwait(false);
-        var preview = await RefreshPreviewAsync(tenant, proposalId, ct).ConfigureAwait(false);
+        var preview = await RefreshPreviewAsync(tenant, company, proposalId, ct).ConfigureAwait(false);
         if (preview.Draft.Version != request.ExpectedDraftVersion || !Sha256Digest.FixedEquals(preview.Fingerprint, request.PreviewFingerprint))
             throw new InvalidOperationException("The draft or FX authority changed; inspect a fresh repricing preview.");
         var updated = preview.Draft with
@@ -438,14 +448,15 @@ public sealed class IntercompanyProposalDeliveryService(IIntercompanyProposalSto
         }
     }
 
-    public async Task<IReadOnlyList<IntercompanyBreakDto>> BreaksAsync(string tenant, Guid sourceBookId, DateOnly asOf, CancellationToken ct = default)
+    public async Task<IReadOnlyList<IntercompanyBreakDto>> BreaksAsync(string tenant, string? company, Guid sourceBookId, DateOnly asOf,
+        CancellationToken ct = default)
     {
         var result = new List<IntercompanyBreakDto>();
-        var proposals = await store.ListAsync(tenant, sourceBookId, ct).ConfigureAwait(false);
         var sourceBook = await journals.GetLedgerBookAsync(sourceBookId, ct).ConfigureAwait(false);
         var sourceOwner = sourceBook is null ? null : await owners.ResolveAsync(sourceBook.FundProfileId, ct).ConfigureAwait(false);
-        if (sourceOwner is null || !sourceOwner.IsHeldBy(tenant))
-            throw new UnauthorizedAccessException("The intercompany source book is outside the current tenant.");
+        if (!IsWithinScope(sourceOwner, tenant, company))
+            throw new UnauthorizedAccessException("The intercompany source book is outside the current tenant or company.");
+        var proposals = await store.ListAsync(tenant, sourceBookId, ct).ConfigureAwait(false);
         var evaluation = new CounterpartEvaluation(journals, agreements, owners, tenant, sourceOwner.CompanyId, asOf);
         foreach (var proposal in proposals)
         {

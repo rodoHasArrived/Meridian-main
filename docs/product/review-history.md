@@ -149,6 +149,11 @@ finding into implementation work.
   governance, reconciliation matching, approvals, close evidence, backfill, marks, order
   lifecycle), anchored to a depth survey of declared-but-dead seams and sequenced around the
   W9 slate
+- [Settings & Preferences Configurability Brainstorm (2026-11-16)](settings-preferences-brainstorm-2026-11-16.md) —
+  inventory of browser, WPF, server-side, and file-only settings, seven ideas (server-side
+  operator preferences, shared browser/WPF preference contract, notifications panel, saved
+  shortcuts, workstation bundle export, searchable settings, versioned config profiles), and
+  guardrails keeping credentials and financial settings host-level
 
 ## Archived Product Material
 
