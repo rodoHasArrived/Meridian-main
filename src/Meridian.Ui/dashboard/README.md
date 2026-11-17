@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-17
 ---
 
 # src/Meridian.Ui/dashboard
@@ -622,6 +622,19 @@ information icon instead; there is no per-section "Hide" link and a description 
 collapses after it has been seen once. The icon opens with Enter/Space; Escape closes it and
 returns focus. Storage failures leave help usable. The setting does not change financial data
 or authorization and does not synchronize between browsers.
+
+Workstation-global shortcuts (`lib/keymap.ts`: command palette `Mod+K`, keyboard help `?`) can be
+rebound from the keyboard help sheet. Each row offers Change, which captures the next chord through
+a window capture-phase listener that stops it reaching the shell's global handler (Esc cancels
+instead of closing the sheet), and Reset when overridden; "Reset all to defaults" clears every
+override. `setKeyBindingOverride` refuses, with a reason shown in a polite status line, a combo in
+use by another global binding (named), Esc/Tab/Enter/Space, browser-owned `Mod+W/T/N/Q/R/L`, and
+bare letters, digits and named keys other than F1–F24 (punctuation such as `?` may stay bare).
+Overrides persist per browser under `meridian.workstation.keymap.v1`, follow other tabs through
+`storage` events, and are decoded defensively: malformed, unknown, default-valued or refused
+entries are ignored, while a stored swap of the two bindings is kept. `getGlobalKeyBinding`
+returns the effective combo, so the shell and command palette honor overrides without other
+changes. Overrides do not follow the operator to another browser or to the WPF desktop.
 
 Every workspace overview opens with `PageHeading` (`components/ui/page-heading.tsx`): the page
 name, then an optional one-line purpose on its own line, then page actions. Write the purpose as
