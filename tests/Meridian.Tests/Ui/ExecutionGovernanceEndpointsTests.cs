@@ -505,11 +505,18 @@ public sealed class ExecutionGovernanceEndpointsTests
     [Fact]
     public async Task PreviewOrder_ClientSuppliesRunIdMetadata_ReturnsForbiddenBeforePreview()
     {
+        // Preview requires an accessible execution account before it reads metadata, so the
+        // request names one; the refusal must then come from the server-owned run key.
         var preview = Substitute.For<IOrderPreviewService>();
-        await using var app = await CreateAppAsync(services => services.AddSingleton(preview));
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterFundAccountScope(services, LiveFundAccountId);
+            services.AddSingleton(preview);
+        });
 
         var response = await app.GetTestClient().PostAsync("/api/execution/orders/preview", JsonContent(new
         {
+            fundAccountId = LiveFundAccountId,
             symbol = "AAPL",
             side = 0,
             type = 0,
