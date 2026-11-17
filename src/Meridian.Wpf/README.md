@@ -154,6 +154,13 @@ profiles are chosen from lists. The desktop enters no rate, principal or amount 
 the same Windows-only validation boundary applies. The entity timeline on the consolidation page
 names a lifecycle state's successor entity, as the browser timeline does.
 
+An Accrual schedules tab (`Views/IntercompanyAccrualSchedulesControl.xaml`) binds the shared
+`IntercompanyAccrualScheduleWorkspace`: list a book's opt-in accrual schedules with their history,
+propose one for a LoanInterest profile and its same-agreement Loan principal profile, approve,
+reject or disable the exact version shown, preview due periods and run an active schedule now. A
+schedule only drafts for ordinary journal review; the desktop never posts, the proposer cannot
+approve, and the same Windows-only validation boundary applies.
+
 Security Master's Schedule Book evidence includes the shared typed declared call/put outcome,
 evaluation date, retained security version, window count, coded blockers and notice diagnostics.
 It also displays the host's effective governance profile, source, restart latch, enforced edit and
