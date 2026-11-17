@@ -18,6 +18,11 @@ carrying-basis relief and realized gain/loss do not become separate operating ca
 
 With short selling disabled, `SimulatedPortfolio` rejects any sell that would leave the position net short, including a sell larger than the current long (long 100, sell 150); it previously rejected only sells from a flat or short position.
 
+A refused fill throws `FillRejectedException` before any portfolio state changes (short selling
+or margin not permitted, or a fill canonical raw-price replay cannot represent, such as a short).
+The engine and delisting monitor discard only those fills and continue the run. Any other failure
+while applying a fill may leave the portfolio partly updated, so it ends the run instead.
+
 An annualised return too large for `decimal` (a 25% one-day gain compounds past it) is reported capped at 1e12 instead of aborting the metrics build. Walk-forward stitched out-of-sample total and annualised returns use the same cap.
 
 `MarketImpactFillModel` fills an all-or-none order completely or not at all; a limit order whose later slices cross the limit no longer returns a partial fill when partial fills are disallowed.

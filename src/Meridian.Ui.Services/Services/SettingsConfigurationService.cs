@@ -341,6 +341,66 @@ public sealed class SettingsConfigurationService
         }
     }
 
+    /// <summary>
+    /// Gets the operator's persisted desktop keyboard shortcut overrides, keyed by action id.
+    /// </summary>
+    public IReadOnlyDictionary<string, DesktopShortcutOverride> GetShortcutOverrides() =>
+        GetDesktopShellPreferences().ShortcutOverrides;
+
+    /// <summary>
+    /// Replaces the persisted desktop keyboard shortcut overrides. An empty set restores every
+    /// shortcut to its default binding. Density and other shell preferences are preserved.
+    /// </summary>
+    public void SetShortcutOverrides(IReadOnlyDictionary<string, DesktopShortcutOverride> overrides)
+    {
+        ArgumentNullException.ThrowIfNull(overrides);
+
+        var snapshot = new Dictionary<string, DesktopShortcutOverride>(StringComparer.Ordinal);
+        foreach (var (actionId, shortcutOverride) in overrides)
+        {
+            if (!string.IsNullOrWhiteSpace(actionId) && shortcutOverride is not null)
+            {
+                snapshot[actionId] = shortcutOverride;
+            }
+        }
+
+        DesktopShellPreferences updatedPreferences;
+        lock (_desktopPreferencesGate)
+        {
+            EnsureDesktopShellPreferencesLoaded();
+            if (ShortcutOverridesEqual(_desktopShellPreferences.ShortcutOverrides, snapshot))
+            {
+                return;
+            }
+
+            updatedPreferences = _desktopShellPreferences with { ShortcutOverrides = snapshot };
+            PersistDesktopShellPreferencesCore(updatedPreferences);
+            _desktopShellPreferences = updatedPreferences;
+        }
+
+        DesktopShellPreferencesChanged?.Invoke(this, updatedPreferences);
+    }
+
+    private static bool ShortcutOverridesEqual(
+        IReadOnlyDictionary<string, DesktopShortcutOverride> left,
+        IReadOnlyDictionary<string, DesktopShortcutOverride> right)
+    {
+        if (left.Count != right.Count)
+        {
+            return false;
+        }
+
+        foreach (var (actionId, shortcutOverride) in left)
+        {
+            if (!right.TryGetValue(actionId, out var other) || other != shortcutOverride)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     private static ProviderCatalogEntry MapProviderCatalogEntry(Meridian.Contracts.Api.ProviderCatalogEntry entry)
     {
         var envCredentialFields = entry.CredentialFields
@@ -542,7 +602,10 @@ public sealed class SettingsConfigurationService
             var model = JsonSerializer.Deserialize<DesktopShellPreferencesStorageModel>(json, DesktopShellJsonOptions);
             _desktopShellPreferences = model is null
                 ? DesktopShellPreferences.Default
-                : new DesktopShellPreferences(ResolveShellDensityMode(model));
+                : new DesktopShellPreferences(ResolveShellDensityMode(model))
+                {
+                    ShortcutOverrides = ResolveShortcutOverrides(model)
+                };
         }
         catch
         {
@@ -565,7 +628,18 @@ public sealed class SettingsConfigurationService
 
         var model = new DesktopShellPreferencesStorageModel
         {
-            ShellDensityMode = preferences.ShellDensityMode.ToString()
+            ShellDensityMode = preferences.ShellDensityMode.ToString(),
+            ShortcutOverrides = preferences.ShortcutOverrides.Count == 0
+                ? null
+                : preferences.ShortcutOverrides.ToDictionary(
+                    pair => pair.Key,
+                    pair => (DesktopShortcutOverrideStorageModel?)new DesktopShortcutOverrideStorageModel
+                    {
+                        Key = pair.Value.Key,
+                        Modifiers = pair.Value.Modifiers,
+                        IsEnabled = pair.Value.IsEnabled
+                    },
+                    StringComparer.Ordinal)
         };
         var json = JsonSerializer.Serialize(model, DesktopShellJsonOptions);
         var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
@@ -587,6 +661,28 @@ public sealed class SettingsConfigurationService
             false => ShellDensityMode.Standard,
             null => ShellDensityMode.Standard
         };
+    }
+
+    private static IReadOnlyDictionary<string, DesktopShortcutOverride> ResolveShortcutOverrides(
+        DesktopShellPreferencesStorageModel model)
+    {
+        if (model.ShortcutOverrides is not { Count: > 0 } stored)
+        {
+            return DesktopShellPreferences.Default.ShortcutOverrides;
+        }
+
+        var overrides = new Dictionary<string, DesktopShortcutOverride>(StringComparer.Ordinal);
+        foreach (var (actionId, entry) in stored)
+        {
+            if (string.IsNullOrWhiteSpace(actionId) || entry is null)
+            {
+                continue;
+            }
+
+            overrides[actionId] = new DesktopShortcutOverride(entry.Key, entry.Modifiers, entry.IsEnabled);
+        }
+
+        return overrides;
     }
 
     private static string GetDesktopPreferencesFilePath()
@@ -612,6 +708,17 @@ public sealed class SettingsConfigurationService
         public string? ShellDensityMode { get; init; }
 
         public bool? IsCompactMode { get; init; }
+
+        public Dictionary<string, DesktopShortcutOverrideStorageModel?>? ShortcutOverrides { get; init; }
+    }
+
+    private sealed class DesktopShortcutOverrideStorageModel
+    {
+        public string? Key { get; init; }
+
+        public string? Modifiers { get; init; }
+
+        public bool? IsEnabled { get; init; }
     }
 }
 

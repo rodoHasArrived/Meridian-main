@@ -438,6 +438,18 @@ Parameter passing follows the standard MVVM drill-in pattern: `NavigationService
 | `F1` | Help |
 | `F5` | Refresh (same shell refresh as the toolbar Refresh button) |
 
+### Saved shortcut overrides
+
+Changes made through `KeyboardShortcutService.UpdateShortcut` or `SetShortcutEnabled` are saved
+per machine with the other desktop shell preferences
+(`%LOCALAPPDATA%\Meridian\desktop-shell-preferences.json`, via
+`SettingsConfigurationService.SetShortcutOverrides`) and reapplied at startup, where `App.xaml.cs`
+attaches the store. Only differences from the defaults are stored. At load, an override is skipped
+when its action is not a default shortcut, its key or modifiers do not parse, it collides with
+another shortcut, or it would leave Start/Stop Collector, Toggle Connection, or Delete Selected
+without Ctrl or Alt. **Reset to defaults** on `KeyboardShortcutsPage` clears every override. There
+is no in-app rebinding editor yet.
+
 ### One refresh control
 
 The shell toolbar Refresh button and `F5` are the single refresh control. `MainPageViewModel`

@@ -149,7 +149,17 @@ the already-built test shards overlap. The runner defaults to one test process l
 fixture files are isolated outside uploaded results and removed after the process exits.
 The JSON/Markdown summaries retain every result in roster order and include elapsed durations.
 All shards are attempted after a test failure, and the lane fails if any shard fails. The
-test filters, complete project roster, catch-all shard, and hang timeout are unchanged.
+complete project roster, catch-all shard, and hang timeout are unchanged.
+
+`Meridian.Tests.Ui.WorkstationEndpointsTests` starts a host for each test and xUnit runs one class
+serially, so it was the longest unit in the roster: about 13 of the lane's 20 minutes on one
+process. The runner now selects it as three disjoint process shards by method-name prefix
+(`core-ui-workstation-endpoints-map`, `core-ui-workstation-endpoints-a-c`, and the base
+`core-ui-workstation-endpoints`, which keeps every method the other two do not name, including
+tests added later). The same tests run once each; only the process they run in changes. With two
+processes the lane's test time is unchanged. The shorter longest shard is what lets a higher
+process count help, and that promotion still follows the
+[benchmark criteria](../../docs/engineering/ci-cd-optimization.md#benchmark-promotion-criteria).
 
 `make test` and `make pre-pr` restore the solution and use the same default test-project/shard
 roster as `run-dotnet-ci-tests.py`. `test-unit` remains the focused C# iteration command.

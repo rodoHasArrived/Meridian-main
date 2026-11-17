@@ -96,11 +96,11 @@ Declared public members:
 | <code>public static async Task WriteAsync(string destinationPath, Func&lt;StreamWriter, Task&gt; writeAction, CancellationToken ct = default);</code> | [src/Meridian.Storage/Archival/AtomicFileWriter.cs:224](../../../../src/Meridian.Storage/Archival/AtomicFileWriter.cs#L224) | Atomically writes content using a stream writer action. |
 | <code>public static async Task WriteStreamAsync(string destinationPath, Func&lt;Stream, Task&gt; writeAction, CancellationToken ct = default);</code> | [src/Meridian.Storage/Archival/AtomicFileWriter.cs:280](../../../../src/Meridian.Storage/Archival/AtomicFileWriter.cs#L280) | Atomically writes content to a file using a raw stream writer action, overwriting any existing file. The destination is only replaced once the temporary file has been fully written, flushed, and fsynced, and the rename is made durable with a directory fsync. |
 | <code>public static async Task AppendAsync(string destinationPath, Func&lt;Stream, Task&gt; appendAction, CancellationToken ct = default);</code> | [src/Meridian.Storage/Archival/AtomicFileWriter.cs:346](../../../../src/Meridian.Storage/Archival/AtomicFileWriter.cs#L346) | Atomically appends binary content to an existing file using copy-on-write semantics. The original file is preserved until the new file containing both the original and appended bytes has been fully written and renamed into place. |
-| <code>public static Task AppendLinesAsync(string destinationPath, IEnumerable&lt;string&gt; lines, CancellationToken ct = default);</code> | [src/Meridian.Storage/Archival/AtomicFileWriter.cs:400](../../../../src/Meridian.Storage/Archival/AtomicFileWriter.cs#L400) | Atomically appends UTF-8 lines to an existing text file using copy-on-write semantics. |
-| <code>public static async Task&lt;string&gt; WriteWithChecksumAsync(string destinationPath, byte[] content, CancellationToken ct = default);</code> | [src/Meridian.Storage/Archival/AtomicFileWriter.cs:430](../../../../src/Meridian.Storage/Archival/AtomicFileWriter.cs#L430) | Atomically writes content with checksum verification. |
-| <code>public static async Task&lt;bool&gt; VerifyChecksumAsync(string filePath, CancellationToken ct = default);</code> | [src/Meridian.Storage/Archival/AtomicFileWriter.cs:492](../../../../src/Meridian.Storage/Archival/AtomicFileWriter.cs#L492) | Verify a file&#x27;s checksum matches its sidecar file. |
-| <code>public static async Task ReplaceAsync(string destinationPath, string newContent, bool keepBackup = true, CancellationToken ct = default);</code> | [src/Meridian.Storage/Archival/AtomicFileWriter.cs:524](../../../../src/Meridian.Storage/Archival/AtomicFileWriter.cs#L524) | Atomically replace a file using copy-on-write semantics. Keeps a backup of the original. |
-| <code>public static Task SyncDirectoryAsync(string directory, CancellationToken ct = default);</code> | [src/Meridian.Storage/Archival/AtomicFileWriter.cs:856](../../../../src/Meridian.Storage/Archival/AtomicFileWriter.cs#L856) | Fsyncs a directory so that prior rename/link operations within it are durable after a crash or power loss. No-op on platforms where directory metadata is journaled automatically. |
+| <code>public static Task AppendLinesAsync(string destinationPath, IEnumerable&lt;string&gt; lines, CancellationToken ct = default);</code> | [src/Meridian.Storage/Archival/AtomicFileWriter.cs:420](../../../../src/Meridian.Storage/Archival/AtomicFileWriter.cs#L420) | Atomically appends UTF-8 lines to an existing text file using copy-on-write semantics. |
+| <code>public static async Task&lt;string&gt; WriteWithChecksumAsync(string destinationPath, byte[] content, CancellationToken ct = default);</code> | [src/Meridian.Storage/Archival/AtomicFileWriter.cs:450](../../../../src/Meridian.Storage/Archival/AtomicFileWriter.cs#L450) | Atomically writes content with checksum verification. |
+| <code>public static async Task&lt;bool&gt; VerifyChecksumAsync(string filePath, CancellationToken ct = default);</code> | [src/Meridian.Storage/Archival/AtomicFileWriter.cs:512](../../../../src/Meridian.Storage/Archival/AtomicFileWriter.cs#L512) | Verify a file&#x27;s checksum matches its sidecar file. |
+| <code>public static async Task ReplaceAsync(string destinationPath, string newContent, bool keepBackup = true, CancellationToken ct = default);</code> | [src/Meridian.Storage/Archival/AtomicFileWriter.cs:544](../../../../src/Meridian.Storage/Archival/AtomicFileWriter.cs#L544) | Atomically replace a file using copy-on-write semantics. Keeps a backup of the original. |
+| <code>public static Task SyncDirectoryAsync(string directory, CancellationToken ct = default);</code> | [src/Meridian.Storage/Archival/AtomicFileWriter.cs:945](../../../../src/Meridian.Storage/Archival/AtomicFileWriter.cs#L945) | Fsyncs a directory so that prior rename/link operations within it are durable after a crash or power loss. No-op on platforms where directory metadata is journaled automatically. |
 
 Source: [src/Meridian.Storage/Archival/AtomicFileWriter.Windows.cs:8](../../../../src/Meridian.Storage/Archival/AtomicFileWriter.Windows.cs#L8).
 
@@ -341,7 +341,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Storage.Archival.WalCorruptionMode</code>. Kind: `enum`.
 
-Source: [src/Meridian.Storage/Archival/WriteAheadLog.cs:1601](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1601).
+Source: [src/Meridian.Storage/Archival/WriteAheadLog.cs:1631](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1631).
 
 Controls how the WAL responds when corrupted records are detected during recovery.
 
@@ -353,15 +353,15 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Skip</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1606](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1606) | Silently skip corrupt records and continue recovery (legacy behaviour). |
-| <code>Alert</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1612](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1612) | Skip corrupt records but fire the WriteAheadLog.CorruptionDetected event so monitoring systems can alert operators. Recommended for production deployments. |
-| <code>Halt</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1619](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1619) | Throw an InvalidDataException when any corrupt record is found. Use this when data integrity is non-negotiable and manual operator review is required before the application can start. |
+| <code>Skip</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1636](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1636) | Silently skip corrupt records and continue recovery (legacy behaviour). |
+| <code>Alert</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1642](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1642) | Skip corrupt records but fire the WriteAheadLog.CorruptionDetected event so monitoring systems can alert operators. Recommended for production deployments. |
+| <code>Halt</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1649](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1649) | Throw an InvalidDataException when any corrupt record is found. Use this when data integrity is non-negotiable and manual operator review is required before the application can start. |
 
 ## WalOptions
 
 Qualified name: <code>Meridian.Storage.Archival.WalOptions</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Archival/WriteAheadLog.cs:1529](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1529).
+Source: [src/Meridian.Storage/Archival/WriteAheadLog.cs:1559](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1559).
 
 WAL configuration options.
 
@@ -373,20 +373,20 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public long MaxWalFileSizeBytes { get; set; } = 100 * 1024 * 1024;</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1534](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1534) | Maximum WAL file size before rotation. |
-| <code>public TimeSpan? MaxWalFileAge { get; set; } = TimeSpan.FromHours(1);</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1539](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1539) | Maximum WAL file age before rotation. |
-| <code>public WalSyncMode SyncMode { get; set; } = WalSyncMode.BatchedSync;</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1544](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1544) | Sync mode for durability. |
-| <code>public int SyncBatchSize { get; set; } = 1000;</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1549](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1549) | Number of records to batch before syncing. |
-| <code>public TimeSpan MaxFlushDelay { get; set; } = TimeSpan.FromSeconds(1);</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1554](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1554) | Maximum delay between flushes. |
-| <code>public bool ArchiveAfterTruncate { get; set; } = true;</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1559](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1559) | Whether to archive WAL files after truncation. |
-| <code>public long UncommittedSizeWarningThreshold { get; set; } = 50 * 1024 * 1024;</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1565](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1565) | Size threshold (bytes) at which a warning is logged about uncommitted WAL data. Default is 50MB. |
-| <code>public WalCorruptionMode CorruptionMode { get; set; } = WalCorruptionMode.Alert;</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1574](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1574) | Controls how the WAL behaves when corrupted records are detected during recovery. Defaults to WalCorruptionMode.Alert so corruption is never silent: the durability backstop must not discard records without an operator signal. Set to WalCorruptionMode.Halt to require manual operator review, or opt into WalCorruptionMode.Skip only when silent-skip is acceptable. |
+| <code>public long MaxWalFileSizeBytes { get; set; } = 100 * 1024 * 1024;</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1564](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1564) | Maximum WAL file size before rotation. |
+| <code>public TimeSpan? MaxWalFileAge { get; set; } = TimeSpan.FromHours(1);</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1569](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1569) | Maximum WAL file age before rotation. |
+| <code>public WalSyncMode SyncMode { get; set; } = WalSyncMode.BatchedSync;</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1574](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1574) | Sync mode for durability. |
+| <code>public int SyncBatchSize { get; set; } = 1000;</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1579](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1579) | Number of records to batch before syncing. |
+| <code>public TimeSpan MaxFlushDelay { get; set; } = TimeSpan.FromSeconds(1);</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1584](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1584) | Maximum delay between flushes. |
+| <code>public bool ArchiveAfterTruncate { get; set; } = true;</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1589](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1589) | Whether to archive WAL files after truncation. |
+| <code>public long UncommittedSizeWarningThreshold { get; set; } = 50 * 1024 * 1024;</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1595](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1595) | Size threshold (bytes) at which a warning is logged about uncommitted WAL data. Default is 50MB. |
+| <code>public WalCorruptionMode CorruptionMode { get; set; } = WalCorruptionMode.Alert;</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1604](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1604) | Controls how the WAL behaves when corrupted records are detected during recovery. Defaults to WalCorruptionMode.Alert so corruption is never silent: the durability backstop must not discard records without an operator signal. Set to WalCorruptionMode.Halt to require manual operator review, or opt into WalCorruptionMode.Skip only when silent-skip is acceptable. |
 
 ## WalRecord
 
 Qualified name: <code>Meridian.Storage.Archival.WalRecord</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Archival/WriteAheadLog.cs:1512](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1512).
+Source: [src/Meridian.Storage/Archival/WriteAheadLog.cs:1542](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1542).
 
 A record in the Write-Ahead Log.
 
@@ -398,18 +398,18 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public long Sequence { get; set; }</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1514](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1514) |  |
-| <code>public DateTime Timestamp { get; set; }</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1515](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1515) |  |
-| <code>public string RecordType { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1516](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1516) |  |
-| <code>public string Payload { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1517](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1517) |  |
-| <code>public string Checksum { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1518](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1518) |  |
-| <code>public T? DeserializePayload&lt;T&gt;();</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1520](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1520) |  |
+| <code>public long Sequence { get; set; }</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1544](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1544) |  |
+| <code>public DateTime Timestamp { get; set; }</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1545](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1545) |  |
+| <code>public string RecordType { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1546](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1546) |  |
+| <code>public string Payload { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1547](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1547) |  |
+| <code>public string Checksum { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1548](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1548) |  |
+| <code>public T? DeserializePayload&lt;T&gt;();</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1550](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1550) |  |
 
 ## WalRepairResult
 
 Qualified name: <code>Meridian.Storage.Archival.WalRepairResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Archival/WriteAheadLog.cs:1625](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1625).
+Source: [src/Meridian.Storage/Archival/WriteAheadLog.cs:1655](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1655).
 
 Result of a WAL repair operation.
 
@@ -421,7 +421,7 @@ public sealed record WalRepairResult(int TotalRecords, int ValidRecords, int Cor
 
 Qualified name: <code>Meridian.Storage.Archival.WalSyncMode</code>. Kind: `enum`.
 
-Source: [src/Meridian.Storage/Archival/WriteAheadLog.cs:1580](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1580).
+Source: [src/Meridian.Storage/Archival/WriteAheadLog.cs:1610](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1610).
 
 WAL synchronization modes.
 
@@ -433,9 +433,9 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>NoSync</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1585](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1585) | No explicit sync - relies on OS buffering (fastest, least durable). |
-| <code>BatchedSync</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1590](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1590) | Sync after batches of writes (balanced). |
-| <code>EveryWrite</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1595](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1595) | Sync after every write (slowest, most durable). |
+| <code>NoSync</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1615](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1615) | No explicit sync - relies on OS buffering (fastest, least durable). |
+| <code>BatchedSync</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1620](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1620) | Sync after batches of writes (balanced). |
+| <code>EveryWrite</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1625](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1625) | Sync after every write (slowest, most durable). |
 
 ## WriteAheadLog
 
@@ -462,14 +462,14 @@ Declared public members:
 | <code>public void ReportUnreadablePayload(bool recordSkip = true);</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:115](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L115) | Records a checksum-valid record whose payload a replay consumer could not deserialize, applying the same corruption counters and Alert-mode signal as record-level corruption so semantic payload failures are never dropped without a monitoring signal. Callers enforcing WalCorruptionMode.Halt should report with recordSkip set to false before throwing, so the corruption is counted without claiming the record was skipped. |
 | <code>public event Action&lt;long&gt;? CorruptionDetected;</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:144](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L144) | Raised when a corrupted WAL record is detected during recovery, provided WalOptions.CorruptionMode is WalCorruptionMode.Alert. The argument is the number of corrupted records found in the current recovery pass. Subscribe to this event to forward alerts to your monitoring infrastructure. |
 | <code>public async Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:149](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L149) | Initialize the WAL, recovering any uncommitted transactions. |
-| <code>public Task&lt;WalRecord&gt; AppendAsync&lt;T&gt;(T data, string recordType, CancellationToken ct = default);</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:212](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L212) | Append a record to the WAL. |
-| <code>public async Task CommitAsync(long throughSequence, CancellationToken ct = default);</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:285](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L285) | Commit a batch of records, marking them as successfully persisted. |
-| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:321](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L321) | Flush any buffered writes to disk. |
-| <code>public async IAsyncEnumerable&lt;WalRecord&gt; GetUncommittedRecordsAsync([System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:546](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L546) | Get uncommitted records for replay/recovery using streaming reads. Processes records in batches to avoid loading entire WAL into memory. |
-| <code>public async Task TruncateAsync(long throughSequence, CancellationToken ct = default);</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:622](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L622) | Truncate WAL files that have been fully committed. Eligibility normally comes from segment-name metadata alone: file names embed the monotonic sequence counter at creation, so a completed segment&#x27;s records are bounded by its successor&#x27;s embedded base and no record scan is needed. Segments whose names do not parse (or whose ordering cannot be trusted) fall back to a full record scan. Runs under its own lock so appends and commits are never stalled behind truncation I/O such as archive compression. |
-| <code>public bool RecoveryEnumerationIsSequenceOrdered();</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:757](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L757) | Reports whether segment names prove that GetUncommittedRecordsAsync yields records in non-decreasing sequence order. |
-| <code>public async Task&lt;WalRepairResult&gt; RepairAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1237](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1237) | Repairs all WAL files by scanning every record, validating checksums, and rewriting only valid records into new WAL files. Corrupted records are discarded and counted in the result. |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1397](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1397) |  |
+| <code>public Task&lt;WalRecord&gt; AppendAsync&lt;T&gt;(T data, string recordType, CancellationToken ct = default);</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:214](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L214) | Append a record to the WAL. |
+| <code>public async Task CommitAsync(long throughSequence, CancellationToken ct = default);</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:300](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L300) | Commit a batch of records, marking them as successfully persisted. |
+| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:336](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L336) | Flush any buffered writes to disk. |
+| <code>public async IAsyncEnumerable&lt;WalRecord&gt; GetUncommittedRecordsAsync([System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:561](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L561) | Get uncommitted records for replay/recovery using streaming reads. Processes records in batches to avoid loading entire WAL into memory. |
+| <code>public async Task TruncateAsync(long throughSequence, CancellationToken ct = default);</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:637](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L637) | Truncate WAL files that have been fully committed. Eligibility normally comes from segment-name metadata alone: file names embed the monotonic sequence counter at creation, so a completed segment&#x27;s records are bounded by its successor&#x27;s embedded base and no record scan is needed. Segments whose names do not parse (or whose ordering cannot be trusted) fall back to a full record scan. Runs under its own lock so appends and commits are never stalled behind truncation I/O such as archive compression. |
+| <code>public bool RecoveryEnumerationIsSequenceOrdered();</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:772](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L772) | Reports whether segment names prove that GetUncommittedRecordsAsync yields records in non-decreasing sequence order. |
+| <code>public async Task&lt;WalRepairResult&gt; RepairAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1252](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1252) | Repairs all WAL files by scanning every record, validating checksums, and rewriting only valid records into new WAL files. Corrupted records are discarded and counted in the result. |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Archival/WriteAheadLog.cs:1427](../../../../src/Meridian.Storage/Archival/WriteAheadLog.cs#L1427) |  |
 
 ## ArchivePolicyConfig
 

@@ -63,6 +63,22 @@
                 </StackPanel>
             </Border>
 
+            <!-- Saved shortcut overrides: status and reset -->
+            <DockPanel Margin="0,0,0,16" LastChildFill="True">
+                <Button x:Name="ResetShortcutsButton"
+                        DockPanel.Dock="Right"
+                        Content="Reset to defaults"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        AutomationProperties.AutomationId="KeyboardShortcutsResetButton"
+                        AutomationProperties.Name="Reset keyboard shortcuts to defaults"
+                        ToolTip="Restore every shortcut's default key binding and re-enable disabled shortcuts."
+                        Click="OnResetShortcutsClick" />
+                <TextBlock x:Name="ShortcutOverrideStatusText"
+                           VerticalAlignment="Center"
+                           Style="{StaticResource CardDescriptionStyle}"
+                           AutomationProperties.AutomationId="KeyboardShortcutsOverrideStatus" />
+            </DockPanel>
+
             <!-- Dynamically populated shortcuts panel -->
             <StackPanel x:Name="DynamicShortcutsPanel" />
 

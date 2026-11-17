@@ -3409,7 +3409,7 @@ items:
     health: yellow
     priority: high
     evidence_posture: in_progress
-    status_note: Fixed-rate simple interest from approved terms becomes a reviewed source draft with a proposed counterpart. Browser and WPF request surfaces and a PostgreSQL post-and-deliver run were recorded 2026-11-16, pending owner acceptance and a Windows run of the WPF control; fees and floating rates stay open.
+    status_note: Fixed-rate interest from approved terms becomes a reviewed source draft with a proposed counterpart. Browser and WPF surfaces exist; since 2026-11-17 the PostgreSQL post-and-deliver run uses durable legal, profile, lifecycle and draft stores. Awaits owner acceptance and a Windows WPF run; fees and floating rates open.
     decision_ids:
       - DEC-IC-ACCRUAL-001
     pr_references: []
@@ -3450,4 +3450,4 @@ items:
         path: tests/Meridian.Ui.Tests/Services/IntercompanyInterestAccrualWorkspaceTests.cs
       - type: test
         path: tests/Meridian.Tests/Storage/IntercompanyAccrualPostAndDeliverPostgresTests.cs
-    last_reviewed: 2026-11-16
+    last_reviewed: 2026-11-17

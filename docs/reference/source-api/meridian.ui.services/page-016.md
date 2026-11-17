@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TradeSide
+
+Qualified name: <code>Meridian.Ui.Services.TradeSide</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:521](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L521).
+
+Trade side indicator.
+
+```csharp
+public enum TradeSide : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unknown</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:523](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L523) |  |
+| <code>Buy</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:524](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L524) |  |
+| <code>Sell</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:525](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L525) |  |
+
 ## TradingCalendarService
 
 Qualified name: <code>Meridian.Ui.Services.TradingCalendarService</code>. Kind: `class`.

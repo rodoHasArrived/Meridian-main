@@ -118,4 +118,7 @@
 2. **Notifications & quiet-hours panel (Idea 3)** — the backend exists; it only needs a control, and it removes a hand-edited file setting.
 3. **One preferences contract for browser and WPF (Idea 2)** — directly advances W8-WPF-PARITY-001.
 
-**Quick win (one day):** persist WPF shortcut overrides. Add an overrides dictionary to the `DesktopShellPreferences` record, save it through the existing `PersistDesktopShellPreferencesCore` (`SettingsConfigurationService.cs:557`), which already migrates legacy payloads, and add "Reset to defaults" on `KeyboardShortcutsPage`. No new endpoint needed.
+**Quick win (one day):** persist WPF shortcut overrides. *Update 2026-11-17: implemented —
+overrides now persist with the desktop shell preferences and reapply at startup, with the
+modifier guardrail from Idea 4 and a "Reset to defaults" button. Implementation found no in-app
+rebinding editor, so rebinding itself still needs one (see Idea 4).* Add an overrides dictionary to the `DesktopShellPreferences` record, save it through the existing `PersistDesktopShellPreferencesCore` (`SettingsConfigurationService.cs:557`), which already migrates legacy payloads, and add "Reset to defaults" on `KeyboardShortcutsPage`. No new endpoint needed.

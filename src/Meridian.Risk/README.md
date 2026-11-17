@@ -15,6 +15,11 @@ last_reviewed: 2026-11-13
 
 `PositionLimitRule` optionally measures the limit against the filled position plus same-side working orders (via an `IOrderManager` accessor), excluding the order being amended. A pending amendment counts as its larger-quantity outcome (`IOrderManager.GetUnitReservingOrders`).
 
+A zero or negative limit means "no limit configured" in every rule, `PositionLimitRule` included,
+matching the operator control service, which stores such limits as unset. `GrossExposureRule`
+rejections carry `Code = GROSS_EXPOSURE_EXCEEDED`, the projected gross exposure as
+`ObservedValue`, and the ceiling as `LimitValue`.
+
 `BrokeragePortfolioStateRule` requires a current, complete and reconciled account snapshot before
 live admission, independently of configurable exposure ceilings. Scoped exposure uses broker
 holdings, cash, buying power and currency, with remaining working orders reserved in the same

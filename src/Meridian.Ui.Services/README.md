@@ -6,7 +6,7 @@ module_id: SRC-UI-SERVICES
 path: src/Meridian.Ui.Services
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-17
 ---
 
 # src/Meridian.Ui.Services
@@ -117,6 +117,15 @@ Provider IDs use the shared ProviderSdk identity map for request paths, mutation
 status joins and catalog deduplication. Aliases resolve to one canonical status row and retain the
 service field schema; ambiguous duplicate service rows remain unavailable. Status projections retain
 verification state and timestamp so callers can distinguish configured from verified credentials.
+
+`DesktopShellPreferences` holds the desktop shell density and the operator's keyboard shortcut
+overrides (`ShortcutOverrides`, keyed by action id, with keys and modifiers stored as WPF enum
+names so this contract stays free of WPF types). `SettingsConfigurationService` persists both in
+`%LOCALAPPDATA%\Meridian\desktop-shell-preferences.json` through a temp-file-then-move write:
+`SetShortcutOverrides` replaces the whole set (empty restores defaults) and preserves density,
+density changes preserve overrides, files without overrides still load, and null or blank entries
+in a hand-edited file are skipped. Validating overrides against registered shortcuts belongs to the
+WPF `KeyboardShortcutService`.
 
 `SettingsConfigurationService.GetProviderCredentialStatusesAsync` reads the authenticated service's
 credential states. Missing, ambiguous or refused responses remain unavailable, even when environment

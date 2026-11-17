@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolOperationResponse
+
+Qualified name: <code>Meridian.Ui.Services.SymbolOperationResponse</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:671](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L671).
+
+Carries API single-symbol operation success, message, and error.
+
+```csharp
+public sealed class SymbolOperationResponse
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:673](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L673) |  |
+| <code>public string? Message { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:674](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L674) |  |
+| <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:675](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L675) |  |
+
 ## SymbolOperationResult
 
 Qualified name: <code>Meridian.Ui.Services.SymbolOperationResult</code>. Kind: `class`.
@@ -1119,23 +1139,3 @@ Declared public members:
 | <code>public decimal Price { get; set; }</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:513](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L513) |  |
 | <code>public decimal Size { get; set; }</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:514](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L514) |  |
 | <code>public TradeSide Side { get; set; }</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:515](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L515) |  |
-
-## TradeSide
-
-Qualified name: <code>Meridian.Ui.Services.TradeSide</code>. Kind: `enum`.
-
-Source: [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:521](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L521).
-
-Trade side indicator.
-
-```csharp
-public enum TradeSide : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unknown</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:523](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L523) |  |
-| <code>Buy</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:524](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L524) |  |
-| <code>Sell</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:525](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L525) |  |

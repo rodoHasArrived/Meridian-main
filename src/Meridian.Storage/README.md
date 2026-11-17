@@ -303,6 +303,12 @@ replay stays at-least-once. New WAL segments fsync their header and directory en
 `NoSync`), and `JsonlStorageSink` fsyncs the directory of a newly created day file, and the parents
 of directories created for it, at the first durability barrier.
 
+WAL record types containing `|` or a line break, and payloads containing a raw line break, are
+refused before they are written, because recovery could not parse them back. `RepairAsync` holds
+the truncate lock, and every segment listing sorts ordinally. `AtomicFileWriter.AppendAsync`
+serializes appends to one path within the process, so concurrent copy-on-write appends keep
+every line.
+
 `JsonlAppendWriter` appends lines to an append-only JSONL log in place and fsyncs them, truncating a
 torn final line first; `JsonlStorageSink` uses the same torn-tail repair for its day files. Use it
 for logs that grow with every event. `AtomicFileWriter.AppendLinesAsync` still copies the whole

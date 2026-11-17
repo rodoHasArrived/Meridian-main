@@ -33,6 +33,11 @@ resting limit and stop orders neither fill nor trigger until current data arrive
 are unaffected. The pre-trade guard (`AggregatePortfolioExposureProvider`) captures through the
 same policy, so it predicts the matcher under either setting.
 
+A paper limit or stop order keeps one gateway id (`PAPER-{seq}`) across its New report and its
+later fill, and every terminal outcome claims the order exactly once, so a racing cancel or
+background evaluation cannot add a second fill or a cancel beside a fill. `ModifyOrderAsync`
+refuses a zero or negative quantity or price and leaves the order resting unchanged.
+
 Reg T short sales post the collateral the broker holds (proceeds × the short initial rate) from `Cash` to `Short Sale Collateral Receivable`, and covering releases it back, so ledger cash equals the account's free cash while a short is open.
 
 `OrderManagementSystem.GetUnitReservingOrders` reserves the larger-quantity outcome of each pending amendment (the original order still executes if the amendment fails); `GetExposureReservingOrders` keeps the larger-value outcome.

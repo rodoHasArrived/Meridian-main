@@ -75,6 +75,51 @@ public sealed class PaperTradingGatewayConcurrencyTests
         submit.FilledQuantity.Should().Be(0m);
     }
 
+    [Fact]
+    public async Task RestingFill_ReportsTheSameGatewayOrderIdAsTheNewReport()
+    {
+        var cache = new LiveMarketDataCache();
+        cache.RecordTrade(Symbol, new Trade(
+            DateTimeOffset.UtcNow, Symbol, 100m, Size: 100, Aggressor: AggressorSide.Buy, SequenceNumber: 1));
+        await using var gateway = new ExecutionGateway(NullLogger<ExecutionGateway>.Instance, liveFeed: cache);
+
+        var accepted = await gateway.SubmitOrderAsync(Limit(limitPrice: 95m, TimeInForce.Day));
+        cache.RecordTrade(Symbol, new Trade(
+            DateTimeOffset.UtcNow, Symbol, 94m, Size: 100, Aggressor: AggressorSide.Sell, SequenceNumber: 2));
+        gateway.EvaluateSymbol(Symbol);
+        var fill = await NextRestingReportAsync(gateway, TimeSpan.FromSeconds(10));
+
+        accepted.OrderStatus.Should().Be(OrderStatus.Accepted);
+        fill.Should().NotBeNull();
+        fill!.OrderStatus.Should().Be(OrderStatus.Filled);
+        fill.GatewayOrderId.Should().Be(accepted.GatewayOrderId,
+            "one order carries one gateway id across its New and Fill reports");
+    }
+
+    [Theory]
+    [InlineData(0, null)]
+    [InlineData(-1, null)]
+    [InlineData(null, 0)]
+    [InlineData(null, -5)]
+    public async Task Modify_WithNonPositiveQuantityOrPrice_IsRejectedAndLeavesTheOrderUnchanged(int? quantity, int? limitPrice)
+    {
+        var cache = new LiveMarketDataCache();
+        cache.RecordTrade(Symbol, new Trade(
+            DateTimeOffset.UtcNow, Symbol, 100m, Size: 100, Aggressor: AggressorSide.Buy, SequenceNumber: 1));
+        await using var gateway = new ExecutionGateway(NullLogger<ExecutionGateway>.Instance, liveFeed: cache);
+        await gateway.SubmitOrderAsync(Limit(limitPrice: 95m, TimeInForce.Day));
+
+        var modified = await gateway.ModifyOrderAsync(OrderId, new OrderModification
+        {
+            NewQuantity = quantity,
+            NewLimitPrice = limitPrice
+        });
+
+        modified.OrderStatus.Should().Be(OrderStatus.Rejected);
+        (await gateway.CancelOrderAsync(OrderId)).OrderStatus.Should().Be(OrderStatus.Cancelled,
+            "the original order is still resting after the refused modification");
+    }
+
     private static OrderRequest Limit(decimal limitPrice, TimeInForce timeInForce) => new()
     {
         Symbol = Symbol,

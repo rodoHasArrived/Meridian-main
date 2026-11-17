@@ -425,7 +425,15 @@ public partial class App : System.Windows.Application
         services.AddSingleton<WpfServices.ConfigService>(_ => WpfServices.ConfigService.Instance);
         services.AddSingleton<WpfServices.ThemeService>(_ => WpfServices.ThemeService.Instance);
         services.AddSingleton<WpfServices.NotificationService>(_ => WpfServices.NotificationService.Instance);
-        services.AddSingleton<WpfServices.KeyboardShortcutService>(_ => WpfServices.KeyboardShortcutService.Instance);
+        services.AddSingleton<WpfServices.KeyboardShortcutService>(_ =>
+        {
+            // Operator shortcut overrides live with the other desktop shell preferences so a
+            // rebinding or a disabled shortcut survives a restart.
+            var shortcuts = WpfServices.KeyboardShortcutService.Instance;
+            var settings = Meridian.Ui.Services.Services.SettingsConfigurationService.Instance;
+            shortcuts.AttachPreferenceStore(settings.GetShortcutOverrides(), settings.SetShortcutOverrides);
+            return shortcuts;
+        });
         services.AddSingleton<WpfServices.MessagingService>(_ => WpfServices.MessagingService.Instance);
         services.AddSingleton<WpfServices.ApiStatusService>();
         services.AddSingleton<IStatusService>(sp => sp.GetRequiredService<WpfServices.ApiStatusService>());

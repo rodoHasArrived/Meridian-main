@@ -64,7 +64,14 @@ public sealed class PaperTradingGateway :
     /// <summary>One resting limit/stop order, with its stop-trigger state.</summary>
     private sealed class RestingPaperOrder
     {
-        public RestingPaperOrder(OrderRequest request) => Request = request;
+        public RestingPaperOrder(OrderRequest request, string gatewayOrderId)
+        {
+            Request = request;
+            GatewayOrderId = gatewayOrderId;
+        }
+
+        /// <summary>The gateway id reported on the New report; every later report for this order reuses it.</summary>
+        public string GatewayOrderId { get; }
 
         /// <summary>Current request (replaced atomically under the instance lock on modify).</summary>
         public OrderRequest Request { get; set; }
@@ -243,7 +250,7 @@ public sealed class PaperTradingGateway :
         // are keyed solely by id, so a duplicate id would collide in the tracking map and
         // become impossible to cancel/modify independently — reject it instead of
         // accepting an order the gateway cannot manage.
-        var resting = new RestingPaperOrder(request with { ClientOrderId = orderId });
+        var resting = new RestingPaperOrder(request with { ClientOrderId = orderId }, gatewayOrderId);
         if (!_restingOrders.TryAdd(orderId, resting))
         {
             return BuildReport(request, orderId, gatewayOrderId, ExecutionReportType.Rejected,
@@ -333,6 +340,22 @@ public sealed class PaperTradingGateway :
     public Task<ExecutionReport> ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(modification);
+
+        // A zero or negative replacement would rest an order that can never be valid (and a
+        // zero-quantity order could "fill" for nothing); refuse it before touching the order.
+        if (modification.NewQuantity is <= 0m || modification.NewLimitPrice is <= 0m || modification.NewStopPrice is <= 0m)
+        {
+            return Task.FromResult(new ExecutionReport
+            {
+                OrderId = orderId,
+                ReportType = ExecutionReportType.Rejected,
+                Symbol = string.Empty,
+                Side = OrderSide.Buy,
+                OrderStatus = OrderStatus.Rejected,
+                RejectReason = "Modified quantity and prices must be positive.",
+                Timestamp = DateTimeOffset.UtcNow
+            });
+        }
 
         if (!_restingOrders.TryGetValue(orderId, out var resting))
         {
@@ -455,7 +478,7 @@ public sealed class PaperTradingGateway :
                 }
 
                 var report = await BuildFillReportAsync(
-                    request, orderId, gatewayOrderId: orderId, match.FillPrice!.Value, observation,
+                    request, orderId, resting.GatewayOrderId, match.FillPrice!.Value, observation,
                     CancellationToken.None).ConfigureAwait(false);
 
                 await EmitRestingReportAsync(report, orderId).ConfigureAwait(false);

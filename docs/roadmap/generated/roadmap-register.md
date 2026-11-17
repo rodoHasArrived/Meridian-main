@@ -2651,11 +2651,11 @@ W12-FINRPT-001: planned; health green; evidence planned_evidence. Bind existing 
 | Priority | high |
 | Owner lane | Accounting and Ledger |
 | Evidence posture | in_progress |
-| Last reviewed | 2026-11-16 |
+| Last reviewed | 2026-11-17 |
 
 ### Current Summary
 
-W12-ICACCRUAL-001: in_progress; health yellow; evidence in_progress. Fixed-rate simple interest from approved terms becomes a reviewed source draft with a proposed counterpart. Browser and WPF request surfaces and a PostgreSQL post-and-deliver run were recorded 2026-11-16, pending owner acceptance and a Windows run of the WPF control; fees and floating rates stay open.
+W12-ICACCRUAL-001: in_progress; health yellow; evidence in_progress. Fixed-rate interest from approved terms becomes a reviewed source draft with a proposed counterpart. Browser and WPF surfaces exist; since 2026-11-17 the PostgreSQL post-and-deliver run uses durable legal, profile, lifecycle and draft stores. Awaits owner acceptance and a Windows WPF run; fees and floating rates open.
 
 ### Status References
 
