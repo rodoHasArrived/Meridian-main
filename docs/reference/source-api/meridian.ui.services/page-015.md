@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolMappingsConfig
+
+Qualified name: <code>Meridian.Ui.Services.SymbolMappingsConfig</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:690](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L690).
+
+Symbol mapping configuration stored on disk.
+
+```csharp
+public sealed class SymbolMappingsConfig
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Version { get; set; } = &quot;1.0&quot;;</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:692](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L692) |  |
+| <code>public DateTime LastUpdated { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:693](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L693) |  |
+| <code>public SymbolMapping[]? Mappings { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:694](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L694) |  |
+
 ## SymbolMappingService
 
 Qualified name: <code>Meridian.Ui.Services.SymbolMappingService</code>. Kind: `class`.
@@ -1126,28 +1146,3 @@ Declared public members:
 | <code>public TourStep Step { get; init; } = null !;</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:550](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L550) |  |
 | <code>public bool IsFirst { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:551](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L551) |  |
 | <code>public bool IsLast { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:552](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L552) |  |
-
-## TradeEvent
-
-Qualified name: <code>Meridian.Ui.Services.TradeEvent</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/LiveDataService.cs:188](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L188).
-
-Carries a live trade&#x27;s symbol, price, size, venue, sequence, and reported side.
-
-```csharp
-public sealed class TradeEvent
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:190](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L190) |  |
-| <code>public decimal Price { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:191](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L191) |  |
-| <code>public decimal Size { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:192](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L192) |  |
-| <code>public DateTime Timestamp { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:193](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L193) |  |
-| <code>public string Exchange { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:194](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L194) |  |
-| <code>public string Condition { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:195](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L195) |  |
-| <code>public long SequenceNumber { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:196](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L196) |  |
-| <code>public string Side { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:197](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L197) |  |

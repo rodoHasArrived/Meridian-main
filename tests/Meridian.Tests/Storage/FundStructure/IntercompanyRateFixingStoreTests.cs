@@ -14,22 +14,6 @@ public sealed class IntercompanyRateFixingStoreTests(FundAccountDatabaseFixture 
 {
     private static readonly DateOnly Date = new(2026, 3, 30);
 
-    [Fact]
-    public async Task FileStore_KeepsEveryVersion_RefusesStaleWrites_AndIsTenantScoped()
-    {
-        var root = Path.Combine(Path.GetTempPath(), "meridian-fixings-" + Guid.NewGuid().ToString("N"));
-        try
-        {
-            await AssertContractAsync(tenant => new FileIntercompanyRateFixingStore(root, new Tenant(tenant)));
-            Assert.Single(Directory.EnumerateFiles(root, "*.json"));
-        }
-        finally
-        {
-            if (Directory.Exists(root))
-                Directory.Delete(root, recursive: true);
-        }
-    }
-
     [FundAccountDatabaseFact]
     public async Task PostgresStore_KeepsEveryVersion_RefusesStaleWrites_AndRejectsRewrites()
     {
@@ -61,7 +45,7 @@ public sealed class IntercompanyRateFixingStoreTests(FundAccountDatabaseFixture 
         finally { await FundAccountDatabaseFixture.DropSchemaAsync(options.ConnectionString, options.Schema); }
     }
 
-    private static async Task AssertContractAsync(Func<string?, IIntercompanyRateFixingStore> create)
+    internal static async Task AssertContractAsync(Func<string?, IIntercompanyRateFixingStore> create)
     {
         var store = create("tenant-a");
         var service = new IntercompanyRateFixingService(store);
@@ -87,8 +71,28 @@ public sealed class IntercompanyRateFixingStoreTests(FundAccountDatabaseFixture 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() => create("tenant-b").AppendAsync(approved with { Version = 3 }, 2));
     }
 
-    private sealed class Tenant(string? tenant) : IFundScopeTenantAccessor
+    internal sealed class Tenant(string? tenant) : IFundScopeTenantAccessor
     {
         public string? ResolveCallerTenant() => tenant;
+    }
+}
+
+/// <summary>The file store needs no database, so it runs without the PostgreSQL fixture.</summary>
+public sealed class FileIntercompanyRateFixingStoreTests
+{
+    [Fact]
+    public async Task FileStore_KeepsEveryVersion_RefusesStaleWrites_AndIsTenantScoped()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-fixings-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            await IntercompanyRateFixingStoreTests.AssertContractAsync(tenant => new FileIntercompanyRateFixingStore(root, new IntercompanyRateFixingStoreTests.Tenant(tenant)));
+            Assert.Single(Directory.EnumerateFiles(root, "*.json"));
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
     }
 }
