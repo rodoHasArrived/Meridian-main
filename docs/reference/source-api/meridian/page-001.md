@@ -252,7 +252,7 @@ Qualified name: <code>Meridian.WorkstationAssetTree</code>. Kind: `class`.
 
 Source: [src/Meridian/WorkstationAssetTree.cs:10](../../../../src/Meridian/WorkstationAssetTree.cs#L10).
 
-Resolves the browser-workstation asset tree the host serves (PRD-018). The canonical tree is the tracked bundle at src/Meridian.Ui/wwwroot/workstation — the same tree the dashboard build writes, the publish/install lanes copy, and the docs name — so the repo-launch, published, and installed lanes all serve one verified bundle instead of resolving whatever happens to sit under the launch directory.
+Resolves the browser-workstation asset tree the host serves (PRD-018). The canonical tree is the built bundle at src/Meridian.Ui/wwwroot/workstation (a gitignored build output) — the same tree the dashboard build writes, the publish/install lanes copy, and the docs name — so the repo-launch, published, and installed lanes all serve one verified bundle instead of resolving whatever happens to sit under the launch directory.
 
 ```csharp
 public static class WorkstationAssetTree
