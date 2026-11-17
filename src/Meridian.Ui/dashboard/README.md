@@ -651,6 +651,14 @@ the host holds a record, missing shortcut overrides mean "none", so a reset in o
 the others. A failed read (no session, an older host, offline) leaves preferences browser-only for
 the visit and saves nothing; a failed save keeps the local value and retries with the next change.
 Last write wins across browsers. Fixture sessions stay browser-only. The values are display-only.
+Settings > Preferences > Notifications (`screens/settings-screen.notification-preferences.tsx`, store
+`lib/notification-preferences.ts`) holds the pop-up switch, five notification types (connection,
+errors, backfill, data gaps, storage), quiet hours as 24-hour `HH:mm` times in the display time zone
+(a window ending earlier than it starts runs past midnight; the end minute is not quiet; equal times
+never hold anything), and a test button that says when pop-ups are off or held. The set syncs with
+the other preferences. In the browser the switch and quiet hours hold price-alert system pop-ups
+(`popUpsAllowed`); triggers still reach the notification center and alert history. The five types
+govern the desktop app's toasts.
 The host set also carries the WPF desktop's shortcut overrides (`desktopKeyBindings`); the browser
 never applies or sends them, and the host keeps them when a browser save leaves them out.
 

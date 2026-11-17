@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ValidationExtensions
+
+Qualified name: <code>Meridian.Ui.Services.Services.ValidationExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/FormValidationRules.cs:251](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L251).
+
+Extension methods for working with multiple validation results.
+
+```csharp
+public static class ValidationExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ValidationResult Combine(params ValidationResult[] results);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:258](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L258) | Combines multiple validation results, returning the first error or warning found. |
+
 ## ValidationResult
 
 Qualified name: <code>Meridian.Ui.Services.Services.ValidationResult</code>. Kind: `class`.
@@ -1168,34 +1186,3 @@ Declared public members:
 | <code>public event EventHandler&lt;SymbolGroupEventArgs&gt;? GroupUpdated;</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:298](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L298) | Event raised when a group is updated. |
 | <code>public event EventHandler&lt;SymbolGroupEventArgs&gt;? GroupDeleted;</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:303](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L303) | Event raised when a group is deleted. |
 | <code>public event EventHandler? GroupsReordered;</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:308](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L308) | Event raised when groups are reordered. |
-
-## SymbolInfo
-
-Qualified name: <code>Meridian.Ui.Services.SymbolInfo</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:500](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L500).
-
-Describes a symbol&#x27;s contract identity, subscription settings, monitoring, and collected-data activity.
-
-```csharp
-public sealed class SymbolInfo
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:502](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L502) |  |
-| <code>public bool SubscribeTrades { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:503](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L503) |  |
-| <code>public bool SubscribeDepth { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:504](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L504) |  |
-| <code>public int DepthLevels { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:505](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L505) |  |
-| <code>public string Exchange { get; set; } = &quot;SMART&quot;;</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:506](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L506) |  |
-| <code>public string SecurityType { get; set; } = &quot;STK&quot;;</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:507](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L507) |  |
-| <code>public string Currency { get; set; } = &quot;USD&quot;;</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:508](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L508) |  |
-| <code>public string? LocalSymbol { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:509](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L509) |  |
-| <code>public string? PrimaryExchange { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:510](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L510) |  |
-| <code>public bool IsMonitored { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:511](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L511) |  |
-| <code>public bool HasArchivedData { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:512](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L512) |  |
-| <code>public DateTime? LastTradeTime { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:513](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L513) |  |
-| <code>public long TotalTrades { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:514](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L514) |  |
-| <code>public long TotalQuotes { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:515](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L515) |  |

@@ -13,6 +13,21 @@ export interface OperatorPreferenceValues {
    * never applies or sends them, and the host keeps them when a save leaves them out.
    */
   desktopKeyBindings?: Record<string, OperatorDesktopShortcut> | null;
+  /** Pop-up notification choices and quiet hours, shared with the WPF desktop. */
+  notifications?: OperatorNotificationPreferences | null;
+}
+
+/** Mirror of OperatorNotificationPreferencesDto; null keeps the client default. Times are HH:mm in the display zone. */
+export interface OperatorNotificationPreferences {
+  enabled?: boolean | null;
+  connectionStatus?: boolean | null;
+  errors?: boolean | null;
+  backfillComplete?: boolean | null;
+  dataGaps?: boolean | null;
+  storageWarnings?: boolean | null;
+  quietHoursEnabled?: boolean | null;
+  quietHoursStart?: string | null;
+  quietHoursEnd?: string | null;
 }
 
 /** One WPF desktop shortcut's difference from its default, with WPF key and modifier names. */

@@ -3,6 +3,7 @@ import { readSectionDescriptionsHidden, resetSectionDescriptionChoices, setSecti
 import { readStoredDensity, writeStoredDensity } from "@/lib/density";
 import { getDisplayTimeZone, reloadDisplayTimeZone, setDisplayTimeZone } from "@/lib/display-time-zone";
 import { getGlobalKeyBinding, reloadKeyBindingOverrides, setKeyBindingOverride } from "@/lib/keymap";
+import { DEFAULT_NOTIFICATION_PREFERENCES, getNotificationPreferences, reloadNotificationPreferences, setNotificationPreferences } from "@/lib/notification-preferences";
 import { onOperatorPreferencesApplied } from "@/lib/operator-preference-events";
 import { readStoredAppearance, writeStoredAppearance } from "@/lib/theme";
 import type { OperatorPreferences, OperatorPreferenceValues } from "@/types/operator-preferences";
@@ -14,6 +15,7 @@ function resetBrowserPreferences() {
   localStorage.clear();
   reloadDisplayTimeZone();
   reloadKeyBindingOverrides();
+  reloadNotificationPreferences();
   resetSectionDescriptionChoices();
   document.documentElement.removeAttribute("data-theme");
   document.body.removeAttribute("data-theme-density");
@@ -85,7 +87,8 @@ describe("startOperatorPreferenceSync", () => {
       density: "default",
       displayTimeZone: "Asia/Tokyo",
       pageDescriptionsHidden: false,
-      keyBindings: { "keyboard-help": "F1" }
+      keyBindings: { "keyboard-help": "F1" },
+      notifications: DEFAULT_NOTIFICATION_PREFERENCES
     });
     expect(readStoredAppearance()).toBe("light");
     stop();
@@ -163,6 +166,36 @@ describe("startOperatorPreferenceSync", () => {
     stop();
   });
 
+  it("applies the host's notification choices and saves a later notification change", async () => {
+    const save = vi.fn(async (preferences: OperatorPreferenceValues) => hostWith(preferences));
+    const host = hostWith({
+      appearance: "system",
+      density: "default",
+      displayTimeZone: "UTC",
+      pageDescriptionsHidden: false,
+      keyBindings: null,
+      notifications: { enabled: true, backfillComplete: false, quietHoursEnabled: true, quietHoursStart: "23:00", quietHoursEnd: "bad" }
+    });
+    const stop = startOperatorPreferenceSync({ operatorKey: OPERATOR, load: async () => host, save, debounceMs: 0 });
+    await settle();
+
+    expect(getNotificationPreferences()).toEqual({
+      ...DEFAULT_NOTIFICATION_PREFERENCES,
+      backfillComplete: false,
+      quietHoursEnabled: true,
+      quietHoursStart: "23:00"
+    });
+    expect(save).not.toHaveBeenCalled();
+
+    setNotificationPreferences({ ...getNotificationPreferences(), dataGaps: false });
+    await vi.advanceTimersByTimeAsync(0);
+    await settle();
+
+    expect(save).toHaveBeenCalledTimes(1);
+    expect(save.mock.calls[0]![0].notifications).toMatchObject({ backfillComplete: false, dataGaps: false, quietHoursStart: "23:00" });
+    stop();
+  });
+
   it("saves the whole set once after a burst of operator changes", async () => {
     const save = vi.fn(async (preferences: OperatorPreferenceValues) => hostWith(preferences));
     const host = hostWith({ appearance: "system", density: "default", displayTimeZone: "UTC", pageDescriptionsHidden: false, keyBindings: null });
@@ -184,7 +217,8 @@ describe("startOperatorPreferenceSync", () => {
       density: "default",
       displayTimeZone: "America/New_York",
       pageDescriptionsHidden: true,
-      keyBindings: null
+      keyBindings: null,
+      notifications: DEFAULT_NOTIFICATION_PREFERENCES
     });
     stop();
   });
@@ -258,7 +292,8 @@ describe("readLocalOperatorPreferences", () => {
       density: "default",
       displayTimeZone: "UTC",
       pageDescriptionsHidden: false,
-      keyBindings: null
+      keyBindings: null,
+      notifications: DEFAULT_NOTIFICATION_PREFERENCES
     });
   });
 });

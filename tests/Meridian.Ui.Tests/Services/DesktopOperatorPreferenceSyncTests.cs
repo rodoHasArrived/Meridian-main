@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Contracts.Workstation;
+using Meridian.Ui.Services;
 using Meridian.Ui.Services.Contracts;
 using Meridian.Ui.Services.Services;
 
@@ -92,6 +93,27 @@ public sealed class DesktopOperatorPreferenceSyncTests
         }
 
         public void HasLocalShortcuts(IReadOnlyDictionary<string, DesktopShortcutOverride> overrides) => ShortcutOverrides = overrides;
+
+        public NotificationSettings Notifications { get; private set; } = new() { SoundType = "Subtle" };
+
+        public int NotificationsApplied { get; private set; }
+
+        public event EventHandler? NotificationsChanged;
+
+        public void ApplyNotifications(NotificationSettings settings)
+        {
+            Notifications = settings;
+            NotificationsApplied++;
+            NotificationsChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        public void OperatorChangesNotifications(Action<NotificationSettings> change)
+        {
+            var next = Notifications.Copy();
+            change(next);
+            Notifications = next;
+            NotificationsChanged?.Invoke(this, EventArgs.Empty);
+        }
     }
 
     private static readonly IReadOnlyDictionary<string, DesktopShortcutOverride> NoShortcuts =
@@ -299,6 +321,100 @@ public sealed class DesktopOperatorPreferenceSyncTests
         DesktopOperatorPreferenceMapping.SameShortcuts(host, HostShortcuts(NoShortcuts)).Should().BeFalse();
         DesktopOperatorPreferenceMapping.SameShortcuts(null, HostShortcuts(NoShortcuts)).Should().BeFalse("not stored differs from every default");
         DesktopOperatorPreferenceMapping.SameShortcuts(null, null).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task StartAsync_AppliesTheHostsNotificationChoicesWithoutSavingBack()
+    {
+        var api = new FakeApi
+        {
+            Stored = Host(new OperatorPreferenceValuesDto(Notifications: new OperatorNotificationPreferencesDto(
+                BackfillComplete: false,
+                QuietHoursEnabled: true,
+                QuietHoursStart: "23:15",
+                QuietHoursEnd: "bad")))
+        };
+        var surface = new FakeSurface();
+        using var sync = new DesktopOperatorPreferenceSync(api, surface, _ => { });
+
+        await sync.StartAsync();
+
+        surface.NotificationsApplied.Should().Be(1);
+        surface.Notifications.NotifyBackfillComplete.Should().BeFalse();
+        surface.Notifications.NotifyErrors.Should().BeTrue("an unset type keeps its default");
+        surface.Notifications.QuietHoursEnabled.Should().BeTrue();
+        surface.Notifications.QuietHoursStart.Should().Be(new TimeSpan(23, 15, 0));
+        surface.Notifications.QuietHoursEnd.Should().Be(QuietHours.DefaultEnd, "an unreadable time keeps its default");
+        surface.Notifications.SoundType.Should().Be("Subtle", "the sound choice is desktop-only");
+        await Task.Delay(50);
+        api.Saves.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task StartAsync_LeavesNotificationsAloneWhenTheHostHasNone()
+    {
+        var api = new FakeApi { Stored = Host(new OperatorPreferenceValuesDto(Appearance: "dark")) };
+        var surface = new FakeSurface();
+        using var sync = new DesktopOperatorPreferenceSync(api, surface, _ => { });
+
+        await sync.StartAsync();
+
+        surface.NotificationsApplied.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task NotificationChange_SavesOnlyTheNotificationSetAndKeepsEverythingElse()
+    {
+        var api = new FakeApi
+        {
+            Stored = Host(new OperatorPreferenceValuesDto(
+                Appearance: "dark",
+                DisplayTimeZone: "Europe/London",
+                DesktopKeyBindings: HostShortcuts(HelpDisabledAndDashboardOnCtrlShiftH())))
+        };
+        var surface = new FakeSurface();
+        using var sync = new DesktopOperatorPreferenceSync(api, surface, _ => { });
+        await sync.StartAsync();
+        var before = api.Stored!.Preferences;
+
+        surface.OperatorChangesNotifications(settings =>
+        {
+            settings.NotifyDataGaps = false;
+            settings.QuietHoursEnabled = true;
+        });
+        await WaitForAsync(() => api.Saves.Count == 1);
+
+        var saved = api.Saves.Should().ContainSingle().Subject;
+        saved.Notifications.Should().Be(new OperatorNotificationPreferencesDto(
+            Enabled: true,
+            ConnectionStatus: true,
+            Errors: true,
+            BackfillComplete: true,
+            DataGaps: false,
+            StorageWarnings: true,
+            QuietHoursEnabled: true,
+            QuietHoursStart: "22:00",
+            QuietHoursEnd: "07:00"));
+        saved.Should().BeEquivalentTo(before with { Notifications = saved.Notifications }, "only the notification set changes");
+    }
+
+    [Fact]
+    public void NotificationMapping_RoundTrips()
+    {
+        var settings = new NotificationSettings
+        {
+            Enabled = false,
+            NotifyConnectionStatus = false,
+            NotifyStorageWarnings = false,
+            QuietHoursEnabled = true,
+            QuietHoursStart = new TimeSpan(21, 45, 0),
+            QuietHoursEnd = new TimeSpan(6, 30, 0)
+        };
+
+        var host = DesktopOperatorPreferenceMapping.ToHostNotifications(settings);
+        host.QuietHoursStart.Should().Be("21:45");
+        DesktopOperatorPreferenceMapping.ToNotificationSettings(host, new NotificationSettings())
+            .Should().BeEquivalentTo(settings);
     }
 
     [Fact]

@@ -85,6 +85,11 @@
 - **What:** "Notifications" card under Settings > Preferences: per-type toggles (connection, errors, backfill complete, data gaps, storage), quiet hours in the operator's display time zone, a "test notification" button.
 - **Problem:** Overnight backfill-complete toasts can only be silenced by editing `appsettings.json` and restarting.
 - **Fit:** Fields already exist on the `NotificationServiceBase` settings. Store per operator through Idea 1, not as host config. Takes effect immediately, so the impact banner shows `Live`.
+- *Update 2026-11-17: implemented. Settings > Preferences > Notifications (browser) and the WPF
+  Settings Notifications card edit one operator set (`OperatorNotificationPreferencesDto`) synced
+  through the host preferences. WPF applies it to its toasts; the browser holds price-alert system
+  pop-ups with the switch and quiet hours. Quiet hours are `HH:mm` in the display time zone. The WPF
+  sound choice is still not applied.*
 - **Effort:** Low–Medium. **Impact:** Medium–High.
 
 ### Idea 4: Rebindable, saved shortcuts

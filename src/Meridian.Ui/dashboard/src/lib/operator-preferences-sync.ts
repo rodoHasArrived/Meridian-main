@@ -1,5 +1,5 @@
 // Keeps the operator's presentation preferences (appearance, density, display time zone, page
-// descriptions, browser shortcut overrides) on the host so they follow the operator to another
+// descriptions, browser shortcut overrides, pop-up notification choices) on the host so they follow the operator to another
 // browser or machine. Each preference keeps its own browser store, which stays a local cache:
 //
 // 1. Once a session is known, read the operator's host preferences. A value the host holds wins
@@ -16,6 +16,13 @@ import { readSectionDescriptionsHidden, setSectionDescriptionsHidden } from "@/c
 import { applyDensity, isDensity, readStoredDensity, writeStoredDensity, type Density } from "@/lib/density";
 import { canonicalTimeZone, getDisplayTimeZone, setDisplayTimeZone } from "@/lib/display-time-zone";
 import { applyKeyBindingOverrides, getKeyBindingOverrides } from "@/lib/keymap";
+import {
+  DEFAULT_NOTIFICATION_PREFERENCES,
+  getNotificationPreferences,
+  normalizeNotificationPreferences,
+  setNotificationPreferences,
+  type NotificationPreferences
+} from "@/lib/notification-preferences";
 import { notifyOperatorPreferencesApplied, onOperatorPreferenceChanged } from "@/lib/operator-preference-events";
 import { applyAppearance, isAppearance, readStoredAppearance, writeStoredAppearance, type Appearance } from "@/lib/theme";
 import type { OperatorPreferences, OperatorPreferenceValues } from "@/types/operator-preferences";
@@ -27,6 +34,7 @@ export interface LocalOperatorPreferences {
   displayTimeZone: string;
   pageDescriptionsHidden: boolean;
   keyBindings: Record<string, string> | null;
+  notifications: NotificationPreferences;
 }
 
 export function readLocalOperatorPreferences(operatorKey: string | null): LocalOperatorPreferences {
@@ -36,8 +44,14 @@ export function readLocalOperatorPreferences(operatorKey: string | null): LocalO
     density: readStoredDensity(),
     displayTimeZone: getDisplayTimeZone(),
     pageDescriptionsHidden: readSectionDescriptionsHidden(operatorKey),
-    keyBindings: Object.keys(keyBindings).length > 0 ? sortRecord(keyBindings) : null
+    keyBindings: Object.keys(keyBindings).length > 0 ? sortRecord(keyBindings) : null,
+    notifications: { ...getNotificationPreferences() }
   };
+}
+
+/** The host's notification set as this browser reads it, or null when the host holds none. */
+function hostNotifications(values: OperatorPreferenceValues | undefined): NotificationPreferences | null {
+  return values?.notifications && typeof values.notifications === "object" ? normalizeNotificationPreferences(values.notifications) : null;
 }
 
 function sortRecord(record: Record<string, string>): Record<string, string> {
@@ -66,7 +80,8 @@ export function mergeOperatorPreferences(
     density: isDensity(values?.density) ? values.density : local.density,
     displayTimeZone: canonicalTimeZone(values?.displayTimeZone) ?? local.displayTimeZone,
     pageDescriptionsHidden: typeof values?.pageDescriptionsHidden === "boolean" ? values.pageDescriptionsHidden : local.pageDescriptionsHidden,
-    keyBindings: hostKeyBindings ?? (hostHasRecord ? null : local.keyBindings)
+    keyBindings: hostKeyBindings ?? (hostHasRecord ? null : local.keyBindings),
+    notifications: hostNotifications(values) ?? local.notifications
   };
 }
 
@@ -82,6 +97,8 @@ function hostHolds(host: OperatorPreferences | null | undefined, set: LocalOpera
     && canonicalTimeZone(values.displayTimeZone) === set.displayTimeZone
     && values.pageDescriptionsHidden === set.pageDescriptionsHidden
     && JSON.stringify(values.keyBindings ? sortRecord(values.keyBindings) : null) === JSON.stringify(set.keyBindings)
+    // A host without a notification set holds the defaults, so a browser on the defaults saves nothing.
+    && JSON.stringify(hostNotifications(values) ?? DEFAULT_NOTIFICATION_PREFERENCES) === JSON.stringify(set.notifications)
   );
 }
 
@@ -105,11 +122,14 @@ export function applyOperatorPreferences(next: LocalOperatorPreferences, operato
   if (JSON.stringify(next.keyBindings) !== JSON.stringify(current.keyBindings)) {
     applyKeyBindingOverrides(next.keyBindings);
   }
+  if (JSON.stringify(next.notifications) !== JSON.stringify(current.notifications)) {
+    setNotificationPreferences(next.notifications, false);
+  }
   notifyOperatorPreferencesApplied();
 }
 
 function toWire(set: LocalOperatorPreferences): OperatorPreferenceValues {
-  return { ...set };
+  return { ...set, notifications: { ...set.notifications } };
 }
 
 export interface OperatorPreferenceSyncOptions {

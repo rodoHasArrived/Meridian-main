@@ -102,6 +102,46 @@ public static class DesktopOperatorPreferenceMapping
     }
 
     /// <summary>
+    /// The desktop notification settings for a host notification set: each value the host holds,
+    /// otherwise the default (pop-ups on, every type on, quiet hours off from 22:00 to 07:00). A quiet-hours
+    /// time that does not read as <c>HH:mm</c> keeps its default. The sound choice is desktop-only and kept.
+    /// </summary>
+    public static NotificationSettings ToNotificationSettings(OperatorNotificationPreferencesDto host, NotificationSettings current)
+    {
+        ArgumentNullException.ThrowIfNull(host);
+        ArgumentNullException.ThrowIfNull(current);
+        return new NotificationSettings
+        {
+            Enabled = host.Enabled ?? true,
+            NotifyConnectionStatus = host.ConnectionStatus ?? true,
+            NotifyErrors = host.Errors ?? true,
+            NotifyBackfillComplete = host.BackfillComplete ?? true,
+            NotifyDataGaps = host.DataGaps ?? true,
+            NotifyStorageWarnings = host.StorageWarnings ?? true,
+            QuietHoursEnabled = host.QuietHoursEnabled ?? false,
+            QuietHoursStart = QuietHours.TryParseClock(host.QuietHoursStart, out var start) ? start : QuietHours.DefaultStart,
+            QuietHoursEnd = QuietHours.TryParseClock(host.QuietHoursEnd, out var end) ? end : QuietHours.DefaultEnd,
+            SoundType = current.SoundType
+        };
+    }
+
+    /// <summary>The host form of the desktop notification settings, with every value written out.</summary>
+    public static OperatorNotificationPreferencesDto ToHostNotifications(NotificationSettings settings)
+    {
+        ArgumentNullException.ThrowIfNull(settings);
+        return new OperatorNotificationPreferencesDto(
+            settings.Enabled,
+            settings.NotifyConnectionStatus,
+            settings.NotifyErrors,
+            settings.NotifyBackfillComplete,
+            settings.NotifyDataGaps,
+            settings.NotifyStorageWarnings,
+            settings.QuietHoursEnabled,
+            QuietHours.FormatClock(settings.QuietHoursStart),
+            QuietHours.FormatClock(settings.QuietHoursEnd));
+    }
+
+    /// <summary>
     /// Resolves an IANA display time zone with this machine's time zone data. False for a missing or
     /// unknown zone, in which case the desktop keeps showing times as it does today.
     /// </summary>
@@ -164,9 +204,9 @@ public sealed class OperatorPreferencesApiClient : IOperatorPreferencesApi
 }
 
 /// <summary>
-/// The desktop preferences the host sync reads and writes: the shell theme, density and keyboard
-/// shortcut overrides. Implemented by the WPF shell over its theme, desktop shell preference and
-/// keyboard shortcut services.
+/// The desktop preferences the host sync reads and writes: the shell theme, density, keyboard shortcut
+/// overrides and notification settings. Implemented by the WPF shell over its theme, desktop shell
+/// preference, keyboard shortcut and notification services.
 /// </summary>
 public interface IDesktopPreferenceSurface
 {
@@ -192,6 +232,15 @@ public interface IDesktopPreferenceSurface
 
     /// <summary>Raised after the operator rebinds, disables or resets a shortcut on this desktop.</summary>
     event EventHandler? ShortcutOverridesChanged;
+
+    /// <summary>The notification settings in effect on this desktop.</summary>
+    NotificationSettings Notifications { get; }
+
+    /// <summary>Replaces this desktop's notification settings.</summary>
+    void ApplyNotifications(NotificationSettings settings);
+
+    /// <summary>Raised after the notification settings change on this desktop.</summary>
+    event EventHandler? NotificationsChanged;
 }
 
 /// <summary>
@@ -207,6 +256,8 @@ public interface IDesktopPreferenceSurface
 /// saved with only the appearance and density replaced; a shortcut change likewise replaces only the
 /// desktop shortcut overrides. Browser-only values (time zone, page descriptions, browser shortcut
 /// overrides, a <c>spacious</c> density) are kept.</item>
+/// <item>Notification choices and quiet hours (<see cref="OperatorPreferenceValuesDto.Notifications"/>)
+/// held by the host replace this desktop's at start; a desktop change saves only that set.</item>
 /// <item>When the host cannot be read at start (no session, an older host, offline), the desktop
 /// stays local for the run and saves nothing. A failed save keeps the local change.</item>
 /// </list>
@@ -265,6 +316,7 @@ public sealed class DesktopOperatorPreferenceSync : IDisposable
         _syncing = true;
         _surface.PreferenceChanged += OnPreferenceChanged;
         _surface.ShortcutOverridesChanged += OnShortcutOverridesChanged;
+        _surface.NotificationsChanged += OnNotificationsChanged;
 
         if (host.Preferences.DesktopKeyBindings is null && _surface.ShortcutOverrides.Count > 0)
         {
@@ -293,6 +345,16 @@ public sealed class DesktopOperatorPreferenceSync : IDisposable
                     DesktopOperatorPreferenceMapping.ToHostShortcuts(_surface.ShortcutOverrides)))
             {
                 _surface.ApplyShortcutOverrides(DesktopOperatorPreferenceMapping.ToDesktopShortcuts(hostShortcuts));
+            }
+
+            if (values.Notifications is { } hostNotifications)
+            {
+                var notifications = DesktopOperatorPreferenceMapping.ToNotificationSettings(hostNotifications, _surface.Notifications);
+                if (DesktopOperatorPreferenceMapping.ToHostNotifications(notifications)
+                    != DesktopOperatorPreferenceMapping.ToHostNotifications(_surface.Notifications))
+                {
+                    _surface.ApplyNotifications(notifications);
+                }
             }
 
             ApplyDisplayTimeZone(values.DisplayTimeZone);
@@ -331,6 +393,16 @@ public sealed class DesktopOperatorPreferenceSync : IDisposable
         _ = SaveShortcutOverridesAsync(_lifetime.Token);
     }
 
+    private void OnNotificationsChanged(object? sender, EventArgs e)
+    {
+        if (_applyingHostValues || Volatile.Read(ref _disposed) != 0)
+        {
+            return;
+        }
+
+        _ = SaveNotificationsAsync(_lifetime.Token);
+    }
+
     /// <summary>
     /// Saves the current desktop theme and density into the operator's host set, keeping every other
     /// stored value. Exposed for tests; the sync calls it after each operator change.
@@ -353,6 +425,18 @@ public sealed class DesktopOperatorPreferenceSync : IDisposable
             current => current with
             {
                 DesktopKeyBindings = DesktopOperatorPreferenceMapping.ToHostShortcuts(_surface.ShortcutOverrides)
+            },
+            ct);
+
+    /// <summary>
+    /// Saves this desktop's notification settings into the operator's host set, keeping every other
+    /// stored value. Exposed for tests; the sync calls it after each notification change.
+    /// </summary>
+    public Task SaveNotificationsAsync(CancellationToken ct = default)
+        => SaveAsync(
+            current => current with
+            {
+                Notifications = DesktopOperatorPreferenceMapping.ToHostNotifications(_surface.Notifications)
             },
             ct);
 
@@ -383,6 +467,7 @@ public sealed class DesktopOperatorPreferenceSync : IDisposable
             if (next.Appearance == current.Appearance
                 && next.Density == current.Density
                 && DesktopOperatorPreferenceMapping.SameShortcuts(next.DesktopKeyBindings, current.DesktopKeyBindings)
+                && next.Notifications == current.Notifications
                 && latest.UpdatedAt is not null)
             {
                 return;
@@ -413,6 +498,7 @@ public sealed class DesktopOperatorPreferenceSync : IDisposable
 
         _surface.PreferenceChanged -= OnPreferenceChanged;
         _surface.ShortcutOverridesChanged -= OnShortcutOverridesChanged;
+        _surface.NotificationsChanged -= OnNotificationsChanged;
         _lifetime.Cancel();
         _lifetime.Dispose();
     }

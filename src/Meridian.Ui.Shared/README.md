@@ -1246,7 +1246,8 @@ authenticated session and only ever read or write the caller's own record.
 
 `GET`/`PUT /api/workstation/operator/preferences` (`Endpoints/WorkstationEndpoints.OperatorPreferences.cs`)
 read and replace the signed-in operator's presentation preferences: appearance, density, display time
-zone, page-descriptions setting, browser shortcut overrides and WPF desktop shortcut overrides.
+zone, page-descriptions setting, browser shortcut overrides, WPF desktop shortcut overrides and pop-up
+notification choices with quiet hours.
 `Workflows/FileOperatorPreferenceStore.cs`
 keeps one record per tenant, company and user (the same key as the default scope) under
 `workstation/operators/preferences.json`, through the snapshot store's atomic replace. A save
@@ -1256,7 +1257,9 @@ is stored as "every desktop shortcut on its default". Values are validated: appe
 the shared `OperatorPreferenceVocabulary` sets, the zone by IANA-name shape (at most 64 characters; the browser confirms it against its
 own zone data), at most 32 browser shortcut overrides with hyphenated lowercase ids and printable combos
 of at most 64 characters, and at most 64 desktop shortcut overrides with letter-and-digit action ids,
-key names and comma-separated modifier names (entries with nothing set are dropped). An invalid value returns 400 naming the field and keeps the stored set.
+key names and comma-separated modifier names (entries with nothing set are dropped), and
+notification quiet-hours times as 24-hour `HH:mm` (a notification set with nothing chosen stores
+nothing). An invalid value returns 400 naming the field and keeps the stored set.
 Both routes require an authenticated session, only touch the caller's record, and return 501 when
 no store is registered. The values are display-only and never change stored or ledger data.
 

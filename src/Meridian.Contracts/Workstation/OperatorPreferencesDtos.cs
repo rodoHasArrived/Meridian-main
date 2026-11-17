@@ -36,13 +36,43 @@ public static class OperatorPreferenceVocabulary
 /// <param name="DesktopKeyBindings">WPF desktop shortcut overrides, keyed by desktop action id (for example
 /// <c>NavigateDashboard</c>). Owned by the desktop: a save that leaves this null keeps the stored set, so a
 /// browser save never clears it; an empty set means every desktop shortcut is on its default.</param>
+/// <param name="Notifications">Which pop-up notifications the operator wants and their quiet hours, shared by
+/// the browser and WPF clients.</param>
 public sealed record OperatorPreferenceValuesDto(
     string? Appearance = null,
     string? Density = null,
     string? DisplayTimeZone = null,
     bool? PageDescriptionsHidden = null,
     IReadOnlyDictionary<string, string>? KeyBindings = null,
-    IReadOnlyDictionary<string, OperatorDesktopShortcutDto>? DesktopKeyBindings = null);
+    IReadOnlyDictionary<string, OperatorDesktopShortcutDto>? DesktopKeyBindings = null,
+    OperatorNotificationPreferencesDto? Notifications = null);
+
+/// <summary>
+/// The operator's pop-up notification choices. Each value is optional: null keeps the client default
+/// (pop-ups on, every type on, quiet hours off from 22:00 to 07:00). Quiet hours are wall-clock times
+/// (<c>HH:mm</c>, 24-hour) in the operator's display time zone; a window whose start is later than its
+/// end runs past midnight, and an equal start and end is an empty window. Pop-ups only: notification
+/// feeds, history and alert records are unaffected.
+/// </summary>
+/// <param name="Enabled">False hides every pop-up notification.</param>
+/// <param name="ConnectionStatus">Provider connected and connection-lost pop-ups.</param>
+/// <param name="Errors">Error and warning pop-ups.</param>
+/// <param name="BackfillComplete">Backfill finished or failed pop-ups.</param>
+/// <param name="DataGaps">Data-gap pop-ups.</param>
+/// <param name="StorageWarnings">Low-storage pop-ups.</param>
+/// <param name="QuietHoursEnabled">True holds pop-ups between <paramref name="QuietHoursStart"/> and <paramref name="QuietHoursEnd"/>.</param>
+/// <param name="QuietHoursStart">Start of quiet hours, <c>HH:mm</c>.</param>
+/// <param name="QuietHoursEnd">End of quiet hours (exclusive), <c>HH:mm</c>.</param>
+public sealed record OperatorNotificationPreferencesDto(
+    bool? Enabled = null,
+    bool? ConnectionStatus = null,
+    bool? Errors = null,
+    bool? BackfillComplete = null,
+    bool? DataGaps = null,
+    bool? StorageWarnings = null,
+    bool? QuietHoursEnabled = null,
+    string? QuietHoursStart = null,
+    string? QuietHoursEnd = null);
 
 /// <summary>
 /// One WPF desktop shortcut's difference from its default. Each value is optional: null keeps the

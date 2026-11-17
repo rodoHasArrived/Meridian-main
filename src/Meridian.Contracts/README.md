@@ -484,7 +484,10 @@ page-descriptions setting, browser shortcut overrides keyed by binding id, and W
 overrides (`DesktopKeyBindings`, `OperatorDesktopShortcutDto` with WPF key and modifier names) keyed
 by desktop action id. Every value is optional; null means nothing is stored and the client keeps its
 own value. The desktop owns `DesktopKeyBindings`: a save that leaves it null keeps the stored set,
-and an empty set means every desktop shortcut is on its default. The values are display-only. `OperatorPreferenceVocabulary` holds the shared appearance (`system`, `light`, `dark`)
+and an empty set means every desktop shortcut is on its default. `Notifications`
+(`OperatorNotificationPreferencesDto`) holds the pop-up switch, five notification types and quiet
+hours as `HH:mm` times in the display time zone; unset values keep the client default. The values
+are display-only. `OperatorPreferenceVocabulary` holds the shared appearance (`system`, `light`, `dark`)
 and density (`compact`, `default`, `spacious`) values that the host store validates against and both
 clients map to their own types.
 

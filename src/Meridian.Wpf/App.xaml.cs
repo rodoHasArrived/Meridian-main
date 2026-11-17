@@ -74,7 +74,7 @@ public partial class App : System.Windows.Application
     private WpfServices.WpfDesktopPreferenceSurface? _operatorPreferenceSurface;
 
     /// <summary>
-    /// Applies the operator's host theme, density and desktop shortcut overrides and saves desktop
+    /// Applies the operator's host theme, density, desktop shortcut overrides and notification settings and saves desktop
     /// changes back. A host that cannot be read leaves the desktop local for this run; nothing here
     /// blocks startup.
     /// </summary>
@@ -84,7 +84,8 @@ public partial class App : System.Windows.Application
         _operatorPreferenceSurface = new WpfServices.WpfDesktopPreferenceSurface(
             WpfServices.ThemeService.Instance,
             SettingsConfigurationService.Instance,
-            WpfServices.KeyboardShortcutService.Instance);
+            WpfServices.KeyboardShortcutService.Instance,
+            WpfServices.NotificationService.Instance);
         _operatorPreferenceSync = new DesktopOperatorPreferenceSync(
             new OperatorPreferencesApiClient(apiClient),
             _operatorPreferenceSurface);

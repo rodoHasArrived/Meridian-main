@@ -6,13 +6,40 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FormValidationRules
+
+Qualified name: <code>Meridian.Ui.Services.Services.FormValidationRules</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/FormValidationRules.cs:9](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L9).
+
+Shared validation rules for form validation across desktop applications. Extracted from FormValidationService implementations to eliminate duplicate validation logic.
+
+```csharp
+public static class FormValidationRules
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ValidationResult ValidateRequired(string? value, string fieldName = &quot;This field&quot;);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:17](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L17) | Validates that a field is not empty. |
+| <code>public static ValidationResult ValidateSymbol(string? value);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:30](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L30) | Validates a stock symbol format. Symbols must be 1-10 characters, start with a letter, and contain only letters, numbers, dots, dashes, and slashes. |
+| <code>public static ValidationResult ValidateSymbolList(string? value, int maxSymbols = 100);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:52](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L52) | Validates a comma-separated list of symbols. |
+| <code>public static ValidationResult ValidateDateRange(DateTimeOffset? fromDate, DateTimeOffset? toDate);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:83](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L83) | Validates a date range for data collection or backfill. |
+| <code>public static ValidationResult ValidateDateRange(string? dateStr);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:104](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L104) | Validates a date string in ISO format (YYYY-MM-DD). |
+| <code>public static ValidationResult ValidateApiKey(string? value);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:121](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L121) | Validates an API key format. |
+| <code>public static ValidationResult ValidateUrl(string? value, string fieldName = &quot;URL&quot;);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:138](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L138) | Validates a URL format. |
+| <code>public static ValidationResult ValidatePort(int? value);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:154](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L154) | Validates a network port number. |
+| <code>public static ValidationResult ValidateFilePath(string? value);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:170](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L170) | Validates a file path format. |
+| <code>public static ValidationResult ValidateNumericRange(double? value, double min, double max, string fieldName = &quot;Value&quot;);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:193](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L193) | Validates that a numeric value is within a specified range. |
+
 ## IDesktopPreferenceSurface
 
 Qualified name: <code>Meridian.Ui.Services.Services.IDesktopPreferenceSurface</code>. Kind: `interface`.
 
-Source: [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:171](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L171).
+Source: [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:211](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L211).
 
-The desktop preferences the host sync reads and writes: the shell theme, density and keyboard shortcut overrides. Implemented by the WPF shell over its theme, desktop shell preference and keyboard shortcut services.
+The desktop preferences the host sync reads and writes: the shell theme, density, keyboard shortcut overrides and notification settings. Implemented by the WPF shell over its theme, desktop shell preference, keyboard shortcut and notification services.
 
 ```csharp
 public interface IDesktopPreferenceSurface
@@ -22,14 +49,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>AppTheme Theme { get; }</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:173](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L173) |  |
-| <code>ShellDensityMode Density { get; }</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:175](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L175) |  |
-| <code>void ApplyTheme(AppTheme theme);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:177](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L177) |  |
-| <code>void ApplyDensity(ShellDensityMode density);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:179](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L179) |  |
-| <code>event EventHandler? PreferenceChanged;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:182](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L182) | Raised after the operator changes the theme or density on this desktop. |
-| <code>IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; ShortcutOverrides { get; }</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:185](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L185) | The shortcut overrides in effect on this desktop: each shortcut&#x27;s difference from its default. |
-| <code>void ApplyShortcutOverrides(IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; overrides);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:191](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L191) | Replaces this desktop&#x27;s shortcut overrides (empty restores every default) and keeps them in the local desktop preferences, so they still apply when the host cannot be reached. |
-| <code>event EventHandler? ShortcutOverridesChanged;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:194](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L194) | Raised after the operator rebinds, disables or resets a shortcut on this desktop. |
+| <code>AppTheme Theme { get; }</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:213](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L213) |  |
+| <code>ShellDensityMode Density { get; }</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:215](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L215) |  |
+| <code>void ApplyTheme(AppTheme theme);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:217](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L217) |  |
+| <code>void ApplyDensity(ShellDensityMode density);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:219](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L219) |  |
+| <code>event EventHandler? PreferenceChanged;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:222](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L222) | Raised after the operator changes the theme or density on this desktop. |
+| <code>IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; ShortcutOverrides { get; }</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:225](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L225) | The shortcut overrides in effect on this desktop: each shortcut&#x27;s difference from its default. |
+| <code>void ApplyShortcutOverrides(IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; overrides);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:231](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L231) | Replaces this desktop&#x27;s shortcut overrides (empty restores every default) and keeps them in the local desktop preferences, so they still apply when the host cannot be reached. |
+| <code>event EventHandler? ShortcutOverridesChanged;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:234](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L234) | Raised after the operator rebinds, disables or resets a shortcut on this desktop. |
+| <code>NotificationSettings Notifications { get; }</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:237](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L237) | The notification settings in effect on this desktop. |
+| <code>void ApplyNotifications(NotificationSettings settings);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:240](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L240) | Replaces this desktop&#x27;s notification settings. |
+| <code>event EventHandler? NotificationsChanged;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:243](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L243) | Raised after the notification settings change on this desktop. |
 
 ## InfoBarConstants
 
@@ -145,7 +175,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.Services.IOperatorPreferencesApi</code>. Kind: `interface`.
 
-Source: [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:127](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L127).
+Source: [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:167](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L167).
 
 Reads and replaces the signed-in operator&#x27;s presentation preferences on the host.
 
@@ -157,8 +187,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;OperatorPreferencesDto?&gt; GetAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:130](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L130) | The stored set, or null when the host could not be read (no session, older host, offline). |
-| <code>Task&lt;OperatorPreferencesDto?&gt; SaveAsync(OperatorPreferenceValuesDto preferences, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:133](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L133) | Replaces the stored set. Returns the saved set, or null when the save failed. |
+| <code>Task&lt;OperatorPreferencesDto?&gt; GetAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:170](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L170) | The stored set, or null when the host could not be read (no session, older host, offline). |
+| <code>Task&lt;OperatorPreferencesDto?&gt; SaveAsync(OperatorPreferenceValuesDto preferences, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:173](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L173) | Replaces the stored set. Returns the saved set, or null when the save failed. |
 
 ## IQualityArchiveStore
 
@@ -301,7 +331,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.Services.NotificationEventArgs</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:42](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L42).
+Source: [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:47](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L47).
 
 Event args for notification received.
 
@@ -313,17 +343,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string Title { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:44](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L44) |  |
-| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:45](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L45) |  |
-| <code>public NotificationType Type { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:46](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L46) |  |
-| <code>public string Tag { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:47](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L47) |  |
-| <code>public int DurationMs { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:48](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L48) |  |
+| <code>public string Title { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:49](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L49) |  |
+| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:50](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L50) |  |
+| <code>public NotificationType Type { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:51](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L51) |  |
+| <code>public string Tag { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:52](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L52) |  |
+| <code>public int DurationMs { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:53](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L53) |  |
 
 ## NotificationHistoryItem
 
 Qualified name: <code>Meridian.Ui.Services.Services.NotificationHistoryItem</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:29](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L29).
+Source: [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:34](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L34).
 
 Notification history item.
 
@@ -335,18 +365,18 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string Title { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:31](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L31) |  |
-| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:32](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L32) |  |
-| <code>public NotificationType Type { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:33](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L33) |  |
-| <code>public DateTime Timestamp { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:34](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L34) |  |
-| <code>public string Tag { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:35](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L35) |  |
-| <code>public bool IsRead { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:36](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L36) |  |
+| <code>public string Title { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:36](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L36) |  |
+| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:37](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L37) |  |
+| <code>public NotificationType Type { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:38](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L38) |  |
+| <code>public DateTime Timestamp { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:39](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L39) |  |
+| <code>public string Tag { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:40](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L40) |  |
+| <code>public bool IsRead { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:41](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L41) |  |
 
 ## NotificationServiceBase
 
 Qualified name: <code>Meridian.Ui.Services.Services.NotificationServiceBase</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:57](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L57).
+Source: [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:62](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L62).
 
 Abstract base class for notification management shared between platforms. Provides smart suppression (deduplication + rate limiting), history tracking, settings management, and domain-specific notification methods. Part of Phase 2 service extraction.
 
@@ -358,34 +388,36 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public event EventHandler&lt;NotificationEventArgs&gt;? NotificationReceived;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:72](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L72) |  |
-| <code>public void ShowNotification(string title, string message, NotificationType type = NotificationType.Info, int durationMs = 5000);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:74](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L74) |  |
-| <code>public Task NotifyErrorAsync(string title, string message, Exception? exception = null);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:149](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L149) |  |
-| <code>public void NotifySuccess(string title, string message) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:161](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L161) |  |
-| <code>public void NotifyWarning(string title, string message);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:164](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L164) |  |
-| <code>public Task NotifyWarningAsync(string title, string message);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:171](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L171) |  |
-| <code>public Task NotifyAsync(string title, string message, NotificationType type = NotificationType.Info);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:177](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L177) |  |
-| <code>public void NotifyInfo(string title, string message) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:183](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L183) |  |
-| <code>public Task NotifyConnectionStatusAsync(bool connected, string providerName, string? details = null);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:186](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L186) |  |
-| <code>public Task NotifyBackfillCompleteAsync(bool success, int symbolCount, int barsWritten, TimeSpan duration);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:207](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L207) |  |
-| <code>public Task NotifyScheduledJobAsync(string jobName, bool started, bool success = true);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:223](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L223) |  |
-| <code>public Task NotifyDataGapAsync(string symbol, DateTime gapStart, DateTime gapEnd, int missingBars);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:238](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L238) |  |
-| <code>public Task NotifyStorageWarningAsync(double usedPercent, long freeSpaceBytes);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:252](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L252) |  |
-| <code>public void SendTestNotification() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:268](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L268) |  |
-| <code>public void UpdateSettings(NotificationSettings settings) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:271](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L271) |  |
-| <code>public NotificationSettings GetSettings() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:274](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L274) |  |
-| <code>public IReadOnlyList&lt;NotificationHistoryItem&gt; GetHistory();</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:276](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L276) |  |
-| <code>public void ClearHistory();</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:282](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L282) |  |
-| <code>public void MarkAsRead(int index);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:293](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L293) |  |
-| <code>public int GetUnreadCount();</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:302](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L302) |  |
+| <code>public event EventHandler&lt;NotificationEventArgs&gt;? NotificationReceived;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:89](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L89) |  |
+| <code>public event EventHandler? SettingsChanged;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:92](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L92) | Raised after UpdateSettings replaces the settings. |
+| <code>public void ShowNotification(string title, string message, NotificationType type = NotificationType.Info, int durationMs = 5000);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:94](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L94) |  |
+| <code>public Task NotifyErrorAsync(string title, string message, Exception? exception = null);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:169](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L169) |  |
+| <code>public void NotifySuccess(string title, string message) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:181](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L181) |  |
+| <code>public void NotifyWarning(string title, string message);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:184](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L184) |  |
+| <code>public Task NotifyWarningAsync(string title, string message);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:191](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L191) |  |
+| <code>public Task NotifyAsync(string title, string message, NotificationType type = NotificationType.Info);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:197](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L197) |  |
+| <code>public void NotifyInfo(string title, string message) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:203](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L203) |  |
+| <code>public Task NotifyConnectionStatusAsync(bool connected, string providerName, string? details = null);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:206](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L206) |  |
+| <code>public Task NotifyBackfillCompleteAsync(bool success, int symbolCount, int barsWritten, TimeSpan duration);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:227](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L227) |  |
+| <code>public Task NotifyScheduledJobAsync(string jobName, bool started, bool success = true);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:243](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L243) |  |
+| <code>public Task NotifyDataGapAsync(string symbol, DateTime gapStart, DateTime gapEnd, int missingBars);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:258](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L258) |  |
+| <code>public Task NotifyStorageWarningAsync(double usedPercent, long freeSpaceBytes);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:272](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L272) |  |
+| <code>public void SendTestNotification() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:288](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L288) |  |
+| <code>public void UpdateSettings(NotificationSettings settings);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:291](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L291) |  |
+| <code>public NotificationSettings GetSettings() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:297](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L297) |  |
+| <code>public IReadOnlyList&lt;NotificationHistoryItem&gt; GetHistory();</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:299](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L299) |  |
+| <code>public void ClearHistory();</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:305](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L305) |  |
+| <code>public void MarkAsRead(int index);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:316](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L316) |  |
+| <code>public int GetUnreadCount();</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:325](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L325) |  |
+| <code>public bool IsQuietHoursNow { get; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:340](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L340) | True while quiet hours hold pop-ups: enabled, and the current time in the operator&#x27;s display time zone falls inside the window. |
 
 ## NotificationSettings
 
 Qualified name: <code>Meridian.Ui.Services.Services.NotificationSettings</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:12](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L12).
+Source: [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:14](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L14).
 
-Notification settings.
+Notification settings. On the desktop these come from the operator&#x27;s host preferences (OperatorNotificationPreferencesDto); quiet hours are read in the operator&#x27;s display time zone (DisplayTimeZone).
 
 ```csharp
 public sealed class NotificationSettings
@@ -395,16 +427,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool Enabled { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:14](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L14) |  |
-| <code>public bool NotifyConnectionStatus { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:15](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L15) |  |
-| <code>public bool NotifyErrors { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:16](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L16) |  |
-| <code>public bool NotifyBackfillComplete { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:17](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L17) |  |
-| <code>public bool NotifyDataGaps { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:18](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L18) |  |
-| <code>public bool NotifyStorageWarnings { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:19](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L19) |  |
-| <code>public string SoundType { get; set; } = &quot;Default&quot;;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:20](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L20) |  |
-| <code>public bool QuietHoursEnabled { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:21](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L21) |  |
-| <code>public TimeSpan QuietHoursStart { get; set; } = new TimeSpan(22, 0, 0);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:22](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L22) |  |
-| <code>public TimeSpan QuietHoursEnd { get; set; } = new TimeSpan(7, 0, 0);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:23](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L23) |  |
+| <code>public bool Enabled { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:16](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L16) |  |
+| <code>public bool NotifyConnectionStatus { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:17](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L17) |  |
+| <code>public bool NotifyErrors { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:18](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L18) |  |
+| <code>public bool NotifyBackfillComplete { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:19](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L19) |  |
+| <code>public bool NotifyDataGaps { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:20](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L20) |  |
+| <code>public bool NotifyStorageWarnings { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:21](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L21) |  |
+| <code>public string SoundType { get; set; } = &quot;Default&quot;;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:22](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L22) |  |
+| <code>public bool QuietHoursEnabled { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:23](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L23) |  |
+| <code>public TimeSpan QuietHoursStart { get; set; } = new TimeSpan(22, 0, 0);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:24](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L24) |  |
+| <code>public TimeSpan QuietHoursEnd { get; set; } = new TimeSpan(7, 0, 0);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:25](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L25) |  |
+| <code>public NotificationSettings Copy() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:28](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L28) | An independent copy, so a change can be built without touching the settings in use. |
 
 ## OnboardingTip
 
@@ -432,7 +465,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.Services.OperatorPreferencesApiClient</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:137](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L137).
+Source: [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:177](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L177).
 
 Desktop client for UiApiRoutes.WorkstationOperatorPreferences.
 
@@ -444,9 +477,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public OperatorPreferencesApiClient(ApiClientService apiClient);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:141](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L141) |  |
-| <code>public async Task&lt;OperatorPreferencesDto?&gt; GetAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:146](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L146) |  |
-| <code>public async Task&lt;OperatorPreferencesDto?&gt; SaveAsync(OperatorPreferenceValuesDto preferences, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:154](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L154) |  |
+| <code>public OperatorPreferencesApiClient(ApiClientService apiClient);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:181](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L181) |  |
+| <code>public async Task&lt;OperatorPreferencesDto?&gt; GetAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:186](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L186) |  |
+| <code>public async Task&lt;OperatorPreferencesDto?&gt; SaveAsync(OperatorPreferenceValuesDto preferences, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:194](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L194) |  |
 
 ## PeriodicRefreshScheduler
 
@@ -1104,21 +1137,3 @@ Declared public members:
 | <code>public double Score { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:161](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L161) |  |
 | <code>public int EventCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:162](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L162) |  |
 | <code>public int AlertCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:163](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L163) |  |
-
-## ValidationExtensions
-
-Qualified name: <code>Meridian.Ui.Services.Services.ValidationExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/FormValidationRules.cs:251](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L251).
-
-Extension methods for working with multiple validation results.
-
-```csharp
-public static class ValidationExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ValidationResult Combine(params ValidationResult[] results);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:258](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L258) | Combines multiple validation results, returning the first error or warning found. |

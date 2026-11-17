@@ -101,6 +101,9 @@ public sealed partial class WorkstationEndpointsTests
         { DesktopShortcuts(("navigate-dashboard", new OperatorDesktopShortcutDto(Key: "D"))), "DesktopKeyBindings" },
         { DesktopShortcuts(("NavigateDashboard", new OperatorDesktopShortcutDto(Key: "Ctrl+D"))), "DesktopKeyBindings" },
         { DesktopShortcuts(("NavigateDashboard", new OperatorDesktopShortcutDto(Modifiers: "Control; Shift"))), "DesktopKeyBindings" },
+        { new OperatorPreferenceValuesDto(Notifications: new OperatorNotificationPreferencesDto(QuietHoursStart: "24:00")), "Notifications" },
+        { new OperatorPreferenceValuesDto(Notifications: new OperatorNotificationPreferencesDto(QuietHoursEnd: "7:00")), "Notifications" },
+        { new OperatorPreferenceValuesDto(Notifications: new OperatorNotificationPreferencesDto(QuietHoursEnd: "07:00pm")), "Notifications" },
         {
             new OperatorPreferenceValuesDto(DesktopKeyBindings: Enumerable.Range(0, 65)
                 .ToDictionary(index => $"Action{index}", _ => new OperatorDesktopShortcutDto(IsEnabled: false))),
@@ -110,6 +113,38 @@ public sealed partial class WorkstationEndpointsTests
 
     private static OperatorPreferenceValuesDto DesktopShortcuts(params (string Id, OperatorDesktopShortcutDto Shortcut)[] entries)
         => new(DesktopKeyBindings: entries.ToDictionary(entry => entry.Id, entry => entry.Shortcut));
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperatorPreferences_StoreNotificationChoicesAndQuietHours()
+    {
+        var store = NewOperatorPreferenceStore();
+        await using var app = await CreateAppAsync(services => services.AddSingleton<IOperatorPreferenceStore>(store),
+            currentUserPermissions: UserPermission.ViewTrades);
+        var client = app.GetTestClient();
+
+        // An operator silences overnight backfill pop-ups from 22:30 to 06:45.
+        (await client.PutAsJsonAsync(OperatorPreferencesPath, new OperatorPreferencesSaveRequest(new OperatorPreferenceValuesDto(
+            DisplayTimeZone: "Europe/London",
+            Notifications: new OperatorNotificationPreferencesDto(
+                BackfillComplete: false,
+                QuietHoursEnabled: true,
+                QuietHoursStart: " 22:30 ",
+                QuietHoursEnd: "06:45"))))).StatusCode.Should().Be(HttpStatusCode.OK);
+
+        using (var saved = await ReadJsonAsync(client, OperatorPreferencesPath))
+        {
+            var notifications = saved.RootElement.GetProperty("preferences").GetProperty("notifications");
+            notifications.GetProperty("backfillComplete").GetBoolean().Should().BeFalse();
+            notifications.GetProperty("quietHoursEnabled").GetBoolean().Should().BeTrue();
+            notifications.GetProperty("quietHoursStart").GetString().Should().Be("22:30");
+            notifications.GetProperty("quietHoursEnd").GetString().Should().Be("06:45");
+            notifications.GetProperty("errors").ValueKind.Should().Be(JsonValueKind.Null, "an unset type keeps the client default");
+        }
+
+        FileOperatorPreferenceStore.Normalize(new OperatorPreferenceValuesDto(
+                Notifications: new OperatorNotificationPreferencesDto(QuietHoursStart: " ", QuietHoursEnd: "")))
+            .Should().BeNull("a notification set with nothing chosen stores nothing");
+    }
 
     [Fact]
     public async Task MapWorkstationEndpoints_OperatorPreferences_BrowserSaveKeepsTheDesktopShortcuts()

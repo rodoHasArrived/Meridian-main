@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Workflows;
 
-/// <summary>Durable per-operator presentation preferences (theme, density, time zone, descriptions, shortcuts).</summary>
+/// <summary>Durable per-operator presentation preferences (theme, density, time zone, descriptions, shortcuts, notifications).</summary>
 public interface IOperatorPreferenceStore
 {
     Task<OperatorPreferencesDto> GetAsync(string operatorKey, CancellationToken ct = default);
@@ -123,9 +123,11 @@ public sealed partial class FileOperatorPreferenceStore
         var timeZone = TimeZoneName(preferences.DisplayTimeZone);
         var keyBindings = KeyBindings(preferences.KeyBindings);
         var desktopKeyBindings = DesktopKeyBindings(preferences.DesktopKeyBindings);
+        var notifications = Notifications(preferences.Notifications);
 
         if (appearance is null && density is null && timeZone is null
-            && preferences.PageDescriptionsHidden is null && keyBindings is null && desktopKeyBindings is null)
+            && preferences.PageDescriptionsHidden is null && keyBindings is null && desktopKeyBindings is null
+            && notifications is null)
         {
             return null;
         }
@@ -136,7 +138,8 @@ public sealed partial class FileOperatorPreferenceStore
             timeZone,
             preferences.PageDescriptionsHidden,
             keyBindings,
-            desktopKeyBindings);
+            desktopKeyBindings,
+            notifications);
     }
 
     private static string? OneOf(string? value, HashSet<string> allowed, string field)
@@ -263,6 +266,43 @@ public sealed partial class FileOperatorPreferenceStore
 
         return normalized;
     }
+
+    private static OperatorNotificationPreferencesDto? Notifications(OperatorNotificationPreferencesDto? notifications)
+    {
+        if (notifications is null)
+        {
+            return null;
+        }
+
+        var normalized = notifications with
+        {
+            QuietHoursStart = ClockTime(notifications.QuietHoursStart, nameof(OperatorNotificationPreferencesDto.QuietHoursStart)),
+            QuietHoursEnd = ClockTime(notifications.QuietHoursEnd, nameof(OperatorNotificationPreferencesDto.QuietHoursEnd))
+        };
+
+        return normalized == new OperatorNotificationPreferencesDto() ? null : normalized;
+    }
+
+    private static string? ClockTime(string? value, string part)
+    {
+        var trimmed = value?.Trim();
+        if (string.IsNullOrEmpty(trimmed))
+        {
+            return null;
+        }
+
+        if (!ClockTimePattern().IsMatch(trimmed))
+        {
+            throw new ArgumentException(
+                $"Notifications.{part} must be a 24-hour time written HH:mm, such as 22:00.",
+                nameof(OperatorPreferenceValuesDto.Notifications));
+        }
+
+        return trimmed;
+    }
+
+    [GeneratedRegex(@"^([01][0-9]|2[0-3]):[0-5][0-9]$", RegexOptions.CultureInvariant)]
+    private static partial Regex ClockTimePattern();
 
     [GeneratedRegex(@"^[A-Za-z][A-Za-z0-9]*$", RegexOptions.CultureInvariant)]
     private static partial Regex DesktopActionIdPattern();

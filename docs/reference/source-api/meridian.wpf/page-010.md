@@ -853,7 +853,7 @@ Qualified name: <code>Meridian.Wpf.Services.WpfDesktopPreferenceSurface</code>. 
 
 Source: [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:15](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L15).
 
-The desktop shell&#x27;s theme, density and keyboard shortcut overrides as DesktopOperatorPreferenceSync reads and writes them. Theme and shortcut changes touch UI state, so values applied from the host are marshalled onto the UI thread; the sync may call in from a background continuation. Host shortcut overrides are also written to the local desktop preferences, which stay the cache used when the host cannot be reached.
+The desktop shell&#x27;s theme, density, keyboard shortcut overrides and notification settings as DesktopOperatorPreferenceSync reads and writes them. Theme and shortcut changes touch UI state, so values applied from the host are marshalled onto the UI thread; the sync may call in from a background continuation. Host shortcut overrides are also written to the local desktop preferences, which stay the cache used when the host cannot be reached.
 
 ```csharp
 public sealed class WpfDesktopPreferenceSurface : IDesktopPreferenceSurface, IDisposable
@@ -863,16 +863,19 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public WpfDesktopPreferenceSurface(ThemeService themeService, SettingsConfigurationService settings, KeyboardShortcutService shortcuts);</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:23](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L23) |  |
-| <code>public AppTheme Theme =&gt; …;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:37](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L37) |  |
-| <code>public ShellDensityMode Density =&gt; …;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:39](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L39) |  |
-| <code>public event EventHandler? PreferenceChanged;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:41](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L41) |  |
-| <code>public IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; ShortcutOverrides =&gt; …;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:43](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L43) |  |
-| <code>public event EventHandler? ShortcutOverridesChanged;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:45](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L45) |  |
-| <code>public void ApplyTheme(AppTheme theme) =&gt; …;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:47](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L47) |  |
-| <code>public void ApplyDensity(ShellDensityMode density) =&gt; …;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:49](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L49) |  |
-| <code>public void ApplyShortcutOverrides(IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; overrides);</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:53](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L53) |  |
-| <code>public void Dispose();</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:96](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L96) |  |
+| <code>public WpfDesktopPreferenceSurface(ThemeService themeService, SettingsConfigurationService settings, KeyboardShortcutService shortcuts, NotificationServiceBase notifications);</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:24](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L24) |  |
+| <code>public AppTheme Theme =&gt; …;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:41](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L41) |  |
+| <code>public ShellDensityMode Density =&gt; …;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:43](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L43) |  |
+| <code>public event EventHandler? PreferenceChanged;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:45](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L45) |  |
+| <code>public IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; ShortcutOverrides =&gt; …;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:47](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L47) |  |
+| <code>public event EventHandler? ShortcutOverridesChanged;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:49](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L49) |  |
+| <code>public NotificationSettings Notifications =&gt; …;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:51](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L51) |  |
+| <code>public event EventHandler? NotificationsChanged;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:53](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L53) |  |
+| <code>public void ApplyNotifications(NotificationSettings settings);</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:57](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L57) |  |
+| <code>public void ApplyTheme(AppTheme theme) =&gt; …;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:65](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L65) |  |
+| <code>public void ApplyDensity(ShellDensityMode density) =&gt; …;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:67](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L67) |  |
+| <code>public void ApplyShortcutOverrides(IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; overrides);</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:71](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L71) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:114](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L114) |  |
 
 ## WpfRemoteWorkstationClient
 

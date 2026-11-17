@@ -135,7 +135,16 @@ zone, page-descriptions setting and browser shortcut overrides are kept. Desktop
 travel as `DesktopKeyBindings`: a host set (an empty set included) replaces this desktop's at start;
 when the host has none yet, this desktop's own overrides are saved up to seed it; and an operator
 rebind, toggle or reset saves only that set. `ToHostShortcuts`, `ToDesktopShortcuts` and
-`SameShortcuts` map and compare the two forms. A host that cannot be read at
+`SameShortcuts` map and compare the two forms. Notification choices travel as `Notifications`: a host
+set replaces the desktop's `NotificationSettings` at start (unset values take the defaults; the sound
+choice stays desktop-only), and a desktop change saves only that set (`ToNotificationSettings`,
+`ToHostNotifications`).
+
+`NotificationServiceBase` judges quiet hours with `QuietHours.IsActive` against its `TimeProvider`
+and the shared `DisplayTimeZone`, so the window is wall-clock time in the operator's display zone; a
+window ending earlier than it starts runs past midnight, the end minute is not quiet, and equal times
+never hold anything. `IsQuietHoursNow` exposes the state, `UpdateSettings` raises `SettingsChanged`,
+and `NotificationSettings.Copy()` builds a change without editing the settings in use. A host that cannot be read at
 start leaves the desktop local for the run; a failed save keeps the local change and the next change
 retries. The display time zone is resolved with this machine's zone data at start and again whenever
 the desktop saves, and applied to the shared `DisplayTimeZone` (UTC when unset or unknown here).

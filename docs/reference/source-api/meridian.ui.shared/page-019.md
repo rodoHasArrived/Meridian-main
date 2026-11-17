@@ -328,7 +328,7 @@ Qualified name: <code>Meridian.Ui.Shared.Workflows.IOperatorPreferenceStore</cod
 
 Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:11](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L11).
 
-Durable per-operator presentation preferences (theme, density, time zone, descriptions, shortcuts).
+Durable per-operator presentation preferences (theme, density, time zone, descriptions, shortcuts, notifications).
 
 ```csharp
 public interface IOperatorPreferenceStore
@@ -443,7 +443,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Workflows.OperatorPreferenceRecord</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:310](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L310).
+Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:350](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L350).
 
 ```csharp
 public sealed record OperatorPreferenceRecord(string OperatorKey, OperatorPreferenceValuesDto Preferences, DateTimeOffset UpdatedAt);
@@ -453,7 +453,7 @@ public sealed record OperatorPreferenceRecord(string OperatorKey, OperatorPrefer
 
 Qualified name: <code>Meridian.Ui.Shared.Workflows.OperatorPreferenceSnapshot</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:312](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L312).
+Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:352](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L352).
 
 ```csharp
 public sealed record OperatorPreferenceSnapshot(int Version, IReadOnlyList<OperatorPreferenceRecord> Operators);

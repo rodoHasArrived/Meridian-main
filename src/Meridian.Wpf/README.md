@@ -46,7 +46,12 @@ theme changes onto the UI thread. It reports theme and density changes and short
 changes on separate events, so each save replaces only what changed. Shortcut overrides follow the
 operator too: host overrides are applied through `KeyboardShortcutService.ApplyOverrides` (entries
 it cannot apply are skipped) and written to the local desktop preferences, which stay the cache when
-the host cannot be reached. Desktop timestamps that used to be
+the host cannot be reached. The Settings page Notifications card (`SettingsViewModel.Notifications.cs`)
+edits the live `NotificationService` settings: the pop-up switch, the five types and quiet hours
+(`HH:mm` in the display zone, applied once both times read). Each change applies at once and is
+saved with the operator's preferences, not the configuration file, so the configuration's
+`NotificationsEnabled` is no longer read into the page. **Send Test Notification** says when pop-ups
+are off or quiet hours hold them. Desktop timestamps that used to be
 labelled UTC now go through `FormatHelpers.FormatDisplayTimestamp` (or `DisplayTimestampConverter` in
 XAML) and follow the operator's display time zone: "UTC" when unset, otherwise the local time with a
 `UTC±hh:mm` label. Open screens pick up a changed zone on their next refresh. Unlabelled local

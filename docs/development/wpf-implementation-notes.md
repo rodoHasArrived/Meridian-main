@@ -483,6 +483,19 @@ apply (an unknown action, an unparseable key, a colliding chord) are skipped, an
 `desktop-shell-preferences.json` keeps what applied, so the overrides still load offline. A browser
 save never clears them. Another desktop's change arrives at the next start; last write wins.
 
+### Notifications and quiet hours follow the operator
+
+The Settings page Notifications card edits the live `NotificationService` settings: **Show pop-up
+notifications**, the five types (connection, errors, backfill, data gaps, storage) and quiet hours
+typed as 24-hour `HH:mm` times. Each change applies at once and is saved with the operator's host
+preferences, the same set the browser's Settings > Preferences > Notifications card edits, so either
+client can change it. Quiet hours are read in the operator's display time zone; a window ending
+earlier than it starts runs past midnight and its end minute is not quiet. The host set is applied at
+startup; another client's change arrives at the next start. Without a reachable host the defaults
+apply for the run. The pop-up switch is no longer read from the configuration file. **Send Test
+Notification** reports when pop-ups are off or held by quiet hours instead of showing nothing. The
+sound choice stays local and is not applied yet.
+
 ### Timestamps follow the display time zone
 
 Timestamps that the desktop labels with a zone use `FormatHelpers.FormatDisplayTimestamp`

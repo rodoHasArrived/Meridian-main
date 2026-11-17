@@ -11,6 +11,8 @@ namespace Meridian.Wpf.Tests.Services;
 /// </summary>
 public sealed class WpfDesktopPreferenceSurfaceTests
 {
+    private sealed class IsolatedNotifications : NotificationServiceBase;
+
     private static string NewPreferencesPath() => Path.Combine(
         Path.GetTempPath(), "meridian-wpf-surface-tests", $"{Guid.NewGuid():N}.desktop-shell-preferences.json");
 
@@ -20,7 +22,7 @@ public sealed class WpfDesktopPreferenceSurfaceTests
         var path = NewPreferencesPath();
         SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(path);
         var settings = SettingsConfigurationService.Instance;
-        using var surface = new WpfDesktopPreferenceSurface(ThemeService.Instance, settings, KeyboardShortcutService.CreateIsolatedForTests());
+        using var surface = new WpfDesktopPreferenceSurface(ThemeService.Instance, settings, KeyboardShortcutService.CreateIsolatedForTests(), new IsolatedNotifications());
         var raised = 0;
         var shortcutChanges = 0;
         surface.PreferenceChanged += (_, _) => raised++;
@@ -62,7 +64,7 @@ public sealed class WpfDesktopPreferenceSurfaceTests
         SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(path);
         var theme = ThemeService.Instance;
         var original = theme.CurrentTheme;
-        using var surface = new WpfDesktopPreferenceSurface(theme, SettingsConfigurationService.Instance, KeyboardShortcutService.CreateIsolatedForTests());
+        using var surface = new WpfDesktopPreferenceSurface(theme, SettingsConfigurationService.Instance, KeyboardShortcutService.CreateIsolatedForTests(), new IsolatedNotifications());
         var raised = 0;
         surface.PreferenceChanged += (_, _) => raised++;
 
@@ -88,7 +90,7 @@ public sealed class WpfDesktopPreferenceSurfaceTests
         SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(path);
         var settings = SettingsConfigurationService.Instance;
         var shortcuts = KeyboardShortcutService.CreateIsolatedForTests();
-        using var surface = new WpfDesktopPreferenceSurface(ThemeService.Instance, settings, shortcuts);
+        using var surface = new WpfDesktopPreferenceSurface(ThemeService.Instance, settings, shortcuts, new IsolatedNotifications());
 
         try
         {
@@ -116,6 +118,34 @@ public sealed class WpfDesktopPreferenceSurfaceTests
             {
                 File.Delete(path);
             }
+        }
+    }
+
+    [Fact]
+    public void ApplyNotifications_ReplacesTheLiveSettingsAndReportsTheChange()
+    {
+        var path = NewPreferencesPath();
+        SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(path);
+        var notifications = new IsolatedNotifications();
+        using var surface = new WpfDesktopPreferenceSurface(
+            ThemeService.Instance, SettingsConfigurationService.Instance, KeyboardShortcutService.CreateIsolatedForTests(), notifications);
+        var changes = 0;
+        var presentationChanges = 0;
+        surface.NotificationsChanged += (_, _) => changes++;
+        surface.PreferenceChanged += (_, _) => presentationChanges++;
+
+        try
+        {
+            surface.ApplyNotifications(new NotificationSettings { NotifyBackfillComplete = false, QuietHoursEnabled = true });
+
+            notifications.GetSettings().NotifyBackfillComplete.Should().BeFalse();
+            surface.Notifications.QuietHoursEnabled.Should().BeTrue();
+            changes.Should().Be(1);
+            presentationChanges.Should().Be(0, "a notification change is not a theme or density change");
+        }
+        finally
+        {
+            SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(null);
         }
     }
 }

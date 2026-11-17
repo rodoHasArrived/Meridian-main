@@ -6,7 +6,7 @@ using Meridian.Ui.Services.Services;
 namespace Meridian.Wpf.Services;
 
 /// <summary>
-/// The desktop shell's theme, density and keyboard shortcut overrides as
+/// The desktop shell's theme, density, keyboard shortcut overrides and notification settings as
 /// <see cref="DesktopOperatorPreferenceSync"/> reads and writes them. Theme and shortcut changes touch
 /// UI state, so values applied from the host are marshalled onto the UI thread; the sync may call in
 /// from a background continuation. Host shortcut overrides are also written to the local desktop
@@ -17,17 +17,21 @@ public sealed class WpfDesktopPreferenceSurface : IDesktopPreferenceSurface, IDi
     private readonly ThemeService _themeService;
     private readonly SettingsConfigurationService _settings;
     private readonly KeyboardShortcutService _shortcuts;
+    private readonly NotificationServiceBase _notifications;
     private ShellDensityMode _lastDensity;
     private IReadOnlyDictionary<string, DesktopShortcutOverride> _lastShortcutOverrides;
 
     public WpfDesktopPreferenceSurface(
         ThemeService themeService,
         SettingsConfigurationService settings,
-        KeyboardShortcutService shortcuts)
+        KeyboardShortcutService shortcuts,
+        NotificationServiceBase notifications)
     {
         _themeService = themeService ?? throw new ArgumentNullException(nameof(themeService));
         _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         _shortcuts = shortcuts ?? throw new ArgumentNullException(nameof(shortcuts));
+        _notifications = notifications ?? throw new ArgumentNullException(nameof(notifications));
+        _notifications.SettingsChanged += OnNotificationSettingsChanged;
         _lastDensity = _settings.GetShellDensityMode();
         _lastShortcutOverrides = _settings.GetShortcutOverrides();
         _themeService.ThemeChanged += OnThemeChanged;
@@ -43,6 +47,20 @@ public sealed class WpfDesktopPreferenceSurface : IDesktopPreferenceSurface, IDi
     public IReadOnlyDictionary<string, DesktopShortcutOverride> ShortcutOverrides => _settings.GetShortcutOverrides();
 
     public event EventHandler? ShortcutOverridesChanged;
+
+    public NotificationSettings Notifications => _notifications.GetSettings();
+
+    public event EventHandler? NotificationsChanged;
+
+    // The notification service swaps its settings atomically and raises SettingsChanged, which the
+    // settings page listens to on the UI thread, so the swap is marshalled there too.
+    public void ApplyNotifications(NotificationSettings settings)
+    {
+        ArgumentNullException.ThrowIfNull(settings);
+        OnUiThread(() => _notifications.UpdateSettings(settings));
+    }
+
+    private void OnNotificationSettingsChanged(object? sender, EventArgs e) => NotificationsChanged?.Invoke(this, EventArgs.Empty);
 
     public void ApplyTheme(AppTheme theme) => OnUiThread(() => _themeService.SetTheme(theme));
 
@@ -97,5 +115,6 @@ public sealed class WpfDesktopPreferenceSurface : IDesktopPreferenceSurface, IDi
     {
         _themeService.ThemeChanged -= OnThemeChanged;
         _settings.DesktopShellPreferencesChanged -= OnDesktopShellPreferencesChanged;
+        _notifications.SettingsChanged -= OnNotificationSettingsChanged;
     }
 }
