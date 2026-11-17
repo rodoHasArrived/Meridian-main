@@ -223,6 +223,12 @@
       "review_after": "2027-05-13"
     },
     {
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_073__intercompany_balance_confirmations.sql",
+      "rule_id": "migration-truncate",
+      "reason": "The lexical TRUNCATE matches declare only BEFORE TRUNCATE rejection triggers protecting the new reciprocal intercompany balance confirmation versions. They execute no TRUNCATE command and remove no table, column, row or retained fact. Preserve these rejection triggers and the UPDATE/DELETE protections. This exact path/rule exception follows V_ledger_030 and V_ledger_031 and covers only these truncation-rejection declarations; it does not authorize data truncation or a history-removing downgrade.",
+      "review_after": "2027-05-13"
+    },
+    {
       "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_065__consolidation_transitions.sql",
       "rule_id": "migration-truncate",
       "reason": "The lexical TRUNCATE matches declare only BEFORE TRUNCATE rejection triggers protecting the new consolidation transition previews and approved cutover receipts. They execute no TRUNCATE command and remove no table, column, row or retained fact. Preserve these rejection triggers and the UPDATE/DELETE protections. This exact path/rule exception follows V_ledger_030 and V_ledger_031 and covers only these truncation-rejection declarations; it does not authorize data truncation or a history-removing downgrade.",
@@ -250,6 +256,12 @@
       "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_064__legacy_intercompany_attribution.sql",
       "rule_id": "migration-drop-object",
       "reason": "Each DROP TRIGGER IF EXISTS is immediately followed by recreation of the same named protection trigger on the same table, making the new legacy attribution receipt protection triggers reapply-idempotent. The migration runner executes the DDL and migration-ledger change in its transaction under the advisory migration lock, so failed recreation restores the prior protections. No table, column, row, retained receipt or history is removed. This exact path/rule exception follows V_ledger_030/V_ledger_031's drop-and-recreate idiom and does not authorize omission of any replacement trigger.",
+      "review_after": "2027-05-13"
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_073__intercompany_balance_confirmations.sql",
+      "rule_id": "migration-drop-object",
+      "reason": "Each DROP TRIGGER IF EXISTS is immediately followed by recreation of the same named protection trigger on the same table, making the new balance-confirmation version-history rejection triggers reapply-idempotent. The migration runner executes the DDL and migration-ledger change in its transaction under the advisory migration lock, so failed recreation restores the prior protections. No table, column, row, retained receipt or history is removed. This exact path/rule exception follows V_ledger_030/V_ledger_031's drop-and-recreate idiom and does not authorize omission of any replacement trigger.",
       "review_after": "2027-05-13"
     },
     {

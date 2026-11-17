@@ -6,6 +6,33 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FileStatementReconciliationReportAuthorityStore
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.FileStatementReconciliationReportAuthorityStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs:14](../../../../src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs#L14).
+
+Local compatibility authority for tests and single-process development. Production composition must use a shared durable implementation.
+
+```csharp
+public sealed class FileStatementReconciliationReportAuthorityStore : IStatementReconciliationReportAuthorityStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileStatementReconciliationReportAuthorityStore(string dataRoot);</code> | [src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs:26](../../../../src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs#L26) |  |
+| <code>public bool IsDurableAuthority =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs:33](../../../../src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs#L33) |  |
+| <code>public string StorageKind =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs:35](../../../../src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs#L35) |  |
+| <code>public async ValueTask&lt;IAsyncDisposable&gt; AcquireWorkflowLeaseAsync(StatementReconciliationReportAuthorityScope scope, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs:37](../../../../src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs#L37) |  |
+| <code>public ValueTask&lt;bool&gt; DocumentExistsAsync(StatementReconciliationReportAuthorityScope scope, string documentKey, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs:76](../../../../src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs#L76) |  |
+| <code>public async ValueTask&lt;StatementReconciliationReportAuthorityDocument?&gt; GetDocumentAsync(StatementReconciliationReportAuthorityScope scope, string documentKey, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs:87](../../../../src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs#L87) |  |
+| <code>public async ValueTask&lt;byte[]?&gt; TryReadDocumentAsync(StatementReconciliationReportAuthorityScope scope, string documentKey, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs:136](../../../../src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs#L136) |  |
+| <code>public async ValueTask&lt;StatementReconciliationReportAuthorityDocument&gt; WriteDocumentAsync(StatementReconciliationReportAuthorityScope scope, string documentKey, ReadOnlyMemory&lt;byte&gt; content, bool isImmutable, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs:166](../../../../src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs#L166) |  |
+| <code>public ValueTask&lt;IReadOnlyList&lt;string&gt;&gt; ListDocumentKeysAsync(StatementReconciliationReportAuthorityScope scope, string documentKeyPrefix, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs:242](../../../../src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs#L242) |  |
+| <code>public ValueTask ProbeAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs:267](../../../../src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs#L267) |  |
+
 ## IEvidenceArtifactStore
 
 Qualified name: <code>Meridian.Ui.Shared.Evidence.IEvidenceArtifactStore</code>. Kind: `interface`.
@@ -1031,15 +1058,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static ScoreExplanationProjection Create(double score, IEnumerable&lt;ScoreReasonProjection&gt; reasons, int maxReasons = 3);</code> | [src/Meridian.Ui.Shared/ScoreExplanationProjection.cs:11](../../../../src/Meridian.Ui.Shared/ScoreExplanationProjection.cs#L11) |  |
-
-## ScoreReasonProjection
-
-Qualified name: <code>Meridian.Ui.Shared.ScoreReasonProjection</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/ScoreExplanationProjection.cs:33](../../../../src/Meridian.Ui.Shared/ScoreExplanationProjection.cs#L33).
-
-Single compact reason entry shown in workstation surfaces.
-
-```csharp
-public sealed record ScoreReasonProjection(string Code, double Contribution);
-```

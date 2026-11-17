@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CommandViewModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Commands.CommandViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs:10](../../../../src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs#L10).
+
+Combines command identity, label, styling, availability, and executable behavior for desktop binding.
+
+```csharp
+public sealed class CommandViewModel : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Id { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs:20](../../../../src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs#L20) |  |
+| <code>public string Label { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs:26](../../../../src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs#L26) |  |
+| <code>public string IconGlyph { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs:32](../../../../src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs#L32) |  |
+| <code>public string Tone { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs:38](../../../../src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs#L38) |  |
+| <code>public string Tooltip { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs:44](../../../../src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs#L44) |  |
+| <code>public bool IsEnabled { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs:50](../../../../src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs#L50) |  |
+| <code>public ICommand? Command { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs:56](../../../../src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs#L56) |  |
+
 ## WorkspaceCommandAdapters
 
 Qualified name: <code>Meridian.Wpf.Workstation.Commands.WorkspaceCommandAdapters</code>. Kind: `class`.
@@ -863,37 +887,3 @@ Declared public members:
 | <code>public IReadOnlyList&lt;CloseReadinessBlockerDto&gt; Blockers { get; init; } = [];</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:8](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L8) |  |
 | <code>public IReadOnlyList&lt;OperationsContinuityCloseBlockerPresentation&gt; BlockerRows =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:9](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L9) |  |
 | <code>public static OperationsContinuityClosePresentation Build(OperationsContinuityWorkflowDto? workflow, FinancialOperationsCommandCenterDto? commandCenter, CloseReadinessScopeDto? selectedScope);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:12](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L12) |  |
-
-## OperationsContinuityMapper
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.OperationsContinuityMapper</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:51](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L51).
-
-Projects the server-owned operations continuity contracts into desktop rows using the same derivations as the browser continuity screen: workflow/gate/severity/checklist/break status tone maps, the gate-priority next-action pick, and the open-item operator queue (an item is open when its tone is not ready). All gate and severity truth stays server-side.
-
-```csharp
-public static class OperationsContinuityMapper
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static WorkstationReadinessTone ToTone(OperationsWorkflowStatusDto status) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:53](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L53) |  |
-| <code>public static WorkstationReadinessTone ToTone(OperationsGateStatusDto status) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:68](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L68) |  |
-| <code>public static WorkstationReadinessTone SeverityTone(string? severity) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:78](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L78) |  |
-| <code>public static WorkstationReadinessTone ChecklistTone(string? status) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:86](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L86) |  |
-| <code>public static WorkstationReadinessTone BreakTone(string? status) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:95](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L95) |  |
-| <code>public static WorkstationReadinessTone LaneTone(OperationsReconciliationLaneStatusDto status) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:104](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L104) |  |
-| <code>public static IReadOnlyList&lt;OperationsContinuityWorkflowRowModel&gt; BuildWorkflowRows(IReadOnlyList&lt;OperationsContinuityWorkflowSummaryDto&gt; workflows);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:114](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L114) |  |
-| <code>public static IReadOnlyList&lt;OperationsContinuityPanelRowModel&gt; BuildGateRows(OperationsContinuityWorkflowDto detail);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:142](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L142) |  |
-| <code>public static IReadOnlyList&lt;OperationsContinuityPanelRowModel&gt; BuildBlockerRows(OperationsContinuityWorkflowDto detail);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:162](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L162) |  |
-| <code>public static IReadOnlyList&lt;OperationsContinuityPanelRowModel&gt; BuildChecklistRows(OperationsContinuityWorkflowDto detail);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:182](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L182) |  |
-| <code>public static IReadOnlyList&lt;OperationsContinuityPanelRowModel&gt; BuildQueueRows(OperationsContinuityWorkflowDto? detail, IReadOnlyList&lt;OperationsContinuityPanelRowModel&gt; closeCalendarRows);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:212](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L212) | The unified operator queue: breaks, reconciliation lanes, blockers, checklist tasks, and close-calendar rows, keeping only open items (tone is not ready) like the browser queue. |
-| <code>public static OperationsContinuityQueueRollupModel BuildQueueRollup(bool isLoading, IReadOnlyList&lt;OperationsContinuityPanelRowModel&gt; queueRows);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:258](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L258) |  |
-| <code>public static OperationsContinuityNextActionModel ResolveNextAction(OperationsContinuityWorkflowDto? detail, bool isLoading, string? detailError, OperationsContinuityClosePresentation? closeReadiness = null);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:286](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L286) | Picks the server-recommended next action: all workflow and gate next actions ordered by the owning gate&#x27;s status priority (blocked outranks review outranks in-progress), first entry with a non-blank label — the browser console&#x27;s exact rule. |
-| <code>public static IReadOnlyList&lt;OperationsContinuityPanelRowModel&gt; BuildCloseCalendarRows(OperationsCloseCalendarDto? calendar);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:361](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L361) |  |
-| <code>public static bool IsChecklistTaskReady(OperationsCloseChecklistTaskDto task);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:390](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L390) |  |
-| <code>public static bool IsChecklistTaskBlocked(OperationsCloseChecklistTaskDto task);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:397](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L397) |  |
-| <code>public static string FormatTimestamp(DateTimeOffset value) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:404](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L404) |  |

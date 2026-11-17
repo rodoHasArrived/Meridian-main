@@ -102,6 +102,10 @@ ledger dimensions omit null fields to preserve legacy evidence hashes. Consolida
 participating policy versions; shared browser/WPF contracts carry translation and rounding separately.
 See [intercompany domain guidance](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md).
 
+`IntercompanyBalanceConfirmationDtos` define the advisory reciprocal confirmation record (both pinned
+sides, net, balance digest and append-only events), its propose/action requests, summary findings and
+`IIntercompanyBalanceConfirmationStore`. See [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
+
 `SecurityMasterLedgerSymbol` resolves a dated, unambiguous active ticker that the existing native
 lineage grammar can represent. It supplies server-owned instrument context for new non-lot
 corporate-action candidates; it grants no approval and accepts no caller authority.

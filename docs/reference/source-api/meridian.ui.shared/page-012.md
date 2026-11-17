@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## HaircutRule
+
+Qualified name: <code>Meridian.Ui.Shared.Services.HaircutRule</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:29](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L29).
+
+```csharp
+public sealed record HaircutRule(string Counterparty, string CollateralType, decimal HaircutPercent);
+```
+
 ## HmacReportingDeliveryGrantCredentialDeriver
 
 Qualified name: <code>Meridian.Ui.Shared.Services.HmacReportingDeliveryGrantCredentialDeriver</code>. Kind: `class`.
@@ -941,22 +951,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public InvestmentAccountingTransactionLabPreviewDto Preview(InvestmentAccountingTransactionLabRequestDto request);</code> | [src/Meridian.Ui.Shared/Services/InvestmentAccountingTransactionLabService.cs:11](../../../../src/Meridian.Ui.Shared/Services/InvestmentAccountingTransactionLabService.cs#L11) |  |
-
-## IOperationsContinuityReconciliationBridge
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IOperationsContinuityReconciliationBridge</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs:11](../../../../src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs#L11).
-
-Runs reconciliation through the Operations Continuity workflow and returns its transition result.
-
-```csharp
-public interface IOperationsContinuityReconciliationBridge
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;OperationsTransitionResultDto&gt; RunReconciliationAsync(Guid workflowId, OperationsReconciliationRunRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs:13](../../../../src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs#L13) |  |
-| <code>Task&lt;OperationsTransitionResultDto&gt; RunReconciliationAsync(Guid workflowId, OperationsReconciliationRunRequestDto request, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs:18](../../../../src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs#L18) |  |

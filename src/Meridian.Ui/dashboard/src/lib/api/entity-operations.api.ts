@@ -18,6 +18,9 @@ export const entityOperationEndpoints = {
   breaks: (bookId: string) => `/api/ledger/intercompany/breaks?sourceBookId=${encodeURIComponent(bookId)}`,
   accrualPreview: "/api/ledger/intercompany/accruals/preview",
   accrualDrafts: "/api/ledger/intercompany/accruals/drafts",
+  confirmations: "/api/ledger/intercompany/confirmations",
+  confirmationSummary: (bookId: string, asOf: string) => `/api/ledger/intercompany/confirmations?${new URLSearchParams({ ledgerBookId: bookId, asOf })}`,
+  confirmationActions: (confirmationId: string) => `/api/ledger/intercompany/confirmations/${encodeURIComponent(confirmationId)}/actions`,
   rates: "/api/ledger/consolidation/fx/rate-sets",
   fxConfiguration: (bookId: string) => `/api/ledger/consolidation/fx/books/${encodeURIComponent(bookId)}/configuration`,
   bindings: (bookId: string, asOf: string) => `/api/ledger/intercompany/account-bindings?${new URLSearchParams({ ledgerBookId: bookId, asOf })}`

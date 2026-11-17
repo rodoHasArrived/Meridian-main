@@ -30,6 +30,11 @@ through trusted workbench intake. It never submits, approves or posts. The workb
 accrual evidence against client saves, blocks review when lines no longer match it, refuses a draft
 whose window a posted accrual already covers, and carries the evidence onto the posted journal.
 
+`IntercompanyBalanceConfirmationEndpoints` serves `/api/ledger/intercompany/confirmations` (summary,
+record, propose and `/{id}/actions`) with exact-decimal strings; mutations need tenant and company
+scope plus ledger management. Confirmation findings join the close advisory as warnings only. See
+[reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
+
 Account/group close advisories require canonical exact-scope membership and retained evidence;
 the book node ID is not substituted for a legal-entity ID. Missing membership yields unknown.
 
