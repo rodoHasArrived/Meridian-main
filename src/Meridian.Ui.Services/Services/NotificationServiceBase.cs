@@ -7,7 +7,9 @@ using NotificationType = Meridian.Ui.Services.NotificationType;
 namespace Meridian.Ui.Services.Services;
 
 /// <summary>
-/// Notification settings.
+/// Notification settings. On the desktop these come from the operator's host preferences
+/// (<c>OperatorNotificationPreferencesDto</c>); quiet hours are read in the operator's display time zone
+/// (<see cref="DisplayTimeZone"/>).
 /// </summary>
 public sealed class NotificationSettings
 {
@@ -21,6 +23,9 @@ public sealed class NotificationSettings
     public bool QuietHoursEnabled { get; set; }
     public TimeSpan QuietHoursStart { get; set; } = new TimeSpan(22, 0, 0);
     public TimeSpan QuietHoursEnd { get; set; } = new TimeSpan(7, 0, 0);
+
+    /// <summary>An independent copy, so a change can be built without touching the settings in use.</summary>
+    public NotificationSettings Copy() => (NotificationSettings)MemberwiseClone();
 }
 
 /// <summary>
@@ -68,8 +73,23 @@ public abstract class NotificationServiceBase
     private const int MaxNotificationsPerMinute = 10;
     private int _notificationsThisMinute;
     private DateTime _minuteWindowStart = DateTime.UtcNow;
+    private readonly TimeProvider _timeProvider;
+
+    protected NotificationServiceBase()
+        : this(TimeProvider.System)
+    {
+    }
+
+    /// <param name="timeProvider">The clock quiet hours are judged against; tests pass a fixed one.</param>
+    protected NotificationServiceBase(TimeProvider timeProvider)
+    {
+        _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
+    }
 
     public event EventHandler<NotificationEventArgs>? NotificationReceived;
+
+    /// <summary>Raised after <see cref="UpdateSettings"/> replaces the settings.</summary>
+    public event EventHandler? SettingsChanged;
 
     public void ShowNotification(string title, string message, NotificationType type = NotificationType.Info, int durationMs = 5000)
     {
@@ -269,7 +289,10 @@ public abstract class NotificationServiceBase
         => ShowNotification("Test Notification", "Notifications are working correctly!", NotificationType.Info);
 
     public void UpdateSettings(NotificationSettings settings)
-        => _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+    {
+        _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+        SettingsChanged?.Invoke(this, EventArgs.Empty);
+    }
 
     public NotificationSettings GetSettings() => _settings;
 
@@ -310,17 +333,21 @@ public abstract class NotificationServiceBase
         }
     }
 
-    private bool IsQuietHours()
+    /// <summary>
+    /// True while quiet hours hold pop-ups: enabled, and the current time in the operator's display
+    /// time zone falls inside the window.
+    /// </summary>
+    public bool IsQuietHoursNow
     {
-        if (!_settings.QuietHoursEnabled)
-            return false;
-
-        var now = DateTime.Now.TimeOfDay;
-        var start = _settings.QuietHoursStart;
-        var end = _settings.QuietHoursEnd;
-
-        return start > end ? now >= start || now <= end : now >= start && now <= end;
+        get
+        {
+            var settings = _settings;
+            return settings.QuietHoursEnabled
+                   && QuietHours.IsActive(_timeProvider.GetUtcNow(), DisplayTimeZone.Current, settings.QuietHoursStart, settings.QuietHoursEnd);
+        }
     }
+
+    private bool IsQuietHours() => IsQuietHoursNow;
 
     private static string FormatDuration(TimeSpan duration)
     {

@@ -193,6 +193,7 @@ public static partial class WorkstationEndpoints
 
         MapCollateralEndpoints(group, jsonOptions);
         MapOperatorScopePreferenceEndpoints(group, jsonOptions);
+        MapOperatorPreferencesEndpoints(group, jsonOptions);
         MapScopeOptionEndpoints(group, jsonOptions);
         MapOperatorSurfaceVisitEndpoints(group, jsonOptions);
 

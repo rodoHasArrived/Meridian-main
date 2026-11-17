@@ -1,6 +1,7 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api-errors";
+import { DEFAULT_NOTIFICATION_PREFERENCES, setNotificationPreferences } from "@/lib/notification-preferences";
 import type { QuotesSnapshotResponse } from "@/types";
 import { quoteAccessDeniedMessage, usePriceAlertsService } from "./service";
 import type { StorageLike } from "./storage";
@@ -135,6 +136,55 @@ describe("usePriceAlertsService", () => {
     expect(result.current.state.alerts[0]?.triggeredAt).not.toBeNull();
     expect(result.current.unacknowledgedCount).toBe(1);
     expect(notify).toHaveBeenCalledTimes(1);
+  });
+
+  it("records the trigger but holds the pop-up when the operator turned pop-ups off", async () => {
+    setNotificationPreferences({ ...DEFAULT_NOTIFICATION_PREFERENCES, enabled: false }, false);
+    try {
+      const notify = vi.fn();
+      const { result } = renderHook(() =>
+        usePriceAlertsService({ storage: new MemoryStorage(), fetchSnapshot: vi.fn().mockResolvedValue(snapshot([])), notify })
+      );
+      act(() => {
+        result.current.createAlert({ symbol: "AAPL", condition: "above", field: "last", threshold: 200 });
+      });
+      act(() => {
+        result.current.evaluateSnapshot(snapshot([{ symbol: "AAPL", lastPrice: 201 }]));
+      });
+
+      await waitFor(() => expect(result.current.state.triggers).toHaveLength(1));
+      expect(result.current.unacknowledgedCount).toBe(1);
+      expect(notify).not.toHaveBeenCalled();
+    } finally {
+      setNotificationPreferences({ ...DEFAULT_NOTIFICATION_PREFERENCES }, false);
+    }
+  });
+
+  it("holds the pop-up during quiet hours in the display time zone", async () => {
+    // 23:30 UTC sits inside a 22:00-07:00 window read in UTC, the default display zone.
+    setNotificationPreferences({ ...DEFAULT_NOTIFICATION_PREFERENCES, quietHoursEnabled: true }, false);
+    try {
+      const notify = vi.fn();
+      const { result } = renderHook(() =>
+        usePriceAlertsService({
+          storage: new MemoryStorage(),
+          fetchSnapshot: vi.fn().mockResolvedValue(snapshot([])),
+          notify,
+          now: () => new Date("2026-07-05T23:30:00Z")
+        })
+      );
+      act(() => {
+        result.current.createAlert({ symbol: "AAPL", condition: "above", field: "last", threshold: 200 });
+      });
+      act(() => {
+        result.current.evaluateSnapshot(snapshot([{ symbol: "AAPL", lastPrice: 201 }]));
+      });
+
+      await waitFor(() => expect(result.current.state.triggers).toHaveLength(1));
+      expect(notify).not.toHaveBeenCalled();
+    } finally {
+      setNotificationPreferences({ ...DEFAULT_NOTIFICATION_PREFERENCES }, false);
+    }
   });
 
   it("respects snooze and does not fire while snoozed", () => {
