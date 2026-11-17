@@ -950,7 +950,9 @@ workstation queues from `IRecurringJournalQueueSource`. `RecurringJournalPeriodA
 the existing PostgreSQL ledger's book/period and fund ownership; `RecurringJournalSubjectAuthority`
 verifies active entity/account membership against retained PostgreSQL fund structure. Unavailable
 authority blocks generation. The recurring endpoints provide explicit initialization, versioned configuration and
-audited restoration of exact prior definitions. Workbench resaves cannot replace retained recurring
+audited restoration of exact prior definitions. Initialization provisions whichever
+`IRecurringJournalStore` the host composed; with a ledger database it is `PostgresRecurringJournalStore`,
+which imports any verified file-retained state once so retained claims and draft identities carry forward. Workbench resaves cannot replace retained recurring
 provenance, and its source evidence is required through approval and posting. Submission and lifecycle
 commands hold the recurring registry lease, reject unavailable state or definition drift, and validate
 the retained ancestry of governed correction drafts. See

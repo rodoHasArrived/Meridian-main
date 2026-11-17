@@ -1658,7 +1658,7 @@ W10-RECON-002: planned; health green; evidence planned_evidence. Activate existi
 
 ### Current Summary
 
-W10-JRNL-001: in_progress; health green; evidence in_progress. Recurring journals create governed drafts only; no submit/approve/post authority. Acceptance remains open; occurrence-store support is processes sharing one filesystem root.
+W10-JRNL-001: in_progress; health green; evidence in_progress. Recurring journals create governed drafts only; no submit/approve/post authority. Acceptance remains open; hosts with a ledger database share one PostgreSQL occurrence store across processes and hosts, and hosts without one share one filesystem root.
 
 ### Status References
 
@@ -1668,6 +1668,7 @@ W10-JRNL-001: in_progress; health green; evidence in_progress. Recurring journal
 - Evidence: [docs/domain/recurring-journal.md](../../domain/recurring-journal.md)
 - Evidence: [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs](../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs)
 - Evidence: [src/Meridian.FinancialOperations/FundAdministration/FileRecurringJournalStore.cs](../../../src/Meridian.FinancialOperations/FundAdministration/FileRecurringJournalStore.cs)
+- Evidence: [src/Meridian.FinancialOperations/FundAdministration/PostgresRecurringJournalStore.cs](../../../src/Meridian.FinancialOperations/FundAdministration/PostgresRecurringJournalStore.cs)
 - Evidence: [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduledWorker.cs](../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduledWorker.cs)
 - Evidence: [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs](../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs)
 - Evidence: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs](../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs)

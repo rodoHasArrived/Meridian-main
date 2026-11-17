@@ -1790,7 +1790,7 @@ items:
     health: green
     priority: high
     evidence_posture: in_progress
-    status_note: Recurring journals create governed drafts only; no submit/approve/post authority. Acceptance remains open; occurrence-store support is processes sharing one filesystem root.
+    status_note: Recurring journals create governed drafts only; no submit/approve/post authority. Acceptance remains open; hosts with a ledger database share one PostgreSQL occurrence store across processes and hosts, and hosts without one share one filesystem root.
     decision_ids: []
     pr_references: []
     status_detail: docs/roadmap/snapshots/status-prose-2026-11-14/W10-JRNL-001.md
@@ -1818,6 +1818,8 @@ items:
         path: src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs
       - type: source
         path: src/Meridian.FinancialOperations/FundAdministration/FileRecurringJournalStore.cs
+      - type: source
+        path: src/Meridian.FinancialOperations/FundAdministration/PostgresRecurringJournalStore.cs
       - type: source
         path: src/Meridian.Ui.Shared/Services/AutomatedJournalScheduledWorker.cs
       - type: source
