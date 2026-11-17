@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-17
 ---
 
 # src/Meridian.Contracts
@@ -22,6 +22,9 @@ strings; omitted companions preserve retained legal command/review hashes. Separ
 attestations retain reviewer and operator identities, while obligation-monitor DTOs carry advisory
 source/freshness evidence outside blocking close contributors. See
 [the native legal contract](../../docs/domain/intercompany-agreements.md).
+
+`IntercompanyAccrualScheduleDtos` define opt-in, reviewed accrual schedules, their run results and
+`IIntercompanyAccrualScheduleStore`. See [opt-in accrual schedules](../../docs/domain/intercompany-agreements.md#opt-in-accrual-schedules).
 
 Governed loan-interest accrual contracts (ADR-028) carry the computation input, slices and preview
 under rule `intercompany-accrual-v1`, plus the retained `IntercompanyAccrualEvidenceDto` and its

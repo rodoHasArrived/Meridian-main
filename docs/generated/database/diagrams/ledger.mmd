@@ -265,6 +265,16 @@ erDiagram
         timestamp_with_time_zone recorded_at_utc
         jsonb payload
     }
+    ledger_intercompany_accrual_schedules {
+        uuid schedule_id PK
+        bigint version PK
+        text tenant_id
+        text company_id
+        uuid ledger_book_id
+        text status
+        jsonb payload
+        timestamp_with_time_zone recorded_at
+    }
     ledger_intercompany_counterpart_reservations {
         text tenant_id PK
         uuid target_book_id PK

@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-17
 ---
 
 # src/Meridian.Storage
@@ -71,6 +71,10 @@ intent, approved FX revisions and legacy-attribution sidecars over exact immutab
 PostgreSQL supplies authority leases through financial commit; file stores provide durable local/demo
 parity without a production or cross-process fencing claim. Migration keeps old journal/evidence
 bytes and refuses unresolved history. See [the operator procedure](../../docs/operators/intercompany-entity-controls.md).
+
+`PostgresIntercompanyAccrualScheduleStore` (ledger migration `074`, rewrite and truncate refused) and
+`FileIntercompanyAccrualScheduleStore` retain accrual-schedule versions append-only and tenant-scoped. See
+[opt-in accrual schedules](../../docs/domain/intercompany-agreements.md#opt-in-accrual-schedules).
 
 Entity lifecycle history uses immutable tenant-bound timeline revisions and authority leases.
 Ledger migration 061 initializes existing books in `LegacyWarning` and stamps new books

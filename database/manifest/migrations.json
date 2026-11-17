@@ -1342,6 +1342,15 @@
       "sha256": "720f57be8f8ac59f1ca7c5dc4466adeae5f7c1ad8004e125da5fb3e723aee72b"
     },
     {
+      "filename": "V_ledger_074__intercompany_accrual_schedules.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_074__intercompany_accrual_schedules.sql",
+      "schema": "ledger",
+      "sha256": "7b6218194f4da89e0e8cf250e4550a06a682345a9dc364f3e5f52349610c0617"
+    },
+    {
       "filename": "001_fund_structure.sql",
       "immutable": true,
       "migration_set_id": "fund-structure",
@@ -1676,7 +1685,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "0fd847198feddb33de03ce79d85bf5bddd2ea78a90d50e246ba1fc544c8324af",
+  "fingerprint": "15cadc7bcafebd3335abc7316631ee4ef83b3c1c03d3f7ff1d2f24fa56049b11",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1938,9 +1947,9 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 186,
+    "files": 187,
     "migration_sets": 11,
-    "waivers": 46,
+    "waivers": 48,
     "warnings": 0
   },
   "waivers": [
@@ -2153,6 +2162,20 @@
       "reason": "Scoped schema review exception for automatic synthetic fill accounting: replaces only ledger_event_audit_events_subject_kind_check with a strict superset preserving journal and period and admitting automation-grant. The migration runner performs drop and replacement within one transaction; no rows, columns, audit events or immutability triggers are removed. Failure rolls back the original constraint. PostgreSQL tests verify existing audit coverage and actor-attributed grant activation/revocation. Independent human schema/storage review remains pending before production activation; never narrow this check while grant audit events exist.",
       "review_after": "2027-02-14",
       "rule_id": "migration-drop-table-member"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_074__intercompany_accrual_schedules.sql",
+      "reason": "Each DROP TRIGGER IF EXISTS is immediately followed by recreation of the same named protection trigger on the same table, making the new intercompany accrual-schedule version-history rejection triggers reapply-idempotent. The migration runner executes the DDL and migration-ledger change in its transaction under the advisory migration lock, so failed recreation restores the prior protections. No table, column, row, retained receipt or history is removed. This exact path/rule exception follows V_ledger_030/V_ledger_031's drop-and-recreate idiom and does not authorize omission of any replacement trigger.",
+      "review_after": "2027-05-17",
+      "rule_id": "migration-drop-object"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_074__intercompany_accrual_schedules.sql",
+      "reason": "The lexical TRUNCATE matches declare only BEFORE TRUNCATE rejection triggers protecting the new intercompany accrual-schedule version history. They execute no TRUNCATE command and remove no table, column, row or retained fact. Preserve these rejection triggers and the UPDATE/DELETE protections. This exact path/rule exception follows V_ledger_030 and V_ledger_031 and covers only these truncation-rejection declarations; it does not authorize data truncation or a history-removing downgrade.",
+      "review_after": "2027-05-17",
+      "rule_id": "migration-truncate"
     },
     {
       "category": "destructive_changes",

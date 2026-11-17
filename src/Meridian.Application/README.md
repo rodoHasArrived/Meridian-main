@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-11-14
+last_reviewed: 2026-11-17
 ---
 
 # src/Meridian.Application
@@ -110,6 +110,9 @@ book-control, atomic proposal and consolidation commit boundaries; local file co
 scope and explicit unavailable capabilities. Generic posting delegates validated consolidation to
 its specialized authority instead of reacquiring the same fences. See
 [the staged implementation plan](../../docs/engineering/plans/intercompany-entity-controls.md).
+
+`IntercompanyEntityServiceRegistration` also composes the accrual-schedule store: PostgreSQL (ledger
+migration `074`) with a ledger database, otherwise an atomic file store. See [opt-in accrual schedules](../../docs/domain/intercompany-agreements.md#opt-in-accrual-schedules).
 
 `DirectLendingJournalLines.ForEvent` owns the loan journal templates consumed by both
 `LoanAccountingProjector` and `DirectLendingOutboxDispatcher`. Their trading cash and loan-specific

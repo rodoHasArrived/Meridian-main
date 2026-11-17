@@ -52,6 +52,7 @@ public static class IntercompanyEntityServiceRegistration
             services.TryAddSingleton<LegacyIntercompanyAttributionValidator>();
             services.TryAddSingleton<ILegacyIntercompanyAttributionStore, PostgresLegacyIntercompanyAttributionStore>();
             services.TryAddSingleton<IIntercompanyProposalStore, PostgresIntercompanyProposalStore>();
+            services.TryAddSingleton<IIntercompanyAccrualScheduleStore, PostgresIntercompanyAccrualScheduleStore>();
             services.TryAddSingleton<ILedgerBookControlStore>(sp => sp.GetService<ILedgerJournalStore>() as ILedgerBookControlStore ?? null!);
             services.TryAddSingleton<IControlledCloseAuthorizationStore>(sp => sp.GetService<ILedgerJournalStore>() as IControlledCloseAuthorizationStore ?? null!);
         }
@@ -59,6 +60,8 @@ public static class IntercompanyEntityServiceRegistration
         {
             services.TryAddSingleton<IConsolidationFxStore>(sp => new ConsolidationFxFileStore(
                 Path.Combine(Root(sp), "accounting", "consolidation-fx.json")));
+            services.TryAddSingleton<IIntercompanyAccrualScheduleStore>(sp => new FileIntercompanyAccrualScheduleStore(
+                Path.Combine(Root(sp), "accounting", "intercompany-accrual-schedules.json"), sp.GetRequiredService<IFundScopeTenantAccessor>()));
             services.TryAddSingleton<IIntercompanyAccountBindingStore>(sp =>
                 sp.GetService<ILedgerJournalStore>() is { } journals &&
                 sp.GetService<IAccountingConfigurationStore>() is { } chart &&

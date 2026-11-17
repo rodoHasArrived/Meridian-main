@@ -236,7 +236,7 @@ public static class IntercompanyOperationsEndpoints
 
     private static IResult Unavailable() => Results.Problem("Durable intercompany proposal delivery is unavailable.", statusCode: 503);
 
-    private static async Task<bool> BookAllowedAsync(HttpContext context, Guid bookId)
+    internal static async Task<bool> BookAllowedAsync(HttpContext context, Guid bookId)
     {
         var journals = context.RequestServices.GetService<ILedgerJournalStore>();
         var registry = context.RequestServices.GetService<IFundProfileTenancyRegistry>();

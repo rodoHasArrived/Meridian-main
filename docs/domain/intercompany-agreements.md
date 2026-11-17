@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** Accounting and Ledger
-**Reviewed:** 2026-11-14
+**Reviewed:** 2026-11-17
 
 An intercompany agreement records the reviewed terms between two legal entities in one tenant.
 It explains the contractual source of intercompany activity; it is not a journal, a payment or
@@ -94,6 +94,16 @@ accrual already covers part of the window; or when the source book has no single
 containing the posting date. A cross-currency loan converts through the governed FX authority or is
 unavailable. Fees are not calculated: a fixed fee has no declared amount period and a percentage fee
 has no measured base in terms schema v1.
+
+### Opt-in accrual schedules
+
+A book can opt in to scheduled drafting ([ADR-031](../adr/031-intercompany-accrual-schedules.md)). A schedule names
+the book, an approved loan-interest profile and its principal profile; one person proposes it with a reason and
+someone else approves it, and it can later be disabled. From the approval date, a background run drafts each
+completed schedule period through the same preview and draft path an operator uses, with the schedule recorded as
+preparer. It never posts, never recomputes a draft that already exists, and reports any refused period with its
+reason so the next run can retry it. Operators can preview the periods a schedule would draft and run an active
+schedule on demand from the Accrual schedules tab in either workstation.
 
 ## External-review attestation
 

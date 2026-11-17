@@ -2,7 +2,7 @@
 
 # `ledger-contracts` data objects - page 3 of 6
 
-Objects 161-240 of 455. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 467. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -625,6 +625,12 @@ classDiagram
     }
     class Meridian_Contracts_Ledger_CurrencyMinorUnits["CurrencyMinorUnits"] {
     }
+    class Meridian_Contracts_Ledger_DecideIntercompanyAccrualScheduleRequest["DecideIntercompanyAccrualScheduleRequest"] {
+        +IntercompanyAccrualScheduleActionDto Action
+        +long ExpectedVersion
+        +string? Reason
+        +Guid RequestId
+    }
     class Meridian_Contracts_Ledger_DimensionMappingProfileDto["DimensionMappingProfileDto"] {
         +AccountingCertificationStateDto CertificationState
         +string DisplayName
@@ -678,20 +684,6 @@ classDiagram
         +Guid? LedgerBookId
         +string? MappingProfileId
         +DateOnly PeriodEnd
-    }
-    class Meridian_Contracts_Ledger_ExternalGlExportPackageManifestDto["ExternalGlExportPackageManifestDto"] {
-        +AccountingCertificationStateDto CertificationState
-        +string? CompanyId
-        +string ContentHash
-        +string ContentType
-        +IReadOnlyList~string~ EvidenceLinks
-        +string ExportPackageId
-        +bool ExternalPostingAllowed
-        +string FileName
-        +string FundProfileId
-        +DateTimeOffset GeneratedAtUtc
-        +IReadOnlyList~ExternalGlExportLineDto~ GeneratedLines
-        +Guid? LedgerBookId
     }
     Meridian_Contracts_Ledger_CloseDeadlineRuleDto --> Meridian_Contracts_Ledger_CloseDeadlineAdjustmentDto
     Meridian_Contracts_Ledger_CloseDeadlineRuleDto --> Meridian_Contracts_Ledger_CloseDeadlineAnchorDto
@@ -756,5 +748,4 @@ classDiagram
     Meridian_Contracts_Ledger_ConsolidationViewDto --> Meridian_Contracts_Ledger_ConsolidationRequestDto
     Meridian_Contracts_Ledger_ExternalGlExportPackageDto --> Meridian_Contracts_Ledger_ExternalGlExportCertificationDto
     Meridian_Contracts_Ledger_ExternalGlExportPackageDto --> Meridian_Contracts_Ledger_ExternalGlExportLineDto
-    Meridian_Contracts_Ledger_ExternalGlExportPackageManifestDto --> Meridian_Contracts_Ledger_ExternalGlExportLineDto
 ```

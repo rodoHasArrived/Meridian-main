@@ -4,7 +4,7 @@
 
 **Owner:** Accounting and Ledger
 
-**Reviewed:** 2026-11-15
+**Reviewed:** 2026-11-17
 
 The adopted scope is P1–P5: an agreement registry, effective entity controls, stable account roles
 and N-entity consolidation, reviewed counterpart proposals, and full reporting-currency
@@ -138,6 +138,21 @@ retained counterpart as a classification: it is kept as the posting's source eve
 written as treasury fund-event metadata. The exemption needs the server-retained proposal identity
 and applies only when no fund event identity, capital account or investor is stated; the ledger
 guard is unchanged. `IntercompanyProposalDeliveryRetryTests` covers this in memory.
+
+### Opt-in accrual schedules (2026-11-17)
+
+`DEC-IC-SCHEDULE-001` and [ADR-031](../../adr/031-intercompany-accrual-schedules.md); roadmap row
+`W12-ICSCHEDULE-001`. Development verification only.
+
+| Piece | Decision and boundary | Verification |
+| --- | --- | --- |
+| Schedule | Book, loan-interest profile and principal profile; maker-checker; reject or disable with a reason; one open schedule per book and profile. | `IntercompanyAccrualScheduleRulesTests`, `IntercompanyAccrualScheduleServiceTests` |
+| Storage | Append-only versions in ledger migration `074` or an atomic file store. | `IntercompanyAccrualScheduleStoreTests` (file and PostgreSQL) |
+| Runs | Completed periods ending on or after approval; drafts through the operator path; existing drafts skipped; refusals reported; 24 periods per run. | `IntercompanyAccrualScheduleServiceTests` |
+| Runner | Every six hours after a one-minute start-up delay; disabled schedules ignored; one failure never stops the rest. | `IntercompanyAccrualScheduleServiceTests` |
+| Routes and surfaces | `/api/ledger/intercompany/accrual-schedules`, due preview and run now; browser and WPF tabs. | `IntercompanyAccrualScheduleEndpointTests`, workspace and browser tests |
+
+Management-fee schedules follow once governed fee drafting is composed on main.
 
 ## Verification record (2026-11-14)
 
