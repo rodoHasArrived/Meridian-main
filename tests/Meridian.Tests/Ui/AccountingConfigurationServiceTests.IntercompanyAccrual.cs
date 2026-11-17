@@ -64,6 +64,54 @@ public sealed partial class AccountingConfigurationServiceTests
         refreshed.IntercompanyAccrualEvidenceDigest.Should().NotBe(saved.IntercompanyAccrualEvidenceDigest);
     }
 
+    [Fact]
+    public async Task IntercompanyAccrual_RebookThroughTheWorkbench_CarriesTheInverseAndRefusesReplacementAmounts()
+    {
+        var configuration = CreateService();
+        await SeedBalancedConfigurationAsync(configuration);
+        var draftStore = new Meridian.Ui.Shared.Services.InMemoryManualJournalEntryDraftStore();
+        var service = CreateManualJournalEntryWorkbenchService(configuration, draftStore: draftStore);
+        var postedAt = DateTimeOffset.UtcNow.AddMinutes(-5);
+        var posted = AccrualDraft("first") with
+        {
+            Status = ManualJournalEntryStatusDto.Posted,
+            PreparedBy = "accrual-service",
+            ApprovedBy = "reviewer",
+            ApprovedAtUtc = postedAt,
+            PostedBy = "reviewer",
+            PostedAtUtc = postedAt
+        };
+        await draftStore.SaveAsync(posted);
+        var evidence = $"/api/workstation/evidence/subjects/accounting-record/rebook/ledger-book/{posted.LedgerBookId:D}/{posted.PeriodId}";
+
+        // Reviewer-supplied amounts under trusted accrual evidence would recognize interest the
+        // computation never produced; the amount changes only by reversing and recomputing.
+        var withReplacement = () => service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+            posted.JournalEntryId, posted.FundProfileId, JournalEntryLifecycleActionDto.Rebook, "controller", posted.Version,
+            Notes: "Rebook the accrual at a different amount", EvidenceLinks: [evidence],
+            RebookLines:
+            [
+                new ManualJournalEntryLineDto("rebook-debit", AccountingTemplateLineSideDto.Debit, 9_999m, "USD", "Assets:Cash"),
+                new ManualJournalEntryLineDto("rebook-credit", AccountingTemplateLineSideDto.Credit, 9_999m, "USD", "Income:Interest")
+            ],
+            LedgerBookId: posted.LedgerBookId));
+        await withReplacement.Should().ThrowAsync<InvalidOperationException>().WithMessage("*reverse it and recompute*");
+
+        var rebook = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+            posted.JournalEntryId, posted.FundProfileId, JournalEntryLifecycleActionDto.Rebook, "controller", posted.Version,
+            Notes: "Rebook the accrual to correct its memo", EvidenceLinks: [evidence], LedgerBookId: posted.LedgerBookId));
+
+        var correction = rebook.GeneratedJournalEntries.Should().ContainSingle().Subject;
+        correction.RebookedFromJournalEntryId.Should().Be(posted.JournalEntryId);
+        correction.Lines.Should().HaveCount(posted.Lines.Count * 2, "the rebook carries the exact inverse plus the replacement");
+        foreach (var account in correction.Lines.GroupBy(line => line.AccountPath))
+        {
+            account.Sum(line => line.Side == AccountingTemplateLineSideDto.Debit ? line.Amount : -line.Amount)
+                .Should().Be(0m, "posting the rebook must not recognize the window's interest a second time");
+        }
+        IntercompanyAccrualEvidenceGuard.Validate(correction).Should().BeNull();
+    }
+
     private static ManualJournalEntryDraftDto AccrualDraft(string principalReference, Guid? journalEntryId = null)
     {
         var draft = BalancedManualJournalEntry() with { TenantId = null };
