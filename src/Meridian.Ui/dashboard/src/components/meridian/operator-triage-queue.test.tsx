@@ -204,14 +204,54 @@ describe("authorized operator triage", () => {
   it("reports bulk per-item refusals instead of optimistic all-success", async () => {
     const user = userEvent.setup(); await mount("account-1");
     vi.mocked(bulkAssignOperatorTriage).mockResolvedValue({ results: [{ status: "Applied", workItemId: blocked.workItemId, replayed: false }, { status: "Conflict", workItemId: review.workItemId, error: "Source version changed", replayed: false }] });
-    await user.click(screen.getByRole("checkbox", { name: "Select Cash variance for assignment" }));
-    await user.click(screen.getByRole("checkbox", { name: "Select Report review for assignment" }));
+    await user.click(screen.getByRole("checkbox", { name: "Select Cash variance for bulk triage" }));
+    await user.click(screen.getByRole("checkbox", { name: "Select Report review for bulk triage" }));
     await user.click(screen.getByRole("button", { name: "Assign 2 selected" }));
     await user.type(screen.getByLabelText("Assignee operator ID"), "reviewer");
     await user.type(screen.getByLabelText("Reason"), "Desk allocation");
     await user.click(screen.getByRole("button", { name: "Apply triage action" }));
     expect(await screen.findByText(/1 applied; 1 not applied: review-2: Source version changed/)).toBeInTheDocument();
     expect(bulkAssignOperatorTriage).toHaveBeenCalledWith(expect.objectContaining({ fundAccountId: "account-1", items: [{ workItemId: "critical-1", expectedVersion: 2, expectedSourceVersion: 4 }, { workItemId: "review-2", expectedVersion: 2, expectedSourceVersion: 4 }] }), expect.any(Object));
+  });
+
+  it("bulk-acknowledges checked items without an assignee, and never bulk-snoozes a blocker", async () => {
+    const user = userEvent.setup(); await mount("account-1");
+    vi.mocked(bulkAssignOperatorTriage).mockResolvedValue({ results: [
+      { status: "Applied", workItemId: blocked.workItemId, replayed: false },
+      { status: "Applied", workItemId: review.workItemId, replayed: false }
+    ] });
+    await user.click(screen.getByRole("checkbox", { name: "Select Cash variance for bulk triage" }));
+    await user.click(screen.getByRole("checkbox", { name: "Select Report review for bulk triage" }));
+    // The blocker (Critical) is checked, so snooze is unavailable for the selection as a whole.
+    expect(screen.getByRole("button", { name: "Snooze 2 selected" })).toBeDisabled();
+
+    await user.click(screen.getByRole("button", { name: "Acknowledge 2 selected" }));
+    const dialog = await screen.findByRole("dialog");
+    expect(dialog).toHaveTextContent("Acknowledge 2 selected items");
+    expect(within(dialog).queryByLabelText("Assignee operator ID")).not.toBeInTheDocument();
+    await user.type(within(dialog).getByLabelText("Reason"), "Reviewed in the morning sweep");
+    await user.click(within(dialog).getByRole("button", { name: "Apply triage action" }));
+    expect(await screen.findByText(/2 applied/)).toBeInTheDocument();
+    const command = vi.mocked(bulkAssignOperatorTriage).mock.calls.at(-1)![0];
+    expect(command).toMatchObject({ action: "Acknowledge", reason: "Reviewed in the morning sweep", fundAccountId: "account-1" });
+    expect(command).not.toHaveProperty("assigneeId");
+    expect(command).not.toHaveProperty("snoozedUntil");
+  });
+
+  it("bulk-snoozes non-blocking items with a snooze-until time", async () => {
+    const user = userEvent.setup(); await mount();
+    vi.mocked(bulkAssignOperatorTriage).mockResolvedValue({ results: [{ status: "Applied", workItemId: review.workItemId, replayed: false }] });
+    await user.click(screen.getByRole("checkbox", { name: "Select Report review for bulk triage" }));
+    await user.click(screen.getByRole("button", { name: "Snooze 1 selected" }));
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByLabelText(/Snooze until/)).toBeInTheDocument();
+    await user.type(within(dialog).getByLabelText("Reason"), "Waiting on the pack owner");
+    await user.click(within(dialog).getByRole("button", { name: "Apply triage action" }));
+    await screen.findByText(/1 applied/);
+    const command = vi.mocked(bulkAssignOperatorTriage).mock.calls.at(-1)![0];
+    expect(command.action).toBe("Snooze");
+    expect(Date.parse(command.snoozedUntil!)).toBeGreaterThan(Date.now());
+    expect(command.items).toEqual([{ workItemId: "review-2", expectedVersion: 2, expectedSourceVersion: 4 }]);
   });
 
   it("keeps unavailable storage read-only and distinguishes a failed inbox from empty work", async () => {

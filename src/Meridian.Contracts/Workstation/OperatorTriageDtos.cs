@@ -16,9 +16,15 @@ public sealed record OperatorTriageCommand(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Guid? FundAccountId = null);
 
 public sealed record OperatorTriageBulkItem(string WorkItemId, long ExpectedVersion, long? ExpectedSourceVersion = null);
+/// <summary>
+/// One reviewed triage action applied to up to 100 items. Each item is authorized, version-checked
+/// and retained separately under <c>{CommandId}:{index}</c>. Assign needs <see cref="AssigneeId"/>;
+/// Snooze needs <see cref="SnoozedUntil"/>; Acknowledge needs neither. Unsnooze is single-item only.
+/// </summary>
 public sealed record OperatorTriageBulkCommand(
-    string CommandId, OperatorTriageAction Action, string Reason, string AssigneeId,
-    IReadOnlyList<OperatorTriageBulkItem> Items, Guid? FundAccountId = null);
+    string CommandId, OperatorTriageAction Action, string Reason, string? AssigneeId,
+    IReadOnlyList<OperatorTriageBulkItem> Items, Guid? FundAccountId = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] DateTimeOffset? SnoozedUntil = null);
 
 public sealed record OperatorTriageActivity(
     string CommandId, string ActorId, OperatorTriageAction Action, string Reason, DateTimeOffset OccurredAt,

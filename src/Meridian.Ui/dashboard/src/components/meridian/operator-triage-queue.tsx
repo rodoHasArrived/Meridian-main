@@ -13,7 +13,7 @@ import { TimeText } from "@/components/ui/time-text";
 import { formatRelativeTime, formatTimestamp, pluralizeCount } from "@/lib/format";
 import { formatEnumLabel } from "@/lib/display-labels";
 import { isActiveTriageSnooze, routeForTriageItem, type OperatorTriageItem } from "@/lib/operator-inbox-triage";
-import { triageSearchText, useOperatorTriageInbox, type OperatorTriageInboxState } from "@/components/meridian/use-operator-triage-inbox";
+import { triageSearchText, useOperatorTriageInbox, type OperatorTriageInboxState, BULK_TRIAGE_ACTIONS, isBulkSelectable, isBulkTriageAction, type OperatorTriageBulkDialogAction } from "@/components/meridian/use-operator-triage-inbox";
 
 export function OperatorTriageQueue({ fundAccountId, fallback, refreshKey = false }: {
   fundAccountId?: string | null;
@@ -35,7 +35,7 @@ export function OperatorTriageQueue({ fundAccountId, fallback, refreshKey = fals
   });
 
   const columns: TableWorkbenchColumn<OperatorTriageItem>[] = [
-    { id: "select", label: "", srLabel: "Select for assignment", render: (item) => <TriageAssignCheckbox triage={triage} item={item} /> },
+    { id: "select", label: "", srLabel: "Select for bulk triage", render: (item) => <TriageAssignCheckbox triage={triage} item={item} /> },
     { id: "item", exportValue: (item) => item.label, label: "Item", wrap: true, render: (item) => <div><span className="font-medium">{item.label}</span><p className="mt-1 text-xs text-muted-foreground">{item.detail}</p></div> },
     { id: "severity", exportValue: (item) => item.tone, label: "Severity", render: (item) => <TriageSeverityStatus item={item} /> },
     { id: "workspace", priority: "low", exportValue: (item) => item.workspace, label: "Workspace", render: (item) => item.workspace ?? "Unspecified" },
@@ -81,8 +81,14 @@ export function OperatorTriageInboxError({ triage, unaffectedText }: { triage: O
   </div>;
 }
 
+const BULK_BAR_ACTIONS: { action: OperatorTriageBulkDialogAction; label: string; ineligible: string }[] = [
+  { action: "BulkAssign", label: "Assign", ineligible: "Some selected items cannot be assigned by you." },
+  { action: "BulkAcknowledge", label: "Acknowledge", ineligible: "Some selected items cannot be acknowledged." },
+  { action: "BulkSnooze", label: "Snooze", ineligible: "Blocked items stay visible and cannot be snoozed." }
+];
+
 /**
- * Bulk assignment for checked inbox rows, as a TableWorkbench selection bar. The bar exists only
+ * Bulk assign, acknowledge or snooze for checked inbox rows, as a TableWorkbench selection bar. The bar exists only
  * while rows are checked, so the toolbar never carries a disabled "Assign 0 selected".
  */
 export function triageSelection(triage: OperatorTriageInboxState): TableWorkbenchSelection {
@@ -91,9 +97,13 @@ export function triageSelection(triage: OperatorTriageInboxState): TableWorkbenc
     count,
     noun: "inbox item",
     onClear: triage.clearChecked,
-    actions: <Button size="sm" disabled={!triage.actionsAvailable || count > 100}
-      disabledReason={count > 100 ? "Assign at most 100 items at once." : !triage.actionsAvailable ? "Durable triage is unavailable." : null}
-      onClick={() => triage.openAction("BulkAssign")}>Assign {count} selected</Button>
+    actions: <>
+      {BULK_BAR_ACTIONS.map(({ action, label, ineligible }) => (
+        <Button key={action} size="sm" variant={action === "BulkAssign" ? "default" : "outline"} disabled={!triage.canBulk(action)}
+          disabledReason={count > 100 ? "Act on at most 100 items at once." : !triage.actionsAvailable ? "Durable triage is unavailable." : !triage.canBulk(action) ? ineligible : null}
+          onClick={() => triage.openAction(action)}>{label} {count} selected</Button>
+      ))}
+    </>
   };
 }
 
@@ -139,8 +149,8 @@ export function restoreTriageFilters(triage: OperatorTriageInboxState, filters: 
 }
 
 export function TriageAssignCheckbox({ triage, item }: { triage: OperatorTriageInboxState; item: OperatorTriageItem }) {
-  return <input type="checkbox" aria-label={`Select ${item.label} for assignment`}
-    disabled={!triage.capability(item, "canAssign")} checked={triage.checkedIds.includes(item.workItemId)}
+  return <input type="checkbox" aria-label={`Select ${item.label} for bulk triage`}
+    disabled={!triage.actionsAvailable || !isBulkSelectable(item)} checked={triage.checkedIds.includes(item.workItemId)}
     onChange={(event) => triage.toggleChecked(item.workItemId, event.target.checked)} />;
 }
 
@@ -178,11 +188,11 @@ export function OperatorTriageDetailRail({ id, triage, item }: { id: string; tri
 export function OperatorTriageActionDialog({ triage }: { triage: OperatorTriageInboxState }) {
   const { action, busy, checkedIds } = triage;
   return <Dialog open={action !== null} onOpenChange={(open) => { if (!open && !busy) triage.closeAction(); }}><DialogContent aria-labelledby="triage-action-title" aria-describedby="triage-action-description">
-    <DialogTitle id="triage-action-title">{action === "BulkAssign" ? `Assign ${checkedIds.length} selected items` : `${formatEnumLabel(action, "Review")} item`}</DialogTitle>
-    <DialogDescription id="triage-action-description">{action === "BulkAssign" ? "Each item is authorized and version-checked separately. Partial failures remain visible." : triage.actionTarget?.label} This changes triage metadata; it does not resolve or approve the source work.</DialogDescription>
+    <DialogTitle id="triage-action-title">{isBulkTriageAction(action) ? `${BULK_TRIAGE_ACTIONS[action].action} ${checkedIds.length} selected items` : `${formatEnumLabel(action, "Review")} item`}</DialogTitle>
+    <DialogDescription id="triage-action-description">{isBulkTriageAction(action) ? "Each item is authorized and version-checked separately. Partial failures remain visible." : triage.actionTarget?.label} This changes triage metadata; it does not resolve or approve the source work.</DialogDescription>
     <form className="mt-4 space-y-3" onSubmit={(event) => { event.preventDefault(); triage.submit(); }}>
       {action === "Assign" || action === "BulkAssign" ? <label className="block text-sm">Assignee operator ID<Input value={triage.assignee} onChange={(event) => triage.setAssignee(event.target.value)} autoComplete="off" required /></label> : null}
-      {action === "Snooze" ? <label className="block text-sm">Snooze until · UTC (within 7 days)<Input type="datetime-local" value={triage.until} onChange={(event) => triage.setUntil(event.target.value)} required /></label> : null}
+      {action === "Snooze" || action === "BulkSnooze" ? <label className="block text-sm">Snooze until · UTC (within 7 days)<Input type="datetime-local" value={triage.until} onChange={(event) => triage.setUntil(event.target.value)} required /></label> : null}
       <label className="block text-sm">Reason<Input value={triage.reason} onChange={(event) => triage.setReason(event.target.value)} required maxLength={2000} /></label>
       <div className="flex justify-end gap-2"><Button type="button" variant="outline" disabled={busy} onClick={triage.closeAction}>Cancel</Button><Button type="submit" disabled={!triage.canSubmit}>{busy ? "Applying…" : "Apply triage action"}</Button></div>
     </form>

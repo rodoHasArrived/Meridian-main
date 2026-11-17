@@ -269,7 +269,8 @@ change.
 **Progress on F1/P3 (2026-11-17).** The shared inbox's "My items" checkbox is now an Owner
 switch (Everyone, Mine, Unassigned). Keyboard triage covers acknowledge (c) and snooze (s) as well
 as assign (a), through the same reviewed, reason-required dialogs, and the `?` sheet lists those
-keys. Bulk acknowledge and snooze still need a server bulk endpoint; only bulk assign has one.
+keys. Bulk acknowledge and snooze now go through the same server bulk endpoint as bulk assign
+(`OperatorTriageBulkCommand` gained Acknowledge and Snooze, 2026-11-17).
 
 **Progress on F2/F4/F7 (2026-11-17).** Provider verification history is deep-linkable by
 connection or provider family, and Today's degraded-provider items open it. Trial balance's

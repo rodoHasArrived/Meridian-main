@@ -287,7 +287,7 @@ describe("DailyControlTowerScreen", () => {
     const user = userEvent.setup();
     await renderLoaded();
     expect(within(screen.getByRole("row", { name: "Brokerage sync failed" })).queryByRole("checkbox")).not.toBeInTheDocument();
-    await user.click(screen.getByRole("checkbox", { name: "Select Cash break triage for assignment" }));
+    await user.click(screen.getByRole("checkbox", { name: "Select Cash break triage for bulk triage" }));
     await user.click(screen.getByRole("button", { name: "Assign 1 selected" }));
     expect(screen.getByRole("dialog")).toHaveAccessibleName("Assign 1 selected items");
   });

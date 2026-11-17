@@ -237,7 +237,8 @@ converting their labels or units; operational source names grant no calculation 
 
 `Workstation/OperatorTriageDtos.cs` defines personal acknowledgement/snooze, shared assignment,
 per-item bulk outcomes and the metadata persistence seam; these commands do not resolve underlying
-financial work. `Ledger/PostedPeriodComparisonDtos.cs` carries explicit fiscal comparison ranges,
+financial work. `OperatorTriageBulkCommand` carries Assign (with `AssigneeId`), Acknowledge, or Snooze
+(with optional trailing `SnoozedUntil`); Unsnooze stays single-item. `Ledger/PostedPeriodComparisonDtos.cs` carries explicit fiscal comparison ranges,
 accounting basis/policy/currency, exact decimal changes and posted-journal population identities.
 
 `AutomatedPostingGrantReferenceDto` binds deterministic synthetic fill posting to an operator's

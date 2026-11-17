@@ -1404,6 +1404,7 @@ The shared inbox (Today and `OperatorTriageQueue`) filters by owner (Everyone, M
 Unassigned; saved views that carry the older `mineOnly` filter still restore). Its queue keys
 come from `QUEUE_KEY_BINDINGS` in `src/lib/keymap.ts`, which the `?` sheet also lists: j/k move,
 a assigns, c acknowledges and s snoozes; each opens the reviewed dialog that requires a reason,
+and checked rows can be assigned, acknowledged or snoozed together when every checked row allows it,
 and a blocker still cannot be snoozed. The reconciliation break queue keeps its own map in
 `src/lib/queue-keyboard-map.ts`.
 The Data overview's provider verification history is linkable: `?verificationConnection=`

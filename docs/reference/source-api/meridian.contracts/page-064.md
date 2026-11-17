@@ -601,7 +601,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorInboxTriageDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:35](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L35).
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:41](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L41).
 
 ```csharp
 public sealed record OperatorInboxTriageDto(DateTimeOffset AsOf, string ActorId, IReadOnlyList<OperatorTriageItemDto> Items, bool PersistenceAvailable, string? UnavailableReason);
@@ -666,7 +666,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageActivity</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:23](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L23).
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:29](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L29).
 
 ```csharp
 public sealed record OperatorTriageActivity(string CommandId, string ActorId, OperatorTriageAction Action, string Reason, DateTimeOffset OccurredAt, string? SubjectActorId = null, string? AssigneeId = null, DateTimeOffset? SnoozedUntil = null);
@@ -676,10 +676,12 @@ public sealed record OperatorTriageActivity(string CommandId, string ActorId, Op
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageBulkCommand</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L19).
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:24](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L24).
+
+One reviewed triage action applied to up to 100 items. Each item is authorized, version-checked and retained separately under {CommandId}:{index}. Assign needs AssigneeId; Snooze needs SnoozedUntil; Acknowledge needs neither. Unsnooze is single-item only.
 
 ```csharp
-public sealed record OperatorTriageBulkCommand(string CommandId, OperatorTriageAction Action, string Reason, string AssigneeId, IReadOnlyList<OperatorTriageBulkItem> Items, Guid? FundAccountId = null);
+public sealed record OperatorTriageBulkCommand(string CommandId, OperatorTriageAction Action, string Reason, string? AssigneeId, IReadOnlyList<OperatorTriageBulkItem> Items, Guid? FundAccountId = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] DateTimeOffset? SnoozedUntil = null);
 ```
 
 ## OperatorTriageBulkItem
@@ -696,7 +698,7 @@ public sealed record OperatorTriageBulkItem(string WorkItemId, long ExpectedVers
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageBulkResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:40](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L40).
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:46](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L46).
 
 ```csharp
 public sealed record OperatorTriageBulkResult(IReadOnlyList<OperatorTriageResult> Results);
@@ -706,7 +708,7 @@ public sealed record OperatorTriageBulkResult(IReadOnlyList<OperatorTriageResult
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageCapabilities</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:26](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L26).
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:32](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L32).
 
 ```csharp
 public sealed record OperatorTriageCapabilities(bool CanAssign, bool CanAcknowledge, bool CanSnooze, bool CanUnsnooze, string? DisabledReason);

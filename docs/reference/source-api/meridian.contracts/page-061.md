@@ -411,7 +411,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Workstation.IOperatorTriageStore</code>. Kind: `interface`.
 
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:60](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L60).
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:66](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L66).
 
 Serializes one item&#x27;s metadata update. Implementations persist state, activity and replay receipt together. The callback may delegate a source-owned assignment using its idempotent command.
 
@@ -423,8 +423,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;OperatorTriageState&gt; GetAsync(OperatorTriageScope scope, string workItemId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:62](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L62) |  |
-| <code>Task&lt;OperatorTriageState&gt; UpdateAsync(OperatorTriageScope scope, string workItemId, Func&lt;OperatorTriageState, CancellationToken, Task&lt;OperatorTriageState&gt;&gt; update, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:63](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L63) |  |
+| <code>Task&lt;OperatorTriageState&gt; GetAsync(OperatorTriageScope scope, string workItemId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:68](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L68) |  |
+| <code>Task&lt;OperatorTriageState&gt; UpdateAsync(OperatorTriageScope scope, string workItemId, Func&lt;OperatorTriageState, CancellationToken, Task&lt;OperatorTriageState&gt;&gt; update, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:69](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L69) |  |
 
 ## IPrivateCapitalCloseCockpitService
 

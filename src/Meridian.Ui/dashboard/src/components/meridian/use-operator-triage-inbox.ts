@@ -1,20 +1,37 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   bulkAssignOperatorTriage, commandOperatorTriage, getOperatorTriageInbox, isActiveTriageSnooze,
-  type OperatorTriageAction, type OperatorTriageBulkAssignment, type OperatorTriageCommand,
+  type OperatorTriageAction, type OperatorTriageBulkCommand, type OperatorTriageCommand,
   type OperatorTriageCommandResult, type OperatorTriageInbox, type OperatorTriageItem
 } from "@/lib/operator-inbox-triage";
 
 export interface PendingTriageCommand {
   itemId?: string;
-  command: OperatorTriageCommand | OperatorTriageBulkAssignment;
+  command: OperatorTriageCommand | OperatorTriageBulkCommand;
 }
 
 export type OperatorTriageCapability = "canAssign" | "canAcknowledge" | "canSnooze" | "canUnsnooze";
-export type OperatorTriageDialogAction = OperatorTriageAction | "BulkAssign";
+export type OperatorTriageBulkDialogAction = "BulkAssign" | "BulkAcknowledge" | "BulkSnooze";
+export type OperatorTriageDialogAction = OperatorTriageAction | OperatorTriageBulkDialogAction;
+
+/** The single-item action a bulk dialog applies, and the capability every checked item needs for it. */
+export const BULK_TRIAGE_ACTIONS: Record<OperatorTriageBulkDialogAction, { action: "Assign" | "Acknowledge" | "Snooze"; capability: OperatorTriageCapability }> = {
+  BulkAssign: { action: "Assign", capability: "canAssign" },
+  BulkAcknowledge: { action: "Acknowledge", capability: "canAcknowledge" },
+  BulkSnooze: { action: "Snooze", capability: "canSnooze" }
+};
+
+export function isBulkTriageAction(action: OperatorTriageDialogAction | null): action is OperatorTriageBulkDialogAction {
+  return action === "BulkAssign" || action === "BulkAcknowledge" || action === "BulkSnooze";
+}
 export type OperatorTriageVisibility = "active" | "all" | "snoozed";
 /** Whose items the inbox shows: everyone's, the signed-in operator's, or nobody's yet. */
 export type OperatorTriageOwnerFilter = "all" | "mine" | "unassigned";
+
+/** A row can join a bulk selection when at least one bulk action is open to it. */
+export function isBulkSelectable(item: OperatorTriageItem): boolean {
+  return item.capabilities.canAssign || item.capabilities.canAcknowledge || item.capabilities.canSnooze;
+}
 
 /** The shared inbox searchable text; Today's merged grid reuses it for inbox rows. */
 export function triageSearchText(item: OperatorTriageItem): string {
@@ -97,7 +114,7 @@ export function useOperatorTriageInbox({ fundAccountId, refreshKey = false }: {
       }
       actor.current = result.actorId;
       const pending = uncertainRef.current;
-      const pendingIds = pending ? pending.itemId ? [pending.itemId] : (pending.command as OperatorTriageBulkAssignment).items.map((item) => item.workItemId) : [];
+      const pendingIds = pending ? pending.itemId ? [pending.itemId] : (pending.command as OperatorTriageBulkCommand).items.map((item) => item.workItemId) : [];
       const retainedPending = pending && pendingIds.every((id, index) => {
         const commandId = pending.itemId ? pending.command.commandId : `${pending.command.commandId}:${index}`;
         return result.items.some((item) => item.workItemId === id && item.activity.some((entry) => entry.commandId === commandId));
@@ -107,7 +124,7 @@ export function useOperatorTriageInbox({ fundAccountId, refreshKey = false }: {
         setNotice("The retained activity confirms the command. Review the refreshed item state.");
       }
       setInbox(result);
-      setCheckedIds((ids) => ids.filter((id) => result.items.some((item) => item.workItemId === id && item.capabilities.canAssign)));
+      setCheckedIds((ids) => ids.filter((id) => result.items.some((item) => item.workItemId === id && isBulkSelectable(item))));
     }).catch((failure) => {
       if (!controller.signal.aborted && readInvocation.current === current) {
         setInbox(null);
@@ -142,7 +159,7 @@ export function useOperatorTriageInbox({ fundAccountId, refreshKey = false }: {
   const openAction = (next: OperatorTriageDialogAction, target: OperatorTriageItem | null = null) => {
     setReason(""); setAssignee("");
     setUntil(new Date(Date.now() + 60 * 60 * 1000).toISOString().slice(0, 16));
-    setNotice(null); setActionTargetId(next === "BulkAssign" ? null : target?.workItemId ?? null); setAction(next);
+    setNotice(null); setActionTargetId(isBulkTriageAction(next) ? null : target?.workItemId ?? null); setAction(next);
   };
   const closeAction = () => setAction(null);
   const setVisibility = (value: string) =>
@@ -150,7 +167,7 @@ export function useOperatorTriageInbox({ fundAccountId, refreshKey = false }: {
   const toggleChecked = (workItemId: string, checked: boolean) =>
     setCheckedIds((ids) => checked ? [...ids, workItemId] : ids.filter((id) => id !== workItemId));
   /** The item a single-item dialog acts on, re-read from the latest authorized inbox. */
-  const actionTarget = action && action !== "BulkAssign"
+  const actionTarget = action && !isBulkTriageAction(action)
     ? inbox?.items.find((item) => item.workItemId === actionTargetId) ?? null
     : null;
 
@@ -164,7 +181,7 @@ export function useOperatorTriageInbox({ fundAccountId, refreshKey = false }: {
     try {
       const results: OperatorTriageCommandResult[] = pending.itemId
         ? [await commandOperatorTriage(pending.itemId, pending.command as OperatorTriageCommand, { signal })]
-        : (await bulkAssignOperatorTriage(pending.command as OperatorTriageBulkAssignment, { signal })).results;
+        : (await bulkAssignOperatorTriage(pending.command as OperatorTriageBulkCommand, { signal })).results;
       if (signal.aborted || current !== commandInvocation.current) return;
       if (!Array.isArray(results) || results.some((result) => !["Applied", "Conflict", "Rejected", "NotFound", "Unavailable", "Forbidden"].includes(result.status))) {
         throw new Error("The command response could not be verified.");
@@ -187,21 +204,33 @@ export function useOperatorTriageInbox({ fundAccountId, refreshKey = false }: {
   }
 
   const snoozeDate = Date.parse(`${until}Z`);
-  const canSubmit = Boolean(action && reason.trim() && !busy && (action !== "Assign" && action !== "BulkAssign" || assignee.trim())
-    && (action !== "Snooze" || Number.isFinite(snoozeDate) && snoozeDate > Date.now() && snoozeDate <= Date.now() + 7 * 24 * 60 * 60 * 1000)
-    && (action === "BulkAssign" ? checkedIds.length > 0 && checkedIds.length <= 100 && checkedIds.every((id) => capability(inbox?.items.find((item) => item.workItemId === id) ?? null, "canAssign"))
+  const snoozeInWindow = Number.isFinite(snoozeDate) && snoozeDate > Date.now() && snoozeDate <= Date.now() + 7 * 24 * 60 * 60 * 1000;
+  const bulk = isBulkTriageAction(action) ? BULK_TRIAGE_ACTIONS[action] : null;
+  const checkedItems = inbox?.items.filter((item) => checkedIds.includes(item.workItemId)) ?? [];
+  // A bulk action needs every checked item to allow it: a blocker is never quietly skipped.
+  const bulkEligible = (capabilityKey: OperatorTriageCapability) => checkedItems.length > 0 && checkedItems.length <= 100
+    && checkedItems.length === checkedIds.length && checkedItems.every((item) => capability(item, capabilityKey));
+  const canSubmit = Boolean(action && reason.trim() && !busy
+    && (action !== "Assign" && action !== "BulkAssign" || assignee.trim())
+    && (action !== "Snooze" && action !== "BulkSnooze" || snoozeInWindow)
+    && (bulk ? bulkEligible(bulk.capability)
       : capability(actionTarget, action === "Assign" ? "canAssign" : action === "Acknowledge" ? "canAcknowledge" : action === "Snooze" ? "canSnooze" : "canUnsnooze")));
 
   /** Submits the open dialog with a fresh command ID and the authoritative versions. */
   const submit = () => {
     if (!canSubmit || !action || !inbox) return;
     const common = { commandId: crypto.randomUUID(), reason: reason.trim(), fundAccountId };
-    if (action === "BulkAssign") {
-      void execute({ command: { ...common, action: "Assign", assigneeId: assignee.trim(), items: inbox.items.filter((item) => checkedIds.includes(item.workItemId)).map((item) => ({ workItemId: item.workItemId, expectedVersion: item.version, expectedSourceVersion: item.sourceVersion })) } });
+    if (bulk) {
+      void execute({ command: { ...common, action: bulk.action,
+        ...(bulk.action === "Assign" ? { assigneeId: assignee.trim() } : {}),
+        ...(bulk.action === "Snooze" ? { snoozedUntil: new Date(snoozeDate).toISOString() } : {}),
+        items: checkedItems.map((item) => ({ workItemId: item.workItemId, expectedVersion: item.version, expectedSourceVersion: item.sourceVersion })) } });
     } else if (actionTarget) {
-      void execute({ itemId: actionTarget.workItemId, command: { ...common, action, expectedVersion: actionTarget.version, expectedSourceVersion: actionTarget.sourceVersion, ...(action === "Assign" ? { assigneeId: assignee.trim() } : {}), ...(action === "Snooze" ? { snoozedUntil: new Date(snoozeDate).toISOString() } : {}) } });
+      void execute({ itemId: actionTarget.workItemId, command: { ...common, action: action as OperatorTriageAction, expectedVersion: actionTarget.version, expectedSourceVersion: actionTarget.sourceVersion, ...(action === "Assign" ? { assigneeId: assignee.trim() } : {}), ...(action === "Snooze" ? { snoozedUntil: new Date(snoozeDate).toISOString() } : {}) } });
     }
   };
+  /** Whether every checked item allows a bulk action, for the selection bar's enabled state. */
+  const canBulk = (next: OperatorTriageBulkDialogAction) => actionsAvailable && bulkEligible(BULK_TRIAGE_ACTIONS[next].capability);
   /** Re-sends the unconfirmed command with its original command ID (idempotent replay). */
   const retryUncertain = () => { if (uncertain) void execute(uncertain); };
 
@@ -211,7 +240,7 @@ export function useOperatorTriageInbox({ fundAccountId, refreshKey = false }: {
     checkedIds, toggleChecked, clearChecked: () => setCheckedIds([]),
     owner, setOwner, mineOnly, setMineOnly, visibility, setVisibility, search, setSearch,
     actionsAvailable, capability,
-    action, actionTarget, openAction, closeAction,
+    action, actionTarget, openAction, closeAction, canBulk,
     reason, setReason, assignee, setAssignee, until, setUntil, canSubmit, submit
   };
 }

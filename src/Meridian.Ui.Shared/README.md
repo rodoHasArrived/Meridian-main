@@ -592,6 +592,10 @@ Blocked/critical work cannot be snoozed; observed escalation permanently cancels
 Account-scoped single and bulk commands carry the selected `FundAccountId`, recheck its retained
 ownership, and rebuild that account's source inbox before acting. Exact retries retain the original
 command identity; omitted account scope preserves legacy command fingerprints.
+`POST /operator/triage/bulk` applies one assign, acknowledge or snooze to 1–100 items, each under
+`{CommandId}:{index}` through the same per-item authorization and policy (a blocker still cannot be
+snoozed); assign without an assignee, snooze without a snooze-until time, and Unsnooze are refused
+with 400 before anything is written.
 Production uses PostgreSQL through `MERIDIAN_OPERATOR_TRIAGE_CONNECTION_STRING` (falling back to the
 ledger connection); missing persistence disables triage actions explicitly. Synthetic hosts use a
 durable file adapter. No notification delivery is implied by assignment or acknowledgement.

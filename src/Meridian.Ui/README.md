@@ -103,7 +103,7 @@ tab. Labels use light caps in the body face, monospace stays on figures and IDs,
 Explorer closes with a debit and credit totals row. Close Cockpit detail tiles keep dates on one
 line and monospace on figures only, and its checklist-progress and break-aging charts render in
 view. The shared inbox filters by owner (Everyone, Mine, Unassigned) and adds acknowledge and
-snooze keys beside assign, and Today's provider items open that provider's retained
+snooze keys and bulk actions beside assign, and Today's provider items open that provider's retained
 verification history. No shared contract changed.
 
 The host-served bundle carries the design-system consolidation. It includes one status

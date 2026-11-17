@@ -20,7 +20,7 @@ public sealed record OperatorTriageCommand(string CommandId, OperatorTriageActio
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageItemDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:28](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L28).
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:34](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L34).
 
 ```csharp
 public sealed record OperatorTriageItemDto(string WorkItemId, string Label, string Detail, string? Workspace, string? TargetRoute, OperatorWorkItemToneDto Tone, DateTimeOffset CreatedAt, string? OwnerId, DateTimeOffset? DueAt, long Version, long? SourceVersion, DateTimeOffset? AcknowledgedAt, DateTimeOffset? SnoozedUntil, OperatorTriageCapabilities Capabilities, IReadOnlyList<OperatorTriageActivity> Activity, Guid? FundAccountId = null, string? RunId = null, string? Scope = null, OperatorWorkItemKindDto? Kind = null, string? TargetPageTag = null);
@@ -30,7 +30,7 @@ public sealed record OperatorTriageItemDto(string WorkItemId, string Label, stri
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriagePersonalState</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:51](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L51).
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:57](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L57).
 
 ```csharp
 public sealed record OperatorTriagePersonalState(string ActorId, DateTimeOffset? AcknowledgedAt, DateTimeOffset? SnoozedUntil, OperatorWorkItemToneDto? SnoozedTone);
@@ -40,7 +40,7 @@ public sealed record OperatorTriagePersonalState(string ActorId, DateTimeOffset?
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageReceipt</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:53](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L53).
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:59](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L59).
 
 ```csharp
 public sealed record OperatorTriageReceipt(string ActorId, string CommandId, string Fingerprint);
@@ -50,7 +50,7 @@ public sealed record OperatorTriageReceipt(string ActorId, string CommandId, str
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:38](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L38).
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:44](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L44).
 
 ```csharp
 public sealed record OperatorTriageResult(string Status, string WorkItemId, OperatorTriageItemDto? Item = null, string? Error = null, bool Replayed = false);
@@ -60,7 +60,7 @@ public sealed record OperatorTriageResult(string Status, string WorkItemId, Oper
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageScope</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:54](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L54).
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:60](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L60).
 
 ```csharp
 public sealed record OperatorTriageScope(string TenantId, string CompanyId);
@@ -70,7 +70,7 @@ public sealed record OperatorTriageScope(string TenantId, string CompanyId);
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageState</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:43](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L43).
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:49](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L49).
 
 Metadata only: never a copy of the source work item or financial workflow.
 
@@ -82,7 +82,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static OperatorTriageState Empty =&gt; …;</code> | [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:49](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L49) |  |
+| <code>public static OperatorTriageState Empty =&gt; …;</code> | [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:55](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L55) |  |
 
 ## OperatorWorkflowHomeSummary
 
