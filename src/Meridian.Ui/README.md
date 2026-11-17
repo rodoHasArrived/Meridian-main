@@ -107,7 +107,8 @@ snooze keys and bulk actions beside assign, and Today's provider items open that
 verification history. Trial balance compares closing balances against the prior close through the
 posted-period comparison's ClosingBalances measure.
 Close Cockpit lays the close plan's tasks out by due day after period end, with owners, blockers and
-dependencies; it uses the existing close-plan contract unchanged.
+dependencies; it uses the existing close-plan contract unchanged. The open-breaks headline KPI shows a
+sparkline rebuilt server-side from retained break times.
 
 The host-served bundle carries the design-system consolidation. It includes one status
 component; one formatting module (year-bearing UTC timestamps; accounting negatives in

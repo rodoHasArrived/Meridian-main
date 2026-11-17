@@ -204,7 +204,7 @@ public sealed record MetricsDiff(decimal NetPnlDelta, decimal TotalReturnDelta, 
 
 Qualified name: <code>Meridian.Contracts.Workstation.MultiAssetClassCoverageDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1019](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1019).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1028](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1028).
 
 Operational coverage row for one asset class across Security Master, provider evidence, ledger, reconciliation, and close readiness.
 
@@ -216,7 +216,7 @@ public sealed record MultiAssetClassCoverageDto(string AssetClass, string Displa
 
 Qualified name: <code>Meridian.Contracts.Workstation.MultiAssetCoverageSummaryDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1065](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1065).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1074](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1074).
 
 Shared multi-asset operational coverage payload returned by GET /api/workstation/portfolio/multi-asset-coverage.
 
@@ -228,13 +228,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;MultiAssetPackCoverageDto&gt; AssetPacks { get; init; } = AssetPacks??[];</code> | [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1074](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1074) |  |
+| <code>public IReadOnlyList&lt;MultiAssetPackCoverageDto&gt; AssetPacks { get; init; } = AssetPacks??[];</code> | [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1083](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1083) |  |
 
 ## MultiAssetDrillThroughTargetDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.MultiAssetDrillThroughTargetDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1006](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1006).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1015](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1015).
 
 Shared drill-through target for one asset-class coverage row.
 
@@ -246,7 +246,7 @@ public sealed record MultiAssetDrillThroughTargetDto(string TargetId, string Tar
 
 Qualified name: <code>Meridian.Contracts.Workstation.MultiAssetEvidenceRequirementDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:985](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L985).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:994](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L994).
 
 Asset-class-specific evidence requirement rendered by Portfolio, Accounting, and desktop workstations.
 
@@ -258,7 +258,7 @@ public sealed record MultiAssetEvidenceRequirementDto(string RequirementId, stri
 
 Qualified name: <code>Meridian.Contracts.Workstation.MultiAssetPackCoverageDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1034](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1034).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1043](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1043).
 
 Shared registry contract for an asset pack exposed by the multi-asset coverage endpoint.
 
@@ -270,14 +270,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;AssetPackRegistryValidationIssue&gt; RegistryValidationIssues { get; init; } = RegistryValidationIssues??[];</code> | [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1056](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1056) |  |
-| <code>public IReadOnlyList&lt;string&gt; PlannedAssetClasses { get; init; } = PlannedAssetClasses??[];</code> | [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1058](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1058) |  |
+| <code>public IReadOnlyList&lt;AssetPackRegistryValidationIssue&gt; RegistryValidationIssues { get; init; } = RegistryValidationIssues??[];</code> | [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1065](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1065) |  |
+| <code>public IReadOnlyList&lt;string&gt; PlannedAssetClasses { get; init; } = PlannedAssetClasses??[];</code> | [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1067](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1067) |  |
 
 ## MultiAssetReadinessBlockerDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.MultiAssetReadinessBlockerDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:996](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L996).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1005](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1005).
 
 Readiness blocker for a single asset class.
 

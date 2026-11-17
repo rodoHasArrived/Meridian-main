@@ -242,6 +242,8 @@ financial work. `OperatorTriageBulkCommand` carries Assign (with `AssigneeId`), 
 accounting basis/policy/currency, exact decimal changes and posted-journal population identities;
 `PostedComparisonMeasureDto` selects Movements (each period's postings, the default) or ClosingBalances
 (cumulative postings from the book's earlier periods through each period end).
+`WorkstationMetricCard` may carry an optional `History` (`WorkstationMetricHistoryPointDto`: date and
+nullable value, oldest first) with a `HistoryBasis`; a null value is a day the source cannot establish.
 
 `AutomatedPostingGrantReferenceDto` binds deterministic synthetic fill posting to an operator's
 retained tenant/account/book/period/policy/mapping delegation. `AuthorizedSystem` is distinct

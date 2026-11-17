@@ -54,6 +54,8 @@ public static partial class WorkstationEndpoints
                 ct: context.RequestAborted)
             .ConfigureAwait(false);
         var scopedOpenBreaks = CrossScreenCountDefinitions.CountOpenBreaks(breakQueueItems);
+        // Rebuilt from the same retained items as the headline count, so its last point equals it.
+        var openBreakHistory = OpenBreakHistory.Build(breakQueueItems, DateTimeOffset.UtcNow);
         var visibleBreakQueueItems = readScope.BreakQueue
             ? breakQueueItems
             : (IReadOnlyList<ReconciliationBreakQueueItem>)[];
@@ -77,7 +79,8 @@ public static partial class WorkstationEndpoints
             return new WorkstationAccountingPayload(
                 Metrics:
                 [
-                    new WorkstationMetricCard("open-breaks", "Open Breaks", scopedOpenBreaks.ToString(CultureInfo.InvariantCulture), "0%", scopedOpenBreaks == 0 ? "success" : "warning"),
+                    new WorkstationMetricCard("open-breaks", "Open Breaks", scopedOpenBreaks.ToString(CultureInfo.InvariantCulture), "0%", scopedOpenBreaks == 0 ? "success" : "warning",
+                    History: openBreakHistory, HistoryBasis: OpenBreakHistory.Basis),
                     new WorkstationMetricCard("timing-drift", "Timing Drift", "0", "0%", "default"),
                     new WorkstationMetricCard("security-gaps", "Security Gaps", "0", "0%", "success"),
                     new WorkstationMetricCard("audit-ready", "Audit Ready", "0", "0%", "default"),
@@ -116,7 +119,8 @@ public static partial class WorkstationEndpoints
         return new WorkstationAccountingPayload(
             Metrics:
             [
-                new WorkstationMetricCard("open-breaks", "Open Breaks", scopedOpenBreaks.ToString(CultureInfo.InvariantCulture), "0%", scopedOpenBreaks == 0 ? "success" : "warning"),
+                new WorkstationMetricCard("open-breaks", "Open Breaks", scopedOpenBreaks.ToString(CultureInfo.InvariantCulture), "0%", scopedOpenBreaks == 0 ? "success" : "warning",
+                    History: openBreakHistory, HistoryBasis: OpenBreakHistory.Basis),
                 new WorkstationMetricCard("timing-drift", "Timing Drift", timingDriftRuns.ToString(CultureInfo.InvariantCulture), "0%", timingDriftRuns == 0 ? "default" : "warning"),
                 new WorkstationMetricCard("security-gaps", "Security Gaps", runsWithSecurityIssues.ToString(CultureInfo.InvariantCulture), "0%", runsWithSecurityIssues == 0 ? "success" : "warning"),
                 new WorkstationMetricCard("audit-ready", "Audit Ready", Math.Max(0, auditReadyRuns).ToString(CultureInfo.InvariantCulture), "0%", auditReadyRuns > 0 ? "success" : "default"),

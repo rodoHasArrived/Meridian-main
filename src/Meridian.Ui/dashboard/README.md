@@ -1417,6 +1417,10 @@ close plan's own tasks: columns are calendar days after the period end (T+0), an
 the task's owner, status, blocker and dependencies by name, with met dependencies struck through.
 A task is overdue only when its due date has passed and it is not signed off; a task without a
 calendar due date is listed separately, never placed on a guessed day. No plan, no board.
+Headline KPIs draw a sparkline only from a producer-supplied `history` (`MetricSparkline` in the stat
+strip, `lib/metric-history.ts`): the latest run of established days, at least two, never bridging a
+gap, with a screen-reader description. The open-breaks KPI carries the history only when its last
+point equals the count it shows.
 The Data overview's provider verification history is linkable: `?verificationConnection=`
 selects an exact connection and `?providerFamily=` its family's first connection (matched on
 `providerFamilyId`, never on display names; otherwise the first loaded connection), anchored at

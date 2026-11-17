@@ -9716,6 +9716,8 @@ Meridian-main
 │   │   │   │   │   ├── mark-freshness.ts
 │   │   │   │   │   ├── metric-context.test.ts
 │   │   │   │   │   ├── metric-context.ts
+│   │   │   │   │   ├── metric-history.test.ts
+│   │   │   │   │   ├── metric-history.ts
 │   │   │   │   │   ├── metric-trust.test.ts
 │   │   │   │   │   ├── metric-trust.ts
 │   │   │   │   │   ├── onboarding.ts
@@ -11208,6 +11210,7 @@ Meridian-main
 │   │   │   ├── OmsIntegrationService.cs
 │   │   │   ├── OnboardingComparisonSource.cs
 │   │   │   ├── OnboardingOpeningStateSource.cs
+│   │   │   ├── OpenBreakHistory.cs
 │   │   │   ├── OperationsContinuityReconciliationBridge.cs
 │   │   │   ├── OperationsReportPackAuthority.cs
 │   │   │   ├── OperatorInboxPriorityScoringService.cs
@@ -14839,6 +14842,7 @@ Meridian-main
 │   │   │   ├── OnboardingOpeningStateSourceTests.cs
 │   │   │   ├── OnboardingShadowModeTests.cs
 │   │   │   ├── OnboardingWorkspaceServiceTests.cs
+│   │   │   ├── OpenBreakHistoryTests.cs
 │   │   │   ├── OperationsContinuityReconciliationBridgeTests.cs
 │   │   │   ├── OperationsReportPackAuthorityCompositionTests.cs
 │   │   │   ├── OperatorApprovalFlowScenarioTests.cs

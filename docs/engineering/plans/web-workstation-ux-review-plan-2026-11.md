@@ -263,8 +263,9 @@ the font decision is still open.
 wraps dates onto three lines: the row wraps as a unit, and only figures keep monospace. The "Close
 task progress" and "Break aging" charts now render in view (after the queue and after the
 reconciliation workbench) rather than inside collapsed disclosures. Headline-KPI sparklines
-remain blocked because workspace metrics carry no history series; adding one is a shared-contract
-change.
+now have a first producer: `WorkstationMetricCard.History`, filled for open breaks by rebuilding each
+day's count from retained break times (2026-11-17). Other KPIs gain sparklines as their sources can
+support a rebuilt series; none uses stored snapshots.
 
 **Progress on F1/P3 (2026-11-17).** The shared inbox's "My items" checkbox is now an Owner
 switch (Everyone, Mine, Unassigned). Keyboard triage covers acknowledge (c) and snooze (s) as well

@@ -609,6 +609,12 @@ book's earlier periods (by posting period) plus the period's own postings to the
 baseline's full close; postings assigned to a period outside the book make the result Unavailable
 rather than guessed. These comparisons never consume the strategy-run simulated ledger.
 
+The Accounting workspace's open-breaks card carries a 14-day history from `OpenBreakHistory`: the
+count at each UTC day end rebuilt from break detection, resolution and reopen times in the retained
+queue (which keeps every status), with today's live count as the last point. A closed break without a
+resolution time, or any day before a reopen (reopen clears the earlier resolution time), is null,
+not guessed. No metric snapshots are stored.
+
 The posted-account running-balance read requires the same authenticated tenant/company and
 retained book ownership, including exact returned period, book and fund identities. Its optional
 `accountingBasis` selector filters retained journal records before aggregation; the posted-row
