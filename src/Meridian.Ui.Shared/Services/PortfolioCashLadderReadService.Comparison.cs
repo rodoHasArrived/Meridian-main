@@ -6,11 +6,15 @@ namespace Meridian.Ui.Shared.Services;
 
 public sealed partial class PortfolioCashLadderReadService
 {
+    /// <summary>True when the asset-operations service can project instruments from historical terms.</summary>
+    private bool TermsAsOfSupported => _assetOperationsQueryService?.SupportsTermsAsOf == true;
+
     /// <summary>
     /// Today's ladder against the ladder rebuilt as of <paramref name="baselineAsOf"/> (default: the
     /// last day of the previous calendar month): opening cash, flows, the lowest cumulative cash, the
     /// number of buckets below the minimum, and each bucket's net flow by position. The prior ladder
-    /// opens from the ledger's cash as of that day; instrument projections use their current terms.
+    /// opens from the ledger's cash as of that day; instruments are projected from the terms recorded by
+    /// the end of that day when the asset-operations service can, and from current terms otherwise.
     /// </summary>
     public async Task<PeriodComparisonDto> GetCashLadderComparisonAsync(
         PortfolioCashLadderQuery query,
@@ -28,7 +32,9 @@ public sealed partial class PortfolioCashLadderReadService
         var notes = new List<string>
         {
             "The prior ladder is rebuilt as of the prior date: it opens from the ledger's cash at the end of that day and projects the same horizon forward from it.",
-            "Instrument cash flows use each instrument's current terms; terms that changed since the prior date are not replayed.",
+            TermsAsOfSupported
+                ? "Instrument cash flows on the prior ladder use the terms recorded by the end of the prior date. Positions merged inside asset operations are still current."
+                : "Instrument cash flows use each instrument's current terms; terms that changed since the prior date are not replayed.",
             "Buckets are compared by position (first bucket with first bucket), because each ladder's bucket dates start from its own as-of day."
         };
 
@@ -45,9 +51,12 @@ public sealed partial class PortfolioCashLadderReadService
                 "Portfolio cash ladder", null, current, baseline, [], notes, now);
         }
 
-        var currentLadder = await GetCashLadderAsync(query, ct).ConfigureAwait(false);
+        // Both sides share this request's clock reading.
+        var currentLadder = await BuildLadderAsync(
+            query, now, asOfDate, _cashBalanceProvider!.GetCashBalancesAsync, ct).ConfigureAwait(false);
+        var termsCutoff = new DateTimeOffset(baselineDate.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
         var baselineLadder = await BuildLadderAsync(
-            query, now, baselineDate, token => history.GetCashBalancesAsOfAsync(baselineDate, token), ct).ConfigureAwait(false);
+            query, now, baselineDate, token => history.GetCashBalancesAsOfAsync(baselineDate, token), ct, termsCutoff).ConfigureAwait(false);
 
         if (!string.Equals(currentLadder.BaseCurrency, baselineLadder.BaseCurrency, StringComparison.OrdinalIgnoreCase))
         {

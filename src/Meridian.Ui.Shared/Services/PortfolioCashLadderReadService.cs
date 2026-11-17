@@ -62,19 +62,21 @@ public sealed partial class PortfolioCashLadderReadService : IPortfolioCashLadde
 
     /// <summary>
     /// Builds the ladder as of <paramref name="asOfDate"/>. <paramref name="loadCash"/> reads the
-    /// opening cash for that date; null means no authoritative provider can.
+    /// opening cash for that date; null means no authoritative provider can. With
+    /// <paramref name="termsAsOf"/>, instruments are projected from the terms recorded by then.
     /// </summary>
     private async Task<PortfolioCashLadderDto> BuildLadderAsync(
         PortfolioCashLadderQuery query,
         DateTimeOffset now,
         DateOnly asOfDate,
         Func<CancellationToken, Task<IReadOnlyList<PortfolioCashBalanceDto>>>? loadCash,
-        CancellationToken ct)
+        CancellationToken ct,
+        DateTimeOffset? termsAsOf = null)
     {
         var horizonDays = Math.Max(1, query.HorizonDays);
         var windowEnd = asOfDate.AddDays(horizonDays);
 
-        var (positions, loadNotices) = await LoadPositionsAsync(asOfDate, ct).ConfigureAwait(false);
+        var (positions, loadNotices) = await LoadPositionsAsync(asOfDate, termsAsOf, ct).ConfigureAwait(false);
         var positionNotices = new List<string>(loadNotices);
         var decisionBlockers = new List<string>(loadNotices);
 
@@ -197,6 +199,7 @@ public sealed partial class PortfolioCashLadderReadService : IPortfolioCashLadde
 
     private async Task<(IReadOnlyList<PortfolioCashLadderPositionDto> Positions, IReadOnlyList<string> Notices)> LoadPositionsAsync(
         DateOnly asOf,
+        DateTimeOffset? termsAsOf,
         CancellationToken ct)
     {
         if (_assetOperationsQueryService is null)
@@ -214,7 +217,7 @@ public sealed partial class PortfolioCashLadderReadService : IPortfolioCashLadde
                 .Where(static holding => holding.Quantity != 0m)
                 .GroupBy(static holding => holding.SecurityId)
                 .ToDictionary(static group => group.Key, static group => group.Sum(static holding => holding.Quantity));
-            var positions = await ProjectAsync(heldQuantities.Keys.ToArray(), heldQuantities, notices, "held securities", ct)
+            var positions = await ProjectAsync(heldQuantities.Keys.ToArray(), heldQuantities, notices, "held securities", termsAsOf, ct)
                 .ConfigureAwait(false);
             return (positions, notices);
         }
@@ -232,6 +235,7 @@ public sealed partial class PortfolioCashLadderReadService : IPortfolioCashLadde
         IReadOnlyDictionary<Guid, decimal>? heldQuantities,
         List<string> notices,
         string sourceLabel,
+        DateTimeOffset? termsAsOf,
         CancellationToken ct)
     {
         var distinct = securityIds.Distinct().ToArray();
@@ -249,8 +253,10 @@ public sealed partial class PortfolioCashLadderReadService : IPortfolioCashLadde
         foreach (var batch in ids.Chunk(ProjectionBatchSize))
         {
             ct.ThrowIfCancellationRequested();
-            var details = await Task.WhenAll(batch.Select(securityId =>
-                _assetOperationsQueryService!.GetOperationsAsync(securityId, ct))).ConfigureAwait(false);
+            var details = await Task.WhenAll(batch.Select(securityId => termsAsOf is { } cutoff && TermsAsOfSupported
+                ? _assetOperationsQueryService!.GetOperationsAsOfAsync(
+                    securityId, new Meridian.Contracts.FixedIncome.BondCalculationContext(cutoff, KnownAt: cutoff), ct)
+                : _assetOperationsQueryService!.GetOperationsAsync(securityId, ct))).ConfigureAwait(false);
             missingProjection += details.Count(static detail => detail is null);
             positions.AddRange(details
                 .Where(static detail => detail is not null)

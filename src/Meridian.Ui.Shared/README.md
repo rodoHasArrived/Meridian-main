@@ -1223,7 +1223,9 @@ Prior-period comparisons (UX Phase E) all return `PeriodComparisonDto`:
   compares a run's per-symbol P&L for one month with the month before, from its daily snapshots.
 - `GET /api/portfolio/cash-ladder/comparison` (`PortfolioCashLadderReadService.Comparison.cs`)
   rebuilds the ladder from the ledger's cash at the prior date (`PortfolioLedgerCashBalanceProvider`
-  implements `IPortfolioCashBalanceHistoryProvider`); instrument flows use current terms.
+  implements `IPortfolioCashBalanceHistoryProvider`). When the asset-operations service reports
+  `SupportsTermsAsOf`, the prior ladder projects instruments from the terms recorded by the end of
+  the prior date (`GetOperationsAsOfAsync`); otherwise it uses current terms and says so.
 - `GET /api/fund-structure/nav-trend` (`FundOperationsWorkspaceReadService.NavTrend.cs`) returns
   `FundNavTrendDto`: ledger NAV at up to 24 month-ends (default 12) plus today, from one ledger book.
   Months before the first NAV component are left out, with a note.
