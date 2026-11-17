@@ -254,7 +254,8 @@ lane, Level 2 should add targeted invariant tests (the full aggregate `bash scri
 recommended), and Level 3 or build/CI-tooling changes should run it when practical. State which
 checks ran and which did not.
 
-Contribute through a `codex/<short-task-name>` branch and a pull request targeting `main`.
+Contribute through a `codex/<short-task-name>` or `claude/<short-task-name>` branch and a pull
+request targeting `main`.
 The hosted `Meridian CI / quality-gate` remains the authoritative merge result.
 See [Engineering](docs/engineering/README.md#buildtestrun) for desktop and release validation,
 build isolation, and hosted validation when local tooling is unavailable.

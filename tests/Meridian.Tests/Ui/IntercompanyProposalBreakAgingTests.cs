@@ -197,7 +197,7 @@ public sealed class IntercompanyProposalBreakAgingTests
         internal IntercompanyProposalDto Proposal { get; set; }
 
         internal Task<IReadOnlyList<IntercompanyBreakDto>> Breaks(DateOnly asOf)
-            => _service.BreaksAsync("tenant-a", IntercompanyProposalTestData.BookA, asOf);
+            => _service.BreaksAsync("tenant-a", "company-a", IntercompanyProposalTestData.BookA, asOf);
 
         /// <summary>Posts one side of the loan in its original currency at that book's own booking rate.</summary>
         internal Guid Post(Guid book, decimal originalAmount, string originalCurrency, decimal rate, bool debit)

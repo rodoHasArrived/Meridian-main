@@ -2056,6 +2056,7 @@ Meridian-main
 │   │   ├── README.md
 │   │   ├── reporting-operating-model-2026-09.md
 │   │   ├── review-history.md
+│   │   ├── settings-preferences-brainstorm-2026-11-16.md
 │   │   ├── single-principal-attestation-acceptance-matrix-2026-11-02.md
 │   │   ├── single-principal-attestation-policy-proposal-2026-11-02.md
 │   │   ├── value-proposition-review-2026-11-01.md
@@ -13263,7 +13264,6 @@ Meridian-main
 │   │   │   ├── PaperSessionRecoveryConcurrencyTests.cs
 │   │   │   ├── PaperSessionVariationMarginTests.cs
 │   │   │   ├── PaperTradingCostModelTests.cs
-│   │   │   ├── PaperTradingGatewayConcurrencyTests.cs
 │   │   │   ├── PaperTradingGatewayTests.cs
 │   │   │   ├── PaperTradingPortfolioAccountingEvidenceTests.cs
 │   │   │   ├── PaperTradingPortfolioBasisParityTests.cs

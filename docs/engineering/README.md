@@ -159,7 +159,8 @@ Focused checks and environment diagnostics do not replace the required hosted ch
 GitHub Actions `Meridian CI / quality-gate` is the authoritative merge result. Local work may
 happen on `main` when the user explicitly requests it or the checkout is intentionally operating
 there. Do not bypass GitHub branch protections; for PR-ready publishing, use a
-`codex/<short-task-name>` branch and a pull request targeting `main`.
+`codex/<short-task-name>` or `claude/<short-task-name>` branch (either agent prefix is accepted)
+and a pull request targeting `main`.
 
 The four-lane `Meridian CI / quality-gate` keeps its identity. The always-reported
 `Meridian CI / integration-gate` companion reports service-backed PostgreSQL tests shared with

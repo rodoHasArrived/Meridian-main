@@ -23,11 +23,11 @@ public sealed class IntercompanyProposalResolutionTests
         fixture.TargetRecords.Add(Record(IntercompanyProposalTestData.BookB, fixture.Proposal.TargetJournalId,
             new(2026, 7, 2), 100m, 2));
 
-        Assert.Empty(await fixture.Service.BreaksAsync("tenant-a", IntercompanyProposalTestData.BookA, new(2026, 6, 30)));
-        var broken = Assert.Single(await fixture.Service.BreaksAsync("tenant-a", IntercompanyProposalTestData.BookA, new(2026, 7, 1)));
+        Assert.Empty(await fixture.Service.BreaksAsync("tenant-a", "company-a", IntercompanyProposalTestData.BookA, new(2026, 6, 30)));
+        var broken = Assert.Single(await fixture.Service.BreaksAsync("tenant-a", "company-a", IntercompanyProposalTestData.BookA, new(2026, 7, 1)));
         Assert.Equal("AmountOrIdentityMismatch", broken.Classification);
         Assert.Contains("correction families", broken.Detail, StringComparison.Ordinal);
-        Assert.Empty(await fixture.Service.BreaksAsync("tenant-a", IntercompanyProposalTestData.BookA, new(2026, 7, 2)));
+        Assert.Empty(await fixture.Service.BreaksAsync("tenant-a", "company-a", IntercompanyProposalTestData.BookA, new(2026, 7, 2)));
     }
 
     [Fact]
@@ -47,7 +47,7 @@ public sealed class IntercompanyProposalResolutionTests
                 })
         });
 
-        Assert.Single(await fixture.Service.BreaksAsync("tenant-a", IntercompanyProposalTestData.BookA, new(2026, 7, 1)));
+        Assert.Single(await fixture.Service.BreaksAsync("tenant-a", "company-a", IntercompanyProposalTestData.BookA, new(2026, 7, 1)));
     }
 
     [Fact]
@@ -56,7 +56,7 @@ public sealed class IntercompanyProposalResolutionTests
         var fixture = Fixture();
         fixture.SourceRecords.Add(Record(IntercompanyProposalTestData.BookA, null, new(2026, 7, 1), -30m, 2));
 
-        Assert.Empty(await fixture.Service.BreaksAsync("tenant-a", IntercompanyProposalTestData.BookA, new(2026, 7, 1)));
+        Assert.Empty(await fixture.Service.BreaksAsync("tenant-a", "company-a", IntercompanyProposalTestData.BookA, new(2026, 7, 1)));
     }
 
     [Fact]
@@ -74,7 +74,7 @@ public sealed class IntercompanyProposalResolutionTests
             original.Entry.Description, [.. original.Entry.Lines, .. otherLines], original.Entry.Metadata)
         };
 
-        Assert.Empty(await fixture.Service.BreaksAsync("tenant-a", IntercompanyProposalTestData.BookA, new(2026, 6, 30)));
+        Assert.Empty(await fixture.Service.BreaksAsync("tenant-a", "company-a", IntercompanyProposalTestData.BookA, new(2026, 6, 30)));
     }
 
     [Fact]
@@ -88,7 +88,7 @@ public sealed class IntercompanyProposalResolutionTests
         var second = fixture.Proposal with { Source = fixture.Proposal.Source with { ProposalId = Guid.NewGuid(), SourceJournalId = secondSource.Entry.JournalEntryId }, TargetJournalId = secondTarget.Entry.JournalEntryId };
         fixture.Proposals.Setup(x => x.ListAsync("tenant-a", IntercompanyProposalTestData.BookA, It.IsAny<CancellationToken>())).ReturnsAsync([fixture.Proposal, second]);
 
-        Assert.Empty(await fixture.Service.BreaksAsync("tenant-a", IntercompanyProposalTestData.BookA, new(2026, 6, 30)));
+        Assert.Empty(await fixture.Service.BreaksAsync("tenant-a", "company-a", IntercompanyProposalTestData.BookA, new(2026, 6, 30)));
 
         fixture.Journals.Verify(x => x.QueryAsync(It.Is<LedgerJournalEntryQuery>(query => query.LedgerBookId == IntercompanyProposalTestData.BookA), It.IsAny<CancellationToken>()), Times.Once);
         fixture.Journals.Verify(x => x.QueryAsync(It.Is<LedgerJournalEntryQuery>(query => query.LedgerBookId == IntercompanyProposalTestData.BookB), It.IsAny<CancellationToken>()), Times.Once);
