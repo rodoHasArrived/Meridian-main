@@ -6,6 +6,69 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RetentionAssuranceViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.RetentionAssuranceViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:12](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L12).
+
+View model for the Retention Assurance cleanup flow. The page remains responsible for WPF-only list wiring and file dialogs while cleanup readiness, validation, busy state, and destructive-action confirmation stay testable here.
+
+```csharp
+public sealed class RetentionAssuranceViewModel : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public RetentionAssuranceViewModel(IRetentionAssuranceClient client);</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:58](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L58) |  |
+| <code>public event EventHandler? CleanupCompleted;</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:70](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L70) |  |
+| <code>public ObservableCollection&lt;RetentionResultItem&gt; Results { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:72](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L72) |  |
+| <code>public IAsyncRelayCommand SaveGuardrailsCommand =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:74](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L74) |  |
+| <code>public IRelayCommand ValidatePolicyCommand =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:76](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L76) |  |
+| <code>public IAsyncRelayCommand DryRunCommand =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:78](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L78) |  |
+| <code>public IRelayCommand RequestCleanupCommand =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:80](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L80) |  |
+| <code>public IAsyncRelayCommand ConfirmCleanupCommand =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:82](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L82) |  |
+| <code>public IRelayCommand CancelCleanupCommand =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:84](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L84) |  |
+| <code>public string MinTickDataDaysText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:86](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L86) |  |
+| <code>public string MinBarDataDaysText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:92](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L92) |  |
+| <code>public string MinQuoteDataDaysText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:98](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L98) |  |
+| <code>public string MaxDailyDeletesText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:104](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L104) |  |
+| <code>public bool RequireChecksumVerification { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:110](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L110) |  |
+| <code>public bool RequireDryRunPreview { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:116](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L116) |  |
+| <code>public bool AllowDeleteDuringTradingHours { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:122](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L122) |  |
+| <code>public string TickDataDaysText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:128](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L128) |  |
+| <code>public string BarDataDaysText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:138](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L138) |  |
+| <code>public string QuoteDataDaysText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:148](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L148) |  |
+| <code>public string FilesPerRunText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:158](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L158) |  |
+| <code>public bool CompressBeforeDelete { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:168](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L168) |  |
+| <code>public bool IsStatusVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:178](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L178) |  |
+| <code>public Visibility StatusVisibility =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:188](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L188) |  |
+| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:190](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L190) |  |
+| <code>public bool IsStatusProgressVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:196](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L196) |  |
+| <code>public Visibility StatusProgressVisibility =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:206](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L206) |  |
+| <code>public bool IsResultsVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:208](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L208) |  |
+| <code>public Visibility ResultsVisibility =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:218](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L218) |  |
+| <code>public string ResultsHeader { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:220](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L220) |  |
+| <code>public string ResultsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:226](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L226) |  |
+| <code>public Visibility ResultsListVisibility =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:232](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L232) |  |
+| <code>public bool IsDryRunRunning { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:234](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L234) |  |
+| <code>public bool IsCleanupBusy { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:244](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L244) |  |
+| <code>public bool IsCleanupConfirmationVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:254](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L254) |  |
+| <code>public Visibility CleanupConfirmationVisibility =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:267](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L267) |  |
+| <code>public bool CanExecuteCleanup { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:270](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L270) |  |
+| <code>public string CleanupReadinessTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:280](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L280) |  |
+| <code>public string CleanupReadinessDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:286](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L286) |  |
+| <code>public string CleanupReadinessScope { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:292](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L292) |  |
+| <code>public string CleanupConfirmationTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:298](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L298) |  |
+| <code>public string CleanupConfirmationDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:304](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L304) |  |
+| <code>public void LoadConfiguration(RetentionConfiguration configuration);</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:310](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L310) |  |
+| <code>public async Task SaveGuardrailsAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:322](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L322) |  |
+| <code>public void ValidatePolicy();</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:343](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L343) |  |
+| <code>public async Task DryRunAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:362](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L362) |  |
+| <code>public async Task ConfirmCleanupAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:423](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L423) |  |
+
 ## RetentionPolicyDisplayItem
 
 Qualified name: <code>Meridian.Wpf.ViewModels.RetentionPolicyDisplayItem</code>. Kind: `class`.
@@ -1534,6 +1597,50 @@ Declared public members:
 | <code>public bool IsBusy { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SetupWizardViewModel.cs:133](../../../../src/Meridian.Wpf/ViewModels/SetupWizardViewModel.cs#L133) |  |
 | <code>public async Task LoadAsync();</code> | [src/Meridian.Wpf/ViewModels/SetupWizardViewModel.cs:154](../../../../src/Meridian.Wpf/ViewModels/SetupWizardViewModel.cs#L154) |  |
 
+## ShortcutBindingRowViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.ShortcutBindingRowViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs:335](../../../../src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs#L335).
+
+One editable shortcut row: its chord, enabled state, capture state, and inline validation.
+
+```csharp
+public sealed partial class ShortcutBindingRowViewModel : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string ActionId { get; }</code> | [src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs:346](../../../../src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs#L346) |  |
+| <code>public bool HasValidationMessage =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs:370](../../../../src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs#L370) | True when an inline rejection reason is showing. |
+| <code>public string ChordDisplayText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs:373](../../../../src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs#L373) | The chord badge text, or the capture prompt while waiting for a chord. |
+
+## ShortcutCategoryGroupViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.ShortcutCategoryGroupViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs:303](../../../../src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs#L303).
+
+One shortcut category card on the Keyboard Shortcuts page.
+
+```csharp
+public sealed class ShortcutCategoryGroupViewModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ShortcutCategoryGroupViewModel(ShortcutCategory category, string label, string icon, string description, IEnumerable&lt;ShortcutBindingRowViewModel&gt; rows);</code> | [src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs:305](../../../../src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs#L305) |  |
+| <code>public ShortcutCategory Category { get; }</code> | [src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs:319](../../../../src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs#L319) |  |
+| <code>public string Label { get; }</code> | [src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs:321](../../../../src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs#L321) |  |
+| <code>public string Icon { get; }</code> | [src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs:323](../../../../src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs#L323) |  |
+| <code>public string Description { get; }</code> | [src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs:325](../../../../src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs#L325) |  |
+| <code>public bool HasDescription =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs:327](../../../../src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs#L327) |  |
+| <code>public ObservableCollection&lt;ShortcutBindingRowViewModel&gt; Rows { get; }</code> | [src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs:329](../../../../src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs#L329) |  |
+
 ## SplitPaneViewModel
 
 Qualified name: <code>Meridian.Wpf.ViewModels.SplitPaneViewModel</code>. Kind: `class`.
@@ -1693,117 +1800,3 @@ Declared public members:
 | <code>public bool HasAnalysisResult =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:263](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L263) |  |
 | <code>public string AnalysisResultTone { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:265](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L265) |  |
 | <code>public Task LoadAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:271](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L271) |  |
-
-## StoragePosture
-
-Qualified name: <code>Meridian.Wpf.ViewModels.StoragePosture</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/ViewModels/StorageViewModel.cs:406](../../../../src/Meridian.Wpf/ViewModels/StorageViewModel.cs#L406).
-
-```csharp
-public sealed record StoragePosture(string Title, string Detail, string GrowthText, string CapacityHorizonText, string LastScanText);
-```
-
-## StorageViewModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.StorageViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/StorageViewModel.cs:48](../../../../src/Meridian.Wpf/ViewModels/StorageViewModel.cs#L48).
-
-ViewModel for the Storage configuration and analytics page. Owns async metric loading and the preview-generation logic so that the code-behind is thinned to constructor DI and lifecycle wiring only.
-
-```csharp
-public sealed class StorageViewModel : BindableBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string TotalSizeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageViewModel.cs:56](../../../../src/Meridian.Wpf/ViewModels/StorageViewModel.cs#L56) |  |
-| <code>public string TotalFilesText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageViewModel.cs:59](../../../../src/Meridian.Wpf/ViewModels/StorageViewModel.cs#L59) |  |
-| <code>public string SymbolCountText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageViewModel.cs:62](../../../../src/Meridian.Wpf/ViewModels/StorageViewModel.cs#L62) |  |
-| <code>public bool IsMetricsLoading { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageViewModel.cs:65](../../../../src/Meridian.Wpf/ViewModels/StorageViewModel.cs#L65) |  |
-| <code>public bool CanRefreshMetrics =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StorageViewModel.cs:78](../../../../src/Meridian.Wpf/ViewModels/StorageViewModel.cs#L78) |  |
-| <code>public string MetricsStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageViewModel.cs:81](../../../../src/Meridian.Wpf/ViewModels/StorageViewModel.cs#L81) |  |
-| <code>public string HotTierSizeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageViewModel.cs:84](../../../../src/Meridian.Wpf/ViewModels/StorageViewModel.cs#L84) |  |
-| <code>public string WarmTierSizeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageViewModel.cs:87](../../../../src/Meridian.Wpf/ViewModels/StorageViewModel.cs#L87) |  |
-| <code>public string ColdTierSizeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageViewModel.cs:90](../../../../src/Meridian.Wpf/ViewModels/StorageViewModel.cs#L90) |  |
-| <code>public string StoragePostureTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageViewModel.cs:94](../../../../src/Meridian.Wpf/ViewModels/StorageViewModel.cs#L94) |  |
-| <code>public string StoragePostureDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageViewModel.cs:97](../../../../src/Meridian.Wpf/ViewModels/StorageViewModel.cs#L97) |  |
-| <code>public string StorageGrowthText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageViewModel.cs:100](../../../../src/Meridian.Wpf/ViewModels/StorageViewModel.cs#L100) |  |
-| <code>public string StorageCapacityHorizonText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageViewModel.cs:103](../../../../src/Meridian.Wpf/ViewModels/StorageViewModel.cs#L103) |  |
-| <code>public string StorageLastScanText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageViewModel.cs:106](../../../../src/Meridian.Wpf/ViewModels/StorageViewModel.cs#L106) |  |
-| <code>public string DataDirectoryText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/StorageViewModel.cs:110](../../../../src/Meridian.Wpf/ViewModels/StorageViewModel.cs#L110) |  |
-| <code>public string NamingConvention { get; set; }</code> | [src/Meridian.Wpf/ViewModels/StorageViewModel.cs:124](../../../../src/Meridian.Wpf/ViewModels/StorageViewModel.cs#L124) |  |
-| <code>public string CompressionFormat { get; set; }</code> | [src/Meridian.Wpf/ViewModels/StorageViewModel.cs:138](../../../../src/Meridian.Wpf/ViewModels/StorageViewModel.cs#L138) |  |
-| <code>public string FileTreePreviewText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageViewModel.cs:152](../../../../src/Meridian.Wpf/ViewModels/StorageViewModel.cs#L152) |  |
-| <code>public string StorageEstimateText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageViewModel.cs:155](../../../../src/Meridian.Wpf/ViewModels/StorageViewModel.cs#L155) |  |
-| <code>public string PreviewScopeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageViewModel.cs:158](../../../../src/Meridian.Wpf/ViewModels/StorageViewModel.cs#L158) |  |
-| <code>public string PreviewActionText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageViewModel.cs:161](../../../../src/Meridian.Wpf/ViewModels/StorageViewModel.cs#L161) |  |
-| <code>public IRelayCommand BrowseStorageRootCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StorageViewModel.cs:163](../../../../src/Meridian.Wpf/ViewModels/StorageViewModel.cs#L163) |  |
-| <code>public IAsyncRelayCommand RefreshMetricsCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StorageViewModel.cs:164](../../../../src/Meridian.Wpf/ViewModels/StorageViewModel.cs#L164) |  |
-| <code>public StorageViewModel(StorageAnalyticsService analyticsService, SettingsConfigurationService settingsConfigService) : this(analyticsService, settingsConfigService, new StorageFolderPicker());</code> | [src/Meridian.Wpf/ViewModels/StorageViewModel.cs:166](../../../../src/Meridian.Wpf/ViewModels/StorageViewModel.cs#L166) |  |
-| <code>public async Task LoadAsync();</code> | [src/Meridian.Wpf/ViewModels/StorageViewModel.cs:202](../../../../src/Meridian.Wpf/ViewModels/StorageViewModel.cs#L202) |  |
-| <code>public void RefreshPreview(string dataDirectory, string naming, string compression);</code> | [src/Meridian.Wpf/ViewModels/StorageViewModel.cs:254](../../../../src/Meridian.Wpf/ViewModels/StorageViewModel.cs#L254) | Regenerates the file-tree preview and storage estimate based on the current configuration selections. |
-| <code>public static string NormalizePreviewRoot(string? dataDirectory);</code> | [src/Meridian.Wpf/ViewModels/StorageViewModel.cs:291](../../../../src/Meridian.Wpf/ViewModels/StorageViewModel.cs#L291) |  |
-| <code>public static StoragePosture BuildStoragePosture(StorageAnalytics analytics);</code> | [src/Meridian.Wpf/ViewModels/StorageViewModel.cs:315](../../../../src/Meridian.Wpf/ViewModels/StorageViewModel.cs#L315) |  |
-| <code>public static StoragePosture BuildStoragePostureUnavailable() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StorageViewModel.cs:367](../../../../src/Meridian.Wpf/ViewModels/StorageViewModel.cs#L367) |  |
-| <code>public static string BuildMetricsStatusText(StorageAnalytics analytics);</code> | [src/Meridian.Wpf/ViewModels/StorageViewModel.cs:375](../../../../src/Meridian.Wpf/ViewModels/StorageViewModel.cs#L375) |  |
-
-## StrategyRunBrowserViewModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.StrategyRunBrowserViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:17](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L17).
-
-Loads strategy runs, filters by mode, and coordinates selection and run comparison.
-
-```csharp
-public sealed class StrategyRunBrowserViewModel : BindableBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public object? Parameter { get; set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:27](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L27) |  |
-| <code>public ObservableCollection&lt;StrategyRunSummary&gt; Runs { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:47](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L47) |  |
-| <code>public WorkstationTableModel&lt;StrategyRunSummary&gt; RunsTable { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:48](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L48) |  |
-| <code>public IReadOnlyList&lt;string&gt; ModeFilters { get; } = [&quot;All&quot;, &quot;Backtest&quot;, &quot;Paper&quot;, &quot;Live&quot;];</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:49](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L49) |  |
-| <code>public StrategyRunSummary? SelectedRun { get; set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:52](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L52) |  |
-| <code>public StrategyRunSummary? ComparisonRun { get; set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:73](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L73) | The second run selected for cross-mode comparison. When both SelectedRun and this are set, CompareRunsCommand is enabled. |
-| <code>public IReadOnlyList&lt;RunComparisonDto&gt;? ComparisonResult { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:90](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L90) | Populated after CompareRunsCommand completes. |
-| <code>public bool IsComparisonVisible =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:106](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L106) | true when a comparison result is available to display. |
-| <code>public IReadOnlyList&lt;ComparisonRow&gt; ComparisonRows { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:109](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L109) | Flat metric rows suitable for binding in the comparison diff panel. |
-| <code>public string SearchText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:153](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L153) |  |
-| <code>public string SelectedModeFilter { get; set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:167](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L167) |  |
-| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:181](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L181) |  |
-| <code>public bool HasActiveFilters =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:187](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L187) |  |
-| <code>public bool IsEmptyStateVisible =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:191](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L191) |  |
-| <code>public bool HasFilterRecoveryAction =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:193](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L193) |  |
-| <code>public string RunScopeText { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:198](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L198) |  |
-| <code>public string EmptyStateTitle { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:212](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L212) |  |
-| <code>public string EmptyStateDetail { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:226](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L226) |  |
-| <code>public bool CanOpenSelectedRun =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:244](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L244) |  |
-| <code>public bool CanCompareRuns =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:247](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L247) | true when two distinct runs are selected and ready to compare. |
-| <code>public bool CanChooseComparisonRun =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:252](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L252) |  |
-| <code>public string ComparisonGuidanceText { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:256](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L256) |  |
-| <code>public string SelectionText { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:283](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L283) |  |
-| <code>public string SelectionDetail { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:302](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L302) |  |
-| <code>public string SelectionContextText { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:315](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L315) |  |
-| <code>public string SelectedRunPerformanceText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:335](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L335) |  |
-| <code>public string SelectedRunEvidenceText { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:340](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L340) |  |
-| <code>public string ComparisonHeaderAText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:377](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L377) |  |
-| <code>public string ComparisonHeaderBText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:382](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L382) |  |
-| <code>public string ComparisonPanelDetail =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:387](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L387) |  |
-| <code>public string ComparisonPlaceholderText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:394](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L394) |  |
-| <code>public IAsyncRelayCommand RefreshCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:397](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L397) |  |
-| <code>public IRelayCommand OpenDetailCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:398](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L398) |  |
-| <code>public IRelayCommand OpenPortfolioCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:399](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L399) |  |
-| <code>public IRelayCommand OpenLedgerCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:400](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L400) |  |
-| <code>public IAsyncRelayCommand CompareRunsCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:401](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L401) |  |
-| <code>public IRelayCommand ClearComparisonCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:402](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L402) |  |
-| <code>public IRelayCommand ClearRunFiltersCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:403](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L403) |  |
-| <code>public async Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:424](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L424) |  |
-| <code>public async Task RefreshAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs:432](../../../../src/Meridian.Wpf/ViewModels/StrategyRunBrowserViewModel.cs#L432) |  |

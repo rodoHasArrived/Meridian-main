@@ -6,6 +6,31 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkspaceTileItem
+
+Qualified name: <code>Meridian.Wpf.ViewModels.MainPageViewModel.WorkspaceTileItem</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/MainPageViewModel.cs:2303](../../../../src/Meridian.Wpf/ViewModels/MainPageViewModel.cs#L2303).
+
+Describes a navigable workspace tile with active-state and automation metadata.
+
+```csharp
+public sealed class WorkspaceTileItem : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WorkspaceTileItem(WorkspaceShellDescriptor workspace, bool isActive);</code> | [src/Meridian.Wpf/ViewModels/MainPageViewModel.cs:2307](../../../../src/Meridian.Wpf/ViewModels/MainPageViewModel.cs#L2307) |  |
+| <code>public string WorkspaceId { get; }</code> | [src/Meridian.Wpf/ViewModels/MainPageViewModel.cs:2318](../../../../src/Meridian.Wpf/ViewModels/MainPageViewModel.cs#L2318) |  |
+| <code>public string Title { get; }</code> | [src/Meridian.Wpf/ViewModels/MainPageViewModel.cs:2320](../../../../src/Meridian.Wpf/ViewModels/MainPageViewModel.cs#L2320) |  |
+| <code>public string TileSummary { get; }</code> | [src/Meridian.Wpf/ViewModels/MainPageViewModel.cs:2322](../../../../src/Meridian.Wpf/ViewModels/MainPageViewModel.cs#L2322) |  |
+| <code>public string HomePageTag { get; }</code> | [src/Meridian.Wpf/ViewModels/MainPageViewModel.cs:2324](../../../../src/Meridian.Wpf/ViewModels/MainPageViewModel.cs#L2324) |  |
+| <code>public string AutomationId { get; }</code> | [src/Meridian.Wpf/ViewModels/MainPageViewModel.cs:2326](../../../../src/Meridian.Wpf/ViewModels/MainPageViewModel.cs#L2326) |  |
+| <code>public string AutomationName { get; }</code> | [src/Meridian.Wpf/ViewModels/MainPageViewModel.cs:2328](../../../../src/Meridian.Wpf/ViewModels/MainPageViewModel.cs#L2328) |  |
+| <code>public bool IsActive { get; set; }</code> | [src/Meridian.Wpf/ViewModels/MainPageViewModel.cs:2330](../../../../src/Meridian.Wpf/ViewModels/MainPageViewModel.cs#L2330) |  |
+
 ## MaintenanceHistoryItem
 
 Qualified name: <code>Meridian.Wpf.ViewModels.MaintenanceHistoryItem</code>. Kind: `class`.
@@ -1559,66 +1584,3 @@ An exact generated amount selected from the governed report&#x27;s retained cata
 ```csharp
 public sealed record ReportLedgerAmountSelection(string SubjectId, LedgerAmountScopeDto Scope, decimal Amount, string Currency, string Label, IReadOnlyList<Guid> JournalEntryIds, IReadOnlyList<Guid> LedgerEntryIds);
 ```
-
-## RetentionAssuranceViewModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.RetentionAssuranceViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:12](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L12).
-
-View model for the Retention Assurance cleanup flow. The page remains responsible for WPF-only list wiring and file dialogs while cleanup readiness, validation, busy state, and destructive-action confirmation stay testable here.
-
-```csharp
-public sealed class RetentionAssuranceViewModel : BindableBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public RetentionAssuranceViewModel(IRetentionAssuranceClient client);</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:58](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L58) |  |
-| <code>public event EventHandler? CleanupCompleted;</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:70](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L70) |  |
-| <code>public ObservableCollection&lt;RetentionResultItem&gt; Results { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:72](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L72) |  |
-| <code>public IAsyncRelayCommand SaveGuardrailsCommand =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:74](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L74) |  |
-| <code>public IRelayCommand ValidatePolicyCommand =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:76](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L76) |  |
-| <code>public IAsyncRelayCommand DryRunCommand =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:78](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L78) |  |
-| <code>public IRelayCommand RequestCleanupCommand =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:80](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L80) |  |
-| <code>public IAsyncRelayCommand ConfirmCleanupCommand =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:82](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L82) |  |
-| <code>public IRelayCommand CancelCleanupCommand =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:84](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L84) |  |
-| <code>public string MinTickDataDaysText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:86](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L86) |  |
-| <code>public string MinBarDataDaysText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:92](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L92) |  |
-| <code>public string MinQuoteDataDaysText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:98](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L98) |  |
-| <code>public string MaxDailyDeletesText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:104](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L104) |  |
-| <code>public bool RequireChecksumVerification { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:110](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L110) |  |
-| <code>public bool RequireDryRunPreview { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:116](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L116) |  |
-| <code>public bool AllowDeleteDuringTradingHours { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:122](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L122) |  |
-| <code>public string TickDataDaysText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:128](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L128) |  |
-| <code>public string BarDataDaysText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:138](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L138) |  |
-| <code>public string QuoteDataDaysText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:148](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L148) |  |
-| <code>public string FilesPerRunText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:158](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L158) |  |
-| <code>public bool CompressBeforeDelete { get; set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:168](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L168) |  |
-| <code>public bool IsStatusVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:178](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L178) |  |
-| <code>public Visibility StatusVisibility =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:188](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L188) |  |
-| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:190](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L190) |  |
-| <code>public bool IsStatusProgressVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:196](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L196) |  |
-| <code>public Visibility StatusProgressVisibility =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:206](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L206) |  |
-| <code>public bool IsResultsVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:208](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L208) |  |
-| <code>public Visibility ResultsVisibility =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:218](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L218) |  |
-| <code>public string ResultsHeader { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:220](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L220) |  |
-| <code>public string ResultsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:226](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L226) |  |
-| <code>public Visibility ResultsListVisibility =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:232](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L232) |  |
-| <code>public bool IsDryRunRunning { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:234](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L234) |  |
-| <code>public bool IsCleanupBusy { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:244](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L244) |  |
-| <code>public bool IsCleanupConfirmationVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:254](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L254) |  |
-| <code>public Visibility CleanupConfirmationVisibility =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:267](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L267) |  |
-| <code>public bool CanExecuteCleanup { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:270](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L270) |  |
-| <code>public string CleanupReadinessTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:280](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L280) |  |
-| <code>public string CleanupReadinessDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:286](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L286) |  |
-| <code>public string CleanupReadinessScope { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:292](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L292) |  |
-| <code>public string CleanupConfirmationTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:298](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L298) |  |
-| <code>public string CleanupConfirmationDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:304](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L304) |  |
-| <code>public void LoadConfiguration(RetentionConfiguration configuration);</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:310](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L310) |  |
-| <code>public async Task SaveGuardrailsAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:322](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L322) |  |
-| <code>public void ValidatePolicy();</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:343](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L343) |  |
-| <code>public async Task DryRunAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:362](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L362) |  |
-| <code>public async Task ConfirmCleanupAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:423](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L423) |  |

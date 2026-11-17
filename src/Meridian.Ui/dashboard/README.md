@@ -898,7 +898,7 @@ any total; a host that predates them shows the not-reported marker rather than z
 
 The generated `api-routes.ts` catalog includes exact account-owned ledger-book oversight routes
 for cash continuity, reviewed close prices and cash forecasts. Regenerate it from shared
-`UiApiRoutes` and rebuild the tracked workstation bundle when those routes change; server-owned
+`UiApiRoutes` and rebuild the workstation bundle when those routes change; server-owned
 scope and evidence verification are described in
 [bounded account oversight](../../../docs/operators/account-oversight.md).
 
