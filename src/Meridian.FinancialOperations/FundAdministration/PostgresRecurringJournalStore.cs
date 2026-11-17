@@ -18,7 +18,7 @@ namespace Meridian.FinancialOperations.FundAdministration;
 /// planning, claim, intake and completion cycle. Every commit also advances a row revision guarded by
 /// compare-and-swap, so a session whose connection (and therefore lease) was lost cannot overwrite a
 /// newer commit: it faults instead. Missing or invalid state never becomes empty state; the row is
-/// created only by explicit provisioning and the table rejects row deletes.
+/// created only by explicit provisioning and the table rejects deletes and truncation.
 /// </remarks>
 public sealed class PostgresRecurringJournalStore : IRecurringJournalStore, IRecurringJournalStoreProvisioning
 {

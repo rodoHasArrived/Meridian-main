@@ -7,7 +7,7 @@
 -- session-level advisory lock for each intake cycle and verifies the document's content hash and
 -- retained definitions on every read. Each commit advances `revision` by compare-and-swap so a
 -- session that lost its lease cannot overwrite a newer commit. The row is created only by explicit
--- provisioning, and the retained row cannot be deleted, so lost state never reads as empty.
+-- provisioning, and retained state cannot be deleted or truncated, so lost state never reads as empty.
 create table if not exists __SCHEMA__.recurring_journal_state (
     store_id text primary key check (store_id = 'default'),
     revision bigint not null check (revision > 0),
@@ -20,10 +20,10 @@ create table if not exists __SCHEMA__.recurring_journal_state (
 comment on table __SCHEMA__.recurring_journal_state is
     'Retained recurring journal definitions, activations and occurrence claims (W10-JRNL-001).';
 
-create or replace function __SCHEMA__.reject_recurring_journal_state_delete()
+create or replace function __SCHEMA__.reject_recurring_journal_state_removal()
 returns trigger language plpgsql as $$
 begin
-    raise exception 'Retained recurring journal state cannot be deleted.'
+    raise exception 'Retained recurring journal state cannot be deleted or truncated.'
         using errcode = '55000';
 end;
 $$;
@@ -35,7 +35,14 @@ begin
           and tgname = 'recurring_journal_state_retained') then
         create trigger recurring_journal_state_retained
             before delete on __SCHEMA__.recurring_journal_state
-            for each row execute function __SCHEMA__.reject_recurring_journal_state_delete();
+            for each row execute function __SCHEMA__.reject_recurring_journal_state_removal();
+    end if;
+    if not exists (select 1 from pg_trigger
+        where tgrelid = '__SCHEMA__.recurring_journal_state'::regclass
+          and tgname = 'recurring_journal_state_not_truncated') then
+        create trigger recurring_journal_state_not_truncated
+            before truncate on __SCHEMA__.recurring_journal_state
+            for each statement execute function __SCHEMA__.reject_recurring_journal_state_removal();
     end if;
 end;
 $migration$;
