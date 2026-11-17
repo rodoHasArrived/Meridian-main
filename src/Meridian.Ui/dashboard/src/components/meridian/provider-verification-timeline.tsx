@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { PROVIDER_HISTORY_ANCHOR, PROVIDER_HISTORY_CONNECTION_PARAM, PROVIDER_HISTORY_FAMILY_PARAM } from "@/lib/provider-history-link";
+import { useSearchParams } from "react-router-dom";
 import { Select } from "@/components/ui/select";
 import { ChartCard } from "@/components/charts/ChartCard";
 import { StatusTimeline } from "@/components/charts/StatusTimeline";
@@ -8,8 +10,20 @@ import { getProviderVerificationHistory, type ProviderVerificationHistory } from
 import type { ProviderRoutingConnection } from "@/types";
 
 export function ProviderVerificationTimeline({ connections }: { connections: ProviderRoutingConnection[] }) {
-  const [chosenId, setChosenId] = useState("");
-  const selected = connections.find((connection) => connection.connectionId === chosenId) ?? connections[0];
+  const [searchParams, setSearchParams] = useSearchParams();
+  // An exact connection id wins; otherwise the first connection of the requested provider family
+  // (matched exactly, never by display name); otherwise the first loaded connection.
+  const chosenId = searchParams.get(PROVIDER_HISTORY_CONNECTION_PARAM) ?? "";
+  const family = searchParams.get(PROVIDER_HISTORY_FAMILY_PARAM)?.toLowerCase() ?? "";
+  const selected = connections.find((connection) => connection.connectionId === chosenId)
+    ?? (family ? connections.find((connection) => connection.providerFamilyId?.toLowerCase() === family) : undefined)
+    ?? connections[0];
+  const setChosenId = (connectionId: string) => setSearchParams((current) => {
+    const next = new URLSearchParams(current);
+    next.set(PROVIDER_HISTORY_CONNECTION_PARAM, connectionId);
+    next.delete(PROVIDER_HISTORY_FAMILY_PARAM);
+    return next;
+  }, { replace: true });
   const connectionId = selected?.connectionId ?? null;
   const [result, setResult] = useState<{ connectionId: string; history?: ProviderVerificationHistory; error?: string } | null>(null);
   const [retry, setRetry] = useState(0);
@@ -25,7 +39,7 @@ export function ProviderVerificationTimeline({ connections }: { connections: Pro
     return () => controller.abort();
   }, [connectionId, retry]);
 
-  return <section aria-label="Provider verification history" className="space-y-3">
+  return <section id={PROVIDER_HISTORY_ANCHOR} aria-label="Provider verification history" className="space-y-3">
     <div className="flex flex-wrap items-center justify-between gap-3">
       <h3 className="text-sm font-semibold">Provider verification history</h3>
       {connections.length > 0 ? <label className="text-xs">Connection <Select className="ml-2" aria-label="Verification history connection"

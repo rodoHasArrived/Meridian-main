@@ -9733,6 +9733,7 @@ Meridian-main
 │   │   │   │   │   ├── private-capital-notice-intent.ts
 │   │   │   │   │   ├── provider-credential-scope.test.ts
 │   │   │   │   │   ├── provider-credential-scope.ts
+│   │   │   │   │   ├── provider-history-link.ts
 │   │   │   │   │   ├── provider-integration-setup-validation.test.ts
 │   │   │   │   │   ├── provider-integration-setup-validation.ts
 │   │   │   │   │   ├── provider-integration-workbench.ts
@@ -10072,6 +10073,7 @@ Meridian-main
 │   │   │   │   │   ├── data-screen.fixed-income-capabilities.test.tsx
 │   │   │   │   │   ├── data-screen.fixed-income-capabilities.tsx
 │   │   │   │   │   ├── data-screen.linked-context.ts
+│   │   │   │   │   ├── data-screen.operator-focus.test.ts
 │   │   │   │   │   ├── data-screen.operator-focus.ts
 │   │   │   │   │   ├── data-screen.plaid-institution-search.ts
 │   │   │   │   │   ├── data-screen.provider-accounting.test-fixtures.ts

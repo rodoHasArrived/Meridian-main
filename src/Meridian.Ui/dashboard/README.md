@@ -1406,6 +1406,12 @@ come from `QUEUE_KEY_BINDINGS` in `src/lib/keymap.ts`, which the `?` sheet also 
 a assigns, c acknowledges and s snoozes; each opens the reviewed dialog that requires a reason,
 and a blocker still cannot be snoozed. The reconciliation break queue keeps its own map in
 `src/lib/queue-keyboard-map.ts`.
+The Data overview's provider verification history is linkable: `?verificationConnection=`
+selects an exact connection and `?providerFamily=` its family's first connection (matched on
+`providerFamilyId`, never on display names; otherwise the first loaded connection), anchored at
+`#provider-verification-history` (`src/lib/provider-history-link.ts`). A degraded provider item
+in Today's queue that carries a `providerId` opens that history; one without an id keeps the
+provider trust list.
 
 `src/lib/workstation-features.ts` supplies wired browser destinations to both sidebar navigation
 and local command search. Purpose descriptions and search-only aliases expose intents such as

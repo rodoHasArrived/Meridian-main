@@ -271,6 +271,13 @@ switch (Everyone, Mine, Unassigned). Keyboard triage covers acknowledge (c) and 
 as assign (a), through the same reviewed, reason-required dialogs, and the `?` sheet lists those
 keys. Bulk acknowledge and snooze still need a server bulk endpoint; only bulk assign has one.
 
+**Progress on F2/F4/F7 (2026-11-17).** Provider verification history is deep-linkable by
+connection or provider family, and Today's degraded-provider items open it. Trial balance's
+"Compare prior period" stays disabled: `PostedPeriodComparison` compares posted movements within
+each period, not closing balances, so wiring it in would label movements as balance changes. A
+balance comparison, and a day-by-day close board, need server fields (comparison balances; task
+due offsets and dependencies) that the current contracts do not carry.
+
 #### C4 🔴 Speak operator language, not system language (follows the 11-10 copy pass)
 
 **Problem.**
