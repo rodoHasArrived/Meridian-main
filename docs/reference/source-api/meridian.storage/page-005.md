@@ -420,6 +420,26 @@ Declared public members:
 | <code>public async Task&lt;IntercompanyAccountBindingDto&gt; AppendAsync(IntercompanyAccountBindingDto revision, Guid? expectedPreviousRevisionId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileIntercompanyAccountBindingStore.cs:41](../../../../src/Meridian.Storage/Ledger/FileIntercompanyAccountBindingStore.cs#L41) |  |
 | <code>public async Task&lt;IAsyncDisposable&gt; AcquireAuthorityLeaseAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileIntercompanyAccountBindingStore.cs:75](../../../../src/Meridian.Storage/Ledger/FileIntercompanyAccountBindingStore.cs#L75) |  |
 
+## FileIntercompanyBalanceConfirmationStore
+
+Qualified name: <code>Meridian.Storage.Ledger.FileIntercompanyBalanceConfirmationStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs:13](../../../../src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs#L13).
+
+Durable single-process local counterpart of the append-only PostgreSQL store: every version is retained, one confirmation exists per tenant, company, profile and date, and a stale expected version is refused.
+
+```csharp
+public sealed class FileIntercompanyBalanceConfirmationStore(string path, IFundScopeTenantAccessor tenants) : IIntercompanyBalanceConfirmationStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IntercompanyBalanceConfirmationDto?&gt; GetAsync(Guid confirmationId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs:19](../../../../src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs#L19) |  |
+| <code>public async Task&lt;IntercompanyBalanceConfirmationDto?&gt; FindAsync(Guid accountingArrangementId, DateOnly asOf, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs:25](../../../../src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs#L25) |  |
+| <code>public async Task&lt;IntercompanyBalanceConfirmationDto&gt; AppendAsync(IntercompanyBalanceConfirmationDto next, long expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs:32](../../../../src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs#L32) |  |
+
 ## FileLegacyIntercompanyAttributionStore
 
 Qualified name: <code>Meridian.Storage.Ledger.FileLegacyIntercompanyAttributionStore</code>. Kind: `class`.
@@ -933,21 +953,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>string ControlName =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:10](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L10) |  |
 | <code>Task&lt;IAsyncDisposable&gt; AcquireAsync(IReadOnlyList&lt;LedgerPostingAuthorityContext&gt; contexts, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:11](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L11) |  |
-
-## ILedgerPostingIdentityCollisionLookup
-
-Qualified name: <code>Meridian.Storage.Ledger.ILedgerPostingIdentityCollisionLookup</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:219](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L219).
-
-Optional optimized lookup for every retained journal that collides with a proposed posting identity. Journal-entry and command identifiers are global identities; source-event and idempotency identities are scoped to the accounting aggregate.
-
-```csharp
-public interface ILedgerPostingIdentityCollisionLookup
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;&gt; FindPostingIdentityCollisionsAsync(LedgerPostingIdentity identity, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:221](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L221) |  |

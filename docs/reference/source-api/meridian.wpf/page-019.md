@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SaveWatchlistDialog
+
+Qualified name: <code>Meridian.Wpf.Views.SaveWatchlistDialog</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs:11](../../../../src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs#L11).
+
+Dialog for saving or updating a watchlist. Replaces the former imperative SaveWatchlistDialog Window class that was embedded in SymbolsPage.xaml.cs.
+
+```csharp
+public partial class SaveWatchlistDialog : Window
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string WatchlistName =&gt; …;</code> | [src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs:14](../../../../src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs#L14) | Gets the watchlist name typed by the user. |
+| <code>public bool SaveAsNew =&gt; …;</code> | [src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs:17](../../../../src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs#L17) | Gets whether the user chose to create a new watchlist. |
+| <code>public string? SelectedWatchlistId =&gt; …;</code> | [src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs:20](../../../../src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs#L20) | Gets the selected existing watchlist name (null when SaveAsNew is true). |
+| <code>public SaveWatchlistDialog(IEnumerable&lt;string&gt; existingWatchlists);</code> | [src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs:22](../../../../src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs#L22) |  |
+
 ## ScatterAnalysisPage
 
 Qualified name: <code>Meridian.Wpf.Views.ScatterAnalysisPage</code>. Kind: `class`.
@@ -1104,26 +1125,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public ICommand RefreshCommand =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:46](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L46) | The shell Refresh control (toolbar button and F5) reloads the workspace shell and every docked page in place instead of rebuilding the shell by re-navigation. |
-
-## AsyncCommandViewModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Commands.AsyncCommandViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs:9](../../../../src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs#L9).
-
-Adds busy, error, and cancellation presentation to an asynchronous workstation command.
-
-```csharp
-public sealed class AsyncCommandViewModel : BindableBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CommandViewModel Command { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs:18](../../../../src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs#L18) |  |
-| <code>public bool IsBusy { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs:24](../../../../src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs#L24) |  |
-| <code>public string BusyMessage { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs:30](../../../../src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs#L30) |  |
-| <code>public string ErrorMessage { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs:36](../../../../src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs#L36) |  |
-| <code>public bool CanCancel { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs:42](../../../../src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs#L42) |  |
-| <code>public IRelayCommand? CancelCommand { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs:48](../../../../src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs#L48) |  |

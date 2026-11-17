@@ -6,6 +6,32 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementNormalizedEntities
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementNormalizedEntities</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:218](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L218).
+
+```csharp
+public sealed record StatementNormalizedEntities(string RunId, string ImportId, IReadOnlyList<StatementPosition> Positions, IReadOnlyList<StatementCashBalance> CashBalances, IReadOnlyList<StatementTransaction> Transactions, IReadOnlyList<StatementSecurityReference> Securities, IReadOnlyList<StatementSourceRowReference> SourceRows)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static StatementNormalizedEntities FromImport(string runId, NormalizedStatementImportResult import);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:227](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L227) |  |
+
+## StatementProfileVersion
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementProfileVersion</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:168](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L168).
+
+```csharp
+public sealed record StatementProfileVersion(string ProfileId, string Version);
+```
+
 ## StatementRawFileEvidenceReference
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementRawFileEvidenceReference</code>. Kind: `record`.

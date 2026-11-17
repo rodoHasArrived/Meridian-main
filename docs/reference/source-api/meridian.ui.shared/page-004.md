@@ -479,6 +479,24 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static void MapIntercompanyAgreementEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementEndpoints.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementEndpoints.cs#L21) |  |
 
+## IntercompanyBalanceConfirmationEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.IntercompanyBalanceConfirmationEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/IntercompanyBalanceConfirmationEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/IntercompanyBalanceConfirmationEndpoints.cs#L16).
+
+Reciprocal intercompany balance confirmation. Balances come from posted journals only; each side acts through its own book, which the service checks against the caller&#x27;s tenant and company. Advisory: nothing here gates close.
+
+```csharp
+public static class IntercompanyBalanceConfirmationEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapIntercompanyBalanceConfirmationEndpoints(this WebApplication app, JsonSerializerOptions endpointOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/IntercompanyBalanceConfirmationEndpoints.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/IntercompanyBalanceConfirmationEndpoints.cs#L20) |  |
+
 ## IntercompanyObligationEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.IntercompanyObligationEndpoints</code>. Kind: `class`.
@@ -1189,21 +1207,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static void MapPackagingEndpoints(this IEndpointRouteBuilder app, string dataRoot);</code> | [src/Meridian.Ui.Shared/Endpoints/PackagingEndpoints.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/PackagingEndpoints.cs#L24) | Maps all packaging-related endpoints. |
-
-## PlaidEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.PlaidEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs#L16).
-
-Maps Plaid linking, account discovery, and synchronization operations to HTTP endpoints.
-
-```csharp
-public static class PlaidEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapPlaidEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs#L18) |  |

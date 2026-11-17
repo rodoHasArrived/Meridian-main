@@ -231,6 +231,11 @@ text (`Fixed` otherwise), and structured Floating loan terms declare a whole-num
 business days before each period start. Focused coverage: `accounting-screen.entity-rate-fixings.test.tsx`,
 `accounting-screen.entity-interest-accrual.test.tsx` and `intercompany-agreement-editor.test.tsx`.
 
+The Balance confirmation tab (`accounting-screen.entity-confirmations.tsx`) loads one book's
+advisory confirmation summary, pins current balances and confirms, disputes or resolves only this
+book's side; focused coverage is `accounting-screen.entity-confirmations.test.tsx`. See
+[reciprocal balance confirmation](../../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
+
 Settings provider runtime evidence and integration setup components are owned by
 `settings-provider-integration.tsx`; the Settings screen composes them without changing routes
 or mutation authority. Presentational Settings sections live beside the screen:

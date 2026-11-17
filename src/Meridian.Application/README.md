@@ -117,6 +117,10 @@ scope and explicit unavailable capabilities. Generic posting delegates validated
 its specialized authority instead of reacquiring the same fences. See
 [the staged implementation plan](../../docs/engineering/plans/intercompany-entity-controls.md).
 
+`IntercompanyEntityServiceRegistration` also composes the advisory `IntercompanyBalanceConfirmationService` over a
+PostgreSQL store (ledger migration `073`) when a ledger database is configured, otherwise an atomic
+file store. See [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
+
 `DirectLendingJournalLines.ForEvent` owns the loan journal templates consumed by both
 `LoanAccountingProjector` and `DirectLendingOutboxDispatcher`. Their trading cash and loan-specific
 account roles resolve through the shared `IChartOfAccounts` registry while preserving historical

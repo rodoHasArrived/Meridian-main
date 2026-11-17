@@ -103,6 +103,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     public IntercompanyInterestAccrualWorkspace? InterestAccrual { get; }
     /// <summary>Reviewed index fixings that floating-rate intercompany accruals read; null when no client is available.</summary>
     public IntercompanyRateFixingWorkspace? RateFixings { get; }
+    public IntercompanyBalanceConfirmationWorkspace? BalanceConfirmation { get; }
 
     public FundLedgerViewModel(
         FundLedgerReadService fundLedgerReadService,
@@ -135,6 +136,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         CounterpartProposals = intercompanyAgreementClient is null ? null : new IntercompanyCounterpartQueueWorkspace(intercompanyAgreementClient);
         InterestAccrual = intercompanyAgreementClient is null ? null : new IntercompanyInterestAccrualWorkspace(intercompanyAgreementClient);
         RateFixings = intercompanyAgreementClient is null ? null : new IntercompanyRateFixingWorkspace(intercompanyAgreementClient);
+        BalanceConfirmation = intercompanyAgreementClient is null ? null : new IntercompanyBalanceConfirmationWorkspace(intercompanyAgreementClient);
         if (_authenticationSession is not null)
         {
             _authenticationSession.SignedOut += OnAgreementSessionChanged;
@@ -1078,6 +1080,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         CounterpartProposals?.Dispose();
         InterestAccrual?.Dispose();
         RateFixings?.Dispose();
+        BalanceConfirmation?.Dispose();
         _fundContextService.ActiveFundProfileChanged -= OnActiveFundProfileChanged;
         DisposeReconciliationWorkbench();
     }
@@ -1097,6 +1100,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         CounterpartProposals?.ResetSession();
         InterestAccrual?.ResetSession();
         RateFixings?.ResetSession();
+        BalanceConfirmation?.ResetSession();
     }
 
     private async Task<FundProfileDetail?> ResolveActiveFundAsync(

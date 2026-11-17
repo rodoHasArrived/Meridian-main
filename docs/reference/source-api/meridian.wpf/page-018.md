@@ -145,6 +145,22 @@ Declared public members:
 | --- | --- | --- |
 | <code>public IntercompanyAgreementsControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/IntercompanyAgreementsControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/IntercompanyAgreementsControl.xaml.cs#L7) |  |
 
+## IntercompanyBalanceConfirmationControl
+
+Qualified name: <code>Meridian.Wpf.Views.IntercompanyBalanceConfirmationControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/IntercompanyBalanceConfirmationControl.xaml.cs:5](../../../../src/Meridian.Wpf/Views/IntercompanyBalanceConfirmationControl.xaml.cs#L5).
+
+```csharp
+public partial class IntercompanyBalanceConfirmationControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyBalanceConfirmationControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/IntercompanyBalanceConfirmationControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/IntercompanyBalanceConfirmationControl.xaml.cs#L7) |  |
+
 ## IntercompanyCounterpartProposalsControl
 
 Qualified name: <code>Meridian.Wpf.Views.IntercompanyCounterpartProposalsControl</code>. Kind: `class`.
@@ -1056,24 +1072,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public RunRiskPage(RunRiskViewModel viewModel);</code> | [src/Meridian.Wpf/Views/RunRiskPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/RunRiskPage.xaml.cs#L12) |  |
-
-## SaveWatchlistDialog
-
-Qualified name: <code>Meridian.Wpf.Views.SaveWatchlistDialog</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs:11](../../../../src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs#L11).
-
-Dialog for saving or updating a watchlist. Replaces the former imperative SaveWatchlistDialog Window class that was embedded in SymbolsPage.xaml.cs.
-
-```csharp
-public partial class SaveWatchlistDialog : Window
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string WatchlistName =&gt; …;</code> | [src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs:14](../../../../src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs#L14) | Gets the watchlist name typed by the user. |
-| <code>public bool SaveAsNew =&gt; …;</code> | [src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs:17](../../../../src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs#L17) | Gets whether the user chose to create a new watchlist. |
-| <code>public string? SelectedWatchlistId =&gt; …;</code> | [src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs:20](../../../../src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs#L20) | Gets the selected existing watchlist name (null when SaveAsNew is true). |
-| <code>public SaveWatchlistDialog(IEnumerable&lt;string&gt; existingWatchlists);</code> | [src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs:22](../../../../src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs#L22) |  |

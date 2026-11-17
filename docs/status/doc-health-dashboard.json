@@ -1,11 +1,11 @@
 {
-  "total_files": 1275,
+  "total_files": 1276,
   "orphaned_count": 396,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 303,
   "health_score": 85,
-  "signal_digest": "sha256:e5112c03029f9d2570a1c3f7764dde49f3e91f2c27eee23d6cfc4ccfd209e3e3",
+  "signal_digest": "sha256:608c20a5c19dda4508f2ab42a09b00f5e569754c5e4bb5c615a718cbaad3f30e",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -4561,6 +4561,13 @@
     },
     {
       "path": "docs/reference/source-api/meridian.contracts/page-077.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-078.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

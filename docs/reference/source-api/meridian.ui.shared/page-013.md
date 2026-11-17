@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## InvestmentAccountingTransactionLabService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.InvestmentAccountingTransactionLabService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/InvestmentAccountingTransactionLabService.cs:9](../../../../src/Meridian.Ui.Shared/Services/InvestmentAccountingTransactionLabService.cs#L9).
+
+Builds investment-accounting transaction lab scenarios and expected journal previews.
+
+```csharp
+public sealed class InvestmentAccountingTransactionLabService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public InvestmentAccountingTransactionLabPreviewDto Preview(InvestmentAccountingTransactionLabRequestDto request);</code> | [src/Meridian.Ui.Shared/Services/InvestmentAccountingTransactionLabService.cs:11](../../../../src/Meridian.Ui.Shared/Services/InvestmentAccountingTransactionLabService.cs#L11) |  |
+
 ## IOperationsContinuityReconciliationBridge
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IOperationsContinuityReconciliationBridge</code>. Kind: `interface`.
@@ -898,29 +916,3 @@ Declared public members:
 | <code>public async Task&lt;IReadOnlyLedger&gt; HydrateLedgerAsOfAsync(RecurringJournalScope scope, DateOnly asOf, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:130](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L130) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;LedgerTaxLot&gt;&gt; ListOpenLotsAsync(RecurringJournalScope scope, LedgerAccount account, Guid securityId, Guid? bookPositionId, DateOnly asOf, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:133](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L133) |  |
 | <code>public Task&lt;IReadOnlyList&lt;FaceValueAccrualHolding&gt;&gt; ListAccrualHoldingsAsync(RecurringJournalScope scope, Guid securityId, Guid bookPositionId, DateOnly from, DateOnly through, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:170](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L170) |  |
-
-## LedgerReportingAuthoritativeSource
-
-Qualified name: <code>Meridian.Ui.Shared.Services.LedgerReportingAuthoritativeSource</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:83](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L83).
-
-Captures an immutable as-of view from the durable ledger journal. Tenant ownership, fund structure, organization, book, period, accounting basis, currency, selected dimensions, and line-level dimensional stamps are all verified before a checkpoint is issued.
-
-```csharp
-public sealed partial class LedgerReportingAuthoritativeSource : IReportingAuthoritativeSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LedgerReportingAuthoritativeSource(ILedgerJournalStore journalStore, IFundProfileTenancyRegistry tenancyRegistry, IFundStructureService fundStructure, TimeProvider? timeProvider = null, ILedgerTaxLotDisposalHistory? taxLotDisposalHistory = null, ILedgerOpenLotSuccessorHistory? openLotSuccessorHistory = null, CapitalCallNoticeSourceValidator? capitalCallNotices = null);</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:93](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L93) |  |
-| <code>public ValueTask&lt;ReportingAuthoritativeSourceCapture&gt; CaptureAsync(ReportingRunParametersDto parameters, ReportAccessQueryContext accessContext, CancellationToken cancellationToken = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:115](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L115) |  |
-| <code>public ValueTask&lt;ReportingAuthoritativeSourceCapture&gt; CaptureAsync(ReportingRunParametersDto parameters, ReportAccessQueryContext accessContext, ReportingAuthoritativeSourceCaptureIntent intent, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:121](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L121) |  |
-
-Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Successors.cs:11](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Successors.cs#L11).
-
-```csharp
-public sealed partial class LedgerReportingAuthoritativeSource
-```

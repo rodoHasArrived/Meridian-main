@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MigrationRecord
+
+Qualified name: <code>Meridian.Storage.Services.MigrationRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/DataLineageService.cs:456](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L456).
+
+```csharp
+public sealed record MigrationRecord(DateTime TimestampUtc, string SourceTier, string TargetTier, string? CompressionChange = null, string? FormatChange = null, long BytesBefore = 0, long BytesAfter = 0);
+```
+
+## MigrationResult
+
+Qualified name: <code>Meridian.Storage.Services.MigrationResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:606](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L606).
+
+```csharp
+public sealed record MigrationResult(bool Success, int FilesProcessed, int FilesFailed, long BytesProcessed, long BytesSaved, TimeSpan Duration, IReadOnlyList<string> Errors);
+```
+
 ## OperationalScheduleConfig
 
 Qualified name: <code>Meridian.Storage.Services.OperationalScheduleConfig</code>. Kind: `record`.
@@ -735,35 +755,3 @@ Declared public members:
 | <code>public async Task&lt;bool&gt; VerifyFileChecksumAsync(string filePath, string expectedChecksum, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageChecksumService.cs:76](../../../../src/Meridian.Storage/Services/StorageChecksumService.cs#L76) | Verify file matches expected checksum. |
 | <code>public async Task&lt;IReadOnlyDictionary&lt;string, string&gt;&gt; ComputeFileChecksumsAsync(IEnumerable&lt;string&gt; filePaths, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageChecksumService.cs:93](../../../../src/Meridian.Storage/Services/StorageChecksumService.cs#L93) | Compute checksums for multiple files in parallel. |
 | <code>public async Task&lt;AuditChainVerifyResult&gt; VerifyAuditChainAsync(string storageBasePath, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageChecksumService.cs:117](../../../../src/Meridian.Storage/Services/StorageChecksumService.cs#L117) | Verify the audit chain for a storage path. |
-
-## StorageQuery
-
-Qualified name: <code>Meridian.Storage.Services.StorageQuery</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/StorageSearchService.cs:898](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L898).
-
-```csharp
-public sealed record StorageQuery(string[]? Symbols, MarketEventType[]? Types, DateTimeOffset? From, DateTimeOffset? To, string[]? Sources, long? MinVolume);
-```
-
-## StorageQueryBuilder
-
-Qualified name: <code>Meridian.Storage.Services.StorageQueryBuilder</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Services/StorageSearchService.cs:910](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L910).
-
-Builds a storage query from symbol, event type, date range, and minimum volume filters.
-
-```csharp
-public sealed class StorageQueryBuilder
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public void AddSymbol(string symbol) =&gt; …;</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:918](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L918) |  |
-| <code>public void AddType(MarketEventType type) =&gt; …;</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:919](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L919) |  |
-| <code>public void SetDateRange(DateTimeOffset from, DateTimeOffset to);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:920](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L920) |  |
-| <code>public void SetMinVolume(long volume) =&gt; …;</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:921](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L921) |  |
-| <code>public StorageQuery Build() =&gt; …;</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:923](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L923) |  |

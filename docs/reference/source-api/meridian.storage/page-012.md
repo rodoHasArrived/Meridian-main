@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecuritySnapshotReplaceOutcome
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.SecuritySnapshotReplaceOutcome</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs:25](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs#L25).
+
+Outcome of ISecurityMasterSnapshotStore.ReplaceAsync.
+
+```csharp
+public enum SecuritySnapshotReplaceOutcome
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Replaced</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs:28](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs#L28) | The retained payload differed and was replaced. |
+| <code>Unchanged</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs:31](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs#L31) | The retained payload already equals the replacement; nothing was written. |
+| <code>VersionChanged</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs:34](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs#L34) | The snapshot is gone or holds another version; nothing was written. |
+
+## StructuredCreditFactorScheduleRow
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.StructuredCreditFactorScheduleRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IStructuredCreditReferenceProjectionStore.cs:57](../../../../src/Meridian.Storage/SecurityMaster/IStructuredCreditReferenceProjectionStore.cs#L57).
+
+```csharp
+public sealed record StructuredCreditFactorScheduleRow(Guid SecurityId, int Ordinal, DateOnly AsOfDate, decimal Factor);
+```
+
 ## StructuredCreditProjectionRow
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.StructuredCreditProjectionRow</code>. Kind: `record`.
@@ -788,39 +818,3 @@ Declared public members:
 | <code>public FilePermissionsResult EnsureDirectoryPermissions(string directoryPath);</code> | [src/Meridian.Storage/Services/FilePermissionsService.cs:35](../../../../src/Meridian.Storage/Services/FilePermissionsService.cs#L35) | Ensures the specified directory exists with proper security permissions. Creates the directory if it doesn&#x27;t exist and sets OS-level permissions. |
 | <code>public FilePermissionsResult VerifyWriteAccess(string directoryPath);</code> | [src/Meridian.Storage/Services/FilePermissionsService.cs:258](../../../../src/Meridian.Storage/Services/FilePermissionsService.cs#L258) | Verifies that the application has write access to the directory. |
 | <code>public FilePermissionsDiagnostic GetPermissionsDiagnostic(string directoryPath);</code> | [src/Meridian.Storage/Services/FilePermissionsService.cs:283](../../../../src/Meridian.Storage/Services/FilePermissionsService.cs#L283) | Checks current permissions on a directory and returns a diagnostic report. |
-
-## FileQualityTrendStore
-
-Qualified name: <code>Meridian.Storage.Services.FileQualityTrendStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Services/QualityTrendStore.cs:23](../../../../src/Meridian.Storage/Services/QualityTrendStore.cs#L23).
-
-Append-only JSONL trend store keyed by symbol/date/provider.
-
-```csharp
-public sealed partial class FileQualityTrendStore : IQualityTrendStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FileQualityTrendStore(StorageOptions options);</code> | [src/Meridian.Storage/Services/QualityTrendStore.cs:33](../../../../src/Meridian.Storage/Services/QualityTrendStore.cs#L33) |  |
-| <code>public async Task AppendAsync(QualityTrendPoint point, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/QualityTrendStore.cs:40](../../../../src/Meridian.Storage/Services/QualityTrendStore.cs#L40) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;QualityTrendPoint&gt;&gt; GetPointsAsync(string symbol, DateTimeOffset fromInclusive, DateTimeOffset toInclusive, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/QualityTrendStore.cs:73](../../../../src/Meridian.Storage/Services/QualityTrendStore.cs#L73) |  |
-
-Source: [src/Meridian.Storage/Services/QualityTrendStore.Persistence.cs:9](../../../../src/Meridian.Storage/Services/QualityTrendStore.Persistence.cs#L9).
-
-```csharp
-public sealed partial class FileQualityTrendStore
-```
-
-## FileSearchQuery
-
-Qualified name: <code>Meridian.Storage.Services.FileSearchQuery</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/StorageSearchService.cs:740](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L740).
-
-```csharp
-public sealed record FileSearchQuery(string[]? Symbols = null, MarketEventType[]? Types = null, string[]? Sources = null, DateTimeOffset? From = null, DateTimeOffset? To = null, long? MinSize = null, long? MaxSize = null, double? MinQualityScore = null, string? PathPattern = null, SortField SortBy = SortField.Date, bool Descending = true, int Skip = 0, int Take = 100);
-```

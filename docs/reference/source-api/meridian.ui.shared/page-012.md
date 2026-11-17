@@ -6,6 +6,34 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## GovernedReportingTemplateCatalog
+
+Qualified name: <code>Meridian.Ui.Shared.Services.GovernedReportingTemplateCatalog</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:10](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L10).
+
+Resolves reporting templates through the governed registry and evaluates caller access.
+
+```csharp
+public sealed class GovernedReportingTemplateCatalog : IReportingTemplateCatalog
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public GovernedReportingTemplateCatalog(IReportingTemplateCatalog fallbackCatalog, ReportTemplateRegistryService templateRegistry);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:15](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L15) |  |
+| <code>public ReportingTemplateMetadata Get(string templateId);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:23](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L23) |  |
+| <code>public ReportingTemplateMetadata Get(string templateId, ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:32](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L32) |  |
+| <code>public ReportingTemplateMetadata Get(string templateId, ReportingOperationalScope? operationalScope) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:43](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L43) |  |
+| <code>public ReportingTemplateMetadata Get(VersionedReportTemplateIdDto templateId);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:48](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L48) |  |
+| <code>public ReportingTemplateMetadata Get(VersionedReportTemplateIdDto templateId, ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:63](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L63) |  |
+| <code>public ReportingTemplateMetadata Get(VersionedReportTemplateIdDto templateId, ReportingOperationalScope? operationalScope) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:80](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L80) |  |
+| <code>public IReadOnlyList&lt;ReportingTemplateMetadata&gt; ListTemplates();</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:85](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L85) |  |
+| <code>public IReadOnlyList&lt;ReportingTemplateMetadata&gt; ListTemplates(ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:104](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L104) |  |
+| <code>public ReportAccessEvaluationDto EvaluateAccess(string templateId, ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:124](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L124) |  |
+| <code>public ReportAccessEvaluationDto EvaluateAccess(VersionedReportTemplateIdDto templateId, ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:153](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L153) |  |
+
 ## HaircutRule
 
 Qualified name: <code>Meridian.Ui.Shared.Services.HaircutRule</code>. Kind: `record`.
@@ -933,21 +961,3 @@ Source: [src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs:
 ```csharp
 public sealed class IntercompanyProposalHostedService(IServiceProvider services, ILogger<IntercompanyProposalHostedService> logger) : BackgroundService
 ```
-
-## InvestmentAccountingTransactionLabService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.InvestmentAccountingTransactionLabService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/InvestmentAccountingTransactionLabService.cs:9](../../../../src/Meridian.Ui.Shared/Services/InvestmentAccountingTransactionLabService.cs#L9).
-
-Builds investment-accounting transaction lab scenarios and expected journal previews.
-
-```csharp
-public sealed class InvestmentAccountingTransactionLabService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public InvestmentAccountingTransactionLabPreviewDto Preview(InvestmentAccountingTransactionLabRequestDto request);</code> | [src/Meridian.Ui.Shared/Services/InvestmentAccountingTransactionLabService.cs:11](../../../../src/Meridian.Ui.Shared/Services/InvestmentAccountingTransactionLabService.cs#L11) |  |

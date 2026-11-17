@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FileQualityTrendStore
+
+Qualified name: <code>Meridian.Storage.Services.FileQualityTrendStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/QualityTrendStore.cs:23](../../../../src/Meridian.Storage/Services/QualityTrendStore.cs#L23).
+
+Append-only JSONL trend store keyed by symbol/date/provider.
+
+```csharp
+public sealed partial class FileQualityTrendStore : IQualityTrendStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileQualityTrendStore(StorageOptions options);</code> | [src/Meridian.Storage/Services/QualityTrendStore.cs:33](../../../../src/Meridian.Storage/Services/QualityTrendStore.cs#L33) |  |
+| <code>public async Task AppendAsync(QualityTrendPoint point, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/QualityTrendStore.cs:40](../../../../src/Meridian.Storage/Services/QualityTrendStore.cs#L40) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;QualityTrendPoint&gt;&gt; GetPointsAsync(string symbol, DateTimeOffset fromInclusive, DateTimeOffset toInclusive, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/QualityTrendStore.cs:73](../../../../src/Meridian.Storage/Services/QualityTrendStore.cs#L73) |  |
+
+Source: [src/Meridian.Storage/Services/QualityTrendStore.Persistence.cs:9](../../../../src/Meridian.Storage/Services/QualityTrendStore.Persistence.cs#L9).
+
+```csharp
+public sealed partial class FileQualityTrendStore
+```
+
+## FileSearchQuery
+
+Qualified name: <code>Meridian.Storage.Services.FileSearchQuery</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/StorageSearchService.cs:740](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L740).
+
+```csharp
+public sealed record FileSearchQuery(string[]? Symbols = null, MarketEventType[]? Types = null, string[]? Sources = null, DateTimeOffset? From = null, DateTimeOffset? To = null, long? MinSize = null, long? MaxSize = null, double? MinQualityScore = null, string? PathPattern = null, SortField SortBy = SortField.Date, bool Descending = true, int Skip = 0, int Take = 100);
+```
+
 ## FileSearchResult
 
 Qualified name: <code>Meridian.Storage.Services.FileSearchResult</code>. Kind: `record`.
@@ -871,24 +907,4 @@ Source: [src/Meridian.Storage/Services/TierMigrationService.cs:599](../../../../
 
 ```csharp
 public sealed record MigrationProgress(string CurrentFile, int FilesProcessed, int TotalFiles, long BytesProcessed);
-```
-
-## MigrationRecord
-
-Qualified name: <code>Meridian.Storage.Services.MigrationRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/DataLineageService.cs:456](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L456).
-
-```csharp
-public sealed record MigrationRecord(DateTime TimestampUtc, string SourceTier, string TargetTier, string? CompressionChange = null, string? FormatChange = null, long BytesBefore = 0, long BytesAfter = 0);
-```
-
-## MigrationResult
-
-Qualified name: <code>Meridian.Storage.Services.MigrationResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:606](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L606).
-
-```csharp
-public sealed record MigrationResult(bool Success, int FilesProcessed, int FilesFailed, long BytesProcessed, long BytesSaved, TimeSpan Duration, IReadOnlyList<string> Errors);
 ```

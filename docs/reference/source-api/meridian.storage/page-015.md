@@ -6,6 +6,38 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StorageQuery
+
+Qualified name: <code>Meridian.Storage.Services.StorageQuery</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/StorageSearchService.cs:898](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L898).
+
+```csharp
+public sealed record StorageQuery(string[]? Symbols, MarketEventType[]? Types, DateTimeOffset? From, DateTimeOffset? To, string[]? Sources, long? MinVolume);
+```
+
+## StorageQueryBuilder
+
+Qualified name: <code>Meridian.Storage.Services.StorageQueryBuilder</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/StorageSearchService.cs:910](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L910).
+
+Builds a storage query from symbol, event type, date range, and minimum volume filters.
+
+```csharp
+public sealed class StorageQueryBuilder
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public void AddSymbol(string symbol) =&gt; …;</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:918](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L918) |  |
+| <code>public void AddType(MarketEventType type) =&gt; …;</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:919](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L919) |  |
+| <code>public void SetDateRange(DateTimeOffset from, DateTimeOffset to);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:920](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L920) |  |
+| <code>public void SetMinVolume(long volume) =&gt; …;</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:921](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L921) |  |
+| <code>public StorageQuery Build() =&gt; …;</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:923](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L923) |  |
+
 ## StorageSearchService
 
 Qualified name: <code>Meridian.Storage.Services.StorageSearchService</code>. Kind: `class`.

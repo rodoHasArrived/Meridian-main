@@ -6,6 +6,95 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyInterestAccrualLineRow
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyInterestAccrualLineRow</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:345](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L345).
+
+One line of the proposed source journal, exactly as the server would retain it.
+
+```csharp
+public sealed class IntercompanyInterestAccrualLineRow(ManualJournalEntryLineDto line)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Account =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:347](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L347) |  |
+| <code>public string Side =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:348](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L348) |  |
+| <code>public string Amount =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:349](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L349) |  |
+| <code>public string Original =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:350](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L350) |  |
+
+## IntercompanyInterestAccrualSliceRow
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyInterestAccrualSliceRow</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:329](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L329).
+
+One homogeneous accrual slice; every figure is the server&#x27;s exact decimal.
+
+```csharp
+public sealed class IntercompanyInterestAccrualSliceRow(IntercompanyAccrualSliceDto slice)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Days =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:331](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L331) |  |
+| <code>public string Principal =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:332](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L332) |  |
+| <code>public string AnnualRate =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:333](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L333) |  |
+| <code>public string Fixing =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:335](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L335) | The approved fixing that set a floating slice&#x27;s rate (rule v2), or &quot;Fixed&quot;. |
+| <code>public string DayCount =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:338](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L338) |  |
+| <code>public string UnroundedAmount =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:339](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L339) |  |
+| <code>public string Authority =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:340](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L340) |  |
+| <code>public string PrincipalEvidence =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:341](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L341) |  |
+
+## IntercompanyInterestAccrualWorkspace
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyInterestAccrualWorkspace</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:16](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L16).
+
+Desktop presentation state for requesting a governed loan-interest accrual. The operator supplies selections only; every rate, principal, amount and permission comes from the shared intercompany API, and a draft is bound to the evidence digest of the preview the operator saw. Nothing is calculated here.
+
+```csharp
+public sealed partial class IntercompanyInterestAccrualWorkspace : ObservableObject, IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyInterestAccrualWorkspace(IWorkstationIntercompanyAgreementApiClient client);</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:34](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L34) |  |
+| <code>public ObservableCollection&lt;IntercompanyChoice&gt; BookChoices { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:43](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L43) | Books the signed-in account can see; choosing one sets SourceBook. |
+| <code>public ObservableCollection&lt;IntercompanyChoice&gt; InterestProfileChoices { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:45](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L45) | Approved LoanInterest profiles that map the chosen book today. |
+| <code>public ObservableCollection&lt;IntercompanyChoice&gt; PrincipalProfileChoices { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:47](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L47) | Approved Loan profiles of the same legal agreement as the chosen interest profile. |
+| <code>public IAsyncRelayCommand LoadChoicesCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:48](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L48) |  |
+| <code>public string ChoicesStatus { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:50](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L50) | What the selection lists hold, or why one is empty. |
+| <code>public Task ProfileChoicesLoad { get; private set; } = Task.CompletedTask;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:52](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L52) | The latest profile read for the chosen book; completed when no read is outstanding. |
+| <code>public ObservableCollection&lt;IntercompanyInterestAccrualSliceRow&gt; Slices { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:54](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L54) |  |
+| <code>public ObservableCollection&lt;IntercompanyInterestAccrualLineRow&gt; Lines { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:55](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L55) |  |
+| <code>public ObservableCollection&lt;string&gt; Refusals { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:56](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L56) |  |
+| <code>public IAsyncRelayCommand PreviewCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:57](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L57) |  |
+| <code>public IAsyncRelayCommand CreateDraftCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:58](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L58) |  |
+| <code>public bool IsBusy { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:59](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L59) |  |
+| <code>public bool CanManageLedger { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:61](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L61) | The server&#x27;s answer for the signed-in account. Source-book authority is still checked per command. |
+| <code>public string PermissionNote =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:62](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L62) |  |
+| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:65](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L65) |  |
+| <code>public string Summary { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:67](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L67) | The previewed amount and journal date, or the reason no amount is shown. |
+| <code>public string Evidence { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:68](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L68) |  |
+| <code>public string DraftStatus { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:69](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L69) |  |
+| <code>public string SourceBook { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:70](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L70) |  |
+| <code>public string InterestProfile { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:79](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L79) |  |
+| <code>public string PrincipalProfile { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:88](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L88) |  |
+| <code>public string AccrualFrom { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:90](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L90) | First accrued day (yyyy-MM-dd). |
+| <code>public string AccrualTo { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:92](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L92) | First day not accrued (yyyy-MM-dd); the journal is dated the day before. |
+| <code>public void ResetSession();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:276](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L276) | Clear prior-session evidence and invalidate every outstanding response on account changes. |
+| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:302](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L302) |  |
+
 ## IntercompanyLegacyCoverageCandidate
 
 Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyLegacyCoverageCandidate</code>. Kind: `record`.
@@ -165,6 +254,20 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;ApiResponse&lt;LedgerBookDto[]&gt;&gt; GetLedgerBooksAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Choices.cs:13](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Choices.cs#L13) | Ledger books visible to the signed-in account, read from the same route the browser workstation uses. It only populates selection lists; every command still authorizes the chosen book on the server. |
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Confirmations.cs:8](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Confirmations.cs#L8).
+
+```csharp
+public partial interface IWorkstationIntercompanyAgreementApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ApiResponse&lt;IntercompanyBalanceConfirmationSummaryDto&gt;&gt; GetBalanceConfirmationsAsync(Guid ledgerBookId, DateOnly asOf, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Confirmations.cs:11](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Confirmations.cs#L11) | Confirmation position for one book at a date. Advisory only; it never changes close eligibility. |
+| <code>Task&lt;ApiResponse&lt;IntercompanyBalanceConfirmationDto&gt;&gt; ProposeBalanceConfirmationAsync(ProposeIntercompanyBalanceConfirmationRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Confirmations.cs:14](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Confirmations.cs#L14) | Pins both sides&#x27; current posted balances for one approved accounting profile at the date. |
+| <code>Task&lt;ApiResponse&lt;IntercompanyBalanceConfirmationDto&gt;&gt; ActOnBalanceConfirmationAsync(Guid confirmationId, IntercompanyBalanceConfirmationActionRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Confirmations.cs:17](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Confirmations.cs#L17) | Confirms, disputes or resolves the exact retained version the operator saw. |
 
 Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs:8](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs#L8).
 
@@ -516,6 +619,20 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;ApiResponse&lt;LedgerBookDto[]&gt;&gt; GetLedgerBooksAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Choices.cs:19](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Choices.cs#L19) |  |
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Confirmations.cs:21](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Confirmations.cs#L21).
+
+```csharp
+public sealed partial class WorkstationIntercompanyAgreementApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;ApiResponse&lt;IntercompanyBalanceConfirmationSummaryDto&gt;&gt; GetBalanceConfirmationsAsync(Guid ledgerBookId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Confirmations.cs:25](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Confirmations.cs#L25) |  |
+| <code>public async Task&lt;ApiResponse&lt;IntercompanyBalanceConfirmationDto&gt;&gt; ProposeBalanceConfirmationAsync(ProposeIntercompanyBalanceConfirmationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Confirmations.cs:36](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Confirmations.cs#L36) |  |
+| <code>public async Task&lt;ApiResponse&lt;IntercompanyBalanceConfirmationDto&gt;&gt; ActOnBalanceConfirmationAsync(Guid confirmationId, IntercompanyBalanceConfirmationActionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Confirmations.cs:45](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Confirmations.cs#L45) |  |
 
 Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs:16](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs#L16).
 
@@ -1322,75 +1439,3 @@ Enum declarations:
 | <code>Live</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:7](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L7) |  |
 | <code>Fixture</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:8](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L8) |  |
 | <code>Offline</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:9](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L9) |  |
-
-## FixtureScenario
-
-Qualified name: <code>Meridian.Ui.Services.Services.FixtureScenario</code>. Kind: `enum`.
-
-Source: [src/Meridian.Ui.Services/Services/FixtureScenario.cs:9](../../../../src/Meridian.Ui.Services/Services/FixtureScenario.cs#L9).
-
-Named fixture scenarios for UI development and debugging. Each scenario corresponds to a distinct system state that can be activated at runtime without restarting the application, enabling rapid iteration over all visual states in a single session.
-
-```csharp
-public enum FixtureScenario
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Connected</code> | [src/Meridian.Ui.Services/Services/FixtureScenario.cs:15](../../../../src/Meridian.Ui.Services/Services/FixtureScenario.cs#L15) | System fully connected with healthy metrics — the happy-path state. Providers are active, throughput is nominal, no errors. |
-| <code>Disconnected</code> | [src/Meridian.Ui.Services/Services/FixtureScenario.cs:21](../../../../src/Meridian.Ui.Services/Services/FixtureScenario.cs#L21) | System disconnected from all providers. Useful for testing empty-state / reconnection UI paths. |
-| <code>Degraded</code> | [src/Meridian.Ui.Services/Services/FixtureScenario.cs:27](../../../../src/Meridian.Ui.Services/Services/FixtureScenario.cs#L27) | System partially connected with degraded metrics. Some providers are unavailable or rate-limited; throughput is reduced. |
-| <code>Error</code> | [src/Meridian.Ui.Services/Services/FixtureScenario.cs:33](../../../../src/Meridian.Ui.Services/Services/FixtureScenario.cs#L33) | System in error state — provider errors, high drop rate, low throughput. Useful for testing error banners, alerts, and recovery UI flows. |
-| <code>Loading</code> | [src/Meridian.Ui.Services/Services/FixtureScenario.cs:39](../../../../src/Meridian.Ui.Services/Services/FixtureScenario.cs#L39) | System is initializing or loading — connections pending, data not yet available. Useful for testing skeleton/loading states and progress indicators. |
-
-## FormValidationRules
-
-Qualified name: <code>Meridian.Ui.Services.Services.FormValidationRules</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/FormValidationRules.cs:9](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L9).
-
-Shared validation rules for form validation across desktop applications. Extracted from FormValidationService implementations to eliminate duplicate validation logic.
-
-```csharp
-public static class FormValidationRules
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ValidationResult ValidateRequired(string? value, string fieldName = &quot;This field&quot;);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:17](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L17) | Validates that a field is not empty. |
-| <code>public static ValidationResult ValidateSymbol(string? value);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:30](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L30) | Validates a stock symbol format. Symbols must be 1-10 characters, start with a letter, and contain only letters, numbers, dots, dashes, and slashes. |
-| <code>public static ValidationResult ValidateSymbolList(string? value, int maxSymbols = 100);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:52](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L52) | Validates a comma-separated list of symbols. |
-| <code>public static ValidationResult ValidateDateRange(DateTimeOffset? fromDate, DateTimeOffset? toDate);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:83](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L83) | Validates a date range for data collection or backfill. |
-| <code>public static ValidationResult ValidateDateRange(string? dateStr);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:104](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L104) | Validates a date string in ISO format (YYYY-MM-DD). |
-| <code>public static ValidationResult ValidateApiKey(string? value);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:121](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L121) | Validates an API key format. |
-| <code>public static ValidationResult ValidateUrl(string? value, string fieldName = &quot;URL&quot;);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:138](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L138) | Validates a URL format. |
-| <code>public static ValidationResult ValidatePort(int? value);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:154](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L154) | Validates a network port number. |
-| <code>public static ValidationResult ValidateFilePath(string? value);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:170](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L170) | Validates a file path format. |
-| <code>public static ValidationResult ValidateNumericRange(double? value, double min, double max, string fieldName = &quot;Value&quot;);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:193](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L193) | Validates that a numeric value is within a specified range. |
-
-## InfoBarConstants
-
-Qualified name: <code>Meridian.Ui.Services.Services.InfoBarConstants</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:19](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L19).
-
-Duration configuration for different severity levels. Shared across InfoBarService implementations.
-
-```csharp
-public static class InfoBarConstants
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const int InfoDurationMs = 4000;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:22](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L22) | Informational messages - 4 seconds (user acknowledgment optional). |
-| <code>public const int SuccessDurationMs = 3000;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:25](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L25) | Success messages - 3 seconds (quick confirmation). |
-| <code>public const int WarningDurationMs = 6000;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:28](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L28) | Warning messages - 6 seconds (user should notice). |
-| <code>public const int ErrorDurationMs = 10000;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:31](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L31) | Error messages - 10 seconds (requires attention). |
-| <code>public const int CriticalDurationMs = 0;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:34](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L34) | Critical errors - no auto-dismiss (manual close required). |
-| <code>public static int GetDurationForSeverity(InfoBarSeverityLevel severity) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:37](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L37) | Gets the recommended duration for a severity level. |

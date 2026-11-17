@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ILedgerPostingIdentityCollisionLookup
+
+Qualified name: <code>Meridian.Storage.Ledger.ILedgerPostingIdentityCollisionLookup</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:219](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L219).
+
+Optional optimized lookup for every retained journal that collides with a proposed posting identity. Journal-entry and command identifiers are global identities; source-event and idempotency identities are scoped to the accounting aggregate.
+
+```csharp
+public interface ILedgerPostingIdentityCollisionLookup
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;&gt; FindPostingIdentityCollisionsAsync(LedgerPostingIdentity identity, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:221](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L221) |  |
+
 ## ILedgerReportingSnapshotSource
 
 Qualified name: <code>Meridian.Storage.Ledger.ILedgerReportingSnapshotSource</code>. Kind: `interface`.
@@ -802,19 +820,3 @@ Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:579](../../../../src
 ```csharp
 public sealed record LedgerTaxLotMutationRecord(Guid MutationRecordId, Guid MutationBatchId, AtomicTaxLotMutationKind MutationKind, Guid TaxLotRecordId, string LotId, int SelectionOrdinal, decimal QuantityBefore, decimal QuantityDelta, decimal QuantityAfter, decimal UnitCost, decimal CostBasis, long ExpectedVersion, long ResultVersion, string SelectionEvidenceId, Guid JournalEntryId, Guid SourceEventId, IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence, DateTimeOffset RecordedAt, LedgerTaxLotRecord? LotBefore, LedgerTaxLotRecord LotAfter, Guid? CorrectsMutationBatchId = null, string? ReliefMethod = null, string? PolicyRevision = null, Guid SecurityId = default, Guid BookPositionId = default);
 ```
-
-## LedgerTaxLotRecord
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerTaxLotRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:418](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L418).
-
-```csharp
-public sealed record LedgerTaxLotRecord(Guid TaxLotRecordId, Guid LedgerBookId, LedgerAccount Account, string LotId, DateOnly AcquiredDate, decimal OriginalQuantity, decimal OpenQuantity, decimal UnitCost, string Currency, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, Guid? SourceJournalEntryId = null, string? EvidenceRef = null, long Version = 0, Guid? OriginatingMutationBatchId = null, Guid? LastMutationBatchId = null, Guid SecurityId = default, Guid BookPositionId = default, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] decimal? OriginalFace = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] decimal? BookedFactor = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] decimal? ParBasis = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto? Acquisition = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Meridian.Contracts.Accounting.Lots.OpenLotBasisAdjustmentDto? BasisAdjustment = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] decimal? CurrentFactor = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool HasFaceValueTerms =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:466](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L466) | True when the lot recorded the acquisition-time par conventions (OriginalFace, BookedFactor, ParBasis). They are persisted all-three-or-none, so a lot either states its face terms or states nothing and consumers fail closed rather than inheriting a price-per-100, factor-1 default. |

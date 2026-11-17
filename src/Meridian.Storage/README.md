@@ -72,6 +72,10 @@ PostgreSQL supplies authority leases through financial commit; file stores provi
 parity without a production or cross-process fencing claim. Migration keeps old journal/evidence
 bytes and refuses unresolved history. See [the operator procedure](../../docs/operators/intercompany-entity-controls.md).
 
+`PostgresIntercompanyBalanceConfirmationStore` (ledger migration `073`, rewrite and truncate refused)
+and `FileIntercompanyBalanceConfirmationStore` retain every confirmation version append-only under
+an expected-version check. See [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
+
 Entity lifecycle history uses immutable tenant-bound timeline revisions and authority leases.
 Ledger migration 061 initializes existing books in `LegacyWarning` and stamps new books
 `Enforced` at insertion. Activation recomputes migration preflight while holding its authority

@@ -6,6 +6,22 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerTaxLotRecord
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerTaxLotRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:418](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L418).
+
+```csharp
+public sealed record LedgerTaxLotRecord(Guid TaxLotRecordId, Guid LedgerBookId, LedgerAccount Account, string LotId, DateOnly AcquiredDate, decimal OriginalQuantity, decimal OpenQuantity, decimal UnitCost, string Currency, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, Guid? SourceJournalEntryId = null, string? EvidenceRef = null, long Version = 0, Guid? OriginatingMutationBatchId = null, Guid? LastMutationBatchId = null, Guid SecurityId = default, Guid BookPositionId = default, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] decimal? OriginalFace = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] decimal? BookedFactor = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] decimal? ParBasis = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto? Acquisition = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Meridian.Contracts.Accounting.Lots.OpenLotBasisAdjustmentDto? BasisAdjustment = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] decimal? CurrentFactor = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool HasFaceValueTerms =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:466](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L466) | True when the lot recorded the acquisition-time par conventions (OriginalFace, BookedFactor, ParBasis). They are persisted all-three-or-none, so a lot either states its face terms or states nothing and consumers fail closed rather than inheriting a price-per-100, factor-1 default. |
+
 ## LegacyIntercompanyAttributionRules
 
 Qualified name: <code>Meridian.Storage.Ledger.LegacyIntercompanyAttributionRules</code>. Kind: `class`.
@@ -139,6 +155,27 @@ Declared public members:
 | <code>public async Task&lt;IntercompanyAccountBindingDto?&gt; GetRevisionAsync(Guid revisionId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresIntercompanyAccountBindingStore.cs:43](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyAccountBindingStore.cs#L43) |  |
 | <code>public async Task&lt;IntercompanyAccountBindingDto&gt; AppendAsync(IntercompanyAccountBindingDto revision, Guid? expectedPreviousRevisionId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresIntercompanyAccountBindingStore.cs:61](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyAccountBindingStore.cs#L61) |  |
 | <code>public async Task&lt;IAsyncDisposable&gt; AcquireAuthorityLeaseAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresIntercompanyAccountBindingStore.cs:114](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyAccountBindingStore.cs#L114) |  |
+
+## PostgresIntercompanyBalanceConfirmationStore
+
+Qualified name: <code>Meridian.Storage.Ledger.PostgresIntercompanyBalanceConfirmationStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs:12](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs#L12).
+
+Append-only, tenant- and company-owned reciprocal balance confirmation versions.
+
+```csharp
+public sealed class PostgresIntercompanyBalanceConfirmationStore : IIntercompanyBalanceConfirmationStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PostgresIntercompanyBalanceConfirmationStore(LedgerJournalStoreOptions options, IFundScopeTenantAccessor tenants);</code> | [src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs:18](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs#L18) |  |
+| <code>public async Task&lt;IntercompanyBalanceConfirmationDto?&gt; GetAsync(Guid confirmationId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs:27](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs#L27) |  |
+| <code>public async Task&lt;IntercompanyBalanceConfirmationDto?&gt; FindAsync(Guid accountingArrangementId, DateOnly asOf, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs:35](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs#L35) |  |
+| <code>public async Task&lt;IntercompanyBalanceConfirmationDto&gt; AppendAsync(IntercompanyBalanceConfirmationDto next, long expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs:46](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs#L46) |  |
 
 ## PostgresIntercompanyProposalStore
 
@@ -1580,44 +1617,3 @@ Declared public members:
 | <code>[JsonPropertyName(&quot;validationErrors&quot;)] public ValidationError[]? ValidationErrors { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageResult.cs:283](../../../../src/Meridian.Storage/Packaging/PackageResult.cs#L283) | Details of validation failures. |
 | <code>public static ImportResult CreateSuccess(string sourcePath, string destinationPath, PackageManifest manifest) =&gt; …;</code> | [src/Meridian.Storage/Packaging/PackageResult.cs:288](../../../../src/Meridian.Storage/Packaging/PackageResult.cs#L288) | Create a successful result. |
 | <code>public static ImportResult CreateFailure(string sourcePath, string error) =&gt; …;</code> | [src/Meridian.Storage/Packaging/PackageResult.cs:301](../../../../src/Meridian.Storage/Packaging/PackageResult.cs#L301) | Create a failure result. |
-
-## ImportScriptTarget
-
-Qualified name: <code>Meridian.Storage.Packaging.ImportScriptTarget</code>. Kind: `enum`.
-
-Source: [src/Meridian.Storage/Packaging/PackageOptions.cs:232](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L232).
-
-Target platforms for import script generation.
-
-```csharp
-public enum ImportScriptTarget : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Python</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:235](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L235) | Python with pandas. |
-| <code>R</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:238](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L238) | R with tidyverse. |
-| <code>PostgreSql</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:241](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L241) | PostgreSQL/TimescaleDB. |
-| <code>ClickHouse</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:244](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L244) | ClickHouse. |
-| <code>Spark</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:247](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L247) | Apache Spark. |
-| <code>DuckDb</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:250](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L250) | DuckDB. |
-
-## IPortableLedgerValidator
-
-Qualified name: <code>Meridian.Storage.Packaging.IPortableLedgerValidator</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Packaging/PortableLedgerPayload.cs:13](../../../../src/Meridian.Storage/Packaging/PortableLedgerPayload.cs#L13).
-
-Accounting-owned validation boundary for an opaque portable journal. Implementations verify its schema, double-entry invariants and declared account-balance checksum, or throw.
-
-```csharp
-public interface IPortableLedgerValidator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task ValidateAsync(PortableLedgerPayload payload, CancellationToken ct = default);</code> | [src/Meridian.Storage/Packaging/PortableLedgerPayload.cs:15](../../../../src/Meridian.Storage/Packaging/PortableLedgerPayload.cs#L15) |  |

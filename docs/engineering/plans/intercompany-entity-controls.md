@@ -155,6 +155,24 @@ guard is unchanged. `IntercompanyProposalDeliveryRetryTests` covers this in memo
 
 Fees, compounding, in-arrears or averaged rates, floors, caps and scheduled runs remain out of scope.
 
+## Reciprocal balance confirmation extension (2026-11-17)
+
+`DEC-IC-CONFIRM-001` brings the advisory slice of reciprocal balance confirmation into scope; roadmap
+row `W12-ICCONFIRM-001` carries its status. Semantics are in the
+[domain document](../../domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
+
+| Piece | What exists | Verification |
+| --- | --- | --- |
+| Rules | `IntercompanyBalanceConfirmationRules`: proposal, confirm, dispute, resolve and advisory findings over a pinned balance digest. | `IntercompanyBalanceConfirmationRulesTests` |
+| Storage | `V_ledger_073__intercompany_balance_confirmations.sql` (append-only, one confirmation per tenant, company, profile and date) behind `PostgresIntercompanyBalanceConfirmationStore`; `FileIntercompanyBalanceConfirmationStore` for hosts without a ledger database. | `IntercompanyBalanceConfirmationStoreTests` (file and PostgreSQL) |
+| Service and routes | `IntercompanyBalanceConfirmationService` reads each side from the balance schedule and checks each side's book; `/api/ledger/intercompany/confirmations` (summary, propose, actions) sends exact decimal strings. | `IntercompanyBalanceConfirmationServiceTests`, `IntercompanyBalanceConfirmationEndpointTests` |
+| Close readiness | Findings join the existing intercompany close advisory as `intercompany.confirmation.*` warnings, after eligibility is decided. | `IntercompanyCloseAdvisoryAuthorizationTests` |
+| Browser | "Balance confirmation" tab in Accounting's entity operations (`accounting-screen.entity-confirmations.tsx`). | `accounting-screen.entity-confirmations.test.tsx` |
+| Desktop | Balance confirmation tab on the Fund Ledger page (`IntercompanyBalanceConfirmationControl.xaml` over `IntercompanyBalanceConfirmationWorkspace`). The ledger book is a typed ID, as on the other desktop intercompany tabs; profiles are chosen from a list. | `IntercompanyBalanceConfirmationWorkspaceTests`, `WorkstationIntercompanyAgreementApiClientTests` (Linux); `IntercompanyNativeControlSmokeTests.BalanceConfirmationControl_*` runs only on Windows |
+
+Not in this slice: opt-in close blocking (needs its own decision and a reviewed policy revision),
+pairs spanning two companies of one tenant, and posting adjustments from a dispute.
+
 ## Verification record (2026-11-14)
 
 This records development verification for `W12-ICAGREE-001`, `W12-ENTITY-001`, `W12-ICPAIR-001`
