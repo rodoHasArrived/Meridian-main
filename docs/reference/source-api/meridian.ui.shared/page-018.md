@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecureReportingTransportCapability
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SecureReportingTransportCapability</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:88](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L88).
+
+Credential-free transport readiness exposed to authenticated reporting operators.
+
+```csharp
+public sealed record SecureReportingTransportCapability(string TransportId, string DisplayName, string DeliveryMode, bool IsExternal, bool RequiresDestination, bool UsesGovernedRecipientScope, bool IssuesAccessGrant, bool SupportsProviderReceipts, bool IsConfigured, bool IsInfrastructureReady, string? InfrastructureDisabledReasonCode, bool IsReady, string? DisabledReasonCode);
+```
+
 ## SecurityMasterExceptionCaseworkService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.SecurityMasterExceptionCaseworkService</code>. Kind: `class`.
@@ -925,22 +937,3 @@ Source: [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.c
 ```csharp
 public sealed record WorkstationPersonalTableViewRecord(string TenantId, string OperatorId, string TableId, WorkstationTableViewDto View);
 ```
-
-## WorkstationServiceCollectionExtensions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationServiceCollectionExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:87](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L87).
-
-Registers the shared web-workstation service graph consumed by endpoint and host surfaces.
-
-```csharp
-public static class WorkstationServiceCollectionExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:89](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L89) |  |
-| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1565](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1565) |  |

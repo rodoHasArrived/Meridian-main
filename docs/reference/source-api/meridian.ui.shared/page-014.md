@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerReportingSchedulePeriodResolver
+
+Qualified name: <code>Meridian.Ui.Shared.Services.LedgerReportingSchedulePeriodResolver</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs:48](../../../../src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs#L48).
+
+Ledger-store-backed IReportingSchedulePeriodResolver.
+
+```csharp
+public sealed class LedgerReportingSchedulePeriodResolver : IReportingSchedulePeriodResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public LedgerReportingSchedulePeriodResolver(ILedgerJournalStore journalStore) : this((journalStore?? throw new ArgumentNullException(nameof(journalStore))).GetLedgerBookAsync, (fundId, ct) =&gt; journalStore.ListLedgerBooksAsync(fundProfileId : fundId, ct : ct), (bookId, ct) =&gt; journalStore.ListPeriodsAsync(ledgerBookId : bookId, ct : ct));</code> | [src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs:54](../../../../src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs#L54) |  |
+| <code>public LedgerReportingSchedulePeriodResolver(Func&lt;Guid, CancellationToken, Task&lt;LedgerBookRecord?&gt;&gt; getBook, Func&lt;string, CancellationToken, Task&lt;IReadOnlyList&lt;LedgerBookRecord&gt;&gt;&gt; listFundBooks, Func&lt;Guid, CancellationToken, Task&lt;IReadOnlyList&lt;LedgerAccountingPeriod&gt;&gt;&gt; listBookPeriods);</code> | [src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs:63](../../../../src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs#L63) | Lookup-delegate constructor; lets the selection rules be exercised without a full store. |
+| <code>public async Task&lt;ReportingSchedulePeriodMatch?&gt; ResolvePeriodAsync(ReportingRunParametersDto parameters, DateOnly date, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs:73](../../../../src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs#L73) |  |
+| <code>public async Task&lt;ReportingSchedulePeriodMatch?&gt; ResolveNextClosePeriodAsync(ReportingRunParametersDto parameters, DateOnly currentPeriodEnd, ReportingSchedulePeriodFrequencyDto frequency, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs:102](../../../../src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs#L102) |  |
+
 ## LiquidityWarning
 
 Qualified name: <code>Meridian.Ui.Shared.Services.LiquidityWarning</code>. Kind: `record`.
@@ -1028,22 +1049,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;PrivateCapitalBankObservationImportResultDto&gt; ImportAsync(PrivateCapitalScopeDto scope, ImportPrivateCapitalBankObservationRequest request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalBankObservationService.cs:28](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalBankObservationService.cs#L28) |  |
-
-## PrivateCapitalFundEventCommandCenterService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PrivateCapitalFundEventCommandCenterService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs:9](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs#L9).
-
-Builds private-capital fund-event command-center projections with readiness and published-output evidence.
-
-```csharp
-public sealed class PrivateCapitalFundEventCommandCenterService : IPrivateCapitalFundEventCommandCenterService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PrivateCapitalFundEventCommandCenterService(IManualJournalEntryWorkbenchService manualJournalEntryWorkbenchService);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs:28](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs#L28) |  |
-| <code>public async Task&lt;PrivateCapitalFundEventCommandCenterDto?&gt; GetCommandCenterAsync(string? fundProfileId, Guid? ledgerBookId, string fundEventId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs:33](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs#L33) |  |

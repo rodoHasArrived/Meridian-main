@@ -10246,6 +10246,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IIntercompanyBalanceConfirmationStore"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.IIntercompanyObligationMonitorService"
     },
     {
@@ -10355,6 +10361,66 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationActionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationActionRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationEventDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationFindingDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationPartyDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationSideDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationStatusDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationSummaryDto"
     },
     {
       "kind": "contract-set-member",
@@ -11249,6 +11315,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalWorkbenchDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ProposeIntercompanyBalanceConfirmationRequest"
     },
     {
       "kind": "contract-set-member",
@@ -27904,6 +27976,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IIntercompanyBalanceConfirmationStore"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.IIntercompanyObligationMonitorService"
     },
     {
@@ -28013,6 +28091,66 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationActionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationActionRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationEventDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationFindingDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationPartyDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationSideDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationStatusDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationSummaryDto"
     },
     {
       "kind": "contract-set-member",
@@ -28907,6 +29045,12 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalWorkbenchDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ProposeIntercompanyBalanceConfirmationRequest"
     },
     {
       "kind": "contract-set-member",
@@ -43517,6 +43661,60 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualProposalDto",
       "target": "contract:Meridian.Contracts.Ledger.ManualJournalEntryDraftDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationActionRequest",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationActionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationActionRequest",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationPartyDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationDto",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationEventDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationDto",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationSideDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationDto",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationEventDto",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationActionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationEventDto",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationPartyDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationSummaryDto",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationSummaryDto",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationFindingDto"
     },
     {
       "kind": "contract-reference",
@@ -60569,6 +60767,18 @@
       "target": "database:ledger.intercompany_account_binding_revisions.tenant_id"
     },
     {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.intercompany_balance_confirmations_tenant_id_check on ledger.intercompany_balance_confirmations",
+      "target": "database:ledger.intercompany_balance_confirmations.tenant_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.intercompany_balance_confirmations_version_check on ledger.intercompany_balance_confirmations",
+      "target": "database:ledger.intercompany_balance_confirmations.version"
+    },
+    {
       "constraint": "intercompany_counterpart_reservations_proposal_id_fkey",
       "kind": "foreign-key",
       "label": "proposal_id",
@@ -66877,6 +67087,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:ledger",
+      "target": "database:ledger.intercompany_balance_confirmations"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
       "target": "database:ledger.intercompany_counterpart_reservations"
     },
     {
@@ -68151,7 +68367,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "1f9b142e934a2e32fe757f7c88a9e82f05a946e8dadc8b4fedc631b3e30cd121",
+  "fingerprint": "c85547873dd836e9c50734519bbb54c7ea3cde38e57d4aa393789f7a0d92dfca",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -78448,6 +78664,12 @@
     },
     {
       "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Ledger.IIntercompanyBalanceConfirmationStore",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IIntercompanyBalanceConfirmationStore"
+    },
+    {
+      "classification": "service_contract",
       "id": "contract:Meridian.Contracts.Ledger.IIntercompanyObligationMonitorService",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.IIntercompanyObligationMonitorService"
@@ -78559,6 +78781,66 @@
       "id": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualRequestDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.IntercompanyAccrualRequestDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationActionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationActionDto"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationActionRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationActionRequest"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationEventDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationEventDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationFindingDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationFindingDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationJsonContext",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationJsonContext"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationPartyDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationPartyDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationSideDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationSideDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationStatusDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationStatusDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationSummaryDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationSummaryDto"
     },
     {
       "classification": "dto",
@@ -79453,6 +79735,12 @@
       "id": "contract:Meridian.Contracts.Ledger.PrivateCapitalWorkbenchDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.PrivateCapitalWorkbenchDto"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Ledger.ProposeIntercompanyBalanceConfirmationRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ProposeIntercompanyBalanceConfirmationRequest"
     },
     {
       "classification": "dto",
@@ -93754,6 +94042,32 @@
       "label": "ledger.intercompany_account_binding_revisions_tenant_id_check on ledger.intercompany_account_binding_revisions"
     },
     {
+      "id": "database:ledger.intercompany_balance_confirmations",
+      "kind": "database-table",
+      "label": "ledger.intercompany_balance_confirmations",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.intercompany_balance_confirmations.tenant_id",
+      "kind": "database-object",
+      "label": "ledger.intercompany_balance_confirmations.tenant_id"
+    },
+    {
+      "id": "database:ledger.intercompany_balance_confirmations.version",
+      "kind": "database-object",
+      "label": "ledger.intercompany_balance_confirmations.version"
+    },
+    {
+      "id": "database:ledger.intercompany_balance_confirmations_tenant_id_check on ledger.intercompany_balance_confirmations",
+      "kind": "database-object",
+      "label": "ledger.intercompany_balance_confirmations_tenant_id_check on ledger.intercompany_balance_confirmations"
+    },
+    {
+      "id": "database:ledger.intercompany_balance_confirmations_version_check on ledger.intercompany_balance_confirmations",
+      "kind": "database-object",
+      "label": "ledger.intercompany_balance_confirmations_version_check on ledger.intercompany_balance_confirmations"
+    },
+    {
       "id": "database:ledger.intercompany_counterpart_reservations",
       "kind": "database-table",
       "label": "ledger.intercompany_counterpart_reservations",
@@ -100091,11 +100405,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4211,
-    "contract_set_memberships": 5464,
-    "edges": 11321,
+    "contract_references": 4220,
+    "contract_set_memberships": 5488,
+    "edges": 11357,
     "foreign_keys": 208,
     "logical_references": 6,
-    "nodes": 5553
+    "nodes": 5570
   }
 }

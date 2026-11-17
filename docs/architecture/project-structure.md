@@ -125,8 +125,8 @@ entry, and `tests/Meridian.DesignModules.Tests` in the same change.
   sidecars such as `*.bak`, `*.backup-*`, `*.pid`, and `*.exitcode`.
 - Safe to consolidate: duplicate generated indexes, stale one-off reports, and
   documentation that repeats command lists already covered by `docs/HELP.md`.
-- Needs review: tracked generated API metadata, tracked workstation bundles,
-  archived code, and agent/skill prompt copies.
+- Needs review: tracked generated API metadata, archived code, and agent/skill prompt copies.
+  The workstation bundle is not tracked; it is a gitignored build output.
 - Should retain: active source, tests, CI workflows, canonical docs, design-system
   assets, and archive material with traceability value.
 

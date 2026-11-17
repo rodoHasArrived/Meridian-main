@@ -6,6 +6,65 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EvidenceWorkbenchSummaryFactModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.EvidenceWorkbenchSummaryFactModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs:30](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs#L30).
+
+```csharp
+public sealed record EvidenceWorkbenchSummaryFactModel(string Label, string Value, string Detail);
+```
+
+## InspectorPanelModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.InspectorPanelModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:317](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L317).
+
+Carries selected-record title, supporting detail, badge, and facts for a workstation inspector.
+
+```csharp
+public sealed class InspectorPanelModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Title { get; init; } = &quot;No selection&quot;;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:319](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L319) |  |
+| <code>public string Subtitle { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:321](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L321) |  |
+| <code>public string Detail { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:323](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L323) |  |
+| <code>public WorkstationBadgeModel? Badge { get; init; }</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:325](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L325) |  |
+| <code>public IReadOnlyList&lt;KeyValueFactModel&gt; Facts { get; init; } = Array.Empty&lt;KeyValueFactModel&gt;();</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:327](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L327) |  |
+
+## KeyValueFactModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.KeyValueFactModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:330](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L330).
+
+```csharp
+public sealed record KeyValueFactModel(string Label, string Value, string Detail = "", string Tone = WorkspaceTone.Neutral);
+```
+
+## OperationsContinuityCloseBlockerPresentation
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.OperationsContinuityCloseBlockerPresentation</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:122](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L122).
+
+```csharp
+public sealed record OperationsContinuityCloseBlockerPresentation(CloseReadinessBlockerDto Blocker)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string OwnerLabel =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:124](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L124) |  |
+| <code>public string RepairInstruction =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:126](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L126) |  |
+
 ## OperationsContinuityClosePresentation
 
 Qualified name: <code>Meridian.Wpf.Workstation.Models.OperationsContinuityClosePresentation</code>. Kind: `record`.
@@ -708,77 +767,3 @@ Declared public members:
 | <code>public static WorkstationRegionState Error(string title, string detail, string actionId = &quot;&quot;, string actionLabel = &quot;&quot;);</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:71](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L71) |  |
 | <code>public static WorkstationRegionState Success(string title, string detail) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:90](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L90) |  |
 | <code>public static WorkstationRegionState Warning(string title, string detail) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:98](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L98) |  |
-
-## WorkstationRegionStatus
-
-Qualified name: <code>Meridian.Wpf.Workstation.State.WorkstationRegionStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:5](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L5).
-
-```csharp
-public enum WorkstationRegionStatus
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Loading</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:7](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L7) |  |
-| <code>Empty</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:8](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L8) |  |
-| <code>Error</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:9](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L9) |  |
-| <code>Success</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:10](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L10) |  |
-| <code>Warning</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:11](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L11) |  |
-
-## ActivityLogGridControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Tables.ActivityLogGridControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:49](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L49).
-
-Displays read-only activity-log rows using row and column virtualization.
-
-```csharp
-public sealed class ActivityLogGridControl : DataGrid
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ActivityLogGridControl();</code> | [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:51](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L51) |  |
-
-## DenseDataGridControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Tables.DenseDataGridControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:8](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L8).
-
-Displays read-only rows with explicit columns and row and column virtualization.
-
-```csharp
-public sealed class DenseDataGridControl : DataGrid
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DenseDataGridControl();</code> | [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:10](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L10) |  |
-
-## KeyValueFactGridControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Tables.KeyValueFactGridControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:37](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L37).
-
-Displays read-only key-value facts using virtualized rows and columns.
-
-```csharp
-public sealed class KeyValueFactGridControl : DataGrid
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public KeyValueFactGridControl();</code> | [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:39](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L39) |  |

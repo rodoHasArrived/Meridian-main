@@ -6,6 +6,64 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LiveDataViewerViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.LiveDataViewerViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:24](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L24).
+
+ViewModel for the Live Data Viewer page. Owns all state, timers, HTTP loading, and session statistics.
+
+```csharp
+public sealed class LiveDataViewerViewModel : BindableBase, IPageActivationLifetime, IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ObservableCollection&lt;LiveDataEventModel&gt; LiveEvents { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:82](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L82) |  |
+| <code>public List&lt;string&gt; AvailableSymbols { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:83](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L83) |  |
+| <code>public string ConnectionStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:87](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L87) |  |
+| <code>public string SelectedSymbol =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:89](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L89) |  |
+| <code>public SolidColorBrush ConnectionIndicatorColor { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:93](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L93) |  |
+| <code>public bool IsPauseResumeEnabled { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:96](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L96) |  |
+| <code>public string PauseResumeButtonText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:99](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L99) |  |
+| <code>public bool NoDataVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:102](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L102) |  |
+| <code>public string TotalEventsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:105](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L105) |  |
+| <code>public string EventRateText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:108](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L108) |  |
+| <code>public string BidPriceText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:111](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L111) |  |
+| <code>public string BidSizeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:114](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L114) |  |
+| <code>public string AskPriceText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:117](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L117) |  |
+| <code>public string AskSizeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:120](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L120) |  |
+| <code>public string SpreadText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:123](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L123) |  |
+| <code>public string MidPriceText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:126](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L126) |  |
+| <code>public string LastTradeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:129](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L129) |  |
+| <code>public string LastTradeTimeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:132](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L132) |  |
+| <code>public string SessionHighText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:135](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L135) |  |
+| <code>public string SessionLowText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:138](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L138) |  |
+| <code>public string SessionVolumeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:141](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L141) |  |
+| <code>public string TradeCountText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:144](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L144) |  |
+| <code>public string VwapText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:147](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L147) |  |
+| <code>public event EventHandler? AutoScrollRequested;</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:150](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L150) |  |
+| <code>public ICommand TearOffCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:153](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L153) | Tears off the current symbol into a floating quote panel. |
+| <code>public LiveDataViewerViewModel(WpfServices.StatusService statusService, WpfServices.ConnectionService connectionService, WpfServices.LoggingService loggingService, WpfServices.NotificationService notificationService, SymbolManagementService symbolManagementService, WpfServices.TearOffPanelService tearOffPanelService, WpfServices.ConfigService configService);</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:155](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L155) |  |
+| <code>public bool IsActive =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:182](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L182) |  |
+| <code>public CancellationToken ActivationToken =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:184](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L184) |  |
+| <code>public Task StartAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:186](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L186) |  |
+| <code>public async Task ActivateAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:188](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L188) |  |
+| <code>public void Stop() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:213](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L213) |  |
+| <code>public void CancelActivation();</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:215](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L215) |  |
+| <code>public void Deactivate();</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:222](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L222) |  |
+| <code>public void PauseResume();</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:236](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L236) |  |
+| <code>public void Clear();</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:246](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L246) |  |
+| <code>public void SelectSymbol(string symbol);</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:255](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L255) |  |
+| <code>public void AddSymbolToList(string symbol);</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:265](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L265) |  |
+| <code>public bool ShowTrades { get; set; } = true;</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:271](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L271) |  |
+| <code>public bool ShowQuotes { get; set; } = true;</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:272](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L272) |  |
+| <code>public bool AutoScroll { get; set; } = true;</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:273](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L273) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs:662](../../../../src/Meridian.Wpf/ViewModels/LiveDataViewerViewModel.cs#L662) |  |
+
 ## MainPageViewModel
 
 Qualified name: <code>Meridian.Wpf.ViewModels.MainPageViewModel</code>. Kind: `class`.
@@ -1665,27 +1723,3 @@ A pre-built scatter template shown in the Quickstart sidebar. Clicking a templat
 ```csharp
 public sealed record QuickstartTemplate(string Name, string Category, string XSymbol, string YSymbol, string XExpression, string YExpression, string TimeRange = "1Y");
 ```
-
-## QuoteFloatViewModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.QuoteFloatViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/QuoteFloatViewModel.cs:14](../../../../src/Meridian.Wpf/ViewModels/QuoteFloatViewModel.cs#L14).
-
-ViewModel for a floating tear-off quote panel. Polls the live quote endpoint for a single symbol and tracks price direction.
-
-```csharp
-public sealed class QuoteFloatViewModel : BindableBase, IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Symbol { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/QuoteFloatViewModel.cs:35](../../../../src/Meridian.Wpf/ViewModels/QuoteFloatViewModel.cs#L35) |  |
-| <code>public decimal LastPrice { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/QuoteFloatViewModel.cs:38](../../../../src/Meridian.Wpf/ViewModels/QuoteFloatViewModel.cs#L38) |  |
-| <code>public decimal BidPrice { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/QuoteFloatViewModel.cs:41](../../../../src/Meridian.Wpf/ViewModels/QuoteFloatViewModel.cs#L41) |  |
-| <code>public decimal AskPrice { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/QuoteFloatViewModel.cs:44](../../../../src/Meridian.Wpf/ViewModels/QuoteFloatViewModel.cs#L44) |  |
-| <code>public Brush PriceDirectionBrush { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/QuoteFloatViewModel.cs:47](../../../../src/Meridian.Wpf/ViewModels/QuoteFloatViewModel.cs#L47) |  |
-| <code>public QuoteFloatViewModel(string symbol);</code> | [src/Meridian.Wpf/ViewModels/QuoteFloatViewModel.cs:53](../../../../src/Meridian.Wpf/ViewModels/QuoteFloatViewModel.cs#L53) |  |
-| <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/QuoteFloatViewModel.cs:111](../../../../src/Meridian.Wpf/ViewModels/QuoteFloatViewModel.cs#L111) |  |

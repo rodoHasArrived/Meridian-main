@@ -6,6 +6,80 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationRegionStatus
+
+Qualified name: <code>Meridian.Wpf.Workstation.State.WorkstationRegionStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:5](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L5).
+
+```csharp
+public enum WorkstationRegionStatus
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Loading</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:7](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L7) |  |
+| <code>Empty</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:8](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L8) |  |
+| <code>Error</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:9](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L9) |  |
+| <code>Success</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:10](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L10) |  |
+| <code>Warning</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:11](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L11) |  |
+
+## ActivityLogGridControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Tables.ActivityLogGridControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:49](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L49).
+
+Displays read-only activity-log rows using row and column virtualization.
+
+```csharp
+public sealed class ActivityLogGridControl : DataGrid
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ActivityLogGridControl();</code> | [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:51](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L51) |  |
+
+## DenseDataGridControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Tables.DenseDataGridControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:8](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L8).
+
+Displays read-only rows with explicit columns and row and column virtualization.
+
+```csharp
+public sealed class DenseDataGridControl : DataGrid
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DenseDataGridControl();</code> | [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:10](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L10) |  |
+
+## KeyValueFactGridControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Tables.KeyValueFactGridControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:37](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L37).
+
+Displays read-only key-value facts using virtualized rows and columns.
+
+```csharp
+public sealed class KeyValueFactGridControl : DataGrid
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public KeyValueFactGridControl();</code> | [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:39](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L39) |  |
+
 ## SearchFilterBarControl
 
 Qualified name: <code>Meridian.Wpf.Workstation.Tables.SearchFilterBarControl</code>. Kind: `class`.

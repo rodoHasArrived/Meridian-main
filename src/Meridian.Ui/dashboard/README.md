@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-17
 ---
 
 # src/Meridian.Ui/dashboard
@@ -221,6 +221,11 @@ commands explain their existing blockers. Controlled-close receipt navigation re
 response's journal, book, profile and version even when the next request is edited; incomplete
 receipt identities provide no journal link. Active FX edits retain their as-of scope until save or
 explicit cancel, and pending saves retain the mounted editor.
+
+The Balance confirmation tab (`accounting-screen.entity-confirmations.tsx`) loads one book's
+advisory confirmation summary, pins current balances and confirms, disputes or resolves only this
+book's side; focused coverage is `accounting-screen.entity-confirmations.test.tsx`. See
+[reciprocal balance confirmation](../../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
 
 Settings provider runtime evidence and integration setup components are owned by
 `settings-provider-integration.tsx`; the Settings screen composes them without changing routes
@@ -933,7 +938,7 @@ any total; a host that predates them shows the not-reported marker rather than z
 
 The generated `api-routes.ts` catalog includes exact account-owned ledger-book oversight routes
 for cash continuity, reviewed close prices and cash forecasts. Regenerate it from shared
-`UiApiRoutes` and rebuild the tracked workstation bundle when those routes change; server-owned
+`UiApiRoutes` and rebuild the workstation bundle when those routes change; server-owned
 scope and evidence verification are described in
 [bounded account oversight](../../../docs/operators/account-oversight.md).
 

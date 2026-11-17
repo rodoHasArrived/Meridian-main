@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StorageSymbolCatalogEntry
+
+Qualified name: <code>Meridian.Storage.Services.StorageSymbolCatalogEntry</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/StorageSearchService.cs:827](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L827).
+
+```csharp
+public sealed record StorageSymbolCatalogEntry(string Symbol, DateTimeOffset FirstDate, DateTimeOffset LastDate, long TotalEvents, long TotalBytes, HashSet<string> Sources, HashSet<string> EventTypes);
+```
+
+## SymbolIndex
+
+Qualified name: <code>Meridian.Storage.Services.SymbolIndex</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/StorageSearchService.cs:840](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L840).
+
+```csharp
+public sealed record SymbolIndex(string Symbol, List<string> Files);
+```
+
 ## SymbolRegistryService
 
 Qualified name: <code>Meridian.Storage.Services.SymbolRegistryService</code>. Kind: `class`.

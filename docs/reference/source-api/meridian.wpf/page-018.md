@@ -6,6 +6,62 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FinancialRecordExplorerPage
+
+Qualified name: <code>Meridian.Wpf.Views.FinancialRecordExplorerPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/FinancialRecordExplorerPage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/FinancialRecordExplorerPage.xaml.cs#L11).
+
+Provides the desktop page to inspect ledger rows, proof actions, report usage, and audit relationships.
+
+```csharp
+public partial class FinancialRecordExplorerPage : Page, IWorkspaceShellPageContextAware
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FinancialRecordExplorerPage() : this(new FinancialRecordExplorerViewModel(ApiClientService.Instance));</code> | [src/Meridian.Wpf/Views/FinancialRecordExplorerPage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/FinancialRecordExplorerPage.xaml.cs#L15) |  |
+| <code>public FinancialRecordExplorerPage(FinancialRecordExplorerViewModel viewModel);</code> | [src/Meridian.Wpf/Views/FinancialRecordExplorerPage.xaml.cs:20](../../../../src/Meridian.Wpf/Views/FinancialRecordExplorerPage.xaml.cs#L20) |  |
+| <code>public void ApplyWorkspaceShellPageTag(string pageTag) =&gt; …;</code> | [src/Meridian.Wpf/Views/FinancialRecordExplorerPage.xaml.cs:27](../../../../src/Meridian.Wpf/Views/FinancialRecordExplorerPage.xaml.cs#L27) |  |
+
+## FloatingPageWindow
+
+Qualified name: <code>Meridian.Wpf.Views.FloatingPageWindow</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/FloatingPageWindow.xaml.cs:11](../../../../src/Meridian.Wpf/Views/FloatingPageWindow.xaml.cs#L11).
+
+A generic floating window that hosts any registered Meridian page. Used when a page is dragged to the &quot;Float Window&quot; drop zone in the split pane. All visual chrome lives here; no business logic.
+
+```csharp
+public partial class FloatingPageWindow : Window
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FloatingPageWindow(string pageTitle, FrameworkElement pageContent);</code> | [src/Meridian.Wpf/Views/FloatingPageWindow.xaml.cs:13](../../../../src/Meridian.Wpf/Views/FloatingPageWindow.xaml.cs#L13) |  |
+
+## FundAccountsPage
+
+Qualified name: <code>Meridian.Wpf.Views.FundAccountsPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/FundAccountsPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/FundAccountsPage.xaml.cs#L10).
+
+Provides the desktop page to inspect account balances, routing, and reconciliation readiness.
+
+```csharp
+public partial class FundAccountsPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FundAccountsPage(FundAccountsViewModel viewModel);</code> | [src/Meridian.Wpf/Views/FundAccountsPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/FundAccountsPage.xaml.cs#L14) |  |
+
 ## FundLedgerPage
 
 Qualified name: <code>Meridian.Wpf.Views.FundLedgerPage</code>. Kind: `class`.
@@ -181,6 +237,22 @@ Declared public members:
 | --- | --- | --- |
 | <code>public IntercompanyAgreementsControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/IntercompanyAgreementsControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/IntercompanyAgreementsControl.xaml.cs#L7) |  |
 
+## IntercompanyBalanceConfirmationControl
+
+Qualified name: <code>Meridian.Wpf.Views.IntercompanyBalanceConfirmationControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/IntercompanyBalanceConfirmationControl.xaml.cs:5](../../../../src/Meridian.Wpf/Views/IntercompanyBalanceConfirmationControl.xaml.cs#L5).
+
+```csharp
+public partial class IntercompanyBalanceConfirmationControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyBalanceConfirmationControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/IntercompanyBalanceConfirmationControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/IntercompanyBalanceConfirmationControl.xaml.cs#L7) |  |
+
 ## IntercompanyCounterpartProposalsControl
 
 Qualified name: <code>Meridian.Wpf.Views.IntercompanyCounterpartProposalsControl</code>. Kind: `class`.
@@ -260,9 +332,9 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Views.KeyboardShortcutsPage</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Views/KeyboardShortcutsPage.xaml.cs:16](../../../../src/Meridian.Wpf/Views/KeyboardShortcutsPage.xaml.cs#L16).
+Source: [src/Meridian.Wpf/Views/KeyboardShortcutsPage.xaml.cs:18](../../../../src/Meridian.Wpf/Views/KeyboardShortcutsPage.xaml.cs#L18).
 
-Keyboard shortcuts reference page that dynamically loads shortcuts from the KeyboardShortcutService, ensuring the display always reflects the current registered shortcuts.
+Keyboard shortcuts page: lists every registered shortcut from KeyboardShortcutService, grouped by category, and lets the operator rebind, enable or disable, and reset each one. State and validation live in KeyboardShortcutsViewModel; this code-behind only lays out the category cards and forwards key presses from the focused capture surface.
 
 ```csharp
 public partial class KeyboardShortcutsPage : Page
@@ -272,7 +344,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public KeyboardShortcutsPage();</code> | [src/Meridian.Wpf/Views/KeyboardShortcutsPage.xaml.cs:20](../../../../src/Meridian.Wpf/Views/KeyboardShortcutsPage.xaml.cs#L20) |  |
+| <code>public KeyboardShortcutsPage();</code> | [src/Meridian.Wpf/Views/KeyboardShortcutsPage.xaml.cs:22](../../../../src/Meridian.Wpf/Views/KeyboardShortcutsPage.xaml.cs#L22) |  |
 
 Source: [src/Meridian.Wpf/Views/Pages.cs:103](../../../../src/Meridian.Wpf/Views/Pages.cs#L103).
 
@@ -980,99 +1052,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public RunDetailPage();</code> | [src/Meridian.Wpf/Views/RunDetailPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/RunDetailPage.xaml.cs#L12) |  |
-
-## RunLedgerPage
-
-Qualified name: <code>Meridian.Wpf.Views.RunLedgerPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:71](../../../../src/Meridian.Wpf/Views/Pages.cs#L71).
-
-```csharp
-public partial class RunLedgerPage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/RunLedgerPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/RunLedgerPage.xaml.cs#L10).
-
-Provides the desktop page to review run postings and execution-linked cash movement.
-
-```csharp
-public partial class RunLedgerPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public RunLedgerPage();</code> | [src/Meridian.Wpf/Views/RunLedgerPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/RunLedgerPage.xaml.cs#L12) |  |
-
-## RunMatPage
-
-Qualified name: <code>Meridian.Wpf.Views.RunMatPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:52](../../../../src/Meridian.Wpf/Views/Pages.cs#L52).
-
-```csharp
-public partial class RunMatPage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/RunMatPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/RunMatPage.xaml.cs#L10).
-
-Strategy workspace surface for editing and executing RunMat scripts.
-
-```csharp
-public partial class RunMatPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public RunMatPage(RunMatViewModel viewModel);</code> | [src/Meridian.Wpf/Views/RunMatPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/RunMatPage.xaml.cs#L14) |  |
-
-## RunPortfolioPage
-
-Qualified name: <code>Meridian.Wpf.Views.RunPortfolioPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:70](../../../../src/Meridian.Wpf/Views/Pages.cs#L70).
-
-```csharp
-public partial class RunPortfolioPage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/RunPortfolioPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/RunPortfolioPage.xaml.cs#L10).
-
-Provides the desktop page to review holdings, exposures, and weights for the selected run.
-
-```csharp
-public partial class RunPortfolioPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public RunPortfolioPage();</code> | [src/Meridian.Wpf/Views/RunPortfolioPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/RunPortfolioPage.xaml.cs#L12) |  |
-
-## RunRiskPage
-
-Qualified name: <code>Meridian.Wpf.Views.RunRiskPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:73](../../../../src/Meridian.Wpf/Views/Pages.cs#L73).
-
-```csharp
-public partial class RunRiskPage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/RunRiskPage.xaml.cs:8](../../../../src/Meridian.Wpf/Views/RunRiskPage.xaml.cs#L8).
-
-Hosts risk details for the selected strategy run.
-
-```csharp
-public partial class RunRiskPage
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public RunRiskPage(RunRiskViewModel viewModel);</code> | [src/Meridian.Wpf/Views/RunRiskPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/RunRiskPage.xaml.cs#L12) |  |

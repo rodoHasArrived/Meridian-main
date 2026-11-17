@@ -6,6 +6,94 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyInterestAccrualLineRow
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyInterestAccrualLineRow</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:339](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L339).
+
+One line of the proposed source journal, exactly as the server would retain it.
+
+```csharp
+public sealed class IntercompanyInterestAccrualLineRow(ManualJournalEntryLineDto line)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Account =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:341](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L341) |  |
+| <code>public string Side =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:342](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L342) |  |
+| <code>public string Amount =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:343](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L343) |  |
+| <code>public string Original =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:344](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L344) |  |
+
+## IntercompanyInterestAccrualSliceRow
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyInterestAccrualSliceRow</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:327](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L327).
+
+One homogeneous accrual slice; every figure is the server&#x27;s exact decimal.
+
+```csharp
+public sealed class IntercompanyInterestAccrualSliceRow(IntercompanyAccrualSliceDto slice)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Days =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:329](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L329) |  |
+| <code>public string Principal =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:330](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L330) |  |
+| <code>public string AnnualRate =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:331](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L331) |  |
+| <code>public string DayCount =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:332](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L332) |  |
+| <code>public string UnroundedAmount =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:333](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L333) |  |
+| <code>public string Authority =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:334](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L334) |  |
+| <code>public string PrincipalEvidence =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:335](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L335) |  |
+
+## IntercompanyInterestAccrualWorkspace
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyInterestAccrualWorkspace</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:16](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L16).
+
+Desktop presentation state for requesting a governed loan-interest accrual. The operator supplies selections only; every rate, principal, amount and permission comes from the shared intercompany API, and a draft is bound to the evidence digest of the preview the operator saw. Nothing is calculated here.
+
+```csharp
+public sealed partial class IntercompanyInterestAccrualWorkspace : ObservableObject, IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyInterestAccrualWorkspace(IWorkstationIntercompanyAgreementApiClient client);</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:34](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L34) |  |
+| <code>public ObservableCollection&lt;IntercompanyChoice&gt; BookChoices { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:43](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L43) | Books the signed-in account can see; choosing one sets SourceBook. |
+| <code>public ObservableCollection&lt;IntercompanyChoice&gt; InterestProfileChoices { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:45](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L45) | Approved LoanInterest profiles that map the chosen book today. |
+| <code>public ObservableCollection&lt;IntercompanyChoice&gt; PrincipalProfileChoices { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:47](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L47) | Approved Loan profiles of the same legal agreement as the chosen interest profile. |
+| <code>public IAsyncRelayCommand LoadChoicesCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:48](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L48) |  |
+| <code>public string ChoicesStatus { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:50](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L50) | What the selection lists hold, or why one is empty. |
+| <code>public Task ProfileChoicesLoad { get; private set; } = Task.CompletedTask;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:52](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L52) | The latest profile read for the chosen book; completed when no read is outstanding. |
+| <code>public ObservableCollection&lt;IntercompanyInterestAccrualSliceRow&gt; Slices { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:54](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L54) |  |
+| <code>public ObservableCollection&lt;IntercompanyInterestAccrualLineRow&gt; Lines { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:55](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L55) |  |
+| <code>public ObservableCollection&lt;string&gt; Refusals { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:56](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L56) |  |
+| <code>public IAsyncRelayCommand PreviewCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:57](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L57) |  |
+| <code>public IAsyncRelayCommand CreateDraftCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:58](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L58) |  |
+| <code>public bool IsBusy { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:59](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L59) |  |
+| <code>public bool CanManageLedger { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:61](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L61) | The server&#x27;s answer for the signed-in account. Source-book authority is still checked per command. |
+| <code>public string PermissionNote =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:62](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L62) |  |
+| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:65](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L65) |  |
+| <code>public string Summary { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:67](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L67) | The previewed amount and journal date, or the reason no amount is shown. |
+| <code>public string Evidence { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:68](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L68) |  |
+| <code>public string DraftStatus { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:69](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L69) |  |
+| <code>public string SourceBook { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:70](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L70) |  |
+| <code>public string InterestProfile { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:79](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L79) |  |
+| <code>public string PrincipalProfile { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:88](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L88) |  |
+| <code>public string AccrualFrom { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:90](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L90) | First accrued day (yyyy-MM-dd). |
+| <code>public string AccrualTo { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:92](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L92) | First day not accrued (yyyy-MM-dd); the journal is dated the day before. |
+| <code>public void ResetSession();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:274](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L274) | Clear prior-session evidence and invalidate every outstanding response on account changes. |
+| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:300](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L300) |  |
+
 ## IntercompanyLegacyCoverageCandidate
 
 Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyLegacyCoverageCandidate</code>. Kind: `record`.
@@ -103,6 +191,20 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;ApiResponse&lt;LedgerBookDto[]&gt;&gt; GetLedgerBooksAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Choices.cs:13](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Choices.cs#L13) | Ledger books visible to the signed-in account, read from the same route the browser workstation uses. It only populates selection lists; every command still authorizes the chosen book on the server. |
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Confirmations.cs:8](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Confirmations.cs#L8).
+
+```csharp
+public partial interface IWorkstationIntercompanyAgreementApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ApiResponse&lt;IntercompanyBalanceConfirmationSummaryDto&gt;&gt; GetBalanceConfirmationsAsync(Guid ledgerBookId, DateOnly asOf, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Confirmations.cs:11](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Confirmations.cs#L11) | Confirmation position for one book at a date. Advisory only; it never changes close eligibility. |
+| <code>Task&lt;ApiResponse&lt;IntercompanyBalanceConfirmationDto&gt;&gt; ProposeBalanceConfirmationAsync(ProposeIntercompanyBalanceConfirmationRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Confirmations.cs:14](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Confirmations.cs#L14) | Pins both sides&#x27; current posted balances for one approved accounting profile at the date. |
+| <code>Task&lt;ApiResponse&lt;IntercompanyBalanceConfirmationDto&gt;&gt; ActOnBalanceConfirmationAsync(Guid confirmationId, IntercompanyBalanceConfirmationActionRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Confirmations.cs:17](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Confirmations.cs#L17) | Confirms, disputes or resolves the exact retained version the operator saw. |
 
 Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs:8](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs#L8).
 
@@ -440,6 +542,20 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;ApiResponse&lt;LedgerBookDto[]&gt;&gt; GetLedgerBooksAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Choices.cs:19](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Choices.cs#L19) |  |
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Confirmations.cs:21](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Confirmations.cs#L21).
+
+```csharp
+public sealed partial class WorkstationIntercompanyAgreementApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;ApiResponse&lt;IntercompanyBalanceConfirmationSummaryDto&gt;&gt; GetBalanceConfirmationsAsync(Guid ledgerBookId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Confirmations.cs:25](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Confirmations.cs#L25) |  |
+| <code>public async Task&lt;ApiResponse&lt;IntercompanyBalanceConfirmationDto&gt;&gt; ProposeBalanceConfirmationAsync(ProposeIntercompanyBalanceConfirmationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Confirmations.cs:36](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Confirmations.cs#L36) |  |
+| <code>public async Task&lt;ApiResponse&lt;IntercompanyBalanceConfirmationDto&gt;&gt; ActOnBalanceConfirmationAsync(Guid confirmationId, IntercompanyBalanceConfirmationActionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Confirmations.cs:45](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Confirmations.cs#L45) |  |
 
 Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs:16](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs#L16).
 
@@ -1245,83 +1361,3 @@ Declared public members:
 | <code>public string[]? Tips { get; set; }</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:11](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L11) |  |
 | <code>public string? LearnMoreUrl { get; set; }</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:12](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L12) |  |
 | <code>public Dictionary&lt;string, string&gt;? KeyboardShortcuts { get; set; }</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:13](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L13) |  |
-
-## FixtureDataService
-
-Qualified name: <code>Meridian.Ui.Services.Services.FixtureDataService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/FixtureDataService.cs:9](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L9).
-
-Provides canned fixture data for UI development without backend dependency. Enables offline development and deterministic testing scenarios.
-
-```csharp
-public sealed class FixtureDataService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static FixtureDataService Instance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:12](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L12) |  |
-| <code>public FixtureScenario ActiveScenario =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:26](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L26) | Gets the currently active fixture scenario. |
-| <code>public void SetScenario(FixtureScenario scenario);</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:29](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L29) | Sets the active fixture scenario. |
-| <code>public static string GetScenarioLabel(FixtureScenario scenario) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:35](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L35) | Returns a human-readable label for the given scenario. |
-| <code>public StatusResponse GetMockStatusResponse() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:48](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L48) | Gets a mock status response showing a running system. |
-| <code>public StatusResponse GetMockDisconnectedStatus() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:79](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L79) | Gets a mock status response showing a disconnected system. |
-| <code>public TradeDataResponse GetMockTradeData(string symbol) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:91](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L91) | Gets mock trade data for a given symbol. |
-| <code>public QuoteDataResponse GetMockQuoteData(string symbol);</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:105](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L105) | Gets mock quote data for a given symbol. |
-| <code>public BackfillHealthResponse GetMockBackfillHealth() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:128](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L128) | Gets a mock backfill health response showing healthy providers. |
-| <code>public string[] GetMockSymbols() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:160](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L160) | Gets a collection of mock symbols for testing. |
-| <code>public TradesResponse GetMockTradesResponse(string symbol, int count = 10);</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:169](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L169) | Gets mock trades response with multiple trades. |
-| <code>public async Task SimulateNetworkDelayAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:199](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L199) | Simulates network delay for realistic fixture behavior. |
-
-## FixtureModeDetector
-
-Qualified name: <code>Meridian.Ui.Services.Services.FixtureModeDetector</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:23](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L23).
-
-Detects and tracks whether the application is running in fixture/offline mode. Provides a centralized check so UI pages can distinguish intentional demo data from backend-unreachable offline state.
-
-```csharp
-public sealed class FixtureModeDetector
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static FixtureModeDetector Instance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:26](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L26) |  |
-| <code>public bool IsFixtureMode =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:54](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L54) | Gets whether the application is explicitly running in fixture mode. |
-| <code>public bool IsOfflineMode =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:59](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L59) | Gets whether the application is in offline mode (backend unreachable). |
-| <code>public bool IsBackendReachable =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:64](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L64) | Gets whether the backend is currently reachable. |
-| <code>public string? ServerDataProvenanceToken =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:71](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L71) | Non-real data provenance reported by the connected backend (for example seeded when the host is serving a seeded demo workspace), or null when the backend serves real data or has not reported yet. |
-| <code>public bool IsNonLiveMode =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:77](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L77) | Gets whether any non-live mode is active (fixture, offline, or a backend that reports simulated/seeded/sample data). |
-| <code>public FixtureModeKind ModeKind =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:82](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L82) | Gets the normalized non-live mode kind for UI tone selection. |
-| <code>public string ModeLabel =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:92](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L92) | Gets a human-readable mode label for display in the UI banner. |
-| <code>public string BannerColor =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:105](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L105) | Gets the banner background color suggestion. Fixture mode: blue informational, Offline: red. |
-| <code>public void SetFixtureMode(bool enabled);</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:110](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L110) | Sets explicit fixture mode state. |
-| <code>public void ReportServerDataProvenance(string? nonRealProvenanceToken);</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:123](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L123) | Records the data provenance the connected backend reports for the records it serves. Pass a non-real provenance token (simulated, seeded, sample) to surface the persistent shell banner, or null when the backend serves real data. W9-TRUTH-001: a workstation attached to a seeded demo workspace must keep labeling it. |
-| <code>public void UpdateBackendReachability(bool isReachable);</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:144](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L144) | Updates backend reachability state. Automatically triggers offline mode when backend is unreachable. |
-| <code>public string ScenarioLabel =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:159](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L159) | Gets the currently active fixture scenario label for display in the UI. |
-| <code>public FixtureScenario ActiveScenario =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:164](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L164) | Gets the currently active fixture scenario. |
-| <code>public FixtureScenario CycleScenario();</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:171](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L171) | Cycles to the next scenario in the FixtureScenario sequence. No-op when fixture mode is off. |
-| <code>public event EventHandler? ModeChanged;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:189](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L189) | Event raised when fixture/offline mode changes. UI pages should subscribe to this to update their visual state. |
-
-## FixtureModeKind
-
-Qualified name: <code>Meridian.Ui.Services.Services.FixtureModeKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:5](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L5).
-
-```csharp
-public enum FixtureModeKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Live</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:7](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L7) |  |
-| <code>Fixture</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:8](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L8) |  |
-| <code>Offline</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:9](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L9) |  |

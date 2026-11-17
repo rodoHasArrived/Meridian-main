@@ -2,8 +2,8 @@
   "counts": {
     "error": 0,
     "info": 0,
-    "total": 306,
-    "warning": 306
+    "total": 307,
+    "warning": 307
   },
   "failed": false,
   "findings": [
@@ -664,6 +664,16 @@
       },
       "message": "Business table ledger.intercompany_account_binding_revisions does not have a table comment.",
       "object": "ledger.intercompany_account_binding_revisions",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "intercompany_balance_confirmations"
+      },
+      "message": "Business table ledger.intercompany_balance_confirmations does not have a table comment.",
+      "object": "ledger.intercompany_balance_confirmations",
       "rule_id": "business-table-must-have-comment",
       "severity": "warning"
     },
@@ -3418,5 +3428,5 @@
       "severity": "warning"
     }
   ],
-  "fingerprint": "8d7285a3def10d2f44f9000cc57e563974234c229b4a606973581a29df4f5839"
+  "fingerprint": "40d92f1e9a2eb269114a604e7c715704902c219e3a8ef0443321c370fca8a444"
 }
