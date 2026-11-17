@@ -149,7 +149,8 @@ the full `bash scripts/ci.sh` aggregate is optional at Level 1, recommended at L
 practical at Level 3 or for build/CI-tooling changes; state which checks ran and which did not.
 GitHub Actions `Meridian CI / quality-gate` is the authoritative merge result. Local work may happen on `main` when the user explicitly requests
 it or the checkout is intentionally operating there, but PR-ready publishing should flow through a
-`codex/<short-task-name>` branch and PR targeting `main` unless GitHub repository rules explicitly
+`codex/<short-task-name>` or `claude/<short-task-name>` branch (either agent prefix is accepted)
+and PR targeting `main` unless GitHub repository rules explicitly
 allow the requested protected-branch flow.
 When local CPU, memory, disk, dependency restore, or MSBuild lock contention makes validation
 unreliable, push the branch and use the GitHub-hosted `Targeted Test` workflow as the remote proof
