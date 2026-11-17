@@ -453,6 +453,13 @@ present `FundAccountId` against the authenticated actor's account-scoped `Manage
 before the OMS can use that account in live-readiness evaluation. Missing run/account context,
 missing readiness registration, rejected readiness, or an approval without retained evidence
 produces an audited rejection instead of a broker submit.
+`runId`, `run_id`, `sessionId`, `session_id`, and `orderOrigin` are server-owned order metadata
+(`ExecutionOrderMetadataPolicy`): the shared HTTP submit and preview routes refuse them with 403, and
+position actions strip them from broker-reported position metadata. Only server-side callers such as
+`LiveStrategyRunSession` stamp a run id, so a manual ticket cannot borrow a promoted run's live
+authority, and no supported manual live-order path exists until a reviewed manual-intent authority
+contract does (see `docs/engineering/blueprints/governed-order-command-boundary-blueprint.md`). The
+OMS's own routing sanitization keeps these keys.
 Broker-backed readiness also includes open-order reconciliation: `BrokerageExecutionReconciliationService`
 compares broker-reported open orders with the OMS open-order ledger, treats missing client order IDs
 as untraceable breaks, and reports OMS/broker divergence before live operators rely on the gateway.

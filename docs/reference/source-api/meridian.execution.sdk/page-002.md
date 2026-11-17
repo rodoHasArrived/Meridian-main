@@ -42,9 +42,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static bool ContainsClientRejectedServerOwnedKey(IReadOnlyDictionary&lt;string, string&gt;? metadata) =&gt; …;</code> | [src/Meridian.Execution.Sdk/ExecutionOrderMetadataPolicy.cs:51](../../../../src/Meridian.Execution.Sdk/ExecutionOrderMetadataPolicy.cs#L51) |  |
-| <code>public static IReadOnlyDictionary&lt;string, string&gt;? RemoveClientRejectedServerOwnedKeys(IReadOnlyDictionary&lt;string, string&gt;? metadata) =&gt; …;</code> | [src/Meridian.Execution.Sdk/ExecutionOrderMetadataPolicy.cs:54](../../../../src/Meridian.Execution.Sdk/ExecutionOrderMetadataPolicy.cs#L54) |  |
-| <code>public static OrderRequest RemoveServerOwnedRoutingKeys(OrderRequest request);</code> | [src/Meridian.Execution.Sdk/ExecutionOrderMetadataPolicy.cs:58](../../../../src/Meridian.Execution.Sdk/ExecutionOrderMetadataPolicy.cs#L58) |  |
+| <code>public static bool ContainsClientRejectedServerOwnedKey(IReadOnlyDictionary&lt;string, string&gt;? metadata) =&gt; …;</code> | [src/Meridian.Execution.Sdk/ExecutionOrderMetadataPolicy.cs:62](../../../../src/Meridian.Execution.Sdk/ExecutionOrderMetadataPolicy.cs#L62) |  |
+| <code>public static IReadOnlyDictionary&lt;string, string&gt;? RemoveClientRejectedServerOwnedKeys(IReadOnlyDictionary&lt;string, string&gt;? metadata) =&gt; …;</code> | [src/Meridian.Execution.Sdk/ExecutionOrderMetadataPolicy.cs:65](../../../../src/Meridian.Execution.Sdk/ExecutionOrderMetadataPolicy.cs#L65) |  |
+| <code>public static OrderRequest RemoveServerOwnedRoutingKeys(OrderRequest request);</code> | [src/Meridian.Execution.Sdk/ExecutionOrderMetadataPolicy.cs:69](../../../../src/Meridian.Execution.Sdk/ExecutionOrderMetadataPolicy.cs#L69) |  |
 
 ## ExecutionReport
 

@@ -487,10 +487,10 @@ between preflight and dispatch using the same hook pattern as the existing opera
 
 | Test | Verifies |
 | --- | --- |
-| `SubmitOrder_ClientSuppliesRunIdMetadata_Returns403` | Gap 1 closed |
-| `SubmitOrder_ClientSuppliesSessionIdMetadata_Returns403` | Same policy |
-| `PreviewOrder_ClientSuppliesRunIdMetadata_Returns403` | Preview path shares the policy |
-| `SubmitOrder_BrowserShapedRequest_Unaffected` | No regression for the real client |
+| `SubmitOrder_ClientSuppliesRunOrSessionAuthorityMetadata_ReturnsForbiddenBeforeOms` (theory: `runId`, `RUNID`, `run_id`, `sessionId`, `session_id`, `orderOrigin`) | Gap 1 closed; refused before the OMS is called |
+| `PreviewOrder_ClientSuppliesRunIdMetadata_ReturnsForbiddenBeforePreview` | Preview path shares the policy |
+| `SubmitOrder_BrowserShapedTicket_ReachesOmsWithServerStampedIdentityOnly` | No regression for the real client |
+| `ExecutionOrderMetadataPolicyTests.RemoveServerOwnedRoutingKeys_PreservesServerStampedRunAndSessionIdentity` | The OMS keeps server-stamped run identity, so live strategy orders still route |
 
 ### `OrderAuthorityResolverTests` (`tests/Meridian.Tests/Execution/`)
 
@@ -543,10 +543,10 @@ between preflight and dispatch using the same hook pattern as the existing opera
 `docs/ai/solo-developer-workflow.md` before merge. The developer owns acceptance.
 
 ### Phase 0: Close the borrowed-run-id path (can ship alone)
-- [ ] Search `tests/` and `src/Meridian.Mcp` for order metadata containing `runId` / `sessionId`
-- [ ] Add `runId`, `run_id`, `sessionId`, `session_id`, `orderOrigin` to `ExecutionOrderMetadataPolicy.ClientRejectedKeys`
-- [ ] Phase 0 endpoint tests
-- [ ] Note the change in `src/Meridian.Execution/README.md`
+- [x] Search `tests/` and `src/Meridian.Mcp` for order metadata containing `runId` / `sessionId`. No MCP or browser caller sends either. Two endpoint tests (`AlpacaExecutionPath_…`, `RobinhoodExecutionPath_…`) reached live routing only by posting the promoted `runId` on a manual REST ticket. They now submit server-side, the way `LiveStrategyRunSession` does, so they keep their broker-path coverage. OMS-level tests that stamp `runId` directly are unaffected, because `RemoveServerOwnedRoutingKeys` uses a separate list
+- [x] Add `runId`, `run_id`, `sessionId`, `session_id`, `orderOrigin` to `ExecutionOrderMetadataPolicy.ClientRejectedKeys`. Also note that `sessionId` decides which paper-session ledger receives an order's updates, so a client-supplied value could have written into another session's ledger
+- [x] Phase 0 endpoint and policy tests (`SubmitOrder_ClientSuppliesRunOrSessionAuthorityMetadata_ReturnsForbiddenBeforeOms`, `PreviewOrder_ClientSuppliesRunIdMetadata_ReturnsForbiddenBeforePreview`, `SubmitOrder_BrowserShapedTicket_ReachesOmsWithServerStampedIdentityOnly`, `RemoveServerOwnedRoutingKeys_PreservesServerStampedRunAndSessionIdentity`)
+- [x] Note the change in `src/Meridian.Execution/README.md`
 
 ### Phase 1: Types and factory
 - [ ] Add the SDK types (`OrderCommandOrigin`, `OrderSubmissionAuthority`, commands, `ExecutionAccountGrant`, `AuthorityDecisionSummary`) and their source-generated JSON context

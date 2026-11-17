@@ -353,28 +353,12 @@ public sealed class ExecutionGovernanceEndpointsTests
         var client = app.GetTestClient();
         client.DefaultRequestHeaders.Add("X-Meridian-Actor", "ops");
 
-        var submitResponse = await client.PostAsync(
-            "/api/execution/orders/submit",
-            JsonContent(new
-            {
-                clientOrderId,
-                symbol = "AAPL",
-                side = 0,
-                type = 0,
-                timeInForce = 0,
-                quantity = 1,
-                strategyId = "strategy-live",
-                fundAccountId = LiveFundAccountId,
-                metadata = new Dictionary<string, string>
-                {
-                    ["runId"] = ApprovedLiveRunId
-                }
-            }));
+        // Live authority comes from a promoted strategy run, which only server-side callers may
+        // stamp (clients are refused "runId" metadata), so submit the way LiveStrategyRunSession does.
+        var submitResult = await SubmitAsPromotedLiveRunAsync(app, clientOrderId);
 
-        submitResponse.StatusCode.Should().Be(HttpStatusCode.Created);
-        using var submitJson = JsonDocument.Parse(await submitResponse.Content.ReadAsStringAsync());
-        submitJson.RootElement.GetProperty("success").GetBoolean().Should().BeTrue();
-        submitJson.RootElement.GetProperty("orderId").GetString().Should().Be(clientOrderId);
+        submitResult.Success.Should().BeTrue("the broker accepted the order; error: {0}", submitResult.ErrorMessage);
+        submitResult.OrderId.Should().Be(clientOrderId);
 
         var healthResponse = await client.GetAsync("/api/execution/health");
         healthResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -433,26 +417,9 @@ public sealed class ExecutionGovernanceEndpointsTests
         var client = app.GetTestClient();
         client.DefaultRequestHeaders.Add("X-Meridian-Actor", "ops");
 
-        var submitResponse = await client.PostAsync(
-            "/api/execution/orders/submit",
-            JsonContent(new
-            {
-                symbol = "AAPL",
-                side = 0,
-                type = 0,
-                timeInForce = 0,
-                quantity = 1,
-                strategyId = "strategy-live",
-                fundAccountId = LiveFundAccountId,
-                metadata = new Dictionary<string, string>
-                {
-                    ["runId"] = ApprovedLiveRunId
-                }
-            }));
+        var submitResult = await SubmitAsPromotedLiveRunAsync(app, clientOrderId: null);
 
-        submitResponse.StatusCode.Should().Be(HttpStatusCode.Created);
-        using var submitJson = JsonDocument.Parse(await submitResponse.Content.ReadAsStringAsync());
-        submitJson.RootElement.GetProperty("success").GetBoolean().Should().BeTrue();
+        submitResult.Success.Should().BeTrue("the broker accepted the order; error: {0}", submitResult.ErrorMessage);
 
         var healthResponse = await client.GetAsync("/api/execution/health");
         healthResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -501,6 +468,84 @@ public sealed class ExecutionGovernanceEndpointsTests
         }));
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Theory]
+    [InlineData("runId")]
+    [InlineData("RUNID")]
+    [InlineData("run_id")]
+    [InlineData("sessionId")]
+    [InlineData("session_id")]
+    [InlineData("orderOrigin")]
+    public async Task SubmitOrder_ClientSuppliesRunOrSessionAuthorityMetadata_ReturnsForbiddenBeforeOms(string key)
+    {
+        // A manual ticket carrying the promoted run's id used to pass the live readiness gate,
+        // which approves when the order's runId equals the promotion's target run. Run and session
+        // identity is server-owned: the ticket is refused before the OMS sees it.
+        var oms = Substitute.For<IOrderManager>();
+        await using var app = await CreateAppAsync(services => services.AddSingleton(oms));
+
+        var response = await app.GetTestClient().PostAsync("/api/execution/orders/submit", JsonContent(new
+        {
+            symbol = "AAPL",
+            side = 0,
+            type = 0,
+            quantity = 1,
+            strategyId = "strategy-live",
+            metadata = new Dictionary<string, string> { [key] = ApprovedLiveRunId }
+        }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        var result = JsonSerializer.Deserialize<OrderResult>(await response.Content.ReadAsStringAsync(), JsonOptions());
+        result.Should().NotBeNull();
+        result!.Success.Should().BeFalse();
+        await oms.DidNotReceive().PlaceOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task PreviewOrder_ClientSuppliesRunIdMetadata_ReturnsForbiddenBeforePreview()
+    {
+        var preview = Substitute.For<IOrderPreviewService>();
+        await using var app = await CreateAppAsync(services => services.AddSingleton(preview));
+
+        var response = await app.GetTestClient().PostAsync("/api/execution/orders/preview", JsonContent(new
+        {
+            symbol = "AAPL",
+            side = 0,
+            type = 0,
+            quantity = 1,
+            metadata = new Dictionary<string, string> { ["runId"] = ApprovedLiveRunId }
+        }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        await preview.DidNotReceive().PreviewAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task SubmitOrder_BrowserShapedTicket_ReachesOmsWithServerStampedIdentityOnly()
+    {
+        // The browser ticket (OrderSubmitRequest) sends no metadata; closing the run-authority path
+        // must not change its route to the OMS.
+        OrderRequest? forwarded = null;
+        var oms = Substitute.For<IOrderManager>();
+        oms.PlaceOrderAsync(Arg.Do<OrderRequest>(request => forwarded = request), Arg.Any<CancellationToken>())
+            .Returns(new OrderResult { Success = true, OrderId = "browser-ticket-1" });
+        await using var app = await CreateAppAsync(services => services.AddSingleton(oms));
+
+        var response = await app.GetTestClient().PostAsync("/api/execution/orders/submit", JsonContent(new
+        {
+            clientOrderId = "browser-ticket-1",
+            symbol = "AAPL",
+            side = 0,
+            type = 1,
+            quantity = 1,
+            limitPrice = 190.25m
+        }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        forwarded.Should().NotBeNull();
+        forwarded!.Metadata.Should().ContainKey("actor");
+        forwarded.Metadata.Should().NotContainKeys("runId", "sessionId");
     }
 
     [Fact]
@@ -683,6 +728,29 @@ public sealed class ExecutionGovernanceEndpointsTests
         }
         return app;
     }
+
+    /// <summary>
+    /// Submits a live order the way LiveStrategyRunSession does: server-side, with the promoted
+    /// run's id stamped into metadata. Clients cannot supply that id through the REST ticket.
+    /// </summary>
+    private static Task<OrderResult> SubmitAsPromotedLiveRunAsync(WebApplication app, string? clientOrderId) =>
+        app.Services.GetRequiredService<IOrderManager>().PlaceOrderAsync(new OrderRequest
+        {
+            ClientOrderId = clientOrderId,
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            TimeInForce = TimeInForce.Day,
+            Quantity = 1,
+            StrategyId = "strategy-live",
+            FundAccountId = LiveFundAccountId,
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["actor"] = "ops",
+                ["runId"] = ApprovedLiveRunId,
+                ["correlationId"] = ApprovedLiveRunId
+            }
+        });
 
     private static void ConfigureReadyBrokerage(BrokerageConfiguration config, string gatewayId)
     {
