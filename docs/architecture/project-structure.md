@@ -57,7 +57,8 @@ tests, automation, docs, design-system assets, and generated artifacts.
 `Meridian.sln`. It holds two things:
 
 - `dashboard/` - the browser workstation source (npm/Vite).
-- `wwwroot/workstation/` - the tracked bundle the dashboard build writes.
+- `wwwroot/workstation/` - the bundle the dashboard build writes. It is gitignored; CI builds it
+  from `dashboard/`.
 
 The `src/Meridian/` host serves that bundle. `Meridian.csproj` links `..\Meridian.Ui\wwwroot\**`
 as content and copies it beside the executable; `UiServer.cs` and `WorkstationAssetTree.cs` in
