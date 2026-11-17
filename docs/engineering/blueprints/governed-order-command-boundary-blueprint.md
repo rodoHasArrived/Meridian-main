@@ -549,9 +549,10 @@ between preflight and dispatch using the same hook pattern as the existing opera
 - [x] Note the change in `src/Meridian.Execution/README.md`
 
 ### Phase 1: Types and factory
-- [ ] Add the SDK types (`OrderCommandOrigin`, `OrderSubmissionAuthority`, commands, `ExecutionAccountGrant`, `AuthorityDecisionSummary`) and their source-generated JSON context
-- [ ] Add the `IOrderManager` default-implemented members
-- [ ] `OrderManagementSystemFactory`; replace both composition sites; composition test
+- [x] Add the SDK types (`OrderCommandOrigin`, `OrderSubmissionAuthority`, the three commands, `ExecutionAccountGrant` with `ExecutionAccountGrantSources`, `AuthorityDecisionSummary`) in `src/Meridian.Execution.Sdk/OrderCommandAuthority.cs`, with `OrderSubmissionAuthorityTests`. The authority, grant, and commands are sealed classes, not records, so a `with` expression cannot bypass the factory validation. `Unattributed` is public: the shim in `Meridian.Execution` needs it, and the SDK grants no `InternalsVisibleTo`.
+- [ ] **Moved to Phase 3:** the source-generated JSON context for persisted authority. Only the journal and escalation queue persist authority, and both arrive in Phase 3. Adding a restore path now would create an unused second way to construct authority.
+- [ ] **Moved to Phase 2:** the `IOrderManager` command members. The design's default `SubmitAsync` throws `NotSupportedException`, so adding it before the OMS implements it would put a member on the production OMS that always throws. It lands with the OMS implementation in Phase 2.
+- [x] `OrderManagementSystemFactory` with `OrderManagementSystemComposition` (`BrokerageExecution`, `HostedWorkstation`), replacing both composition sites, with `OrderManagementSystemFactoryTests`. The two hand-written compositions differed, and the factory keeps each difference by name: the hosted workstation requires `IRiskValidator`, `IPortfolioState`, and `OrderManagementSystemOptions` and wires `PaperSessionPersistenceService`; the library composition leaves the first three optional and does not wire session persistence.
 
 ### Phase 2: Resolver at preflight
 - [ ] `OrderAuthorityResolver` and `OrderAuthorityOptions`; move readiness and Security Master from `OrderAdmissionPolicy`

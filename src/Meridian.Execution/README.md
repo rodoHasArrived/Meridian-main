@@ -231,6 +231,15 @@ passing the OMS instance as a general callback target.
 
 `OrderExecutionAudit` sanitizes order IDs in diagnostic logs while retaining the original IDs in durable audit records.
 
+`OrderManagementSystemFactory` is the only place that builds the OMS from a service provider. Both
+hosts use it: `AddBrokerageExecution` with `OrderManagementSystemComposition.BrokerageExecution`
+(risk validator, portfolio state, and options optional; no paper-session persistence) and the
+workstation `UiServer` with `HostedWorkstation` (all three required; paper-session persistence
+wired). New OMS dependencies are wired there once. `OrderSubmissionAuthority` and the order command
+types in `Meridian.Execution.Sdk` define typed order authority for the governed order command
+boundary; the OMS does not consume them yet (see
+`docs/engineering/blueprints/governed-order-command-boundary-blueprint.md`).
+
 The shared broker-report gate still serializes live callbacks, explicit recovery, amendment
 resolution, and retention. Amendment preparation keeps original/proposed snapshot identity and
 broker outcome evidence distinct from the expected-entry comparison used for removal. Recovery

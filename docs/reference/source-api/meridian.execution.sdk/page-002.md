@@ -6,6 +6,70 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ExecutionAccountGrant
+
+Qualified name: <code>Meridian.Execution.Sdk.ExecutionAccountGrant</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:47](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L47).
+
+Proof, resolved at the edge where the principal is known, that an actor may route orders for one fund account. The OMS verifies that the grant is present, names the order&#x27;s account, and is fresh enough; it does not resolve identity itself.
+
+```csharp
+public sealed class ExecutionAccountGrant
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ExecutionAccountGrant(Guid fundAccountId, string grantedTo, string source, DateTimeOffset resolvedAt);</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:49](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L49) |  |
+| <code>public Guid FundAccountId { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:63](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L63) | The fund account the grant covers. |
+| <code>public string GrantedTo { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:66](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L66) | The actor the grant was resolved for. |
+| <code>public string Source { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:69](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L69) | How the grant was resolved; see ExecutionAccountGrantSources. |
+| <code>public DateTimeOffset ResolvedAt { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:72](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L72) | When the grant was resolved. The OMS bounds its age at dispatch. |
+
+## ExecutionAccountGrantSources
+
+Qualified name: <code>Meridian.Execution.Sdk.ExecutionAccountGrantSources</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:33](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L33).
+
+Well-known values for ExecutionAccountGrant.Source.
+
+```csharp
+public static class ExecutionAccountGrantSources
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string HttpPrincipal = &quot;http-principal&quot;;</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:36](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L36) | Resolved from the authenticated HTTP principal&#x27;s account-scoped access. |
+| <code>public const string StrategyRun = &quot;strategy-run&quot;;</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:39](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L39) | Derived from a strategy run&#x27;s retained fund account. |
+
+## ExecutionDiagnostics
+
+Qualified name: <code>Meridian.Execution.Sdk.ExecutionDiagnostics</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution.Sdk/Models.cs:281](../../../../src/Meridian.Execution.Sdk/Models.cs#L281).
+
+Normalized operational diagnostics derived from broker status/reject payloads.
+
+```csharp
+public sealed record ExecutionDiagnostics
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? BrokerStatus { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:283](../../../../src/Meridian.Execution.Sdk/Models.cs#L283) |  |
+| <code>public string? BrokerRejectReason { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:284](../../../../src/Meridian.Execution.Sdk/Models.cs#L284) |  |
+| <code>public string? RejectCode { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:285](../../../../src/Meridian.Execution.Sdk/Models.cs#L285) |  |
+| <code>public string? Category { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:286](../../../../src/Meridian.Execution.Sdk/Models.cs#L286) |  |
+| <code>public string? Severity { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:287](../../../../src/Meridian.Execution.Sdk/Models.cs#L287) |  |
+| <code>public string? RecommendedAction { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:288](../../../../src/Meridian.Execution.Sdk/Models.cs#L288) |  |
+
 ## ExecutionMode
 
 Qualified name: <code>Meridian.Execution.Sdk.ExecutionMode</code>. Kind: `enum`.
@@ -750,6 +814,26 @@ Declared public members:
 | <code>public string? TradingClass { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:129](../../../../src/Meridian.Execution.Sdk/Models.cs#L129) |  |
 | <code>public string? LocalSymbol { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:130](../../../../src/Meridian.Execution.Sdk/Models.cs#L130) |  |
 
+## OrderCancelCommand
+
+Qualified name: <code>Meridian.Execution.Sdk.OrderCancelCommand</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:294](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L294).
+
+A cancel command for one working order.
+
+```csharp
+public sealed class OrderCancelCommand
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public OrderCancelCommand(string orderId, OrderSubmissionAuthority authority);</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:296](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L296) |  |
+| <code>public string OrderId { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:303](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L303) |  |
+| <code>public OrderSubmissionAuthority Authority { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:305](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L305) |  |
+
 ## OrderCancellationIdentifier
 
 Qualified name: <code>Meridian.Execution.Sdk.OrderCancellationIdentifier</code>. Kind: `record struct`.
@@ -790,6 +874,29 @@ Source: [src/Meridian.Execution.Sdk/ExecutionWorkflows.cs:5](../../../../src/Mer
 ```csharp
 public sealed record OrderCheck(string Code, string Status, string Message);
 ```
+
+## OrderCommandOrigin
+
+Qualified name: <code>Meridian.Execution.Sdk.OrderCommandOrigin</code>. Kind: `enum`.
+
+Source: [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:11](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L11).
+
+Who or what originated an order command. Set by server-side callers through the OrderSubmissionAuthority factories; never read from client-supplied metadata.
+
+```csharp
+public enum OrderCommandOrigin
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unattributed</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:14](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L14) | Legacy IOrderManager.PlaceOrderAsync calls that carry no typed authority. |
+| <code>OperatorTicket</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:17](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L17) | A manual order ticket submitted by an authenticated operator. |
+| <code>PositionAction</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:20](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L20) | A close or upsize action an operator took on an existing position. |
+| <code>EscalationRelease</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:23](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L23) | A risk-escalated order released by an approver; carries the parked authority. |
+| <code>StrategyRun</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:26](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L26) | An order generated by a running strategy (paper or live run). |
+| <code>KillSwitch</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:29](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L29) | A kill-switch cancellation. Cancel-only; never refused on authority. |
 
 ## OrderLeg
 
@@ -882,78 +989,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public decimal LimitPrice { get; }</code> | [src/Meridian.Execution.Sdk/ValidatedOrder.cs:123](../../../../src/Meridian.Execution.Sdk/ValidatedOrder.cs#L123) |  |
-
-## MarketStyle
-
-Qualified name: <code>Meridian.Execution.Sdk.OrderPricing.MarketStyle</code>. Kind: `class`.
-
-Source: [src/Meridian.Execution.Sdk/ValidatedOrder.cs:115](../../../../src/Meridian.Execution.Sdk/ValidatedOrder.cs#L115).
-
-```csharp
-public sealed class MarketStyle : OrderPricing
-```
-
-## StopLimit
-
-Qualified name: <code>Meridian.Execution.Sdk.OrderPricing.StopLimit</code>. Kind: `class`.
-
-Source: [src/Meridian.Execution.Sdk/ValidatedOrder.cs:132](../../../../src/Meridian.Execution.Sdk/ValidatedOrder.cs#L132).
-
-```csharp
-public sealed class StopLimit : OrderPricing
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public decimal StopPrice { get; }</code> | [src/Meridian.Execution.Sdk/ValidatedOrder.cs:140](../../../../src/Meridian.Execution.Sdk/ValidatedOrder.cs#L140) |  |
-| <code>public decimal LimitPrice { get; }</code> | [src/Meridian.Execution.Sdk/ValidatedOrder.cs:141](../../../../src/Meridian.Execution.Sdk/ValidatedOrder.cs#L141) |  |
-
-## StopMarket
-
-Qualified name: <code>Meridian.Execution.Sdk.OrderPricing.StopMarket</code>. Kind: `class`.
-
-Source: [src/Meridian.Execution.Sdk/ValidatedOrder.cs:126](../../../../src/Meridian.Execution.Sdk/ValidatedOrder.cs#L126).
-
-```csharp
-public sealed class StopMarket : OrderPricing
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public decimal StopPrice { get; }</code> | [src/Meridian.Execution.Sdk/ValidatedOrder.cs:129](../../../../src/Meridian.Execution.Sdk/ValidatedOrder.cs#L129) |  |
-
-## TrailingAmount
-
-Qualified name: <code>Meridian.Execution.Sdk.OrderPricing.TrailingAmount</code>. Kind: `class`.
-
-Source: [src/Meridian.Execution.Sdk/ValidatedOrder.cs:144](../../../../src/Meridian.Execution.Sdk/ValidatedOrder.cs#L144).
-
-```csharp
-public sealed class TrailingAmount : OrderPricing
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public decimal Amount { get; }</code> | [src/Meridian.Execution.Sdk/ValidatedOrder.cs:147](../../../../src/Meridian.Execution.Sdk/ValidatedOrder.cs#L147) |  |
-
-## TrailingPercentage
-
-Qualified name: <code>Meridian.Execution.Sdk.OrderPricing.TrailingPercentage</code>. Kind: `class`.
-
-Source: [src/Meridian.Execution.Sdk/ValidatedOrder.cs:150](../../../../src/Meridian.Execution.Sdk/ValidatedOrder.cs#L150).
-
-```csharp
-public sealed class TrailingPercentage : OrderPricing
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public decimal Percent { get; }</code> | [src/Meridian.Execution.Sdk/ValidatedOrder.cs:153](../../../../src/Meridian.Execution.Sdk/ValidatedOrder.cs#L153) |  |

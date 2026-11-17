@@ -819,6 +819,43 @@ Declared public members:
 | <code>public ValueTask DisposeAsync() =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystem.ExecutionReportSubscriptions.cs:87](../../../../src/Meridian.Execution/OrderManagementSystem.ExecutionReportSubscriptions.cs#L87) |  |
 | <code>public ValueTask FailAsync(Exception failure) =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystem.ExecutionReportSubscriptions.cs:94](../../../../src/Meridian.Execution/OrderManagementSystem.ExecutionReportSubscriptions.cs#L94) | Fails this authoritative consumer and closes OMS order admission. Consumers call this when a report they accepted cannot be delivered or durably accounted; merely disposing would remove the only consumer and allow later fills to pass without one. |
 
+## OrderManagementSystemComposition
+
+Qualified name: <code>Meridian.Execution.OrderManagementSystemComposition</code>. Kind: `enum`.
+
+Source: [src/Meridian.Execution/OrderManagementSystemFactory.cs:14](../../../../src/Meridian.Execution/OrderManagementSystemFactory.cs#L14).
+
+Which host is composing the OMS. The two hosts historically built it separately; their differences are kept exactly and named here so they cannot drift further.
+
+```csharp
+public enum OrderManagementSystemComposition
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>BrokerageExecution</code> | [src/Meridian.Execution/OrderManagementSystemFactory.cs:21](../../../../src/Meridian.Execution/OrderManagementSystemFactory.cs#L21) | BrokerageServiceRegistration.AddBrokerageExecution: library composition. Risk validator, portfolio state, and options are optional; paper-session persistence is not wired. |
+| <code>HostedWorkstation</code> | [src/Meridian.Execution/OrderManagementSystemFactory.cs:27](../../../../src/Meridian.Execution/OrderManagementSystemFactory.cs#L27) | The workstation host (UiServer): order routing is fail-closed, so the pre-trade risk validator, portfolio state, and options are required, and paper-session persistence is wired. |
+
+## OrderManagementSystemFactory
+
+Qualified name: <code>Meridian.Execution.OrderManagementSystemFactory</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/OrderManagementSystemFactory.cs:35](../../../../src/Meridian.Execution/OrderManagementSystemFactory.cs#L35).
+
+The single place that constructs OrderManagementSystem from a service provider. Every OMS dependency added later (for example the order authority resolver) is wired here once, so both hosts receive it.
+
+```csharp
+public static class OrderManagementSystemFactory
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static OrderManagementSystem Create(IServiceProvider services, OrderManagementSystemComposition composition);</code> | [src/Meridian.Execution/OrderManagementSystemFactory.cs:37](../../../../src/Meridian.Execution/OrderManagementSystemFactory.cs#L37) |  |
+
 ## OrderManagementSystemOptions
 
 Qualified name: <code>Meridian.Execution.OrderManagementSystemOptions</code>. Kind: `class`.
@@ -1132,24 +1169,4 @@ Result from a Security Master gate check for an order symbol.
 
 ```csharp
 public sealed record SecurityMasterGateResult(bool IsApproved, string? Reason = null);
-```
-
-## PaperFinancingApiJsonContext
-
-Qualified name: <code>Meridian.Execution.Serialization.PaperFinancingApiJsonContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Execution/Serialization/PaperFinancingApiJsonContext.cs:10](../../../../src/Meridian.Execution/Serialization/PaperFinancingApiJsonContext.cs#L10).
-
-```csharp
-public partial class PaperFinancingApiJsonContext : JsonSerializerContext
-```
-
-## PaperFinancingRequest
-
-Qualified name: <code>Meridian.Execution.Serialization.PaperFinancingRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Serialization/PaperFinancingApiJsonContext.cs:5](../../../../src/Meridian.Execution/Serialization/PaperFinancingApiJsonContext.cs#L5).
-
-```csharp
-public sealed record PaperFinancingRequest(DateOnly AccrualDate, decimal Amount, string SourceReference, string Rationale);
 ```

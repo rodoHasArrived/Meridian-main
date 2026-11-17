@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PaperFinancingApiJsonContext
+
+Qualified name: <code>Meridian.Execution.Serialization.PaperFinancingApiJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/Serialization/PaperFinancingApiJsonContext.cs:10](../../../../src/Meridian.Execution/Serialization/PaperFinancingApiJsonContext.cs#L10).
+
+```csharp
+public partial class PaperFinancingApiJsonContext : JsonSerializerContext
+```
+
+## PaperFinancingRequest
+
+Qualified name: <code>Meridian.Execution.Serialization.PaperFinancingRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Serialization/PaperFinancingApiJsonContext.cs:5](../../../../src/Meridian.Execution/Serialization/PaperFinancingApiJsonContext.cs#L5).
+
+```csharp
+public sealed record PaperFinancingRequest(DateOnly AccrualDate, decimal Amount, string SourceReference, string Rationale);
+```
+
 ## AccountDefinition
 
 Qualified name: <code>Meridian.Execution.Services.AccountDefinition</code>. Kind: `record`.
@@ -811,33 +831,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public OrderPreviewService(IExecutionGateway gateway, IOrderManager orders, IRiskValidator risk, IOrderMarketReferenceSource prices, ILogger&lt;OrderPreviewService&gt; logger, BrokerageConfiguration? configuration = null, ISecurityMasterGate? securityMaster = null, ExecutionOperatorControlService? controls = null, IPortfolioState? portfolio = null, IOrderSessionPolicy? sessions = null, TimeProvider? clock = null, IOrderInstrumentCoverageSource? coverage = null, ILiveOrderReadinessGate? liveReadiness = null);</code> | [src/Meridian.Execution/Services/OrderPreviewService.cs:23](../../../../src/Meridian.Execution/Services/OrderPreviewService.cs#L23) |  |
 | <code>public async Task&lt;OrderPreviewResult&gt; PreviewAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/OrderPreviewService.cs:41](../../../../src/Meridian.Execution/Services/OrderPreviewService.cs#L41) |  |
-
-## PaperLedgerIntegrityBreak
-
-Qualified name: <code>Meridian.Execution.Services.PaperLedgerIntegrityBreak</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/PaperLedgerIntegrityBreak.cs:4](../../../../src/Meridian.Execution/Services/PaperLedgerIntegrityBreak.cs#L4).
-
-A difference between the paper portfolio and its posted double-entry record.
-
-```csharp
-public sealed record PaperLedgerIntegrityBreak(string AccountId, string Check, decimal Expected, decimal Actual)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public decimal Difference =&gt; …;</code> | [src/Meridian.Execution/Services/PaperLedgerIntegrityBreak.cs:10](../../../../src/Meridian.Execution/Services/PaperLedgerIntegrityBreak.cs#L10) |  |
-
-## PaperSessionDetailDto
-
-Qualified name: <code>Meridian.Execution.Services.PaperSessionDetailDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1884](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1884).
-
-Detailed session DTO. TradingCosts is the session&#x27;s total explicit transaction cost (commission + fees + modeled slippage) across all fills.
-
-```csharp
-public sealed record PaperSessionDetailDto(PaperSessionSummaryDto Summary, IReadOnlyList<string> Symbols, ExecutionPortfolioSnapshotDto? Portfolio, IReadOnlyList<OrderState>? OrderHistory, int FillCount, int LedgerEntryCount, DateTimeOffset? LastFillAt, DateTimeOffset? LastOrderUpdatedAt, IReadOnlyList<ExecutionReport>? FillHistory = null, decimal TradingCosts = 0m, string? AccountingUnavailableReason = null);
-```

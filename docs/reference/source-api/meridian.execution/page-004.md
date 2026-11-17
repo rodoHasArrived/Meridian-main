@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PaperLedgerIntegrityBreak
+
+Qualified name: <code>Meridian.Execution.Services.PaperLedgerIntegrityBreak</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/PaperLedgerIntegrityBreak.cs:4](../../../../src/Meridian.Execution/Services/PaperLedgerIntegrityBreak.cs#L4).
+
+A difference between the paper portfolio and its posted double-entry record.
+
+```csharp
+public sealed record PaperLedgerIntegrityBreak(string AccountId, string Check, decimal Expected, decimal Actual)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal Difference =&gt; …;</code> | [src/Meridian.Execution/Services/PaperLedgerIntegrityBreak.cs:10](../../../../src/Meridian.Execution/Services/PaperLedgerIntegrityBreak.cs#L10) |  |
+
+## PaperSessionDetailDto
+
+Qualified name: <code>Meridian.Execution.Services.PaperSessionDetailDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1884](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1884).
+
+Detailed session DTO. TradingCosts is the session&#x27;s total explicit transaction cost (commission + fees + modeled slippage) across all fills.
+
+```csharp
+public sealed record PaperSessionDetailDto(PaperSessionSummaryDto Summary, IReadOnlyList<string> Symbols, ExecutionPortfolioSnapshotDto? Portfolio, IReadOnlyList<OrderState>? OrderHistory, int FillCount, int LedgerEntryCount, DateTimeOffset? LastFillAt, DateTimeOffset? LastOrderUpdatedAt, IReadOnlyList<ExecutionReport>? FillHistory = null, decimal TradingCosts = 0m, string? AccountingUnavailableReason = null);
+```
+
 ## PaperSessionFillAppendResult
 
 Qualified name: <code>Meridian.Execution.Services.PaperSessionFillAppendResult</code>. Kind: `record`.
@@ -826,7 +856,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.TradeFillLedgerPostingHostOptions</code>. Kind: `class`.
 
-Source: [src/Meridian.Execution/BrokerageServiceRegistration.cs:317](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L317).
+Source: [src/Meridian.Execution/BrokerageServiceRegistration.cs:284](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L284).
 
 Configuration-owned exact ledger scope for the production execution host. A period or book rollover requires updated values and a host restart so retained fills can never cross scopes.
 
@@ -838,25 +868,25 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string SectionKey = &quot;Execution:TradeFillLedgerPosting&quot;;</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:319](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L319) |  |
-| <code>public bool Enabled { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:321](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L321) |  |
-| <code>public Guid AggregateId { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:323](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L323) |  |
-| <code>public Guid PeriodId { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:325](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L325) |  |
-| <code>public Guid LedgerBookId { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:327](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L327) |  |
-| <code>public string AccountingPolicyId { get; set; } = &quot;execution-trade-fill&quot;;</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:329](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L329) |  |
-| <code>public string AccountingPolicyVersion { get; set; } = &quot;1&quot;;</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:331](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L331) |  |
-| <code>public long? ExpectedPeriodVersion { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:333](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L333) |  |
-| <code>public AutomatedTradeFillAccountingOptions? CanonicalAccounting { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:336](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L336) | Null retains the legacy journal-only scope. Set only after reviewed canonical opening-state cutover. |
-| <code>public int ChannelCapacity { get; set; } = 10_000;</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:338](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L338) |  |
-| <code>public TimeSpan? DrainTimeout { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:340](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L340) |  |
-| <code>public TimeSpan? CancellationTimeout { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:342](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L342) |  |
-| <code>public TradeFillLedgerPostingContext BuildContext();</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:344](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L344) |  |
+| <code>public const string SectionKey = &quot;Execution:TradeFillLedgerPosting&quot;;</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:286](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L286) |  |
+| <code>public bool Enabled { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:288](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L288) |  |
+| <code>public Guid AggregateId { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:290](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L290) |  |
+| <code>public Guid PeriodId { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:292](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L292) |  |
+| <code>public Guid LedgerBookId { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:294](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L294) |  |
+| <code>public string AccountingPolicyId { get; set; } = &quot;execution-trade-fill&quot;;</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:296](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L296) |  |
+| <code>public string AccountingPolicyVersion { get; set; } = &quot;1&quot;;</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:298](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L298) |  |
+| <code>public long? ExpectedPeriodVersion { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:300](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L300) |  |
+| <code>public AutomatedTradeFillAccountingOptions? CanonicalAccounting { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:303](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L303) | Null retains the legacy journal-only scope. Set only after reviewed canonical opening-state cutover. |
+| <code>public int ChannelCapacity { get; set; } = 10_000;</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:305](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L305) |  |
+| <code>public TimeSpan? DrainTimeout { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:307](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L307) |  |
+| <code>public TimeSpan? CancellationTimeout { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:309](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L309) |  |
+| <code>public TradeFillLedgerPostingContext BuildContext();</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:311](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L311) |  |
 
 ## TradeFillLedgerPostingOptions
 
 Qualified name: <code>Meridian.Execution.TradeFillLedgerPostingOptions</code>. Kind: `class`.
 
-Source: [src/Meridian.Execution/BrokerageServiceRegistration.cs:304](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L304).
+Source: [src/Meridian.Execution/BrokerageServiceRegistration.cs:271](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L271).
 
 Runtime controls for the explicit fill-to-ledger consumer.
 
@@ -868,6 +898,6 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public int ChannelCapacity { get; set; } = 10_000;</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:306](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L306) |  |
-| <code>public TimeSpan? DrainTimeout { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:308](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L308) |  |
-| <code>public TimeSpan? CancellationTimeout { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:310](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L310) |  |
+| <code>public int ChannelCapacity { get; set; } = 10_000;</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:273](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L273) |  |
+| <code>public TimeSpan? DrainTimeout { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:275](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L275) |  |
+| <code>public TimeSpan? CancellationTimeout { get; set; }</code> | [src/Meridian.Execution/BrokerageServiceRegistration.cs:277](../../../../src/Meridian.Execution/BrokerageServiceRegistration.cs#L277) |  |
