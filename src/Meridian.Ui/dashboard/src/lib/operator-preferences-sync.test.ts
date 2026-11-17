@@ -140,6 +140,29 @@ describe("startOperatorPreferenceSync", () => {
     stop();
   });
 
+  it("never sends the desktop's shortcut overrides, so the host keeps them", async () => {
+    const save = vi.fn(async (preferences: OperatorPreferenceValues) => hostWith(preferences));
+    const host = hostWith({
+      appearance: "system",
+      density: "default",
+      displayTimeZone: "UTC",
+      pageDescriptionsHidden: false,
+      keyBindings: null,
+      desktopKeyBindings: { Help: { isEnabled: false } }
+    });
+    const stop = startOperatorPreferenceSync({ operatorKey: OPERATOR, load: async () => host, save, debounceMs: 0 });
+    await settle();
+    expect(save).not.toHaveBeenCalled();
+
+    writeStoredAppearance("dark");
+    await vi.advanceTimersByTimeAsync(0);
+    await settle();
+
+    expect(save).toHaveBeenCalledTimes(1);
+    expect(save.mock.calls[0]![0]).not.toHaveProperty("desktopKeyBindings");
+    stop();
+  });
+
   it("saves the whole set once after a burst of operator changes", async () => {
     const save = vi.fn(async (preferences: OperatorPreferenceValues) => hostWith(preferences));
     const host = hostWith({ appearance: "system", density: "default", displayTimeZone: "UTC", pageDescriptionsHidden: false, keyBindings: null });

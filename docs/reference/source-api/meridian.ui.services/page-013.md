@@ -10,9 +10,9 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Ui.Services.Services.IDesktopPreferenceSurface</code>. Kind: `interface`.
 
-Source: [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:121](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L121).
+Source: [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:171](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L171).
 
-The desktop presentation preferences the host sync reads and writes: the shell theme and density. Implemented by the WPF shell over its theme service and desktop shell preferences.
+The desktop preferences the host sync reads and writes: the shell theme, density and keyboard shortcut overrides. Implemented by the WPF shell over its theme, desktop shell preference and keyboard shortcut services.
 
 ```csharp
 public interface IDesktopPreferenceSurface
@@ -22,11 +22,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>AppTheme Theme { get; }</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:123](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L123) |  |
-| <code>ShellDensityMode Density { get; }</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:125](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L125) |  |
-| <code>void ApplyTheme(AppTheme theme);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:127](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L127) |  |
-| <code>void ApplyDensity(ShellDensityMode density);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:129](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L129) |  |
-| <code>event EventHandler? PreferenceChanged;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:132](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L132) | Raised after the operator changes the theme or density on this desktop. |
+| <code>AppTheme Theme { get; }</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:173](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L173) |  |
+| <code>ShellDensityMode Density { get; }</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:175](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L175) |  |
+| <code>void ApplyTheme(AppTheme theme);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:177](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L177) |  |
+| <code>void ApplyDensity(ShellDensityMode density);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:179](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L179) |  |
+| <code>event EventHandler? PreferenceChanged;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:182](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L182) | Raised after the operator changes the theme or density on this desktop. |
+| <code>IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; ShortcutOverrides { get; }</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:185](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L185) | The shortcut overrides in effect on this desktop: each shortcut&#x27;s difference from its default. |
+| <code>void ApplyShortcutOverrides(IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; overrides);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:191](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L191) | Replaces this desktop&#x27;s shortcut overrides (empty restores every default) and keeps them in the local desktop preferences, so they still apply when the host cannot be reached. |
+| <code>event EventHandler? ShortcutOverridesChanged;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:194](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L194) | Raised after the operator rebinds, disables or resets a shortcut on this desktop. |
 
 ## InfoBarConstants
 
@@ -142,7 +145,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.Services.IOperatorPreferencesApi</code>. Kind: `interface`.
 
-Source: [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:78](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L78).
+Source: [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:127](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L127).
 
 Reads and replaces the signed-in operator&#x27;s presentation preferences on the host.
 
@@ -154,8 +157,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;OperatorPreferencesDto?&gt; GetAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:81](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L81) | The stored set, or null when the host could not be read (no session, older host, offline). |
-| <code>Task&lt;OperatorPreferencesDto?&gt; SaveAsync(OperatorPreferenceValuesDto preferences, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:84](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L84) | Replaces the stored set. Returns the saved set, or null when the save failed. |
+| <code>Task&lt;OperatorPreferencesDto?&gt; GetAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:130](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L130) | The stored set, or null when the host could not be read (no session, older host, offline). |
+| <code>Task&lt;OperatorPreferencesDto?&gt; SaveAsync(OperatorPreferenceValuesDto preferences, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:133](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L133) | Replaces the stored set. Returns the saved set, or null when the save failed. |
 
 ## IQualityArchiveStore
 
@@ -429,7 +432,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.Services.OperatorPreferencesApiClient</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:88](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L88).
+Source: [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:137](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L137).
 
 Desktop client for UiApiRoutes.WorkstationOperatorPreferences.
 
@@ -441,9 +444,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public OperatorPreferencesApiClient(ApiClientService apiClient);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:92](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L92) |  |
-| <code>public async Task&lt;OperatorPreferencesDto?&gt; GetAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:97](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L97) |  |
-| <code>public async Task&lt;OperatorPreferencesDto?&gt; SaveAsync(OperatorPreferenceValuesDto preferences, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:105](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L105) |  |
+| <code>public OperatorPreferencesApiClient(ApiClientService apiClient);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:141](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L141) |  |
+| <code>public async Task&lt;OperatorPreferencesDto?&gt; GetAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:146](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L146) |  |
+| <code>public async Task&lt;OperatorPreferencesDto?&gt; SaveAsync(OperatorPreferenceValuesDto preferences, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:154](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L154) |  |
 
 ## PeriodicRefreshScheduler
 

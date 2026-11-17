@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperatorTriageActivity
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageActivity</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:23](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L23).
+
+```csharp
+public sealed record OperatorTriageActivity(string CommandId, string ActorId, OperatorTriageAction Action, string Reason, DateTimeOffset OccurredAt, string? SubjectActorId = null, string? AssigneeId = null, DateTimeOffset? SnoozedUntil = null);
+```
+
 ## OperatorTriageBulkCommand
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageBulkCommand</code>. Kind: `record`.
@@ -693,14 +703,4 @@ An immutable assertion and its original declaration alongside a dated applicabil
 
 ```csharp
 public sealed record PreparerEvidenceAcknowledgmentDto(PreparerAttestationReceiptDto Receipt, SinglePrincipalDeclarationDto OriginalDeclaration, PreparerAttestationRevocationDto? Revocation, string Applicability);
-```
-
-## PrepareThreeWayAdjustmentRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.PrepareThreeWayAdjustmentRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:82](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L82).
-
-```csharp
-public sealed record PrepareThreeWayAdjustmentRequestDto(Guid LedgerBookId, Guid AccountingPeriodId, string OperationId, string CheckId, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] long ExpectedPeriodVersion, string EvidenceHash);
 ```

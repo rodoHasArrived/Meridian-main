@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingDeploymentCapabilityDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportingDeploymentCapabilityDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReportingDeploymentDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/ReportingDeploymentDtos.cs#L16).
+
+Sanitized capability and durability posture for the canonical reporting authority. This contract never exposes connection strings, destinations, credentials, or schema details.
+
+```csharp
+public sealed record ReportingDeploymentCapabilityDto(bool IsReady = default, bool DurableGovernance = default, bool DurableArtifacts = default, bool DurableReconciliationEvidence = default, bool DurableRuns = default, bool DurableScheduling = default, bool DurableDelivery = default, bool RecipientDestinationsConfigured = default, bool ClientDocumentsConfigured = default, bool MigrationsManaged = default, IReadOnlyList<ReportingDeploymentComponentDto> Components = default !, IReadOnlyList<string> BlockingReasons = default !);
+```
+
 ## ReportingDeploymentComponentDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportingDeploymentComponentDto</code>. Kind: `record`.
@@ -600,16 +612,4 @@ Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1777]
 
 ```csharp
 public sealed record ReportPackPublicationManifestDto(string ManifestId, string RetainedManifestPath, string EvidenceHash, string SignedOffBy, DateTimeOffset SignedOffAt, IReadOnlyList<ReportPackEvidenceLinkDto> EvidenceLinks, ReportBrandingThemeDto? BrandingTheme = null, string? SignedOffRole = null, string? SignOffReason = null, string? SignOffContext = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
-```
-
-## ReportPackPublishRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportPackPublishRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1790](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1790).
-
-Request payload for publishing an approved report pack into retained evidence storage.
-
-```csharp
-public sealed record ReportPackPublishRequestDto(string SignedOffBy, string EvidenceHash, string ManifestId, string RetainedManifestPath, IReadOnlyList<ReportPackEvidenceLinkDto> EvidenceLinks, string? Note = null, ReportBrandingThemeDto? BrandingTheme = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 ```

@@ -69,7 +69,44 @@ public sealed class DesktopOperatorPreferenceSyncTests
             Density = density;
             PreferenceChanged?.Invoke(this, EventArgs.Empty);
         }
+
+        public IReadOnlyDictionary<string, DesktopShortcutOverride> ShortcutOverrides { get; private set; } =
+            new Dictionary<string, DesktopShortcutOverride>();
+
+        public int ShortcutsApplied { get; private set; }
+
+        public event EventHandler? ShortcutOverridesChanged;
+
+        // Like the WPF surface, applying host overrides writes the local store, which reports a change.
+        public void ApplyShortcutOverrides(IReadOnlyDictionary<string, DesktopShortcutOverride> overrides)
+        {
+            ShortcutOverrides = overrides;
+            ShortcutsApplied++;
+            ShortcutOverridesChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        public void OperatorChangesShortcuts(IReadOnlyDictionary<string, DesktopShortcutOverride> overrides)
+        {
+            ShortcutOverrides = overrides;
+            ShortcutOverridesChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        public void HasLocalShortcuts(IReadOnlyDictionary<string, DesktopShortcutOverride> overrides) => ShortcutOverrides = overrides;
     }
+
+    private static readonly IReadOnlyDictionary<string, DesktopShortcutOverride> NoShortcuts =
+        new Dictionary<string, DesktopShortcutOverride>();
+
+    private static IReadOnlyDictionary<string, DesktopShortcutOverride> HelpDisabledAndDashboardOnCtrlShiftH() =>
+        new Dictionary<string, DesktopShortcutOverride>
+        {
+            ["Help"] = new(IsEnabled: false),
+            ["NavigateDashboard"] = new("H", "Control, Shift")
+        };
+
+    private static IReadOnlyDictionary<string, OperatorDesktopShortcutDto> HostShortcuts(
+        IReadOnlyDictionary<string, DesktopShortcutOverride> overrides)
+        => DesktopOperatorPreferenceMapping.ToHostShortcuts(overrides);
 
     private static OperatorPreferencesDto Host(OperatorPreferenceValuesDto values) => new(values, DateTimeOffset.Parse("2026-11-17T09:00:00Z"));
 
@@ -128,6 +165,140 @@ public sealed class DesktopOperatorPreferenceSyncTests
         await sync.StartAsync();
 
         applied.Should().ContainSingle().Which.Should().BeNull("null restores UTC");
+    }
+
+    [Fact]
+    public async Task StartAsync_AppliesTheHostsDesktopShortcutsWithoutSavingBack()
+    {
+        var api = new FakeApi
+        {
+            Stored = Host(new OperatorPreferenceValuesDto(DesktopKeyBindings: HostShortcuts(HelpDisabledAndDashboardOnCtrlShiftH())))
+        };
+        var surface = new FakeSurface();
+        surface.HasLocalShortcuts(new Dictionary<string, DesktopShortcutOverride> { ["Refresh"] = new(IsEnabled: false) });
+        using var sync = new DesktopOperatorPreferenceSync(api, surface, _ => { });
+
+        await sync.StartAsync();
+
+        surface.ShortcutOverrides.Should().BeEquivalentTo(HelpDisabledAndDashboardOnCtrlShiftH(), "the host set replaces this desktop's");
+        await Task.Delay(50);
+        api.Saves.Should().BeEmpty("applying host values is not an operator change");
+    }
+
+    [Fact]
+    public async Task StartAsync_AppliesAnEmptyHostSetAsEveryDefault()
+    {
+        var api = new FakeApi { Stored = Host(new OperatorPreferenceValuesDto(DesktopKeyBindings: HostShortcuts(NoShortcuts))) };
+        var surface = new FakeSurface();
+        surface.HasLocalShortcuts(HelpDisabledAndDashboardOnCtrlShiftH());
+        using var sync = new DesktopOperatorPreferenceSync(api, surface, _ => { });
+
+        await sync.StartAsync();
+
+        surface.ShortcutOverrides.Should().BeEmpty("another desktop reset every shortcut");
+        api.Saves.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task StartAsync_SeedsTheHostWithThisDesktopsShortcutsWhenItHasNone()
+    {
+        var api = new FakeApi { Stored = Host(new OperatorPreferenceValuesDto(Appearance: "dark", KeyBindings: new Dictionary<string, string> { ["command-palette"] = "Mod+P" })) };
+        var surface = new FakeSurface();
+        surface.HasLocalShortcuts(HelpDisabledAndDashboardOnCtrlShiftH());
+        using var sync = new DesktopOperatorPreferenceSync(api, surface, _ => { });
+
+        await sync.StartAsync();
+
+        surface.ShortcutsApplied.Should().Be(0);
+        var saved = api.Saves.Should().ContainSingle().Subject;
+        saved.DesktopKeyBindings.Should().BeEquivalentTo(HostShortcuts(HelpDisabledAndDashboardOnCtrlShiftH()));
+        saved.Appearance.Should().Be("dark");
+        saved.KeyBindings.Should().ContainKey("command-palette", "browser shortcut overrides are kept");
+    }
+
+    [Fact]
+    public async Task StartAsync_SavesNothingWhenNeitherSideHasDesktopShortcuts()
+    {
+        var api = new FakeApi { Stored = Host(new OperatorPreferenceValuesDto(Appearance: "dark")) };
+        using var sync = new DesktopOperatorPreferenceSync(api, new FakeSurface(), _ => { });
+
+        await sync.StartAsync();
+        await Task.Delay(50);
+
+        api.Saves.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ShortcutChange_SavesOnlyDesktopShortcutsAndKeepsEverythingElse()
+    {
+        var api = new FakeApi
+        {
+            Stored = Host(new OperatorPreferenceValuesDto(
+                Appearance: "dark",
+                Density: "spacious",
+                DisplayTimeZone: "Europe/London",
+                PageDescriptionsHidden: true,
+                KeyBindings: new Dictionary<string, string> { ["command-palette"] = "Mod+P" }))
+        };
+        var surface = new FakeSurface();
+        using var sync = new DesktopOperatorPreferenceSync(api, surface, _ => { });
+        await sync.StartAsync();
+        var before = api.Stored!.Preferences;
+
+        surface.OperatorChangesShortcuts(HelpDisabledAndDashboardOnCtrlShiftH());
+        await WaitForAsync(() => api.Saves.Count == 1);
+
+        var saved = api.Saves.Should().ContainSingle().Subject;
+        saved.DesktopKeyBindings.Should().BeEquivalentTo(HostShortcuts(HelpDisabledAndDashboardOnCtrlShiftH()));
+        saved.Should().BeEquivalentTo(
+            before with { DesktopKeyBindings = saved.DesktopKeyBindings },
+            "only the desktop shortcuts change");
+        saved.Density.Should().Be("spacious");
+        saved.KeyBindings.Should().ContainKey("command-palette");
+    }
+
+    [Fact]
+    public async Task ShortcutResetToDefaults_SavesAnEmptySetSoOtherDesktopsResetToo()
+    {
+        var api = new FakeApi { Stored = Host(new OperatorPreferenceValuesDto(DesktopKeyBindings: HostShortcuts(HelpDisabledAndDashboardOnCtrlShiftH()))) };
+        var surface = new FakeSurface();
+        using var sync = new DesktopOperatorPreferenceSync(api, surface, _ => { });
+        await sync.StartAsync();
+
+        surface.OperatorChangesShortcuts(NoShortcuts);
+        await WaitForAsync(() => api.Saves.Count == 1);
+
+        api.Saves.Should().ContainSingle().Which.DesktopKeyBindings.Should().NotBeNull().And.BeEmpty();
+    }
+
+    [Fact]
+    public async Task ThemeChange_DoesNotTouchTheHostsDesktopShortcuts()
+    {
+        var hostShortcuts = HostShortcuts(HelpDisabledAndDashboardOnCtrlShiftH());
+        var api = new FakeApi { Stored = Host(new OperatorPreferenceValuesDto(Appearance: "light", DesktopKeyBindings: hostShortcuts)) };
+        var surface = new FakeSurface();
+        using var sync = new DesktopOperatorPreferenceSync(api, surface, _ => { });
+        await sync.StartAsync();
+
+        surface.OperatorChangesTheme(AppTheme.Dark);
+        await WaitForAsync(() => api.Saves.Count == 1);
+
+        var saved = api.Saves.Should().ContainSingle().Subject;
+        saved.Appearance.Should().Be("dark");
+        saved.DesktopKeyBindings.Should().BeEquivalentTo(hostShortcuts);
+    }
+
+    [Fact]
+    public void ShortcutMapping_RoundTripsAndComparesByValue()
+    {
+        var host = DesktopOperatorPreferenceMapping.ToHostShortcuts(HelpDisabledAndDashboardOnCtrlShiftH());
+
+        host.Keys.Should().Equal("Help", "NavigateDashboard");
+        DesktopOperatorPreferenceMapping.ToDesktopShortcuts(host).Should().BeEquivalentTo(HelpDisabledAndDashboardOnCtrlShiftH());
+        DesktopOperatorPreferenceMapping.SameShortcuts(host, HostShortcuts(HelpDisabledAndDashboardOnCtrlShiftH())).Should().BeTrue();
+        DesktopOperatorPreferenceMapping.SameShortcuts(host, HostShortcuts(NoShortcuts)).Should().BeFalse();
+        DesktopOperatorPreferenceMapping.SameShortcuts(null, HostShortcuts(NoShortcuts)).Should().BeFalse("not stored differs from every default");
+        DesktopOperatorPreferenceMapping.SameShortcuts(null, null).Should().BeTrue();
     }
 
     [Fact]

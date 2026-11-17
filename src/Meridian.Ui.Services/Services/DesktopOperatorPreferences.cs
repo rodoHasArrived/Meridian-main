@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Contracts.Api;
@@ -51,6 +52,54 @@ public static class DesktopOperatorPreferenceMapping
             => currentHostDensity,
         _ => OperatorPreferenceVocabulary.DensityDefault
     };
+
+    /// <summary>The host form of the desktop's shortcut overrides, sorted by action id.</summary>
+    public static IReadOnlyDictionary<string, OperatorDesktopShortcutDto> ToHostShortcuts(
+        IReadOnlyDictionary<string, DesktopShortcutOverride> overrides)
+    {
+        ArgumentNullException.ThrowIfNull(overrides);
+        var host = new SortedDictionary<string, OperatorDesktopShortcutDto>(StringComparer.Ordinal);
+        foreach (var (actionId, shortcut) in overrides)
+        {
+            if (!string.IsNullOrWhiteSpace(actionId) && shortcut is not null)
+            {
+                host[actionId] = new OperatorDesktopShortcutDto(shortcut.Key, shortcut.Modifiers, shortcut.IsEnabled);
+            }
+        }
+
+        return host;
+    }
+
+    /// <summary>The desktop form of the host's desktop shortcut overrides.</summary>
+    public static IReadOnlyDictionary<string, DesktopShortcutOverride> ToDesktopShortcuts(
+        IReadOnlyDictionary<string, OperatorDesktopShortcutDto> host)
+    {
+        ArgumentNullException.ThrowIfNull(host);
+        var overrides = new Dictionary<string, DesktopShortcutOverride>(StringComparer.Ordinal);
+        foreach (var (actionId, shortcut) in host)
+        {
+            if (!string.IsNullOrWhiteSpace(actionId) && shortcut is not null)
+            {
+                overrides[actionId] = new DesktopShortcutOverride(shortcut.Key, shortcut.Modifiers, shortcut.IsEnabled);
+            }
+        }
+
+        return overrides;
+    }
+
+    /// <summary>True when two desktop shortcut override sets hold the same entries.</summary>
+    public static bool SameShortcuts(
+        IReadOnlyDictionary<string, OperatorDesktopShortcutDto>? left,
+        IReadOnlyDictionary<string, OperatorDesktopShortcutDto>? right)
+    {
+        if (left is null || right is null)
+        {
+            return left is null && right is null;
+        }
+
+        return left.Count == right.Count
+               && left.All(pair => right.TryGetValue(pair.Key, out var other) && other == pair.Value);
+    }
 
     /// <summary>
     /// Resolves an IANA display time zone with this machine's time zone data. False for a missing or
@@ -115,8 +164,9 @@ public sealed class OperatorPreferencesApiClient : IOperatorPreferencesApi
 }
 
 /// <summary>
-/// The desktop presentation preferences the host sync reads and writes: the shell theme and density.
-/// Implemented by the WPF shell over its theme service and desktop shell preferences.
+/// The desktop preferences the host sync reads and writes: the shell theme, density and keyboard
+/// shortcut overrides. Implemented by the WPF shell over its theme, desktop shell preference and
+/// keyboard shortcut services.
 /// </summary>
 public interface IDesktopPreferenceSurface
 {
@@ -130,17 +180,33 @@ public interface IDesktopPreferenceSurface
 
     /// <summary>Raised after the operator changes the theme or density on this desktop.</summary>
     event EventHandler? PreferenceChanged;
+
+    /// <summary>The shortcut overrides in effect on this desktop: each shortcut's difference from its default.</summary>
+    IReadOnlyDictionary<string, DesktopShortcutOverride> ShortcutOverrides { get; }
+
+    /// <summary>
+    /// Replaces this desktop's shortcut overrides (empty restores every default) and keeps them in the
+    /// local desktop preferences, so they still apply when the host cannot be reached.
+    /// </summary>
+    void ApplyShortcutOverrides(IReadOnlyDictionary<string, DesktopShortcutOverride> overrides);
+
+    /// <summary>Raised after the operator rebinds, disables or resets a shortcut on this desktop.</summary>
+    event EventHandler? ShortcutOverridesChanged;
 }
 
 /// <summary>
-/// Keeps the desktop shell's theme and density in step with the operator's host preferences, the
-/// same set the browser workstation syncs (<see cref="OperatorPreferencesDto"/>).
+/// Keeps the desktop shell's theme, density and keyboard shortcut overrides in step with the
+/// operator's host preferences, the same set the browser workstation syncs (<see cref="OperatorPreferencesDto"/>).
 /// <list type="bullet">
-/// <item>On start, the values the host holds are applied. Nothing is saved: the desktop does not
-/// persist its theme, so its startup theme is a default, not an operator choice.</item>
+/// <item>On start, the values the host holds are applied. Theme and density are not saved back: the
+/// desktop does not persist its theme, so its startup theme is a default, not an operator choice.</item>
+/// <item>Desktop shortcut overrides (<see cref="OperatorPreferenceValuesDto.DesktopKeyBindings"/>) held
+/// by the host replace this desktop's, including an empty set (every default). When the host has
+/// none yet, this desktop's own overrides are saved up, so the first desktop to sync seeds them.</item>
 /// <item>When the operator changes the theme or density here, the latest host set is re-read and
-/// saved with only the appearance and density replaced, so browser-only values (time zone,
-/// page descriptions, shortcut overrides, a <c>spacious</c> density) are kept.</item>
+/// saved with only the appearance and density replaced; a shortcut change likewise replaces only the
+/// desktop shortcut overrides. Browser-only values (time zone, page descriptions, browser shortcut
+/// overrides, a <c>spacious</c> density) are kept.</item>
 /// <item>When the host cannot be read at start (no session, an older host, offline), the desktop
 /// stays local for the run and saves nothing. A failed save keeps the local change.</item>
 /// </list>
@@ -198,6 +264,12 @@ public sealed class DesktopOperatorPreferenceSync : IDisposable
         ApplyHostValues(host.Preferences);
         _syncing = true;
         _surface.PreferenceChanged += OnPreferenceChanged;
+        _surface.ShortcutOverridesChanged += OnShortcutOverridesChanged;
+
+        if (host.Preferences.DesktopKeyBindings is null && _surface.ShortcutOverrides.Count > 0)
+        {
+            await SaveShortcutOverridesAsync(linked.Token).ConfigureAwait(false);
+        }
     }
 
     private void ApplyHostValues(OperatorPreferenceValuesDto values)
@@ -213,6 +285,14 @@ public sealed class DesktopOperatorPreferenceSync : IDisposable
             if (DesktopOperatorPreferenceMapping.ToShellDensity(values.Density) is { } density && density != _surface.Density)
             {
                 _surface.ApplyDensity(density);
+            }
+
+            if (values.DesktopKeyBindings is { } hostShortcuts
+                && !DesktopOperatorPreferenceMapping.SameShortcuts(
+                    hostShortcuts,
+                    DesktopOperatorPreferenceMapping.ToHostShortcuts(_surface.ShortcutOverrides)))
+            {
+                _surface.ApplyShortcutOverrides(DesktopOperatorPreferenceMapping.ToDesktopShortcuts(hostShortcuts));
             }
 
             ApplyDisplayTimeZone(values.DisplayTimeZone);
@@ -241,11 +321,44 @@ public sealed class DesktopOperatorPreferenceSync : IDisposable
         _ = SaveLocalChangeAsync(_lifetime.Token);
     }
 
+    private void OnShortcutOverridesChanged(object? sender, EventArgs e)
+    {
+        if (_applyingHostValues || Volatile.Read(ref _disposed) != 0)
+        {
+            return;
+        }
+
+        _ = SaveShortcutOverridesAsync(_lifetime.Token);
+    }
+
     /// <summary>
     /// Saves the current desktop theme and density into the operator's host set, keeping every other
     /// stored value. Exposed for tests; the sync calls it after each operator change.
     /// </summary>
-    public async Task SaveLocalChangeAsync(CancellationToken ct = default)
+    public Task SaveLocalChangeAsync(CancellationToken ct = default)
+        => SaveAsync(
+            current => current with
+            {
+                Appearance = DesktopOperatorPreferenceMapping.ToAppearance(_surface.Theme),
+                Density = DesktopOperatorPreferenceMapping.ToHostDensity(_surface.Density, current.Density)
+            },
+            ct);
+
+    /// <summary>
+    /// Saves this desktop's shortcut overrides into the operator's host set, keeping every other
+    /// stored value. Exposed for tests; the sync calls it after each shortcut change.
+    /// </summary>
+    public Task SaveShortcutOverridesAsync(CancellationToken ct = default)
+        => SaveAsync(
+            current => current with
+            {
+                DesktopKeyBindings = DesktopOperatorPreferenceMapping.ToHostShortcuts(_surface.ShortcutOverrides)
+            },
+            ct);
+
+    private async Task SaveAsync(
+        Func<OperatorPreferenceValuesDto, OperatorPreferenceValuesDto> change,
+        CancellationToken ct)
     {
         try
         {
@@ -266,12 +379,11 @@ public sealed class DesktopOperatorPreferenceSync : IDisposable
 
             var current = latest.Preferences;
             ApplyDisplayTimeZone(current.DisplayTimeZone);
-            var next = current with
-            {
-                Appearance = DesktopOperatorPreferenceMapping.ToAppearance(_surface.Theme),
-                Density = DesktopOperatorPreferenceMapping.ToHostDensity(_surface.Density, current.Density)
-            };
-            if (next.Appearance == current.Appearance && next.Density == current.Density && latest.UpdatedAt is not null)
+            var next = change(current);
+            if (next.Appearance == current.Appearance
+                && next.Density == current.Density
+                && DesktopOperatorPreferenceMapping.SameShortcuts(next.DesktopKeyBindings, current.DesktopKeyBindings)
+                && latest.UpdatedAt is not null)
             {
                 return;
             }
@@ -300,6 +412,7 @@ public sealed class DesktopOperatorPreferenceSync : IDisposable
         }
 
         _surface.PreferenceChanged -= OnPreferenceChanged;
+        _surface.ShortcutOverridesChanged -= OnShortcutOverridesChanged;
         _lifetime.Cancel();
         _lifetime.Dispose();
     }

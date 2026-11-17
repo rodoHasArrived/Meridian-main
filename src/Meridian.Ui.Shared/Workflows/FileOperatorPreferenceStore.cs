@@ -18,9 +18,11 @@ public interface IOperatorPreferenceStore
 /// <summary>
 /// JSON-backed store under Meridian's data root, keyed by tenant, company and user so one operator's
 /// preferences never reach another. Writes replace the operator's whole set through the snapshot
-/// store's atomic replace, like the default operating scope. Values are validated here so a client
-/// cannot store arbitrary text; clients still decode defensively because older hosts or other
-/// clients may hold values they do not recognise.
+/// store's atomic replace, like the default operating scope. The one exception is
+/// <see cref="OperatorPreferenceValuesDto.DesktopKeyBindings"/>: the desktop owns it, so a save that
+/// leaves it null keeps the stored set and a browser save never clears it. Values are validated here
+/// so a client cannot store arbitrary text; clients still decode defensively because older hosts or
+/// other clients may hold values they do not recognise.
 /// </summary>
 public sealed partial class FileOperatorPreferenceStore
     : JsonFileSnapshotStore<OperatorPreferenceSnapshot>, IOperatorPreferenceStore
@@ -30,6 +32,10 @@ public sealed partial class FileOperatorPreferenceStore
     private const int MaxKeyBindings = 32;
     private const int MaxKeyBindingIdLength = 64;
     private const int MaxKeyBindingComboLength = 64;
+    private const int MaxDesktopKeyBindings = 64;
+    private const int MaxDesktopActionIdLength = 64;
+    private const int MaxDesktopKeyLength = 32;
+    private const int MaxDesktopModifiersLength = 64;
 
     private static readonly HashSet<string> Appearances = new(OperatorPreferenceVocabulary.Appearances, StringComparer.Ordinal);
     private static readonly HashSet<string> Densities = new(OperatorPreferenceVocabulary.Densities, StringComparer.Ordinal);
@@ -71,18 +77,34 @@ public sealed partial class FileOperatorPreferenceStore
         return await UpdateSnapshotAsync(
                 snapshot =>
                 {
-                    var others = (snapshot.Operators ?? [])
+                    var operators = snapshot.Operators ?? [];
+                    var existing = operators.FirstOrDefault(item => string.Equals(item.OperatorKey, operatorKey, StringComparison.Ordinal));
+                    var values = KeepStoredDesktopKeyBindings(normalized, existing?.Preferences);
+                    var others = operators
                         .Where(item => !string.Equals(item.OperatorKey, operatorKey, StringComparison.Ordinal));
-                    var next = normalized is null
+                    var next = values is null
                         ? others.ToArray()
-                        : others.Append(new OperatorPreferenceRecord(operatorKey, normalized, updatedAt)).ToArray();
+                        : others.Append(new OperatorPreferenceRecord(operatorKey, values, updatedAt)).ToArray();
                     var result = new OperatorPreferencesDto(
-                        normalized ?? new OperatorPreferenceValuesDto(),
-                        normalized is null ? null : updatedAt);
+                        values ?? new OperatorPreferenceValuesDto(),
+                        values is null ? null : updatedAt);
                     return (new OperatorPreferenceSnapshot(SnapshotVersion, next), result);
                 },
                 ct)
             .ConfigureAwait(false);
+    }
+
+    // A save without desktop shortcut overrides (every browser save) keeps the desktop's stored set.
+    private static OperatorPreferenceValuesDto? KeepStoredDesktopKeyBindings(
+        OperatorPreferenceValuesDto? incoming,
+        OperatorPreferenceValuesDto? stored)
+    {
+        if (incoming?.DesktopKeyBindings is not null || stored?.DesktopKeyBindings is not { } kept)
+        {
+            return incoming;
+        }
+
+        return (incoming ?? new OperatorPreferenceValuesDto()) with { DesktopKeyBindings = kept };
     }
 
     /// <summary>
@@ -100,14 +122,21 @@ public sealed partial class FileOperatorPreferenceStore
         var density = OneOf(preferences.Density, Densities, nameof(preferences.Density));
         var timeZone = TimeZoneName(preferences.DisplayTimeZone);
         var keyBindings = KeyBindings(preferences.KeyBindings);
+        var desktopKeyBindings = DesktopKeyBindings(preferences.DesktopKeyBindings);
 
         if (appearance is null && density is null && timeZone is null
-            && preferences.PageDescriptionsHidden is null && keyBindings is null)
+            && preferences.PageDescriptionsHidden is null && keyBindings is null && desktopKeyBindings is null)
         {
             return null;
         }
 
-        return new OperatorPreferenceValuesDto(appearance, density, timeZone, preferences.PageDescriptionsHidden, keyBindings);
+        return new OperatorPreferenceValuesDto(
+            appearance,
+            density,
+            timeZone,
+            preferences.PageDescriptionsHidden,
+            keyBindings,
+            desktopKeyBindings);
     }
 
     private static string? OneOf(string? value, HashSet<string> allowed, string field)
@@ -182,6 +211,67 @@ public sealed partial class FileOperatorPreferenceStore
 
         return normalized;
     }
+
+    // Null stays null ("not sent"); an empty set is kept, because it means "every desktop shortcut on
+    // its default". Entries with no key, modifiers or enabled state carry nothing and are dropped.
+    private static IReadOnlyDictionary<string, OperatorDesktopShortcutDto>? DesktopKeyBindings(
+        IReadOnlyDictionary<string, OperatorDesktopShortcutDto>? bindings)
+    {
+        const string field = nameof(OperatorPreferenceValuesDto.DesktopKeyBindings);
+        if (bindings is null)
+        {
+            return null;
+        }
+
+        if (bindings.Count > MaxDesktopKeyBindings)
+        {
+            throw new ArgumentException($"{field} holds at most {MaxDesktopKeyBindings} entries.", field);
+        }
+
+        var normalized = new SortedDictionary<string, OperatorDesktopShortcutDto>(StringComparer.Ordinal);
+        foreach (var (id, shortcut) in bindings)
+        {
+            var trimmedId = id?.Trim() ?? string.Empty;
+            if (trimmedId.Length is 0 or > MaxDesktopActionIdLength || !DesktopActionIdPattern().IsMatch(trimmedId))
+            {
+                throw new ArgumentException(
+                    $"{field} ids must be letters and digits starting with a letter, at most {MaxDesktopActionIdLength} characters.",
+                    field);
+            }
+
+            var key = string.IsNullOrWhiteSpace(shortcut?.Key) ? null : shortcut.Key.Trim();
+            if (key is not null && (key.Length > MaxDesktopKeyLength || !DesktopKeyPattern().IsMatch(key)))
+            {
+                throw new ArgumentException($"{field} keys must be a key name of at most {MaxDesktopKeyLength} letters and digits.", field);
+            }
+
+            var modifiers = string.IsNullOrWhiteSpace(shortcut?.Modifiers) ? null : shortcut.Modifiers.Trim();
+            if (modifiers is not null && (modifiers.Length > MaxDesktopModifiersLength || !DesktopModifiersPattern().IsMatch(modifiers)))
+            {
+                throw new ArgumentException(
+                    $"{field} modifiers must be modifier names separated by commas, at most {MaxDesktopModifiersLength} characters.",
+                    field);
+            }
+
+            if (key is null && modifiers is null && shortcut?.IsEnabled is null)
+            {
+                continue;
+            }
+
+            normalized[trimmedId] = new OperatorDesktopShortcutDto(key, modifiers, shortcut?.IsEnabled);
+        }
+
+        return normalized;
+    }
+
+    [GeneratedRegex(@"^[A-Za-z][A-Za-z0-9]*$", RegexOptions.CultureInvariant)]
+    private static partial Regex DesktopActionIdPattern();
+
+    [GeneratedRegex(@"^[A-Za-z0-9]+$", RegexOptions.CultureInvariant)]
+    private static partial Regex DesktopKeyPattern();
+
+    [GeneratedRegex(@"^[A-Za-z]+(\s*,\s*[A-Za-z]+)*$", RegexOptions.CultureInvariant)]
+    private static partial Regex DesktopModifiersPattern();
 
     [GeneratedRegex(@"^(UTC|[A-Za-z]+(/[A-Za-z0-9_+\-]+){1,3})$", RegexOptions.CultureInvariant)]
     private static partial Regex TimeZonePattern();

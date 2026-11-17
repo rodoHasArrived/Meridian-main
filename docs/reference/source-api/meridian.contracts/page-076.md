@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationDataExportRecord
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationDataExportRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1139](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1139).
+
+Export row returned by the Data workspace bootstrap payload.
+
+```csharp
+public sealed record WorkstationDataExportRecord(string ExportId, string Profile, string Target, string Status, string Rows, string UpdatedAt);
+```
+
 ## WorkstationDataPayload
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationDataPayload</code>. Kind: `record`.
@@ -540,14 +552,4 @@ Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:482](../
 
 ```csharp
 public sealed record WorkstationReportWriterFilterPayload(string Field, string Operator, string? Value = null, string? Label = null);
-```
-
-## WorkstationReportWriterFormulaPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportWriterFormulaPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:477](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L477).
-
-```csharp
-public sealed record WorkstationReportWriterFormulaPayload(string Name, string Expression, string? Label = null);
 ```

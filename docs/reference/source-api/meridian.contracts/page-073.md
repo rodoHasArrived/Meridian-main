@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StorageTierSummaryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StorageTierSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:135](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L135).
+
+```csharp
+public sealed record StorageTierSummaryDto(string Tier, int FileCount, long TotalBytes);
+```
+
 ## StpProcessingState
 
 Qualified name: <code>Meridian.Contracts.Workstation.StpProcessingState</code>. Kind: `enum`.
@@ -683,16 +693,4 @@ Lineage timeline event grouped by canonical run identity.
 
 ```csharp
 public sealed record StrategyRunLineageTimelineEntry(string? CanonicalRunKey = null, string? ParentCanonicalRunKey = null, string? RunId = null, string? StrategyId = null, string? StrategyName = null, StrategyRunMode? Mode = null, StrategyRunStatus? Status = null, DateTimeOffset? EventTimestamp = null, StrategyRunLineageEventType? EventType = null, string? PromotionDecision = null, StrategyRunCrossModeTransitionMetadata? CrossModeTransition = null);
-```
-
-## StrategyRunLiveStatus
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunLiveStatus</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:66](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L66).
-
-Live-execution status fields attached to a running or recently completed live run. Surfaced on StrategyRunSummary and StrategyRunDetail when StrategyRunMode is Live.
-
-```csharp
-public sealed record StrategyRunLiveStatus(string BrokerId, string AccountId, bool IsConnected, bool IsSessionActive, int OpenOrderCount, int FillCount, decimal? RealizedPnl, decimal? UnrealizedPnl, DateTimeOffset? LastBrokerPollAt, string? ReconciliationBreakReason = null);
 ```

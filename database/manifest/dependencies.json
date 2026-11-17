@@ -19120,6 +19120,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OperatorDesktopShortcutDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.OperatorInboxDto"
     },
     {
@@ -52881,6 +52887,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OperatorPreferenceValuesDto",
+      "target": "contract:Meridian.Contracts.Workstation.OperatorDesktopShortcutDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.OperatorPreferencesDto",
       "target": "contract:Meridian.Contracts.Workstation.OperatorPreferenceValuesDto"
     },
@@ -68097,7 +68109,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "1184a48fbe5fc105841a5f94e65e17b3ef26a871e9a40d94e06f0dc8d62fe2b7",
+  "fingerprint": "ba6db1dede75ff823db65d040a43c12c6167bf0182e0663fa3825b2b535f7992",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -87268,6 +87280,12 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OperatorDesktopShortcutDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OperatorDesktopShortcutDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.OperatorInboxDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.OperatorInboxDto"
@@ -100001,11 +100019,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4209,
-    "contract_set_memberships": 5457,
-    "edges": 11312,
+    "contract_references": 4210,
+    "contract_set_memberships": 5458,
+    "edges": 11314,
     "foreign_keys": 208,
     "logical_references": 6,
-    "nodes": 5547
+    "nodes": 5548
   }
 }

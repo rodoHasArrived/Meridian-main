@@ -97,8 +97,62 @@ public sealed partial class WorkstationEndpointsTests
         {
             new OperatorPreferenceValuesDto(KeyBindings: Enumerable.Range(0, 33).ToDictionary(index => $"binding-{index}", _ => "Mod+K")),
             "KeyBindings"
+        },
+        { DesktopShortcuts(("navigate-dashboard", new OperatorDesktopShortcutDto(Key: "D"))), "DesktopKeyBindings" },
+        { DesktopShortcuts(("NavigateDashboard", new OperatorDesktopShortcutDto(Key: "Ctrl+D"))), "DesktopKeyBindings" },
+        { DesktopShortcuts(("NavigateDashboard", new OperatorDesktopShortcutDto(Modifiers: "Control; Shift"))), "DesktopKeyBindings" },
+        {
+            new OperatorPreferenceValuesDto(DesktopKeyBindings: Enumerable.Range(0, 65)
+                .ToDictionary(index => $"Action{index}", _ => new OperatorDesktopShortcutDto(IsEnabled: false))),
+            "DesktopKeyBindings"
         }
     };
+
+    private static OperatorPreferenceValuesDto DesktopShortcuts(params (string Id, OperatorDesktopShortcutDto Shortcut)[] entries)
+        => new(DesktopKeyBindings: entries.ToDictionary(entry => entry.Id, entry => entry.Shortcut));
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperatorPreferences_BrowserSaveKeepsTheDesktopShortcuts()
+    {
+        var store = NewOperatorPreferenceStore();
+        await using var app = await CreateAppAsync(services => services.AddSingleton<IOperatorPreferenceStore>(store),
+            currentUserPermissions: UserPermission.ViewTrades);
+        var client = app.GetTestClient();
+
+        // The desktop saves its shortcut overrides ...
+        (await client.PutAsJsonAsync(OperatorPreferencesPath, new OperatorPreferencesSaveRequest(new OperatorPreferenceValuesDto(
+            Appearance: "dark",
+            DesktopKeyBindings: new Dictionary<string, OperatorDesktopShortcutDto>
+            {
+                [" NavigateDashboard "] = new(" H ", "Control, Shift"),
+                ["Help"] = new(IsEnabled: false),
+                ["Refresh"] = new()
+            })))).StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // ... and a browser save, which never sends them, keeps them.
+        (await client.PutAsJsonAsync(OperatorPreferencesPath, new OperatorPreferencesSaveRequest(
+            new OperatorPreferenceValuesDto(Appearance: "light", KeyBindings: new Dictionary<string, string> { ["command-palette"] = "Mod+P" }))))
+            .StatusCode.Should().Be(HttpStatusCode.OK);
+
+        using (var saved = await ReadJsonAsync(client, OperatorPreferencesPath))
+        {
+            var preferences = saved.RootElement.GetProperty("preferences");
+            preferences.GetProperty("appearance").GetString().Should().Be("light");
+            var desktop = preferences.GetProperty("desktopKeyBindings");
+            desktop.EnumerateObject().Select(property => property.Name).Should().Equal("Help", "NavigateDashboard");
+            desktop.GetProperty("NavigateDashboard").GetProperty("key").GetString().Should().Be("H");
+            desktop.GetProperty("NavigateDashboard").GetProperty("modifiers").GetString().Should().Be("Control, Shift");
+            desktop.GetProperty("Help").GetProperty("isEnabled").GetBoolean().Should().BeFalse();
+        }
+
+        // A desktop reset is an empty set, which is kept rather than read as "nothing stored".
+        (await client.PutAsJsonAsync(OperatorPreferencesPath, new OperatorPreferencesSaveRequest(new OperatorPreferenceValuesDto(
+            DesktopKeyBindings: new Dictionary<string, OperatorDesktopShortcutDto>())))).StatusCode.Should().Be(HttpStatusCode.OK);
+        var reset = await store.GetAsync("tenant-test|tenant-test|ops-user");
+        reset.Preferences.DesktopKeyBindings.Should().NotBeNull().And.BeEmpty();
+        reset.UpdatedAt.Should().NotBeNull();
+        reset.Preferences.Appearance.Should().BeNull("a desktop save replaces the rest of the set like any other save");
+    }
 
     [Theory]
     [MemberData(nameof(InvalidOperatorPreferences))]
@@ -156,6 +210,10 @@ public sealed partial class WorkstationEndpointsTests
 
         preferences.DisplayTimeZone.Should().Be("Asia/Tokyo");
         preferences.KeyBindings.Should().ContainKey("keyboard-help").WhoseValue.Should().Be("F1");
+
+        await reopened.SetAsync("t|c|alice", DesktopShortcuts(("Help", new OperatorDesktopShortcutDto(IsEnabled: false))));
+        (await new FileOperatorPreferenceStore(root, NullLogger<FileOperatorPreferenceStore>.Instance).GetAsync("t|c|alice"))
+            .Preferences.DesktopKeyBindings.Should().ContainKey("Help").WhoseValue.IsEnabled.Should().BeFalse();
         (await reopened.GetAsync("t|c|bob")).Preferences.Should().Be(new OperatorPreferenceValuesDto());
     }
 }

@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportPackPublishRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportPackPublishRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1790](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1790).
+
+Request payload for publishing an approved report pack into retained evidence storage.
+
+```csharp
+public sealed record ReportPackPublishRequestDto(string SignedOffBy, string EvidenceHash, string ManifestId, string RetainedManifestPath, IReadOnlyList<ReportPackEvidenceLinkDto> EvidenceLinks, string? Note = null, ReportBrandingThemeDto? BrandingTheme = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
+```
+
 ## ReportPackRejectionMetadataDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportPackRejectionMetadataDto</code>. Kind: `record`.
@@ -616,14 +628,4 @@ Source: [src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:106](../../.
 
 ```csharp
 public sealed record ResearchWhatChangedItem(string ChangeId, string Title, string Summary, string Category, DateTimeOffset Timestamp, string RelativeTime, string? RunId = null);
-```
-
-## ResolveBreakCase
-
-Qualified name: <code>Meridian.Contracts.Workstation.ResolveBreakCase</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:27](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L27).
-
-```csharp
-public sealed record ResolveBreakCase(Guid WorkflowId, FundWorkflowCommandMetadata Metadata);
 ```

@@ -651,6 +651,8 @@ the host holds a record, missing shortcut overrides mean "none", so a reset in o
 the others. A failed read (no session, an older host, offline) leaves preferences browser-only for
 the visit and saves nothing; a failed save keeps the local value and retries with the next change.
 Last write wins across browsers. Fixture sessions stay browser-only. The values are display-only.
+The host set also carries the WPF desktop's shortcut overrides (`desktopKeyBindings`); the browser
+never applies or sends them, and the host keeps them when a browser save leaves them out.
 
 Every workspace overview opens with `PageHeading` (`components/ui/page-heading.tsx`): the page
 name, then an optional one-line purpose on its own line, then page actions. Write the purpose as

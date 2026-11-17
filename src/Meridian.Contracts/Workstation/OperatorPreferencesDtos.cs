@@ -33,12 +33,26 @@ public static class OperatorPreferenceVocabulary
 /// <param name="PageDescriptionsHidden">True when page and section descriptions sit behind an information icon.</param>
 /// <param name="KeyBindings">Browser workstation global shortcut overrides, keyed by binding id (for example
 /// <c>command-palette</c>), valued with the combo (for example <c>Mod+Shift+P</c>).</param>
+/// <param name="DesktopKeyBindings">WPF desktop shortcut overrides, keyed by desktop action id (for example
+/// <c>NavigateDashboard</c>). Owned by the desktop: a save that leaves this null keeps the stored set, so a
+/// browser save never clears it; an empty set means every desktop shortcut is on its default.</param>
 public sealed record OperatorPreferenceValuesDto(
     string? Appearance = null,
     string? Density = null,
     string? DisplayTimeZone = null,
     bool? PageDescriptionsHidden = null,
-    IReadOnlyDictionary<string, string>? KeyBindings = null);
+    IReadOnlyDictionary<string, string>? KeyBindings = null,
+    IReadOnlyDictionary<string, OperatorDesktopShortcutDto>? DesktopKeyBindings = null);
+
+/// <summary>
+/// One WPF desktop shortcut's difference from its default. Each value is optional: null keeps the
+/// default. <paramref name="Key"/> and <paramref name="Modifiers"/> use WPF enum names (for example
+/// <c>D</c> and <c>Control, Shift</c>) so this contract stays free of WPF types.
+/// </summary>
+public sealed record OperatorDesktopShortcutDto(
+    string? Key = null,
+    string? Modifiers = null,
+    bool? IsEnabled = null);
 
 /// <summary>The signed-in operator's stored presentation preferences and when they last changed.</summary>
 public sealed record OperatorPreferencesDto(

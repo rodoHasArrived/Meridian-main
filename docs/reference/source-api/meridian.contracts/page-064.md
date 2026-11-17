@@ -581,6 +581,18 @@ Enum declarations:
 | <code>Closed = 7</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:21](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L21) |  |
 | <code>Blocked = 8</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:22](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L22) |  |
 
+## OperatorDesktopShortcutDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperatorDesktopShortcutDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs:52](../../../../src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs#L52).
+
+One WPF desktop shortcut&#x27;s difference from its default. Each value is optional: null keeps the default. Key and Modifiers use WPF enum names (for example D and Control, Shift) so this contract stays free of WPF types.
+
+```csharp
+public sealed record OperatorDesktopShortcutDto(string? Key = null, string? Modifiers = null, bool? IsEnabled = null);
+```
+
 ## OperatorInboxDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorInboxDto</code>. Kind: `record`.
@@ -611,7 +623,7 @@ public sealed record OperatorInboxTriageDto(DateTimeOffset AsOf, string ActorId,
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorPreferencesDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs:44](../../../../src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs#L44).
+Source: [src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs:58](../../../../src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs#L58).
 
 The signed-in operator&#x27;s stored presentation preferences and when they last changed.
 
@@ -623,7 +635,7 @@ public sealed record OperatorPreferencesDto(OperatorPreferenceValuesDto Preferen
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorPreferencesSaveRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs:51](../../../../src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs#L51).
+Source: [src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs:65](../../../../src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs#L65).
 
 Replaces the signed-in operator&#x27;s presentation preferences as a whole. A null or empty set clears them.
 
@@ -635,12 +647,12 @@ public sealed record OperatorPreferencesSaveRequest(OperatorPreferenceValuesDto?
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorPreferenceValuesDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs:36](../../../../src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs#L36).
+Source: [src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs:39](../../../../src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs#L39).
 
 The signed-in operator&#x27;s presentation preferences, kept on the host so they follow the operator to another browser or machine. Every value is optional: null means &quot;no preference stored&quot;, and the client keeps its own default. Values are display-only and never change stored or ledger data.
 
 ```csharp
-public sealed record OperatorPreferenceValuesDto(string? Appearance = null, string? Density = null, string? DisplayTimeZone = null, bool? PageDescriptionsHidden = null, IReadOnlyDictionary<string, string>? KeyBindings = null);
+public sealed record OperatorPreferenceValuesDto(string? Appearance = null, string? Density = null, string? DisplayTimeZone = null, bool? PageDescriptionsHidden = null, IReadOnlyDictionary<string, string>? KeyBindings = null, IReadOnlyDictionary<string, OperatorDesktopShortcutDto>? DesktopKeyBindings = null);
 ```
 
 ## OperatorPreferenceVocabulary
@@ -722,13 +734,3 @@ Enum declarations:
 | <code>Acknowledge</code> | [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L6) |  |
 | <code>Snooze</code> | [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L6) |  |
 | <code>Unsnooze</code> | [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L6) |  |
-
-## OperatorTriageActivity
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageActivity</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:23](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L23).
-
-```csharp
-public sealed record OperatorTriageActivity(string CommandId, string ActorId, OperatorTriageAction Action, string Reason, DateTimeOffset OccurredAt, string? SubjectActorId = null, string? AssigneeId = null, DateTimeOffset? SnoozedUntil = null);
-```

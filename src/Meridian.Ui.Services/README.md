@@ -124,14 +124,18 @@ status joins and catalog deduplication. Aliases resolve to one canonical status 
 service field schema; ambiguous duplicate service rows remain unavailable. Status projections retain
 verification state and timestamp so callers can distinguish configured from verified credentials.
 
-`DesktopOperatorPreferenceSync` keeps the desktop theme and density in step with the operator's
-host preferences (`/api/workstation/operator/preferences`, the set the browser workstation syncs).
+`DesktopOperatorPreferenceSync` keeps the desktop theme, density and keyboard shortcut overrides in
+step with the operator's host preferences (`/api/workstation/operator/preferences`, the set the browser workstation syncs).
 `DesktopOperatorPreferenceMapping` maps the shared vocabulary to `AppTheme` and `ShellDensityMode`:
 `default` and `spacious` both show as Standard, and a desktop Standard save keeps a stored
 `spacious`. On start the host values are applied and nothing is saved, because the desktop does not
 persist its theme and its startup theme is a default rather than a choice. An operator change on the
 desktop re-reads the host set and saves it with only appearance and density replaced, so the time
-zone, page-descriptions setting and browser shortcut overrides are kept. A host that cannot be read at
+zone, page-descriptions setting and browser shortcut overrides are kept. Desktop shortcut overrides
+travel as `DesktopKeyBindings`: a host set (an empty set included) replaces this desktop's at start;
+when the host has none yet, this desktop's own overrides are saved up to seed it; and an operator
+rebind, toggle or reset saves only that set. `ToHostShortcuts`, `ToDesktopShortcuts` and
+`SameShortcuts` map and compare the two forms. A host that cannot be read at
 start leaves the desktop local for the run; a failed save keeps the local change and the next change
 retries. The display time zone is resolved with this machine's zone data at start and again whenever
 the desktop saves, and applied to the shared `DisplayTimeZone` (UTC when unset or unknown here).

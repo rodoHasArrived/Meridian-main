@@ -77,7 +77,8 @@
 - *Update 2026-11-17: implemented for theme and density. `OperatorPreferenceVocabulary` (Contracts)
   is the one vocabulary; `DesktopOperatorPreferenceSync` makes WPF read and save the host set, with
   `spacious` shown as Standard and kept on desktop saves. WPF timestamps now honour the display time
-  zone through `FormatHelpers.FormatDisplayTimestamp`. Not yet done: syncing WPF shortcut overrides.*
+  zone through `FormatHelpers.FormatDisplayTimestamp`, and WPF shortcut overrides sync through the
+  host preferences as `DesktopKeyBindings`, kept apart from the browser's shortcut overrides.*
 - **Effort:** Medium. **Impact:** High for the parity lane.
 
 ### Idea 3: Notifications & quiet-hours panel

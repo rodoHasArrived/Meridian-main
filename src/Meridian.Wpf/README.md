@@ -42,8 +42,11 @@ default chord. `KeyboardShortcutServicePersistenceTests`, `KeyboardShortcutServi
 The shell theme and density follow the operator's host preferences, the same set the browser
 workstation uses: `App.xaml.cs` starts `DesktopOperatorPreferenceSync` after the theme service is
 initialized (not in fixture mode) over `WpfDesktopPreferenceSurface`, which marshals host-applied
-theme changes onto the UI thread and reports only theme and density changes (shortcut overrides
-share the desktop shell preference store but stay per machine). Desktop timestamps that used to be
+theme changes onto the UI thread. It reports theme and density changes and shortcut override
+changes on separate events, so each save replaces only what changed. Shortcut overrides follow the
+operator too: host overrides are applied through `KeyboardShortcutService.ApplyOverrides` (entries
+it cannot apply are skipped) and written to the local desktop preferences, which stay the cache when
+the host cannot be reached. Desktop timestamps that used to be
 labelled UTC now go through `FormatHelpers.FormatDisplayTimestamp` (or `DisplayTimestampConverter` in
 XAML) and follow the operator's display time zone: "UTC" when unset, otherwise the local time with a
 `UTC±hh:mm` label. Open screens pick up a changed zone on their next refresh. Unlabelled local

@@ -441,7 +441,7 @@ Parameter passing follows the standard MVVM drill-in pattern: `NavigationService
 ### Saved shortcut overrides
 
 Changes made through `KeyboardShortcutService.UpdateShortcut` or `SetShortcutEnabled` are saved
-per machine with the other desktop shell preferences
+with the other desktop shell preferences
 (`%LOCALAPPDATA%\Meridian\desktop-shell-preferences.json`, via
 `SettingsConfigurationService.SetShortcutOverrides`) and reapplied at startup, where `App.xaml.cs`
 attaches the store. Only differences from the defaults are stored. At load, an override is skipped
@@ -449,6 +449,8 @@ when its action is not a default shortcut, its key or modifiers do not parse, it
 another shortcut, or it would leave Start/Stop Collector, Toggle Connection, or Delete Selected
 without Ctrl or Alt. Collisions are checked against the whole saved set, so a saved swap of two
 chords reapplies both; when two saved rebindings claim one chord the earlier entry keeps it.
+That local file is a cache: the overrides also follow the operator through the host preferences
+(see below).
 
 `KeyboardShortcutsPage` is the in-app editor, backed by `KeyboardShortcutsViewModel`. Each row
 offers **Rebind** (captures the next key chord; bare Ctrl/Shift/Alt/Win presses are ignored and
@@ -467,7 +469,19 @@ The shell theme and density come from the operator's host preferences
 the host holds are applied at startup; a desktop change saves only appearance and density and keeps
 the browser's other values. The browser's `spacious` density shows as Standard here and is not
 narrowed by a desktop save. With no reachable host (or in fixture mode) theme and density stay
-local; the theme then starts as Light as before. Desktop shortcut overrides remain per machine.
+local; the theme then starts as Light as before.
+
+### Shortcut overrides follow the operator
+
+Desktop shortcut overrides are saved with the operator's host preferences as `DesktopKeyBindings`,
+separate from the browser's shortcut overrides because the two clients have different actions and
+chord formats. At startup a host set replaces this desktop's, and an empty host set restores every
+default. When the host has no desktop set yet, this desktop's local overrides are saved up, so the
+first desktop to sync seeds the others. A rebind, toggle or reset in `KeyboardShortcutsPage` re-reads
+the host set and saves only the desktop shortcut overrides. Host overrides that this desktop cannot
+apply (an unknown action, an unparseable key, a colliding chord) are skipped, and the local
+`desktop-shell-preferences.json` keeps what applied, so the overrides still load offline. A browser
+save never clears them. Another desktop's change arrives at the next start; last write wins.
 
 ### Timestamps follow the display time zone
 
