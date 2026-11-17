@@ -121,4 +121,6 @@
 **Quick win (one day):** persist WPF shortcut overrides. *Update 2026-11-17: implemented —
 overrides now persist with the desktop shell preferences and reapply at startup, with the
 modifier guardrail from Idea 4 and a "Reset to defaults" button. Implementation found no in-app
-rebinding editor, so rebinding itself still needs one (see Idea 4).* Add an overrides dictionary to the `DesktopShellPreferences` record, save it through the existing `PersistDesktopShellPreferencesCore` (`SettingsConfigurationService.cs:557`), which already migrates legacy payloads, and add "Reset to defaults" on `KeyboardShortcutsPage`. No new endpoint needed.
+rebinding editor, so rebinding itself still needs one (see Idea 4). Update 2026-11-17 (later):
+the in-app rebinding editor on `KeyboardShortcutsPage` now captures chords, toggles and resets
+individual shortcuts, and refuses guarded or conflicting chords inline.* Add an overrides dictionary to the `DesktopShellPreferences` record, save it through the existing `PersistDesktopShellPreferencesCore` (`SettingsConfigurationService.cs:557`), which already migrates legacy payloads, and add "Reset to defaults" on `KeyboardShortcutsPage`. No new endpoint needed.
