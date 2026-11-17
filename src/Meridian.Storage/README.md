@@ -1636,9 +1636,11 @@ journal without scanning unrelated metadata. No projection-event-to-journal link
 schema, or new route is introduced.
 `LedgerJournalEntryQuery.FillId` and `.OrderId` find postings by the execution identifiers their
 metadata recorded: `fillId` exactly, and an order through the `source.orderId` tag or, for a GUID
-identifier, the `orderId` field. These read `journal_entries.metadata` JSON without an index, so
-callers bound them by book (the execution-lineage route always does); add an expression index if
-volumes require it.
+identifier, the `orderId` field. Migration `V_ledger_073` adds partial expression indexes on exactly
+those three metadata expressions (only postings that recorded the identifier are indexed), so the
+lookup does not scan unrelated metadata; callers still bound it by book (the execution-lineage route
+always does). The filter SQL and the index expressions must stay textually identical for the planner
+to use them.
 Approved typed posting commands stamp command, approval, source-event, Security Master, book
 position, projection model/run/event, and selected rule-pack/rule identities into normalized journal
 metadata while retaining typed evidence and line dimensions. Conflicting pre-existing command-owned

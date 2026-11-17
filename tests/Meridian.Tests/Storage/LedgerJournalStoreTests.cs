@@ -320,6 +320,31 @@ public sealed class LedgerJournalStoreTests
             .Sql.Should().BeEmpty();
     }
 
+    [Fact]
+    public void ExecutionLineageFilter_ComparesExactlyTheExpressionsMigration073Indexes()
+    {
+        // The partial expression indexes are used only when the filter compares the identical expression.
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        string? migrationPath = null;
+        while (directory is not null && migrationPath is null)
+        {
+            var candidate = Path.Combine(directory.FullName, "src", "Meridian.Storage", "Ledger", "Migrations",
+                "V_ledger_073__journal_execution_lineage_indexes.sql");
+            migrationPath = File.Exists(candidate) ? candidate : null;
+            directory = directory.Parent;
+        }
+        migrationPath.Should().NotBeNull("the execution-lineage index migration ships with the store");
+        var migration = File.ReadAllText(migrationPath!);
+
+        var sql = PostgresLedgerJournalStore.BuildExecutionLineageFilter(new LedgerJournalEntryQuery(FillId: Guid.NewGuid())).Sql
+            + PostgresLedgerJournalStore.BuildExecutionLineageFilter(new LedgerJournalEntryQuery(OrderId: Guid.NewGuid().ToString())).Sql;
+        foreach (var expression in new[] { "metadata ->> 'fillId'", "metadata -> 'tags' ->> 'source.orderId'", "metadata ->> 'orderId'" })
+        {
+            sql.Should().Contain($"je_filter.{expression} =");
+            migration.Should().Contain($"(({expression}))").And.Contain($"where ({expression}) is not null");
+        }
+    }
+
     [LedgerDatabaseFact]
     [Trait("Category", "Integration")]
     public async Task QueryAsync_ExecutionLineageFindsPostingsByRecordedFillAndOrderWithinBookAndTenant()

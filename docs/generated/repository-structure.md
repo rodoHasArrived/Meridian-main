@@ -8267,7 +8267,8 @@ Meridian-main
 │   │   │   │   ├── V_ledger_069__automated_posting_grants.sql
 │   │   │   │   ├── V_ledger_070__automatic_policy_snapshot.sql
 │   │   │   │   ├── V_ledger_071__fee_economic_identity.sql
-│   │   │   │   └── V_ledger_072__onboarding_workspaces.sql
+│   │   │   │   ├── V_ledger_072__onboarding_workspaces.sql
+│   │   │   │   └── V_ledger_073__journal_execution_lineage_indexes.sql
 │   │   │   ├── AccountingPostingCommandFingerprintJsonContext.cs
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── AtomicTaxLotJournalFingerprint.cs
