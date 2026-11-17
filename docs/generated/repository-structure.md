@@ -9734,6 +9734,7 @@ Meridian-main
 │   │   │   │   │   ├── private-capital-notice-intent.ts
 │   │   │   │   │   ├── provider-credential-scope.test.ts
 │   │   │   │   │   ├── provider-credential-scope.ts
+│   │   │   │   │   ├── provider-history-link.ts
 │   │   │   │   │   ├── provider-integration-setup-validation.test.ts
 │   │   │   │   │   ├── provider-integration-setup-validation.ts
 │   │   │   │   │   ├── provider-integration-workbench.ts
@@ -9861,6 +9862,7 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.account-close-prices.tsx
 │   │   │   │   │   ├── accounting-screen.account-oversight.test.tsx
 │   │   │   │   │   ├── accounting-screen.account-oversight.tsx
+│   │   │   │   │   ├── accounting-screen.accounting-value.test.tsx
 │   │   │   │   │   ├── accounting-screen.accounting-value.tsx
 │   │   │   │   │   ├── accounting-screen.approvals-workstream.tsx
 │   │   │   │   │   ├── accounting-screen.approvals.ts
@@ -10072,6 +10074,7 @@ Meridian-main
 │   │   │   │   │   ├── data-screen.fixed-income-capabilities.test.tsx
 │   │   │   │   │   ├── data-screen.fixed-income-capabilities.tsx
 │   │   │   │   │   ├── data-screen.linked-context.ts
+│   │   │   │   │   ├── data-screen.operator-focus.test.ts
 │   │   │   │   │   ├── data-screen.operator-focus.ts
 │   │   │   │   │   ├── data-screen.plaid-institution-search.ts
 │   │   │   │   │   ├── data-screen.provider-accounting.test-fixtures.ts
@@ -10327,6 +10330,7 @@ Meridian-main
 │   │   │   │   │   ├── strategy-designer-screen.tsx
 │   │   │   │   │   ├── strategy-designer-screen.view-model.test.ts
 │   │   │   │   │   ├── strategy-designer-screen.view-model.ts
+│   │   │   │   │   ├── strategy-overview-hub.test.ts
 │   │   │   │   │   ├── strategy-overview-hub.tsx
 │   │   │   │   │   ├── strategy-run-ledger-screen.test.tsx
 │   │   │   │   │   ├── strategy-run-ledger-screen.tsx
