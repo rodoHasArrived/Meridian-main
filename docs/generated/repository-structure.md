@@ -5656,6 +5656,7 @@ Meridian-main
 │   │   │   ├── PluginBacktestStrategyLiveSource.cs
 │   │   │   └── StrategyPluginLoader.cs
 │   │   ├── Portfolio
+│   │   │   ├── FillRejectedException.cs
 │   │   │   ├── ICommissionModel.cs
 │   │   │   ├── LinkedListExtensions.cs
 │   │   │   ├── SimulatedPortfolio.CanonicalActions.cs
@@ -6873,9 +6874,6 @@ Meridian-main
 │   │   │   ├── FundAdministrationControlService.cs
 │   │   │   ├── FundAdministrationModels.cs
 │   │   │   ├── FundAdministrationRegisters.cs
-│   │   │   ├── PostgresRecurringJournalStore.cs
-│   │   │   ├── RecurringJournalDocumentRules.cs
-│   │   │   ├── RecurringJournalDocumentSession.cs
 │   │   │   └── RecurringJournalState.cs
 │   │   ├── Intercompany
 │   │   │   ├── FundStructureIntercompanyAccountingArrangementScopeAuthority.cs
@@ -8269,8 +8267,7 @@ Meridian-main
 │   │   │   │   ├── V_ledger_069__automated_posting_grants.sql
 │   │   │   │   ├── V_ledger_070__automatic_policy_snapshot.sql
 │   │   │   │   ├── V_ledger_071__fee_economic_identity.sql
-│   │   │   │   ├── V_ledger_072__onboarding_workspaces.sql
-│   │   │   │   └── V_ledger_073__recurring_journal_state.sql
+│   │   │   │   └── V_ledger_072__onboarding_workspaces.sql
 │   │   │   ├── AccountingPostingCommandFingerprintJsonContext.cs
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── AtomicTaxLotJournalFingerprint.cs
@@ -14485,7 +14482,6 @@ Meridian-main
 │   │   │   ├── QuotaEnforcementServiceTests.cs
 │   │   │   ├── RecurringJournalCalculationPostgresTests.cs
 │   │   │   ├── RecurringJournalPeriodAuthorityPostgresTests.cs
-│   │   │   ├── RecurringJournalPostgresStoreTests.cs
 │   │   │   ├── ReportingOperationalStoreTests.cs
 │   │   │   ├── RetainedDataQueryStoreTests.cs
 │   │   │   ├── SecurityEntitlementInventoryPostgresTests.cs
@@ -14536,6 +14532,7 @@ Meridian-main
 │   │   │   ├── LiveRunMetricsTrackerTests.cs
 │   │   │   ├── LiveStrategyBaseTests.cs
 │   │   │   ├── LiveStrategyCatalogFallbackTests.cs
+│   │   │   ├── LiveStrategyExecutionContextAccountTests.cs
 │   │   │   ├── LiveStrategyRunSessionCompletionTests.cs
 │   │   │   ├── LiveStrategyRunSessionFillPriceTests.cs
 │   │   │   ├── LiveTradingEngineTests.AuditCancellation.cs

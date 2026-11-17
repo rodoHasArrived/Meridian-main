@@ -348,6 +348,26 @@ public static partial class AtomicFileWriter
         Func<Stream, Task> appendAction,
         CancellationToken ct = default)
     {
+        // Each append copies the whole file and replaces it. Two concurrent appends to one path
+        // would both copy the same bytes and the second replace would drop the first's lines, so
+        // appends to one path are serialized in this process. Callers that also hold the JSONL
+        // archive gate take it first; this gate is innermost and never re-entered.
+        var appendGate = await AppendGate.EnterAsync(destinationPath, ct).ConfigureAwait(false);
+        try
+        {
+            await AppendCoreAsync(destinationPath, appendAction, ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            appendGate.Dispose();
+        }
+    }
+
+    private static async Task AppendCoreAsync(
+        string destinationPath,
+        Func<Stream, Task> appendAction,
+        CancellationToken ct)
+    {
         var directory = Path.GetDirectoryName(destinationPath);
         if (!string.IsNullOrEmpty(directory))
         {
@@ -659,6 +679,75 @@ public static partial class AtomicFileWriter
     // before the failure is reported. POSIX rename never fails for open handles, and EACCES there is
     // a real permission problem, so no retry applies off Windows.
     private const int ReplaceAttempts = 10;
+    /// <summary>One semaphore per full path while any append to it is pending; removed when idle.</summary>
+    private static class AppendGate
+    {
+        private static readonly StringComparer PathComparer =
+            OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+        private static readonly Dictionary<string, (SemaphoreSlim Semaphore, int References)> Gates = new(PathComparer);
+
+        public static async ValueTask<IDisposable> EnterAsync(string path, CancellationToken ct)
+        {
+            var key = Path.GetFullPath(path);
+            SemaphoreSlim semaphore;
+            lock (Gates)
+            {
+                if (Gates.TryGetValue(key, out var entry))
+                {
+                    semaphore = entry.Semaphore;
+                    Gates[key] = (semaphore, entry.References + 1);
+                }
+                else
+                {
+                    semaphore = new SemaphoreSlim(1, 1);
+                    Gates[key] = (semaphore, 1);
+                }
+            }
+
+            try
+            {
+                await semaphore.WaitAsync(ct).ConfigureAwait(false);
+            }
+            catch
+            {
+                Release(key, entered: false);
+                throw;
+            }
+
+            return new Lease(key);
+        }
+
+        private static void Release(string key, bool entered)
+        {
+            lock (Gates)
+            {
+                var entry = Gates[key];
+                if (entered)
+                    entry.Semaphore.Release();
+                if (entry.References == 1)
+                {
+                    Gates.Remove(key);
+                    entry.Semaphore.Dispose();
+                }
+                else
+                {
+                    Gates[key] = (entry.Semaphore, entry.References - 1);
+                }
+            }
+        }
+
+        private sealed class Lease(string key) : IDisposable
+        {
+            private int _released;
+
+            public void Dispose()
+            {
+                if (Interlocked.Exchange(ref _released, 1) == 0)
+                    Release(key, entered: true);
+            }
+        }
+    }
+
     private static readonly TimeSpan ReplaceRetryDelay = TimeSpan.FromMilliseconds(20);
 
     private static bool IsTransientReplaceFailure(Exception exception)

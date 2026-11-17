@@ -66,7 +66,7 @@ public static class IntercompanyAccrualEvidenceGuard
     /// counterpart delivery from mistaking the reversed original's counterpart for an existing booking.
     /// </summary>
     public static string TransactionId(DateOnly accrualFrom, DateOnly accrualTo, int generation = 0)
-        => $"{TransactionPrefix}{accrualFrom:yyyyMMdd}-{accrualTo:yyyyMMdd}"
+        => TransactionPrefix + FormattableString.Invariant($"{accrualFrom:yyyyMMdd}-{accrualTo:yyyyMMdd}")
             + (generation == 0 ? string.Empty : FormattableString.Invariant($"#g{generation}"));
 
     /// <summary>Recovers the half-open accrual window a retained transaction identity declares.</summary>
@@ -77,8 +77,8 @@ public static class IntercompanyAccrualEvidenceGuard
             return false;
         var parts = transactionId[TransactionPrefix.Length..].Split('#')[0].Split('-');
         return parts.Length == 2
-            && DateOnly.TryParseExact(parts[0], "yyyyMMdd", null, System.Globalization.DateTimeStyles.None, out accrualFrom)
-            && DateOnly.TryParseExact(parts[1], "yyyyMMdd", null, System.Globalization.DateTimeStyles.None, out accrualTo)
+            && DateOnly.TryParseExact(parts[0], "yyyyMMdd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out accrualFrom)
+            && DateOnly.TryParseExact(parts[1], "yyyyMMdd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out accrualTo)
             && accrualFrom < accrualTo;
     }
 

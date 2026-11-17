@@ -440,6 +440,24 @@ Declared public members:
 | <code>public IBacktestStrategy Instantiate(Type strategyType);</code> | [src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs:29](../../../../src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs#L29) | Creates an instance of the strategy type using its default constructor. |
 | <code>public IReadOnlyList&lt;StrategyParameterInfo&gt; GetParameters(Type strategyType) =&gt; …;</code> | [src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs:37](../../../../src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs#L37) | Returns &#91;StrategyParameter&#93;-decorated properties on the strategy type. |
 
+## FillRejectedException
+
+Qualified name: <code>Meridian.Backtesting.Portfolio.FillRejectedException</code>. Kind: `class`.
+
+Source: [src/Meridian.Backtesting/Portfolio/FillRejectedException.cs:9](../../../../src/Meridian.Backtesting/Portfolio/FillRejectedException.cs#L9).
+
+The simulated account refused a fill before changing any portfolio state (short selling or margin not permitted, or a fill canonical raw-price replay cannot represent). The engine discards such a fill and continues the run. Any other failure while applying a fill may leave the portfolio partly updated, so it is not caught and ends the run.
+
+```csharp
+public sealed class FillRejectedException : InvalidOperationException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FillRejectedException(string message) : base(message);</code> | [src/Meridian.Backtesting/Portfolio/FillRejectedException.cs:11](../../../../src/Meridian.Backtesting/Portfolio/FillRejectedException.cs#L11) |  |
+
 ## FixedCommissionModel
 
 Qualified name: <code>Meridian.Backtesting.Portfolio.FixedCommissionModel</code>. Kind: `class`.
