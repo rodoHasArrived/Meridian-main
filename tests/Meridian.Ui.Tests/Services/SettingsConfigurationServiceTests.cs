@@ -797,6 +797,157 @@ public sealed class SettingsConfigurationServiceTests
         }
     }
 
+    [Fact]
+    public void ShortcutOverrides_PersistAcrossReloadAndPreserveDensity()
+    {
+        var preferencesPath = NewDesktopPreferencesPath();
+
+        try
+        {
+            SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(preferencesPath);
+            var service = SettingsConfigurationService.Instance;
+            service.SetShellDensityMode(ShellDensityMode.Compact);
+
+            service.SetShortcutOverrides(new Dictionary<string, DesktopShortcutOverride>
+            {
+                // An operator moves Stop Collector off Ctrl+Shift+Q, which a remote-desktop
+                // client intercepts, and turns off the bare-F11 fullscreen toggle.
+                ["StopCollector"] = new("F12", "Control, Alt"),
+                ["ToggleFullscreen"] = new(IsEnabled: false)
+            });
+
+            // Simulate an app restart: the next read must come from disk.
+            SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(preferencesPath);
+            var reloaded = SettingsConfigurationService.Instance.GetDesktopShellPreferences();
+
+            reloaded.ShellDensityMode.Should().Be(ShellDensityMode.Compact);
+            reloaded.ShortcutOverrides.Should().HaveCount(2);
+            reloaded.ShortcutOverrides["StopCollector"].Should().Be(new DesktopShortcutOverride("F12", "Control, Alt"));
+            reloaded.ShortcutOverrides["ToggleFullscreen"].Should().Be(new DesktopShortcutOverride(IsEnabled: false));
+        }
+        finally
+        {
+            ResetDesktopPreferencesPath(preferencesPath);
+        }
+    }
+
+    [Fact]
+    public void SetShellDensityMode_KeepsPersistedShortcutOverrides()
+    {
+        var preferencesPath = NewDesktopPreferencesPath();
+
+        try
+        {
+            SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(preferencesPath);
+            var service = SettingsConfigurationService.Instance;
+            service.SetShortcutOverrides(new Dictionary<string, DesktopShortcutOverride>
+            {
+                ["RunBackfill"] = new("R", "Control, Shift")
+            });
+
+            service.SetShellDensityMode(ShellDensityMode.Compact);
+
+            SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(preferencesPath);
+            SettingsConfigurationService.Instance.GetShortcutOverrides()
+                .Should().ContainKey("RunBackfill")
+                .WhoseValue.Should().Be(new DesktopShortcutOverride("R", "Control, Shift"));
+        }
+        finally
+        {
+            ResetDesktopPreferencesPath(preferencesPath);
+        }
+    }
+
+    [Fact]
+    public void SetShortcutOverrides_EmptySetClearsOverridesAndRaisesChange()
+    {
+        var preferencesPath = NewDesktopPreferencesPath();
+        var service = SettingsConfigurationService.Instance;
+        var changes = new List<DesktopShellPreferences>();
+        void OnChanged(object? sender, DesktopShellPreferences preferences) => changes.Add(preferences);
+
+        try
+        {
+            SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(preferencesPath);
+            service.SetShortcutOverrides(new Dictionary<string, DesktopShortcutOverride>
+            {
+                ["Help"] = new(IsEnabled: false)
+            });
+            service.DesktopShellPreferencesChanged += OnChanged;
+
+            service.SetShortcutOverrides(new Dictionary<string, DesktopShortcutOverride>());
+            service.SetShortcutOverrides(new Dictionary<string, DesktopShortcutOverride>());
+
+            changes.Should().ContainSingle().Which.ShortcutOverrides.Should().BeEmpty();
+            File.ReadAllText(preferencesPath).Should().NotContain("shortcutOverrides");
+        }
+        finally
+        {
+            service.DesktopShellPreferencesChanged -= OnChanged;
+            ResetDesktopPreferencesPath(preferencesPath);
+        }
+    }
+
+    [Fact]
+    public void GetShortcutOverrides_LegacyFileWithoutOverridesReadsAsEmpty()
+    {
+        var preferencesPath = NewDesktopPreferencesPath();
+
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(preferencesPath)!);
+            File.WriteAllText(preferencesPath, """{"shellDensityMode":"Compact"}""");
+            SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(preferencesPath);
+
+            var preferences = SettingsConfigurationService.Instance.GetDesktopShellPreferences();
+
+            preferences.ShellDensityMode.Should().Be(ShellDensityMode.Compact);
+            preferences.ShortcutOverrides.Should().BeEmpty();
+        }
+        finally
+        {
+            ResetDesktopPreferencesPath(preferencesPath);
+        }
+    }
+
+    [Fact]
+    public void GetShortcutOverrides_SkipsNullAndBlankEntriesInHandEditedFile()
+    {
+        var preferencesPath = NewDesktopPreferencesPath();
+
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(preferencesPath)!);
+            File.WriteAllText(
+                preferencesPath,
+                """{"shellDensityMode":"Standard","shortcutOverrides":{"Help":{"isEnabled":false},"Save":null," ":{"key":"F2"}}}""");
+            SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(preferencesPath);
+
+            var overrides = SettingsConfigurationService.Instance.GetShortcutOverrides();
+
+            overrides.Should().ContainSingle()
+                .Which.Should().Be(new KeyValuePair<string, DesktopShortcutOverride>("Help", new(IsEnabled: false)));
+        }
+        finally
+        {
+            ResetDesktopPreferencesPath(preferencesPath);
+        }
+    }
+
+    private static string NewDesktopPreferencesPath() => Path.Combine(
+        Path.GetTempPath(),
+        "meridian-settings-tests",
+        $"{Guid.NewGuid():N}.desktop-shell-preferences.json");
+
+    private static void ResetDesktopPreferencesPath(string preferencesPath)
+    {
+        SettingsConfigurationService.SetDesktopPreferencesFilePathOverrideForTests(null);
+        if (File.Exists(preferencesPath))
+        {
+            File.Delete(preferencesPath);
+        }
+    }
+
     [Theory]
     [InlineData(true, ShellDensityMode.Compact)]
     [InlineData(false, ShellDensityMode.Standard)]
