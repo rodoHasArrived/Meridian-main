@@ -2,9 +2,12 @@ using Meridian.Application.FundStructure;
 using Meridian.Contracts.Calendars;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Services;
 using Meridian.Contracts.Tenancy;
+using Meridian.Entities.FundStructure;
 using Meridian.FinancialOperations.Intercompany;
 using Meridian.Ledger;
+using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Storage.FundStructure;
 using Meridian.Storage.Ledger;
 using Meridian.Tests.TestSupport;
@@ -17,9 +20,12 @@ namespace Meridian.Tests.Storage;
 /// Month-end interest on an intercompany loan, end to end over durable stores: the lender's book holds a
 /// posted drawdown, the governed accrual is drafted from approved terms, reviewed and posted, the retained
 /// proposal is delivered into the borrower's review queue, and the borrower posts its own side.
-/// The ledger, proposal outbox, account bindings, chart and book ownership are the PostgreSQL stores and the
-/// intercompany posting authority is the production class. The legal agreement registry, the accounting
-/// profile history, entity lifecycle and journal drafts are synthetic in-memory stand-ins.
+/// Every store is durable: the ledger, proposal outbox, account bindings, chart and book ownership in the ledger
+/// schema; the native legal agreement registry, accounting profile history, legal-entity graph and entity
+/// lifecycle history in a fund-structure schema of the same PostgreSQL database; and journal drafts in the file
+/// store the workstation host registers. The intercompany, legal-agreement and entity-lifecycle posting
+/// authorities are the production classes. Only the agreement access scope, the evidence vault, the profile
+/// scope authority and the fund-account read service are synthetic.
 /// </summary>
 [Trait("Category", "Integration")]
 public sealed class IntercompanyAccrualPostAndDeliverPostgresTests
@@ -29,12 +35,14 @@ public sealed class IntercompanyAccrualPostAndDeliverPostgresTests
     private const string LenderFund = "accrual-lender-fund";
     private const string BorrowerFund = "accrual-borrower-fund";
     private const string Transaction = "loan-interest:20260601-20260701";
+    private static readonly Guid Organization = Guid.Parse("d1111111-1111-1111-1111-111111111111");
     private static readonly Guid Lender = Guid.Parse("a1111111-1111-1111-1111-111111111111");
     private static readonly Guid Borrower = Guid.Parse("b1111111-1111-1111-1111-111111111111");
     private static readonly Guid LenderBook = Guid.Parse("a2222222-2222-2222-2222-222222222222");
     private static readonly Guid BorrowerBook = Guid.Parse("b2222222-2222-2222-2222-222222222222");
     private static readonly Guid PrincipalProfile = Guid.Parse("c1111111-1111-1111-1111-111111111111");
     private static readonly Guid InterestProfile = Guid.Parse("c3333333-3333-3333-3333-333333333333");
+    private static readonly DateTimeOffset Formed = new(2020, 1, 1, 0, 0, 0, TimeSpan.Zero);
     private static readonly DateTimeOffset ProfileStart = new(2026, 5, 1, 0, 0, 0, TimeSpan.Zero);
     private static readonly DateTimeOffset Reviewed = new(2026, 5, 2, 12, 0, 0, TimeSpan.Zero);
     private static readonly DateOnly From = new(2026, 6, 1);
@@ -44,7 +52,7 @@ public sealed class IntercompanyAccrualPostAndDeliverPostgresTests
     public async Task ReviewedAccrual_PostsAtSource_DeliversOneCounterpartDraft_AndPostsAtDestinationWithoutMirroringBack()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
-        var fixture = await SetupAsync(database);
+        await using var fixture = await SetupAsync(database);
         using var target = fixture.Target;
 
         // The lender advanced 1,000,000 on 15 May. The drawdown's own counterpart is delivered to the borrower
@@ -76,6 +84,11 @@ public sealed class IntercompanyAccrualPostAndDeliverPostgresTests
         var receivable = Assert.Single(sourceJournal.Entry.Lines, line => line.Dimensions?.ChartAccountNodeId == "a-int-recv");
         Assert.Equal((4166.67m, 0m), (receivable.Debit, receivable.Credit));
         Assert.Equal(Transaction, receivable.Dimensions!.IntercompanyTransactionId);
+        // The posted line pins the exact revision the native registry approved, not a fixture-built snapshot.
+        Assert.Equal((fixture.LegalRevision.AgreementId, fixture.LegalRevision.AgreementVersion),
+            (receivable.Dimensions.IntercompanyAgreementId, receivable.Dimensions.IntercompanyAgreementVersion));
+        Assert.Equal(ManualJournalEntryStatusDto.Posted,
+            (await fixture.ReopenDrafts().GetAsync(LenderFund, sourcePosted.JournalEntryId, default, Tenant, Company))!.Status);
 
         // Posting the source committed its proposal with the journal; the borrower's book is still untouched.
         var pending = Assert.Single(await fixture.Proposals.ListAsync(Tenant, LenderBook), item => item.Source.TransactionId == Transaction);
@@ -98,6 +111,10 @@ public sealed class IntercompanyAccrualPostAndDeliverPostgresTests
         Assert.Equal([("b-int-expense", AccountingTemplateLineSideDto.Debit, 4166.67m), ("b-int-pay", AccountingTemplateLineSideDto.Credit, 4166.67m)],
             counterpart.Lines.Select(line => (line.Dimensions!.ChartAccountNodeId!, line.Side, line.Amount)).OrderBy(line => line.Item1, StringComparer.Ordinal));
         Assert.Empty(await fixture.Journals.GetByPeriodAsync(fixture.BorrowerJune.PeriodId));
+        // The delivered draft is retained on disk, so a restarted host finds the same reviewable counterpart.
+        var reopened = (await fixture.ReopenDrafts().GetAsync(BorrowerFund, counterpart.JournalEntryId, default, Tenant, Company))!;
+        Assert.Equal((counterpart.Version, counterpart.Status, counterpart.IntercompanyProposalId, counterpart.IntercompanyProposalSourceDigest),
+            (reopened.Version, reopened.Status, reopened.IntercompanyProposalId, reopened.IntercompanyProposalSourceDigest));
 
         // The borrower reviews and posts its own side; the source preparer never touches the destination book.
         var destinationPosted = await fixture.ReviewAndPostAsync(counterpart, BorrowerFund, BorrowerBook, fixture.BorrowerJune,
@@ -121,9 +138,84 @@ public sealed class IntercompanyAccrualPostAndDeliverPostgresTests
         Assert.Contains(Transaction, again.Diagnostics[^1]);
     }
 
+    [LedgerDatabaseFact]
+    public async Task DeliveredCounterpart_ForABorrowerDissolvedInDurableLifecycleHistory_IsRefusedAndTheBorrowerBookStaysEmpty()
+    {
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        await using var fixture = await SetupAsync(database);
+        using var target = fixture.Target;
+        await fixture.Journals.AppendAsync(fixture.Drawdown(1_000_000m));
+        Assert.Equal(1, await fixture.Delivery.RunOnceAsync("worker"));
+        var request = new IntercompanyAccrualRequestDto(LenderBook, InterestProfile, PrincipalProfile, From, To);
+        var preview = await fixture.Accrual.PreviewAsync(Tenant, Company, "accrual-preparer", request);
+        var draft = await fixture.Accrual.CreateDraftAsync(Tenant, Company, "accrual-preparer", new(request, preview.EvidenceDigest!));
+        await fixture.ReviewAndPostAsync(draft, LenderFund, LenderBook, fixture.LenderJune, "accrual-preparer", "lender-reviewer");
+        Assert.Equal(1, await fixture.Delivery.RunOnceAsync("worker"));
+        var pending = Assert.Single(await fixture.Proposals.ListAsync(Tenant, LenderBook), item => item.Source.TransactionId == Transaction);
+        var delivered = (await fixture.Proposals.GetAsync(Tenant, pending.Source.ProposalId))!;
+        var counterpart = (await fixture.Drafts.GetAsync(BorrowerFund, delivered.TargetJournalId!.Value, default, Tenant, Company))!;
+
+        // The borrower was dissolved on 15 June, before the 30 June accrual date, in its retained lifecycle history.
+        await fixture.DissolveAsync(Borrower, new(2026, 6, 15, 0, 0, 0, TimeSpan.Zero));
+
+        var refusal = await Record.ExceptionAsync(() => fixture.ReviewAndPostAsync(counterpart, BorrowerFund, BorrowerBook, fixture.BorrowerJune,
+            counterpart.PreparedBy, "borrower-reviewer", "borrower-preparer"));
+
+        // The refusal is the production entity-lifecycle control reading the retained history, not any fixture rule.
+        var lifecycleRefusal = Assert.IsType<LedgerValidationException>(refusal);
+        Assert.Contains("Dissolved and merged entities are read-only", lifecycleRefusal.Message);
+        Assert.Contains("entity-lifecycle control", lifecycleRefusal.Message);
+        Assert.Empty(await fixture.Journals.GetByPeriodAsync(fixture.BorrowerJune.PeriodId));
+        Assert.NotEqual(ManualJournalEntryStatusDto.Posted,
+            (await fixture.ReopenDrafts().GetAsync(BorrowerFund, counterpart.JournalEntryId, default, Tenant, Company))!.Status);
+        // The lender's posted accrual is untouched by the borrower-side refusal.
+        Assert.Single(await fixture.Journals.GetByPeriodAsync(fixture.LenderJune.PeriodId));
+    }
+
     private static async Task<Fixture> SetupAsync(LedgerPostgresTestDatabase database)
     {
+        var structureOptions = new FundStructureStoreOptions
+        {
+            ConnectionString = database.Options.ConnectionString,
+            Schema = database.Options.SchemaName + "_accrual_structure"
+        };
+        var draftPath = Path.Combine(Path.GetTempPath(), "meridian-accrual-drafts-" + Guid.NewGuid().ToString("N"), "manual-journal-drafts.json");
+        try
+        {
+            return await SetupAsync(database, structureOptions, draftPath);
+        }
+        catch
+        {
+            await DropAsync(structureOptions, draftPath);
+            throw;
+        }
+    }
+
+    private static async Task<Fixture> SetupAsync(LedgerPostgresTestDatabase database, FundStructureStoreOptions structureOptions, string draftPath)
+    {
         var tenants = new TenantAccessor();
+        await new FundStructureMigrationRunner(structureOptions).EnsureMigratedAsync();
+        var graph = new PostgresFundStructureStore(structureOptions);
+        var lifecycle = new PostgresEntityLifecycleStore(structureOptions);
+        // The organization graph only exposes entities reachable from the structure, so both legal entities sit
+        // under one fund of one business of the organization that owns the accounting profiles.
+        var fund = Guid.Parse("e1111111-1111-1111-1111-111111111111");
+        var business = Guid.Parse("e2222222-2222-2222-2222-222222222222");
+        await graph.UpsertOrganizationAsync(new(Organization, "ORG", "Synthetic group", "USD", true, Formed, null, [business]));
+        await graph.UpsertBusinessAsync(new(business, Organization, BusinessKindDto.FundManager, "MGR", "Synthetic manager", "USD", true, Formed, null,
+            [], [fund], []));
+        await graph.UpsertFundAsync(new(fund, business, "FUND", "Synthetic lending fund", "USD", true, Formed, null, [], [], [Lender, Borrower], [], []));
+        foreach (var node in new[] { Organization, business, fund })
+            await graph.StampNodeTenantAsync(node, Tenant);
+        foreach (var (entity, code) in new[] { (Lender, "LENDER"), (Borrower, "BORROWER") })
+        {
+            await graph.UpsertLegalEntityAsync(new(entity, LegalEntityTypeDto.Vehicle, code, $"Synthetic {code.ToLowerInvariant()} entity",
+                "US", "USD", true, Formed, null));
+            await graph.StampNodeTenantAsync(entity, Tenant);
+            await lifecycle.AppendAsync(EntityLifecycleRevisionIntegrity.Seal(new(Tenant, entity, 1, Formed, "lifecycle-reviewer",
+                "Evidenced synthetic formation", "document://synthetic-formation", "", "",
+                [new(Guid.NewGuid(), Formed, null, LegalEntityLifecycleStatusDto.Active, LegalEntityLifecycleEventKindDto.Formation)])), 0);
+        }
         var owners = new PostgresFundProfileTenancyRegistry(database.Options);
         await owners.BindAsync(LenderFund, Tenant, Company);
         await owners.BindAsync(BorrowerFund, Tenant, Company);
@@ -157,25 +249,29 @@ public sealed class IntercompanyAccrualPostAndDeliverPostgresTests
                     account.NodeId, account.IntercompanyRole!.Value, account.Path, account.AccountName, account.AccountType, new DateOnly(2026, 1, 1),
                     null, [], Tenant, Company, "mapping-reviewer", Reviewed, "Reviewed synthetic intercompany account role"), null);
 
-        // One approved legal loan agreement with structured fixed-rate terms, pinned by both accounting profiles.
+        // One legal loan agreement with structured fixed-rate terms, authored, submitted and approved by different
+        // people in the native PostgreSQL registry. Both accounting profiles pin its exact approved revision.
         var terms = new IntercompanyAgreementTermsDto
         {
             StructuredTerms = new(new(new(2026, 5, 1), new(2027, 5, 1), IntercompanyFrequencyDto.Monthly, "WEEKENDS", BusinessDayConvention.Following),
                 IntercompanyRateBasisDto.Fixed, 0.05m, DayCount: IntercompanyDayCountDto.Actual360, Compounding: IntercompanyCompoundingDto.Simple)
         };
+        var agreements = new PostgresIntercompanyAgreementStore(structureOptions);
+        var legalRevision = await ApproveLoanAgreementAsync(agreements, lifecycle, graph, new IntercompanyAgreementDraftDto("IC-ACCRUAL-LOAN",
+            "Synthetic intercompany loan", Lender, "Lender", Borrower, "Borrower", IntercompanyAgreementTypeDto.Loan, "USD", new(2026, 5, 1),
+            Terms: terms, Evidence: [new("synthetic-retained-vault:loan-agreement")]));
         ResolvedIntercompanyAccountingArrangementDto Profile(Guid id, IntercompanyAccountingTemplateKindDto kind, IReadOnlyList<IntercompanyPartyMappingDto> mappings)
         {
-            var profile = IntercompanyArrangementTestData.Create(id, Guid.Parse("d1111111-1111-1111-1111-111111111111"), kind, Lender, Borrower, "USD",
-                mappings, Guid.NewGuid(), ProfileStart);
-            return profile with { LegalRevision = profile.LegalRevision with { Terms = profile.LegalRevision.Terms with { PartyOneRole = "Lender", PartyTwoRole = "Borrower", Terms = terms } } };
+            var profile = IntercompanyArrangementTestData.Create(id, Organization, kind, Lender, Borrower, "USD",
+                mappings, Guid.NewGuid(), ProfileStart, canonicalId: legalRevision.AgreementId, canonicalVersion: legalRevision.AgreementVersion);
+            return new(profile.Arrangement with { CanonicalPayloadHash = legalRevision.PayloadHash }, legalRevision);
         }
         var principal = Profile(PrincipalProfile, IntercompanyAccountingTemplateKindDto.Loan,
             [new(Lender, LenderBook, "a-loan-recv", "a-loan-pay-unused", "a-cash"), new(Borrower, BorrowerBook, "b-loan-recv-unused", "b-loan-pay", "b-cash")]);
         var interest = Profile(InterestProfile, IntercompanyAccountingTemplateKindDto.LoanInterest,
             [new(Lender, LenderBook, "a-int-recv", "a-int-pay-unused", null, "a-int-income", "a-int-expense-unused"),
              new(Borrower, BorrowerBook, "b-int-recv-unused", "b-int-pay", null, "b-int-income-unused", "b-int-expense")]);
-        var legalRevision = interest.LegalRevision;
-        var arrangements = new InMemoryIntercompanyAccountingArrangementStore();
+        var arrangements = new PostgresIntercompanyAccountingArrangementStore(structureOptions);
         foreach (var profile in new[] { principal, interest })
         {
             var approved = profile.Arrangement;
@@ -188,19 +284,23 @@ public sealed class IntercompanyAccrualPostAndDeliverPostgresTests
             await arrangements.AppendAsync(Tenant, 2, new(Guid.NewGuid(), new string('c', 64),
                 IntercompanyAccountingArrangementActionDto.Approve, "mapping-reviewer", ProfileStart, null, approved));
         }
-        var legal = IntercompanyArrangementTestData.LegalAuthority(interest);
-        var legalLease = new Mock<IIntercompanyAccountingArrangementLegalLease>();
-        legalLease.Setup(lease => lease.ResolveExact(interest.Arrangement.CanonicalReference)).Returns(legalRevision);
-        legalLease.Setup(lease => lease.ResolveEffective(interest.Arrangement.CanonicalReference, It.IsAny<DateOnly>())).Returns(legalRevision);
-        legal.Setup(authority => authority.AcquireLeaseAsync(It.IsAny<string>(), It.IsAny<IReadOnlyList<IntercompanyCanonicalAgreementReferenceDto>>(),
-            It.IsAny<LegalEntityReadAuthorityProof?>(), It.IsAny<CancellationToken>())).ReturnsAsync(legalLease.Object);
-        var profiles = new IntercompanyAccountingArrangementService(arrangements, Mock.Of<IIntercompanyAccountingArrangementScopeAuthority>(), legal.Object);
+        var profiles = new IntercompanyAccountingArrangementService(arrangements, Mock.Of<IIntercompanyAccountingArrangementScopeAuthority>(),
+            new IntercompanyAccountingArrangementLegalAuthority(agreements));
 
         var intercompany = new IntercompanyLedgerPostingAuthority(arrangements, profiles, bindings, database.AccountingConfigurationStore, plain, owners);
-        var journals = new PostgresLedgerJournalStore(database.Options, tenants,
-            postingAuthorities: () => [new SyntheticLifecycle(), intercompany],
-            controlPreflights: () => [intercompany],
-            intercompanyAgreementAuthority: () => new SyntheticLegalRegistry(legalRevision));
+        // No fund cash accounts take part in this loan; the organization graph is read from the durable store.
+        var accounts = new Mock<IFundAccountService>();
+        accounts.Setup(service => service.QueryAccountsAsync(It.IsAny<AccountStructureQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Array.Empty<AccountSummaryDto>());
+        var structures = new PostgresFundStructureService(graph, accounts.Object, new FundStructurePolicyService(),
+            tenantAccessor: tenants, entityLifecycleStore: lifecycle);
+        var legalPosting = new PostgresIntercompanyAgreementPostingAuthority(agreements);
+        PostgresLedgerJournalStore? journals = null;
+        var entityLifecycle = new LifecycleLedgerPostingAuthority(structures, lifecycle, () => journals, graph.AcquireConsolidationAuthorityLeaseAsync);
+        journals = new PostgresLedgerJournalStore(database.Options, tenants,
+            postingAuthorities: () => [entityLifecycle, intercompany],
+            controlPreflights: () => [entityLifecycle, intercompany],
+            intercompanyAgreementAuthority: () => legalPosting);
         async Task<LedgerAccountingPeriod> Period(Guid book, int month) => await journals.SavePeriodAsync(new(Guid.NewGuid(), book, 2026, month,
             $"2026-{month:00}", new(2026, month, 1), new DateOnly(2026, month, 1).AddMonths(1).AddDays(-1), "Open", ProfileStart, null, 0), 0);
         var lenderMay = await Period(LenderBook, 5);
@@ -211,7 +311,7 @@ public sealed class IntercompanyAccrualPostAndDeliverPostgresTests
         var configuration = new Mock<IAccountingConfigurationService>();
         configuration.Setup(service => service.GetWorkspaceAsync(LenderFund, LenderBook, It.IsAny<CancellationToken>(), Tenant, Company)).ReturnsAsync(lenderWorkspace);
         configuration.Setup(service => service.GetWorkspaceAsync(BorrowerFund, BorrowerBook, It.IsAny<CancellationToken>(), Tenant, Company)).ReturnsAsync(borrowerWorkspace);
-        var drafts = new InMemoryManualJournalEntryDraftStore();
+        var drafts = new FileManualJournalEntryDraftStore(draftPath);
         var target = new DurableLedgerPostingTarget(journals);
         var workbench = new ManualJournalEntryWorkbenchService(drafts, configuration.Object, new InMemoryAccountingActionAuditStore(),
             journalStore: journals, postingTarget: target, intercompanyPostingAuthority: intercompany);
@@ -220,7 +320,39 @@ public sealed class IntercompanyAccrualPostAndDeliverPostgresTests
             new Mock<IConsolidationFxAuthority>(MockBehavior.Strict).Object);
         var accrual = new IntercompanyAccrualDraftService(profiles, journals, bindings, configuration.Object, drafts, workbench,
             new IntercompanyAccrualPreviewService(new StaticBusinessDayCalendarSource([BusinessDayCalendars.WeekendsOnly])));
-        return new(journals, proposals, drafts, workbench, delivery, accrual, target, lenderMay, lenderJune, borrowerJune, principal, bound["a-loan-recv"]);
+        return new(journals, proposals, drafts, workbench, delivery, accrual, target, lenderMay, lenderJune, borrowerJune, principal, bound["a-loan-recv"],
+            legalRevision, lifecycle, structureOptions, draftPath);
+    }
+
+    /// <summary>Creates, submits and approves the loan through the native registry service with separate author and reviewer.</summary>
+    private static async Task<IntercompanyAgreementRevisionDto> ApproveLoanAgreementAsync(PostgresIntercompanyAgreementStore store,
+        PostgresEntityLifecycleStore lifecycle, PostgresFundStructureStore graph, IntercompanyAgreementDraftDto draft)
+    {
+        var service = new IntercompanyAgreementService(store, new SyntheticAgreementAccess(), new SyntheticAgreementEvidence(),
+            new AgreementClock(), lifecycle, graph);
+        var author = new IntercompanyAgreementCallContext(Tenant, "legal-author");
+        var reviewer = new IntercompanyAgreementCallContext(Tenant, "legal-reviewer");
+        var agreementId = Guid.NewGuid();
+        var proposalId = Guid.NewGuid();
+        async Task<IntercompanyAgreementCommandDto> Command(IntercompanyAgreementDraftDto? content = null) => new(Guid.NewGuid(), agreementId,
+            (await store.GetAsync(Tenant, agreementId))?.AggregateVersion ?? 0, proposalId, content, "Reviewed synthetic intercompany loan terms");
+        await service.CreateAsync(author, await Command(draft));
+        var submitted = await service.SubmitAsync(author, await Command());
+        await service.ApproveAsync(reviewer, await Command() with { SubmittedHash = submitted.Detail.Proposals[^1].SubmittedHash });
+        return Assert.Single((await store.GetAsync(Tenant, agreementId))!.Revisions);
+    }
+
+    private static async Task DropAsync(FundStructureStoreOptions structureOptions, string draftPath)
+    {
+        await using (var connection = new Npgsql.NpgsqlConnection(structureOptions.ConnectionString))
+        {
+            await connection.OpenAsync(CancellationToken.None);
+            await using var command = new Npgsql.NpgsqlCommand($"drop schema if exists \"{structureOptions.Schema}\" cascade", connection);
+            await command.ExecuteNonQueryAsync(CancellationToken.None);
+        }
+        var directory = Path.GetDirectoryName(draftPath)!;
+        if (Directory.Exists(directory))
+            Directory.Delete(directory, recursive: true);
     }
 
     private static ChartOfAccountsNodeDto Node(string id, string root, string name, string type, IntercompanyAccountRoleDto? role)
@@ -230,10 +362,27 @@ public sealed class IntercompanyAccrualPostAndDeliverPostgresTests
         => new(fund, book, AccountingConfigurationStatusDto.Active, "accrual-fixture-v1", Reviewed, [], chart, [], [], [], [], TenantId: Tenant, CompanyId: Company);
 
     private sealed record Fixture(PostgresLedgerJournalStore Journals, PostgresIntercompanyProposalStore Proposals,
-        InMemoryManualJournalEntryDraftStore Drafts, ManualJournalEntryWorkbenchService Workbench, IntercompanyProposalDeliveryService Delivery,
+        FileManualJournalEntryDraftStore Drafts, ManualJournalEntryWorkbenchService Workbench, IntercompanyProposalDeliveryService Delivery,
         IntercompanyAccrualDraftService Accrual, DurableLedgerPostingTarget Target, LedgerAccountingPeriod LenderMay, LedgerAccountingPeriod LenderJune,
-        LedgerAccountingPeriod BorrowerJune, ResolvedIntercompanyAccountingArrangementDto Principal, IntercompanyAccountBindingDto LoanReceivable)
+        LedgerAccountingPeriod BorrowerJune, ResolvedIntercompanyAccountingArrangementDto Principal, IntercompanyAccountBindingDto LoanReceivable,
+        IntercompanyAgreementRevisionDto LegalRevision, PostgresEntityLifecycleStore Lifecycle, FundStructureStoreOptions StructureOptions,
+        string DraftPath) : IAsyncDisposable
     {
+        /// <summary>The same durable draft file opened by another process or after a restart.</summary>
+        public FileManualJournalEntryDraftStore ReopenDrafts() => new(DraftPath);
+
+        /// <summary>Appends the next complete lifecycle timeline: active since formation, dissolved from <paramref name="at"/>.</summary>
+        public async Task DissolveAsync(Guid entity, DateTimeOffset at)
+        {
+            var current = (await Lifecycle.GetLatestAsync(Tenant, entity))!;
+            await Lifecycle.AppendAsync(EntityLifecycleRevisionIntegrity.Seal(new(Tenant, entity, current.Revision + 1, at, "lifecycle-reviewer",
+                "Evidenced synthetic dissolution", "document://synthetic-dissolution", current.ContentHash, "",
+                [new(Guid.NewGuid(), Formed, at, LegalEntityLifecycleStatusDto.Active, LegalEntityLifecycleEventKindDto.Formation),
+                 new(Guid.NewGuid(), at, null, LegalEntityLifecycleStatusDto.Dissolved, LegalEntityLifecycleEventKindDto.Dissolution)])), current.Revision);
+        }
+
+        public async ValueTask DisposeAsync() => await DropAsync(StructureOptions, DraftPath);
+
         /// <summary>The lender's posted loan advance under the reviewed Loan profile.</summary>
         public LedgerJournalEntryWrite Drawdown(decimal amount)
         {
@@ -296,33 +445,25 @@ public sealed class IntercompanyAccrualPostAndDeliverPostgresTests
         public string? ResolveCallerTenant() => Tenant;
     }
 
-    /// <summary>Stands in for the native legal agreement registry: one approved revision, retained under a lease.</summary>
-    private sealed class SyntheticLegalRegistry(IntercompanyAgreementRevisionDto revision) : IIntercompanyAgreementPostingAuthority
+    /// <summary>The caller's workstation scope already admits both synthetic entities in the one tenant.</summary>
+    private sealed class SyntheticAgreementAccess : IIntercompanyAgreementAccessAuthority
     {
-        public Task<IAsyncDisposable> AcquireValidatedLeaseAsync(IntercompanyAgreementPostingRequest request, CancellationToken ct = default)
-        {
-            Assert.Equal(Tenant, request.TenantId);
-            Assert.All(request.Lines, line => Assert.Equal((revision.AgreementId, revision.AgreementVersion), (line.AgreementId, line.AgreementVersion)));
-            return Task.FromResult<IAsyncDisposable>(new Lease(revision));
-        }
-
-        private sealed class Lease(IntercompanyAgreementRevisionDto revision) : IIntercompanyAgreementPostingLease
-        {
-            public IReadOnlyList<IntercompanyAgreementStoreState> Agreements { get; } = [new(revision.AgreementId, 1, [], [revision], [], [])];
-            public Task<LegalEntitySummaryDto?> GetLegalEntityAsync(Guid entityId, CancellationToken ct = default) => Task.FromResult<LegalEntitySummaryDto?>(null);
-            public ValueTask DisposeAsync() => ValueTask.CompletedTask;
-        }
+        public Task<bool> CanAccessEntitiesAsync(IntercompanyAgreementCallContext context, IReadOnlyList<Guid> entities, CancellationToken ct = default)
+            => Task.FromResult(context.TenantId == Tenant && entities.All(entity => entity == Lender || entity == Borrower));
     }
 
-    /// <summary>Entity lifecycle is covered by its own fixtures; both synthetic entities are treated as active here.</summary>
-    private sealed class SyntheticLifecycle : ILedgerPostingAuthority
+    /// <summary>The evidence vault returns a retained hash for the signed agreement document.</summary>
+    private sealed class SyntheticAgreementEvidence : IIntercompanyAgreementEvidenceAuthority
     {
-        public string ControlName => "entity-lifecycle";
-        public Task<IAsyncDisposable> AcquireAsync(IReadOnlyList<LedgerPostingAuthorityContext> contexts, CancellationToken ct = default)
-        {
-            foreach (var context in contexts)
-                context.Decisions.Add(new(ControlName, "synthetic-fixture", true, "Synthetic active-entity authority for the accrual post-and-deliver fixture."));
-            return Task.FromResult<IAsyncDisposable>(EmptyLedgerAuthorityLease.Instance);
-        }
+        public Task<IReadOnlyList<IntercompanyAgreementEvidenceDto>> ResolveAsync(IntercompanyAgreementCallContext context,
+            Guid agreementId, Guid proposalId, IReadOnlyList<IntercompanyAgreementEvidenceDto> evidence, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<IntercompanyAgreementEvidenceDto>>(evidence.Select(item =>
+                new IntercompanyAgreementEvidenceDto(item.Reference, "synthetic-document", "synthetic-retained-loan-agreement-hash")).ToArray());
+    }
+
+    /// <summary>The loan was approved the day before its terms take effect.</summary>
+    private sealed class AgreementClock : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => new(2026, 4, 30, 9, 0, 0, TimeSpan.Zero);
     }
 }
