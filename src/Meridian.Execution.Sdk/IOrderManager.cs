@@ -83,6 +83,17 @@ public interface IOrderManager
     Task<KillSwitchSweepResult> CancelAllAsync(CancellationToken ct = default);
 
     /// <summary>
+    /// The same kill-switch sweep as <see cref="CancelAllAsync(CancellationToken)"/>, under the
+    /// kill-switch authority that invoked it. Implementations that record authority attach it to
+    /// every cancellation the sweep makes; the default runs the unattributed sweep.
+    /// </summary>
+    Task<KillSwitchSweepResult> CancelAllAsync(OrderCancelAllCommand command, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        return CancelAllAsync(ct);
+    }
+
+    /// <summary>
     /// Gets the most recently completed orders (filled, cancelled, rejected, expired) for display
     /// in the trading cockpit fills feed. Ordered by completion time, most recent first.
     /// </summary>

@@ -327,7 +327,12 @@ public static partial class ExecutionEndpoints
             var actionId = GenerateActionId();
             var openCount = oms.GetOpenOrders().Count;
 
-            var sweep = await oms.CancelAllAsync(context.RequestAborted).ConfigureAwait(false)
+            // The sweep runs under kill-switch authority, recorded on every cancellation it makes.
+            // A missing identity is recorded as such rather than refusing the kill switch.
+            var killSwitch = OrderSubmissionAuthority.ForKillSwitch(
+                TryResolveActor(context, out var sweepActor) ? sweepActor : UnidentifiedKillSwitchActor,
+                actionId);
+            var sweep = await oms.CancelAllAsync(new OrderCancelAllCommand(killSwitch), context.RequestAborted).ConfigureAwait(false)
                 ?? KillSwitchSweepResult.Unestablished(openCount);
 
             logger.LogInformation(
@@ -448,7 +453,10 @@ public static partial class ExecutionEndpoints
                     // A null sweep is an order manager that established nothing about the book.
                     // Fail closed on it rather than dereferencing: the kill switch reporting
                     // "object reference not set" tells an operator nothing about their orders.
-                    var sweep = await oms.CancelAllAsync(context.RequestAborted).ConfigureAwait(false)
+                    var killSwitch = OrderSubmissionAuthority.ForKillSwitch(
+                        actor,
+                        string.IsNullOrWhiteSpace(request.CorrelationId) ? GenerateActionId() : request.CorrelationId);
+                    var sweep = await oms.CancelAllAsync(new OrderCancelAllCommand(killSwitch), context.RequestAborted).ConfigureAwait(false)
                         ?? KillSwitchSweepResult.Unestablished(openCount);
                     sweepOutcome = sweep;
 
@@ -1088,6 +1096,9 @@ public static partial class ExecutionEndpoints
 
     private static bool TryResolveActor(HttpContext context, out string actor)
         => EndpointAuthorization.TryResolveActor(context, out actor);
+
+    /// <summary>Recorded as the kill-switch actor when the request carries no resolvable identity.</summary>
+    private const string UnidentifiedKillSwitchActor = "unidentified-operator";
 
     private static bool HasExecutionControlMutationPermission(HttpContext context) =>
         HasExecutionTradingPermission(context, UserPermission.ManageOrders);

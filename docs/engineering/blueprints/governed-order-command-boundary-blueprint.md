@@ -587,7 +587,17 @@ between preflight and dispatch using the same hook pattern as the existing opera
 - [x] WPF parity-plan row (`docs/engineering/plans/wpf-web-ui-alignment-plan.md`). The shared seams are in place; the desktop order book's Origin column and a future WPF ticket are recorded as the gap.
 - [ ] **Owner decision:** whether untyped paper orders should also be refused, by adding an option such as `AllowUnattributedInPaper` defaulting to `false`. Not decided here, because accountless paper tickets would then be refused too (Open Question 6).
 - [x] Paper rehearsal: `OrderAuthorityPaperRehearsalTests` takes one paper OMS through a strategy-run order, an operator ticket, a ticket for an account that was not granted, a kill-switch submit and a legacy order, and checks the origins on the working-order book and the completed feed. Synthetic evidence only.
-- [ ] Recording kill-switch authority on the cancel-all sweep (carried from Phase 3). Cancels are never refused on authority, and the sweep's audit already names its actor, so this stays open as an audit enhancement.
+- [x] Kill-switch authority is recorded on the cancel-all sweep (carried from Phase 3; delivered as a follow-up).
+  - `OrderCancelAllCommand` accepts only `KillSwitch` authority, and `IOrderManager.CancelAllAsync(OrderCancelAllCommand)` defaults to the unattributed sweep.
+  - The OMS records the authority on every cancellation the sweep makes:
+    - the tracked order's `CancelIntent` and `CancelOutcomeUnconfirmed` journal entries (`ExecutionJournalEntry.Authority`);
+    - its `OrderCancelled` or `OrderCancelRejected` audit record, as `Actor`, `CorrelationId`, and `commandOrigin`, `commandActor` and `commandCorrelationId` metadata;
+    - broker-only residue and withdrawn parked escalations, on their audit records.
+  - It also writes one `KillSwitchSweep` audit record with the outcome and counts. A failed write of that record is logged and never changes the outcome.
+  - The `/orders/cancel-all` endpoint sweeps as the operator, correlated to the action id; an unresolved identity is recorded as `unidentified-operator` rather than refusing the kill switch. Before this, that endpoint wrote no audit record at all.
+  - The circuit-breaker endpoint sweeps as the operator under the request's correlation id. The automated trip handler sweeps as what tripped the breaker.
+  - Authority never refuses a cancellation.
+  - Tests: `KillSwitchAuthorityRecordingTests`, `CancelAll_SweepsUnderKillSwitchAuthorityCorrelatedToTheAction`, and the updated circuit-breaker and trip-handler tests.
 
 ### Phase 5: Wrap-up
 - [x] `src/Meridian.Execution/README.md` has an "Order authority" section. It covers the origins and their live behavior, both resolver checkpoints with their reason codes, retention and reporting, and the open owner decisions. The OMS ownership table now lists `OrderAuthorityResolver`, `OrderAuthorityMetadata` and `OrderManagementSystemFactory`. The Validation block has a command for the authority suites.

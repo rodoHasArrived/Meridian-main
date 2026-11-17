@@ -181,7 +181,7 @@ public sealed partial class OrderManagementSystem
     /// completes locally because no broker order exists. Returns null when the order is
     /// not parked, leaving the ordinary gateway cancellation to run.
     /// </summary>
-    private async Task<OrderResult?> TryCancelParkedOrderAsync(string orderId, CancellationToken ct)
+    private async Task<OrderResult?> TryCancelParkedOrderAsync(string orderId, CancellationToken ct, OrderSubmissionAuthority? authority = null)
     {
         if (TryWithdrawParkedEscalation(orderId) is not { } withdrawnState)
         {
@@ -196,7 +196,8 @@ public sealed partial class OrderManagementSystem
             state: withdrawnState,
             report: null,
             message: "Cancelled while awaiting governed approval; the escalation was withdrawn.",
-            ct: ct).ConfigureAwait(false);
+            ct: ct,
+            authority: authority).ConfigureAwait(false);
 
         return new OrderResult { Success = true, OrderId = orderId, OrderState = withdrawnState };
     }

@@ -19,7 +19,10 @@ for strategy orders the run id. It is built only by validating factories and has
 JSON constructor; `OrderSubmissionAuthorityRecord` is its server-retained form, restored through
 the same factories. `ForEscalationRelease` takes an optional `releaseGrant`: the approver's grant,
 which must cover the parked order's account. When present, grant age is judged from it, so a late
-approval can still release the order. `IOrderManager.SubmitAsync(OrderSubmitCommand)` submits under it. `OrderState.Origin` and
+approval can still release the order. `IOrderManager.SubmitAsync(OrderSubmitCommand)` submits under it.
+`IOrderManager.CancelAllAsync(OrderCancelAllCommand)` runs the kill-switch sweep under `KillSwitch`
+authority (the only origin the command accepts). The default implementation runs the unattributed
+sweep. `OrderState.Origin` and
 `OrderResult.AuthorityDecision` carry the origin and the authority outcome back to callers;
 `OrderCommandOrigin` serializes by name.
 `ExecutionOrderMetadataPolicy` treats `runId`, `run_id`, `sessionId`, `session_id` and

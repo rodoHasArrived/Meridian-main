@@ -1450,7 +1450,9 @@ refused until a reviewed manual-intent contract exists. The workstation register
 `StrategyRunAuthoritySource` for the OMS. The trading workspace payload carries
 `ManualOrderEntry`, which mirrors the OMS's mode for the active gateway so the order ticket can
 disable live manual submission with the reason up front, and each working-order row carries its
-`Origin`.
+`Origin`. Both kill-switch entry points, `/orders/cancel-all` and opening the circuit breaker, sweep under
+`KillSwitch` authority naming the operator. Cancel-all correlates to its action id and records an
+unresolved identity as `unidentified-operator` rather than refusing the sweep.
 
 The `execution-webhook` client dials only public addresses: it resolves the host, refuses loopback, private, link-local and other internal addresses at connection time, pins the connection to the validated addresses, follows no redirects and uses no system proxy.
 

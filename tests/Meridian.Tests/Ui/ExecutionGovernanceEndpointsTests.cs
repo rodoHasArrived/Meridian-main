@@ -87,7 +87,12 @@ public sealed class ExecutionGovernanceEndpointsTests
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        await oms.Received(1).CancelAllAsync(Arg.Any<CancellationToken>());
+        // The sweep runs under the operator's kill-switch authority, so each cancellation it makes
+        // records who opened the breaker.
+        await oms.Received(1).CancelAllAsync(
+            Arg.Is<OrderCancelAllCommand>(command =>
+                command.Authority.Origin == OrderCommandOrigin.KillSwitch && command.Authority.Actor == "ops-user"),
+            Arg.Any<CancellationToken>());
 
         var controlsResponse = await client.GetAsync("/api/execution/controls");
         controlsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -108,6 +113,27 @@ public sealed class ExecutionGovernanceEndpointsTests
             entry.Action == "CircuitBreakerCancelAll" &&
             entry.Outcome == "Completed",
             because: "opening the breaker is the kill switch and must sweep the open book with an audited outcome");
+    }
+
+    [Fact]
+    public async Task CancelAll_SweepsUnderKillSwitchAuthorityCorrelatedToTheAction()
+    {
+        OrderCancelAllCommand? command = null;
+        var oms = Substitute.For<IOrderManager>();
+        oms.GetOpenOrders().Returns(Array.Empty<OrderState>());
+        oms.CancelAllAsync(Arg.Do<OrderCancelAllCommand>(received => command = received), Arg.Any<CancellationToken>())
+            .Returns(KillSwitchSweepResult.Empty);
+        await using var app = await CreateAppAsync(services => services.AddSingleton(oms));
+
+        var response = await app.GetTestClient().PostAsync("/api/execution/orders/cancel-all", content: null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        command.Should().NotBeNull("the operator's sweep carries kill-switch authority into the OMS");
+        command!.Authority.Origin.Should().Be(OrderCommandOrigin.KillSwitch);
+        command.Authority.Actor.Should().NotBeNullOrWhiteSpace();
+        command.Authority.CorrelationId.Should().Be(body.RootElement.GetProperty("actionId").GetString(),
+            "the sweep's records correlate to the action the operator was shown");
     }
 
     [Fact]

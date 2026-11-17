@@ -276,7 +276,7 @@ identity the caller put in metadata (`actor`, `runId`, `correlationId`, `session
 | `PositionAction` | Position close and upsize endpoints, same account check | Refused as a manual live order. Broker-reported position metadata never grants run authority |
 | `StrategyRun` | `LiveStrategyRunSession`, using the run's retained fund account | Routes only for an active, live-promoted run whose artifact matches, and then only if readiness approves |
 | `EscalationRelease` | Risk escalation release, from the authority retained with the parked entry (`RiskEscalationEntry.Authority`) plus the approver's grant resolved at release time | Judged by the parked authority. Grant age is taken from the approver's grant, so a late approval can still release |
-| `KillSwitch` | Kill-switch sweep | Cancel-only; any submit is refused (`KILL_SWITCH_SUBMIT_NOT_ALLOWED`) |
+| `KillSwitch` | Kill-switch sweep (`CancelAllAsync(OrderCancelAllCommand)`): the operator's cancel-all, the circuit-breaker endpoint, and the automated trip handler | Cancel-only; any submit is refused (`KILL_SWITCH_SUBMIT_NOT_ALLOWED`). The authority is recorded on every cancellation the sweep makes and on one `KillSwitchSweep` audit record, and never refuses a cancellation |
 | `Unattributed` | Legacy `PlaceOrderAsync`, and operator orders that name no account | Paper routes unchanged. Live is refused before readiness (`ORDER_ORIGIN_UNATTRIBUTED_LIVE`) |
 
 `OrderAuthorityResolver` runs at two checkpoints:

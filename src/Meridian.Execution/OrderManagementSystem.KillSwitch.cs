@@ -1,6 +1,7 @@
 using Meridian.Execution.OrderManagement;
 using Meridian.Execution.Logging;
 using Meridian.Execution.Sdk;
+using Meridian.Execution.Services;
 using Microsoft.Extensions.Logging;
 
 
@@ -17,7 +18,33 @@ namespace Meridian.Execution;
 public sealed partial class OrderManagementSystem
 {
     /// <inheritdoc />
-    public async Task<KillSwitchSweepResult> CancelAllAsync(CancellationToken ct = default)
+    public Task<KillSwitchSweepResult> CancelAllAsync(CancellationToken ct = default) =>
+        CancelAllCoreAsync(authority: null, ct);
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// The kill-switch authority is recorded on every cancellation the sweep makes: tracked orders
+    /// (journal and audit), broker-only residue and withdrawn parked escalations (audit). The sweep
+    /// itself is audited once with its outcome. Authority never refuses a cancellation.
+    /// </remarks>
+    public Task<KillSwitchSweepResult> CancelAllAsync(OrderCancelAllCommand command, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        return CancelAllCoreAsync(command.Authority, ct);
+    }
+
+    private async Task<KillSwitchSweepResult> CancelAllCoreAsync(OrderSubmissionAuthority? authority, CancellationToken ct)
+    {
+        var sweep = await SweepOpenBookAsync(authority, ct).ConfigureAwait(false);
+        if (authority is not null)
+        {
+            await RecordKillSwitchSweepAsync(sweep, authority).ConfigureAwait(false);
+        }
+
+        return sweep;
+    }
+
+    private async Task<KillSwitchSweepResult> SweepOpenBookAsync(OrderSubmissionAuthority? authority, CancellationToken ct)
     {
         using var operation = _lifecycle.EnterOperation(allowCancellationAfterFailure: true);
 
@@ -45,7 +72,7 @@ public sealed partial class OrderManagementSystem
         // leave the sweep reporting an empty book while the escalation stayed releasable -- an
         // order able to route after the halt.
         var failures = new List<KillSwitchSweepFailure>(
-            await WithdrawAllParkedEscalationsAsync(sweepToken).ConfigureAwait(false));
+            await WithdrawAllParkedEscalationsAsync(sweepToken, authority).ConfigureAwait(false));
 
         // Not GetOpenOrders(): that excludes PendingCancel, and an order whose earlier cancellation
         // is still unconfirmed can absolutely still fill. Skipping it would let the kill switch
@@ -140,7 +167,7 @@ public sealed partial class OrderManagementSystem
                     : null;
                 try
                 {
-                    var result = await CancelOrderCoreAsync(order.OrderId, token, gatewayOrderId).ConfigureAwait(false);
+                    var result = await CancelOrderCoreAsync(order.OrderId, token, gatewayOrderId, authority).ConfigureAwait(false);
                     failure = result.Success
                         ? null
                         : new KillSwitchSweepFailure(
@@ -185,7 +212,7 @@ public sealed partial class OrderManagementSystem
                 parallelOptions,
                 async (order, token) =>
                 {
-                    var failure = await _brokerOrderSweep.CancelResidualOrderAsync(order, token).ConfigureAwait(false);
+                    var failure = await _brokerOrderSweep.CancelResidualOrderAsync(order, token, authority).ConfigureAwait(false);
 
                     lock (gate)
                     {
@@ -312,6 +339,51 @@ public sealed partial class OrderManagementSystem
     private readonly record struct ConfirmedCancellation(string LocalOrderId, string? BrokerOrderId);
 
     /// <summary>
+    /// One audit record per attributed sweep: who or what invoked the kill switch, under which
+    /// correlation, and what the sweep achieved. Evidence, not control flow: a failed write is
+    /// logged and never changes the sweep's reported outcome.
+    /// </summary>
+    private async Task RecordKillSwitchSweepAsync(KillSwitchSweepResult sweep, OrderSubmissionAuthority authority)
+    {
+        if (_auditTrail is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await _auditTrail.RecordAsync(new ExecutionAuditEntry(
+                AuditId: Guid.NewGuid().ToString("N"),
+                Category: "Order",
+                Action: "KillSwitchSweep",
+                Outcome: sweep.Outcome.ToString(),
+                OccurredAt: DateTimeOffset.UtcNow,
+                Actor: authority.Actor,
+                BrokerName: _gateway.GatewayId,
+                CorrelationId: authority.CorrelationId,
+                Message: sweep.Describe(),
+                Metadata: OrderAuditMetadata.WithCommandAuthority(
+                    new Dictionary<string, string>(StringComparer.Ordinal)
+                    {
+                        ["requested"] = sweep.Requested.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                        ["cancelled"] = sweep.Cancelled.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                        ["stillWorking"] = sweep.StillWorking.Count.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                        ["brokerViewUnavailable"] = sweep.BrokerViewUnavailable ? "true" : "false"
+                    },
+                    authority)), CancellationToken.None).ConfigureAwait(false);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(
+                exception,
+                "Kill-switch sweep by {Actor} ({CorrelationId}) finished as {Outcome} but its audit record could not be retained",
+                authority.Actor,
+                authority.CorrelationId,
+                sweep.Outcome);
+        }
+    }
+
+    /// <summary>
     /// Withdraws every parked governed escalation, returning the ones that could not be withdrawn.
     /// <para>
     /// A parked order holds no broker order, so it never appears in the swept book — but its
@@ -319,7 +391,9 @@ public sealed partial class OrderManagementSystem
     /// are returned rather than logged so the sweep's outcome can carry them.
     /// </para>
     /// </summary>
-    private async Task<IReadOnlyList<KillSwitchSweepFailure>> WithdrawAllParkedEscalationsAsync(CancellationToken ct)
+    private async Task<IReadOnlyList<KillSwitchSweepFailure>> WithdrawAllParkedEscalationsAsync(
+        CancellationToken ct,
+        OrderSubmissionAuthority? authority)
     {
         var parkedOrderIds = _approvalReservations.SnapshotOrderIds();
         if (parkedOrderIds.Length == 0)
@@ -337,7 +411,7 @@ public sealed partial class OrderManagementSystem
             OrderResult? withdrawn;
             try
             {
-                withdrawn = await TryCancelParkedOrderAsync(parkedOrderId, ct).ConfigureAwait(false);
+                withdrawn = await TryCancelParkedOrderAsync(parkedOrderId, ct, authority).ConfigureAwait(false);
             }
             catch (Exception exception)
             {

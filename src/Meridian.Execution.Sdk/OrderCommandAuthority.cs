@@ -385,6 +385,24 @@ public sealed class OrderCancelCommand
     public OrderSubmissionAuthority Authority { get; }
 }
 
+/// <summary>
+/// A kill-switch sweep of the whole book: every working order cancelled, every parked escalation
+/// withdrawn. Only <see cref="OrderCommandOrigin.KillSwitch"/> authority may sweep; the authority
+/// is recorded on each cancellation the sweep makes. It is never used to refuse a cancellation.
+/// </summary>
+public sealed class OrderCancelAllCommand
+{
+    public OrderCancelAllCommand(OrderSubmissionAuthority authority)
+    {
+        ArgumentNullException.ThrowIfNull(authority);
+        if (authority.Origin != OrderCommandOrigin.KillSwitch)
+            throw new ArgumentException("Only kill-switch authority can sweep the order book.", nameof(authority));
+        Authority = authority;
+    }
+
+    public OrderSubmissionAuthority Authority { get; }
+}
+
 /// <summary>A cancel/replace command for one working order.</summary>
 public sealed class OrderReplaceCommand
 {

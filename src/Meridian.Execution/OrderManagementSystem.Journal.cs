@@ -98,7 +98,8 @@ public sealed partial class OrderManagementSystem
     }
 
     private Task RecordJournalOperationAsync(OrderState state, string kind, CancellationToken ct,
-        OrderModification? modification = null, string? detail = null) => _journal is null ? Task.CompletedTask
+        OrderModification? modification = null, string? detail = null, OrderSubmissionAuthority? authority = null) => _journal is null ? Task.CompletedTask
         : _journal.AppendAsync(new(1, $"operation:{Guid.NewGuid():N}", JournalScope, state.FundAccountId,
-            state.OrderId, kind, DateTimeOffset.UtcNow, Detail: detail, Modification: modification, AttemptId: state.JournalAttemptId), ct);
+            state.OrderId, kind, DateTimeOffset.UtcNow, Detail: detail, Modification: modification, AttemptId: state.JournalAttemptId,
+            Authority: authority?.ToRecord()), ct);
 }
