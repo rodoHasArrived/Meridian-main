@@ -6,6 +6,79 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FixtureModeDetector
+
+Qualified name: <code>Meridian.Ui.Services.Services.FixtureModeDetector</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:23](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L23).
+
+Detects and tracks whether the application is running in fixture/offline mode. Provides a centralized check so UI pages can distinguish intentional demo data from backend-unreachable offline state.
+
+```csharp
+public sealed class FixtureModeDetector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static FixtureModeDetector Instance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:26](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L26) |  |
+| <code>public bool IsFixtureMode =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:54](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L54) | Gets whether the application is explicitly running in fixture mode. |
+| <code>public bool IsOfflineMode =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:59](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L59) | Gets whether the application is in offline mode (backend unreachable). |
+| <code>public bool IsBackendReachable =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:64](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L64) | Gets whether the backend is currently reachable. |
+| <code>public string? ServerDataProvenanceToken =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:71](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L71) | Non-real data provenance reported by the connected backend (for example seeded when the host is serving a seeded demo workspace), or null when the backend serves real data or has not reported yet. |
+| <code>public bool IsNonLiveMode =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:77](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L77) | Gets whether any non-live mode is active (fixture, offline, or a backend that reports simulated/seeded/sample data). |
+| <code>public FixtureModeKind ModeKind =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:82](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L82) | Gets the normalized non-live mode kind for UI tone selection. |
+| <code>public string ModeLabel =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:92](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L92) | Gets a human-readable mode label for display in the UI banner. |
+| <code>public string BannerColor =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:105](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L105) | Gets the banner background color suggestion. Fixture mode: blue informational, Offline: red. |
+| <code>public void SetFixtureMode(bool enabled);</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:110](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L110) | Sets explicit fixture mode state. |
+| <code>public void ReportServerDataProvenance(string? nonRealProvenanceToken);</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:123](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L123) | Records the data provenance the connected backend reports for the records it serves. Pass a non-real provenance token (simulated, seeded, sample) to surface the persistent shell banner, or null when the backend serves real data. W9-TRUTH-001: a workstation attached to a seeded demo workspace must keep labeling it. |
+| <code>public void UpdateBackendReachability(bool isReachable);</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:144](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L144) | Updates backend reachability state. Automatically triggers offline mode when backend is unreachable. |
+| <code>public string ScenarioLabel =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:159](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L159) | Gets the currently active fixture scenario label for display in the UI. |
+| <code>public FixtureScenario ActiveScenario =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:164](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L164) | Gets the currently active fixture scenario. |
+| <code>public FixtureScenario CycleScenario();</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:171](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L171) | Cycles to the next scenario in the FixtureScenario sequence. No-op when fixture mode is off. |
+| <code>public event EventHandler? ModeChanged;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:189](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L189) | Event raised when fixture/offline mode changes. UI pages should subscribe to this to update their visual state. |
+
+## FixtureModeKind
+
+Qualified name: <code>Meridian.Ui.Services.Services.FixtureModeKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:5](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L5).
+
+```csharp
+public enum FixtureModeKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Live</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:7](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L7) |  |
+| <code>Fixture</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:8](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L8) |  |
+| <code>Offline</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:9](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L9) |  |
+
+## FixtureScenario
+
+Qualified name: <code>Meridian.Ui.Services.Services.FixtureScenario</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ui.Services/Services/FixtureScenario.cs:9](../../../../src/Meridian.Ui.Services/Services/FixtureScenario.cs#L9).
+
+Named fixture scenarios for UI development and debugging. Each scenario corresponds to a distinct system state that can be activated at runtime without restarting the application, enabling rapid iteration over all visual states in a single session.
+
+```csharp
+public enum FixtureScenario
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Connected</code> | [src/Meridian.Ui.Services/Services/FixtureScenario.cs:15](../../../../src/Meridian.Ui.Services/Services/FixtureScenario.cs#L15) | System fully connected with healthy metrics — the happy-path state. Providers are active, throughput is nominal, no errors. |
+| <code>Disconnected</code> | [src/Meridian.Ui.Services/Services/FixtureScenario.cs:21](../../../../src/Meridian.Ui.Services/Services/FixtureScenario.cs#L21) | System disconnected from all providers. Useful for testing empty-state / reconnection UI paths. |
+| <code>Degraded</code> | [src/Meridian.Ui.Services/Services/FixtureScenario.cs:27](../../../../src/Meridian.Ui.Services/Services/FixtureScenario.cs#L27) | System partially connected with degraded metrics. Some providers are unavailable or rate-limited; throughput is reduced. |
+| <code>Error</code> | [src/Meridian.Ui.Services/Services/FixtureScenario.cs:33](../../../../src/Meridian.Ui.Services/Services/FixtureScenario.cs#L33) | System in error state — provider errors, high drop rate, low throughput. Useful for testing error banners, alerts, and recovery UI flows. |
+| <code>Loading</code> | [src/Meridian.Ui.Services/Services/FixtureScenario.cs:39](../../../../src/Meridian.Ui.Services/Services/FixtureScenario.cs#L39) | System is initializing or loading — connections pending, data not yet available. Useful for testing skeleton/loading states and progress indicators. |
+
 ## FormValidationRules
 
 Qualified name: <code>Meridian.Ui.Services.Services.FormValidationRules</code>. Kind: `class`.
@@ -1073,67 +1146,3 @@ Declared public members:
 | <code>public int EventCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:33](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L33) |  |
 | <code>public int GapCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:34](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L34) |  |
 | <code>public DateTime LastUpdate { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:35](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L35) |  |
-
-## ThemeServiceBase
-
-Qualified name: <code>Meridian.Ui.Services.Services.ThemeServiceBase</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/ThemeServiceBase.cs:11](../../../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs#L11).
-
-Abstract base class for theme management shared across desktop applications. Provides shared theme state management, toggle logic, and delegates platform-specific theme application and event raising to derived classes. Part of Phase 6C.2 service deduplication (ROADMAP item 6C.2).
-
-```csharp
-public abstract class ThemeServiceBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public AppTheme CurrentTheme =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ThemeServiceBase.cs:16](../../../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs#L16) | Gets the current application theme. |
-| <code>public void SetTheme(AppTheme theme);</code> | [src/Meridian.Ui.Services/Services/ThemeServiceBase.cs:30](../../../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs#L30) | Sets the application theme to the specified value. No-ops if the theme is already set to the requested value. |
-| <code>public void ToggleTheme();</code> | [src/Meridian.Ui.Services/Services/ThemeServiceBase.cs:46](../../../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs#L46) | Toggles between light and dark themes. |
-| <code>public virtual AppTheme GetSystemTheme() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ThemeServiceBase.cs:57](../../../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs#L57) | Gets the system theme preference. |
-
-## TooltipContent
-
-Qualified name: <code>Meridian.Ui.Services.Services.TooltipContent</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/TooltipContent.cs:33](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L33).
-
-Provides shared feature help content and onboarding tips data. This is the single source of truth for all tooltip content used across desktop platforms.
-
-```csharp
-public static class TooltipContent
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static FeatureHelp GetFeatureHelp(string featureKey);</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:38](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L38) | Gets contextual help for a feature by key. |
-| <code>public static IReadOnlyList&lt;OnboardingTip&gt; GetOnboardingTips(string pageKey);</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:51](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L51) | Gets onboarding tips for a page by key. |
-| <code>public static string GetTooltipText(string featureKey);</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:59](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L59) | Gets formatted tooltip text for a feature (description + tips). |
-| <code>public static readonly Dictionary&lt;string, FeatureHelp&gt; FeatureHelpContent = new () {[&quot;dashboard&quot;]= new FeatureHelp { Title = &quot;Dashboard&quot;, Description = &quot;The Dashboard provides a real-time overview of your market data collection. Monitor connection status, event throughput, data quality, and active symbol subscriptions at a glance.&quot;, Tips = new[] { &quot;Use keyboard shortcut Ctrl+D to quickly navigate here&quot;, &quot;The sparklines show trends over the last 30 seconds&quot;, &quot;Click on any metric card to see detailed analysis&quot; }, KeyboardShortcuts = new Dictionary&lt;string, string&gt;{[&quot;Ctrl+S&quot;]= &quot;Start collector&quot;, [&quot;Ctrl+Shift+S&quot;]= &quot;Stop collector&quot;, [&quot;F5&quot;]= &quot;Refresh data&quot; } }, [&quot;backfill&quot;]= new FeatureHelp { Title = &quot;Historical Backfill&quot;, Description = &quot;Download historical market data from various providers. Use this to fill gaps in your data or bootstrap a new symbol with historical bars.&quot;, Tips = new[] { &quot;Use &#x27;composite&#x27; provider to automatically try multiple sources&quot;, &quot;Drag and drop symbols to prioritize download order&quot;, &quot;Schedule recurring backfills for automatic gap filling&quot; }, KeyboardShortcuts = new Dictionary&lt;string, string&gt;{[&quot;Ctrl+B&quot;]= &quot;Navigate to Backfill&quot;, [&quot;Ctrl+Enter&quot;]= &quot;Start backfill&quot;, [&quot;Escape&quot;]= &quot;Cancel backfill&quot; } }, [&quot;symbols&quot;]= new FeatureHelp { Title = &quot;Symbol Management&quot;, Description = &quot;Manage your symbol subscriptions. Add new symbols, configure subscription types (trades, depth, quotes), and set exchange mappings.&quot;, Tips = new[] { &quot;Enter multiple symbols separated by commas&quot;, &quot;Use the Index Subscription page to add market indices&quot;, &quot;Import from CSV files using Portfolio Import&quot; } }, [&quot;provider&quot;]= new FeatureHelp { Title = &quot;Data Provider Configuration&quot;, Description = &quot;Configure your active data provider and connection settings. Each provider has different capabilities and rate limits.&quot;, Tips = new[] { &quot;Store API keys in environment variables for security&quot;, &quot;Use Multi-Source for automatic failover between providers&quot;, &quot;Check provider health status before starting collection&quot; } }, [&quot;storage&quot;]= new FeatureHelp { Title = &quot;Storage Management&quot;, Description = &quot;Monitor storage usage, configure retention policies, and manage data archival. Keep your data organized and disk space optimized.&quot;, Tips = new[] { &quot;Use Archive Health to verify data integrity&quot;, &quot;Configure automatic cleanup with retention policies&quot;, &quot;Export data to Parquet for efficient analysis&quot; } }, [&quot;dataquality&quot;]= new FeatureHelp { Title = &quot;Data Quality Monitoring&quot;, Description = &quot;Monitor the quality of your collected data. Track gaps, anomalies, and integrity issues to ensure reliable data for analysis.&quot;, Tips = new[] { &quot;Quality scores below 95% may indicate issues&quot;, &quot;Set up alerts for automatic gap detection&quot;, &quot;Use the integrity check to verify file consistency&quot; } }, [&quot;leanintegration&quot;]= new FeatureHelp { Title = &quot;QuantConnect Lean Integration&quot;, Description = &quot;Run backtests using QuantConnect&#x27;s Lean Engine with your collected data. Test trading strategies against historical market data.&quot;, Tips = new[] { &quot;Ensure your data covers the backtest date range&quot;, &quot;Configure Lean paths in the integration settings&quot;, &quot;Results are exported to the configured output folder&quot; } } };</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:69](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L69) |  |
-| <code>public static readonly Dictionary&lt;string, OnboardingTip[]&gt; OnboardingTipsContent = new () {[&quot;Dashboard&quot;]= new[] { new OnboardingTip { Id = &quot;dashboard_welcome&quot;, Title = &quot;Welcome to Meridian&quot;, Content = &quot;This dashboard shows your real-time data collection status. Start by configuring a data provider.&quot;, TargetElement = &quot;CollectorStatusBadge&quot;, Order = 1 }, new OnboardingTip { Id = &quot;dashboard_metrics&quot;, Title = &quot;Monitoring Metrics&quot;, Content = &quot;These cards show key metrics: events published, dropped, integrity issues, and historical bars.&quot;, TargetElement = &quot;MetricsGrid&quot;, Order = 2 }, new OnboardingTip { Id = &quot;dashboard_quickadd&quot;, Title = &quot;Quick Add Symbol&quot;, Content = &quot;Quickly add a symbol to your subscription list. Type a symbol like AAPL or SPY and press Enter.&quot;, TargetElement = &quot;QuickAddSymbolBox&quot;, Order = 3 } }, [&quot;Backfill&quot;]= new[] { new OnboardingTip { Id = &quot;backfill_provider&quot;, Title = &quot;Choose a Provider&quot;, Content = &quot;Select a historical data provider. &#x27;composite&#x27; will try multiple providers automatically.&quot;, TargetElement = &quot;ProviderCombo&quot;, Order = 1 }, new OnboardingTip { Id = &quot;backfill_daterange&quot;, Title = &quot;Select Date Range&quot;, Content = &quot;Use the preset buttons (30d, 90d, YTD) or pick custom dates. Longer ranges take more time.&quot;, TargetElement = &quot;DatePresetPanel&quot;, Order = 2 } }, [&quot;Provider&quot;]= new[] { new OnboardingTip { Id = &quot;provider_apikey&quot;, Title = &quot;API Keys&quot;, Content = &quot;Enter your API credentials. For security, consider using environment variables instead of storing keys directly.&quot;, TargetElement = &quot;ApiKeyInput&quot;, Order = 1 } } };</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:164](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L164) |  |
-
-## TrendDataPoint
-
-Qualified name: <code>Meridian.Ui.Services.Services.TrendDataPoint</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:158](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L158).
-
-Records a timestamped quality score with event and alert counts.
-
-```csharp
-public sealed class TrendDataPoint
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DateTime Timestamp { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:160](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L160) |  |
-| <code>public double Score { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:161](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L161) |  |
-| <code>public int EventCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:162](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L162) |  |
-| <code>public int AlertCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:163](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L163) |  |

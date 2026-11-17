@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ILedgerStructurePostingAuthority
+
+Qualified name: <code>Meridian.Storage.Ledger.ILedgerStructurePostingAuthority</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:15](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L15).
+
+Lets native producers retain structure authority before taking global security locks.
+
+```csharp
+public interface ILedgerStructurePostingAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IAsyncDisposable&gt; AcquireStructureAuthorityAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:17](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L17) |  |
+
 ## ILedgerTaxLotDisposalHistory
 
 Qualified name: <code>Meridian.Storage.Ledger.ILedgerTaxLotDisposalHistory</code>. Kind: `interface`.
@@ -801,23 +819,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public async Task&lt;IAsyncDisposable&gt; AcquireAuthorityLeaseAsync(LegacyIntercompanyAttributionDto fact, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs:80](../../../../src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs#L80) |  |
 | <code>public async Task ValidateAsync(LegacyIntercompanyAttributionDto fact, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs:117](../../../../src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs#L117) |  |
-
-## OpenLotBackfillRules
-
-Qualified name: <code>Meridian.Storage.Ledger.OpenLotBackfillRules</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/OpenLotBackfillRules.cs:10](../../../../src/Meridian.Storage/Ledger/OpenLotBackfillRules.cs#L10).
-
-Deterministic backfill checks shared by retention, review and atomic application.
-
-```csharp
-public static class OpenLotBackfillRules
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static OpenLotBackfillFactsDto ReadFacts(byte[] content, string hash);</code> | [src/Meridian.Storage/Ledger/OpenLotBackfillRules.cs:19](../../../../src/Meridian.Storage/Ledger/OpenLotBackfillRules.cs#L19) |  |
-| <code>public static LedgerTaxLotRecord Enrich(LedgerTaxLotRecord lot, OpenLotBackfillEvidenceDto evidence);</code> | [src/Meridian.Storage/Ledger/OpenLotBackfillRules.cs:43](../../../../src/Meridian.Storage/Ledger/OpenLotBackfillRules.cs#L43) |  |
-| <code>public static IReadOnlyList&lt;string&gt; Issues(LedgerTaxLotRecord lot);</code> | [src/Meridian.Storage/Ledger/OpenLotBackfillRules.cs:90](../../../../src/Meridian.Storage/Ledger/OpenLotBackfillRules.cs#L90) |  |

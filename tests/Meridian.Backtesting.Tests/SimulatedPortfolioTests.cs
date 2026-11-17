@@ -153,6 +153,28 @@ public sealed class SimulatedPortfolioTests
             positions["SPY"].Quantity.Should().Be(expectedRemaining);
     }
 
+    [Fact]
+    public void ProcessFill_AccountRefusals_AreFillRejectedExceptionsRaisedBeforeAnyStateChanges()
+    {
+        // The engine discards only FillRejectedException and lets every other failure end the run,
+        // because a later failure may leave the portfolio half-updated. That contract holds only if
+        // every refusal is raised before cash or positions move.
+        var portfolio = CreateLongOnlyPortfolio();
+        portfolio.ProcessFill(new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "SPY", 100L, 50m, 0m, DateTimeOffset.UtcNow, "long-only"));
+        var cash = portfolio.Cash;
+
+        var shortSell = () => portfolio.ProcessFill(
+            new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "SPY", -150L, 55m, 0m, DateTimeOffset.UtcNow, "long-only"));
+        var marginBuy = () => portfolio.ProcessFill(
+            new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "QQQ", 1_000L, 400m, 0m, DateTimeOffset.UtcNow, "long-only"));
+
+        shortSell.Should().Throw<FillRejectedException>().WithMessage("*short selling*");
+        marginBuy.Should().Throw<FillRejectedException>().WithMessage("*margin*");
+        portfolio.Cash.Should().Be(cash);
+        portfolio.GetCurrentPositions().Keys.Should().BeEquivalentTo(["SPY"]);
+        portfolio.GetCurrentPositions()["SPY"].Quantity.Should().Be(100);
+    }
+
     private static SimulatedPortfolio CreateLongOnlyPortfolio()
         => new(
             [

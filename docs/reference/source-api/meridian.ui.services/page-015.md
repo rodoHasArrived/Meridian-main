@@ -6,6 +6,81 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolGapSummary
+
+Qualified name: <code>Meridian.Ui.Services.SymbolGapSummary</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:66](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L66).
+
+Summarizes a symbol&#x27;s gap count, missing duration, and coverage percentage.
+
+```csharp
+public sealed class SymbolGapSummary
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:68](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L68) |  |
+| <code>public int GapCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:69](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L69) |  |
+| <code>public TimeSpan TotalGapDuration { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:70](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L70) |  |
+| <code>public double CoveragePercent { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:71](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L71) |  |
+
+## SymbolGroupEventArgs
+
+Qualified name: <code>Meridian.Ui.Services.SymbolGroupEventArgs</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:314](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L314).
+
+Symbol group event args.
+
+```csharp
+public sealed class SymbolGroupEventArgs : EventArgs
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SymbolGroup? Group { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:316](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L316) |  |
+
+## SymbolGroupService
+
+Qualified name: <code>Meridian.Ui.Services.SymbolGroupService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:11](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L11).
+
+Service for managing symbol groups and portfolios.
+
+```csharp
+public sealed class SymbolGroupService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static SymbolGroupService Instance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:31](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L31) |  |
+| <code>public async Task&lt;SymbolGroupsConfig&gt; LoadGroupsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:41](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L41) | Loads symbol groups configuration. |
+| <code>public async Task&lt;SymbolGroup[]&gt; GetGroupsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:57](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L57) | Gets all symbol groups. |
+| <code>public async Task&lt;SymbolGroup?&gt; GetGroupByIdAsync(string id, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:69](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L69) | Gets a symbol group by ID. |
+| <code>public async Task&lt;SymbolGroup&gt; CreateGroupAsync(string name, string? description = null, string? color = null, string? icon = null, string[]? symbols = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:78](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L78) | Creates a new symbol group. |
+| <code>public async Task&lt;SymbolGroup?&gt; CreateGroupFromTemplateAsync(string templateId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:111](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L111) | Creates a group from a predefined template. |
+| <code>public async Task&lt;bool&gt; UpdateGroupAsync(SymbolGroup group, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:129](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L129) | Updates an existing symbol group. |
+| <code>public async Task&lt;bool&gt; DeleteGroupAsync(string id, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:150](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L150) | Deletes a symbol group. |
+| <code>public async Task&lt;bool&gt; AddSymbolToGroupAsync(string groupId, string symbol, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:169](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L169) | Adds a symbol to a group. |
+| <code>public async Task&lt;bool&gt; RemoveSymbolFromGroupAsync(string groupId, string symbol, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:188](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L188) | Removes a symbol from a group. |
+| <code>public async Task&lt;bool&gt; MoveSymbolAsync(string symbol, string? fromGroupId, string toGroupId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:204](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L204) | Moves a symbol between groups. |
+| <code>public async Task&lt;SymbolGroup[]&gt; GetGroupsForSymbolAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:217](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L217) | Gets all groups that contain a symbol. |
+| <code>public async Task&lt;string[]&gt; GetUngroupedSymbolsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:228](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L228) | Gets symbols that are not in any group. |
+| <code>public async Task ReorderGroupsAsync(int oldIndex, int newIndex, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:248](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L248) | Reorders groups. |
+| <code>public IEnumerable&lt;(string Id, string Name, string[] Symbols, string Color)&gt; GetTemplates();</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:274](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L274) | Gets available templates. |
+| <code>public event EventHandler&lt;SymbolGroupEventArgs&gt;? GroupCreated;</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:293](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L293) | Event raised when a group is created. |
+| <code>public event EventHandler&lt;SymbolGroupEventArgs&gt;? GroupUpdated;</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:298](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L298) | Event raised when a group is updated. |
+| <code>public event EventHandler&lt;SymbolGroupEventArgs&gt;? GroupDeleted;</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:303](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L303) | Event raised when a group is deleted. |
+| <code>public event EventHandler? GroupsReordered;</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:308](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L308) | Event raised when groups are reordered. |
+
 ## SymbolInfo
 
 Qualified name: <code>Meridian.Ui.Services.SymbolInfo</code>. Kind: `class`.
@@ -1104,66 +1179,3 @@ Declared public members:
 | <code>public string ProviderId { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:452](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L452) |  |
 | <code>public string ErrorMessage { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:453](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L453) |  |
 | <code>public TokenRefreshFailedEventArgs(string providerId, string errorMessage);</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:455](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L455) |  |
-
-## TooltipPlacement
-
-Qualified name: <code>Meridian.Ui.Services.TooltipPlacement</code>. Kind: `enum`.
-
-Source: [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:507](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L507).
-
-Tooltip placement relative to the target element.
-
-```csharp
-public enum TooltipPlacement : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Top</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:509](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L509) |  |
-| <code>Bottom</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:510](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L510) |  |
-| <code>Left</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:511](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L511) |  |
-| <code>Right</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:512](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L512) |  |
-| <code>Center</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:513](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L513) |  |
-
-## TourCategory
-
-Qualified name: <code>Meridian.Ui.Services.TourCategory</code>. Kind: `enum`.
-
-Source: [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:496](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L496).
-
-Tour category for organization.
-
-```csharp
-public enum TourCategory : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>GettingStarted</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:498](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L498) |  |
-| <code>DataManagement</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:499](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L499) |  |
-| <code>Monitoring</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:500](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L500) |  |
-| <code>Advanced</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:501](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L501) |  |
-
-## TourCompletedEventArgs
-
-Qualified name: <code>Meridian.Ui.Services.TourCompletedEventArgs</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:558](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L558).
-
-Event args for tour completion.
-
-```csharp
-public sealed class TourCompletedEventArgs : EventArgs
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string TourId { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:560](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L560) |  |
-| <code>public int StepsCompleted { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:561](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L561) |  |
-| <code>public TimeSpan Duration { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:562](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L562) |  |

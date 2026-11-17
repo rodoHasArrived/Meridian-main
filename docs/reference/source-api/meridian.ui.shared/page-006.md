@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StorageEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.StorageEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/StorageEndpoints.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/StorageEndpoints.cs#L18).
+
+Extension methods for registering storage operation API endpoints. Implements Phase 3B.2 — replaces 19 stub endpoints with working handlers.
+
+```csharp
+public static class StorageEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapStorageEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/StorageEndpoints.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/StorageEndpoints.cs#L20) |  |
+
 ## StorageQualityEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.StorageQualityEndpoints</code>. Kind: `class`.
@@ -208,12 +226,12 @@ Declared public members:
 | <code>public static IServiceCollection AddUiSharedServices(this IServiceCollection services, ApplicationStatusEndpointHandlers statusHandlers, string? configPath = null, IConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:49](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L49) | Registers shared services with a pre-configured StatusEndpointHandlers instance. Use this when the workstation host supplies an existing handler instance. |
 | <code>public static WebApplication MapUiEndpoints(this WebApplication app);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:80](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L80) | Maps all UI API endpoints using default JSON serializer options. |
 | <code>public static JsonSerializerOptions CreateEndpointJsonOptions(bool writeIndented = false) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:94](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L94) | Creates the standard JsonSerializerOptions used by UI API endpoints. Uses camelCase naming and a DefaultJsonTypeInfoResolver so callers can extend the type-info chain without reflection falling back to a null resolver. |
-| <code>public static WebApplication MapUiEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions, JsonSerializerOptions? jsonOptionsIndented = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:121](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L121) | Maps all UI API endpoints with custom JSON serializer options. |
-| <code>public static WebApplication MapUiEndpointsWithStatus(this WebApplication app, ApplicationStatusEndpointHandlers statusHandlers);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:317](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L317) | Maps all UI API endpoints including status endpoints. Use this when StatusEndpointHandlers has been registered in DI. |
-| <code>public const string MutationRateLimitPolicy = &quot;mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:336](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L336) | Rate limiting policy name applied to mutation (POST/PUT/DELETE) endpoints. |
-| <code>public const string DirectLendingMutationRateLimitPolicy = &quot;direct-lending-mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:342](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L342) | Direct-lending command limiter. Kept separate from the general mutation budget so loan servicing writes have an explicit, independently auditable abuse-control boundary. |
-| <code>public const string LoginRateLimitPolicy = &quot;login&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:349](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L349) | Per-IP limiter for the unauthenticated sign-in endpoint. Bounds how quickly one client can guess credentials or churn the bounded failed-attempt table in LoginSessionService. |
-| <code>public static IServiceCollection AddMutationRateLimiter(this IServiceCollection services, bool forceEnable = false, IConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:358](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L358) | Registers a per-IP fixed-window rate limiter for mutation endpoints. Allows 10 requests per minute per IP with a small queue for bursts. Set the MDC_DISABLE_RATE_LIMIT=true environment variable to bypass rate limiting only in explicit development/test hosts outside production, packaged and customer postures. Rejections expose the fixed-window retry delay through Retry-After. |
+| <code>public static WebApplication MapUiEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions, JsonSerializerOptions? jsonOptionsIndented = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:122](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L122) | Maps all UI API endpoints with custom JSON serializer options. |
+| <code>public static WebApplication MapUiEndpointsWithStatus(this WebApplication app, ApplicationStatusEndpointHandlers statusHandlers);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:319](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L319) | Maps all UI API endpoints including status endpoints. Use this when StatusEndpointHandlers has been registered in DI. |
+| <code>public const string MutationRateLimitPolicy = &quot;mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:338](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L338) | Rate limiting policy name applied to mutation (POST/PUT/DELETE) endpoints. |
+| <code>public const string DirectLendingMutationRateLimitPolicy = &quot;direct-lending-mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:344](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L344) | Direct-lending command limiter. Kept separate from the general mutation budget so loan servicing writes have an explicit, independently auditable abuse-control boundary. |
+| <code>public const string LoginRateLimitPolicy = &quot;login&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:351](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L351) | Per-IP limiter for the unauthenticated sign-in endpoint. Bounds how quickly one client can guess credentials or churn the bounded failed-attempt table in LoginSessionService. |
+| <code>public static IServiceCollection AddMutationRateLimiter(this IServiceCollection services, bool forceEnable = false, IConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:360](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L360) | Registers a per-IP fixed-window rate limiter for mutation endpoints. Allows 10 requests per minute per IP with a small queue for bursts. Set the MDC_DISABLE_RATE_LIMIT=true environment variable to bypass rate limiting only in explicit development/test hosts outside production, packaged and customer postures. Rejections expose the fixed-window retry delay through Retry-After. |
 
 ## UpdateExecutionCircuitBreakerRequest
 
@@ -1235,30 +1253,3 @@ Declared public members:
 | <code>public async Task&lt;IReadOnlyList&lt;EvidenceVaultDocumentEntryDto&gt;&gt; ListDocumentsAsync(EvidenceVaultDocumentQueryDto query, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs:434](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs#L434) |  |
 | <code>[Obsolete(&quot;Use ReviewDocumentAsync(..., tenantId, scope, request, ct); Evidence Vault reviews require authenticated scope.&quot;)] public Task&lt;EvidenceVaultDocumentReviewResponseDto?&gt; ReviewDocumentAsync(string vaultId, string documentId, EvidenceVaultDocumentReviewRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs:788](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs#L788) |  |
 | <code>public async Task&lt;EvidenceVaultDocumentReviewResponseDto?&gt; ReviewDocumentAsync(string vaultId, string documentId, string tenantId, string scope, EvidenceVaultDocumentReviewRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs:795](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs#L795) |  |
-
-## FileStatementReconciliationReportAuthorityStore
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.FileStatementReconciliationReportAuthorityStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs:14](../../../../src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs#L14).
-
-Local compatibility authority for tests and single-process development. Production composition must use a shared durable implementation.
-
-```csharp
-public sealed class FileStatementReconciliationReportAuthorityStore : IStatementReconciliationReportAuthorityStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FileStatementReconciliationReportAuthorityStore(string dataRoot);</code> | [src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs:26](../../../../src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs#L26) |  |
-| <code>public bool IsDurableAuthority =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs:33](../../../../src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs#L33) |  |
-| <code>public string StorageKind =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs:35](../../../../src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs#L35) |  |
-| <code>public async ValueTask&lt;IAsyncDisposable&gt; AcquireWorkflowLeaseAsync(StatementReconciliationReportAuthorityScope scope, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs:37](../../../../src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs#L37) |  |
-| <code>public ValueTask&lt;bool&gt; DocumentExistsAsync(StatementReconciliationReportAuthorityScope scope, string documentKey, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs:76](../../../../src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs#L76) |  |
-| <code>public async ValueTask&lt;StatementReconciliationReportAuthorityDocument?&gt; GetDocumentAsync(StatementReconciliationReportAuthorityScope scope, string documentKey, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs:87](../../../../src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs#L87) |  |
-| <code>public async ValueTask&lt;byte[]?&gt; TryReadDocumentAsync(StatementReconciliationReportAuthorityScope scope, string documentKey, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs:136](../../../../src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs#L136) |  |
-| <code>public async ValueTask&lt;StatementReconciliationReportAuthorityDocument&gt; WriteDocumentAsync(StatementReconciliationReportAuthorityScope scope, string documentKey, ReadOnlyMemory&lt;byte&gt; content, bool isImmutable, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs:166](../../../../src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs#L166) |  |
-| <code>public ValueTask&lt;IReadOnlyList&lt;string&gt;&gt; ListDocumentKeysAsync(StatementReconciliationReportAuthorityScope scope, string documentKeyPrefix, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs:242](../../../../src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs#L242) |  |
-| <code>public ValueTask ProbeAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs:267](../../../../src/Meridian.Ui.Shared/Evidence/FileStatementReconciliationReportAuthorityStore.cs#L267) |  |

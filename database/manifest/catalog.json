@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "85e747b191ee84218f63efbc0ea65d240251910bb4ecdbb41042aadf5e7a3406",
+  "database_fingerprint": "86c951172e34763a69ccdda8a3880c300239917f3c6854ce6c9247f11a7d5682",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -4307,6 +4307,30 @@
       "target": "ledger.intercompany_account_binding_revisions.tenant_id",
       "target_kind": "table column",
       "target_name": "intercompany_account_binding_revisions",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "e6c29f9c8fc5fc92d76827a7652657e2f6fe18f62e488c6c2cf5b1d19ae3f587",
+      "kind": "normal",
+      "source": "ledger.intercompany_balance_confirmations_tenant_id_check on ledger.intercompany_balance_confirmations",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.intercompany_balance_confirmations.tenant_id",
+      "target_kind": "table column",
+      "target_name": "intercompany_balance_confirmations",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "f15c29633aad852b71334b68c3ae96679e800cd896403e002aadedad34ce78ba",
+      "kind": "normal",
+      "source": "ledger.intercompany_balance_confirmations_version_check on ledger.intercompany_balance_confirmations",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.intercompany_balance_confirmations.version",
+      "target_kind": "table column",
+      "target_name": "intercompany_balance_confirmations",
       "target_schema": "ledger"
     },
     {
@@ -16927,6 +16951,38 @@
       "object": "column:ledger.intercompany_account_binding_revisions.tenant_id"
     },
     {
+      "fingerprint": "c1ca016e562d92ea5cd2c81242be72503f86b7cc4ac20a3bac1543ac4d990a82",
+      "object": "column:ledger.intercompany_balance_confirmations.accounting_arrangement_id"
+    },
+    {
+      "fingerprint": "92a31a9940ef671876f4d5b1fcb45c4a7b3c348ff1d422583cf09e7a99a98d33",
+      "object": "column:ledger.intercompany_balance_confirmations.as_of"
+    },
+    {
+      "fingerprint": "364452d73e50dda478dd920de54b462d53af73db3a445eae080f45b68e29beb4",
+      "object": "column:ledger.intercompany_balance_confirmations.company_id"
+    },
+    {
+      "fingerprint": "23ea3adae9a5b5d1302b6e519c4fe455fd512edeb54068798748811f3cadcad7",
+      "object": "column:ledger.intercompany_balance_confirmations.confirmation_id"
+    },
+    {
+      "fingerprint": "1c1787b5d97cda2158c4f74af4e3dda466f532ad1ef4f7bfa08016e6ad02993e",
+      "object": "column:ledger.intercompany_balance_confirmations.payload"
+    },
+    {
+      "fingerprint": "1225abadcfc987d043c90661f0f75e72cf1e63e0dccdda8719e200200dff658a",
+      "object": "column:ledger.intercompany_balance_confirmations.recorded_at"
+    },
+    {
+      "fingerprint": "06149a255b2b0f090670b3758a4e42ae6300569f0112b450fdd40c37923c1146",
+      "object": "column:ledger.intercompany_balance_confirmations.tenant_id"
+    },
+    {
+      "fingerprint": "80d93d5d46995c55b204733af221fcfa619955aaaca0cb34d576a8c01c36fe1b",
+      "object": "column:ledger.intercompany_balance_confirmations.version"
+    },
+    {
       "fingerprint": "02cf0ee4ca355972e63e94bbb1833c67c5324f8f54406a5d01e5ff1e9fd2de16",
       "object": "column:ledger.intercompany_counterpart_reservations.proposal_id"
     },
@@ -26851,6 +26907,18 @@
       "object": "constraint:ledger.intercompany_account_binding_revisions.intercompany_account_binding_revisions_tenant_id_check"
     },
     {
+      "fingerprint": "ae2e363fbe22a45cd41ed0182cd89a4ce5e037cf57f8ba7201dd9ca268ef7dd3",
+      "object": "constraint:ledger.intercompany_balance_confirmations.intercompany_balance_confirmations_pkey"
+    },
+    {
+      "fingerprint": "48b62b63a31fe21f6ef480e4a1778e04bcadd0f7277a4b0caf417acb876a7495",
+      "object": "constraint:ledger.intercompany_balance_confirmations.intercompany_balance_confirmations_tenant_id_check"
+    },
+    {
+      "fingerprint": "9d12d4d29a0da4a729b5f28207783c0fa12c994da43403d6ec2e880e7a92b3a5",
+      "object": "constraint:ledger.intercompany_balance_confirmations.intercompany_balance_confirmations_version_check"
+    },
+    {
       "fingerprint": "fd233f022ebf8527171adba288d95890a15f94db48eb5a64bb2bf438e692adfa",
       "object": "constraint:ledger.intercompany_counterpart_reservations.intercompany_counterpart_reservations_pkey"
     },
@@ -31267,6 +31335,14 @@
       "object": "dependency:ledger.intercompany_account_binding_revisions_tenant_id_check on ledger.intercompany_account_binding_revisions->ledger.intercompany_account_binding_revisions.tenant_id:normal"
     },
     {
+      "fingerprint": "e6c29f9c8fc5fc92d76827a7652657e2f6fe18f62e488c6c2cf5b1d19ae3f587",
+      "object": "dependency:ledger.intercompany_balance_confirmations_tenant_id_check on ledger.intercompany_balance_confirmations->ledger.intercompany_balance_confirmations.tenant_id:normal"
+    },
+    {
+      "fingerprint": "f15c29633aad852b71334b68c3ae96679e800cd896403e002aadedad34ce78ba",
+      "object": "dependency:ledger.intercompany_balance_confirmations_version_check on ledger.intercompany_balance_confirmations->ledger.intercompany_balance_confirmations.version:normal"
+    },
+    {
       "fingerprint": "06018ea21cad2987ecec11827d5070dd9c8f87f57fd1da2f017897c60817fdd4",
       "object": "dependency:ledger.intercompany_counterpart_reservations_proposal_id_fkey on ledger.intercompany_counterpart_reservations->ledger.intercompany_proposals.proposal_id:normal"
     },
@@ -34455,6 +34531,10 @@
       "object": "function:ledger.refuse_intercompany_account_binding_rewrite()"
     },
     {
+      "fingerprint": "1012f1ae2e60cb62e3d382a8759d1f4ea42f364846d1654fc400504cf620e7bc",
+      "object": "function:ledger.refuse_intercompany_balance_confirmation_rewrite()"
+    },
+    {
       "fingerprint": "e72094e0fdc87f482a7de14afe2ade90b0c851747e1af5e4e63fa199c96763af",
       "object": "function:ledger.refuse_legacy_intercompany_attribution_rewrite()"
     },
@@ -35259,6 +35339,10 @@
       "object": "index:ledger.intercompany_account_binding_revisions_pkey"
     },
     {
+      "fingerprint": "b0beeb47927cc0693da68f3500982e6291bcb1bf8963319bd4a23707e903c6bd",
+      "object": "index:ledger.intercompany_balance_confirmations_pkey"
+    },
+    {
       "fingerprint": "885939ea1523da991f4bf88e80b76c7396718f5f01c5f25837aecf1f8f2b777c",
       "object": "index:ledger.intercompany_counterpart_reservations_pkey"
     },
@@ -35761,6 +35845,14 @@
     {
       "fingerprint": "172e78627509b796406ed6fc07748da5c84d792d758aa9254badb8ef2e76ca1c",
       "object": "index:ledger.ux_consolidation_transition_successor"
+    },
+    {
+      "fingerprint": "5db320ce400aed12dbff31cb30951c4c95fcf1ab08707fa2009e1fb66c09a5f5",
+      "object": "index:ledger.ux_intercompany_balance_confirmation_scope_identity"
+    },
+    {
+      "fingerprint": "5da122d44ffe764e75464397e3015f1746da1ab7bd86affeb0b9cbecd0650df4",
+      "object": "index:ledger.ux_intercompany_balance_confirmation_scope_version"
     },
     {
       "fingerprint": "9f8f3fb38f33dfff8dda06f1bc2016824ba16dd185795ec92b828d842c29c528",
@@ -37715,6 +37807,10 @@
       "object": "rls:ledger.intercompany_account_binding_revisions"
     },
     {
+      "fingerprint": "cea8302f4cf1e02291f47fe5af31eaeec94b28e3f08434fd8fc1553ec71be84c",
+      "object": "rls:ledger.intercompany_balance_confirmations"
+    },
+    {
       "fingerprint": "2582d7e6b8f35bd770120b98db7be3d75f600e78c0d1e6615a734b3948a0d7eb",
       "object": "rls:ledger.intercompany_counterpart_reservations"
     },
@@ -38507,7 +38603,7 @@
       "object": "schema:identity_access"
     },
     {
-      "fingerprint": "dbe4d2322ba8ec60f13875de22aec43ea81f8436fadedb7c14b82bd09a36040e",
+      "fingerprint": "82b8370ae3ae1d7064a7610d083448a1112d67b883dfafe7165992bbc928d612",
       "object": "schema:ledger"
     },
     {
@@ -38873,6 +38969,10 @@
     {
       "fingerprint": "7b22f9e39cd8b23eb169916595f66fc23dc99163897af2ac30792e32a3534a38",
       "object": "table:ledger.intercompany_account_binding_revisions"
+    },
+    {
+      "fingerprint": "3c669d3828da08fc23250529a190d6234c24b87db6cdfb5740e07569695ad761",
+      "object": "table:ledger.intercompany_balance_confirmations"
     },
     {
       "fingerprint": "7f7b9018c0372444326b37cbeb8b6e100206f7b811eecbdf0d0109238788dfac",
@@ -39809,6 +39909,14 @@
     {
       "fingerprint": "1099e8f30f0334924a7d6a4a38cc2bc58885ff64120424a61ea52558aa2ce12e",
       "object": "trigger:ledger.intercompany_account_binding_revisions.tr_intercompany_account_binding_no_truncate"
+    },
+    {
+      "fingerprint": "256f54997656664ffc0c8e3c485f7f678c765ece1bf76ab1b311fdb04a07facf",
+      "object": "trigger:ledger.intercompany_balance_confirmations.tr_intercompany_balance_confirmation_immutable"
+    },
+    {
+      "fingerprint": "7723f5d97978cba644b9c035efc919bc2a37830d2d6dbe7b47d65132a49cdb46",
+      "object": "trigger:ledger.intercompany_balance_confirmations.tr_intercompany_balance_confirmation_no_truncate"
     },
     {
       "fingerprint": "782532e96967d90a0022eacf39127c7af942ef285358ec7f908e77f4b078e46c",
@@ -84934,6 +85042,30 @@
           "target_schema": "ledger"
         },
         {
+          "fingerprint": "e6c29f9c8fc5fc92d76827a7652657e2f6fe18f62e488c6c2cf5b1d19ae3f587",
+          "kind": "normal",
+          "source": "ledger.intercompany_balance_confirmations_tenant_id_check on ledger.intercompany_balance_confirmations",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.intercompany_balance_confirmations.tenant_id",
+          "target_kind": "table column",
+          "target_name": "intercompany_balance_confirmations",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "f15c29633aad852b71334b68c3ae96679e800cd896403e002aadedad34ce78ba",
+          "kind": "normal",
+          "source": "ledger.intercompany_balance_confirmations_version_check on ledger.intercompany_balance_confirmations",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.intercompany_balance_confirmations.version",
+          "target_kind": "table column",
+          "target_name": "intercompany_balance_confirmations",
+          "target_schema": "ledger"
+        },
+        {
           "fingerprint": "06018ea21cad2987ecec11827d5070dd9c8f87f57fd1da2f017897c60817fdd4",
           "kind": "normal",
           "source": "ledger.intercompany_counterpart_reservations_proposal_id_fkey on ledger.intercompany_counterpart_reservations",
@@ -86738,7 +86870,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "dbe4d2322ba8ec60f13875de22aec43ea81f8436fadedb7c14b82bd09a36040e",
+      "fingerprint": "82b8370ae3ae1d7064a7610d083448a1112d67b883dfafe7165992bbc928d612",
       "foreign_tables": [],
       "functions": [
         {
@@ -87296,6 +87428,37 @@
           "security_definer": false,
           "security_labels": [],
           "signature": "refuse_intercompany_account_binding_rewrite()",
+          "strict": false,
+          "volatility": "volatile"
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "PUBLIC",
+              "grantor": "meridian",
+              "privilege": "execute"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "execute"
+            }
+          ],
+          "comment": null,
+          "definition_hash": "cc7483f60b216ce740c92ebd3694123b7f9416cab5e2fe2e3b76cde1f69d0e24",
+          "fingerprint": "1012f1ae2e60cb62e3d382a8759d1f4ea42f364846d1654fc400504cf620e7bc",
+          "kind": "function",
+          "language": "plpgsql",
+          "name": "refuse_intercompany_balance_confirmation_rewrite",
+          "owner": "meridian",
+          "parallel_safety": "unsafe",
+          "result_type": "trigger",
+          "schema": "ledger",
+          "security_definer": false,
+          "security_labels": [],
+          "signature": "refuse_intercompany_balance_confirmation_rewrite()",
           "strict": false,
           "volatility": "volatile"
         },
@@ -96597,6 +96760,377 @@
               "level": "statement",
               "name": "tr_intercompany_account_binding_no_truncate",
               "relation": "intercompany_account_binding_revisions",
+              "schema": "ledger",
+              "timing": "before"
+            }
+          ]
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "23ea3adae9a5b5d1302b6e519c4fe455fd512edeb54068798748811f3cadcad7",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "confirmation_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "80d93d5d46995c55b204733af221fcfa619955aaaca0cb34d576a8c01c36fe1b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "version",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "06149a255b2b0f090670b3758a4e42ae6300569f0112b450fdd40c37923c1146",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "364452d73e50dda478dd920de54b462d53af73db3a445eae080f45b68e29beb4",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "company_id",
+              "nullable": true,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "c1ca016e562d92ea5cd2c81242be72503f86b7cc4ac20a3bac1543ac4d990a82",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "accounting_arrangement_id",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "92a31a9940ef671876f4d5b1fcb45c4a7b3c348ff1d422583cf09e7a99a98d33",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "as_of",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "1c1787b5d97cda2158c4f74af4e3dda466f532ad1ef4f7bfa08016e6ad02993e",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "payload",
+              "nullable": false,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": "now()",
+              "fingerprint": "1225abadcfc987d043c90661f0f75e72cf1e63e0dccdda8719e200200dff658a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "recorded_at",
+              "nullable": false,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "tenant_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (length(btrim(tenant_id)) > 0 AND lower(btrim(tenant_id)) <> 'all'::text)",
+              "delete_action": null,
+              "fingerprint": "48b62b63a31fe21f6ef480e4a1778e04bcadd0f7277a4b0caf417acb876a7495",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "intercompany_balance_confirmations_tenant_id_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "version"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (version > 0)",
+              "delete_action": null,
+              "fingerprint": "9d12d4d29a0da4a729b5f28207783c0fa12c994da43403d6ec2e880e7a92b3a5",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "intercompany_balance_confirmations_version_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "confirmation_id",
+                "version"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (confirmation_id, version)",
+              "delete_action": null,
+              "fingerprint": "ae2e363fbe22a45cd41ed0182cd89a4ce5e037cf57f8ba7201dd9ca268ef7dd3",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "intercompany_balance_confirmations_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "3c669d3828da08fc23250529a190d6234c24b87db6cdfb5740e07569695ad761",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX intercompany_balance_confirmations_pkey ON ledger.intercompany_balance_confirmations USING btree (confirmation_id, version)",
+              "expression": null,
+              "fingerprint": "b0beeb47927cc0693da68f3500982e6291bcb1bf8963319bd4a23707e903c6bd",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "confirmation_id",
+                "version"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "intercompany_balance_confirmations_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX ux_intercompany_balance_confirmation_scope_identity ON ledger.intercompany_balance_confirmations USING btree (tenant_id, COALESCE(company_id, ''::text), accounting_arrangement_id, as_of) WHERE (version = 1)",
+              "expression": "COALESCE(company_id, ''::text)",
+              "fingerprint": "5db320ce400aed12dbff31cb30951c4c95fcf1ab08707fa2009e1fb66c09a5f5",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "tenant_id",
+                "COALESCE(company_id, ''::text)",
+                "accounting_arrangement_id",
+                "as_of"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ux_intercompany_balance_confirmation_scope_identity",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "version = 1",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX ux_intercompany_balance_confirmation_scope_version ON ledger.intercompany_balance_confirmations USING btree (tenant_id, COALESCE(company_id, ''::text), accounting_arrangement_id, as_of, version)",
+              "expression": "COALESCE(company_id, ''::text)",
+              "fingerprint": "5da122d44ffe764e75464397e3015f1746da1ab7bd86affeb0b9cbecd0650df4",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "tenant_id",
+                "COALESCE(company_id, ''::text)",
+                "accounting_arrangement_id",
+                "as_of",
+                "version"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ux_intercompany_balance_confirmation_scope_version",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "intercompany_balance_confirmations",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "ledger",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER tr_intercompany_balance_confirmation_immutable BEFORE DELETE OR UPDATE ON ledger.intercompany_balance_confirmations FOR EACH ROW EXECUTE FUNCTION ledger.refuse_intercompany_balance_confirmation_rewrite()",
+              "definition_hash": "c32780e38298451a10136e9295a0887626093fef721b340ba1b9f402340f87a6",
+              "enabled": "origin",
+              "events": [
+                "delete",
+                "update"
+              ],
+              "fingerprint": "256f54997656664ffc0c8e3c485f7f678c765ece1bf76ab1b311fdb04a07facf",
+              "function_schema": "ledger",
+              "function_signature": "refuse_intercompany_balance_confirmation_rewrite()",
+              "level": "row",
+              "name": "tr_intercompany_balance_confirmation_immutable",
+              "relation": "intercompany_balance_confirmations",
+              "schema": "ledger",
+              "timing": "before"
+            },
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER tr_intercompany_balance_confirmation_no_truncate BEFORE TRUNCATE ON ledger.intercompany_balance_confirmations FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_intercompany_balance_confirmation_rewrite()",
+              "definition_hash": "375487bda6c6b62f27cd4ae6c1f67196d35d11aacf31f1cb4e35a0fbe48aa3d4",
+              "enabled": "origin",
+              "events": [
+                "truncate"
+              ],
+              "fingerprint": "7723f5d97978cba644b9c035efc919bc2a37830d2d6dbe7b47d65132a49cdb46",
+              "function_schema": "ledger",
+              "function_signature": "refuse_intercompany_balance_confirmation_rewrite()",
+              "level": "statement",
+              "name": "tr_intercompany_balance_confirmation_no_truncate",
+              "relation": "intercompany_balance_confirmations",
               "schema": "ledger",
               "timing": "before"
             }
@@ -113280,6 +113814,14 @@
         },
         {
           "enabled": false,
+          "fingerprint": "cea8302f4cf1e02291f47fe5af31eaeec94b28e3f08434fd8fc1553ec71be84c",
+          "forced": false,
+          "policies": [],
+          "relation": "intercompany_balance_confirmations",
+          "schema": "ledger"
+        },
+        {
+          "enabled": false,
           "fingerprint": "2582d7e6b8f35bd770120b98db7be3d75f600e78c0d1e6615a734b3948a0d7eb",
           "forced": false,
           "policies": [],
@@ -122469,6 +123011,377 @@
               "level": "statement",
               "name": "tr_intercompany_account_binding_no_truncate",
               "relation": "intercompany_account_binding_revisions",
+              "schema": "ledger",
+              "timing": "before"
+            }
+          ]
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "23ea3adae9a5b5d1302b6e519c4fe455fd512edeb54068798748811f3cadcad7",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "confirmation_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "80d93d5d46995c55b204733af221fcfa619955aaaca0cb34d576a8c01c36fe1b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "version",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "06149a255b2b0f090670b3758a4e42ae6300569f0112b450fdd40c37923c1146",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "364452d73e50dda478dd920de54b462d53af73db3a445eae080f45b68e29beb4",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "company_id",
+              "nullable": true,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "c1ca016e562d92ea5cd2c81242be72503f86b7cc4ac20a3bac1543ac4d990a82",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "accounting_arrangement_id",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "92a31a9940ef671876f4d5b1fcb45c4a7b3c348ff1d422583cf09e7a99a98d33",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "as_of",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "1c1787b5d97cda2158c4f74af4e3dda466f532ad1ef4f7bfa08016e6ad02993e",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "payload",
+              "nullable": false,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": "now()",
+              "fingerprint": "1225abadcfc987d043c90661f0f75e72cf1e63e0dccdda8719e200200dff658a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "recorded_at",
+              "nullable": false,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "tenant_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (length(btrim(tenant_id)) > 0 AND lower(btrim(tenant_id)) <> 'all'::text)",
+              "delete_action": null,
+              "fingerprint": "48b62b63a31fe21f6ef480e4a1778e04bcadd0f7277a4b0caf417acb876a7495",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "intercompany_balance_confirmations_tenant_id_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "version"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (version > 0)",
+              "delete_action": null,
+              "fingerprint": "9d12d4d29a0da4a729b5f28207783c0fa12c994da43403d6ec2e880e7a92b3a5",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "intercompany_balance_confirmations_version_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "confirmation_id",
+                "version"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (confirmation_id, version)",
+              "delete_action": null,
+              "fingerprint": "ae2e363fbe22a45cd41ed0182cd89a4ce5e037cf57f8ba7201dd9ca268ef7dd3",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "intercompany_balance_confirmations_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "3c669d3828da08fc23250529a190d6234c24b87db6cdfb5740e07569695ad761",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX intercompany_balance_confirmations_pkey ON ledger.intercompany_balance_confirmations USING btree (confirmation_id, version)",
+              "expression": null,
+              "fingerprint": "b0beeb47927cc0693da68f3500982e6291bcb1bf8963319bd4a23707e903c6bd",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "confirmation_id",
+                "version"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "intercompany_balance_confirmations_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX ux_intercompany_balance_confirmation_scope_identity ON ledger.intercompany_balance_confirmations USING btree (tenant_id, COALESCE(company_id, ''::text), accounting_arrangement_id, as_of) WHERE (version = 1)",
+              "expression": "COALESCE(company_id, ''::text)",
+              "fingerprint": "5db320ce400aed12dbff31cb30951c4c95fcf1ab08707fa2009e1fb66c09a5f5",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "tenant_id",
+                "COALESCE(company_id, ''::text)",
+                "accounting_arrangement_id",
+                "as_of"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ux_intercompany_balance_confirmation_scope_identity",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "version = 1",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX ux_intercompany_balance_confirmation_scope_version ON ledger.intercompany_balance_confirmations USING btree (tenant_id, COALESCE(company_id, ''::text), accounting_arrangement_id, as_of, version)",
+              "expression": "COALESCE(company_id, ''::text)",
+              "fingerprint": "5da122d44ffe764e75464397e3015f1746da1ab7bd86affeb0b9cbecd0650df4",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "tenant_id",
+                "COALESCE(company_id, ''::text)",
+                "accounting_arrangement_id",
+                "as_of",
+                "version"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ux_intercompany_balance_confirmation_scope_version",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "intercompany_balance_confirmations",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "ledger",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER tr_intercompany_balance_confirmation_immutable BEFORE DELETE OR UPDATE ON ledger.intercompany_balance_confirmations FOR EACH ROW EXECUTE FUNCTION ledger.refuse_intercompany_balance_confirmation_rewrite()",
+              "definition_hash": "c32780e38298451a10136e9295a0887626093fef721b340ba1b9f402340f87a6",
+              "enabled": "origin",
+              "events": [
+                "delete",
+                "update"
+              ],
+              "fingerprint": "256f54997656664ffc0c8e3c485f7f678c765ece1bf76ab1b311fdb04a07facf",
+              "function_schema": "ledger",
+              "function_signature": "refuse_intercompany_balance_confirmation_rewrite()",
+              "level": "row",
+              "name": "tr_intercompany_balance_confirmation_immutable",
+              "relation": "intercompany_balance_confirmations",
+              "schema": "ledger",
+              "timing": "before"
+            },
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER tr_intercompany_balance_confirmation_no_truncate BEFORE TRUNCATE ON ledger.intercompany_balance_confirmations FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_intercompany_balance_confirmation_rewrite()",
+              "definition_hash": "375487bda6c6b62f27cd4ae6c1f67196d35d11aacf31f1cb4e35a0fbe48aa3d4",
+              "enabled": "origin",
+              "events": [
+                "truncate"
+              ],
+              "fingerprint": "7723f5d97978cba644b9c035efc919bc2a37830d2d6dbe7b47d65132a49cdb46",
+              "function_schema": "ledger",
+              "function_signature": "refuse_intercompany_balance_confirmation_rewrite()",
+              "level": "statement",
+              "name": "tr_intercompany_balance_confirmation_no_truncate",
+              "relation": "intercompany_balance_confirmations",
               "schema": "ledger",
               "timing": "before"
             }
@@ -139051,6 +139964,41 @@
           "level": "statement",
           "name": "tr_intercompany_account_binding_no_truncate",
           "relation": "intercompany_account_binding_revisions",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER tr_intercompany_balance_confirmation_immutable BEFORE DELETE OR UPDATE ON ledger.intercompany_balance_confirmations FOR EACH ROW EXECUTE FUNCTION ledger.refuse_intercompany_balance_confirmation_rewrite()",
+          "definition_hash": "c32780e38298451a10136e9295a0887626093fef721b340ba1b9f402340f87a6",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "256f54997656664ffc0c8e3c485f7f678c765ece1bf76ab1b311fdb04a07facf",
+          "function_schema": "ledger",
+          "function_signature": "refuse_intercompany_balance_confirmation_rewrite()",
+          "level": "row",
+          "name": "tr_intercompany_balance_confirmation_immutable",
+          "relation": "intercompany_balance_confirmations",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER tr_intercompany_balance_confirmation_no_truncate BEFORE TRUNCATE ON ledger.intercompany_balance_confirmations FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_intercompany_balance_confirmation_rewrite()",
+          "definition_hash": "375487bda6c6b62f27cd4ae6c1f67196d35d11aacf31f1cb4e35a0fbe48aa3d4",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "7723f5d97978cba644b9c035efc919bc2a37830d2d6dbe7b47d65132a49cdb46",
+          "function_schema": "ledger",
+          "function_signature": "refuse_intercompany_balance_confirmation_rewrite()",
+          "level": "statement",
+          "name": "tr_intercompany_balance_confirmation_no_truncate",
+          "relation": "intercompany_balance_confirmations",
           "schema": "ledger",
           "timing": "before"
         },
