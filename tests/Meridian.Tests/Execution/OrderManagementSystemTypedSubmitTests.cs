@@ -2,6 +2,7 @@ using FluentAssertions;
 using Meridian.Execution;
 using Meridian.Execution.OrderManagement;
 using Meridian.Execution.Sdk;
+using Meridian.Execution.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -106,14 +107,22 @@ public sealed class OrderManagementSystemTypedSubmitTests : IDisposable
     }
 
     [Fact]
-    public void Bind_Release_KeepsOriginalSubmitterAsActor()
+    public void Bind_Release_NamesApproverAsActorAndRetainsSubmitter()
     {
-        var release = OrderSubmissionAuthority.ForEscalationRelease(Ticket(), "risk-approver");
+        var release = OrderSubmissionAuthority.ForEscalationRelease(Ticket(), "risk-approver", "risk-escalation-esc-1");
+        var order = LimitOrder() with
+        {
+            Metadata = new Dictionary<string, string> { [RiskEscalationQueueService.SubmitterMetadataKey] = "spoofed" }
+        };
 
-        var bound = OrderAuthorityMetadata.Bind(LimitOrder(), release);
+        var bound = OrderAuthorityMetadata.Bind(order, release);
 
-        bound.Metadata!["actor"].Should().Be("ops",
-            "risk escalation reads the actor as the submitter for segregation of duties");
+        // The queue records "actor" as ReleasedBy and refuses a release by the order's own
+        // submitter, so the release names the approver; the submitter travels separately so a
+        // rule that escalates again re-parks under the submitter.
+        bound.Metadata!["actor"].Should().Be("risk-approver");
+        bound.Metadata[RiskEscalationQueueService.SubmitterMetadataKey].Should().Be("ops");
+        bound.Metadata["correlationId"].Should().Be("risk-escalation-esc-1");
     }
 
     private static OrderSubmissionAuthority Ticket() =>

@@ -17,7 +17,8 @@ public sealed record ExecutionJournalEntry(
     BrokerageActivityCursorDto? ActivityCursor = null, JournalOpeningEvidence? Opening = null,
     string? ReportingAssetClass = null, DateTimeOffset? ReconciledThrough = null,
     BrokerageActivityEventDto? Activity = null, OrderModification? Modification = null, Guid? AttemptId = null,
-    Guid? PaperBookId = null);
+    Guid? PaperBookId = null,
+    OrderSubmissionAuthorityRecord? Authority = null);
 
 public sealed record JournalOpeningEvidence(bool IsComplete, bool IsFlat, DateTimeOffset ObservedAt, string Source);
 public sealed record JournalAttribution(string? StrategyId, string? RunId, string? Tag, decimal GrossRealizedPnl, decimal? NetRealizedPnl);

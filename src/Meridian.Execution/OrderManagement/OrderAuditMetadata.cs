@@ -77,9 +77,21 @@ internal static class OrderAuditMetadata
 
     internal static IReadOnlyDictionary<string, string>? BuildOrderSubmittedAuditMetadata(
         ExecutionControlDecision? operatorControlDecision,
-        LiveOrderReadinessDecision? liveOrderReadinessDecision)
+        LiveOrderReadinessDecision? liveOrderReadinessDecision,
+        OrderSubmissionAuthorityRecord? authority = null)
     {
         var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (authority is not null)
+        {
+            metadata["orderOrigin"] = authority.Origin.ToString();
+            if (authority.GrantFundAccountId is { } grantedAccount)
+                metadata["accountGrant"] = grantedAccount.ToString();
+            if (authority.GrantSource is { } grantSource)
+                metadata["accountGrantSource"] = grantSource;
+            if (authority.ReleasedFrom is { } parked)
+                metadata["releasedFromOrigin"] = parked.Origin.ToString();
+        }
+
         if (!string.IsNullOrWhiteSpace(operatorControlDecision?.AppliedManualOverrideId))
         {
             metadata["manualOverrideId"] = operatorControlDecision.AppliedManualOverrideId;

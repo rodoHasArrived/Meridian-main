@@ -2128,6 +2128,10 @@ file sealed class RecordingOrderManager(params OrderState[] openOrders) : IOrder
     public List<string> CancelledOrderIds { get; } = new();
     public int CancelAllCallCount { get; private set; }
 
+    // Endpoints with a verified account submit under typed authority; record the order the same way.
+    public Task<OrderResult> SubmitAsync(OrderSubmitCommand command, CancellationToken ct = default) =>
+        PlaceOrderAsync(command.Order, ct);
+
     public Task<OrderResult> PlaceOrderAsync(ExecutionOrderRequest request, CancellationToken ct = default) =>
         Task.FromResult(new OrderResult { Success = true, OrderId = request.ClientOrderId ?? "recorded-order" });
 

@@ -706,6 +706,10 @@ public sealed class StrategySessionShutdownTests
     {
         public ConcurrentQueue<ExecutionSdk.OrderRequest> Requests { get; } = new();
 
+        // Strategy runs with a fund account submit under typed authority; record the order the same way.
+        public Task<ExecutionSdk.OrderResult> SubmitAsync(ExecutionSdk.OrderSubmitCommand command, CancellationToken ct = default) =>
+            PlaceOrderAsync(command.Order, ct);
+
         public Task<ExecutionSdk.OrderResult> PlaceOrderAsync(ExecutionSdk.OrderRequest request, CancellationToken ct = default)
         {
             Requests.Enqueue(request);

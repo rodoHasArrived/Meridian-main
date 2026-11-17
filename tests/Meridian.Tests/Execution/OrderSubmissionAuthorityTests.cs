@@ -185,6 +185,72 @@ public sealed class OrderSubmissionAuthorityTests
         new OrderSubmitCommand(order, authority).Authority.Should().BeSameAs(authority);
     }
 
+    public static TheoryData<string> RetainableOrigins => new("ticket", "position", "run", "kill", "release");
+
+    [Theory]
+    [MemberData(nameof(RetainableOrigins))]
+    public void RetainedRecord_RoundTripsThroughTheFactories(string kind)
+    {
+        var original = kind switch
+        {
+            "ticket" => OrderSubmissionAuthority.ForOperatorTicket("ops", Grant("ops"), "corr-1", "session-1"),
+            "position" => OrderSubmissionAuthority.ForPositionAction("ops", Grant("ops"), "close-1"),
+            "run" => OrderSubmissionAuthority.ForStrategyRun("strategy-runtime", Grant("ops"), "run-1", "sa1-abc"),
+            "kill" => OrderSubmissionAuthority.ForKillSwitch("ops", "sweep-1"),
+            _ => OrderSubmissionAuthority.ForEscalationRelease(
+                OrderSubmissionAuthority.ForStrategyRun("strategy-runtime", Grant("ops"), "run-1"), "approver", "risk-escalation-1")
+        };
+
+        var restored = OrderSubmissionAuthority.FromRetainedRecord(original.ToRecord());
+
+        restored.ToRecord().Should().BeEquivalentTo(original.ToRecord());
+    }
+
+    [Fact]
+    public void RetainedRecord_Unattributed_CannotBeRestored()
+    {
+        var record = OrderSubmissionAuthority.Unattributed(new Dictionary<string, string> { ["actor"] = "ops" }).ToRecord();
+
+        var restore = () => OrderSubmissionAuthority.FromRetainedRecord(record);
+
+        restore.Should().Throw<ArgumentException>("untyped identity was never established as authority");
+    }
+
+    [Fact]
+    public void RetainedRecord_MissingGrant_CannotBeRestored()
+    {
+        var record = OrderSubmissionAuthority.ForOperatorTicket("ops", Grant("ops"), "corr-1").ToRecord()
+            with
+        { GrantFundAccountId = null };
+
+        var restore = () => OrderSubmissionAuthority.FromRetainedRecord(record);
+
+        restore.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void RetainedRecord_GrantForAnotherActor_IsRefusedByTheFactory()
+    {
+        var record = OrderSubmissionAuthority.ForOperatorTicket("ops", Grant("ops"), "corr-1").ToRecord()
+            with
+        { Actor = "someone-else" };
+
+        var restore = () => OrderSubmissionAuthority.FromRetainedRecord(record);
+
+        restore.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void ForEscalationRelease_WithCorrelation_UsesIt()
+    {
+        var parked = OrderSubmissionAuthority.ForOperatorTicket("ops", Grant("ops"), "corr-1");
+
+        OrderSubmissionAuthority.ForEscalationRelease(parked, "approver", "risk-escalation-9")
+            .CorrelationId.Should().Be("risk-escalation-9");
+        OrderSubmissionAuthority.ForEscalationRelease(parked, "approver")
+            .CorrelationId.Should().Be("corr-1");
+    }
+
     private static ExecutionAccountGrant Grant(string grantedTo) =>
         new(AccountId, grantedTo, ExecutionAccountGrantSources.HttpPrincipal, ResolvedAt);
 }

@@ -190,9 +190,13 @@ public sealed class OrderSubmissionAuthority
     /// <summary>
     /// Authority for releasing a risk-escalated order. The parked authority is carried unchanged,
     /// so the OMS rechecks the original account grant and run binding rather than re-deriving them
-    /// from the approver.
+    /// from the approver. <paramref name="correlationId"/> names the release itself; it defaults
+    /// to the parked order's correlation.
     /// </summary>
-    public static OrderSubmissionAuthority ForEscalationRelease(OrderSubmissionAuthority parked, string approver)
+    public static OrderSubmissionAuthority ForEscalationRelease(
+        OrderSubmissionAuthority parked,
+        string approver,
+        string? correlationId = null)
     {
         ArgumentNullException.ThrowIfNull(parked);
         if (parked.Origin == OrderCommandOrigin.KillSwitch)
@@ -204,9 +208,63 @@ public sealed class OrderSubmissionAuthority
             parked.AccountGrant,
             parked.RunId,
             parked.StrategyArtifactId,
-            parked.CorrelationId,
+            NormalizeOptional(correlationId) ?? parked.CorrelationId,
             parked.SessionId,
             parked);
+    }
+
+    /// <summary>
+    /// The durable form of this authority, retained with parked escalations and journal intents.
+    /// </summary>
+    public OrderSubmissionAuthorityRecord ToRecord() => new(
+        Origin,
+        Actor,
+        AccountGrant?.FundAccountId,
+        AccountGrant?.GrantedTo,
+        AccountGrant?.Source,
+        AccountGrant?.ResolvedAt,
+        RunId,
+        StrategyArtifactId,
+        CorrelationId,
+        SessionId,
+        ReleasedFrom?.ToRecord());
+
+    /// <summary>
+    /// Rebuilds authority the server itself retained (a parked escalation or journal intent)
+    /// through the same validating factories, so a retained record can never produce authority
+    /// the factories would refuse. Never call this with data a client supplied.
+    /// </summary>
+    /// <exception cref="ArgumentException">The record does not describe valid authority.</exception>
+    public static OrderSubmissionAuthority FromRetainedRecord(OrderSubmissionAuthorityRecord record)
+    {
+        ArgumentNullException.ThrowIfNull(record);
+        ExecutionAccountGrant? grant = record.GrantFundAccountId is { } account
+            && record.GrantedTo is { } grantedTo
+            && record.GrantSource is { } source
+            && record.GrantResolvedAt is { } resolvedAt
+            ? new ExecutionAccountGrant(account, grantedTo, source, resolvedAt)
+            : null;
+
+        return record.Origin switch
+        {
+            OrderCommandOrigin.OperatorTicket =>
+                ForOperatorTicket(record.Actor, RequireGrant(grant), record.CorrelationId, record.SessionId),
+            OrderCommandOrigin.PositionAction =>
+                ForPositionAction(record.Actor, RequireGrant(grant), record.CorrelationId),
+            OrderCommandOrigin.StrategyRun =>
+                ForStrategyRun(record.Actor, RequireGrant(grant), record.RunId!, record.StrategyArtifactId),
+            OrderCommandOrigin.KillSwitch => ForKillSwitch(record.Actor, record.CorrelationId),
+            OrderCommandOrigin.EscalationRelease => ForEscalationRelease(
+                FromRetainedRecord(record.ReleasedFrom
+                    ?? throw new ArgumentException("A release record must carry the authority it released.", nameof(record))),
+                record.Actor,
+                record.CorrelationId),
+            _ => throw new ArgumentException(
+                $"Retained authority with origin '{record.Origin}' cannot be restored.", nameof(record))
+        };
+
+        static ExecutionAccountGrant RequireGrant(ExecutionAccountGrant? grant) =>
+            grant ?? throw new ArgumentException("The retained authority record is missing its account grant.", nameof(record));
     }
 
     /// <summary>Authority for a kill-switch cancellation. Recorded, never used to refuse a cancel.</summary>
@@ -268,6 +326,24 @@ public sealed class OrderSubmissionAuthority
         return null;
     }
 }
+
+/// <summary>
+/// The durable form of <see cref="OrderSubmissionAuthority"/>. Server-retained only: no endpoint
+/// binds it from a request, and <see cref="OrderSubmissionAuthority.FromRetainedRecord"/>
+/// re-validates it through the factories.
+/// </summary>
+public sealed record OrderSubmissionAuthorityRecord(
+    OrderCommandOrigin Origin,
+    string Actor,
+    Guid? GrantFundAccountId,
+    string? GrantedTo,
+    string? GrantSource,
+    DateTimeOffset? GrantResolvedAt,
+    string? RunId,
+    string? StrategyArtifactId,
+    string CorrelationId,
+    string? SessionId,
+    OrderSubmissionAuthorityRecord? ReleasedFrom);
 
 /// <summary>A new-order command: the order and the typed authority it is submitted under.</summary>
 public sealed class OrderSubmitCommand

@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Execution;
 using Meridian.Execution.OrderManagement;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
@@ -218,14 +219,100 @@ public sealed class OrderAuthorityResolverTests
         (await resolver.EvaluatePreflightAsync(Prepared(releasedRun), default)).IsApproved.Should().BeTrue();
     }
 
+    // ---- Dispatch recheck (Phase 3) ----
+
+    [Fact]
+    public async Task Dispatch_Unattributed_IsNotRechecked()
+    {
+        var readiness = new RecordingReadinessGate(approve: false);
+        var security = new StubSecurityGate(approve: false);
+        var resolver = Resolver(ExecutionMode.Live, readiness, security: security);
+
+        var refusal = await resolver.EvaluateDispatchAsync(Prepared(Unattributed("run-1"), runId: "run-1"), default);
+
+        refusal.Should().BeNull("the legacy path keeps its pre-existing behavior, which has no dispatch recheck");
+        readiness.Requests.Should().BeEmpty();
+        security.Calls.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task Dispatch_GrantAgedPastLimitSincePreflight_IsRefused()
+    {
+        var resolver = Resolver(ExecutionMode.Paper, new RecordingReadinessGate(approve: true),
+            options: new OrderAuthorityOptions { MaxGrantAge = TimeSpan.FromMinutes(5) });
+
+        var refusal = await resolver.EvaluateDispatchAsync(
+            Prepared(Ticket(resolvedAt: Now - TimeSpan.FromMinutes(6))), default);
+
+        refusal!.ReasonCode.Should().Be(OrderAuthorityReasonCodes.AccountGrantStale);
+        refusal.Source.Should().Be("order authority at dispatch");
+    }
+
+    [Fact]
+    public async Task Dispatch_LiveStrategyRun_ReadinessWithdrawn_IsRefused()
+    {
+        var resolver = Resolver(ExecutionMode.Live, new RecordingReadinessGate(approve: false),
+            new StubRunAuthority(_ => Promoted()));
+
+        var refusal = await resolver.EvaluateDispatchAsync(Prepared(StrategyRun()), default);
+
+        refusal!.ReasonCode.Should().Be(OrderAuthorityReasonCodes.ReadinessChangedBeforeDispatch);
+    }
+
+    [Fact]
+    public async Task Dispatch_LiveStrategyRun_RunEndedSincePreflight_IsRefused()
+    {
+        var resolver = Resolver(ExecutionMode.Live, new RecordingReadinessGate(approve: true),
+            new StubRunAuthority(_ => Promoted() with { IsActive = false }));
+
+        var refusal = await resolver.EvaluateDispatchAsync(Prepared(StrategyRun()), default);
+
+        refusal!.ReasonCode.Should().Be(OrderAuthorityReasonCodes.RunNotActive);
+        refusal.Source.Should().Be("order authority at dispatch");
+    }
+
+    [Fact]
+    public async Task Dispatch_TypedAuthority_SecurityMasterRefusal_IsRefused()
+    {
+        var resolver = Resolver(ExecutionMode.Paper, new RecordingReadinessGate(approve: true),
+            security: new StubSecurityGate(approve: false));
+
+        var refusal = await resolver.EvaluateDispatchAsync(Prepared(Ticket()), default);
+
+        refusal!.ReasonCode.Should().Be(OrderAuthorityReasonCodes.SecurityMasterRejectedAtDispatch);
+    }
+
+    [Fact]
+    public async Task Dispatch_TypedAuthority_StillValid_Passes()
+    {
+        var security = new StubSecurityGate(approve: true);
+        var resolver = Resolver(ExecutionMode.Live, new RecordingReadinessGate(approve: true),
+            new StubRunAuthority(_ => Promoted()), security: security);
+
+        (await resolver.EvaluateDispatchAsync(Prepared(StrategyRun()), default)).Should().BeNull();
+        security.Calls.Should().Be(1);
+    }
+
     // ---- Helpers ----
 
     private static OrderAuthorityResolver Resolver(
         ExecutionMode mode,
         ILiveOrderReadinessGate readiness,
         IStrategyRunAuthoritySource? runs = null,
-        OrderAuthorityOptions? options = null) =>
-        new(mode, readiness, runs, options, new FixedClock(Now));
+        OrderAuthorityOptions? options = null,
+        ISecurityMasterGate? security = null) =>
+        new(mode, readiness, runs, options, new FixedClock(Now), security);
+
+    private sealed class StubSecurityGate(bool approve) : ISecurityMasterGate
+    {
+        public int Calls { get; private set; }
+
+        public Task<SecurityMasterGateResult> CheckAsync(string symbol, CancellationToken ct = default)
+        {
+            Calls++;
+            return Task.FromResult(new SecurityMasterGateResult(approve, approve ? null : "instrument suspended"));
+        }
+    }
 
     private static PreparedOrderAdmission Prepared(
         OrderSubmissionAuthority authority,

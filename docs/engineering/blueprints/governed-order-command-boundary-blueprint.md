@@ -563,15 +563,16 @@ between preflight and dispatch using the same hook pattern as the existing opera
 - **Sequencing correction.** The design said Phase 2 refuses `Unattributed` authority in Live mode. That would refuse every live strategy order, because `LiveStrategyRunSession` still calls `PlaceOrderAsync` until Phase 3 moves it to typed commands. In Phase 2, `Unattributed` keeps exactly its old behavior: paper orders pass, and live orders need readiness approval for their `runId` metadata. Refusing `Unattributed` in Live is now part of Phase 3 and lands after every caller is migrated. `OrderAuthorityOptions.AllowUnattributedInPaper` is not added until that switch exists.
 
 ### Phase 3: Callers and dispatch recheck
-- [ ] `ExecutionAccountGrantResolver`; always resolve an account on submit and position actions
-- [ ] Migrate all callers listed above to `SubmitAsync`
-- [ ] Escalation queue retains authority; release uses `ForEscalationRelease`
-- [ ] Dispatch-checkpoint resolution in the dispatch block
-- [ ] Journal and audit fields for origin and both decisions
-- [ ] Extend the OMS, journal, kill-switch, run-session, and risk-endpoint suites
-- [ ] Move Security Master into the resolver with the dispatch recheck (deferred from Phase 2)
+- [x] Account grants at the HTTP edge. `HttpPrincipalAccountGrant` (in `ExecutionEndpoints.Metadata.cs`) builds the grant immediately after the endpoint verifies the operator's account-scoped access. **Divergence:** an order that names no account is not refused. It stays on the untyped path, which is paper-only in practice because live routing refuses it. Making account selection mandatory changes the browser ticket and is moved to Phase 4 (Open Question 6). A separate `ExecutionAccountGrantResolver` class was not needed.
+- [x] Callers migrated to `SubmitAsync`: the order ticket (`ForOperatorTicket`) and position actions (`ForPositionAction`) when an account is verified, the escalation release (`ForEscalationRelease` over the retained parked authority), and `LiveStrategyRunSession` (`ForStrategyRun` with the run's retained fund account; a run without an account keeps the untyped path, and live runs without one are already deferred at launch). The kill switch is cancel-only and never refused on authority, so it was not migrated; recording its authority is left to Phase 4.
+- [x] The escalation queue retains authority. `RiskEscalationEntry.Authority` (an `OrderSubmissionAuthorityRecord`) is attached once by the OMS after parking, persisted with the queue snapshot, and restored through `OrderSubmissionAuthority.FromRetainedRecord`, which re-validates it through the factories. A release with no retained authority, or with one the factories refuse, stays on the untyped path.
+- [x] Dispatch recheck. `OrderAuthorityResolver.EvaluateDispatchAsync` runs after risk validation and **before** the dispatch lease, so authority lookups never lengthen the window a kill-switch sweep waits on. The operator-control recheck still follows the lease. For typed authority it rechecks grant age, the run binding and readiness (live strategy orders), and Security Master. A refusal settles risk reservations and restores consumed approvals exactly as an operator-control refusal does. Untyped orders keep their old path, which has no dispatch recheck.
+- [x] Journal and audit. `ExecutionJournalEntry.Authority` on intent entries, and `orderOrigin`, `accountGrant`, `accountGrantSource` and `releasedFromOrigin` in the `OrderSubmitted` audit metadata, for typed authority only. Untyped records are unchanged.
+- [x] Release metadata convention corrected. On a release, `Bind` writes the approver as `actor` and the original submitter as `riskSubmitter`, matching the untyped release path. Phase 2 had put the submitter in `actor`; nothing called the typed release path then.
+- [x] Security Master at dispatch, in the resolver. The preflight Security Master check stays after operator controls to keep the refusal order.
+- [x] Source-generated JSON for persisted authority. `OrderSubmissionAuthorityRecord` is reachable from `RiskEscalationEntry` and `ExecutionJournalEntry`, so the existing source-generated contexts serialize it. No separate context was needed.
+- [x] Tests: `OrderAuthorityResolverTests` (dispatch), `OrderSubmissionAuthorityTests` (record round-trip), `RiskEscalationAuthorityRetentionTests`, the typed park-and-release test in `RiskEndpointsTests`, the typed ticket test in `ExecutionGovernanceEndpointsTests`, and the live-engine suites updated for strategy-run authority.
 - [ ] After every caller submits typed commands: refuse `Unattributed` authority in Live mode (deferred from Phase 2; see the sequencing correction above)
-- [ ] Source-generated JSON context for persisted authority (deferred from Phase 1)
 
 ### Phase 4: Surfaces and tightening
 - [ ] `OrderResult.AuthorityDecision`; browser ticket refusal rendering; Live manual ticket disabled with reason; blotter Origin column; vitest
@@ -594,6 +595,7 @@ between preflight and dispatch using the same hook pattern as the existing opera
 | 3 | Is 8 hours the right `MaxGrantAge`, given that escalations can park overnight? | Product owner | Parked orders either expire unexpectedly or carry stale grants |
 | 4 | Does `ISecurityMasterGate` have a version stamp, so the dispatch check can be skipped when nothing changed? | Implementer | One extra Security Master call per order at dispatch |
 | 5 | Should a paused strategy run keep live order authority? `StrategyRunAuthoritySource` treats a run as active until it ends or reaches a terminal status, so a paused run still passes the run binding check. | Product owner | Orders a paused run already queued can still route |
+| 6 | Should every operator order name an account? Accountless tickets and position actions stay on the untyped path, which works in paper and is refused live. Requiring an account changes the browser ticket. | Product owner | Paper tickets without an account carry no typed authority |
 
 ## Risks
 

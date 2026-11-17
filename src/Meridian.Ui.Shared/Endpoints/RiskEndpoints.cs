@@ -382,9 +382,33 @@ public static class RiskEndpoints
                 metadata["correlationId"] = $"risk-escalation-{approved.EscalationId}";
 
                 var releaseRequest = approved.Request with { Metadata = metadata };
+
+                // An order parked under typed authority is released under that same authority, so
+                // the OMS rechecks the original account grant and run binding, not the approver's.
+                // Orders parked through the untyped path (or before typed authority existed) keep
+                // the untyped release, which live routing refuses.
+                OrderSubmissionAuthority? releaseAuthority = null;
+                if (approved.Authority is { } parkedAuthority)
+                {
+                    try
+                    {
+                        releaseAuthority = OrderSubmissionAuthority.ForEscalationRelease(
+                            OrderSubmissionAuthority.FromRetainedRecord(parkedAuthority),
+                            actor,
+                            metadata["correlationId"]);
+                    }
+                    catch (ArgumentException)
+                    {
+                        // A retained record the factories refuse confers no authority.
+                        releaseAuthority = null;
+                    }
+                }
+
                 try
                 {
-                    releaseResult = await oms.PlaceOrderAsync(releaseRequest, context.RequestAborted).ConfigureAwait(false);
+                    releaseResult = releaseAuthority is null
+                        ? await oms.PlaceOrderAsync(releaseRequest, context.RequestAborted).ConfigureAwait(false)
+                        : await oms.SubmitAsync(new OrderSubmitCommand(releaseRequest, releaseAuthority), context.RequestAborted).ConfigureAwait(false);
                 }
                 finally
                 {

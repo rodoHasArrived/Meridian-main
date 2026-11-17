@@ -249,7 +249,19 @@ and binds live strategy orders to an active, live-promoted run through `IStrateg
 before readiness. A release is judged by the authority it was parked with. `PlaceOrderAsync` is the
 legacy, unattributed path and keeps its exact prior behavior: readiness for `runId` metadata in
 Live mode, nothing extra in paper. Security Master remains in `OrderAdmissionPolicy` after
-operator controls.
+operator controls at preflight.
+
+Callers submit typed commands: the order ticket and position actions when the operator is verified
+for the named account (accountless operator orders stay untyped and are refused live), the risk
+escalation release under the authority retained with the parked entry
+(`RiskEscalationEntry.Authority`), and `LiveStrategyRunSession` under the run's retained fund
+account. After risk validation and before the dispatch lease, `EvaluateDispatchAsync` rechecks
+typed authority (grant age; run binding and readiness for live strategy orders; Security Master)
+so authority withdrawn while an order waited cannot route; a refusal releases risk reservations and
+consumed approvals like an operator-control refusal. Typed authority is retained on journal intents
+(`ExecutionJournalEntry.Authority`) and in `OrderSubmitted` audit metadata (`orderOrigin`,
+`accountGrant`, `accountGrantSource`, `releasedFromOrigin`). On a typed release, `actor` is the
+approver and `riskSubmitter` the original submitter, as on the untyped release path.
 
 The shared broker-report gate still serializes live callbacks, explicit recovery, amendment
 resolution, and retention. Amendment preparation keeps original/proposed snapshot identity and

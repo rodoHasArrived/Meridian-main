@@ -325,6 +325,82 @@ public sealed class RiskEndpointsTests
     }
 
     [Fact]
+    public async Task TypedSubmit_ParkedOrder_IsReleasedUnderItsParkedAuthority()
+    {
+        // Governed order command boundary, Phase 3: a typed order that escalates keeps its
+        // authority with the escalation, and the release is judged by that authority while the
+        // queue still refuses a release by the order's own submitter.
+        var accountId = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
+        var queue = new RiskEscalationQueueService(
+            NullLogger<RiskEscalationQueueService>.Instance,
+            options: new RiskEscalationQueueOptions(
+                Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json")));
+        var validator = new CompositeRiskValidator(
+            [new EscalatingRule("order-notional", "band A")],
+            NullLogger<CompositeRiskValidator>.Instance,
+            escalationQueue: queue);
+        var oms = new OrderManagementSystem(
+            new Meridian.Execution.PaperTradingGateway(
+                NullLogger<Meridian.Execution.PaperTradingGateway>.Instance,
+                options: new Meridian.Execution.Adapters.PaperTradingGatewayOptions { AllowScaffoldMarketFills = true }),
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: validator,
+            portfolioState: new PaperTradingPortfolio(100_000m),
+            escalationQueue: queue);
+        await oms.StartAsync();
+        try
+        {
+            var grant = new ExecutionAccountGrant(accountId, "submitter", ExecutionAccountGrantSources.HttpPrincipal, DateTimeOffset.UtcNow);
+            var order = new OrderRequest
+            {
+                ClientOrderId = "typed-parked-1",
+                Symbol = "AAPL",
+                Side = OrderSide.Buy,
+                Type = OrderType.Limit,
+                Quantity = 10m,
+                LimitPrice = 100m,
+                FundAccountId = accountId
+            };
+
+            var parked = await oms.SubmitAsync(new OrderSubmitCommand(
+                order, OrderSubmissionAuthority.ForOperatorTicket("submitter", grant, "corr-1")));
+
+            parked.RequiresApproval.Should().BeTrue();
+            var entry = queue.TryGet(parked.EscalationId!)!;
+            entry.Authority.Should().NotBeNull("the OMS retains the typed authority with the parked order");
+            entry.Authority!.Origin.Should().Be(OrderCommandOrigin.OperatorTicket);
+            entry.Authority.GrantFundAccountId.Should().Be(accountId);
+
+            queue.Approve(entry.EscalationId, "risk-desk", "independent review");
+            var releaseRequest = entry.Request with
+            {
+                Metadata = new Dictionary<string, string>(entry.Request.Metadata!, StringComparer.OrdinalIgnoreCase)
+                {
+                    [RiskEscalationQueueService.ApprovalMetadataKey] = entry.EscalationId
+                }
+            };
+            var parkedAuthority = OrderSubmissionAuthority.FromRetainedRecord(entry.Authority);
+
+            var selfRelease = await oms.SubmitAsync(new OrderSubmitCommand(
+                releaseRequest,
+                OrderSubmissionAuthority.ForEscalationRelease(parkedAuthority, "submitter", $"risk-escalation-{entry.EscalationId}")));
+            selfRelease.Success.Should().BeFalse("the submitter cannot release their own escalated order");
+
+            var released = await oms.SubmitAsync(new OrderSubmitCommand(
+                releaseRequest,
+                OrderSubmissionAuthority.ForEscalationRelease(parkedAuthority, "risk-desk", $"risk-escalation-{entry.EscalationId}")));
+
+            released.Success.Should().BeTrue(released.ErrorMessage);
+            queue.TryGet(entry.EscalationId)!.ReleasedBy.Should().Be("risk-desk");
+            oms.GetOrder(released.OrderId!)!.FundAccountId.Should().Be(accountId);
+        }
+        finally
+        {
+            oms.Dispose();
+        }
+    }
+
+    [Fact]
     public async Task RiskAndExecutionIntegration_RegisteredValidatorEnforcesOrderRateThrottle()
     {
         // Proves the consolidation: the RiskRuleRuntimeService that powers the dashboard supplies

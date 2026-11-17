@@ -1,4 +1,5 @@
 using Meridian.Execution.Sdk;
+using Meridian.Execution.Services;
 
 namespace Meridian.Execution.OrderManagement;
 
@@ -18,7 +19,8 @@ internal static class OrderAuthorityMetadata
         "correlationId",
         "sessionId",
         "session_id",
-        "orderOrigin"
+        "orderOrigin",
+        RiskEscalationQueueService.SubmitterMetadataKey
     ];
 
     internal static OrderRequest Bind(OrderRequest order, OrderSubmissionAuthority authority)
@@ -36,9 +38,14 @@ internal static class OrderAuthorityMetadata
             }
         }
 
-        // Risk escalation records the "actor" as the submitter for segregation of duties, so a
-        // release keeps the original submitter there; the approver is carried on the authority.
-        metadata["actor"] = Submitter(authority).Actor;
+        // "actor" is the operator issuing this command. For a release that is the approver: the
+        // queue records it as ReleasedBy and refuses a release by the order's own submitter. The
+        // original submitter travels under the submitter key, so a rule that escalates again
+        // during the release re-parks under the submitter's identity (the convention the
+        // untyped release path already follows).
+        metadata["actor"] = authority.Actor;
+        if (authority.Origin == OrderCommandOrigin.EscalationRelease)
+            metadata[RiskEscalationQueueService.SubmitterMetadataKey] = Submitter(authority).Actor;
         if (authority.RunId is { } runId)
             metadata["runId"] = runId;
         if (!string.IsNullOrWhiteSpace(authority.CorrelationId))

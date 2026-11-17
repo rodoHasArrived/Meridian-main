@@ -25,6 +25,8 @@ public static class OrderAuthorityReasonCodes
     public const string RunArtifactMismatch = "RUN_ARTIFACT_MISMATCH";
     public const string AuthoritySourceUnavailable = "AUTHORITY_SOURCE_UNAVAILABLE";
     public const string LiveOrderReadinessRejected = "LIVE_ORDER_READINESS_REJECTED";
+    public const string ReadinessChangedBeforeDispatch = "READINESS_CHANGED_BEFORE_DISPATCH";
+    public const string SecurityMasterRejectedAtDispatch = "SECURITY_MASTER_REJECTED_AT_DISPATCH";
 }
 
 /// <summary>Retained run, promotion, and artifact state that strategy-run authority is checked against.</summary>
@@ -71,10 +73,12 @@ internal sealed class OrderAuthorityResolver
 {
     private const string ReadinessSource = "live order readiness gate";
     private const string AuthoritySource = "order authority";
+    private const string DispatchSource = "order authority at dispatch";
 
     private readonly ExecutionMode _executionMode;
     private readonly ILiveOrderReadinessGate? _liveReadinessGate;
     private readonly IStrategyRunAuthoritySource? _runAuthority;
+    private readonly ISecurityMasterGate? _securityMasterGate;
     private readonly OrderAuthorityOptions _options;
     private readonly TimeProvider _clock;
 
@@ -83,11 +87,13 @@ internal sealed class OrderAuthorityResolver
         ILiveOrderReadinessGate? liveReadinessGate,
         IStrategyRunAuthoritySource? runAuthority = null,
         OrderAuthorityOptions? options = null,
-        TimeProvider? clock = null)
+        TimeProvider? clock = null,
+        ISecurityMasterGate? securityMasterGate = null)
     {
         _executionMode = executionMode;
         _liveReadinessGate = liveReadinessGate;
         _runAuthority = runAuthority;
+        _securityMasterGate = securityMasterGate;
         _options = options ?? new OrderAuthorityOptions();
         _clock = clock ?? TimeProvider.System;
     }
@@ -138,6 +144,54 @@ internal sealed class OrderAuthorityResolver
                 return Refuse(OrderAuthorityReasonCodes.AuthoritySourceUnavailable,
                     $"Order authority origin '{root.Origin}' is not supported.");
         }
+    }
+
+    /// <summary>
+    /// Re-checks typed authority after risk validation, immediately before the order becomes
+    /// visible and routes. Time passes between preflight and this point (waiting for the
+    /// pre-trade gate, validating risk), and a grant can age past its limit, a run can end, a
+    /// readiness snapshot can be withdrawn, or an instrument can be suspended in that time.
+    /// Untyped (legacy) orders keep their pre-existing path, which has no dispatch recheck.
+    /// </summary>
+    /// <returns>Null when the order may route; otherwise the refusal.</returns>
+    internal async Task<OrderAdmissionRefusal?> EvaluateDispatchAsync(PreparedOrderAdmission prepared, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(prepared);
+        var root = Root(prepared.Authority);
+        if (root.Origin is OrderCommandOrigin.Unattributed or OrderCommandOrigin.KillSwitch)
+            return null;
+
+        if (EvaluateGrant(root, prepared.SafeRequest) is { Refusal: { } grantRefusal })
+            return grantRefusal with { Source = DispatchSource };
+
+        if (root.Origin == OrderCommandOrigin.StrategyRun && _executionMode is ExecutionMode.Live)
+        {
+            if (await EvaluateRunBindingAsync(root, ct).ConfigureAwait(false) is { Refusal: { } runRefusal })
+                return runRefusal with { Source = DispatchSource };
+
+            var readiness = await EvaluateLiveOrderReadinessAsync(prepared, root.RunId, observationOnly: false, ct)
+                .ConfigureAwait(false);
+            if (!readiness.IsApproved)
+            {
+                return new OrderAdmissionRefusal(
+                    readiness.Reason ?? "Live order readiness was withdrawn before dispatch.",
+                    DispatchSource,
+                    OrderAuthorityReasonCodes.ReadinessChangedBeforeDispatch,
+                    OrderAuditMetadata.BuildLiveOrderReadinessRejectedAuditMetadata(readiness));
+            }
+        }
+
+        if (_securityMasterGate is not null)
+        {
+            var security = await _securityMasterGate.CheckAsync(prepared.SafeRequest.Symbol, ct).ConfigureAwait(false);
+            if (!security.IsApproved)
+            {
+                return new OrderAdmissionRefusal(
+                    security.Reason, DispatchSource, OrderAuthorityReasonCodes.SecurityMasterRejectedAtDispatch);
+            }
+        }
+
+        return null;
     }
 
     /// <summary>A release is judged by the authority it was parked with, not by the approver.</summary>

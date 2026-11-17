@@ -51,6 +51,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
     // exposure. Without it, concurrent submissions each evaluate against the same
     // pre-order book and can collectively breach a ceiling none of them breaches alone.
     private readonly SemaphoreSlim _preTradeReservationGate = new(1, 1);
+    private readonly RiskEscalationQueueService? _escalationQueue;
     // Canonical immediate fills reserve cash and units until the portfolio has actually applied
     // the gateway acknowledgement, rather than merely until the order becomes visible.
     private readonly SemaphoreSlim _canonicalSubmissionGate = new(1, 1);
@@ -111,6 +112,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
 
         _auditTrail = auditTrail;
         _approvalReservations = new OrderApprovalReservations(escalationQueue, logger);
+        _escalationQueue = escalationQueue;
         _portfolioState = portfolioState;
         _sessionPersistence = sessionPersistence;
         _recoveryJournal = new BrokerageOrderRecoveryJournal(recoveryStore);
@@ -171,6 +173,13 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
         ArgumentNullException.ThrowIfNull(command);
         return PlaceOrderSerializedAsync(OrderAuthorityMetadata.Bind(command.Order, command.Authority), command.Authority, ct);
     }
+
+    /// <summary>
+    /// The authority to retain with this order's journal, audit, and parked escalation. Only typed
+    /// authority is retained; untyped orders keep their pre-existing records unchanged.
+    /// </summary>
+    private static OrderSubmissionAuthorityRecord? RetainedAuthority(PreparedOrderAdmission prepared) =>
+        prepared.Authority.Origin == OrderCommandOrigin.Unattributed ? null : prepared.Authority.ToRecord();
 
     private async Task<OrderResult> PlaceOrderSerializedAsync(
         OrderRequest request,
@@ -234,7 +243,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                 journalAttemptId).ConfigureAwait(false);
         }
 
-        await RecordJournalIntentAsync(safeRequest, "Intent", journalAttemptId, ct).ConfigureAwait(false);
+        await RecordJournalIntentAsync(safeRequest, "Intent", journalAttemptId, ct, RetainedAuthority(prepared)).ConfigureAwait(false);
         var admission = await _admissionPolicy.EvaluatePreflightAsync(prepared, ct).ConfigureAwait(false);
         if (admission.Refusal is { } refusal)
         {
@@ -314,7 +323,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                             correlationId,
                             riskResult,
                             sessionId,
-                            ct).ConfigureAwait(false);
+                            ct,
+                            RetainedAuthority(prepared)).ConfigureAwait(false);
                     }
 
                     return await RejectOrderAsync(
@@ -352,6 +362,34 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                         riskWarnings,
                         ct).ConfigureAwait(false);
                 }
+            }
+
+            // Typed authority is re-checked here, after risk validation and before the dispatch
+            // lease: waiting for this gate and validating risk take time, in which a grant can
+            // age out, a run can end, readiness can be withdrawn, or an instrument suspended.
+            // Placed before the lease so authority lookups never extend the window a kill-switch
+            // sweep waits on; the operator-control recheck below still runs after the lease.
+            if (await _admissionPolicy.EvaluateDispatchAuthorityAsync(prepared, ct).ConfigureAwait(false) is { } authorityRefusal)
+            {
+                SettleRiskReservations(riskDecision, commit: false, orderId);
+                RestoreConsumedApprovals(consumedApprovalId, "order authority withdrawn before dispatch", orderId);
+                return await RejectOrderAsync(
+                    orderId,
+                    safeRequest,
+                    actor,
+                    brokerName,
+                    runId,
+                    correlationId,
+                    authorityRefusal.Reason,
+                    sessionId,
+                    ct,
+                    rejectionSource: authorityRefusal.Source,
+                    reasonCode: authorityRefusal.ReasonCode,
+                    metadata: authorityRefusal.Metadata,
+                    riskWarnings: riskWarnings,
+                    riskDecision: riskDecision?.ToSummary(),
+                    journalAttemptId: journalAttemptId)
+                    .ConfigureAwait(false);
             }
 
             // A derivative's contract multiplier must reach both the working-order reserve
@@ -441,7 +479,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                 }
             }
 
-            await RecordJournalIntentAsync(safeRequest, "OpeningCheckpoint", journalAttemptId, ct).ConfigureAwait(false);
+            await RecordJournalIntentAsync(safeRequest, "OpeningCheckpoint", journalAttemptId, ct, RetainedAuthority(prepared)).ConfigureAwait(false);
             if (!TryRegisterOrder(orderId, orderState))
             {
                 // Lost a race with a concurrent submission that claimed the same client order id
@@ -531,7 +569,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
             // process exit must never make an already accepted client id available again.
             if (_gateway is IBrokerageGateway || _recoveryJournal.HasStore)
                 RetainBrokerageDispatch(orderState);
-            await RecordJournalIntentAsync(safeRequest, "Dispatch", journalAttemptId, ct).ConfigureAwait(false);
+            await RecordJournalIntentAsync(safeRequest, "Dispatch", journalAttemptId, ct, RetainedAuthority(prepared)).ConfigureAwait(false);
             var recoveryVersion = _recoveryJournal.CaptureVersion(orderId);
             if (await _admissionPolicy.EvaluateDispatchMarketChecksAsync(safeRequest, ct).ConfigureAwait(false) is { } marketRefusal)
                 throw new BrokerageRequestNotSentException(marketRefusal.Reason ?? "Current market conditions do not allow dispatch.");
@@ -625,7 +663,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                         Scope: BuildOrderAuditScope(safeRequest, runId),
                         Metadata: BuildOrderSubmittedAuditMetadata(
                             operatorControlDecision,
-                            liveOrderReadinessDecision)), CancellationToken.None).ConfigureAwait(false);
+                            liveOrderReadinessDecision,
+                            RetainedAuthority(prepared))), CancellationToken.None).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {

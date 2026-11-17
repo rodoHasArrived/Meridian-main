@@ -194,18 +194,28 @@ public static partial class ExecutionEndpoints
 
             string? correlationId = null;
             request.Metadata?.TryGetValue("correlationId", out correlationId);
+            var ticketCorrelationId = string.IsNullOrWhiteSpace(correlationId) ? GenerateActionId() : correlationId;
             var normalizedRequest = request with
             {
                 Metadata = MergeMetadata(
                     request.Metadata,
                     ("actor", actor),
-                    ("correlationId", string.IsNullOrWhiteSpace(correlationId) ? GenerateActionId() : correlationId))
+                    ("correlationId", ticketCorrelationId))
             };
+
+            // The account check above verified this operator for the named account, which is the
+            // grant the typed authority carries into the OMS.
+            var ticketAuthority = normalizedRequest.FundAccountId is { } grantedAccount
+                ? OrderSubmissionAuthority.ForOperatorTicket(
+                    actor,
+                    HttpPrincipalAccountGrant(grantedAccount, actor),
+                    ticketCorrelationId)
+                : null;
 
             OrderResult result;
             try
             {
-                result = await oms.PlaceOrderAsync(normalizedRequest, context.RequestAborted).ConfigureAwait(false);
+                result = await SubmitOperatorOrderAsync(oms, normalizedRequest, ticketAuthority, context.RequestAborted).ConfigureAwait(false);
             }
             catch (InvalidOperationException ex) when (OrderSubmissionRefusal.IsBeforeDispatch(ex))
             {

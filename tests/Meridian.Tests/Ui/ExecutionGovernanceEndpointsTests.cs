@@ -556,6 +556,43 @@ public sealed class ExecutionGovernanceEndpointsTests
     }
 
     [Fact]
+    public async Task SubmitOrder_WithVerifiedAccount_SubmitsUnderOperatorTicketAuthority()
+    {
+        // The account check verifies the operator for the named account; that verification is
+        // the grant the typed authority carries into the OMS.
+        OrderSubmitCommand? submitted = null;
+        var oms = Substitute.For<IOrderManager>();
+        oms.SubmitAsync(Arg.Do<OrderSubmitCommand>(command => submitted = command), Arg.Any<CancellationToken>())
+            .Returns(new OrderResult { Success = true, OrderId = "ticket-1" });
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterFundAccountScope(services, LiveFundAccountId);
+            services.AddSingleton(oms);
+        });
+        var client = app.GetTestClient();
+        client.DefaultRequestHeaders.Add("X-Meridian-Actor", "ops");
+
+        var response = await client.PostAsync("/api/execution/orders/submit", JsonContent(new
+        {
+            clientOrderId = "ticket-1",
+            symbol = "AAPL",
+            side = 0,
+            type = 1,
+            quantity = 1,
+            limitPrice = 190.25m,
+            fundAccountId = LiveFundAccountId
+        }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        submitted.Should().NotBeNull();
+        submitted!.Authority.Origin.Should().Be(OrderCommandOrigin.OperatorTicket);
+        submitted.Authority.AccountGrant!.FundAccountId.Should().Be(LiveFundAccountId);
+        submitted.Authority.AccountGrant.Source.Should().Be(ExecutionAccountGrantSources.HttpPrincipal);
+        submitted.Authority.RunId.Should().BeNull("a manual ticket never carries strategy-run authority");
+        await oms.DidNotReceive().PlaceOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task SubmitOrder_WithRestrictedBrokerRoutingMetadataAlias_ReturnsForbidden()
     {
         var tempRoot = CreateTempRoot();

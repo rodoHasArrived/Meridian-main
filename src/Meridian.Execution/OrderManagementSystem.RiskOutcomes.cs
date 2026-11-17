@@ -31,9 +31,22 @@ public sealed partial class OrderManagementSystem
         string? correlationId,
         RiskValidationResult riskResult,
         string? sessionId,
-        CancellationToken ct)
+        CancellationToken ct,
+        OrderSubmissionAuthorityRecord? authority = null)
     {
         var parkedState = CreateRejectedState(orderId, request, riskResult.RejectReason);
+
+        // Retain the typed authority with the parked entry so its release is judged by it. Best
+        // effort like the rest of post-park bookkeeping: without it the release stays on the
+        // untyped path, which refuses live orders.
+        if (authority is not null && riskResult.EscalationId is { } parkedEscalationId && _escalationQueue is not null
+            && !_escalationQueue.TryAttachAuthority(parkedEscalationId, authority))
+        {
+            _logger.LogWarning(
+                "Order {OrderId} parked for approval ({EscalationId}) without its typed authority retained",
+                LogSanitizer.Sanitize(orderId),
+                LogSanitizer.Sanitize(parkedEscalationId));
+        }
 
         // The tracked state is terminal (nothing is working at the broker), but the client
         // order id must not be reclaimable while the approval is live: another submission

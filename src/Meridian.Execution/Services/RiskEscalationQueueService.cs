@@ -296,6 +296,40 @@ public sealed class RiskEscalationQueueService : IRiskEscalationQueue, IAsyncDis
         _entries.TryGetValue(escalationId, out var entry) ? entry : null;
 
     /// <summary>
+    /// Retains the typed authority a parked order was submitted under, so its release is judged
+    /// by that authority. Attaches once, only to a pending entry, and only when the snapshot can be
+    /// persisted; otherwise the entry is left unchanged and its release stays on the untyped path,
+    /// which refuses live orders.
+    /// </summary>
+    /// <returns>True when the authority is attached and durably retained.</returns>
+    public bool TryAttachAuthority(string escalationId, OrderSubmissionAuthorityRecord authority)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(escalationId);
+        ArgumentNullException.ThrowIfNull(authority);
+        lock (_resolveLock)
+        {
+            if (!_entries.TryGetValue(escalationId, out var entry)
+                || entry.Status != RiskEscalationStatus.PendingApproval
+                || entry.Authority is not null)
+            {
+                return false;
+            }
+
+            _entries[escalationId] = entry with { Authority = authority };
+            if (!TryPersistSnapshotLocked())
+            {
+                _entries[escalationId] = entry;
+                _logger.LogError(
+                    "Typed authority for escalation {EscalationId} was not retained: the snapshot could not be persisted",
+                    escalationId);
+                return false;
+            }
+
+            return true;
+        }
+    }
+
+    /// <summary>
     /// Approves a pending escalation, arming a one-shot release of the parked order.
     /// Returns the updated entry, or <see langword="null"/> when the entry does not exist
     /// or is no longer pending.

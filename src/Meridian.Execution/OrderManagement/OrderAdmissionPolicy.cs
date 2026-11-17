@@ -56,7 +56,7 @@ internal sealed class OrderAdmissionPolicy
         _instrumentCoverage = instrumentCoverage;
         _clock = clock ?? TimeProvider.System;
         _authority = new OrderAuthorityResolver(
-            _executionMode, liveReadinessGate, runAuthority, authorityOptions, _clock);
+            _executionMode, liveReadinessGate, runAuthority, authorityOptions, _clock, securityMasterGate);
     }
 
     /// <summary>
@@ -192,6 +192,13 @@ internal sealed class OrderAdmissionPolicy
     /// </summary>
     internal ExecutionControlDecision? EvaluateDispatchControls(PreparedOrderAdmission prepared) =>
         _operatorControls?.EvaluateOrder(prepared.ControlRequest, _portfolioState, prepared.RunId);
+
+    /// <summary>
+    /// Re-checks typed order authority after risk validation and before the order becomes
+    /// visible; see <see cref="OrderAuthorityResolver.EvaluateDispatchAsync"/>.
+    /// </summary>
+    internal Task<OrderAdmissionRefusal?> EvaluateDispatchAuthorityAsync(PreparedOrderAdmission prepared, CancellationToken ct) =>
+        _authority.EvaluateDispatchAsync(prepared, ct);
 
     internal static OrderAdmissionRefusal ControlRefusal(ExecutionControlDecision decision, string source) =>
         new(decision.RejectReason, source, decision.RejectCode ?? "OPERATOR_CONTROL_REJECTED",
