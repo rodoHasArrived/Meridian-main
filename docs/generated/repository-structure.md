@@ -10592,6 +10592,7 @@ Meridian-main
 │   │   │   │   ├── WorkstationEntityConsolidationApiClient.cs
 │   │   │   │   ├── WorkstationEntityConsolidationApiClient.Lifecycle.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.Accruals.cs
+│   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.Choices.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.LegacyCoverage.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.Obligations.cs
@@ -15135,6 +15136,7 @@ Meridian-main
 │   │   │   ├── IntegrityEventsServiceTests.cs
 │   │   │   ├── IntercompanyAgreementWorkspaceTests.cs
 │   │   │   ├── IntercompanyAgreementWorkspaceTests.Structured.cs
+│   │   │   ├── IntercompanyBookChoiceTests.cs
 │   │   │   ├── IntercompanyCounterpartQueueWorkspaceTests.cs
 │   │   │   ├── IntercompanyInterestAccrualWorkspaceTests.cs
 │   │   │   ├── LeanIntegrationServiceTests.cs
@@ -15170,6 +15172,7 @@ Meridian-main
 │   │   │   ├── WorkstationAccountingCloseApiClientTests.cs
 │   │   │   ├── WorkstationEntityConsolidationApiClientTests.cs
 │   │   │   ├── WorkstationIntercompanyAgreementApiClientTests.Accruals.cs
+│   │   │   ├── WorkstationIntercompanyAgreementApiClientTests.Choices.cs
 │   │   │   ├── WorkstationIntercompanyAgreementApiClientTests.cs
 │   │   │   ├── WorkstationIntercompanyAgreementApiClientTests.Obligations.cs
 │   │   │   ├── WorkstationIntercompanyAgreementApiClientTests.Proposals.cs

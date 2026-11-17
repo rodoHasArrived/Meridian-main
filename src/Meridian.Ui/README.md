@@ -6,7 +6,7 @@ module_id: SRC-UI
 path: src/Meridian.Ui
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-14
+last_reviewed: 2026-11-17
 ---
 
 # src/Meridian.Ui
@@ -36,6 +36,10 @@ The rebuilt bundle also includes explicit retained quote and observed-fixing sel
 rates ingestion, provider identity-review evidence and shared chart accessibility. Dashboard reads
 preserve exact decimal text from fixed-income responses; calculation and review authority remains
 in the shared services. See the dashboard README for these workflows and rebuild validation.
+
+The served keyboard help sheet lets an operator rebind the workstation-global shortcuts (command
+palette, keyboard help) for that browser, with conflict, reserved-key and bare-letter checks. The
+overrides live in browser storage only; the host stores nothing. Rebuild the dashboard to serve it.
 
 The host-served bundle includes the Security Master bond analytics model selector and floating v3
 metrics, projected payments, fixing provenance and typed refusal states. Rebuild it from `dashboard/`
