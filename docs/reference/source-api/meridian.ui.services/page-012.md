@@ -794,6 +794,99 @@ Represents an ARGB color value.
 public readonly record struct ArgbColor(byte A, byte R, byte G, byte B);
 ```
 
+## IPeriodComparisonApiClient
+
+Qualified name: <code>Meridian.Ui.Services.Services.Comparisons.IPeriodComparisonApiClient</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs:9](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs#L9).
+
+Reads the shared prior-period comparisons that the desktop does not compose in process.
+
+```csharp
+public interface IPeriodComparisonApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ApiResponse&lt;PeriodComparisonDto&gt;&gt; GetCashLadderComparisonAsync(DateOnly? baselineAsOf = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs:12](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs#L12) | The portfolio cash ladder today against the ladder rebuilt as of baselineAsOf (default: the end of last month). |
+
+## PeriodComparisonApiClient
+
+Qualified name: <code>Meridian.Ui.Services.Services.Comparisons.PeriodComparisonApiClient</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs:20](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs#L20).
+
+HTTP client for UiApiRoutes.PortfolioCashLadderComparison. The cash ladder service needs host-composed holdings and cash providers, so the desktop reads it over the API; a host without them answers 501, which PeriodComparisonProjection.DescribeFailure{T} explains.
+
+```csharp
+public sealed class PeriodComparisonApiClient : IPeriodComparisonApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PeriodComparisonApiClient(ApiClientService apiClient);</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs:24](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs#L24) |  |
+| <code>public Task&lt;ApiResponse&lt;PeriodComparisonDto&gt;&gt; GetCashLadderComparisonAsync(DateOnly? baselineAsOf = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs:30](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs#L30) |  |
+| <code>public static string BuildCashLadderComparisonRoute(DateOnly? baselineAsOf) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs:34](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs#L34) | The comparison route, with the prior date when one is given. |
+
+## PeriodComparisonProjection
+
+Qualified name: <code>Meridian.Ui.Services.Services.Comparisons.PeriodComparisonProjection</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:58](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L58).
+
+Presentation projection for PeriodComparisonDto, shared by the desktop NAV, run attribution and cash ladder comparisons (UX Phase E parity). Lives here rather than in the desktop assembly so it runs in tests on any platform. It mirrors the browser&#x27;s period-comparison-panel.tsx: amounts to two places with negatives in parentheses, counts as whole numbers, the server&#x27;s percent (never recomputed) to two places, &quot;Not comparable · prior zero&quot; for a zero prior, and the Portfolio materiality threshold from lib/reporting-materiality.ts on amount lines.
+
+```csharp
+public static class PeriodComparisonProjection
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const decimal PortfolioMaterialAbsoluteVariance = 250_000m;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:61](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L61) | The Portfolio policy&#x27;s absolute-variance threshold in lib/reporting-materiality.ts. |
+| <code>public const string NotComparablePriorZero = &quot;Not comparable · prior zero&quot;;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:64](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L64) | Shown in place of a percent when the prior is zero. |
+| <code>public static readonly IReadOnlyCollection&lt;string&gt; CashLadderCountKeys = [&quot;breaches&quot;];</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:67](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L67) | Lines of the cash ladder comparison that are counts, not amounts. |
+| <code>public static PeriodComparisonView Project(PeriodComparisonDto? comparison, decimal? materialThreshold = PortfolioMaterialAbsoluteVariance, IReadOnlyCollection&lt;string&gt;? countKeys = null);</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:70](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L70) | Formats a comparison. A null comparison reads as still loading. |
+| <code>public static string FormatAmount(decimal value);</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:113](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L113) | Two places, thousands separated, negatives in parentheses. |
+| <code>public static string FormatCount(decimal value) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:120](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L120) | A whole number, negative with a minus sign. |
+| <code>public static string FormatPercent(decimal? percent) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:124](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L124) | The server&#x27;s percent to two places, or the not-comparable text when there is none. |
+| <code>public static string DescribeFailure&lt;T&gt;(ApiResponse&lt;T&gt; response) where T : class;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:130](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L130) | What to tell the operator when a comparison request fails. |
+
+## PeriodComparisonRow
+
+Qualified name: <code>Meridian.Ui.Services.Services.Comparisons.PeriodComparisonRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:17](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L17).
+
+One line of a prior-period comparison, formatted for display.
+
+```csharp
+public sealed record PeriodComparisonRow(string Key, string Label, string Current, string Prior, string Change, string ChangePercent, bool IsTotal, bool IsMaterial, bool IsPriorZero)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string MaterialLabel =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:29](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L29) | &quot;Material&quot; when the change is past the threshold, otherwise empty. |
+
+## PeriodComparisonView
+
+Qualified name: <code>Meridian.Ui.Services.Services.Comparisons.PeriodComparisonView</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:39](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L39).
+
+A prior-period comparison ready to show: a heading, why it is empty if it is, rows and notes.
+
+```csharp
+public sealed record PeriodComparisonView(bool IsReady, string Heading, string Windows, string? Message, IReadOnlyList<PeriodComparisonRow> Rows, IReadOnlyList<string> Notes);
+```
+
 ## ConfigProfile
 
 Qualified name: <code>Meridian.Ui.Services.Services.ConfigProfile</code>. Kind: `record`.
@@ -1232,122 +1325,3 @@ Enum declarations:
 | <code>Live</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:7](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L7) |  |
 | <code>Fixture</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:8](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L8) |  |
 | <code>Offline</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:9](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L9) |  |
-
-## FixtureScenario
-
-Qualified name: <code>Meridian.Ui.Services.Services.FixtureScenario</code>. Kind: `enum`.
-
-Source: [src/Meridian.Ui.Services/Services/FixtureScenario.cs:9](../../../../src/Meridian.Ui.Services/Services/FixtureScenario.cs#L9).
-
-Named fixture scenarios for UI development and debugging. Each scenario corresponds to a distinct system state that can be activated at runtime without restarting the application, enabling rapid iteration over all visual states in a single session.
-
-```csharp
-public enum FixtureScenario
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Connected</code> | [src/Meridian.Ui.Services/Services/FixtureScenario.cs:15](../../../../src/Meridian.Ui.Services/Services/FixtureScenario.cs#L15) | System fully connected with healthy metrics — the happy-path state. Providers are active, throughput is nominal, no errors. |
-| <code>Disconnected</code> | [src/Meridian.Ui.Services/Services/FixtureScenario.cs:21](../../../../src/Meridian.Ui.Services/Services/FixtureScenario.cs#L21) | System disconnected from all providers. Useful for testing empty-state / reconnection UI paths. |
-| <code>Degraded</code> | [src/Meridian.Ui.Services/Services/FixtureScenario.cs:27](../../../../src/Meridian.Ui.Services/Services/FixtureScenario.cs#L27) | System partially connected with degraded metrics. Some providers are unavailable or rate-limited; throughput is reduced. |
-| <code>Error</code> | [src/Meridian.Ui.Services/Services/FixtureScenario.cs:33](../../../../src/Meridian.Ui.Services/Services/FixtureScenario.cs#L33) | System in error state — provider errors, high drop rate, low throughput. Useful for testing error banners, alerts, and recovery UI flows. |
-| <code>Loading</code> | [src/Meridian.Ui.Services/Services/FixtureScenario.cs:39](../../../../src/Meridian.Ui.Services/Services/FixtureScenario.cs#L39) | System is initializing or loading — connections pending, data not yet available. Useful for testing skeleton/loading states and progress indicators. |
-
-## FormValidationRules
-
-Qualified name: <code>Meridian.Ui.Services.Services.FormValidationRules</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/FormValidationRules.cs:9](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L9).
-
-Shared validation rules for form validation across desktop applications. Extracted from FormValidationService implementations to eliminate duplicate validation logic.
-
-```csharp
-public static class FormValidationRules
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ValidationResult ValidateRequired(string? value, string fieldName = &quot;This field&quot;);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:17](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L17) | Validates that a field is not empty. |
-| <code>public static ValidationResult ValidateSymbol(string? value);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:30](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L30) | Validates a stock symbol format. Symbols must be 1-10 characters, start with a letter, and contain only letters, numbers, dots, dashes, and slashes. |
-| <code>public static ValidationResult ValidateSymbolList(string? value, int maxSymbols = 100);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:52](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L52) | Validates a comma-separated list of symbols. |
-| <code>public static ValidationResult ValidateDateRange(DateTimeOffset? fromDate, DateTimeOffset? toDate);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:83](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L83) | Validates a date range for data collection or backfill. |
-| <code>public static ValidationResult ValidateDateRange(string? dateStr);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:104](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L104) | Validates a date string in ISO format (YYYY-MM-DD). |
-| <code>public static ValidationResult ValidateApiKey(string? value);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:121](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L121) | Validates an API key format. |
-| <code>public static ValidationResult ValidateUrl(string? value, string fieldName = &quot;URL&quot;);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:138](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L138) | Validates a URL format. |
-| <code>public static ValidationResult ValidatePort(int? value);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:154](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L154) | Validates a network port number. |
-| <code>public static ValidationResult ValidateFilePath(string? value);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:170](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L170) | Validates a file path format. |
-| <code>public static ValidationResult ValidateNumericRange(double? value, double min, double max, string fieldName = &quot;Value&quot;);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:193](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L193) | Validates that a numeric value is within a specified range. |
-
-## InfoBarConstants
-
-Qualified name: <code>Meridian.Ui.Services.Services.InfoBarConstants</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:19](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L19).
-
-Duration configuration for different severity levels. Shared across InfoBarService implementations.
-
-```csharp
-public static class InfoBarConstants
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const int InfoDurationMs = 4000;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:22](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L22) | Informational messages - 4 seconds (user acknowledgment optional). |
-| <code>public const int SuccessDurationMs = 3000;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:25](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L25) | Success messages - 3 seconds (quick confirmation). |
-| <code>public const int WarningDurationMs = 6000;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:28](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L28) | Warning messages - 6 seconds (user should notice). |
-| <code>public const int ErrorDurationMs = 10000;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:31](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L31) | Error messages - 10 seconds (requires attention). |
-| <code>public const int CriticalDurationMs = 0;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:34](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L34) | Critical errors - no auto-dismiss (manual close required). |
-| <code>public static int GetDurationForSeverity(InfoBarSeverityLevel severity) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:37](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L37) | Gets the recommended duration for a severity level. |
-
-## InfoBarSeverityLevel
-
-Qualified name: <code>Meridian.Ui.Services.Services.InfoBarSeverityLevel</code>. Kind: `enum`.
-
-Source: [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:7](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L7).
-
-Platform-agnostic severity levels for info bar notifications. Shared across desktop platforms.
-
-```csharp
-public enum InfoBarSeverityLevel : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Informational</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:9](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L9) |  |
-| <code>Success</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:10](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L10) |  |
-| <code>Warning</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:11](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L11) |  |
-| <code>Error</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:12](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L12) |  |
-
-## OmsIntegrationApiHandler
-
-Qualified name: <code>Meridian.Ui.Services.Services.Integrations.OmsIntegrationApiHandler</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:12](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L12).
-
-Handles OMS/EMS ingestion with bounded in-memory deduplication, diagnostics, signing keys, and audit history.
-
-```csharp
-public sealed class OmsIntegrationApiHandler : IOmsIntegrationApiHandler
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public OmsIntegrationApiHandler(TimeProvider? timeProvider = null);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:26](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L26) |  |
-| <code>public OmsIngestionResult Ingest(OmsInboundMessage message, OmsRequestSignatureInput? signature = null);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:32](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L32) |  |
-| <code>public IReadOnlyCollection&lt;OmsInboundMessage&gt; Snapshot() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:68](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L68) |  |
-| <code>public IReadOnlyCollection&lt;OmsAdapterDiagnostics&gt; AdapterDiagnostics();</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:70](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L70) |  |
-| <code>public OmsSyncConflictResult ResolveSyncConflict(OmsSyncRequest request, OmsRequestSignatureInput? signature = null);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:112](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L112) |  |
-| <code>public IReadOnlyCollection&lt;OmsIntegrationAuditEntry&gt; AuditTrail(int take = 200) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:136](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L136) |  |
-| <code>public OmsRequestSignatureResult VerifyRequestSignature(OmsRequestSignatureInput signature);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:139](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L139) |  |
-| <code>public OmsKeyRotationResult RotateSigningKey(OmsKeyRotationRequest request);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:161](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L161) |  |
-| <code>public static string ComputeSignature(byte[] key, string timestampUtc, string canonicalPayload);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:234](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L234) |  |

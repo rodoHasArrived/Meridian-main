@@ -6,6 +6,123 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkspaceShellViewModelBase
+
+Qualified name: <code>Meridian.Wpf.ViewModels.WorkspaceShellViewModelBase</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:20](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L20).
+
+Provides workspace definition, attention ribbon, and command-group state for shell view models.
+
+```csharp
+public abstract class WorkspaceShellViewModelBase : WorkspaceViewModelBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public event EventHandler&lt;string&gt;? AttentionPrimaryActionRequested;</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:33](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L33) |  |
+| <code>public WorkspaceShellDefinition WorkspaceDefinition { get; }</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:35](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L35) |  |
+| <code>public WorkspaceAttentionRibbonViewModel AttentionRibbon { get; protected set; }</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:37](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L37) |  |
+| <code>public WorkspaceCommandGroup CommandGroup { get; set; }</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:43](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L43) |  |
+
+## WorkstationScopeOptionsViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.WorkstationScopeOptionsViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:13](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L13).
+
+Desktop scope picker backed by the shared GET /api/workstation/scope-options seam: the entities, funds and fund accounts the operator may scope to, with a chosen entity narrowing the funds and a chosen entity or fund narrowing the accounts, by the same rule the browser workstation&#x27;s scope picker applies (WorkstationScopeOptionsNarrowing).
+
+```csharp
+public sealed class WorkstationScopeOptionsViewModel : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WorkstationScopeOptionsViewModel(IWorkstationScopeOptionsApiClient client);</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:35](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L35) |  |
+| <code>public ReadOnlyObservableCollection&lt;WorkstationScopeEntityOptionDto&gt; Entities { get; }</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:47](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L47) |  |
+| <code>public ReadOnlyObservableCollection&lt;WorkstationScopeFundOptionDto&gt; Funds { get; }</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:49](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L49) |  |
+| <code>public ReadOnlyObservableCollection&lt;WorkstationScopeAccountOptionDto&gt; Accounts { get; }</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:51](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L51) |  |
+| <code>public IAsyncRelayCommand ReloadCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:53](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L53) |  |
+| <code>public IRelayCommand ClearSelectionCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:55](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L55) |  |
+| <code>public WorkstationScopeOptionsSource Source { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:58](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L58) | Where the current lists came from. |
+| <code>public bool IsAvailable =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:71](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L71) | True when lists loaded (from the seam or the 404 fallback) and narrowing applies. |
+| <code>public bool IsLoading { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:73](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L73) |  |
+| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:86](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L86) | Why the lists look the way they do: loaded counts, fallback source, or failure reason. |
+| <code>public string NarrowingText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:93](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L93) | How the chosen entity/fund narrowed the lists, including accounts left out; empty when nothing is narrowed. |
+| <code>public WorkstationScopeEntityOptionDto? SelectedEntity { get; set; }</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:99](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L99) |  |
+| <code>public WorkstationScopeFundOptionDto? SelectedFund { get; set; }</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:119](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L119) |  |
+| <code>public WorkstationScopeAccountOptionDto? SelectedAccount { get; set; }</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:133](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L133) |  |
+| <code>public bool HasSelection =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:147](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L147) |  |
+| <code>public string? SelectedScopeContextKey =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:154](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L154) | The narrowest pick as an operating-context key (account, else fund, else entity), in the WorkstationOperatingContext.CreateContextKey form the desktop context catalog uses; null when nothing is picked. |
+| <code>public string? SelectedScopeDisplayName =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:164](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L164) | Display name of the narrowest pick, for status messages; null when nothing is picked. |
+| <code>public Task InitializeAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:168](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L168) | Loads the options once; later calls are no-ops until ReloadCommand runs. |
+| <code>public async Task LoadAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:172](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L172) | Loads (or reloads) the options from the shared seam and re-applies the current picks. |
+
+## WpfIndicatorValueVm
+
+Qualified name: <code>Meridian.Wpf.ViewModels.WpfIndicatorValueVm</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:834](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L834).
+
+Carries an indicator&#x27;s display name, formatted value, and value brush.
+
+```csharp
+public sealed class WpfIndicatorValueVm
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:836](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L836) |  |
+| <code>public string Value { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:837](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L837) |  |
+| <code>public Brush ValueBrush { get; set; } = Brushes.White;</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:838](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L838) |  |
+
+## WpfVolumeBarVm
+
+Qualified name: <code>Meridian.Wpf.ViewModels.WpfVolumeBarVm</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:814](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L814).
+
+Carries a volume bar&#x27;s rendered height, brush, and tooltip.
+
+```csharp
+public sealed class WpfVolumeBarVm
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public double Height { get; set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:816](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L816) |  |
+| <code>public Brush BarBrush { get; set; } = Brushes.Gray;</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:817](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L817) |  |
+| <code>public string Tooltip { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:818](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L818) |  |
+
+## WpfVolumeProfileBarVm
+
+Qualified name: <code>Meridian.Wpf.ViewModels.WpfVolumeProfileBarVm</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:824](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L824).
+
+Carries a price-volume bucket&#x27;s price label, rendered width, and brush.
+
+```csharp
+public sealed class WpfVolumeProfileBarVm
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string PriceLabel { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:826](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L826) |  |
+| <code>public double BarWidth { get; set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:827](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L827) |  |
+| <code>public Brush BarBrush { get; set; } = Brushes.Blue;</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:828](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L828) |  |
+
 ## AccountingClosePage
 
 Qualified name: <code>Meridian.Wpf.Views.AccountingClosePage</code>. Kind: `class`.
@@ -996,99 +1113,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public FundAccountsPage(FundAccountsViewModel viewModel);</code> | [src/Meridian.Wpf/Views/FundAccountsPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/FundAccountsPage.xaml.cs#L14) |  |
-
-## FundLedgerPage
-
-Qualified name: <code>Meridian.Wpf.Views.FundLedgerPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/FundLedgerPage.xaml.cs:13](../../../../src/Meridian.Wpf/Views/FundLedgerPage.xaml.cs#L13).
-
-Provides the desktop page to review journal, account, and accounting readiness in one view.
-
-```csharp
-public partial class FundLedgerPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FundLedgerPage(FundLedgerViewModel viewModel);</code> | [src/Meridian.Wpf/Views/FundLedgerPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/FundLedgerPage.xaml.cs#L17) |  |
-
-## FundProfileSelectionPage
-
-Qualified name: <code>Meridian.Wpf.Views.FundProfileSelectionPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/FundProfileSelectionPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/FundProfileSelectionPage.xaml.cs#L10).
-
-Hosts operating-context and fund-profile selection before entering the desktop workstation.
-
-```csharp
-public partial class FundProfileSelectionPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FundProfileSelectionPage(FundProfileSelectionViewModel viewModel);</code> | [src/Meridian.Wpf/Views/FundProfileSelectionPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/FundProfileSelectionPage.xaml.cs#L14) |  |
-
-## FundStructureSetupPage
-
-Qualified name: <code>Meridian.Wpf.Views.FundStructureSetupPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/FundStructureSetupPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/FundStructureSetupPage.xaml.cs#L10).
-
-Provides the desktop page to create fund-structure entities, ownership links, and account handoff drafts.
-
-```csharp
-public partial class FundStructureSetupPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FundStructureSetupPage(FundStructureSetupViewModel viewModel);</code> | [src/Meridian.Wpf/Views/FundStructureSetupPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/FundStructureSetupPage.xaml.cs#L12) |  |
-
-## HelpPage
-
-Qualified name: <code>Meridian.Wpf.Views.HelpPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/HelpPage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/HelpPage.xaml.cs#L11).
-
-Help page with tutorials, documentation, and support links.
-
-```csharp
-public partial class HelpPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public HelpPage(WpfServices.NavigationService navigationService, WpfServices.NotificationService notificationService);</code> | [src/Meridian.Wpf/Views/HelpPage.xaml.cs:16](../../../../src/Meridian.Wpf/Views/HelpPage.xaml.cs#L16) |  |
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:99](../../../../src/Meridian.Wpf/Views/Pages.cs#L99).
-
-```csharp
-public partial class HelpPage : Page
-```
-
-## HomeWorkspacePage
-
-Qualified name: <code>Meridian.Wpf.Views.HomeWorkspacePage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/HomeWorkspacePage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/HomeWorkspacePage.xaml.cs#L11).
-
-Hosts the desktop workspace overview and recent activity.
-
-```csharp
-public partial class HomeWorkspacePage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public HomeWorkspacePage(HomeWorkspaceViewModel viewModel);</code> | [src/Meridian.Wpf/Views/HomeWorkspacePage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/HomeWorkspacePage.xaml.cs#L15) |  |

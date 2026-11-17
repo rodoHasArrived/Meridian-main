@@ -6,6 +6,92 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SearchFilterBarControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Tables.SearchFilterBarControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:30](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L30).
+
+Provides a content surface for table search and filter controls.
+
+```csharp
+public sealed class SearchFilterBarControl : ContentControl
+```
+
+## AuditTimelineEntry
+
+Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.AuditTimelineEntry</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs:8](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs#L8).
+
+Carries an audit event&#x27;s timestamp, actor, and message.
+
+```csharp
+public sealed class AuditTimelineEntry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DateTimeOffset Timestamp { get; init; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs:10](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs#L10) |  |
+| <code>public string Actor { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs:11](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs#L11) |  |
+| <code>public string Message { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs:12](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs#L12) |  |
+
+## AuditTimelineViewModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.AuditTimelineViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs:18](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs#L18).
+
+Exposes an observable collection of timestamped audit entries for desktop binding.
+
+```csharp
+public sealed class AuditTimelineViewModel : Meridian.Wpf.ViewModels.BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ObservableCollection&lt;AuditTimelineEntry&gt; Entries { get; } = [];</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs:20](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs#L20) |  |
+
+## BatchedObservableCollection (generic arity 1)
+
+Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.BatchedObservableCollection</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/ViewModels/Base/BatchedObservableCollection.cs:10](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/BatchedObservableCollection.cs#L10).
+
+Replaces collection contents while batching notifications into a single reset.
+
+```csharp
+public sealed class BatchedObservableCollection<T>: ObservableCollection<T>
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public void ReplaceAll(IEnumerable&lt;T&gt; items);</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/BatchedObservableCollection.cs:14](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/BatchedObservableCollection.cs#L14) |  |
+
+## DataQualityViewModelBase
+
+Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.DataQualityViewModelBase</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/ViewModels/Base/DataQualityViewModelBase.cs:6](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/DataQualityViewModelBase.cs#L6).
+
+Adds an observable quality summary to workspace view models.
+
+```csharp
+public abstract class DataQualityViewModelBase : WorkspaceViewModelBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string QualitySummary { get; protected set; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/DataQualityViewModelBase.cs:10](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/DataQualityViewModelBase.cs#L10) |  |
+
 ## DetailWorkspaceViewModelBase (generic arity 1)
 
 Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.DetailWorkspaceViewModelBase</code>. Kind: `class`.

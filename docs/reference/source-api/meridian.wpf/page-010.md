@@ -6,6 +6,53 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ToastNotificationService
+
+Qualified name: <code>Meridian.Wpf.Services.ToastNotificationService</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/ToastNotificationService.cs:21](../../../../src/Meridian.Wpf/Services/ToastNotificationService.cs#L21).
+
+Delivers Windows balloon-tip notifications via NotifyIcon. The project targets net9.0-windows (no explicit Windows version suffix), so the WinRT Windows.UI.Notifications API is unavailable without adding Microsoft.Windows.SDK.Contracts or bumping the TFM to net9.0-windows10.0.17763.0. This service provides a functionally equivalent experience through the system-tray balloon-tip channel. Limitation: Balloon tips do NOT persist in the Windows Action Center; they appear for ≈5 s and are then silently dismissed. For true Action Center persistence, change TargetFramework to net9.0-windows10.0.17763.0 and use Windows.UI.Notifications.ToastNotificationManager.
+
+```csharp
+public sealed class ToastNotificationService : IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ToastNotificationService Instance =&gt; …;</code> | [src/Meridian.Wpf/Services/ToastNotificationService.cs:39](../../../../src/Meridian.Wpf/Services/ToastNotificationService.cs#L39) | Gets the singleton instance. |
+| <code>public static void SetAppUserModelId() =&gt; …;</code> | [src/Meridian.Wpf/Services/ToastNotificationService.cs:58](../../../../src/Meridian.Wpf/Services/ToastNotificationService.cs#L58) | Registers the AppUserModelID with Windows so that toast activations, JumpList entries, and taskbar pins all share the same identity. Must be called before any window is shown. |
+| <code>public void ShowBackfillComplete(int symbolCount, long barsWritten, TimeSpan duration);</code> | [src/Meridian.Wpf/Services/ToastNotificationService.cs:67](../../../../src/Meridian.Wpf/Services/ToastNotificationService.cs#L67) | Shows a &quot;Backfill Complete&quot; balloon notification. |
+| <code>public void ShowProviderDisconnected(string providerName);</code> | [src/Meridian.Wpf/Services/ToastNotificationService.cs:81](../../../../src/Meridian.Wpf/Services/ToastNotificationService.cs#L81) | Shows a &quot;Provider Disconnected&quot; balloon notification. |
+| <code>public void ShowDataQualityAlert(string symbol, double score);</code> | [src/Meridian.Wpf/Services/ToastNotificationService.cs:96](../../../../src/Meridian.Wpf/Services/ToastNotificationService.cs#L96) | Shows a &quot;Data Quality Alert&quot; balloon notification when a quality score drops below the warning threshold. |
+| <code>public void Dispose();</code> | [src/Meridian.Wpf/Services/ToastNotificationService.cs:153](../../../../src/Meridian.Wpf/Services/ToastNotificationService.cs#L153) |  |
+
+## TooltipService
+
+Qualified name: <code>Meridian.Wpf.Services.TooltipService</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/TooltipService.cs:14](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L14).
+
+Service for managing contextual tooltips, onboarding tips, and feature discovery. Tracks which tips have been shown to avoid repetition. Uses file-based storage for dismissed tips persistence. Delegates content to the shared TooltipContent in Ui.Services.
+
+```csharp
+public sealed class TooltipService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static TooltipService Instance =&gt; …;</code> | [src/Meridian.Wpf/Services/TooltipService.cs:22](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L22) |  |
+| <code>public FeatureHelp GetFeatureHelp(string featureKey) =&gt; …;</code> | [src/Meridian.Wpf/Services/TooltipService.cs:29](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L29) |  |
+| <code>public bool ShouldShowTip(string tipKey);</code> | [src/Meridian.Wpf/Services/TooltipService.cs:31](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L31) |  |
+| <code>public void DismissTip(string tipKey);</code> | [src/Meridian.Wpf/Services/TooltipService.cs:41](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L41) |  |
+| <code>public void ResetAllTips();</code> | [src/Meridian.Wpf/Services/TooltipService.cs:47](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L47) |  |
+| <code>public IReadOnlyList&lt;OnboardingTip&gt; GetOnboardingTips(string pageKey) =&gt; …;</code> | [src/Meridian.Wpf/Services/TooltipService.cs:54](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L54) |  |
+| <code>public string GetTooltipContent(string featureKey) =&gt; …;</code> | [src/Meridian.Wpf/Services/TooltipService.cs:60](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L60) | Gets formatted tooltip text for a feature (title + description + tips). Can be used to populate WPF ToolTip content on controls. |
+
 ## TradingSafetyCommandService
 
 Qualified name: <code>Meridian.Wpf.Services.TradingSafetyCommandService</code>. Kind: `class`.
@@ -1103,52 +1150,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public PageContentFactory(NavigationService navigationService);</code> | [src/Meridian.Wpf/Shell/Services/PageContentFactory.cs:14](../../../../src/Meridian.Wpf/Shell/Services/PageContentFactory.cs#L14) |  |
 | <code>public FrameworkElement CreateContent(string pageTag, object? parameter = null, WorkspaceChromePresentationMode presentationMode = WorkspaceChromePresentationMode.Docked) =&gt; …;</code> | [src/Meridian.Wpf/Shell/Services/PageContentFactory.cs:19](../../../../src/Meridian.Wpf/Shell/Services/PageContentFactory.cs#L19) |  |
-
-## ShellNavigationCoordinator
-
-Qualified name: <code>Meridian.Wpf.Shell.Services.ShellNavigationCoordinator</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:13](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L13).
-
-Resolves navigation routes and coordinates page creation and pane drop behavior.
-
-```csharp
-public sealed class ShellNavigationCoordinator : IShellNavigationCoordinator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ShellNavigationCoordinator(INavigationService navigationService, IShellRouteRegistry routeRegistry, IPageContentFactory pageContentFactory);</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:18](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L18) |  |
-| <code>public IShellRouteRegistry RouteRegistry { get; }</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:28](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L28) |  |
-| <code>public ShellRoute? ResolveRoute(string? pageTag) =&gt; …;</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:30](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L30) |  |
-| <code>public bool IsRouteRegistered(string? pageTag) =&gt; …;</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:32](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L32) |  |
-| <code>public bool NavigateToRoute(string pageTag, object? parameter = null);</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:34](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L34) |  |
-| <code>public PaneDropResult ApplyPaneDrop(PaneHostViewModel paneHost, string? pageTag, int targetPaneIndex, PaneDropAction action = PaneDropAction.Replace);</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:40](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L40) |  |
-| <code>public IReadOnlyList&lt;PaneContentState&gt; GetVisiblePaneContentStates(PaneHostViewModel paneHost);</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:66](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L66) |  |
-| <code>public FrameworkElement CreatePaneContent(PaneContentState state);</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:72](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L72) |  |
-| <code>public void InitializeNavigationFrame(Frame frame);</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:78](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L78) |  |
-
-## ShellPageRegistryBuilder
-
-Qualified name: <code>Meridian.Wpf.Shell.Services.ShellPageRegistryBuilder</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:10](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L10).
-
-Combines feature-module page and workspace declarations into a desktop shell registry.
-
-```csharp
-public sealed class ShellPageRegistryBuilder
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ShellPageRegistryBuilder Contribute(IEnumerable&lt;ShellPageDescriptor&gt; pages);</code> | [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:15](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L15) |  |
-| <code>public ShellPageRegistryBuilder ContributeCapability(WorkspaceCapabilityDescriptor capability);</code> | [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:23](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L23) |  |
-| <code>public IShellPageRegistry Build();</code> | [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:31](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L31) |  |
-| <code>public static IShellPageRegistry BuildDefault();</code> | [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:87](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L87) |  |
-| <code>public static ShellPageDescriptor Page&lt;TPage&gt;(string pageTag, string title, string subtitle, string workspaceId, string sectionLabel, string glyph, int order, ShellNavigationVisibilityTier visibilityTier, IReadOnlyList&lt;string&gt;? searchKeywords = null, IReadOnlyList&lt;string&gt;? relatedPageTags = null, IReadOnlyList&lt;string&gt;? aliases = null, bool hideFromDefaultPalette = false) where TPage : class;</code> | [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:115](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L115) |  |
-| <code>public static WorkspacePaneDefinition Pane(string pageTag, PaneDropAction action, WorkspacePaneParameterBinding parameterBinding = WorkspacePaneParameterBinding.None, bool openWithoutBoundParameter = false, string? fallbackPageTag = null, PaneDropAction? fallbackAction = null) =&gt; …;</code> | [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:146](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L146) |  |

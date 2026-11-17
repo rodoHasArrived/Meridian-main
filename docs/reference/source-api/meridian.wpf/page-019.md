@@ -6,6 +6,129 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SaveWatchlistDialog
+
+Qualified name: <code>Meridian.Wpf.Views.SaveWatchlistDialog</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs:11](../../../../src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs#L11).
+
+Dialog for saving or updating a watchlist. Replaces the former imperative SaveWatchlistDialog Window class that was embedded in SymbolsPage.xaml.cs.
+
+```csharp
+public partial class SaveWatchlistDialog : Window
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string WatchlistName =&gt; …;</code> | [src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs:14](../../../../src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs#L14) | Gets the watchlist name typed by the user. |
+| <code>public bool SaveAsNew =&gt; …;</code> | [src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs:17](../../../../src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs#L17) | Gets whether the user chose to create a new watchlist. |
+| <code>public string? SelectedWatchlistId =&gt; …;</code> | [src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs:20](../../../../src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs#L20) | Gets the selected existing watchlist name (null when SaveAsNew is true). |
+| <code>public SaveWatchlistDialog(IEnumerable&lt;string&gt; existingWatchlists);</code> | [src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs:22](../../../../src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs#L22) |  |
+
+## ScatterAnalysisPage
+
+Qualified name: <code>Meridian.Wpf.Views.ScatterAnalysisPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/ScatterAnalysisPage.xaml.cs:16](../../../../src/Meridian.Wpf/Views/ScatterAnalysisPage.xaml.cs#L16).
+
+Code-behind for the Scatter Analysis page. Keeps business logic in ScatterAnalysisViewModel; this file handles: • ScottPlot chart rendering (UI-specific, not MVVM-bindable) • Tab panel visibility switching • Time-range RadioButton selection → ViewModel propagation
+
+```csharp
+public partial class ScatterAnalysisPage
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ScatterAnalysisPage(ScatterAnalysisViewModel viewModel);</code> | [src/Meridian.Wpf/Views/ScatterAnalysisPage.xaml.cs:32](../../../../src/Meridian.Wpf/Views/ScatterAnalysisPage.xaml.cs#L32) |  |
+
+## ScheduleManagerPage
+
+Qualified name: <code>Meridian.Wpf.Views.ScheduleManagerPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:24](../../../../src/Meridian.Wpf/Views/Pages.cs#L24).
+
+```csharp
+public partial class ScheduleManagerPage : Page
+```
+
+Source: [src/Meridian.Wpf/Views/ScheduleManagerPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/ScheduleManagerPage.xaml.cs#L12).
+
+Hosts backfill and maintenance scheduling and cron validation.
+
+```csharp
+public partial class ScheduleManagerPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ScheduleManagerPage(NavigationService navigationService, NotificationService notificationService);</code> | [src/Meridian.Wpf/Views/ScheduleManagerPage.xaml.cs:16](../../../../src/Meridian.Wpf/Views/ScheduleManagerPage.xaml.cs#L16) |  |
+
+## SecretInputControl
+
+Qualified name: <code>Meridian.Wpf.Views.SecretInputControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/SecretInputControl.xaml.cs:11](../../../../src/Meridian.Wpf/Views/SecretInputControl.xaml.cs#L11).
+
+Provides a bound secret editor with explicit reveal state and accessible input and reveal labels.
+
+```csharp
+public partial class SecretInputControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly DependencyProperty SecretProperty = DependencyProperty.Register(nameof(Secret), typeof(string), typeof(SecretInputControl), new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnSecretChanged));</code> | [src/Meridian.Wpf/Views/SecretInputControl.xaml.cs:13](../../../../src/Meridian.Wpf/Views/SecretInputControl.xaml.cs#L13) |  |
+| <code>public static readonly DependencyProperty IsRevealedProperty = DependencyProperty.Register(nameof(IsRevealed), typeof(bool), typeof(SecretInputControl), new PropertyMetadata(false, OnIsRevealedChanged));</code> | [src/Meridian.Wpf/Views/SecretInputControl.xaml.cs:23](../../../../src/Meridian.Wpf/Views/SecretInputControl.xaml.cs#L23) |  |
+| <code>public static readonly DependencyProperty InputAutomationIdProperty = DependencyProperty.Register(nameof(InputAutomationId), typeof(string), typeof(SecretInputControl), new PropertyMetadata(&quot;SecretInput&quot;));</code> | [src/Meridian.Wpf/Views/SecretInputControl.xaml.cs:30](../../../../src/Meridian.Wpf/Views/SecretInputControl.xaml.cs#L30) |  |
+| <code>public static readonly DependencyProperty RevealAutomationIdProperty = DependencyProperty.Register(nameof(RevealAutomationId), typeof(string), typeof(SecretInputControl), new PropertyMetadata(&quot;SecretInputRevealButton&quot;));</code> | [src/Meridian.Wpf/Views/SecretInputControl.xaml.cs:37](../../../../src/Meridian.Wpf/Views/SecretInputControl.xaml.cs#L37) |  |
+| <code>public static readonly DependencyProperty InputAutomationNameProperty = DependencyProperty.Register(nameof(InputAutomationName), typeof(string), typeof(SecretInputControl), new PropertyMetadata(&quot;Secret input&quot;, OnInputAutomationNameChanged));</code> | [src/Meridian.Wpf/Views/SecretInputControl.xaml.cs:44](../../../../src/Meridian.Wpf/Views/SecretInputControl.xaml.cs#L44) |  |
+| <code>public static readonly DependencyProperty RevealAutomationNameProperty = DependencyProperty.Register(nameof(RevealAutomationName), typeof(string), typeof(SecretInputControl), new PropertyMetadata(&quot;Show or hide secret&quot;));</code> | [src/Meridian.Wpf/Views/SecretInputControl.xaml.cs:51](../../../../src/Meridian.Wpf/Views/SecretInputControl.xaml.cs#L51) |  |
+| <code>public static readonly DependencyProperty RevealToolTipProperty = DependencyProperty.Register(nameof(RevealToolTip), typeof(string), typeof(SecretInputControl), new PropertyMetadata(&quot;Show or hide secret&quot;));</code> | [src/Meridian.Wpf/Views/SecretInputControl.xaml.cs:58](../../../../src/Meridian.Wpf/Views/SecretInputControl.xaml.cs#L58) |  |
+| <code>public static readonly DependencyProperty InputMinHeightProperty = DependencyProperty.Register(nameof(InputMinHeight), typeof(double), typeof(SecretInputControl), new PropertyMetadata(34d));</code> | [src/Meridian.Wpf/Views/SecretInputControl.xaml.cs:65](../../../../src/Meridian.Wpf/Views/SecretInputControl.xaml.cs#L65) |  |
+| <code>public SecretInputControl();</code> | [src/Meridian.Wpf/Views/SecretInputControl.xaml.cs:76](../../../../src/Meridian.Wpf/Views/SecretInputControl.xaml.cs#L76) |  |
+| <code>public event EventHandler? SecretChanged;</code> | [src/Meridian.Wpf/Views/SecretInputControl.xaml.cs:83](../../../../src/Meridian.Wpf/Views/SecretInputControl.xaml.cs#L83) |  |
+| <code>public string Secret { get; set; }</code> | [src/Meridian.Wpf/Views/SecretInputControl.xaml.cs:85](../../../../src/Meridian.Wpf/Views/SecretInputControl.xaml.cs#L85) |  |
+| <code>public bool IsRevealed { get; set; }</code> | [src/Meridian.Wpf/Views/SecretInputControl.xaml.cs:91](../../../../src/Meridian.Wpf/Views/SecretInputControl.xaml.cs#L91) |  |
+| <code>public string InputAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/SecretInputControl.xaml.cs:97](../../../../src/Meridian.Wpf/Views/SecretInputControl.xaml.cs#L97) |  |
+| <code>public string RevealAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/SecretInputControl.xaml.cs:103](../../../../src/Meridian.Wpf/Views/SecretInputControl.xaml.cs#L103) |  |
+| <code>public string InputAutomationName { get; set; }</code> | [src/Meridian.Wpf/Views/SecretInputControl.xaml.cs:109](../../../../src/Meridian.Wpf/Views/SecretInputControl.xaml.cs#L109) |  |
+| <code>public string RevealAutomationName { get; set; }</code> | [src/Meridian.Wpf/Views/SecretInputControl.xaml.cs:115](../../../../src/Meridian.Wpf/Views/SecretInputControl.xaml.cs#L115) |  |
+| <code>public string RevealToolTip { get; set; }</code> | [src/Meridian.Wpf/Views/SecretInputControl.xaml.cs:121](../../../../src/Meridian.Wpf/Views/SecretInputControl.xaml.cs#L121) |  |
+| <code>public double InputMinHeight { get; set; }</code> | [src/Meridian.Wpf/Views/SecretInputControl.xaml.cs:127](../../../../src/Meridian.Wpf/Views/SecretInputControl.xaml.cs#L127) |  |
+| <code>public void ClearSecret();</code> | [src/Meridian.Wpf/Views/SecretInputControl.xaml.cs:133](../../../../src/Meridian.Wpf/Views/SecretInputControl.xaml.cs#L133) |  |
+
+## SecurityMasterPage
+
+Qualified name: <code>Meridian.Wpf.Views.SecurityMasterPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:83](../../../../src/Meridian.Wpf/Views/Pages.cs#L83).
+
+```csharp
+public partial class SecurityMasterPage : Page
+```
+
+Source: [src/Meridian.Wpf/Views/SecurityMasterPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/SecurityMasterPage.xaml.cs#L10).
+
+Hosts security-master discovery, trust review, and conflict workflows.
+
+```csharp
+public partial class SecurityMasterPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterPage(SecurityMasterViewModel viewModel);</code> | [src/Meridian.Wpf/Views/SecurityMasterPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/SecurityMasterPage.xaml.cs#L14) |  |
+
 ## SecurityPassportEditorPage
 
 Qualified name: <code>Meridian.Wpf.Views.SecurityPassportEditorPage</code>. Kind: `class`.
@@ -1002,106 +1125,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public ICommand RefreshCommand =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:46](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L46) | The shell Refresh control (toolbar button and F5) reloads the workspace shell and every docked page in place instead of rebuilding the shell by re-navigation. |
-
-## AsyncCommandViewModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Commands.AsyncCommandViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs:9](../../../../src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs#L9).
-
-Adds busy, error, and cancellation presentation to an asynchronous workstation command.
-
-```csharp
-public sealed class AsyncCommandViewModel : BindableBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CommandViewModel Command { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs:18](../../../../src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs#L18) |  |
-| <code>public bool IsBusy { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs:24](../../../../src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs#L24) |  |
-| <code>public string BusyMessage { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs:30](../../../../src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs#L30) |  |
-| <code>public string ErrorMessage { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs:36](../../../../src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs#L36) |  |
-| <code>public bool CanCancel { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs:42](../../../../src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs#L42) |  |
-| <code>public IRelayCommand? CancelCommand { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs:48](../../../../src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs#L48) |  |
-
-## CommandViewModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Commands.CommandViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs:10](../../../../src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs#L10).
-
-Combines command identity, label, styling, availability, and executable behavior for desktop binding.
-
-```csharp
-public sealed class CommandViewModel : BindableBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Id { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs:20](../../../../src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs#L20) |  |
-| <code>public string Label { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs:26](../../../../src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs#L26) |  |
-| <code>public string IconGlyph { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs:32](../../../../src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs#L32) |  |
-| <code>public string Tone { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs:38](../../../../src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs#L38) |  |
-| <code>public string Tooltip { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs:44](../../../../src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs#L44) |  |
-| <code>public bool IsEnabled { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs:50](../../../../src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs#L50) |  |
-| <code>public ICommand? Command { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs:56](../../../../src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs#L56) |  |
-
-## WorkspaceCommandAdapters
-
-Qualified name: <code>Meridian.Wpf.Workstation.Commands.WorkspaceCommandAdapters</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Commands/WorkspaceCommandAdapters.cs:8](../../../../src/Meridian.Wpf/Workstation/Commands/WorkspaceCommandAdapters.cs#L8).
-
-Converts workspace command groups into executable desktop command descriptors.
-
-```csharp
-public static class WorkspaceCommandAdapters
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;CommandViewModel&gt; ToCommandDescriptors(WorkspaceCommandGroup? group);</code> | [src/Meridian.Wpf/Workstation/Commands/WorkspaceCommandAdapters.cs:10](../../../../src/Meridian.Wpf/Workstation/Commands/WorkspaceCommandAdapters.cs#L10) |  |
-
-## WorkspaceCompositionDefinition
-
-Qualified name: <code>Meridian.Wpf.Workstation.Composition.WorkspaceCompositionDefinition</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Composition/WorkspaceCompositionDefinition.cs:15](../../../../src/Meridian.Wpf/Workstation/Composition/WorkspaceCompositionDefinition.cs#L15).
-
-Maps a workspace identity to the module assigned to each composition slot.
-
-```csharp
-public sealed class WorkspaceCompositionDefinition
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string WorkspaceId { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/Composition/WorkspaceCompositionDefinition.cs:17](../../../../src/Meridian.Wpf/Workstation/Composition/WorkspaceCompositionDefinition.cs#L17) |  |
-| <code>public IReadOnlyList&lt;WorkspaceCompositionSlot&gt; Slots { get; init; } = Array.Empty&lt;WorkspaceCompositionSlot&gt;();</code> | [src/Meridian.Wpf/Workstation/Composition/WorkspaceCompositionDefinition.cs:18](../../../../src/Meridian.Wpf/Workstation/Composition/WorkspaceCompositionDefinition.cs#L18) |  |
-
-## WorkspaceCompositionSlot
-
-Qualified name: <code>Meridian.Wpf.Workstation.Composition.WorkspaceCompositionSlot</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Composition/WorkspaceCompositionDefinition.cs:6](../../../../src/Meridian.Wpf/Workstation/Composition/WorkspaceCompositionDefinition.cs#L6).
-
-Associates a named workspace slot with its contributing module.
-
-```csharp
-public sealed class WorkspaceCompositionSlot
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string SlotId { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/Composition/WorkspaceCompositionDefinition.cs:8](../../../../src/Meridian.Wpf/Workstation/Composition/WorkspaceCompositionDefinition.cs#L8) |  |
-| <code>public string ModuleId { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/Composition/WorkspaceCompositionDefinition.cs:9](../../../../src/Meridian.Wpf/Workstation/Composition/WorkspaceCompositionDefinition.cs#L9) |  |

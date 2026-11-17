@@ -6,6 +6,40 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FundReconciliationReadAvailability
+
+Qualified name: <code>Meridian.Wpf.Models.FundReconciliationReadAvailability</code>. Kind: `enum`.
+
+Source: [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:31](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L31).
+
+```csharp
+public enum FundReconciliationReadAvailability : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Available = 0</code> | [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:33](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L33) |  |
+| <code>Degraded = 1</code> | [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:34](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L34) |  |
+| <code>Unavailable = 2</code> | [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:35](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L35) |  |
+
+## FundReconciliationReadResult
+
+Qualified name: <code>Meridian.Wpf.Models.FundReconciliationReadResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:38](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L38).
+
+```csharp
+public sealed record FundReconciliationReadResult(ReconciliationSummary Summary, int KnownRunCount, int MissingRunCount, int UnavailableRunCount)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FundReconciliationReadAvailability Availability =&gt; …;</code> | [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:44](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L44) |  |
+
 ## FundReconciliationRunRow
 
 Qualified name: <code>Meridian.Wpf.Models.FundReconciliationRunRow</code>. Kind: `record`.
@@ -986,24 +1020,4 @@ Source: [src/Meridian.Wpf/Models/SecurityMasterPresentationModels.cs:12](../../.
 
 ```csharp
 public sealed record SecurityMasterChecklistItem(string Label, string Owner, string Status);
-```
-
-## SecurityMasterEvidenceItem
-
-Qualified name: <code>Meridian.Wpf.Models.SecurityMasterEvidenceItem</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Models/SecurityMasterPresentationModels.cs:17](../../../../src/Meridian.Wpf/Models/SecurityMasterPresentationModels.cs#L17).
-
-```csharp
-public sealed record SecurityMasterEvidenceItem(string Title, string Detail, string Destination);
-```
-
-## SecurityMasterPresentationField
-
-Qualified name: <code>Meridian.Wpf.Models.SecurityMasterPresentationField</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Models/SecurityMasterPresentationModels.cs:3](../../../../src/Meridian.Wpf/Models/SecurityMasterPresentationModels.cs#L3).
-
-```csharp
-public sealed record SecurityMasterPresentationField(string Label, string Value);
 ```

@@ -10641,6 +10641,9 @@ Meridian-main
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.Proposals.cs
 │   │   │   │   ├── WorkstationManualJournalApiClient.cs
 │   │   │   │   └── WorkstationOnboardingApiClient.cs
+│   │   │   ├── Comparisons
+│   │   │   │   ├── PeriodComparisonApiClient.cs
+│   │   │   │   └── PeriodComparisonProjection.cs
 │   │   │   ├── DataQuality
 │   │   │   │   ├── DataQualityApiClient.cs
 │   │   │   │   ├── DataQualityModels.cs
@@ -11549,6 +11552,10 @@ Meridian-main
 │   │   │   ├── LedgerAmountProofDrawer.xaml.cs
 │   │   │   ├── MetricCard.xaml
 │   │   │   ├── MetricCard.xaml.cs
+│   │   │   ├── NavTrendPanel.xaml
+│   │   │   ├── NavTrendPanel.xaml.cs
+│   │   │   ├── PeriodComparisonPanel.xaml
+│   │   │   ├── PeriodComparisonPanel.xaml.cs
 │   │   │   ├── PreparerDraftCheckPanel.xaml
 │   │   │   ├── PreparerDraftCheckPanel.xaml.cs
 │   │   │   ├── SectionHeaderBar.xaml
@@ -11869,6 +11876,9 @@ Meridian-main
 │   │   │   ├── CashFlows
 │   │   │   │   ├── ContractualCashFlowScenarioViewModel.cs
 │   │   │   │   └── PreparerDraftCheckViewModel.cs
+│   │   │   ├── Comparisons
+│   │   │   │   ├── NavTrendSectionViewModel.cs
+│   │   │   │   └── PeriodComparisonSectionViewModel.cs
 │   │   │   ├── SecurityMaster
 │   │   │   │   ├── BondAnalyticsViewModel.cs
 │   │   │   │   ├── BondMigrationPreviewViewModel.cs
@@ -11893,6 +11903,7 @@ Meridian-main
 │   │   │   ├── BindableBase.cs
 │   │   │   ├── CarryTradeBacktestViewModel.cs
 │   │   │   ├── CashFlowViewModel.cs
+│   │   │   ├── CashFlowViewModel.PortfolioLadderComparison.cs
 │   │   │   ├── ChartingPageViewModel.cs
 │   │   │   ├── ClusterStatusViewModel.cs
 │   │   │   ├── CollectionSessionViewModel.cs
@@ -11917,6 +11928,7 @@ Meridian-main
 │   │   │   ├── FundAccountsViewModel.cs
 │   │   │   ├── FundLedgerViewModel.CloseReadiness.cs
 │   │   │   ├── FundLedgerViewModel.cs
+│   │   │   ├── FundLedgerViewModel.NavComparison.cs
 │   │   │   ├── FundLedgerViewModel.PrivateCapitalCloseScope.cs
 │   │   │   ├── FundLedgerViewModel.Reconciliation.cs
 │   │   │   ├── FundLedgerViewModel.ReconciliationAvailability.cs
@@ -15154,6 +15166,8 @@ Meridian-main
 │   │   │   ├── BoundedObservableCollectionTests.cs
 │   │   │   └── CircularBufferTests.cs
 │   │   ├── Services
+│   │   │   ├── Comparisons
+│   │   │   │   └── PeriodComparisonProjectionTests.cs
 │   │   │   ├── TestSupport
 │   │   │   │   └── FixedConfigService.cs
 │   │   │   ├── ActivityFeedServiceTests.cs
@@ -15368,6 +15382,9 @@ Meridian-main
 │   │   │   ├── StrategyRunWorkspaceTestData.cs
 │   │   │   └── WpfTestThread.cs
 │   │   ├── ViewModels
+│   │   │   ├── Comparisons
+│   │   │   │   ├── PeriodComparisonSectionViewModelTests.cs
+│   │   │   │   └── PhaseEComparisonWiringTests.cs
 │   │   │   ├── AccountingCloseViewModelTests.cs
 │   │   │   ├── AccountingConfigureViewModelTests.cs
 │   │   │   ├── AccountingPreparerAttestationPresentationTests.cs

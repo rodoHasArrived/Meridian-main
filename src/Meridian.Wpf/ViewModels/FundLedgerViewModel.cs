@@ -960,6 +960,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     {
         var activeFund = await ResolveActiveFundAsync(context, ct);
         ApplySelectedTab(context);
+        StartNavComparison(activeFund?.FundProfileId, activeFund?.BaseCurrency);
 
         if (activeFund is null)
         {

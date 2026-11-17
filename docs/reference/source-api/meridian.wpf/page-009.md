@@ -6,6 +6,48 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PortfolioWorkspaceShellStateProvider
+
+Qualified name: <code>Meridian.Wpf.Services.PortfolioWorkspaceShellStateProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs:129](../../../../src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs#L129).
+
+Supplies the portfolio workspace definition and shell state.
+
+```csharp
+public sealed class PortfolioWorkspaceShellStateProvider : WorkspaceShellStateProviderBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PortfolioWorkspaceShellStateProvider(FundContextService fundContextService, WorkstationOperatingContextService? operatingContextService) : base(operatingContextService);</code> | [src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs:133](../../../../src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs#L133) |  |
+| <code>public override WorkspaceShellDefinition Definition =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs:141](../../../../src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs#L141) |  |
+
+## QuantScriptExecutionHistoryService
+
+Qualified name: <code>Meridian.Wpf.Services.QuantScriptExecutionHistoryService</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs:27](../../../../src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs#L27).
+
+Records QuantScript executions in strategy-run history and exports retained execution records.
+
+```csharp
+public sealed class QuantScriptExecutionHistoryService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public QuantScriptExecutionHistoryService(ConfigService configService, StrategyRunWorkspaceService strategyRunWorkspaceService, ILogger&lt;QuantScriptExecutionHistoryService&gt; logger);</code> | [src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs:33](../../../../src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs#L33) |  |
+| <code>public static string BuildQuantScriptStrategyId(string documentTitle) =&gt; …;</code> | [src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs:43](../../../../src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs#L43) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;QuantScriptExecutionRecord&gt;&gt; GetHistoryAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs:46](../../../../src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs#L46) |  |
+| <code>public async Task&lt;QuantScriptExecutionRecord&gt; RecordExecutionAsync(QuantScriptExecutionRecordRequest request, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs:79](../../../../src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs#L79) |  |
+| <code>public async Task&lt;string&gt; ExportExecutionRecordAsync(QuantScriptExecutionRecord record, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs:136](../../../../src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs#L136) |  |
+| <code>public static string ConvertValueToString(object? value);</code> | [src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs:161](../../../../src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs#L161) |  |
+
 ## QuantScriptExecutionRecordRequest
 
 Qualified name: <code>Meridian.Wpf.Services.QuantScriptExecutionRecordRequest</code>. Kind: `record`.
@@ -1001,50 +1043,3 @@ Declared public members:
 | <code>public decimal Ask { get; set; }</code> | [src/Meridian.Wpf/Services/MessagingService.cs:298](../../../../src/Meridian.Wpf/Services/MessagingService.cs#L298) |  |
 | <code>public decimal Last { get; set; }</code> | [src/Meridian.Wpf/Services/MessagingService.cs:299](../../../../src/Meridian.Wpf/Services/MessagingService.cs#L299) |  |
 | <code>public bool Uptick { get; set; }</code> | [src/Meridian.Wpf/Services/MessagingService.cs:300](../../../../src/Meridian.Wpf/Services/MessagingService.cs#L300) |  |
-
-## ToastNotificationService
-
-Qualified name: <code>Meridian.Wpf.Services.ToastNotificationService</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/ToastNotificationService.cs:21](../../../../src/Meridian.Wpf/Services/ToastNotificationService.cs#L21).
-
-Delivers Windows balloon-tip notifications via NotifyIcon. The project targets net9.0-windows (no explicit Windows version suffix), so the WinRT Windows.UI.Notifications API is unavailable without adding Microsoft.Windows.SDK.Contracts or bumping the TFM to net9.0-windows10.0.17763.0. This service provides a functionally equivalent experience through the system-tray balloon-tip channel. Limitation: Balloon tips do NOT persist in the Windows Action Center; they appear for ≈5 s and are then silently dismissed. For true Action Center persistence, change TargetFramework to net9.0-windows10.0.17763.0 and use Windows.UI.Notifications.ToastNotificationManager.
-
-```csharp
-public sealed class ToastNotificationService : IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ToastNotificationService Instance =&gt; …;</code> | [src/Meridian.Wpf/Services/ToastNotificationService.cs:39](../../../../src/Meridian.Wpf/Services/ToastNotificationService.cs#L39) | Gets the singleton instance. |
-| <code>public static void SetAppUserModelId() =&gt; …;</code> | [src/Meridian.Wpf/Services/ToastNotificationService.cs:58](../../../../src/Meridian.Wpf/Services/ToastNotificationService.cs#L58) | Registers the AppUserModelID with Windows so that toast activations, JumpList entries, and taskbar pins all share the same identity. Must be called before any window is shown. |
-| <code>public void ShowBackfillComplete(int symbolCount, long barsWritten, TimeSpan duration);</code> | [src/Meridian.Wpf/Services/ToastNotificationService.cs:67](../../../../src/Meridian.Wpf/Services/ToastNotificationService.cs#L67) | Shows a &quot;Backfill Complete&quot; balloon notification. |
-| <code>public void ShowProviderDisconnected(string providerName);</code> | [src/Meridian.Wpf/Services/ToastNotificationService.cs:81](../../../../src/Meridian.Wpf/Services/ToastNotificationService.cs#L81) | Shows a &quot;Provider Disconnected&quot; balloon notification. |
-| <code>public void ShowDataQualityAlert(string symbol, double score);</code> | [src/Meridian.Wpf/Services/ToastNotificationService.cs:96](../../../../src/Meridian.Wpf/Services/ToastNotificationService.cs#L96) | Shows a &quot;Data Quality Alert&quot; balloon notification when a quality score drops below the warning threshold. |
-| <code>public void Dispose();</code> | [src/Meridian.Wpf/Services/ToastNotificationService.cs:153](../../../../src/Meridian.Wpf/Services/ToastNotificationService.cs#L153) |  |
-
-## TooltipService
-
-Qualified name: <code>Meridian.Wpf.Services.TooltipService</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/TooltipService.cs:14](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L14).
-
-Service for managing contextual tooltips, onboarding tips, and feature discovery. Tracks which tips have been shown to avoid repetition. Uses file-based storage for dismissed tips persistence. Delegates content to the shared TooltipContent in Ui.Services.
-
-```csharp
-public sealed class TooltipService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static TooltipService Instance =&gt; …;</code> | [src/Meridian.Wpf/Services/TooltipService.cs:22](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L22) |  |
-| <code>public FeatureHelp GetFeatureHelp(string featureKey) =&gt; …;</code> | [src/Meridian.Wpf/Services/TooltipService.cs:29](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L29) |  |
-| <code>public bool ShouldShowTip(string tipKey);</code> | [src/Meridian.Wpf/Services/TooltipService.cs:31](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L31) |  |
-| <code>public void DismissTip(string tipKey);</code> | [src/Meridian.Wpf/Services/TooltipService.cs:41](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L41) |  |
-| <code>public void ResetAllTips();</code> | [src/Meridian.Wpf/Services/TooltipService.cs:47](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L47) |  |
-| <code>public IReadOnlyList&lt;OnboardingTip&gt; GetOnboardingTips(string pageKey) =&gt; …;</code> | [src/Meridian.Wpf/Services/TooltipService.cs:54](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L54) |  |
-| <code>public string GetTooltipContent(string featureKey) =&gt; …;</code> | [src/Meridian.Wpf/Services/TooltipService.cs:60](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L60) | Gets formatted tooltip text for a feature (title + description + tips). Can be used to populate WPF ToolTip content on controls. |
