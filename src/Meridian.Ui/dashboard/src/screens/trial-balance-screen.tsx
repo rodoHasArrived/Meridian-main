@@ -249,6 +249,18 @@ export function TrialBalanceScreen() {
       onContextClose={() => postedLedger.selectTrialBalanceRow(null)}
     >
       <AccountingPeriodComparison bookId={postedLedger.selectedBook?.ledgerBookId} periodId={selectedPeriodId} expectedBasis={postedLedger.view.trialBalance.selectedBasis} enabled={postedLedger.periodsSettled} periodOptions={periodOptions} />
+      {/* Cumulative closing balances against the prior close. This is not the same population as the
+          trial balance on this screen, which reports the selected period's posted activity; the movement
+          comparison ("Vs prior period") matches that. The server accumulates every posting in the
+          book's earlier periods for these figures. */}
+      <AccountingPeriodComparison
+        measure="ClosingBalances"
+        bookId={postedLedger.selectedBook?.ledgerBookId}
+        periodId={selectedPeriodId}
+        expectedBasis={postedLedger.view.trialBalance.selectedBasis}
+        enabled={postedLedger.periodsSettled}
+        periodOptions={periodOptions}
+      />
       <OperationalTrustSummary
         source={{ value: "Posted journal", tone: postedLedger.view.trialBalance.state === "error" ? "blocked" : "ready" }}
         scope={{ value: selectedPeriodLabel ?? "No period selected", detail: selectedBasisLabel, tone: selectedPeriodId ? "ready" : "unknown" }}
@@ -275,7 +287,6 @@ export function TrialBalanceScreen() {
             />
           </FormRow>
           <div className="flex flex-wrap gap-2">
-            <Button type="button" size="sm" variant="outline" disabled disabledReason="Prior-period comparison requires a retained comparison run.">Compare prior period</Button>
             <Button type="button" size="sm" variant="outline" disabled disabledReason="Exports are generated through Report Preview and Validation.">Export</Button>
             <Button asChild size="sm" variant="outline">
               <Link to={WORKSTATION_ROUTE_CATALOG.reportingPreviewValidation}>Jump to report preview</Link>

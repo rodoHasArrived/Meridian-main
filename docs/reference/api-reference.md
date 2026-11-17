@@ -1595,7 +1595,7 @@ Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.PeriodComparison.cs](.
 
 | Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
 | --- | --- | --- | --- | --- | --- |
-| `/api/ledger/books/{ledgerBookId}/periods/{periodId}/comparison` | GET | `async (Guid ledgerBookId, Guid periodId, Guid? baselinePeriodId, DateTimeOffset? asOf, AccountingBasisKindDto? accountingBasis, HttpContext context) => …` | `Produces<PostedPeriodComparisonDto>(200)`; `Produces(400)`; `Produces(403)`; `Produces(404)`; `Produces(503)`; `Results.Problem`; `Results.BadRequest`; `Results.Json`; `Results.NotFound` | `WithName("GetPostedLedgerPeriodComparison")` | [L19](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.PeriodComparison.cs#L19) |
+| `/api/ledger/books/{ledgerBookId}/periods/{periodId}/comparison` | GET | `async (Guid ledgerBookId, Guid periodId, Guid? baselinePeriodId, DateTimeOffset? asOf, AccountingBasisKindDto? accountingBasis, PostedComparisonMeasureDto? measure, HttpContext context) => …` | `Produces<PostedPeriodComparisonDto>(200)`; `Produces(400)`; `Produces(403)`; `Produces(404)`; `Produces(503)`; `Results.Problem`; `Results.BadRequest`; `Results.Json`; `Results.NotFound` | `WithName("GetPostedLedgerPeriodComparison")` | [L19](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.PeriodComparison.cs#L19) |
 
 ### MoneyMarketFundEndpoints
 

@@ -1,5 +1,12 @@
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_PrivateCapitalBankObservationImportResultDto["PrivateCapitalBankObservationImportResultDto"] {
+        +BankTransactionDto BankTransaction
+        +string DocumentId
+        +string EvidenceLink
+        +bool IsReplay
+        +string SourceHashSha256
+    }
     class Meridian_Contracts_Ledger_PrivateCapitalBankObservationSourceDto["PrivateCapitalBankObservationSourceDto"] {
         +decimal Amount
         +Guid BankTransactionId

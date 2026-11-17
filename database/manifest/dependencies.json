@@ -10972,6 +10972,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PostedComparisonMeasureDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.PostedLedgerJournalEntryResultDto"
     },
     {
@@ -28570,6 +28576,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PostedComparisonMeasureDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.PostedLedgerJournalEntryResultDto"
     },
     {
@@ -44291,6 +44303,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.PostedPeriodComparisonDto",
       "target": "contract:Meridian.Contracts.Ledger.LedgerDimensionSetDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PostedPeriodComparisonDto",
+      "target": "contract:Meridian.Contracts.Ledger.PostedComparisonMeasureDto"
     },
     {
       "kind": "contract-reference",
@@ -68061,7 +68079,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "34130e763e0273bc86c5a90ff01bda298f008c7b9ac8adbc6536f751864d2f05",
+  "fingerprint": "df5d47784e59da658a86d964592f7fa4070172361082eb97a91828560d0536a1",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -79081,6 +79099,12 @@
       "id": "contract:Meridian.Contracts.Ledger.PostPostingRuleJournalCandidateRequestDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.PostPostingRuleJournalCandidateRequestDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Ledger.PostedComparisonMeasureDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.PostedComparisonMeasureDto"
     },
     {
       "classification": "dto",
@@ -99941,11 +99965,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4207,
-    "contract_set_memberships": 5453,
-    "edges": 11306,
+    "contract_references": 4208,
+    "contract_set_memberships": 5455,
+    "edges": 11309,
     "foreign_keys": 208,
     "logical_references": 6,
-    "nodes": 5543
+    "nodes": 5544
   }
 }

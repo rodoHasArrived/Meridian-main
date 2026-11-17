@@ -274,10 +274,10 @@ keys. Bulk acknowledge and snooze now go through the same server bulk endpoint a
 
 **Progress on F2/F4/F7 (2026-11-17).** Provider verification history is deep-linkable by
 connection or provider family, and Today's degraded-provider items open it. Trial balance's
-"Compare prior period" stays disabled: `PostedPeriodComparison` compares posted movements within
-each period, not closing balances, so wiring it in would label movements as balance changes. A
-balance comparison, and a day-by-day close board, need server fields (comparison balances; task
-due offsets and dependencies) that the current contracts do not carry.
+"Compare prior period" is now "Closing balances vs prior close": the posted-period comparison gained a
+`ClosingBalances` measure that accumulates every posting through each period end (2026-11-17). Note
+that the Trial balance table itself reports the selected period's posted activity, not cumulative
+balances. A day-by-day close board still needs task due offsets and dependencies.
 
 #### C4 🔴 Speak operator language, not system language (follows the 11-10 copy pass)
 

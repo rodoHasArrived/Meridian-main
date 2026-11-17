@@ -1407,6 +1407,11 @@ a assigns, c acknowledges and s snoozes; each opens the reviewed dialog that req
 and checked rows can be assigned, acknowledged or snoozed together when every checked row allows it,
 and a blocker still cannot be snoozed. The reconciliation break queue keeps its own map in
 `src/lib/queue-keyboard-map.ts`.
+Trial balance offers two posted-period comparisons through `AccountingPeriodComparison`: "Vs prior
+period" (movements, matching the per-period trial balance on that screen) and "Closing balances vs
+prior close" (`measure="ClosingBalances"`, cumulative balances against the prior period's full close).
+The client and panel refuse a response whose `measure` differs from the request, so movements are
+never shown under a balance heading.
 The Data overview's provider verification history is linkable: `?verificationConnection=`
 selects an exact connection and `?providerFamily=` its family's first connection (matched on
 `providerFamilyId`, never on display names; otherwise the first loaded connection), anchored at

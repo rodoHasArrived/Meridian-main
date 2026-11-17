@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OtcMarginCallDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcMarginCallDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:109](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L109).
+
+A margin call: one movement from an exposure snapshot, taken through its life. The amount is copied from the snapshot&#x27;s movement, never typed.
+
+```csharp
+public sealed record OtcMarginCallDto(Guid CallId, Guid NettingSetId, Guid CollateralAgreementId, Guid SnapshotId, OtcMovementKind Kind, OtcMovementParty Mover, string Currency, decimal AmountCalled, decimal? AmountAgreed, OtcMarginCallStatus Status, DateOnly IssuedOn, DateOnly? DueOn, string? DisputeReason, DateOnly? SettledOn, decimal? SettledAmount, string? Notes, long Version, string UpdatedBy, DateTimeOffset UpdatedAt);
+```
+
 ## OtcMarginCallRules
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcMarginCallRules</code>. Kind: `class`.
@@ -780,15 +792,3 @@ Enum declarations:
 | <code>EffectiveDate</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:87](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L87) | Adjusting the effective date. |
 | <code>TerminationDate</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:90](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L90) | Adjusting the termination date. |
 | <code>Payment</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:93](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L93) | Adjusting or lagging payment dates. |
-
-## ScheduleCalendarUsage
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleCalendarUsage</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:100](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L100).
-
-Evidence of one calendar, identified by id and content hash, used for one purpose.
-
-```csharp
-public sealed record ScheduleCalendarUsage(string CalendarId, string ContentHash, ScheduleCalendarPurpose Purpose);
-```

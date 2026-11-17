@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TradingReplayReadinessDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.TradingReplayReadinessDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:191](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L191).
+
+```csharp
+public sealed record TradingReplayReadinessDto(string SessionId, string ReplaySource, bool IsConsistent, int ComparedFillCount, int ComparedOrderCount, int ComparedLedgerEntryCount, DateTimeOffset VerifiedAt, DateTimeOffset? LastPersistedFillAt, DateTimeOffset? LastPersistedOrderUpdateAt, string? VerificationAuditId, IReadOnlyList<string> MismatchReasons, string DriftStatus, string RequiredNextAction);
+```
+
 ## TradingReportPackReadinessDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.TradingReportPackReadinessDto</code>. Kind: `record`.
@@ -569,15 +579,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public string Provider =&gt; …;</code> | [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1122](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1122) |  |
-
-## WorkstationDataProviderRoutingSummary
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationDataProviderRoutingSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1094](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1094).
-
-Compact routing summary embedded in a Data workspace provider row.
-
-```csharp
-public sealed record WorkstationDataProviderRoutingSummary(string? ConnectionId, string? ProviderFamilyId, bool? ProductionReady, bool? CertificationFresh, int BindingCount, int FallbackRouteCount, string? HealthStatus);
-```

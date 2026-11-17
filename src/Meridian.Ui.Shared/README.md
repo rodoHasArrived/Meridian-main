@@ -604,7 +604,10 @@ Posted-period comparison reads require retained fund ownership for the exact ten
 ledger book. The shared route recomputes filtered totals from immutable journals with exact decimal
 transport, policy/currency checks and source population identities. An open period compares the
 same elapsed fiscal interval in a completed baseline; missing or too-short baselines remain
-unavailable. These comparisons never consume the strategy-run simulated ledger.
+unavailable. `measure=ClosingBalances` instead compares cumulative balances: every posting in the
+book's earlier periods (by posting period) plus the period's own postings to the cutoff, against the
+baseline's full close; postings assigned to a period outside the book make the result Unavailable
+rather than guessed. These comparisons never consume the strategy-run simulated ledger.
 
 The posted-account running-balance read requires the same authenticated tenant/company and
 retained book ownership, including exact returned period, book and fund identities. Its optional

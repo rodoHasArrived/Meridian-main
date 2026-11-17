@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ISecurityMasterStructuredCreditReclassificationService
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityMasterStructuredCreditReclassificationService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterStructuredCreditReclassification.cs:59](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterStructuredCreditReclassification.cs#L59).
+
+Builds a report of structured credit instruments requiring reference classification review.
+
+```csharp
+public interface ISecurityMasterStructuredCreditReclassificationService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;StructuredCreditReclassificationReportDto&gt; BuildReportAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterStructuredCreditReclassification.cs:62](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterStructuredCreditReclassification.cs#L62) | Scans the active Security Master population and builds the reclassification report. |
+
 ## ISecurityRateObservationProvider
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityRateObservationProvider</code>. Kind: `interface`.
@@ -818,15 +836,3 @@ Enum declarations:
 | <code>Dispute</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L58) |  |
 | <code>Settle</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:59](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L59) |  |
 | <code>Cancel</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:60](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L60) |  |
-
-## OtcMarginCallDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcMarginCallDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:109](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L109).
-
-A margin call: one movement from an exposure snapshot, taken through its life. The amount is copied from the snapshot&#x27;s movement, never typed.
-
-```csharp
-public sealed record OtcMarginCallDto(Guid CallId, Guid NettingSetId, Guid CollateralAgreementId, Guid SnapshotId, OtcMovementKind Kind, OtcMovementParty Mover, string Currency, decimal AmountCalled, decimal? AmountAgreed, OtcMarginCallStatus Status, DateOnly IssuedOn, DateOnly? DueOn, string? DisputeReason, DateOnly? SettledOn, decimal? SettledAmount, string? Notes, long Version, string UpdatedBy, DateTimeOffset UpdatedAt);
-```

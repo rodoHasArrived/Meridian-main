@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PlaidAccountLinkRequest
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidAccountLinkRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:118](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L118).
+
+```csharp
+public sealed record PlaidAccountLinkRequest(string PlaidAccountId, string Name, string? OfficialName, string? Mask, string Type, string? Subtype, string? PersistentAccountId = null, Guid? MeridianAccountId = null, Guid? EntityId = null);
+```
+
 ## PlaidBalanceDto
 
 Qualified name: <code>Meridian.Contracts.Plaid.PlaidBalanceDto</code>. Kind: `record`.
@@ -573,14 +583,4 @@ Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:48](../.
 
 ```csharp
 public sealed record ReportingGovernanceAccessPrincipalDto(string Kind, string PrincipalId);
-```
-
-## ReportingGovernanceAccessScopeDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceAccessScopeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:39](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L39).
-
-```csharp
-public sealed record ReportingGovernanceAccessScopeDto(string PolicyId, string PolicyVersion, string Mode, string? OwnerPrincipalId, bool AllowOwnerAccess, IReadOnlyList<ReportingGovernanceAccessPrincipalDto> Principals, string PolicyHash);
 ```

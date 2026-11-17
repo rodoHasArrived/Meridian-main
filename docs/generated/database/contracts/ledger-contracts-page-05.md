@@ -2,7 +2,7 @@
 
 # `ledger-contracts` data objects - page 5 of 6
 
-Objects 321-400 of 455. References crossing pages remain available in the dependency manifest.
+Objects 321-400 of 456. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -516,6 +516,8 @@ classDiagram
         +IReadOnlyList~string~ EvidenceLinks
         +string? TenantId
     }
+    class Meridian_Contracts_Ledger_PostedComparisonMeasureDto["PostedComparisonMeasureDto"] {
+    }
     class Meridian_Contracts_Ledger_PostedLedgerJournalEntryResultDto["PostedLedgerJournalEntryResultDto"] {
         +AccountingBasisKindDto AccountingBasis
         +Guid AggregateId
@@ -727,13 +729,6 @@ classDiagram
     }
     class Meridian_Contracts_Ledger_PrivateCapitalActivityRoutes["PrivateCapitalActivityRoutes"] {
     }
-    class Meridian_Contracts_Ledger_PrivateCapitalBankObservationImportResultDto["PrivateCapitalBankObservationImportResultDto"] {
-        +BankTransactionDto BankTransaction
-        +string DocumentId
-        +string EvidenceLink
-        +bool IsReplay
-        +string SourceHashSha256
-    }
     Meridian_Contracts_Ledger_LedgerCrossPeriodPnlReportDto --> Meridian_Contracts_Ledger_LedgerPeriodPnlSummaryDto
     Meridian_Contracts_Ledger_LedgerCrossPeriodTrialBalanceLineDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
     Meridian_Contracts_Ledger_LedgerCrossPeriodTrialBalanceReportDto --> Meridian_Contracts_Ledger_LedgerCrossPeriodTrialBalanceLineDto
@@ -786,6 +781,7 @@ classDiagram
     Meridian_Contracts_Ledger_PaymentIntentWorkflowDto --> Meridian_Contracts_Ledger_PaymentIntentWorkflowStatusDto
     Meridian_Contracts_Ledger_PostPostingRuleJournalCandidateRequestDto --> Meridian_Contracts_Ledger_PostingRuleJournalCandidateRequestDto
     Meridian_Contracts_Ledger_PostedPeriodComparisonDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
+    Meridian_Contracts_Ledger_PostedPeriodComparisonDto --> Meridian_Contracts_Ledger_PostedComparisonMeasureDto
     Meridian_Contracts_Ledger_PostedPeriodComparisonDto --> Meridian_Contracts_Ledger_PostedPeriodComparisonLineDto
     Meridian_Contracts_Ledger_PostedPeriodComparisonDto --> Meridian_Contracts_Ledger_PostedPeriodComparisonRangeDto
     Meridian_Contracts_Ledger_PostedPeriodComparisonLineDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto

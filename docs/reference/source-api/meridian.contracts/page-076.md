@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationDataProviderRoutingSummary
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationDataProviderRoutingSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1094](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1094).
+
+Compact routing summary embedded in a Data workspace provider row.
+
+```csharp
+public sealed record WorkstationDataProviderRoutingSummary(string? ConnectionId, string? ProviderFamilyId, bool? ProductionReady, bool? CertificationFresh, int BindingCount, int FallbackRouteCount, string? HealthStatus);
+```
+
 ## WorkstationGeneratedReportWriterGridPayload
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationGeneratedReportWriterGridPayload</code>. Kind: `record`.
@@ -530,16 +542,4 @@ One live guardrail from the enforced risk-rule registry, rendered as a utilizati
 
 ```csharp
 public sealed record WorkstationRiskGuardrail(string RuleName, string State, string CurrentValue, string Threshold, decimal? UtilizationPercent, string Severity);
-```
-
-## WorkstationRunDigest
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationRunDigest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:115](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L115).
-
-Minimal run digest attached to session and strategy payloads. Fields match BuildRunDigest in WorkstationEndpoints.
-
-```csharp
-public sealed record WorkstationRunDigest(string RunId, string StrategyName, string Mode, string Status, string LastUpdated, bool HasLedger, bool HasPortfolio, WorkstationSecurityCoveragePayload SecurityCoverage);
 ```

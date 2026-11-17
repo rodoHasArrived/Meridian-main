@@ -6,6 +6,40 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationalCaseHistoryAppendRequest
+
+Qualified name: <code>Meridian.Contracts.Operations.OperationalCaseHistoryAppendRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:55](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L55).
+
+```csharp
+public sealed record OperationalCaseHistoryAppendRequest
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public required string CaseId { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:57](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L57) |  |
+| <code>public required string CaseType { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:58](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L58) |  |
+| <code>public required string HistoryEventId { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:59](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L59) |  |
+| <code>public required string EventType { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:60](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L60) |  |
+| <code>public required DateTimeOffset OccurredAtUtc { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:61](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L61) |  |
+| <code>public required string ActorId { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:62](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L62) |  |
+| <code>public required string Reason { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:63](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L63) |  |
+| <code>public required string CorrelationId { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:64](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L64) |  |
+| <code>public required string InputHashSha256 { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:65](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L65) |  |
+| <code>public IReadOnlyDictionary&lt;string, string&gt; Data { get; init; } = new Dictionary&lt;string, string&gt;(StringComparer.Ordinal);</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:66](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L66) |  |
+| <code>public OperationalCaseStateTransition? Transition { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:68](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L68) |  |
+| <code>public OperationalCaseAssignment? Assignment { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:69](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L69) |  |
+| <code>public IReadOnlyList&lt;OperationalCaseRetry&gt; Retries { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:70](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L70) |  |
+| <code>public IReadOnlyList&lt;OperationalCaseException&gt; Exceptions { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:71](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L71) |  |
+| <code>public IReadOnlyList&lt;OperationalCaseApproval&gt; Approvals { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:72](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L72) |  |
+| <code>public IReadOnlyList&lt;OperationArtifactReference&gt; Artifacts { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:73](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L73) |  |
+| <code>public IReadOnlyList&lt;OperationEvidenceReference&gt; Evidence { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:74](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L74) |  |
+| <code>public IReadOnlyList&lt;OperationalCaseRecoveryAttempt&gt; RecoveryAttempts { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:75](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L75) |  |
+| <code>public VerifiedOperationOutcome? TerminalOutcome { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:76](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L76) |  |
+
 ## OperationalCaseHistoryHashing
 
 Qualified name: <code>Meridian.Contracts.Operations.OperationalCaseHistoryHashing</code>. Kind: `class`.
@@ -881,14 +915,4 @@ Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:158](../../../../src/Meridi
 
 ```csharp
 public sealed record PlaidAccountDto(string PlaidAccountId, string ItemId, string Name, string? OfficialName, string? Mask, string Type, string? Subtype, string? PersistentAccountId, Guid? MeridianAccountId, Guid? EntityId, string? VerificationStatus);
-```
-
-## PlaidAccountLinkRequest
-
-Qualified name: <code>Meridian.Contracts.Plaid.PlaidAccountLinkRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:118](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L118).
-
-```csharp
-public sealed record PlaidAccountLinkRequest(string PlaidAccountId, string Name, string? OfficialName, string? Mask, string Type, string? Subtype, string? PersistentAccountId = null, Guid? MeridianAccountId = null, Guid? EntityId = null);
 ```

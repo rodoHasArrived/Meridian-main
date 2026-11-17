@@ -18,7 +18,7 @@ public static partial class LedgerEndpoints
         exactJson.Converters.Insert(0, new AccountOversightDecimalJsonConverter());
         app.MapGet("/api/ledger/books/{ledgerBookId:guid}/periods/{periodId:guid}/comparison", async (
             Guid ledgerBookId, Guid periodId, Guid? baselinePeriodId, DateTimeOffset? asOf,
-            AccountingBasisKindDto? accountingBasis, HttpContext context) =>
+            AccountingBasisKindDto? accountingBasis, PostedComparisonMeasureDto? measure, HttpContext context) =>
         {
             if (!HasLedgerReadPermission(context))
                 return EndpointHelpers.Forbidden();
@@ -42,7 +42,8 @@ public static partial class LedgerEndpoints
                 var comparison = await service.GetAsync(tenant.TenantId!, tenant.CompanyId!, ledgerBookId,
                     periodId, baselinePeriodId, asOf ?? DateTimeOffset.UtcNow, dimensions,
                     records => BuildJournalEntryDtos(records, _ => ledgerBookId, filter), context.RequestAborted,
-                    accountingBasis: accountingBasis).ConfigureAwait(false);
+                    accountingBasis: accountingBasis,
+                    measure: measure ?? PostedComparisonMeasureDto.Movements).ConfigureAwait(false);
                 return Results.Json(comparison, exactJson);
             }
             catch (UnauthorizedAccessException) { return EndpointHelpers.Forbidden(); }
@@ -66,7 +67,7 @@ public static partial class LedgerEndpoints
             "portfolioId", "bookId", "accountId", "customerId", "vendorId", "projectId"];
         var known = new HashSet<string>(dimensions, StringComparer.OrdinalIgnoreCase)
         {
-            "baselinePeriodId", "asOf", "accountingBasis", "fundProfileId", "ledgerBookDimensionId", "externalGlDimensionKey", "externalGlDimensionValue"
+            "baselinePeriodId", "asOf", "accountingBasis", "measure", "fundProfileId", "ledgerBookDimensionId", "externalGlDimensionKey", "externalGlDimensionValue"
         };
         foreach (var dimension in dimensions)
         {

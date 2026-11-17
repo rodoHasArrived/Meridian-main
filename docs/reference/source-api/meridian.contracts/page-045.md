@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionPayloadSchemaCatalog
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionPayloadSchemaCatalog</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloadSchemaCatalog.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloadSchemaCatalog.cs#L11).
+
+Versioned schemas for the JSON payload carried by CorporateActionDto. Unknown properties remain allowed so a provider can retain evidence ahead of a Meridian release, while known properties are type-checked and acceptance-required properties fail closed.
+
+```csharp
+public static class CorporateActionPayloadSchemaCatalog
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;CorporateActionPayloadSchemaDescriptor&gt; All =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloadSchemaCatalog.cs:123](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloadSchemaCatalog.cs#L123) | Returns a v1 schema for every canonical event type, including an empty schema. |
+| <code>public static CorporateActionPayloadSchemaDescriptor Get(string eventType);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloadSchemaCatalog.cs:128](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloadSchemaCatalog.cs#L128) |  |
+| <code>public static string? Validate(CorporateActionDto action, bool forAcceptance);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionPayloadSchemaCatalog.cs:145](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionPayloadSchemaCatalog.cs#L145) | Validates schema version, payload object shape, known field types, and optionally fields required before an observation can be accepted as a canonical source event. |
+
 ## CorporateActionPayloadSchemaDescriptor
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionPayloadSchemaDescriptor</code>. Kind: `record`.
@@ -862,14 +882,4 @@ Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:58](../../.
 
 ```csharp
 public sealed record EdgarAddress(string? Street1, string? Street2, string? City, string? StateOrCountry, string? StateOrCountryDescription, string? ZipCode);
-```
-
-## EdgarDebtOfferingTerms
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarDebtOfferingTerms</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:109](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L109).
-
-```csharp
-public sealed record EdgarDebtOfferingTerms(string Cik, string AccessionNumber, string Form, string SourceDocument, string? SourceDocumentDescription, string? IssuerName, string? SecurityTitle, string? Cusip, string? Isin, string? Currency, decimal? PrincipalAmount, decimal? IssueSize, decimal? CouponRate, string? CouponType, string? DayCount, string? InterestPaymentFrequency, DateOnly? IssueDate, DateOnly? MaturityDate, DateOnly? FirstInterestPaymentDate, string? Seniority, string? Ranking, bool? IsCallable, DateOnly? FirstCallDate, decimal? OfferingPrice, decimal? MinimumDenomination, decimal? AdditionalDenomination, string? Trustee, IReadOnlyList<string> Underwriters, IReadOnlyList<string> RedemptionTerms, decimal ExtractionConfidence, IReadOnlyList<string> ExtractionNotes);
 ```

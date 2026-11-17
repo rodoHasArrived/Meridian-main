@@ -239,7 +239,9 @@ converting their labels or units; operational source names grant no calculation 
 per-item bulk outcomes and the metadata persistence seam; these commands do not resolve underlying
 financial work. `OperatorTriageBulkCommand` carries Assign (with `AssigneeId`), Acknowledge, or Snooze
 (with optional trailing `SnoozedUntil`); Unsnooze stays single-item. `Ledger/PostedPeriodComparisonDtos.cs` carries explicit fiscal comparison ranges,
-accounting basis/policy/currency, exact decimal changes and posted-journal population identities.
+accounting basis/policy/currency, exact decimal changes and posted-journal population identities;
+`PostedComparisonMeasureDto` selects Movements (each period's postings, the default) or ClosingBalances
+(cumulative postings from the book's earlier periods through each period end).
 
 `AutomatedPostingGrantReferenceDto` binds deterministic synthetic fill posting to an operator's
 retained tenant/account/book/period/policy/mapping delegation. `AuthorizedSystem` is distinct
