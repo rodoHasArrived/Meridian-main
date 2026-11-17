@@ -106,7 +106,7 @@ public sealed class IntercompanyLedgerPostingAuthority(IIntercompanyAccountingAr
                                 ?? DateOnly.FromDateTime(originals[0].Entry.Timestamp.UtcDateTime);
                             context.Decisions.Add(new("IntercompanyAgreement", "HistoricalIntercompanyReversal", true,
                                 "An exact retained source inverse uses the original agreement effective date.",
-                                $"{originalId:D}:{retainedOriginalEffectiveDate:yyyy-MM-dd}"));
+                                FormattableString.Invariant($"{originalId:D}:{retainedOriginalEffectiveDate:yyyy-MM-dd}")));
                         }
                     }
                     if (!retainedInverse)

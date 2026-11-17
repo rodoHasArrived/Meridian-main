@@ -46,9 +46,20 @@ public sealed class StatementMappingProfileCatalog(IStatementMappingProfileStore
     /// Builds the runtime registry consumed by the legacy reconciliation paths. Captured at
     /// startup by singleton services; the connector paths read the catalog live instead.
     /// </summary>
+    public async Task<StatementMappingProfileRegistry> BuildRegistryAsync(CancellationToken ct = default)
+        => ToRegistry(await ListAsync(ct).ConfigureAwait(false));
+
+    /// <summary>
+    /// Synchronous form for the dependency-injection factory, which cannot await. Every await
+    /// on the file store's read path uses <c>ConfigureAwait(false)</c>, so blocking here holds
+    /// one thread for a single startup read and cannot deadlock on a UI or request context.
+    /// Prefer <see cref="BuildRegistryAsync"/> wherever the caller can await.
+    /// </summary>
     public StatementMappingProfileRegistry BuildRegistry()
+        => ToRegistry(ListAsync().ConfigureAwait(false).GetAwaiter().GetResult());
+
+    private static StatementMappingProfileRegistry ToRegistry(IReadOnlyList<StatementMappingProfileDocument> documents)
     {
-        var documents = ListAsync().GetAwaiter().GetResult();
         var profiles = new List<StatementMappingProfile>(documents.Count);
         foreach (var document in documents)
         {

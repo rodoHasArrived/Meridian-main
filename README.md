@@ -212,7 +212,8 @@ When dashboard source changes, regenerate and commit the tracked bundle:
 npm --prefix src/Meridian.Ui/dashboard run build
 ```
 
-CI checks that `src/Meridian.Ui/wwwroot/workstation/` matches the dashboard source.
+`src/Meridian.Ui/wwwroot/workstation/` is gitignored. CI builds it from the dashboard source in the
+browser lane and passes it to later jobs as an artifact.
 See [Start Here](docs/start/README.md#the-workstation-bundle-the-demo-serves) for the bundle contract.
 
 ### MCP server
@@ -253,7 +254,8 @@ lane, Level 2 should add targeted invariant tests (the full aggregate `bash scri
 recommended), and Level 3 or build/CI-tooling changes should run it when practical. State which
 checks ran and which did not.
 
-Contribute through a `codex/<short-task-name>` branch and a pull request targeting `main`.
+Contribute through a `codex/<short-task-name>` or `claude/<short-task-name>` branch and a pull
+request targeting `main`.
 The hosted `Meridian CI / quality-gate` remains the authoritative merge result.
 See [Engineering](docs/engineering/README.md#buildtestrun) for desktop and release validation,
 build isolation, and hosted validation when local tooling is unavailable.

@@ -26,7 +26,8 @@ For each task, follow this sequence:
 10. Summarize what changed, why, and how it was validated.
 11. Local work may happen on `main` when the user explicitly requests it or the checkout is
     intentionally operating there. Do not bypass GitHub branch protections; for PR-ready publishing,
-    use a `codex/<short-task-name>` branch and a PR targeting `main`.
+    use a `codex/<short-task-name>` or `claude/<short-task-name>` branch (either agent prefix is
+    accepted) and a PR targeting `main`.
 
 **No mobile development lane:** do not create mobile applications, mobile-specific product
 surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or

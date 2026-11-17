@@ -6,6 +6,47 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TradeRecord
+
+Qualified name: <code>Meridian.Ui.Services.TradeRecord</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:510](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L510).
+
+Individual trade record.
+
+```csharp
+public sealed class TradeRecord
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DateTime Timestamp { get; set; }</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:512](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L512) |  |
+| <code>public decimal Price { get; set; }</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:513](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L513) |  |
+| <code>public decimal Size { get; set; }</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:514](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L514) |  |
+| <code>public TradeSide Side { get; set; }</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:515](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L515) |  |
+
+## TradeSide
+
+Qualified name: <code>Meridian.Ui.Services.TradeSide</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:521](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L521).
+
+Trade side indicator.
+
+```csharp
+public enum TradeSide : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unknown</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:523](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L523) |  |
+| <code>Buy</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:524](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L524) |  |
+| <code>Sell</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:525](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L525) |  |
+
 ## TradingCalendarService
 
 Qualified name: <code>Meridian.Ui.Services.TradingCalendarService</code>. Kind: `class`.

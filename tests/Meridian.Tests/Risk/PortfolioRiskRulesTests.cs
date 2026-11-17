@@ -75,6 +75,9 @@ public sealed class PortfolioRiskRulesTests
 
         result.IsApproved.Should().BeFalse();
         result.RejectReason.Should().Contain("Gross exposure limit");
+        result.Code.Should().Be("GROSS_EXPOSURE_EXCEEDED");
+        result.ObservedValue.Should().Be(105_000m, "the evidence carries the projected book the rule evaluated");
+        result.LimitValue.Should().Be(100_000m);
     }
 
     [Fact]

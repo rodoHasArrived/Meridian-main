@@ -64,6 +64,27 @@ public sealed class ParquetStorageSinkTests : TempDirectoryAsyncTestBase
         Path.GetFileName(file).Should().NotContain("20240102");
     }
 
+    [Theory]
+    [InlineData("BRK/B")]
+    [InlineData("../ESCAPE")]
+    public async Task FlushAsync_SymbolWithPathCharacters_WritesOneEncodedFileInsideTheRoot(string symbol)
+    {
+        _sink = CreateSink();
+        await _sink.AppendAsync(CreateTradeEvent(symbol));
+
+        await _sink.FlushAsync();
+
+        var root = Path.GetFullPath(TestDataRoot);
+        var parent = Path.GetDirectoryName(root.TrimEnd(Path.DirectorySeparatorChar))!;
+        Directory.GetFiles(parent, "*ESCAPE*.parquet", SearchOption.TopDirectoryOnly)
+            .Should().BeEmpty("a symbol must never place a file outside the storage root");
+
+        var file = Directory.GetFiles(root, "*.parquet", SearchOption.AllDirectories).Single();
+        Path.GetFullPath(file).Should().StartWith(root);
+        Path.GetFileName(file).Should().StartWith("~", "unsafe symbols are hex-encoded into one path segment");
+        Directory.GetParent(file)!.Name.Should().NotBe("BRK", "a '/' in the symbol must not create a subfolder");
+    }
+
     public override async Task DisposeAsync()
     {
         if (_sink is not null)

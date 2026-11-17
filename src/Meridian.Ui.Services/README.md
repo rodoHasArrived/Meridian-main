@@ -6,7 +6,7 @@ module_id: SRC-UI-SERVICES
 path: src/Meridian.Ui.Services
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-17
 ---
 
 # src/Meridian.Ui.Services
@@ -60,13 +60,19 @@ browser queue. Retry, explicit linking and FX repricing send a reasoned request 
 reused for an identical retry; the server decides permission, target-book authority and every
 amount. Responses for another book, proposal, link target or repricing request are refused, a
 break outage reads as unknown rather than empty, and amounts render from exact decimals.
+The source book is chosen from `/api/ledger/books`, the route the browser uses, and the existing
+counterpart book from that list's books owned by the proposal's counterparty entity.
 
 `IntercompanyInterestAccrualWorkspace` is the desktop state for requesting a governed loan-interest
 accrual over `/api/ledger/intercompany/accruals/preview` and `/drafts`, the routes the browser uses.
 It sends the source book, the two accounting profiles and the half-open window only; the rate,
 principal and amount are the server's. A draft is bound to the evidence digest of the preview that
 was shown, any change to the selection withdraws that preview, and a response for another window,
-book or computation is refused. It never approves or posts.
+book or computation is refused. It never approves or posts. The book is chosen from
+`/api/ledger/books`; its approved LoanInterest profiles come from the book-scoped
+`/api/ledger/intercompany-accounting-arrangements` read, and the principal choices are the Loan
+profiles of the same legal agreement. The lists only fill the selection; the server still
+authorizes every identifier, and a profile read for a book no longer chosen is ignored.
 
 `WorkstationOnboardingApiClient` and `OnboardingShadowWorkspace` bring shadow-mode onboarding
 (W11-SHADOW-001) to the desktop over the browser's onboarding routes. The panel covers:
@@ -117,6 +123,15 @@ Provider IDs use the shared ProviderSdk identity map for request paths, mutation
 status joins and catalog deduplication. Aliases resolve to one canonical status row and retain the
 service field schema; ambiguous duplicate service rows remain unavailable. Status projections retain
 verification state and timestamp so callers can distinguish configured from verified credentials.
+
+`DesktopShellPreferences` holds the desktop shell density and the operator's keyboard shortcut
+overrides (`ShortcutOverrides`, keyed by action id, with keys and modifiers stored as WPF enum
+names so this contract stays free of WPF types). `SettingsConfigurationService` persists both in
+`%LOCALAPPDATA%\Meridian\desktop-shell-preferences.json` through a temp-file-then-move write:
+`SetShortcutOverrides` replaces the whole set (empty restores defaults) and preserves density,
+density changes preserve overrides, files without overrides still load, and null or blank entries
+in a hand-edited file are skipped. Validating overrides against registered shortcuts belongs to the
+WPF `KeyboardShortcutService`.
 
 `SettingsConfigurationService.GetProviderCredentialStatusesAsync` reads the authenticated service's
 credential states. Missing, ambiguous or refused responses remain unavailable, even when environment

@@ -23,6 +23,19 @@ public sealed class PositionLimitRuleTests
             NullLogger<PositionLimitRule>.Instance);
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public async Task EvaluateAsync_ZeroOrNegativeLimit_MeansNoLimitLikeEveryOtherRule(int limit)
+    {
+        var sut = CreateSut(maxPositionSize: limit);
+
+        var result = await sut.EvaluateAsync(CreateBuyOrder(1_000m));
+
+        result.IsApproved.Should().BeTrue(
+            "the operator control service normalizes a zero limit to 'no limit', and the exposure, concentration, notional and fat-finger rules treat it the same way");
+    }
+
     private static OrderRequest CreateBuyOrder(decimal quantity, string symbol = DefaultSymbol) => new()
     {
         Symbol = symbol,

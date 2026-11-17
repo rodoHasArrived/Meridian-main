@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Input;
+using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Workstation.Controls;
 
 namespace Meridian.Wpf.Services;
@@ -14,7 +15,22 @@ public sealed class KeyboardShortcutService
 {
     private static readonly Lazy<KeyboardShortcutService> _instance = new(() => new KeyboardShortcutService());
 
+    /// <summary>
+    /// Actions whose bindings an operator override may never reduce to a bare key or a
+    /// Shift-only chord: they start or stop collection, drop the provider connection, or delete
+    /// data, so an accidental keystroke must not trigger them. Default bindings are unaffected.
+    /// </summary>
+    private static readonly HashSet<string> ModifierRequiredActions = new(StringComparer.Ordinal)
+    {
+        "StartCollector",
+        "StopCollector",
+        "ToggleConnection",
+        "DeleteSelected"
+    };
+
     private readonly Dictionary<string, ShortcutAction> _shortcuts = new();
+    private readonly Dictionary<string, DefaultBinding> _defaultBindings = new(StringComparer.Ordinal);
+    private Action<IReadOnlyDictionary<string, DesktopShortcutOverride>>? _saveOverrides;
     private FrameworkElement? _rootElement;
     private bool _isEnabled = true;
 
@@ -26,7 +42,176 @@ public sealed class KeyboardShortcutService
     private KeyboardShortcutService()
     {
         InitializeDefaultShortcuts();
+        foreach (var (actionId, action) in _shortcuts)
+        {
+            _defaultBindings[actionId] = new DefaultBinding(action.Key, action.Modifiers, action.IsEnabled);
+        }
     }
+
+    /// <summary>
+    /// Creates an isolated instance with the default shortcuts, for tests that must not mutate
+    /// the process-wide singleton.
+    /// </summary>
+    internal static KeyboardShortcutService CreateIsolatedForTests() => new();
+
+    /// <summary>
+    /// Loads the operator's persisted shortcut overrides, applies them, and saves every later
+    /// <see cref="UpdateShortcut"/>, <see cref="SetShortcutEnabled"/>, and
+    /// <see cref="ResetToDefaults"/> change through <paramref name="saveOverrides"/>.
+    /// </summary>
+    public void AttachPreferenceStore(
+        IReadOnlyDictionary<string, DesktopShortcutOverride> persistedOverrides,
+        Action<IReadOnlyDictionary<string, DesktopShortcutOverride>> saveOverrides)
+    {
+        ArgumentNullException.ThrowIfNull(persistedOverrides);
+        ArgumentNullException.ThrowIfNull(saveOverrides);
+
+        _saveOverrides = null;
+        ApplyOverrides(persistedOverrides);
+        _saveOverrides = saveOverrides;
+    }
+
+    /// <summary>
+    /// Restores every default shortcut to its default binding, then applies the valid entries of
+    /// <paramref name="overrides"/>. An entry is skipped when its action is not a default
+    /// shortcut, its key or modifiers do not parse, it would leave a modifier-required action
+    /// without Ctrl or Alt, or it collides with another shortcut's binding.
+    /// </summary>
+    /// <returns>The action ids whose override was skipped.</returns>
+    public IReadOnlyList<string> ApplyOverrides(IReadOnlyDictionary<string, DesktopShortcutOverride> overrides)
+    {
+        ArgumentNullException.ThrowIfNull(overrides);
+
+        RestoreDefaultBindings();
+        var skipped = new List<string>();
+        foreach (var (actionId, shortcutOverride) in overrides)
+        {
+            if (!TryApplyOverride(actionId, shortcutOverride))
+            {
+                skipped.Add(actionId);
+            }
+        }
+
+        return skipped;
+    }
+
+    /// <summary>
+    /// Gets the current differences from the default bindings, in the form persisted to the
+    /// operator's desktop preferences.
+    /// </summary>
+    public IReadOnlyDictionary<string, DesktopShortcutOverride> GetOverrides()
+    {
+        var overrides = new Dictionary<string, DesktopShortcutOverride>(StringComparer.Ordinal);
+        foreach (var (actionId, defaults) in _defaultBindings)
+        {
+            if (!_shortcuts.TryGetValue(actionId, out var action))
+            {
+                continue;
+            }
+
+            var bindingChanged = action.Key != defaults.Key || action.Modifiers != defaults.Modifiers;
+            var enabledChanged = action.IsEnabled != defaults.IsEnabled;
+            if (!bindingChanged && !enabledChanged)
+            {
+                continue;
+            }
+
+            overrides[actionId] = new DesktopShortcutOverride(
+                bindingChanged ? action.Key.ToString() : null,
+                bindingChanged ? action.Modifiers.ToString() : null,
+                enabledChanged ? action.IsEnabled : null);
+        }
+
+        return overrides;
+    }
+
+    /// <summary>
+    /// Restores every default shortcut's binding and enabled state and clears the persisted
+    /// overrides.
+    /// </summary>
+    public void ResetToDefaults()
+    {
+        RestoreDefaultBindings();
+        PersistOverrides();
+    }
+
+    /// <summary>
+    /// True when an operator may bind <paramref name="actionId"/> to this chord: actions that
+    /// start or stop collection, drop the connection, or delete data must keep Ctrl or Alt.
+    /// </summary>
+    public static bool IsBindingAllowed(string actionId, Key key, ModifierKeys modifiers)
+    {
+        if (key == Key.None)
+        {
+            return false;
+        }
+
+        return !ModifierRequiredActions.Contains(actionId)
+               || (modifiers & (ModifierKeys.Control | ModifierKeys.Alt)) != ModifierKeys.None;
+    }
+
+    private bool TryApplyOverride(string actionId, DesktopShortcutOverride? shortcutOverride)
+    {
+        if (shortcutOverride is null
+            || !_defaultBindings.ContainsKey(actionId)
+            || !_shortcuts.TryGetValue(actionId, out var action))
+        {
+            return false;
+        }
+
+        var key = action.Key;
+        var modifiers = action.Modifiers;
+        if (shortcutOverride.Key is not null || shortcutOverride.Modifiers is not null)
+        {
+            if (shortcutOverride.Key is not null
+                && !Enum.TryParse(shortcutOverride.Key, ignoreCase: true, out key))
+            {
+                return false;
+            }
+
+            if (shortcutOverride.Modifiers is not null
+                && !Enum.TryParse(shortcutOverride.Modifiers, ignoreCase: true, out modifiers))
+            {
+                return false;
+            }
+
+            const ModifierKeys knownModifiers =
+                ModifierKeys.Alt | ModifierKeys.Control | ModifierKeys.Shift | ModifierKeys.Windows;
+            if (!Enum.IsDefined(key)
+                || (modifiers & ~knownModifiers) != ModifierKeys.None
+                || !IsBindingAllowed(actionId, key, modifiers)
+                || HasConflict(key, modifiers, excludeActionId: actionId))
+            {
+                return false;
+            }
+        }
+
+        action.Key = key;
+        action.Modifiers = modifiers;
+        if (shortcutOverride.IsEnabled is { } isEnabled)
+        {
+            action.IsEnabled = isEnabled;
+        }
+
+        return true;
+    }
+
+    private void RestoreDefaultBindings()
+    {
+        foreach (var (actionId, defaults) in _defaultBindings)
+        {
+            if (_shortcuts.TryGetValue(actionId, out var action))
+            {
+                action.Key = defaults.Key;
+                action.Modifiers = defaults.Modifiers;
+                action.IsEnabled = defaults.IsEnabled;
+            }
+        }
+    }
+
+    private void PersistOverrides() => _saveOverrides?.Invoke(GetOverrides());
+
+    private readonly record struct DefaultBinding(Key Key, ModifierKeys Modifiers, bool IsEnabled);
 
     /// <summary>
     /// Gets or sets whether keyboard shortcuts are enabled.
@@ -323,6 +508,7 @@ public sealed class KeyboardShortcutService
         {
             action.Key = key;
             action.Modifiers = modifiers;
+            PersistOverrides();
         }
     }
 
@@ -336,6 +522,7 @@ public sealed class KeyboardShortcutService
         if (_shortcuts.TryGetValue(actionId, out var action))
         {
             action.IsEnabled = enabled;
+            PersistOverrides();
         }
     }
 

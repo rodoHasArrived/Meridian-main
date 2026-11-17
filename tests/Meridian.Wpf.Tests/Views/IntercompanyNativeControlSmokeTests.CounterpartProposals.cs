@@ -19,11 +19,17 @@ public sealed partial class IntercompanyNativeControlSmokeTests
             RunMatUiAutomationFacade.EnsureApplicationResources();
             using var errors = new BindingErrorCapture();
             var client = new CounterpartClient();
-            using var workspace = new IntercompanyCounterpartQueueWorkspace(client) { SourceBook = client.BookId.ToString("D"), AsOf = "2026-11-13" };
+            using var workspace = new IntercompanyCounterpartQueueWorkspace(client) { AsOf = "2026-11-13" };
             var control = new IntercompanyCounterpartProposalsControl { DataContext = workspace };
             var window = Host(control);
             try
             {
+                await ArrangeAsync(window, control);
+                await ExecuteAsync(Button(control, "Load books"));
+                await ArrangeAsync(window, control);
+                var source = Named<ComboBox>(control, "Counterpart source ledger book");
+                Assert.Equal(2, source.Items.Count);
+                source.SelectedValue = client.BookId.ToString("D");
                 await ArrangeAsync(window, control);
                 await ExecuteAsync(Button(control, "Load counterpart evidence"));
                 await ArrangeAsync(window, control);
@@ -42,6 +48,9 @@ public sealed partial class IntercompanyNativeControlSmokeTests
                 Assert.Equal(BindingStatus.Active, provenance.GetBindingExpression(TextBox.TextProperty)!.Status);
                 Assert.Contains("Source digest synthetic-source-digest", provenance.Text);
                 Assert.False(Button(control, "Preview counterpart FX repricing").IsEnabled);
+                // Only the counterparty entity's own book is offered for linking an existing counterpart.
+                var target = Named<ComboBox>(control, "Existing counterpart book");
+                Assert.Equal(client.CounterpartyBookId.ToString("D"), Assert.Single(target.Items.Cast<IntercompanyChoice>()).Id);
 
                 SetText(Named<TextBox>(control, "Delivery retry reason"), "Synthetic destination period reopened");
                 await ArrangeAsync(window, control);
@@ -63,11 +72,13 @@ public sealed partial class IntercompanyNativeControlSmokeTests
     {
         private IntercompanyProposalDto _proposal;
         public Guid BookId { get; } = Guid.NewGuid();
+        public Guid CounterpartyBookId { get; } = Guid.NewGuid();
+        private readonly Guid _counterparty = Guid.NewGuid();
         public RetryIntercompanyProposalRequest? LastRetry { get; private set; }
 
         public CounterpartClient()
         {
-            var source = new IntercompanyProposalSourceDto(Guid.NewGuid(), "synthetic-tenant", null, Guid.NewGuid(), BookId, Guid.NewGuid(), Guid.NewGuid(),
+            var source = new IntercompanyProposalSourceDto(Guid.NewGuid(), "synthetic-tenant", null, Guid.NewGuid(), BookId, Guid.NewGuid(), _counterparty,
                 Guid.NewGuid(), Guid.NewGuid(), "SYN-TX-1", new DateOnly(2026, 9, 30), "USD",
                 [new IntercompanyProposalSourceLineDto(Guid.NewGuid(), "Due from affiliate", "Asset", "synthetic-node", ExactBalance, 0m, "USD", ExactBalance, 0m)]);
             _proposal = new IntercompanyProposalDto(source, "synthetic-source-digest", IntercompanyProposalStatusDto.NeedsFix, 2, RecordedAt, LastError: "Synthetic destination period is closed");
@@ -75,6 +86,10 @@ public sealed partial class IntercompanyNativeControlSmokeTests
 
         public Task<ApiResponse<IntercompanyOperationCapabilities>> GetIntercompanyCapabilitiesAsync(CancellationToken ct = default)
             => Task.FromResult(ApiResponse<IntercompanyOperationCapabilities>.Ok(new IntercompanyOperationCapabilities(CanManageLedger: true, CanViewLedger: true)));
+        public Task<ApiResponse<LedgerBookDto[]>> GetLedgerBooksAsync(CancellationToken ct = default)
+            => Task.FromResult(ApiResponse<LedgerBookDto[]>.Ok(
+                [new(BookId, "synthetic-source-fund", _proposal.Source.SourceEntityId, FundStructureNodeKindDto.Entity, "Synthetic source book", "USD", RecordedAt, RecordedAt),
+                 new(CounterpartyBookId, "synthetic-counterparty-fund", _counterparty, FundStructureNodeKindDto.Entity, "Synthetic counterparty book", "USD", RecordedAt, RecordedAt)]));
         public Task<ApiResponse<IntercompanyProposalDto[]>> GetCounterpartProposalsAsync(Guid sourceBookId, CancellationToken ct = default)
             => Task.FromResult(ApiResponse<IntercompanyProposalDto[]>.Ok([_proposal]));
         public Task<ApiResponse<IntercompanyBreakDto[]>> GetCounterpartBreaksAsync(Guid sourceBookId, DateOnly asOf, CancellationToken ct = default)

@@ -358,6 +358,28 @@ public sealed class TierMigrationService : ITierMigrationService
         }
         _sourceGuard.EnsurePath(sourcePath);
 
+        // With DeleteSource, events a sink appends after the copy would be deleted with the
+        // source. Hold both writer fences from before the copy until the delete, in the same
+        // order Defrag and compression take them, and refuse files that are open for writing.
+        // A source no writer has ever locked has no lock file; none is created for it, so no
+        // stray lock file outlives the deleted source.
+        IDisposable? fenceLease = null;
+        FileStream? writerLease = null;
+        if (options.DeleteSource)
+        {
+            if (!JsonlWriteFence.TryEnterExclusive(sourcePath, out var fence))
+                throw new IOException($"Refusing to migrate and delete a file that is open for writing: {sourcePath}");
+            fenceLease = fence;
+            if (!JsonlWriterLock.TryAcquireExclusive(sourcePath, out writerLease, createIfMissing: false))
+            {
+                fenceLease.Dispose();
+                throw new IOException($"Refusing to migrate and delete a file another process has open for writing: {sourcePath}");
+            }
+        }
+
+        using var heldFence = fenceLease;
+        using var heldWriterLock = writerLease;
+
         var sourceInfo = new FileInfo(sourcePath);
         var originalSize = sourceInfo.Length;
 

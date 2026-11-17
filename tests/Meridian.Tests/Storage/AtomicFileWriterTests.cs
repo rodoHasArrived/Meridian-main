@@ -38,6 +38,20 @@ public sealed class AtomicFileWriterTests : TempDirectoryTestBase
     }
 
     [Fact]
+    public async Task AppendLinesAsync_ConcurrentAppendsToOneFile_KeepEveryLine()
+    {
+        // Each append copies the file and replaces it; unserialized, two concurrent appends
+        // copy the same bytes and the second replace drops the first one's line.
+        var path = Path.Combine(TestDataRoot, "history.jsonl");
+        const int writers = 32;
+
+        await Task.WhenAll(Enumerable.Range(0, writers).Select(index =>
+            Task.Run(() => AtomicFileWriter.AppendLinesAsync(path, [$"line-{index}"]))));
+
+        File.ReadAllLines(path).Should().BeEquivalentTo(Enumerable.Range(0, writers).Select(index => $"line-{index}"));
+    }
+
+    [Fact]
     public async Task WriteAsync_ReaderRefusesReplacement_PreservesOriginalAndCleansTemporaryFiles()
     {
         if (!OperatingSystem.IsWindows())

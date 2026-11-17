@@ -550,6 +550,11 @@ public sealed class SecurityMasterWorkbenchDeclaredExerciseScheduleBookTests
         await policy.DidNotReceiveWithAnyArgs().GetBlockerAsync(default!, default);
     }
 
+    // Theory case names include the security, so a generated id would give every run different
+    // test identities and paired CI evidence could never match.
+    private static SecurityDetailDto StableCase(SecurityDetailDto security) =>
+        security with { SecurityId = Guid.Parse("7c1d2e3f-4a5b-4c6d-8e7f-9a0b1c2d3e4f") };
+
     public static TheoryData<string, SecurityDetailDto, string?> ConsistencyCases()
     {
         var bermudan = new Dictionary<string, object?>
@@ -568,16 +573,16 @@ public sealed class SecurityMasterWorkbenchDeclaredExerciseScheduleBookTests
         // permits the bond, and any other text for a policy that blocks it with that reason.
         return new()
         {
-            { "European call", BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")]), null },
-            { "call without notice", BondExerciseNoticeWatchTests.Bond([EuropeanCall(null, null, null)]), null },
-            { "call and put", BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")], [Put()]), null },
-            { "Bermudan call and put", BondExerciseNoticeWatchTests.Bond([bermudan], [Put()]), null },
-            { "shared deadline", BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, null, "Calendar"), later]), null },
-            { "blocked: no conventions", WithoutConventions(BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")])), null },
-            { "blocked: floating", BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")], extra: new() { ["couponType"] = "Floating", ["floatingIndex"] = "SOFR" }), null },
+            { "European call", StableCase(BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")])), null },
+            { "call without notice", StableCase(BondExerciseNoticeWatchTests.Bond([EuropeanCall(null, null, null)])), null },
+            { "call and put", StableCase(BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")], [Put()])), null },
+            { "Bermudan call and put", StableCase(BondExerciseNoticeWatchTests.Bond([bermudan], [Put()])), null },
+            { "shared deadline", StableCase(BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, null, "Calendar"), later])), null },
+            { "blocked: no conventions", StableCase(WithoutConventions(BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")]))), null },
+            { "blocked: floating", StableCase(BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")], extra: new() { ["couponType"] = "Floating", ["floatingIndex"] = "SOFR" })), null },
             { "recovered", Recovered(EuropeanPriced, RecoveredPut, AccrualBoth), null },
-            { "policy permits", BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")], [Put()]), "" },
-            { "policy blocks", BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")], [Put()]), "Reviewed cutover blocks this bond." }
+            { "policy permits", StableCase(BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")], [Put()])), "" },
+            { "policy blocks", StableCase(BondExerciseNoticeWatchTests.Bond([EuropeanCall(30, 60, "Calendar")], [Put()])), "Reviewed cutover blocks this bond." }
         };
     }
 

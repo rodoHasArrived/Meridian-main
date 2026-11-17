@@ -2056,6 +2056,7 @@ Meridian-main
 │   │   ├── README.md
 │   │   ├── reporting-operating-model-2026-09.md
 │   │   ├── review-history.md
+│   │   ├── settings-preferences-brainstorm-2026-11-16.md
 │   │   ├── single-principal-attestation-acceptance-matrix-2026-11-02.md
 │   │   ├── single-principal-attestation-policy-proposal-2026-11-02.md
 │   │   ├── value-proposition-review-2026-11-01.md
@@ -5653,6 +5654,7 @@ Meridian-main
 │   │   │   ├── PluginBacktestStrategyLiveSource.cs
 │   │   │   └── StrategyPluginLoader.cs
 │   │   ├── Portfolio
+│   │   │   ├── FillRejectedException.cs
 │   │   │   ├── ICommissionModel.cs
 │   │   │   ├── LinkedListExtensions.cs
 │   │   │   ├── SimulatedPortfolio.CanonicalActions.cs
@@ -10588,6 +10590,7 @@ Meridian-main
 │   │   │   │   ├── WorkstationEntityConsolidationApiClient.cs
 │   │   │   │   ├── WorkstationEntityConsolidationApiClient.Lifecycle.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.Accruals.cs
+│   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.Choices.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.LegacyCoverage.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.Obligations.cs
@@ -13261,6 +13264,7 @@ Meridian-main
 │   │   │   ├── PaperSessionRecoveryConcurrencyTests.cs
 │   │   │   ├── PaperSessionVariationMarginTests.cs
 │   │   │   ├── PaperTradingCostModelTests.cs
+│   │   │   ├── PaperTradingGatewayConcurrencyTests.cs
 │   │   │   ├── PaperTradingGatewayTests.cs
 │   │   │   ├── PaperTradingPortfolioAccountingEvidenceTests.cs
 │   │   │   ├── PaperTradingPortfolioBasisParityTests.cs
@@ -14527,6 +14531,7 @@ Meridian-main
 │   │   │   ├── LiveRunMetricsTrackerTests.cs
 │   │   │   ├── LiveStrategyBaseTests.cs
 │   │   │   ├── LiveStrategyCatalogFallbackTests.cs
+│   │   │   ├── LiveStrategyExecutionContextAccountTests.cs
 │   │   │   ├── LiveStrategyRunSessionCompletionTests.cs
 │   │   │   ├── LiveStrategyRunSessionFillPriceTests.cs
 │   │   │   ├── LiveTradingEngineTests.AuditCancellation.cs
@@ -15129,6 +15134,7 @@ Meridian-main
 │   │   │   ├── IntegrityEventsServiceTests.cs
 │   │   │   ├── IntercompanyAgreementWorkspaceTests.cs
 │   │   │   ├── IntercompanyAgreementWorkspaceTests.Structured.cs
+│   │   │   ├── IntercompanyBookChoiceTests.cs
 │   │   │   ├── IntercompanyCounterpartQueueWorkspaceTests.cs
 │   │   │   ├── IntercompanyInterestAccrualWorkspaceTests.cs
 │   │   │   ├── LeanIntegrationServiceTests.cs
@@ -15164,6 +15170,7 @@ Meridian-main
 │   │   │   ├── WorkstationAccountingCloseApiClientTests.cs
 │   │   │   ├── WorkstationEntityConsolidationApiClientTests.cs
 │   │   │   ├── WorkstationIntercompanyAgreementApiClientTests.Accruals.cs
+│   │   │   ├── WorkstationIntercompanyAgreementApiClientTests.Choices.cs
 │   │   │   ├── WorkstationIntercompanyAgreementApiClientTests.cs
 │   │   │   ├── WorkstationIntercompanyAgreementApiClientTests.Obligations.cs
 │   │   │   ├── WorkstationIntercompanyAgreementApiClientTests.Proposals.cs
@@ -15242,6 +15249,7 @@ Meridian-main
 │   │   │   ├── FundLedgerReadServiceTests.cs
 │   │   │   ├── FundReconciliationWorkbenchServiceTests.cs
 │   │   │   ├── InfoBarServiceTests.cs
+│   │   │   ├── KeyboardShortcutServicePersistenceTests.cs
 │   │   │   ├── KeyboardShortcutServiceTests.cs
 │   │   │   ├── MessagingServiceTests.cs
 │   │   │   ├── ModelRoutingPolicyValidatorTests.cs

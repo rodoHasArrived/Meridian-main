@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyLegacyCoverageCandidate
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyLegacyCoverageCandidate</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.LegacyCoverage.cs:7](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.LegacyCoverage.cs#L7).
+
+```csharp
+public sealed record IntercompanyLegacyCoverageCandidate(Guid LedgerBookId, Guid JournalEntryId, Guid EntryId, string SourceLineDigest, string AccountName, string AccountType, decimal Debit, decimal Credit, DateOnly EffectiveDate);
+```
+
 ## IntercompanyOperationCapabilities
 
 Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyOperationCapabilities</code>. Kind: `record`.
@@ -81,6 +91,18 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;ApiResponse&lt;IntercompanyAccrualProposalDto&gt;&gt; PreviewInterestAccrualAsync(IntercompanyAccrualRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Accruals.cs:10](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Accruals.cs#L10) | Read-only computation over the operator&#x27;s selection; the server resolves every economic input. |
 | <code>Task&lt;ApiResponse&lt;ManualJournalEntryDraftDto&gt;&gt; CreateInterestAccrualDraftAsync(CreateIntercompanyAccrualDraftRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Accruals.cs:13](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Accruals.cs#L13) | Retains the previewed computation as a source-book review draft. It never approves or posts. |
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Choices.cs:7](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Choices.cs#L7).
+
+```csharp
+public partial interface IWorkstationIntercompanyAgreementApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ApiResponse&lt;LedgerBookDto[]&gt;&gt; GetLedgerBooksAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Choices.cs:13](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Choices.cs#L13) | Ledger books visible to the signed-in account, read from the same route the browser workstation uses. It only populates selection lists; every command still authorizes the chosen book on the server. |
 
 Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs:8](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs#L8).
 
@@ -406,6 +428,18 @@ Declared public members:
 | --- | --- | --- |
 | <code>public async Task&lt;ApiResponse&lt;IntercompanyAccrualProposalDto&gt;&gt; PreviewInterestAccrualAsync(IntercompanyAccrualRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Accruals.cs:22](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Accruals.cs#L22) |  |
 | <code>public async Task&lt;ApiResponse&lt;ManualJournalEntryDraftDto&gt;&gt; CreateInterestAccrualDraftAsync(CreateIntercompanyAccrualDraftRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Accruals.cs:41](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Accruals.cs#L41) |  |
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Choices.cs:17](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Choices.cs#L17).
+
+```csharp
+public sealed partial class WorkstationIntercompanyAgreementApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;ApiResponse&lt;LedgerBookDto[]&gt;&gt; GetLedgerBooksAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Choices.cs:19](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Choices.cs#L19) |  |
 
 Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs:16](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs#L16).
 
@@ -764,7 +798,7 @@ public readonly record struct ArgbColor(byte A, byte R, byte G, byte B);
 
 Qualified name: <code>Meridian.Ui.Services.Services.ConfigProfile</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:619](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L619).
+Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:726](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L726).
 
 Represents a configuration profile (built-in or custom).
 
@@ -873,7 +907,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.Services.CredentialServiceRefusedException</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:657](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L657).
+Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:764](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L764).
 
 Credential configuration state for a provider.
 
@@ -885,7 +919,7 @@ public sealed class CredentialServiceRefusedException(string message) : InvalidO
 
 Qualified name: <code>Meridian.Ui.Services.Services.CredentialState</code>. Kind: `enum`.
 
-Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:659](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L659).
+Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:766](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L766).
 
 ```csharp
 public enum CredentialState : byte
@@ -895,11 +929,11 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>NotRequired</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:661](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L661) |  |
-| <code>Configured</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:662](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L662) |  |
-| <code>Partial</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:663](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L663) |  |
-| <code>Missing</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:664](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L664) |  |
-| <code>Unavailable</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:665](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L665) |  |
+| <code>NotRequired</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:768](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L768) |  |
+| <code>Configured</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:769](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L769) |  |
+| <code>Partial</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:770](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L770) |  |
+| <code>Missing</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:771](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L771) |  |
+| <code>Unavailable</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:772](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L772) |  |
 
 ## DailyQualityRecord
 
@@ -1014,7 +1048,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.Services.DesktopShellPreferences</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:15](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L15).
+Source: [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:29](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L29).
 
 Persisted desktop shell preferences consumed by the WPF workstation shell.
 
@@ -1026,7 +1060,20 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static DesktopShellPreferences Default { get; } = new (ShellDensityMode.Standard);</code> | [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:18](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L18) |  |
+| <code>public static DesktopShellPreferences Default { get; } = new (ShellDensityMode.Standard);</code> | [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:35](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L35) |  |
+| <code>public IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; ShortcutOverrides { get; init; } = NoShortcutOverrides;</code> | [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:40](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L40) | The operator&#x27;s shortcut overrides; empty when every shortcut uses its default binding. |
+
+## DesktopShortcutOverride
+
+Qualified name: <code>Meridian.Ui.Services.Services.DesktopShortcutOverride</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:21](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L21).
+
+A persisted operator change to one default desktop keyboard shortcut, keyed by action id. Keys and modifiers are stored as their WPF enum names (for example F10 and Control, Shift) so this contract stays free of WPF types; a null member means &quot;keep the default&quot; for that part of the binding.
+
+```csharp
+public sealed record DesktopShortcutOverride(string? Key = null, string? Modifiers = null, bool? IsEnabled = null);
+```
 
 ## ErrorDetailsModel
 
@@ -1304,43 +1351,3 @@ Declared public members:
 | <code>public OmsRequestSignatureResult VerifyRequestSignature(OmsRequestSignatureInput signature);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:139](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L139) |  |
 | <code>public OmsKeyRotationResult RotateSigningKey(OmsKeyRotationRequest request);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:161](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L161) |  |
 | <code>public static string ComputeSignature(byte[] key, string timestampUtc, string canonicalPayload);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:234](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L234) |  |
-
-## OmsIntegrationServiceCollectionExtensions
-
-Qualified name: <code>Meridian.Ui.Services.Services.Integrations.OmsIntegrationServiceCollectionExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationServiceCollectionExtensions.cs:10](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationServiceCollectionExtensions.cs#L10).
-
-Registers the shared OMS/EMS integration API handler with dependency injection.
-
-```csharp
-public static class OmsIntegrationServiceCollectionExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IServiceCollection AddOmsIntegrationApiHandlers(this IServiceCollection services);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationServiceCollectionExtensions.cs:12](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationServiceCollectionExtensions.cs#L12) |  |
-
-## IntegrityVerificationResult
-
-Qualified name: <code>Meridian.Ui.Services.Services.IntegrityVerificationResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:205](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L205).
-
-Reports data integrity validity, score, issues, and recommended remediation.
-
-```csharp
-public sealed class IntegrityVerificationResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsValid { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:207](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L207) |  |
-| <code>public double Score { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:208](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L208) |  |
-| <code>public List&lt;string&gt; Issues { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:209](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L209) |  |
-| <code>public List&lt;string&gt; Recommendations { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:210](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L210) |  |
-| <code>public DateTime CheckedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:211](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L211) |  |
