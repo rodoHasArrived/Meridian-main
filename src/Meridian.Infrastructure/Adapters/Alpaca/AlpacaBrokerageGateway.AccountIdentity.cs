@@ -28,7 +28,7 @@ public sealed partial class AlpacaBrokerageGateway
         List<string>? completenessIssues, CancellationToken ct)
     {
         using var client = CreateHttpClient();
-        var response = await client.GetAsync($"{BaseUrl}/v2/account", ct).ConfigureAwait(false);
+        using var response = await client.GetAsync($"{BaseUrl}/v2/account", ct).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
         var account = await response.Content.ReadFromJsonAsync(

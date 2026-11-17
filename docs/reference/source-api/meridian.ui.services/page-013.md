@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OmsIntegrationServiceCollectionExtensions
+
+Qualified name: <code>Meridian.Ui.Services.Services.Integrations.OmsIntegrationServiceCollectionExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationServiceCollectionExtensions.cs:10](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationServiceCollectionExtensions.cs#L10).
+
+Registers the shared OMS/EMS integration API handler with dependency injection.
+
+```csharp
+public static class OmsIntegrationServiceCollectionExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IServiceCollection AddOmsIntegrationApiHandlers(this IServiceCollection services);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationServiceCollectionExtensions.cs:12](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationServiceCollectionExtensions.cs#L12) |  |
+
 ## IntegrityVerificationResult
 
 Qualified name: <code>Meridian.Ui.Services.Services.IntegrityVerificationResult</code>. Kind: `class`.
@@ -1111,23 +1129,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public List&lt;ConfigSection&gt;? Sections { get; set; }</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:682](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L682) |  |
-
-## ShowConfigResult
-
-Qualified name: <code>Meridian.Ui.Services.ShowConfigResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:670](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L670).
-
-Reports configuration-query success and the resulting configuration sections.
-
-```csharp
-public sealed class ShowConfigResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:672](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L672) |  |
-| <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:673](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L673) |  |
-| <code>public List&lt;ConfigSection&gt; Sections { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:674](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L674) |  |
