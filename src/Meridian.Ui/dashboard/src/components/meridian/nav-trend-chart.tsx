@@ -10,8 +10,9 @@ import { accountingAmount } from "@/components/meridian/period-comparison-panel"
 type NavTrendService = (query: { fundProfileId: string; months?: number }, options?: ApiRequestOptions) => Promise<FundNavTrend>;
 
 /**
- * Ledger NAV at each of the last month-ends, ending with NAV now (UX Phase E follow-up). Every
- * point is the posted ledger as it stood on that date. The plotted values are listed in a table.
+ * Ledger NAV at each of the last month-ends, ending with NAV now (UX Phase E follow-up), and the
+ * securities exposure (long, short, gross) at the same dates when the ledger holds any. Every point
+ * is the posted ledger as it stood on that date. The plotted values are listed in tables.
  */
 export function NavTrendChart({ fundProfileId, months = 12, service = getNavTrend }: { fundProfileId: string; months?: number; service?: NavTrendService }) {
   const key = `${fundProfileId}:${months}`;
@@ -35,6 +36,14 @@ export function NavTrendChart({ fundProfileId, months = 12, service = getNavTren
     columns: ["As of", "NAV"],
     rows: points.map((point) => [point.asOf, accountingAmount(point.totalNav)])
   }), [points, active?.trend]);
+  // Exposure is drawn only when the server sends it and some date holds securities.
+  const hasExposure = points.length >= 2 && points.some((point) => point.grossExposure !== null && Number(point.grossExposure) !== 0);
+  const exposureData = useMemo(() => ({
+    caption: `Securities exposure by month-end${active?.trend ? `, ${active.trend.currency}` : ""}`,
+    columns: ["As of", "Long", "Short", "Gross", "Net"],
+    rows: points.map((point) => [point.asOf, accountingAmount(point.longExposure ?? "0"), accountingAmount(point.shortExposure ?? "0"),
+      accountingAmount(point.grossExposure ?? "0"), accountingAmount(point.netExposure ?? "0")])
+  }), [points, active?.trend]);
 
   return (
     <section aria-label="NAV trend" className="space-y-2" data-chart-table="nav-trend">
@@ -47,6 +56,18 @@ export function NavTrendChart({ fundProfileId, months = 12, service = getNavTren
                 series={[{ label: "NAV", color: "var(--chart-equity, #2E7655)", points: points.map((point) => Number(point.totalNav)) }]}
                 ariaLabel={`Ledger NAV from ${points[0]!.asOf} to ${points.at(-1)!.asOf}`} accessibleData={accessibleData} />
             </ChartCard>}
+      {hasExposure ? <section aria-label="Exposure trend" className="space-y-2" data-chart-table="exposure-trend">
+        <h3 className="text-sm font-semibold">Exposure, last {months} month-ends</h3>
+        <ChartCard title={`Securities exposure · ${active!.trend!.currency}`} subtitle={`${points[0]!.asOf} to ${points.at(-1)!.asOf}`} height={220}>
+          <EquityCurve labels={points.map((point) => point.asOf)} valueFmt={(value) => formatCurrency(value, { currency: active!.trend!.currency, notation: "compact", maximumFractionDigits: 2 })}
+            series={[
+              { label: "Long", color: "var(--chart-up, #2E7655)", points: points.map((point) => Number(point.longExposure ?? 0)) },
+              { label: "Short", color: "var(--chart-dn, #A23B2A)", points: points.map((point) => Number(point.shortExposure ?? 0)) },
+              { label: "Gross", color: "var(--chart-series-1, #29323A)", points: points.map((point) => Number(point.grossExposure ?? 0)) }
+            ]}
+            ariaLabel={`Securities exposure from ${points[0]!.asOf} to ${points.at(-1)!.asOf}`} accessibleData={exposureData} />
+        </ChartCard>
+      </section> : null}
       {active?.trend?.notes.length ? <ul className="list-disc space-y-0.5 pl-5 text-xs text-muted-foreground">{active.trend.notes.map((note) => <li key={note}>{note}</li>)}</ul> : null}
     </section>
   );

@@ -7017,67 +7017,116 @@
         {
           "asOf": "2025-08-31",
           "totalNav": 10850000,
-          "componentCount": 6
+          "componentCount": 6,
+          "longExposure": 7812000,
+          "shortExposure": 868000,
+          "grossExposure": 8680000,
+          "netExposure": 6944000
         },
         {
           "asOf": "2025-09-30",
           "totalNav": 10920000,
-          "componentCount": 6
+          "componentCount": 6,
+          "longExposure": 7862000,
+          "shortExposure": 874000,
+          "grossExposure": 8736000,
+          "netExposure": 6988000
         },
         {
           "asOf": "2025-10-31",
           "totalNav": 11140000,
-          "componentCount": 6
+          "componentCount": 6,
+          "longExposure": 8021000,
+          "shortExposure": 891000,
+          "grossExposure": 8912000,
+          "netExposure": 7130000
         },
         {
           "asOf": "2025-11-30",
           "totalNav": 11080000,
-          "componentCount": 6
+          "componentCount": 6,
+          "longExposure": 7978000,
+          "shortExposure": 886000,
+          "grossExposure": 8864000,
+          "netExposure": 7092000
         },
         {
           "asOf": "2025-12-31",
           "totalNav": 11310000,
-          "componentCount": 6
+          "componentCount": 6,
+          "longExposure": 8143000,
+          "shortExposure": 905000,
+          "grossExposure": 9048000,
+          "netExposure": 7238000
         },
         {
           "asOf": "2026-01-31",
           "totalNav": 11460000,
-          "componentCount": 6
+          "componentCount": 6,
+          "longExposure": 8251000,
+          "shortExposure": 917000,
+          "grossExposure": 9168000,
+          "netExposure": 7334000
         },
         {
           "asOf": "2026-02-28",
           "totalNav": 11390000,
-          "componentCount": 6
+          "componentCount": 6,
+          "longExposure": 8201000,
+          "shortExposure": 911000,
+          "grossExposure": 9112000,
+          "netExposure": 7290000
         },
         {
           "asOf": "2026-03-31",
           "totalNav": 11620000,
-          "componentCount": 6
+          "componentCount": 6,
+          "longExposure": 8366000,
+          "shortExposure": 930000,
+          "grossExposure": 9296000,
+          "netExposure": 7436000
         },
         {
           "asOf": "2026-04-30",
           "totalNav": 11810000,
-          "componentCount": 6
+          "componentCount": 6,
+          "longExposure": 8503000,
+          "shortExposure": 945000,
+          "grossExposure": 9448000,
+          "netExposure": 7558000
         },
         {
           "asOf": "2026-05-31",
           "totalNav": 11940000,
-          "componentCount": 6
+          "componentCount": 6,
+          "longExposure": 8597000,
+          "shortExposure": 955000,
+          "grossExposure": 9552000,
+          "netExposure": 7642000
         },
         {
           "asOf": "2026-06-30",
           "totalNav": 12010000,
-          "componentCount": 6
+          "componentCount": 6,
+          "longExposure": 8647000,
+          "shortExposure": 961000,
+          "grossExposure": 9608000,
+          "netExposure": 7686000
         },
         {
           "asOf": "2026-07-13",
           "totalNav": 12450000,
-          "componentCount": 6
+          "componentCount": 6,
+          "longExposure": 8964000,
+          "shortExposure": 996000,
+          "grossExposure": 9960000,
+          "netExposure": 7968000
         }
       ],
       "notes": [
         "Each point is ledger NAV rebuilt as of that date, at the end of each month; the last point is NAV now.",
-        "Cash, financing and strategy cuts that do not take a date are not included."
+        "Cash, financing and strategy cuts that do not take a date are not included.",
+        "Exposure is the ledger's securities held long and the short securities payable, at the last posted mark on or before each date."
       ],
       "generatedAt": "2026-07-13T18:55:00Z"
     }

@@ -11,9 +11,14 @@ import { RunAttributionPeriodComparison } from "@/screens/portfolio-screen.attri
 import { NavTrendChart } from "@/components/meridian/nav-trend-chart";
 import type { FundNavTrend } from "@/lib/api/period-comparison.api";
 
-function trend(points: Array<[string, number]>, notes: string[] = []): FundNavTrend {
+function trend(points: Array<[string, number]>, notes: string[] = [], exposure?: Array<[number, number]>): FundNavTrend {
   return { fundProfileId: "fund-alpha", subject: "Alpha Fund", currency: "USD", generatedAt: "2026-11-17T12:00:00Z", notes,
-    points: points.map(([asOf, nav]) => ({ asOf, totalNav: String(nav), componentCount: 3 })) };
+    points: points.map(([asOf, nav], index) => {
+      const [long, short] = exposure?.[index] ?? [null, null];
+      return { asOf, totalNav: String(nav), componentCount: 3,
+        longExposure: long === null ? null : String(long), shortExposure: short === null ? null : String(short),
+        grossExposure: long === null || short === null ? null : String(long + short), netExposure: long === null || short === null ? null : String(long - short) };
+    }) };
 }
 
 vi.mock("@/lib/table-workbench", async (load) => ({ ...await load<typeof import("@/lib/table-workbench")>(), loadTableViews: vi.fn(async () => []), saveTableView: vi.fn() }));
@@ -99,6 +104,21 @@ describe("prior-period surfaces", () => {
     expect(await screen.findByText("At least two dates with ledger NAV are needed for a trend.")).toBeInTheDocument();
     expect(screen.getByText("Months before the ledger's first NAV component are left out.")).toBeInTheDocument();
     expect(screen.queryByRole("img")).not.toBeInTheDocument();
+  });
+
+  it("the exposure trend draws long, short and gross with a table, and is hidden without securities", async () => {
+    const service = vi.fn(async () => trend([["2026-10-31", 1_000], ["2026-11-17", 1_100]], [], [[700, 100], [800, 150]]));
+    const { unmount } = renderWithRouter(<NavTrendChart fundProfileId="fund-alpha" service={service} />);
+    const section = await screen.findByRole("region", { name: "Exposure trend" });
+    expect(section).toHaveAttribute("data-chart-table", "exposure-trend");
+    expect(within(section).getByRole("img", { name: "Securities exposure from 2026-10-31 to 2026-11-17" })).toBeInTheDocument();
+    expect(within(section).getByRole("table")).toHaveTextContent("950.00");
+    unmount();
+
+    const flat = vi.fn(async () => trend([["2026-10-31", 1_000], ["2026-11-17", 1_100]], [], [[0, 0], [0, 0]]));
+    renderWithRouter(<NavTrendChart fundProfileId="fund-alpha" service={flat} />);
+    expect(await screen.findByRole("img", { name: /Ledger NAV from/ })).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Exposure trend" })).not.toBeInTheDocument();
   });
 
   it("the NAV trend offers a retry when it fails", async () => {

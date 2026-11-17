@@ -105,6 +105,11 @@ export interface FundNavTrendPoint {
   /** Ledger NAV at the end of that day, as decimal text. */
   totalNav: string;
   componentCount: number;
+  /** Securities held long, short securities payable (positive), gross and net, as decimal text; null from an older server. */
+  longExposure: string | null;
+  shortExposure: string | null;
+  grossExposure: string | null;
+  netExposure: string | null;
 }
 
 export interface FundNavTrend {
@@ -116,7 +121,13 @@ export interface FundNavTrend {
   generatedAt: string;
 }
 
-type RawNavTrend = Omit<FundNavTrend, "points"> & { points: Array<Omit<FundNavTrendPoint, "totalNav"> & { totalNav: RawAmount }> };
+type ExposureField = "longExposure" | "shortExposure" | "grossExposure" | "netExposure";
+type RawNavTrendPoint = Omit<FundNavTrendPoint, "totalNav" | ExposureField> & { totalNav: RawAmount } & Partial<Record<ExposureField, RawAmount | null>>;
+type RawNavTrend = Omit<FundNavTrend, "points"> & { points: RawNavTrendPoint[] };
+
+function optionalAmountText(value: RawAmount | null | undefined, field: string): string | null {
+  return value === null || value === undefined ? null : amountText(value, field);
+}
 
 /** Ledger NAV at each recent month-end, ending with NAV now. */
 export async function getNavTrend(query: { fundProfileId: string; months?: number }, options: ApiRequestOptions = {}): Promise<FundNavTrend> {
@@ -127,6 +138,14 @@ export async function getNavTrend(query: { fundProfileId: string; months?: numbe
   if (!raw || !Array.isArray(raw.points) || !Array.isArray(raw.notes)) throw new Error("The NAV trend response is not recognised.");
   return {
     ...raw,
-    points: raw.points.map((point) => ({ asOf: point.asOf, componentCount: point.componentCount, totalNav: amountText(point.totalNav, "NAV") }))
+    points: raw.points.map((point) => ({
+      asOf: point.asOf,
+      componentCount: point.componentCount,
+      totalNav: amountText(point.totalNav, "NAV"),
+      longExposure: optionalAmountText(point.longExposure, "long exposure"),
+      shortExposure: optionalAmountText(point.shortExposure, "short exposure"),
+      grossExposure: optionalAmountText(point.grossExposure, "gross exposure"),
+      netExposure: optionalAmountText(point.netExposure, "net exposure")
+    }))
   };
 }

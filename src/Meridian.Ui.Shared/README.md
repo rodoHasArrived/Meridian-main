@@ -1228,7 +1228,9 @@ Prior-period comparisons (UX Phase E) all return `PeriodComparisonDto`:
   the prior date (`GetOperationsAsOfAsync`); otherwise it uses current terms and says so.
 - `GET /api/fund-structure/nav-trend` (`FundOperationsWorkspaceReadService.NavTrend.cs`) returns
   `FundNavTrendDto`: ledger NAV at up to 24 month-ends (default 12) plus today, from one ledger book.
-  Months before the first NAV component are left out, with a note.
+  Months before the first NAV component are left out, with a note. Each point also carries securities
+  exposure from the same attribution: long is the `Securities` balances, short the `Short Securities
+  Payable` balances, with gross and net, at the ledger's last posted mark.
 
 The report-pack portfolio cuts (`ReportPackRunReadService.ReportedPeriods.cs`) read only the latest
 published or restated version per fund, account, template and period. A fund's cut uses its latest

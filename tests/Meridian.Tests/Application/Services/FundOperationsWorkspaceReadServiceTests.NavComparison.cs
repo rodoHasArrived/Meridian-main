@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.Ledger;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Reporting;
 using Meridian.Strategies.Services;
@@ -99,6 +100,38 @@ public sealed partial class FundOperationsWorkspaceReadServiceTests
         // The run's ledger starts in April 2026, so February and March are left out with a note.
         trend.Points.Select(static point => point.AsOf).Should().Equal(new DateOnly(2026, 4, 30), new DateOnly(2026, 5, 31), new DateOnly(2026, 6, 30), new DateOnly(2026, 7, 15));
         trend.Notes.Should().Contain(static note => note.Contains("left out", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task GetNavTrendAsync_ReportsLongShortGrossAndNetSecuritiesExposureAtEachDate()
+    {
+        var fundProfileId = $"fund-nav-{Guid.NewGuid():N}";
+        var run = BuildRun("run-nav-exposure", "nav-x", "Nav Strategy", fundProfileId, "Nav Fund", realizedPnl: 40m, unrealizedPnl: 60m);
+        // AAPL (400 long since April) is marked up 50 in June, and MSFT is sold short for 150 in June.
+        var ledger = (Meridian.Ledger.Ledger)run.Metrics!.Ledger!;
+        PostBalancedEntry(ledger, new DateTimeOffset(2026, 6, 10, 14, 0, 0, TimeSpan.Zero), "Short MSFT",
+        [
+            (LedgerAccounts.Cash, 150m, 0m),
+            (LedgerAccounts.ShortSecuritiesPayable("MSFT"), 0m, 150m)
+        ]);
+        PostBalancedEntry(ledger, new DateTimeOffset(2026, 6, 30, 21, 0, 0, TimeSpan.Zero), "Mark AAPL",
+        [
+            (LedgerAccounts.Securities("AAPL"), 50m, 0m),
+            (LedgerAccounts.UnrealizedGain, 0m, 50m)
+        ]);
+        var repository = new StrategyRunStore();
+        await repository.RecordRunAsync(run);
+        var service = CreateNavComparisonService(repository);
+
+        var trend = await service.GetNavTrendAsync(fundProfileId, months: 4, asOf: new DateTimeOffset(2026, 7, 15, 0, 0, 0, TimeSpan.Zero), currency: "USD");
+
+        trend.Points.Select(static point => (point.AsOf, point.LongExposure, point.ShortExposure, point.GrossExposure, point.NetExposure))
+            .Should().Equal(
+                (new DateOnly(2026, 4, 30), 400m, 0m, 400m, 400m),
+                (new DateOnly(2026, 5, 31), 400m, 0m, 400m, 400m),
+                (new DateOnly(2026, 6, 30), 450m, 150m, 600m, 300m),
+                (new DateOnly(2026, 7, 15), 450m, 150m, 600m, 300m));
+        trend.Notes.Should().Contain(static note => note.Contains("last posted mark", StringComparison.Ordinal));
     }
 
     [Fact]

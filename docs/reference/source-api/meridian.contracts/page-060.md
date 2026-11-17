@@ -103,7 +103,7 @@ public sealed record FundNavAttributionSummaryDto(string Currency, decimal Total
 
 Qualified name: <code>Meridian.Contracts.Workstation.FundNavTrendDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundNavTrendDtos.cs:17](../../../../src/Meridian.Contracts/Workstation/FundNavTrendDtos.cs#L17).
+Source: [src/Meridian.Contracts/Workstation/FundNavTrendDtos.cs:25](../../../../src/Meridian.Contracts/Workstation/FundNavTrendDtos.cs#L25).
 
 A fund&#x27;s ledger NAV at each month-end over a recent window, ending with NAV at the as-of date. Every point is the posted ledger as it stood on that date, through the same NAV attribution the workspace and the NAV comparison use.
 
@@ -115,12 +115,12 @@ public sealed record FundNavTrendDto(string FundProfileId, string Subject, strin
 
 Qualified name: <code>Meridian.Contracts.Workstation.FundNavTrendPointDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundNavTrendDtos.cs:7](../../../../src/Meridian.Contracts/Workstation/FundNavTrendDtos.cs#L7).
+Source: [src/Meridian.Contracts/Workstation/FundNavTrendDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/FundNavTrendDtos.cs#L11).
 
 Ledger NAV at one date.
 
 ```csharp
-public sealed record FundNavTrendPointDto(DateOnly AsOf, decimal TotalNav, int ComponentCount);
+public sealed record FundNavTrendPointDto(DateOnly AsOf, decimal TotalNav, int ComponentCount, decimal LongExposure = 0m, decimal ShortExposure = 0m, decimal GrossExposure = 0m, decimal NetExposure = 0m);
 ```
 
 ## FundOperationsNavigationContext

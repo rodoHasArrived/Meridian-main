@@ -486,7 +486,8 @@ ledger comparison uses it too. `AssetOperations/PortfolioCashLadderDtos.cs` adds
 `IAssetOperationsQueryService.GetOperationsAsOfAsync` projects operations at a
 `BondCalculationContext` cutoff; its default falls back to the current projection, and
 `SupportsTermsAsOf` says which one a service gives.
-`Workstation/FundNavTrendDtos.cs` carries ledger NAV at recent month-ends (`FundNavTrendDto`).
+`Workstation/FundNavTrendDtos.cs` carries ledger NAV at recent month-ends (`FundNavTrendDto`), with
+long, short, gross and net securities exposure on each point.
 
 `Workstation/OperatorScopePreferenceDtos.cs` carries the signed-in operator's default operating
 scope (symbol, fund account, run, provider and date dimensions, plus the optional legal entity and

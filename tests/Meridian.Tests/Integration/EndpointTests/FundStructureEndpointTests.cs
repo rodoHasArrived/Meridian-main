@@ -419,6 +419,14 @@ public sealed class FundStructureEndpointTests : IClassFixture<FundStructureEndp
         payload!.FundProfileId.Should().Be(seed.FundProfileId);
         payload.Points.Count.Should().BeLessThanOrEqualTo(3);
         payload.Points.Select(static point => point.AsOf).Should().BeInAscendingOrder();
+        payload.Points.Should().OnlyContain(static point =>
+            point.GrossExposure == point.LongExposure + point.ShortExposure
+            && point.NetExposure == point.LongExposure - point.ShortExposure);
+        var json = await response.Content.ReadAsStringAsync();
+        if (payload.Points.Count > 0)
+        {
+            json.Should().Contain("\"grossExposure\"").And.Contain("\"longExposure\"").And.Contain("\"shortExposure\"").And.Contain("\"netExposure\"");
+        }
     }
 
     [Theory]
