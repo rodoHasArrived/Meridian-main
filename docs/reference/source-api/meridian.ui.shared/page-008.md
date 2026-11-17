@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ScoreReasonProjection
+
+Qualified name: <code>Meridian.Ui.Shared.ScoreReasonProjection</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/ScoreExplanationProjection.cs:33](../../../../src/Meridian.Ui.Shared/ScoreExplanationProjection.cs#L33).
+
+Single compact reason entry shown in workstation surfaces.
+
+```csharp
+public sealed record ScoreReasonProjection(string Code, double Contribution);
+```
+
 ## IntercompanyOperationsJsonContext
 
 Qualified name: <code>Meridian.Ui.Shared.Serialization.IntercompanyOperationsJsonContext</code>. Kind: `class`.
@@ -907,21 +919,3 @@ Declared public members:
 | <code>public object? GetProgress() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:90](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L90) | Gets backfill progress snapshot from the core coordinator, if available. |
 | <code>public Task&lt;BackfillPreviewResult&gt; PreviewAsync(BackfillRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:96](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L96) | Previews a backfill operation without actually fetching data. Returns information about what would be backfilled. |
 | <code>public void Dispose();</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:99](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L99) |  |
-
-## BackfillExecutionContractProjection
-
-Qualified name: <code>Meridian.Ui.Shared.Services.BackfillExecutionContractProjection</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/BackfillExecutionContractProjection.cs:14](../../../../src/Meridian.Ui.Shared/Services/BackfillExecutionContractProjection.cs#L14).
-
-Projects application-owned execution history into a stable workstation contract. Legacy warning metadata remains readable, but all callers receive the same typed SLA shape.
-
-```csharp
-public static class BackfillExecutionContractProjection
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static BackfillExecutionHistoryResponse Build(IReadOnlyList&lt;BackfillExecutionLog&gt; executions, string? defaultProvider, DateTimeOffset? nowUtc = null, TimeSpan? dueSoonWindow = null);</code> | [src/Meridian.Ui.Shared/Services/BackfillExecutionContractProjection.cs:18](../../../../src/Meridian.Ui.Shared/Services/BackfillExecutionContractProjection.cs#L18) |  |

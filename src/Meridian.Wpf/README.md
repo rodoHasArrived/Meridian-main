@@ -138,6 +138,10 @@ book, retained source lines and provenance, delivery retry, explicit FX repricin
 before-and-after preview, and linking an existing counterpart journal. The desktop holds no
 proposal state and never posts; the same Windows-only validation boundary applies.
 
+Fund Operations adds a Balance confirmation tab
+(`Views/IntercompanyBalanceConfirmationControl.xaml`) over the shared
+`IntercompanyBalanceConfirmationWorkspace`. See [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
+
 An Interest accrual tab (`Views/IntercompanyInterestAccrualControl.xaml`) binds the shared
 `IntercompanyInterestAccrualWorkspace`: preview the server-computed fixed-rate interest for a
 loan-interest profile, its loan principal profile and a window, review the slices, proposed lines

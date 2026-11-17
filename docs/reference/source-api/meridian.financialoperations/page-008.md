@@ -6,6 +6,32 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MatchingTolerances
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.MatchingTolerances</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/MatchingTolerances.cs:5](../../../../src/Meridian.FinancialOperations/Reconciliation/MatchingTolerances.cs#L5).
+
+```csharp
+public sealed record MatchingTolerances(decimal Quantity, decimal Price, decimal MarketValue, decimal CashAmount, TimeSpan TimingWindow)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StatementToleranceProfile ToStatementToleranceProfile() =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/MatchingTolerances.cs:7](../../../../src/Meridian.FinancialOperations/Reconciliation/MatchingTolerances.cs#L7) |  |
+
+## NormalizedStatementCashBalance
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.NormalizedStatementCashBalance</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:909](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L909).
+
+```csharp
+public sealed record NormalizedStatementCashBalance(string CashBalanceId, string Account, string Currency, decimal EndingBalance, string EvidenceReference, DateOnly AsOfDate, bool IsForStatementPeriodEnd = true) : IStatementMatchItem
+```
+
 ## NormalizedStatementPosition
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.NormalizedStatementPosition</code>. Kind: `record`.
@@ -793,29 +819,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public decimal LargestAbsoluteAmount =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1024](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1024) |  |
-
-## StatementNormalizedEntities
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementNormalizedEntities</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:218](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L218).
-
-```csharp
-public sealed record StatementNormalizedEntities(string RunId, string ImportId, IReadOnlyList<StatementPosition> Positions, IReadOnlyList<StatementCashBalance> CashBalances, IReadOnlyList<StatementTransaction> Transactions, IReadOnlyList<StatementSecurityReference> Securities, IReadOnlyList<StatementSourceRowReference> SourceRows)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static StatementNormalizedEntities FromImport(string runId, NormalizedStatementImportResult import);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:227](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L227) |  |
-
-## StatementProfileVersion
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementProfileVersion</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:168](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L168).
-
-```csharp
-public sealed record StatementProfileVersion(string ProfileId, string Version);
-```

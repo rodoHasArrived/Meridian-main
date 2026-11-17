@@ -6,6 +6,71 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TradeEvent
+
+Qualified name: <code>Meridian.Ui.Services.TradeEvent</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/LiveDataService.cs:188](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L188).
+
+Carries a live trade&#x27;s symbol, price, size, venue, sequence, and reported side.
+
+```csharp
+public sealed class TradeEvent
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:190](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L190) |  |
+| <code>public decimal Price { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:191](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L191) |  |
+| <code>public decimal Size { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:192](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L192) |  |
+| <code>public DateTime Timestamp { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:193](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L193) |  |
+| <code>public string Exchange { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:194](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L194) |  |
+| <code>public string Condition { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:195](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L195) |  |
+| <code>public long SequenceNumber { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:196](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L196) |  |
+| <code>public string Side { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:197](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L197) |  |
+
+## TradeEventArgs
+
+Qualified name: <code>Meridian.Ui.Services.TradeEventArgs</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:554](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L554).
+
+Event args for trade events.
+
+```csharp
+public sealed class TradeEventArgs : EventArgs
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:556](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L556) |  |
+| <code>public TradeRecord Trade { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:557](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L557) |  |
+
+## TradeRecord
+
+Qualified name: <code>Meridian.Ui.Services.TradeRecord</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:510](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L510).
+
+Individual trade record.
+
+```csharp
+public sealed class TradeRecord
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DateTime Timestamp { get; set; }</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:512](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L512) |  |
+| <code>public decimal Price { get; set; }</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:513](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L513) |  |
+| <code>public decimal Size { get; set; }</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:514](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L514) |  |
+| <code>public TradeSide Side { get; set; }</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:515](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L515) |  |
+
 ## TradeSide
 
 Qualified name: <code>Meridian.Ui.Services.TradeSide</code>. Kind: `enum`.

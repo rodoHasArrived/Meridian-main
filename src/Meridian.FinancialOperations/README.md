@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-14
+last_reviewed: 2026-11-17
 ---
 
 # src/Meridian.FinancialOperations
@@ -65,6 +65,11 @@ directions separate, and reports missing mappings explicitly. Terms supply no ba
 The close cockpit consumes this structured schedule instead of intercompany keywords.
 NetSuite guarded export review retains its schedule hash and rechecks mapping completeness
 and freshness alongside the existing external NetSuite evidence requirements.
+
+`IntercompanyBalanceConfirmationRules` and `IntercompanyBalanceConfirmationService` pin both sides'
+posted schedule balances for one approved accounting profile at a date, then record confirm, dispute
+and resolve steps against the exact version and balance digest shown. Advisory only; close is
+unchanged. See [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
 
 Intercompany services own approved accounting-profile revisions and governed counterpart templates;
 canonical legal terms and independent review remain in Application/FundStructure.

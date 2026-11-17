@@ -54,6 +54,10 @@ input, server capabilities, exact approved versions, evidence and review history
 agreement authority in the desktop client. Source-line responses verify agreement/book/date identity
 and retain exact amount strings. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
 
+`IntercompanyBalanceConfirmationWorkspace` is the desktop state for reciprocal balance confirmation
+over the client's exact-decimal confirmation reads and actions; a refused action keeps its request
+identity only for an identical retry. See [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
+
 `IntercompanyCounterpartQueueWorkspace` is the desktop state for counterpart delivery records and
 booking breaks over the same `/api/ledger/intercompany/proposals` and `/breaks` routes as the
 browser queue. Retry, explicit linking and FX repricing send a reasoned request whose identity is
