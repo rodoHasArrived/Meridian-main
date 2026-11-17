@@ -97,6 +97,32 @@ public sealed class IntercompanyAccrualPreviewServiceTests
         Assert.Equal(dayCount == IntercompanyDayCountDto.Actual360 ? 4305.56m : 4166.67m, cut.Amount);
     }
 
+    [Theory]
+    // February of a leap year: 29 accrual days.
+    [InlineData(IntercompanyDayCountDto.Actual365, "2028-02-01", "2028-03-01", 29.0 / 365)]
+    [InlineData(IntercompanyDayCountDto.ActualActualIsda, "2028-02-01", "2028-03-01", 29.0 / 366)]
+    [InlineData(IntercompanyDayCountDto.Actual360, "2028-02-01", "2028-03-01", 29.0 / 360)]
+    // A window containing Feb 29 that is not a whole month.
+    [InlineData(IntercompanyDayCountDto.Actual365, "2028-02-20", "2028-03-10", 19.0 / 365)]
+    [InlineData(IntercompanyDayCountDto.ActualActualIsda, "2028-02-20", "2028-03-10", 19.0 / 366)]
+    // Crossing into a leap year: ISDA splits the days by calendar year (17/365 + 14/366).
+    [InlineData(IntercompanyDayCountDto.Actual365, "2027-12-15", "2028-01-15", 31.0 / 365)]
+    [InlineData(IntercompanyDayCountDto.ActualActualIsda, "2027-12-15", "2028-01-15", 17.0 / 365 + 14.0 / 366)]
+    public void LeapYearAndYearCrossingWindows_UseTheDeclaredDayCount(
+        IntercompanyDayCountDto dayCount, string fromText, string toText, double expectedFraction)
+    {
+        var from = DateOnly.Parse(fromText, System.Globalization.CultureInfo.InvariantCulture);
+        var to = DateOnly.Parse(toText, System.Globalization.CultureInfo.InvariantCulture);
+        var loan = Loan(dayCount: dayCount, effectiveFrom: new DateOnly(2027, 1, 1), maturity: new DateOnly(2029, 1, 1));
+
+        var preview = Preview(from, to, [Authority(from, to, loan)], [Principal(from, to, 1_000_000m)]);
+
+        Assert.Equal(IntercompanyAccrualRules.StatusReady, preview.Status);
+        var fraction = preview.Slices.Sum(slice => slice.YearFraction);
+        Assert.Equal((decimal)expectedFraction, fraction, 10);
+        Assert.Equal(decimal.Round(1_000_000m * 0.05m * (decimal)expectedFraction, 2, MidpointRounding.AwayFromZero), preview.Amount);
+    }
+
     [Fact]
     public void ZeroMinorUnitCurrency_RoundsToWholeUnits()
     {
@@ -190,14 +216,16 @@ public sealed class IntercompanyAccrualPreviewServiceTests
         => new(from, to, amount, "principal-evidence");
 
     private static IntercompanyAgreementRevisionDto Loan(int version = 1, decimal rate = 0.05m, DateOnly? effectiveFrom = null,
-        DateOnly? scheduleStart = null, string currency = "USD", IntercompanyDayCountDto dayCount = IntercompanyDayCountDto.Actual360)
+        DateOnly? scheduleStart = null, string currency = "USD", IntercompanyDayCountDto dayCount = IntercompanyDayCountDto.Actual360,
+        DateOnly? maturity = null)
     {
         var start = effectiveFrom ?? new DateOnly(2026, 1, 1);
+        var end = maturity ?? new DateOnly(2027, 1, 1);
         var draft = new IntercompanyAgreementDraftDto("IC-LOAN", "Synthetic loan", Lender, "Lender", Borrower, "Borrower",
-            IntercompanyAgreementTypeDto.Loan, currency, start, new(2027, 1, 1),
+            IntercompanyAgreementTypeDto.Loan, currency, start, end,
             new()
             {
-                StructuredTerms = new(new(scheduleStart ?? start, new(2027, 1, 1), IntercompanyFrequencyDto.Monthly, "WEEKENDS",
+                StructuredTerms = new(new(scheduleStart ?? start, end, IntercompanyFrequencyDto.Monthly, "WEEKENDS",
                         BusinessDayConvention.Following, 1), IntercompanyRateBasisDto.Fixed, rate,
                     DayCount: dayCount, Compounding: IntercompanyCompoundingDto.Simple)
             },
