@@ -6,6 +6,60 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AuditTimelineViewModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.AuditTimelineViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs:18](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs#L18).
+
+Exposes an observable collection of timestamped audit entries for desktop binding.
+
+```csharp
+public sealed class AuditTimelineViewModel : Meridian.Wpf.ViewModels.BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ObservableCollection&lt;AuditTimelineEntry&gt; Entries { get; } = [];</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs:20](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs#L20) |  |
+
+## BatchedObservableCollection (generic arity 1)
+
+Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.BatchedObservableCollection</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/ViewModels/Base/BatchedObservableCollection.cs:10](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/BatchedObservableCollection.cs#L10).
+
+Replaces collection contents while batching notifications into a single reset.
+
+```csharp
+public sealed class BatchedObservableCollection<T>: ObservableCollection<T>
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public void ReplaceAll(IEnumerable&lt;T&gt; items);</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/BatchedObservableCollection.cs:14](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/BatchedObservableCollection.cs#L14) |  |
+
+## DataQualityViewModelBase
+
+Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.DataQualityViewModelBase</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/ViewModels/Base/DataQualityViewModelBase.cs:6](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/DataQualityViewModelBase.cs#L6).
+
+Adds an observable quality summary to workspace view models.
+
+```csharp
+public abstract class DataQualityViewModelBase : WorkspaceViewModelBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string QualitySummary { get; protected set; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/DataQualityViewModelBase.cs:10](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/DataQualityViewModelBase.cs#L10) |  |
+
 ## DetailWorkspaceViewModelBase (generic arity 1)
 
 Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.DetailWorkspaceViewModelBase</code>. Kind: `class`.

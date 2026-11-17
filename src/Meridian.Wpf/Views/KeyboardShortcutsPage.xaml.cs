@@ -1,213 +1,122 @@
-using System.Collections.Generic;
-using System.Linq;
+using System;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Media;
+using System.Windows.Input;
+using System.Windows.Threading;
 using Meridian.Wpf.Services;
+using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Views;
 
 /// <summary>
-/// Keyboard shortcuts reference page that dynamically loads shortcuts
-/// from the KeyboardShortcutService, ensuring the display always reflects
-/// the current registered shortcuts.
+/// Keyboard shortcuts page: lists every registered shortcut from
+/// <see cref="KeyboardShortcutService"/>, grouped by category, and lets the operator rebind,
+/// enable or disable, and reset each one. State and validation live in
+/// <see cref="KeyboardShortcutsViewModel"/>; this code-behind only lays out the category cards
+/// and forwards key presses from the focused capture surface.
 /// </summary>
 public partial class KeyboardShortcutsPage : Page
 {
-    private readonly KeyboardShortcutService _keyboardShortcutService;
+    private readonly KeyboardShortcutsViewModel _viewModel;
 
     public KeyboardShortcutsPage()
     {
         InitializeComponent();
-        _keyboardShortcutService = KeyboardShortcutService.Instance;
+        _viewModel = new KeyboardShortcutsViewModel(KeyboardShortcutService.Instance, LoggingService.Instance);
+        DataContext = _viewModel;
         Loaded += OnPageLoaded;
+        Unloaded += OnPageUnloaded;
     }
 
     private void OnPageLoaded(object sender, RoutedEventArgs e)
     {
+        _viewModel.Refresh();
         PopulateDynamicShortcuts();
-        UpdateOverrideStatus();
     }
 
-    private void OnResetShortcutsClick(object sender, RoutedEventArgs e)
+    private void OnPageUnloaded(object sender, RoutedEventArgs e)
     {
-        _keyboardShortcutService.ResetToDefaults();
-        PopulateDynamicShortcuts();
-        UpdateOverrideStatus();
-    }
-
-    private void UpdateOverrideStatus()
-    {
-        var overrideCount = _keyboardShortcutService.GetOverrides().Count;
-        ShortcutOverrideStatusText.Text = overrideCount switch
-        {
-            0 => "All shortcuts use their default bindings.",
-            1 => "1 shortcut differs from its default and is saved for this machine.",
-            _ => $"{overrideCount} shortcuts differ from their defaults and are saved for this machine."
-        };
-        ResetShortcutsButton.IsEnabled = overrideCount > 0;
+        // Never leave global shortcut handling suspended when the operator navigates away
+        // mid-capture.
+        _viewModel.CancelCapture();
     }
 
     /// <summary>
-    /// Populates the dynamic shortcuts panel by reading all registered
-    /// shortcuts from KeyboardShortcutService, grouped by category.
+    /// Lays out one card per shortcut category in two columns. Each card is rendered from
+    /// <c>ShortcutCategoryCardTemplate</c> bound to its <see cref="ShortcutCategoryGroupViewModel"/>.
     /// </summary>
     private void PopulateDynamicShortcuts()
     {
         DynamicShortcutsPanel.Children.Clear();
 
-        var grouped = _keyboardShortcutService.GetShortcutsByCategory();
-
-        // Define display order and metadata for categories
-        var categoryInfo = new Dictionary<ShortcutCategory, (string Label, string Icon, string Description)>
-        {
-            [ShortcutCategory.Navigation] = ("Navigation", "\uE80F", "Move between pages and sections of the application."),
-            [ShortcutCategory.Collector] = ("Data Collection", "\uE774", "Control data collection and live streaming."),
-            [ShortcutCategory.Backfill] = ("Backfill", "\uE896", "Manage historical data backfill operations."),
-            [ShortcutCategory.Symbols] = ("Symbol Management", "\uE71D", "Add, remove, and manage tracked symbols."),
-            [ShortcutCategory.View] = ("View Controls", "\uE7B3", "Adjust the interface, search content, and access tools."),
-            [ShortcutCategory.General] = ("General", "\uE713", "Application-wide actions and common operations.")
-        };
-
-        var orderedCategories = new[]
-        {
-            ShortcutCategory.Navigation,
-            ShortcutCategory.Collector,
-            ShortcutCategory.Backfill,
-            ShortcutCategory.Symbols,
-            ShortcutCategory.View,
-            ShortcutCategory.General
-        };
-
-        // Create a two-column grid
         var outerGrid = new Grid();
         outerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         outerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(24) });
         outerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
 
-        var col = 0;
-        var row = 0;
-
-        foreach (var category in orderedCategories)
+        var cardTemplate = (DataTemplate)FindResource("ShortcutCategoryCardTemplate");
+        var index = 0;
+        foreach (var group in _viewModel.Categories)
         {
-            if (!grouped.TryGetValue(category, out var shortcuts) || shortcuts.Count == 0)
-                continue;
+            var card = new ContentControl
+            {
+                Content = group,
+                ContentTemplate = cardTemplate,
+                Focusable = false,
+                VerticalAlignment = VerticalAlignment.Top
+            };
 
-            var (label, icon, description) = categoryInfo.TryGetValue(category, out var info)
-                ? info
-                : (category.ToString(), "\uE713", string.Empty);
-
-            var card = BuildCategoryCard(label, icon, description, shortcuts);
-
-            // Determine grid position (two columns layout)
-            var gridCol = col % 2 == 0 ? 0 : 2;
-            var gridRow = col / 2;
-
-            // Ensure enough rows exist
+            var gridColumn = index % 2 == 0 ? 0 : 2;
+            var gridRow = index / 2;
             while (outerGrid.RowDefinitions.Count <= gridRow * 2)
             {
                 outerGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
                 outerGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(24) });
             }
 
-            Grid.SetColumn(card, gridCol);
+            Grid.SetColumn(card, gridColumn);
             Grid.SetRow(card, gridRow * 2);
             outerGrid.Children.Add(card);
-
-            col++;
-            row = gridRow;
+            index++;
         }
 
         DynamicShortcutsPanel.Children.Add(outerGrid);
     }
 
-    private Border BuildCategoryCard(string label, string icon, string description, List<ShortcutAction> shortcuts)
+    private void OnCaptureSurfacePreviewKeyDown(object sender, KeyEventArgs e)
     {
-        var cardPanel = new StackPanel();
-
-        // Header with icon
-        var headerPanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 16) };
-        headerPanel.Children.Add(new TextBlock
+        if (!_viewModel.IsCapturing)
         {
-            Text = icon,
-            FontFamily = (FontFamily)FindResource("SymbolThemeFontFamily"),
-            FontSize = 18,
-            Foreground = (Brush)FindResource("InfoColorBrush"),
-            VerticalAlignment = VerticalAlignment.Center
-        });
-        headerPanel.Children.Add(new TextBlock
-        {
-            Text = label,
-            Style = (Style)FindResource("CardHeaderStyle"),
-            Margin = new Thickness(8, 0, 0, 0)
-        });
-        cardPanel.Children.Add(headerPanel);
-
-        // Description
-        if (!string.IsNullOrEmpty(description))
-        {
-            cardPanel.Children.Add(new TextBlock
-            {
-                Text = description,
-                Foreground = (Brush)FindResource("ConsoleTextMutedBrush"),
-                FontSize = 12,
-                Margin = new Thickness(0, 0, 0, 16),
-                TextWrapping = TextWrapping.Wrap
-            });
+            return;
         }
 
-        // Shortcuts grid
-        var grid = new Grid();
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-
-        for (var i = 0; i < shortcuts.Count; i++)
+        var key = KeyboardShortcutsViewModel.ResolveCapturedKey(e.Key, e.SystemKey, e.ImeProcessedKey);
+        if (!_viewModel.HandleCapturedKey(key, Keyboard.Modifiers))
         {
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-
-            var shortcut = shortcuts[i];
-
-            // Key badge
-            var keyBorder = new Border
-            {
-                Style = (Style)FindResource("KeyboardShortcutStyle")
-            };
-            keyBorder.Child = new TextBlock
-            {
-                Text = shortcut.FormattedShortcut,
-                Style = (Style)FindResource("ShortcutKeyTextStyle")
-            };
-
-            Grid.SetRow(keyBorder, i);
-            Grid.SetColumn(keyBorder, 0);
-            grid.Children.Add(keyBorder);
-
-            // Description
-            var descText = new TextBlock
-            {
-                Text = shortcut.Description,
-                Style = (Style)FindResource("ShortcutDescriptionStyle")
-            };
-
-            // Gray out disabled shortcuts
-            if (!shortcut.IsEnabled)
-            {
-                descText.Foreground = (Brush)FindResource("ConsoleTextMutedBrush");
-                descText.FontStyle = FontStyles.Italic;
-            }
-
-            Grid.SetRow(descText, i);
-            Grid.SetColumn(descText, 1);
-            grid.Children.Add(descText);
+            return;
         }
 
-        cardPanel.Children.Add(grid);
-
-        return new Border
+        // Swallow the press so it neither reaches page controls nor runs as a command.
+        e.Handled = true;
+        if (!_viewModel.IsCapturing && sender is FrameworkElement { Tag: UIElement rebindButton })
         {
-            Style = (Style)FindResource("CardStyle"),
-            Child = cardPanel
-        };
+            Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => rebindButton.Focus()));
+        }
+    }
+
+    private void OnCaptureSurfaceLostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+    {
+        if (sender is FrameworkElement { DataContext: ShortcutBindingRowViewModel { IsCapturing: true } })
+        {
+            _viewModel.CancelCapture();
+        }
+    }
+
+    private void OnCaptureSurfaceIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        if (e.NewValue is true && sender is UIElement surface)
+        {
+            Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() => Keyboard.Focus(surface)));
+        }
     }
 }

@@ -524,9 +524,9 @@ protection, so readable rulesets are not a complete inventory of existing requir
 
 ### Generated repair and maintenance activation
 
-The maintained producer catalog covers the tracked workstation bundle, generated UI contracts,
-source-derived schema-control contract/dependency manifests and database documentation, roadmap
-views, structured production readiness, and program-state summaries. PR authors edit source and
+The maintained producer catalog covers the workstation bundle (a CI artifact, not committed),
+generated UI contracts, source-derived schema-control contract/dependency manifests and database
+documentation, roadmap views, structured production readiness, and program-state summaries. PR authors edit source and
 registry fields; the configured repair bot batches deterministic output into one commit. The
 schema-control physical catalog and migration/policy snapshots still use their existing review
 and promotion workflow. Reviewed source-module hashes remain attestations, not a mechanical
