@@ -388,6 +388,64 @@ public sealed class FundStructureEndpointTests : IClassFixture<FundStructureEndp
     }
 
     [Fact]
+    public async Task GetNavComparison_WithSeededFundProfile_ReturnsAPeriodComparison()
+    {
+        var seed = await SeedFundWorkspaceAsync();
+
+        using var client = _fixture.CreatePermittedClient(UserPermission.AdminMaintenance);
+        var response = await client.GetAsync(
+            $"/api/fund-structure/nav-comparison?fundProfileId={Uri.EscapeDataString(seed.FundProfileId)}&currency=USD");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var payload = await response.Content.ReadFromJsonAsync<PeriodComparisonDto>();
+        payload.Should().NotBeNull();
+        payload!.Subject.Should().Be(seed.DisplayName);
+        payload.Status.Should().BeOneOf(PeriodComparisonStatus.Ready, PeriodComparisonStatus.Unavailable);
+        payload.Notes.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public async Task GetNavTrend_WithSeededFundProfile_ReturnsMonthEndPointsEndingNow()
+    {
+        var seed = await SeedFundWorkspaceAsync();
+
+        using var client = _fixture.CreatePermittedClient(UserPermission.AdminMaintenance);
+        var response = await client.GetAsync(
+            $"/api/fund-structure/nav-trend?fundProfileId={Uri.EscapeDataString(seed.FundProfileId)}&months=3");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var payload = await response.Content.ReadFromJsonAsync<FundNavTrendDto>();
+        payload.Should().NotBeNull();
+        payload!.FundProfileId.Should().Be(seed.FundProfileId);
+        payload.Points.Count.Should().BeLessThanOrEqualTo(3);
+        payload.Points.Select(static point => point.AsOf).Should().BeInAscendingOrder();
+    }
+
+    [Theory]
+    [InlineData("/api/fund-structure/nav-comparison")]
+    [InlineData("/api/fund-structure/nav-trend")]
+    public async Task NavReads_WithoutFundProfile_ReturnBadRequest(string route)
+    {
+        using var client = _fixture.CreatePermittedClient(UserPermission.AdminMaintenance);
+
+        var response = await client.GetAsync(route);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Theory]
+    [InlineData("/api/fund-structure/nav-comparison?fundProfileId=fund-x")]
+    [InlineData("/api/fund-structure/nav-trend?fundProfileId=fund-x")]
+    public async Task NavReads_WithoutFundStructurePermission_AreForbidden(string route)
+    {
+        using var client = _fixture.CreatePermittedClient(UserPermission.ViewTrades);
+
+        var response = await client.GetAsync(route);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
     public async Task GetWorkspaceView_WithScopeQueryParameters_ParsesSelectionAndReturnsScopedLedgerDto()
     {
         var seed = await SeedFundWorkspaceAsync();

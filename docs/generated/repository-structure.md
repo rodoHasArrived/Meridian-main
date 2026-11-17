@@ -13733,6 +13733,7 @@ Meridian-main
 │   │   │   │   ├── NonSessionPrincipalAuthorizationTests.cs
 │   │   │   │   ├── OperationalProblemDetailsEndpointTests.cs
 │   │   │   │   ├── OptionsEndpointTests.cs
+│   │   │   │   ├── PeriodComparisonEndpointTests.cs
 │   │   │   │   ├── PilotAcceptanceHarnessTests.cs
 │   │   │   │   ├── ProviderConnectionHonestyEndpointTests.cs
 │   │   │   │   ├── ProviderDataProjectionAuthorizationTests.cs
