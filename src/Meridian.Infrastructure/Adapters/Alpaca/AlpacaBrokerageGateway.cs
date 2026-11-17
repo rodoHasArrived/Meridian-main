@@ -282,7 +282,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
         using var client = endpoint.RequiresBrokerApi
             ? CreateBrokerApiHttpClient()
             : CreateHttpClient();
-        var response = await client.PostAsJsonAsync(
+        using var response = await client.PostAsJsonAsync(
             endpoint.Url, payload, AlpacaBrokerageSerializerContext.Default.AlpacaOrderPayload, ct)
             .ConfigureAwait(false);
 
@@ -383,7 +383,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
     private async Task<IReadOnlyList<BrokerPosition>> GetPositionsCoreAsync(List<string>? completenessIssues, CancellationToken ct)
     {
         using var client = CreateHttpClient();
-        var response = await client.GetAsync($"{BaseUrl}/v2/positions", ct).ConfigureAwait(false);
+        using var response = await client.GetAsync($"{BaseUrl}/v2/positions", ct).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
         var positions = await response.Content.ReadFromJsonAsync(

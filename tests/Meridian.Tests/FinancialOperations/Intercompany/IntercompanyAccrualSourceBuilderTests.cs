@@ -19,6 +19,38 @@ public sealed class IntercompanyAccrualSourceBuilderTests
     private static readonly HashSet<string> Payables = ["a-payable"];
 
     [Fact]
+    public void AccrualIdentities_DoNotDependOnTheHostCulture()
+    {
+        var request = new IntercompanyAccrualRequestDto(
+            Guid.Parse("a1111111-1111-1111-1111-111111111111"),
+            Guid.Parse("a2222222-2222-2222-2222-222222222222"),
+            Guid.Parse("a3333333-3333-3333-3333-333333333333"),
+            new DateOnly(2026, 6, 1),
+            new DateOnly(2026, 7, 1));
+        var invariantTransaction = IntercompanyAccrualEvidenceGuard.TransactionId(request.AccrualFrom, request.AccrualTo);
+        var invariantDraft = IntercompanyAccrualSourceBuilder.DraftId("tenant-a", request);
+
+        var original = System.Globalization.CultureInfo.CurrentCulture;
+        try
+        {
+            // th-TH formats with the Thai Buddhist calendar by default: 2026 reads as 2569.
+            System.Globalization.CultureInfo.CurrentCulture = new System.Globalization.CultureInfo("th-TH");
+
+            var transaction = IntercompanyAccrualEvidenceGuard.TransactionId(request.AccrualFrom, request.AccrualTo);
+
+            Assert.Equal(invariantTransaction, transaction);
+            Assert.Contains("20260601-20260701", transaction, StringComparison.Ordinal);
+            Assert.Equal(invariantDraft, IntercompanyAccrualSourceBuilder.DraftId("tenant-a", request));
+            Assert.True(IntercompanyAccrualEvidenceGuard.TryParseWindow(transaction, out var from, out var to));
+            Assert.Equal((request.AccrualFrom, request.AccrualTo), (from, to));
+        }
+        finally
+        {
+            System.Globalization.CultureInfo.CurrentCulture = original;
+        }
+    }
+
+    [Fact]
     public void Principal_IsReadFromPostedLoanJournals_WithMovementsEffectiveOnTheirOwnDate()
     {
         var drawdown = PrincipalJournal(new(2026, 5, 15), "a-receivable", debit: 1_000_000m);
