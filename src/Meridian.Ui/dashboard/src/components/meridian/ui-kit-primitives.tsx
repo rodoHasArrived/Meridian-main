@@ -407,6 +407,26 @@ function DenseDataTableComponent<T>({
     []
   );
 
+  // Columns clipped at the right edge used to give no sign that more figures sat beyond them.
+  // `data-overflow-end` drives a right-edge fade on the scroll viewport while any column is
+  // still out of view, and clears once the operator has scrolled to the last column.
+  const [overflowEnd, setOverflowEnd] = useState(false);
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const measure = () => setOverflowEnd(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
+    measure();
+    el.addEventListener("scroll", measure, { passive: true });
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(measure);
+    observer?.observe(el);
+    const table = el.querySelector("table");
+    if (table) observer?.observe(table);
+    return () => {
+      el.removeEventListener("scroll", measure);
+      observer?.disconnect();
+    };
+  }, [columns.length, rows.length]);
+
   // Focus a row that was not mounted when navigation targeted it, once the
   // reveal-driven scroll has mounted it into the window.
   useEffect(() => {
@@ -544,6 +564,7 @@ function DenseDataTableComponent<T>({
       tabIndex={!selectableRows ? 0 : undefined}
       data-empty={rows.length === 0 ? "true" : undefined}
       data-density={density}
+      data-overflow-end={overflowEnd ? "true" : undefined}
       ref={wrapRef}
       style={isVirtual ? { maxHeight: viewportHeight } : undefined}
       onScroll={isVirtual ? handleScroll : undefined}

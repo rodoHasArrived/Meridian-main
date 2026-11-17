@@ -35,6 +35,22 @@ afterEach(() => {
 });
 
 describe("DenseDataTable table system", () => {
+  it("marks the scroll viewport while columns are clipped on the right, and clears it at the last column", () => {
+    render(<DenseDataTable ariaLabel="Positions" emptyText="No positions" columns={columns} rows={rows} getRowId={(row) => row.id} />);
+    const viewport = screen.getByRole("region", { name: "Positions scroll area" });
+    // jsdom lays out nothing, so nothing overflows until the viewport reports narrower than its content.
+    expect(viewport).not.toHaveAttribute("data-overflow-end");
+
+    Object.defineProperty(viewport, "clientWidth", { configurable: true, value: 400 });
+    Object.defineProperty(viewport, "scrollWidth", { configurable: true, value: 900 });
+    fireEvent.scroll(viewport);
+    expect(viewport).toHaveAttribute("data-overflow-end", "true");
+
+    Object.defineProperty(viewport, "scrollLeft", { configurable: true, value: 500 });
+    fireEvent.scroll(viewport);
+    expect(viewport).not.toHaveAttribute("data-overflow-end");
+  });
+
   it("sorts by a column's raw value and reports the order through aria-sort", () => {
     render(<DenseDataTable ariaLabel="Positions" emptyText="No positions" columns={columns} rows={rows} getRowId={(row) => row.id} />);
 

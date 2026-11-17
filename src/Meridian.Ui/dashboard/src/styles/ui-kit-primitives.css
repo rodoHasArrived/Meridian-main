@@ -73,6 +73,14 @@
   background: var(--ws-surface);
 }
 
+/* Scroll cue: while columns remain clipped on the right, fade the viewport's right edge. A mask
+   (not a background gradient) is used because opaque cell and selected-row backgrounds paint
+   over any gradient behind them. The fade stops short of transparent so clipped text stays legible. */
+.dense-data-table-wrap[data-overflow-end="true"] {
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 3rem), rgb(0 0 0 / 0.35));
+  mask-image: linear-gradient(to right, #000 calc(100% - 3rem), rgb(0 0 0 / 0.35));
+}
+
 .dense-data-table {
   --dense-head-py: 0.4375rem;
   --dense-cell-py: 0.4375rem;

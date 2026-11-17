@@ -529,7 +529,7 @@ function StrategyScreenContent({ data, fundAccountId }: StrategyScreenProps) {
       </KpiProvider>
       {vm.plotTool.analyticsEvidenceStatus === "Illustrative" ? <p role="status" className="border-l-2 border-warning px-3 py-2 text-xs">Illustrative PlotTool analytics · simulated observations demonstrate the interface and are not retained market evidence.</p> : null}
 
-      {routeView === "overview" ? <StrategyOverviewHub vm={vm} /> : null}
+      {routeView === "overview" ? <StrategyOverviewHub vm={vm} headlineRunCount={data.metrics.find((metric) => metric.id === "runs")?.value} /> : null}
 
       {showLab || showRuns ? (
       <Card>

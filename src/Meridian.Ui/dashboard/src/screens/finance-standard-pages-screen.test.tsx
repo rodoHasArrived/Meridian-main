@@ -603,6 +603,33 @@ describe("finance standard pages", () => {
     expect(table).not.toHaveTextContent("All entities");
   });
 
+  it("nests posting lines under their journal and counts entries and lines separately", async () => {
+    mockPostedBook();
+    vi.mocked(ledgerReportsApi.getLedgerPeriodJournalEntries).mockResolvedValue([{
+      journalEntryId: "je-sweep", periodId: LEDGER_PERIOD_ID, ledgerBookId: LEDGER_BOOK_ID,
+      timestamp: "2026-07-31T00:00:00Z", description: "Cash sweep", totalDebits: 500, totalCredits: 500,
+      isBalanced: true,
+      lines: [
+        { entryId: "line-dr", journalEntryId: "je-sweep", timestamp: "2026-07-31T00:00:00Z", accountName: "Cash", accountType: "Asset",
+          symbol: null, financialAccountId: "1000", debit: 500, credit: 0, description: "Cash sweep receipt", dimensions: { entityId: "entity-lux" } },
+        { entryId: "line-cr", journalEntryId: "je-sweep", timestamp: "2026-07-31T00:00:00Z", accountName: "Public Investments", accountType: "Asset",
+          symbol: null, financialAccountId: "1200", debit: 0, credit: 500, description: "Cash sweep funding", dimensions: { entityId: "entity-lux" } }
+      ]
+    }] as never);
+
+    await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger");
+
+    const table = await screen.findByRole("table", { name: "Ledger Explorer results" });
+    expect(await screen.findByText(/^1 posted entry \(2 posting lines\)/)).toBeInTheDocument();
+    expect(screen.queryByText(/entry\(ies\)/)).not.toBeInTheDocument();
+    // A posting line has no date of its own; the instruction copy used to sit in the Date column.
+    expect(table).not.toHaveTextContent("Posting amount");
+    expect(within(table).getAllByText("Posting line of je-sweep")).toHaveLength(2);
+    // Lines that share the journal's entity do not repeat it; the journal row names it once.
+    expect(within(table).getAllByText("Same entity as journal")).toHaveLength(2);
+    expect(within(table).getAllByRole("link", { name: "Inspect Entity name unavailable" })).toHaveLength(1);
+  });
+
   it("keeps entity workspace destinations in the exact source book, period and route scope", async () => {
     mockPostedBook();
     const feederBookId = "00000000-0000-0000-0000-0000000000cc";

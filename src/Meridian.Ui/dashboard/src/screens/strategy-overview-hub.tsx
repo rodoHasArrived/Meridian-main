@@ -46,7 +46,21 @@ export const strategyHubRoutes = [
 ] as const;
 
 
-export function StrategyOverviewHub({ vm }: { vm: StrategyRunLibraryState }) {
+/**
+ * The RUNS headline counts the whole retained population; the workbench lists only the runs loaded
+ * into this view. When the two differ, say so beside the list rather than leaving "24" above "2 of 2".
+ */
+export function strategyRunPopulationNote(headlineRunCount: string | number | null | undefined, loadedRunCount: number): string | null {
+  const text = typeof headlineRunCount === "number" ? String(headlineRunCount) : String(headlineRunCount ?? "").replace(/,/g, "").trim();
+  const headline = /^\d+$/.test(text) ? Number(text) : Number.NaN;
+  if (!Number.isInteger(headline) || headline < 0 || headline === loadedRunCount) {
+    return null;
+  }
+  return `The Runs headline counts ${headline} retained ${headline === 1 ? "run" : "runs"}; ${loadedRunCount} ${loadedRunCount === 1 ? "is" : "are"} loaded in this list.`;
+}
+
+export function StrategyOverviewHub({ vm, headlineRunCount }: { vm: StrategyRunLibraryState; headlineRunCount?: string | number | null }) {
+  const populationNote = strategyRunPopulationNote(headlineRunCount, vm.runs.length);
   const plotToolConnected = vm.plotTool.workspace.statusBadgeLabel !== PLOT_TOOL_NOT_CONNECTED_LABEL;
   const runs = vm.runs.map((run) => ({
     id: run.id,
@@ -70,6 +84,7 @@ export function StrategyOverviewHub({ vm }: { vm: StrategyRunLibraryState }) {
   return (
     <section className="space-y-3" aria-label="Strategy run workbench">
       <WorkspaceTaskWorkbench title="Retained strategy runs" description="Select a run to inspect its source, results, and next review action. Comparison and promotion controls remain in the run library." items={runs} stateKey="strategyRun" emptyText="No retained runs are available yet. Open a focused lab to create or inspect strategy evidence." />
+      {populationNote ? <p className="text-xs text-muted-foreground" role="note">{populationNote}</p> : null}
       <div className="workspace-task-health" role="status">
         <strong>PlotTool analytics</strong>
         <Badge variant={vm.plotTool.workspace.statusBadgeVariant}>{vm.plotTool.workspace.statusBadgeLabel}</Badge>
