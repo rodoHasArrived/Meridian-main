@@ -76,7 +76,6 @@
     "docs/source/generated/source-module-index.md",
     "docs/source/generated/source-roadmap-traceability.md",
     "docs/source/generated/source-todo-checklist.md",
-    "docs/status/ROADMAP_SUMMARY.md",
     "docs/status/TODO.md",
     "docs/status/ai-handoff-checklist-report.json",
     "docs/status/ai-handoff-checklist-report.md",
@@ -206,11 +205,6 @@
       "docs/source/generated/source-todo-checklist.md": {
         "strategy": "regenerate",
         "generator": "build/scripts/docs/render-source-docs.py",
-        "required": true
-      },
-      "docs/status/ROADMAP_SUMMARY.md": {
-        "strategy": "regenerate",
-        "generator": "build/scripts/docs/render-roadmap-docs.py",
         "required": true
       },
       "docs/status/TODO.md": {
