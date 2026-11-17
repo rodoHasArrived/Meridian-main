@@ -170,7 +170,7 @@ describe("StrategyScreen equity paths on one scale", () => {
     expect(secondRow).not.toHaveAttribute("aria-selected", "true");
     expect(screen.getByText("No runs selected")).toBeInTheDocument();
     const disabledCompare = screen.getByRole("button", { name: /compare 2 runs unavailable/i });
-    expect(disabledCompare).toHaveAttribute("title", "Select exactly two runs before using this command. 0 selected.");
+    expect(disabledCompare).toHaveAttribute("title", "Select two to 4 runs before comparing. 0 selected.");
 
     // And the two-run selection does not move the equity-path set.
     const checkboxes = screen.getAllByRole("checkbox", { name: /^(Select|Remove) .+ for compare and diff$/ });
@@ -184,7 +184,7 @@ describe("StrategyScreen equity paths on one scale", () => {
     await user.click(within(tray()).getByRole("button", { name: "Clear" }));
 
     expect(tray()).toHaveTextContent("0 of 6");
-    expect(screen.getByRole("button", { name: /compare 2 runs: mean reversion fx and index momentum/i })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /compare 2 runs: mean reversion fx, index momentum/i })).toBeEnabled();
     expect(api.compareRuns).not.toHaveBeenCalled();
   });
 

@@ -38,6 +38,10 @@ import type {
 } from "@/types";
 import { formatCount as formatCountValue, formatDecimal, formatMoney, formatNumber, formatRatioAsPercent as formatRatioAsPercentValue } from "@/lib/format";
 import { defaultGetRunEquityCurve } from "@/screens/strategy-screen.equity-paths.view-model";
+import {
+  buildRunComparisonOverlay, describeRunSelectionRefusal, RUN_COMPARE_MAX, toggleRunSelection,
+  type RunCurveInput
+} from "@/screens/strategy-screen.comparison.view-model";
 
 /** Badge text of the analytics panel when no analytics source is connected. */
 export const PLOT_TOOL_NOT_CONNECTED_LABEL = "Not connected";
@@ -740,6 +744,11 @@ export function useStrategyRunLibraryViewModel(
   const [selectedRunEvidenceStatus, setSelectedRunEvidenceStatus] = useState<StrategyRunEvidenceLoadStatus>("idle");
   const [inspectedRunId, setInspectedRunId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  // Why the last run was not added to the comparison (the selection is full), until it changes.
+  const [selectionNotice, setSelectionNotice] = useState<string | null>(null);
+  // The selected runs' equity curves, loaded after a compare, for the overlay charts (UX Phase E).
+  const [comparisonCurves, setComparisonCurves] = useState<RunCurveInput[] | null>(null);
+  const [comparisonCurvesLoading, setComparisonCurvesLoading] = useState(false);
   const [comparison, setComparison] = useState<RunComparisonRow[]>([]);
   const [selectedComparisonRowId, setSelectedComparisonRowId] = useState<string | null>(null);
   const [runDiff, setRunDiff] = useState<RunDiff | null>(null);
@@ -765,7 +774,8 @@ export function useStrategyRunLibraryViewModel(
   const reviewPacketRequestId = useRef(0);
 
   const metrics = data?.metrics ?? [];
-  const runs = data?.runs ?? [];
+  // Stable while the payload is unchanged, so the callbacks that read it are not rebuilt each render.
+  const runs = useMemo(() => data?.runs ?? [], [data?.runs]);
 
   const state = useMemo(
     () => buildStrategyRunLibraryState({
@@ -831,6 +841,15 @@ export function useStrategyRunLibraryViewModel(
   );
 
   const toggleRun = useCallback((runId: string) => {
+    // A full selection refuses another run with a message; it never drops one silently.
+    const refusal = describeRunSelectionRefusal(selectedIds, runId, runs.find((run) => run.id === runId)?.strategyName ?? runId);
+    if (refusal) {
+      setSelectionNotice(refusal);
+      return;
+    }
+    setSelectionNotice(null);
+    setComparisonCurves(null);
+    setComparisonCurvesLoading(false);
     runScopedCommandRequestId.current += 1;
     promotionRequestId.current += 1;
     setInspectedRunId(runId);
@@ -849,7 +868,7 @@ export function useStrategyRunLibraryViewModel(
     setPromotionAcknowledged(false);
     setActionError(null);
     setActiveCommand((current) => current === "history" ? current : null);
-  }, []);
+  }, [runs, selectedIds]);
 
   const openRunDetail = useCallback((run: StrategyRunRecord) => {
     const requestId = reviewPacketRequestId.current + 1;
@@ -940,8 +959,8 @@ export function useStrategyRunLibraryViewModel(
   }, [services]);
 
   const compareSelectedRuns = useCallback(async () => {
-    if (selectedIds.length !== 2) {
-      setActionError("Select exactly two runs before comparing.");
+    if (selectedIds.length < 2 || selectedIds.length > RUN_COMPARE_MAX) {
+      setActionError(`Select two to ${RUN_COMPARE_MAX} runs before comparing.`);
       return;
     }
 
@@ -964,6 +983,25 @@ export function useStrategyRunLibraryViewModel(
       setSelectedDiffParameterKey(null);
       setComparisonLoaded(true);
       setRunDiffLoaded(false);
+      // Overlay charts: each selected run's retained equity curve. A run whose curve fails is named
+      // beside the charts; the others still draw.
+      const getCurve = services.getRunEquityCurve;
+      if (getCurve) {
+        setComparisonCurvesLoading(true);
+        void Promise.allSettled(requestedRunIds.map((runId) => getCurve(runId))).then((results) => {
+          if (runScopedCommandRequestId.current !== requestId) return;
+          setComparisonCurves(results.map((result, index) => {
+            const runId = requestedRunIds[index]!;
+            const label = runs.find((run) => run.id === runId)?.strategyName ?? runId;
+            return result.status === "fulfilled" && Array.isArray(result.value?.points)
+              ? { runId, label, points: result.value.points, error: null }
+              : { runId, label, points: null, error: result.status === "rejected" && result.reason instanceof Error ? result.reason.message : "Equity curve unavailable." };
+          }));
+          setComparisonCurvesLoading(false);
+        });
+      } else {
+        setComparisonCurves(null);
+      }
     } catch (err) {
       if (runScopedCommandRequestId.current !== requestId) {
         return;
@@ -975,7 +1013,7 @@ export function useStrategyRunLibraryViewModel(
         setActiveCommand(null);
       }
     }
-  }, [selectedIds, services]);
+  }, [runs, selectedIds, services]);
 
   const diffSelectedRuns = useCallback(async () => {
     if (selectedIds.length !== 2) {
@@ -1111,8 +1149,19 @@ export function useStrategyRunLibraryViewModel(
     setPromotionAcknowledged(checked);
   }, []);
 
+  const clearRunSelection = useCallback(() => {
+    runScopedCommandRequestId.current += 1;
+    setSelectedIds([]); setSelectionNotice(null); setComparison([]); setComparisonLoaded(false);
+    setComparisonCurves(null); setComparisonCurvesLoading(false); setRunDiff(null); setRunDiffLoaded(false);
+  }, []);
+  const comparisonOverlay = useMemo(() => comparisonCurves ? buildRunComparisonOverlay(comparisonCurves) : null, [comparisonCurves]);
+
   return {
     ...state,
+    selectionNotice,
+    comparisonOverlay,
+    comparisonCurvesLoading,
+    clearRunSelection,
     toggleRun,
     openRunDetail,
     closeRunDetail,
@@ -1204,6 +1253,7 @@ export function buildStrategyRunLibraryState({
     ? runs.find((run) => run.id === resolvedInspectedRunId) ?? null
     : null;
   const hasTwoRuns = selectedIds.length === 2;
+  const canCompareSelection = selectedIds.length >= 2 && selectedIds.length <= RUN_COMPARE_MAX;
   const hasOneBacktestRun = selectedIds.length === 1 &&
     selectedRuns[0]?.mode === "backtest" &&
     selectedRuns[0]?.status === "Completed";
@@ -1313,7 +1363,7 @@ export function buildStrategyRunLibraryState({
     showPromotionHistoryPanel: promotionHistoryLoaded || promotionHistory.length > 0,
     activeCommand,
     actionError,
-    canCompare: hasTwoRuns && !busy,
+    canCompare: canCompareSelection && !busy,
     canDiff: hasTwoRuns && !busy,
     canLoadPromotionHistory: !busy,
     canPromote: hasOneBacktestRun && !busy && !promoteBusy && promoteState !== "done",
@@ -1331,9 +1381,11 @@ export function buildStrategyRunLibraryState({
     selectionText: buildSelectionText(selectedRuns),
     selectionDetail: hasTwoRuns
       ? "Ready to compare or diff the selected run pair."
-      : hasOneBacktestRun
-        ? "Select Promote to Paper to evaluate this run for paper trading."
-        : "Select two runs to enable compare and diff commands.",
+      : canCompareSelection
+        ? `Ready to compare ${selectedIds.length} runs. Diff compares exactly two.`
+        : hasOneBacktestRun
+          ? "Select Promote to Paper to evaluate this run for paper trading."
+          : `Select two to ${RUN_COMPARE_MAX} runs to compare; diff needs exactly two.`,
     evidenceAction: buildStrategyEvidenceAction(selectedRuns[0] ?? runs[0] ?? null),
     compareButtonLabel: commandStates.compare.label,
     diffButtonLabel: commandStates.diff.label,
@@ -1486,6 +1538,15 @@ export function buildStrategyCommandStates({
   const pairLabel = selectedRuns.length === 2
     ? `${formatText(selectedRuns[0].strategyName)} and ${formatText(selectedRuns[1].strategyName)}`
     : null;
+  const compareCount = selectedRuns.length;
+  const canCompareSelection = compareCount >= 2 && compareCount <= RUN_COMPARE_MAX;
+  const compareNames = canCompareSelection ? selectedRuns.map((run) => formatText(run.strategyName)).join(", ") : null;
+  const compareDisabledReason = busy
+    ? "Wait for the current Strategy command to finish."
+    : canCompareSelection
+      ? null
+      : `Select two to ${RUN_COMPARE_MAX} runs before comparing. ${compareCount} selected.`;
+  const compareLabel = `Compare ${canCompareSelection ? compareCount : 2} runs`;
   const selectedRun = selectedRuns[0] ?? null;
   const pairDisabledReason = busy
     ? "Wait for the current Strategy command to finish."
@@ -1520,14 +1581,14 @@ export function buildStrategyCommandStates({
       busy: activeCommand === "history"
     },
     compare: {
-      label: activeCommand === "compare" ? "Comparing..." : "Compare 2 runs",
+      label: activeCommand === "compare" ? "Comparing..." : compareLabel,
       ariaLabel: activeCommand === "compare"
-        ? `Comparing selected runs: ${pairLabel ?? "current selection"}`
-        : pairLabel
-          ? `Compare 2 runs: ${pairLabel}`
-          : "Compare 2 runs unavailable",
-      disabled: !hasTwoRuns || busy,
-      disabledReason: pairDisabledReason,
+        ? `Comparing selected runs: ${compareNames ?? "current selection"}`
+        : compareNames
+          ? `${compareLabel}: ${compareNames}`
+          : `${compareLabel} unavailable`,
+      disabled: !canCompareSelection || busy,
+      disabledReason: compareDisabledReason,
       busy: activeCommand === "compare"
     },
     diff: {
@@ -2934,13 +2995,7 @@ function resolveInspectedRunId(
   return selectedRuns[0]?.id ?? runs[0]?.id ?? null;
 }
 
-export function toggleRunSelection(currentIds: string[], runId: string): string[] {
-  if (currentIds.includes(runId)) {
-    return currentIds.filter((id) => id !== runId);
-  }
-
-  return [...currentIds, runId].slice(-2);
-}
+export { RUN_COMPARE_MAX, toggleRunSelection } from "@/screens/strategy-screen.comparison.view-model";
 
 export function shouldCloseRunDetailForKey(key: string): boolean {
   return key === "Escape" || key === "Esc";
@@ -2955,7 +3010,7 @@ function buildSelectionText(selectedRuns: StrategyRunRecord[]): string {
     return `Selected ${selectedRuns[0].strategyName}`;
   }
 
-  return `${selectedRuns[0].strategyName} vs ${selectedRuns[1].strategyName}`;
+  return selectedRuns.map((run) => run.strategyName).join(" vs ");
 }
 
 function buildPlotExpression(
