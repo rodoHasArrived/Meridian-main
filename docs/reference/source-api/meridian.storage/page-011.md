@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PostgresFxSpotReferenceProjectionStore
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresFxSpotReferenceProjectionStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/PostgresFxSpotReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/PostgresFxSpotReferenceProjectionStore.cs#L9).
+
+Reads spot foreign exchange reference projections from PostgreSQL by security, pair, and currency.
+
+```csharp
+public sealed class PostgresFxSpotReferenceProjectionStore : IFxSpotReferenceProjectionStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PostgresFxSpotReferenceProjectionStore(SecurityMasterOptions options);</code> | [src/Meridian.Storage/SecurityMaster/PostgresFxSpotReferenceProjectionStore.cs:23](../../../../src/Meridian.Storage/SecurityMaster/PostgresFxSpotReferenceProjectionStore.cs#L23) |  |
+| <code>public Task&lt;FxSpotProjectionRow?&gt; GetFxSpotAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresFxSpotReferenceProjectionStore.cs:31](../../../../src/Meridian.Storage/SecurityMaster/PostgresFxSpotReferenceProjectionStore.cs#L31) |  |
+| <code>public Task&lt;FxSpotProjectionRow?&gt; GetByPairCodeAsync(string pairCode, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresFxSpotReferenceProjectionStore.cs:34](../../../../src/Meridian.Storage/SecurityMaster/PostgresFxSpotReferenceProjectionStore.cs#L34) |  |
+| <code>public Task&lt;IReadOnlyList&lt;FxSpotProjectionRow&gt;&gt; GetByCurrencyAsync(string currency, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresFxSpotReferenceProjectionStore.cs:37](../../../../src/Meridian.Storage/SecurityMaster/PostgresFxSpotReferenceProjectionStore.cs#L37) |  |
+
 ## PostgresMoneyMarketFundReferenceProjectionStore
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresMoneyMarketFundReferenceProjectionStore</code>. Kind: `class`.
@@ -1058,16 +1079,4 @@ UnderlyingGraph / UnderlyingLinkDeclared or UnderlyingLinkAmended.
 
 ```csharp
 public sealed record UnderlyingLinkDeclaredPayload(UnderlyingLinkPayload Link, UnderlyingLinkPayload? Previous, IReadOnlyList<string> Changes) : ISecurityGovernancePayload;
-```
-
-## UnderlyingLinkPayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.UnderlyingLinkPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:71](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L71).
-
-A declared underlying link as the UnderlyingGraph stream records it.
-
-```csharp
-public sealed record UnderlyingLinkPayload(Guid LinkId, Guid SecurityId, string Role, Guid? UnderlyingSecurityId, string? Reference, decimal? Weight, DateTimeOffset ValidFrom, DateTimeOffset? ValidTo, string? Notes, string DeclaredBy, DateTimeOffset DeclaredAt);
 ```

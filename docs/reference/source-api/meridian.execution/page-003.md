@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountDefinition
+
+Qualified name: <code>Meridian.Execution.Services.AccountDefinition</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1423](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1423).
+
+Defines one account within a multi-account paper trading session.
+
+```csharp
+public sealed record AccountDefinition(string AccountId, string DisplayName, AccountKind Kind, decimal InitialCash, MarginAccountType MarginType = MarginAccountType.Cash, IMarginModel? MarginModel = null);
+```
+
 ## BrokerAccountingBreak
 
 Qualified name: <code>Meridian.Execution.Services.BrokerAccountingBreak</code>. Kind: `record`.
@@ -828,16 +840,4 @@ Detailed session DTO. TradingCosts is the session&#x27;s total explicit transact
 
 ```csharp
 public sealed record PaperSessionDetailDto(PaperSessionSummaryDto Summary, IReadOnlyList<string> Symbols, ExecutionPortfolioSnapshotDto? Portfolio, IReadOnlyList<OrderState>? OrderHistory, int FillCount, int LedgerEntryCount, DateTimeOffset? LastFillAt, DateTimeOffset? LastOrderUpdatedAt, IReadOnlyList<ExecutionReport>? FillHistory = null, decimal TradingCosts = 0m, string? AccountingUnavailableReason = null);
-```
-
-## PaperSessionFillAppendResult
-
-Qualified name: <code>Meridian.Execution.Services.PaperSessionFillAppendResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/IPaperSessionStore.cs:238](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L238).
-
-Idempotent durable-fill append result.
-
-```csharp
-public sealed record PaperSessionFillAppendResult(PaperSessionFillAppendStatus Status, string? ExistingCanonicalHash = null);
 ```

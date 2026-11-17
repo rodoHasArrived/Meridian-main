@@ -487,6 +487,12 @@ fund or entity the caller may not see is null, and every list may be empty. On a
 fund or entity that exists but is not visible to the caller; they never carry its id or name. Its source-generated
 `WorkstationScopeOptionsJsonContext` is registered in the Ui.Shared endpoint JSON options.
 
+`Workstation/PerformanceReturnDtos.cs` defines `PerformanceReturnFigureDto`, the single labeled
+return figure (W10-PERF-001): convention, status (`Reported`, `ProForma`, `ReviewRequired`),
+period, currency, source and reasons, with a null `Value` whenever no single number may be shown.
+`BrokeragePortfolioPerformanceDto` carries it as the optional trailing `ReturnFigures` list rather
+than a parallel performance contract; `CashAdjustedReturn` keeps its original arithmetic.
+
 `Workstation/RecurringJournalDtos.cs` publishes one exact-scope occurrence projection for browser
 and WPF Accounting queues. It carries retained schedule/template versions, source evidence
 references, authoritative draft approval status, blockers, lock owner and governed reopen path.
@@ -796,7 +802,9 @@ accepts older numeric status payloads; persisted queue records already use text 
   declared unit (`scheduleConventions.couponRateUnit`, or a leg's unit) wins for the fields it
   governs, then the field default declared in `SecurityRateFieldUnits`, and otherwise the value is
   `RateUnitResolution.Undeclared` and is flagged, never converted. Magnitude never selects a unit;
-  zero resolves as unit-invariant. `SecurityRateFieldUnits` inventories each rate field's meaning,
+  zero resolves as unit-invariant. Its `ToFraction` is the one unit-to-fraction conversion: the
+  direct-lending normalizer and observed-fixing conversions (`ToFractionOrNull`) call it, while
+  ranges and sign policy stay per domain. `SecurityRateFieldUnits` inventories each rate field's meaning,
   default unit (Fraction, Percent or BasisPoints), fraction range and negative-rate policy. Only
   `*Bps` fields (BasisPoints) and Deposit/CashSweep rates (Fraction) declare a default; fields
   stored both ways declare none. D3 (decided 2026-11-05): undeclared non-zero rates block; no field

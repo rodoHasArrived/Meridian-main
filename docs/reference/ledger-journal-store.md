@@ -118,6 +118,9 @@ Run journal queries are available under `/api/workstation/runs/{runId}/ledger`: 
 rebuild from authorized posted journals carrying the exact `strategy.runId`, strategy and account
 provenance. An unspecified book selects only a unique primary book; parallel accounting bases
 are never added together. Existing WPF run-ledger views consume the shared summary.
+In-memory ledgers filter on the same tag through `LedgerQuery.RunId` (exact match on
+`LedgerQuery.StrategyRunIdTag`); the run stays a tag, not a metadata field, so retained journals
+compare unchanged on replay.
 
 `POST /api/workstation/runs/{runId}/ledger/export` and
 `POST /api/ledger/periods/{periodId}/journal-export` produce CSV or Parquet journal lines.

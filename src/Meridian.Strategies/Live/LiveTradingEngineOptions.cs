@@ -28,6 +28,13 @@ public sealed class LiveTradingEngineOptions
     public int FillReportQueueCapacity { get; set; } = 1024;
 
     /// <summary>
+    /// How long an operator stop waits for fills the order manager has already accepted to reach
+    /// the run's session before it closes report admission. Fills still in flight at the deadline
+    /// are accounted as undeliverable and fail the run.
+    /// </summary>
+    public TimeSpan StopFillDrainTimeout { get; set; } = TimeSpan.FromSeconds(10);
+
+    /// <summary>
     /// Directory holding user-authored strategy plugin assemblies. When set, promoted runs whose
     /// parameter set names a <c>pluginAssembly</c> are resolved from this directory and adapted
     /// into live execution; when null (the default) plugin-backed strategies stay disabled.

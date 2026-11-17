@@ -266,7 +266,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Backtesting.Engine.BacktestEngine</code>. Kind: `class`.
 
-Source: [src/Meridian.Backtesting/Engine/BacktestEngine.cs:20](../../../../src/Meridian.Backtesting/Engine/BacktestEngine.cs#L20).
+Source: [src/Meridian.Backtesting/Engine/BacktestEngine.cs:21](../../../../src/Meridian.Backtesting/Engine/BacktestEngine.cs#L21).
 
 Core backtesting engine. Drives a multi-symbol chronological merge over locally-stored JSONL data, dispatches events to the strategy, processes fills, and records cash flows.
 
@@ -278,10 +278,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public BacktestEngine(ILogger&lt;BacktestEngine&gt; logger, StorageCatalogService catalogService, ISecurityMasterQueryService? securityMasterQueryService = null, ICorporateActionAdjustmentService? corporateActionAdjustment = null, IBacktestPreflightService? backtestPreflightService = null) : this(logger, catalogService, (ISecurityTradingParametersQueryService?) securityMasterQueryService, corporateActionAdjustment, backtestPreflightService, securityMasterQueryService);</code> | [src/Meridian.Backtesting/Engine/BacktestEngine.cs:30](../../../../src/Meridian.Backtesting/Engine/BacktestEngine.cs#L30) | Retains the aggregate-query constructor used by compiled consumers. |
-| <code>public ISecurityCorporateActionsQueryService? CanonicalCorporateActionQueries { get; init; }</code> | [src/Meridian.Backtesting/Engine/BacktestEngine.cs:45](../../../../src/Meridian.Backtesting/Engine/BacktestEngine.cs#L45) | Optional canonical settlement query port; ignored by legacy replay and existing mapped event sources. |
-| <code>public IBacktestAssetEventSource? AssetEventSource { get; init; }</code> | [src/Meridian.Backtesting/Engine/BacktestEngine.cs:48](../../../../src/Meridian.Backtesting/Engine/BacktestEngine.cs#L48) | Optional authoritative action source; aggregate-query callers also receive the built-in bridge. |
-| <code>public async Task&lt;BacktestResult&gt; RunAsync(BacktestRequest request, IBacktestStrategy strategy, IProgress&lt;BacktestProgressEvent&gt;? progress = null, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/Engine/BacktestEngine.cs:57](../../../../src/Meridian.Backtesting/Engine/BacktestEngine.cs#L57) | Runs a complete backtest, replaying all events in the requested date/symbol range. |
+| <code>public BacktestEngine(ILogger&lt;BacktestEngine&gt; logger, StorageCatalogService catalogService, ISecurityMasterQueryService? securityMasterQueryService = null, ICorporateActionAdjustmentService? corporateActionAdjustment = null, IBacktestPreflightService? backtestPreflightService = null) : this(logger, catalogService, (ISecurityTradingParametersQueryService?) securityMasterQueryService, corporateActionAdjustment, backtestPreflightService, securityMasterQueryService);</code> | [src/Meridian.Backtesting/Engine/BacktestEngine.cs:31](../../../../src/Meridian.Backtesting/Engine/BacktestEngine.cs#L31) | Retains the aggregate-query constructor used by compiled consumers. |
+| <code>public ISecurityCorporateActionsQueryService? CanonicalCorporateActionQueries { get; init; }</code> | [src/Meridian.Backtesting/Engine/BacktestEngine.cs:46](../../../../src/Meridian.Backtesting/Engine/BacktestEngine.cs#L46) | Optional canonical settlement query port; ignored by legacy replay and existing mapped event sources. |
+| <code>public IBacktestAssetEventSource? AssetEventSource { get; init; }</code> | [src/Meridian.Backtesting/Engine/BacktestEngine.cs:49](../../../../src/Meridian.Backtesting/Engine/BacktestEngine.cs#L49) | Optional authoritative action source; aggregate-query callers also receive the built-in bridge. |
+| <code>public async Task&lt;BacktestResult&gt; RunAsync(BacktestRequest request, IBacktestStrategy strategy, IProgress&lt;BacktestProgressEvent&gt;? progress = null, CancellationToken ct = default);</code> | [src/Meridian.Backtesting/Engine/BacktestEngine.cs:58](../../../../src/Meridian.Backtesting/Engine/BacktestEngine.cs#L58) | Runs a complete backtest, replaying all events in the requested date/symbol range. |
 
 ## IBacktestAssetEventSource
 

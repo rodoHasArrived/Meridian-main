@@ -52,6 +52,10 @@ explicit mappings and exceptions. Decide how historical strings read without mut
 before and after the change; certified-report grouping is pinned for affected classes. A display
 repair cannot silently change stored classification or report grouping.
 
+**2026-11-16:** the listed-option exercise-style label no longer comes from the union case's
+`ToString()`; `CanonicalExerciseStyle` spells out American, European and Bermudan, and
+`ExerciseStyleStoredLabelTests` pins them. Stored values are unchanged.
+
 ## Slice 4 — Declared rate semantics and explicit accounting disposition
 
 **Evidence:** D10. First inventory each rate field's meaning and the already-readable schedule
@@ -86,6 +90,11 @@ allowing negative index, spread and floor). Only the new direct-lending
 use it. It is separate from the Security Master `RateUnitNormalizer`
 (`src/Meridian.Contracts/SecurityMaster/RateUnitNormalizer.cs`) in the implementation note above; the
 two may converge once canonical units are approved.
+
+**2026-11-16:** the unit-to-fraction arithmetic now has one home, the Security Master
+`RateUnitNormalizer.ToFraction`. The direct-lending normalizer and the two observed-fixing
+conversions call it. Ranges, sign policy and error text stay per domain and still wait for the
+canonical-unit decision.
 
 ## Slice 5 — Audit evidence contracts before storage/serialization changes
 

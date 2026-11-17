@@ -361,6 +361,9 @@ public static class WorkstationServiceCollectionExtensions
             sp.GetRequiredService<LegacyProviderRuntimeCredentialStore>(), sp.GetRequiredService<IHttpClientFactory>().CreateClient("external-gl-read-only")));
         services.AddSingleton<IAccountingSystemProvider>(sp => sp.GetRequiredService<XeroAccountingProvider>());
         services.AddSingleton<IAccountingSystemProvider>(sp => sp.GetRequiredService<NetSuiteAccountingProvider>());
+        // Imports, mapping profiles and certified export packages survive a restart.
+        services.TryAddSingleton(sp => new AccountingSystemIntegrationStateStore(
+            Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "external-gl")));
         services.TryAddSingleton<AccountingSystemIntegrationService>();
         services.TryAddSingleton<IOnboardingWorkspaceStore>(sp => new FileOnboardingWorkspaceStore(
             Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "onboarding-workspaces.json")));
@@ -581,7 +584,11 @@ public static class WorkstationServiceCollectionExtensions
                 paperMatchingIsAuthoritative: () =>
                     sp.GetService<Meridian.Execution.Sdk.IExecutionGateway>()
                         is Meridian.Execution.PaperTradingGateway,
-                livePortfolioAccessor: sp.GetService<LiveBrokeragePortfolioSyncService>));
+                livePortfolioAccessor: sp.GetService<LiveBrokeragePortfolioSyncService>,
+                // The same freshness window the paper gateways match under, built from the same
+                // options instance, so the guard drops exactly the observations the matcher drops.
+                paperObservationFreshness: Meridian.Execution.PaperMatching.PaperObservationFreshnessPolicy.From(
+                    sp.GetService<Meridian.Execution.Adapters.PaperTradingGatewayOptions>())));
         // Governed-approval queue for escalated orders (severity outcome: Escalate parks).
         // Queue transitions persist atomically so parked approvals survive restarts.
         services.TryAddSingleton<RiskEscalationQueueService>(sp => new RiskEscalationQueueService(

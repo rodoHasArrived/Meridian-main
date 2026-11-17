@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PaperSessionFillAppendResult
+
+Qualified name: <code>Meridian.Execution.Services.PaperSessionFillAppendResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/IPaperSessionStore.cs:238](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L238).
+
+Idempotent durable-fill append result.
+
+```csharp
+public sealed record PaperSessionFillAppendResult(PaperSessionFillAppendStatus Status, string? ExistingCanonicalHash = null);
+```
+
 ## PaperSessionFillAppendStatus
 
 Qualified name: <code>Meridian.Execution.Services.PaperSessionFillAppendStatus</code>. Kind: `enum`.
