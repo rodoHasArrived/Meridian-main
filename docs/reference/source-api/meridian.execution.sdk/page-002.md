@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Execution.Sdk.ExecutionAccountGrant</code>. Kind: `class`.
 
-Source: [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:47](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L47).
+Source: [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:49](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L49).
 
 Proof, resolved at the edge where the principal is known, that an actor may route orders for one fund account. The OMS verifies that the grant is present, names the order&#x27;s account, and is fresh enough; it does not resolve identity itself.
 
@@ -22,17 +22,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ExecutionAccountGrant(Guid fundAccountId, string grantedTo, string source, DateTimeOffset resolvedAt);</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:49](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L49) |  |
-| <code>public Guid FundAccountId { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:63](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L63) | The fund account the grant covers. |
-| <code>public string GrantedTo { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:66](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L66) | The actor the grant was resolved for. |
-| <code>public string Source { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:69](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L69) | How the grant was resolved; see ExecutionAccountGrantSources. |
-| <code>public DateTimeOffset ResolvedAt { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:72](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L72) | When the grant was resolved. The OMS bounds its age at dispatch. |
+| <code>public ExecutionAccountGrant(Guid fundAccountId, string grantedTo, string source, DateTimeOffset resolvedAt);</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:51](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L51) |  |
+| <code>public Guid FundAccountId { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:65](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L65) | The fund account the grant covers. |
+| <code>public string GrantedTo { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:68](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L68) | The actor the grant was resolved for. |
+| <code>public string Source { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:71](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L71) | How the grant was resolved; see ExecutionAccountGrantSources. |
+| <code>public DateTimeOffset ResolvedAt { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:74](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L74) | When the grant was resolved. The OMS bounds its age at dispatch. |
 
 ## ExecutionAccountGrantSources
 
 Qualified name: <code>Meridian.Execution.Sdk.ExecutionAccountGrantSources</code>. Kind: `class`.
 
-Source: [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:33](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L33).
+Source: [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:35](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L35).
 
 Well-known values for ExecutionAccountGrant.Source.
 
@@ -44,8 +44,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string HttpPrincipal = &quot;http-principal&quot;;</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:36](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L36) | Resolved from the authenticated HTTP principal&#x27;s account-scoped access. |
-| <code>public const string StrategyRun = &quot;strategy-run&quot;;</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:39](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L39) | Derived from a strategy run&#x27;s retained fund account. |
+| <code>public const string HttpPrincipal = &quot;http-principal&quot;;</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:38](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L38) | Resolved from the authenticated HTTP principal&#x27;s account-scoped access. |
+| <code>public const string StrategyRun = &quot;strategy-run&quot;;</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:41](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L41) | Derived from a strategy run&#x27;s retained fund account. |
 
 ## ExecutionDiagnostics
 
@@ -821,7 +821,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Sdk.OrderCancelCommand</code>. Kind: `class`.
 
-Source: [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:294](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L294).
+Source: [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:287](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L287).
 
 A cancel command for one working order.
 
@@ -833,9 +833,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public OrderCancelCommand(string orderId, OrderSubmissionAuthority authority);</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:296](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L296) |  |
-| <code>public string OrderId { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:303](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L303) |  |
-| <code>public OrderSubmissionAuthority Authority { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:305](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L305) |  |
+| <code>public OrderCancelCommand(string orderId, OrderSubmissionAuthority authority);</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:289](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L289) |  |
+| <code>public string OrderId { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:296](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L296) |  |
+| <code>public OrderSubmissionAuthority Authority { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:298](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L298) |  |
 
 ## OrderCancellationIdentifier
 
@@ -882,7 +882,7 @@ public sealed record OrderCheck(string Code, string Status, string Message);
 
 Qualified name: <code>Meridian.Execution.Sdk.OrderCommandOrigin</code>. Kind: `enum`.
 
-Source: [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:11](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L11).
+Source: [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:13](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L13).
 
 Who or what originated an order command. Set by server-side callers through the OrderSubmissionAuthority factories; never read from client-supplied metadata.
 
@@ -894,12 +894,12 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Unattributed</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:14](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L14) | Legacy IOrderManager.PlaceOrderAsync calls that carry no typed authority. |
-| <code>OperatorTicket</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:17](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L17) | A manual order ticket submitted by an authenticated operator. |
-| <code>PositionAction</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:20](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L20) | A close or upsize action an operator took on an existing position. |
-| <code>EscalationRelease</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:23](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L23) | A risk-escalated order released by an approver; carries the parked authority. |
-| <code>StrategyRun</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:26](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L26) | An order generated by a running strategy (paper or live run). |
-| <code>KillSwitch</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:29](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L29) | A kill-switch cancellation. Cancel-only; never refused on authority. |
+| <code>Unattributed</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:16](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L16) | Legacy IOrderManager.PlaceOrderAsync calls that carry no typed authority. |
+| <code>OperatorTicket</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:19](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L19) | A manual order ticket submitted by an authenticated operator. |
+| <code>PositionAction</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:22](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L22) | A close or upsize action an operator took on an existing position. |
+| <code>EscalationRelease</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:25](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L25) | A risk-escalated order released by an approver; carries the parked authority. |
+| <code>StrategyRun</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:28](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L28) | An order generated by a running strategy (paper or live run). |
+| <code>KillSwitch</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:31](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L31) | A kill-switch cancellation. Cancel-only; never refused on authority. |
 
 ## OrderLeg
 

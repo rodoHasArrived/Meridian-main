@@ -85,7 +85,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Sdk.OrderReplaceCommand</code>. Kind: `class`.
 
-Source: [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:309](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L309).
+Source: [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:302](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L302).
 
 A cancel/replace command for one working order.
 
@@ -97,10 +97,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public OrderReplaceCommand(string orderId, OrderModification modification, OrderSubmissionAuthority authority);</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:311](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L311) |  |
-| <code>public string OrderId { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:319](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L319) |  |
-| <code>public OrderModification Modification { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:321](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L321) |  |
-| <code>public OrderSubmissionAuthority Authority { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:323](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L323) |  |
+| <code>public OrderReplaceCommand(string orderId, OrderModification modification, OrderSubmissionAuthority authority);</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:304](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L304) |  |
+| <code>public string OrderId { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:312](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L312) |  |
+| <code>public OrderModification Modification { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:314](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L314) |  |
+| <code>public OrderSubmissionAuthority Authority { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:316](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L316) |  |
 
 ## OrderRequest
 
@@ -337,7 +337,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Execution.Sdk.OrderSubmissionAuthority</code>. Kind: `class`.
 
-Source: [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:80](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L80).
+Source: [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:82](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L82).
 
 Typed authority for one order command. Instances are created only through the static factories, which validate the fields each origin requires. There is no public constructor and no JSON constructor, so an HTTP model binder can never produce one from a request body.
 
@@ -349,20 +349,20 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public OrderCommandOrigin Origin { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:103](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L103) | Who or what originated the command. |
-| <code>public string Actor { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:106](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L106) | The actor issuing this command. For a release, the approver. |
-| <code>public ExecutionAccountGrant? AccountGrant { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:109](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L109) | Account authority. Null only for OrderCommandOrigin.KillSwitch. |
-| <code>public string? RunId { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:112](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L112) | The strategy run the order belongs to. Set only for strategy-run authority. |
-| <code>public string? StrategyArtifactId { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:115](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L115) | The strategy artifact the run executes, when the run carries one. |
-| <code>public string CorrelationId { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:118](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L118) | Correlates the command with its journal, audit, and operator action. |
-| <code>public string? SessionId { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:121](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L121) | The paper session the order belongs to, when a server-side caller assigned one. |
-| <code>public OrderSubmissionAuthority? ReleasedFrom { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:124](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L124) | For OrderCommandOrigin.EscalationRelease, the authority the order was parked with. |
-| <code>public static OrderSubmissionAuthority ForOperatorTicket(string actor, ExecutionAccountGrant accountGrant, string correlationId, string? sessionId = null);</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:127](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L127) | Authority for a manual ticket from an authenticated operator. |
-| <code>public static OrderSubmissionAuthority ForPositionAction(string actor, ExecutionAccountGrant accountGrant, string correlationId);</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:147](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L147) | Authority for a close or upsize action on an existing position. |
-| <code>public static OrderSubmissionAuthority ForStrategyRun(string actor, ExecutionAccountGrant accountGrant, string runId, string? strategyArtifactId = null);</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:169](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L169) | Authority for an order generated by a strategy run. The correlation id is the run id, matching what LiveStrategyRunSession stamps today. |
-| <code>public static OrderSubmissionAuthority ForEscalationRelease(OrderSubmissionAuthority parked, string approver);</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:193](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L193) | Authority for releasing a risk-escalated order. The parked authority is carried unchanged, so the OMS rechecks the original account grant and run binding rather than re-deriving them from the approver. |
-| <code>public static OrderSubmissionAuthority ForKillSwitch(string actor, string correlationId) =&gt; …;</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:211](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L211) | Authority for a kill-switch cancellation. Recorded, never used to refuse a cancel. |
-| <code>public static OrderSubmissionAuthority Unattributed(IReadOnlyDictionary&lt;string, string&gt;? legacyMetadata);</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:228](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L228) | Authority for a legacy IOrderManager.PlaceOrderAsync call. Identity is copied from the request metadata the caller supplied, exactly as the OMS reads it today, and the origin records that none of it was established by a typed authority. Phase 2 refuses this origin in Live mode. |
+| <code>public OrderCommandOrigin Origin { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:105](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L105) | Who or what originated the command. |
+| <code>public string Actor { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:108](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L108) | The actor issuing this command. For a release, the approver. |
+| <code>public ExecutionAccountGrant? AccountGrant { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:111](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L111) | Account authority. Null only for OrderCommandOrigin.KillSwitch. |
+| <code>public string? RunId { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:114](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L114) | The strategy run the order belongs to. Set only for strategy-run authority. |
+| <code>public string? StrategyArtifactId { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:117](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L117) | The strategy artifact the run executes, when the run carries one. |
+| <code>public string CorrelationId { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:120](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L120) | Correlates the command with its journal, audit, and operator action. |
+| <code>public string? SessionId { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:123](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L123) | The paper session the order belongs to, when a server-side caller assigned one. |
+| <code>public OrderSubmissionAuthority? ReleasedFrom { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:126](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L126) | For OrderCommandOrigin.EscalationRelease, the authority the order was parked with. |
+| <code>public static OrderSubmissionAuthority ForOperatorTicket(string actor, ExecutionAccountGrant accountGrant, string correlationId, string? sessionId = null);</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:129](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L129) | Authority for a manual ticket from an authenticated operator. |
+| <code>public static OrderSubmissionAuthority ForPositionAction(string actor, ExecutionAccountGrant accountGrant, string correlationId);</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:149](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L149) | Authority for a close or upsize action on an existing position. |
+| <code>public static OrderSubmissionAuthority ForStrategyRun(string actor, ExecutionAccountGrant accountGrant, string runId, string? strategyArtifactId = null);</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:171](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L171) | Authority for an order generated by a strategy run. The correlation id is the run id, matching what LiveStrategyRunSession stamps today. |
+| <code>public static OrderSubmissionAuthority ForEscalationRelease(OrderSubmissionAuthority parked, string approver);</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:195](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L195) | Authority for releasing a risk-escalated order. The parked authority is carried unchanged, so the OMS rechecks the original account grant and run binding rather than re-deriving them from the approver. |
+| <code>public static OrderSubmissionAuthority ForKillSwitch(string actor, string correlationId) =&gt; …;</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:213](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L213) | Authority for a kill-switch cancellation. Recorded, never used to refuse a cancel. |
+| <code>public static OrderSubmissionAuthority Unattributed(IReadOnlyDictionary&lt;string, string&gt;? legacyMetadata);</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:230](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L230) | Authority for a legacy IOrderManager.PlaceOrderAsync call. Identity is copied from the request metadata the caller supplied, exactly as the OMS reads it today, and the origin records that none of it was established by a typed authority. Phase 2 refuses this origin in Live mode. |
 
 ## OrderSubmissionRefusal
 
@@ -387,7 +387,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Sdk.OrderSubmitCommand</code>. Kind: `class`.
 
-Source: [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:280](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L280).
+Source: [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:273](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L273).
 
 A new-order command: the order and the typed authority it is submitted under.
 
@@ -399,9 +399,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public OrderSubmitCommand(OrderRequest order, OrderSubmissionAuthority authority);</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:282](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L282) |  |
-| <code>public OrderRequest Order { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:288](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L288) |  |
-| <code>public OrderSubmissionAuthority Authority { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:290](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L290) |  |
+| <code>public OrderSubmitCommand(OrderRequest order, OrderSubmissionAuthority authority);</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:275](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L275) |  |
+| <code>public OrderRequest Order { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:281](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L281) |  |
+| <code>public OrderSubmissionAuthority Authority { get; }</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:283](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L283) |  |
 
 ## OrderType
 

@@ -1,3 +1,5 @@
+using static Meridian.Contracts.Text.TextPrimitives;
+
 namespace Meridian.Execution.Sdk;
 
 /// <summary>
@@ -240,15 +242,6 @@ public sealed class OrderSubmissionAuthority
             ReadMetadata(legacyMetadata, "sessionId"),
             releasedFrom: null);
     }
-
-    private static string RequireText(string? value, string parameterName)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(value, parameterName);
-        return value.Trim();
-    }
-
-    private static string? NormalizeOptional(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static void RequireGrantFor(ExecutionAccountGrant? grant, string actor, string parameterName)
     {
