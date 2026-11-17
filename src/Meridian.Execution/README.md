@@ -233,6 +233,8 @@ passing the OMS instance as a general callback target.
 | `AccountingHandoffCoordinator` | Publisher scope checks, durable accounting acceptance, independent fallback retention, and retained-handoff replay. The lifecycle coordinator starts and drains replay. |
 | `ExecutionReportHub`, `ExecutionFailureState` | Authoritative subscriber delivery and recovery, the best-effort observer channel, and the first terminal consumer failure shared with operation admission. The lifecycle coordinator controls registration closure and shutdown ordering. |
 | `OrderAuditMetadata`, `OrderExecutionAudit` | Audit metadata construction and lifecycle/unresolved-fill evidence from explicit snapshots. Command decisions and their audit timing stay with their callers. |
+| `OrderAuthorityResolver`, `OrderAuthorityMetadata` | Typed order authority at preflight and at dispatch, and binding the authority's identity into order metadata. The facade decides when each check runs and settles reservations on refusal. |
+| `OrderManagementSystemFactory` | The single OMS composition from a service provider, for both hosts. |
 
 `OrderExecutionAudit` sanitizes order IDs in diagnostic logs while retaining the original IDs in durable audit records.
 
@@ -241,38 +243,6 @@ hosts use it: `AddBrokerageExecution` with `OrderManagementSystemComposition.Bro
 (risk validator, portfolio state, and options optional; no paper-session persistence) and the
 workstation `UiServer` with `HostedWorkstation` (all three required; paper-session persistence
 wired). New OMS dependencies are wired there once.
-
-Order authority (governed order command boundary,
-`docs/engineering/blueprints/governed-order-command-boundary-blueprint.md`):
-`OrderManagementSystem.SubmitAsync(OrderSubmitCommand)` submits under a typed, server-built
-`OrderSubmissionAuthority`. `OrderAuthorityMetadata.Bind` replaces any caller identity metadata with
-the authority's identity before admission. `OrderAuthorityResolver` runs at the position the live
-readiness gate held in preflight, so other refusals keep their order. It refuses kill-switch
-authority on submit, requires a fresh account grant for the order's account, refuses manual live
-orders (`MANUAL_LIVE_INTENT_CONTRACT_NOT_REVIEWED`) until a reviewed manual-intent contract exists,
-and binds live strategy orders to an active, live-promoted run through `IStrategyRunAuthoritySource`
-before readiness. A release is judged by the authority it was parked with. `PlaceOrderAsync` is the
-legacy, unattributed path: it still routes paper orders unchanged, but a live order submitted
-through it is refused (`ORDER_ORIGIN_UNATTRIBUTED_LIVE`) before readiness is consulted, because
-every production caller submits live orders under typed authority. Live position actions are
-refused as manual live orders; broker-reported position metadata never confers run authority. Security Master remains in `OrderAdmissionPolicy` after
-operator controls at preflight.
-
-Callers submit typed commands: the order ticket and position actions when the operator is verified
-for the named account (accountless operator orders stay untyped and are refused live), the risk
-escalation release under the authority retained with the parked entry
-(`RiskEscalationEntry.Authority`), and `LiveStrategyRunSession` under the run's retained fund
-account. After risk validation and before the dispatch lease, `EvaluateDispatchAsync` rechecks
-typed authority (grant age; run binding and readiness for live strategy orders; Security Master)
-so authority withdrawn while an order waited cannot route; a refusal releases risk reservations and
-consumed approvals like an operator-control refusal. Typed authority is retained on journal intents
-(`ExecutionJournalEntry.Authority`) and in `OrderSubmitted` audit metadata (`orderOrigin`,
-`accountGrant`, `accountGrantSource`, `releasedFromOrigin`). On a typed release, `actor` is the
-approver and `riskSubmitter` the original submitter, as on the untyped release path. `OrderState.Origin`
-records who originated each order created by submission (refused and parked orders included), and
-`OrderResult.AuthorityDecision` reports the authority outcome to the caller: refusals by order
-authority with their checkpoint (`preflight` or `dispatch`) and reason code, and admitted typed
-submissions.
 
 The shared broker-report gate still serializes live callbacks, explicit recovery, amendment
 resolution, and retention. Amendment preparation keeps original/proposed snapshot identity and
@@ -289,6 +259,64 @@ These boundaries preserve public APIs, durable recovery formats, order and fill 
 comparison rules, and lock ordering. Command/risk/amendment coordination still spans the facade
 and its collaborators; the extraction does not move the whole order state machine into one new
 service.
+
+### Order authority
+
+Design: `docs/engineering/blueprints/governed-order-command-boundary-blueprint.md` (`W13-OMS-001`).
+
+`OrderManagementSystem.SubmitAsync(OrderSubmitCommand)` submits an order under a typed,
+server-built `OrderSubmissionAuthority`. The authority can only be built through validating
+factories in `Meridian.Execution.Sdk`. Before admission, `OrderAuthorityMetadata.Bind` strips any
+identity the caller put in metadata (`actor`, `runId`, `correlationId`, `sessionId`, `orderOrigin`,
+`riskSubmitter` and their aliases) and stamps the authority's identity instead.
+
+| Origin | Built by | Live behavior |
+| --- | --- | --- |
+| `OperatorTicket` | Order ticket endpoint, after verifying the operator's access to the named account | Refused (`MANUAL_LIVE_INTENT_CONTRACT_NOT_REVIEWED`) until a reviewed manual-intent contract exists |
+| `PositionAction` | Position close and upsize endpoints, same account check | Refused as a manual live order. Broker-reported position metadata never grants run authority |
+| `StrategyRun` | `LiveStrategyRunSession`, using the run's retained fund account | Routes only for an active, live-promoted run whose artifact matches, and then only if readiness approves |
+| `EscalationRelease` | Risk escalation release, from the authority retained with the parked entry (`RiskEscalationEntry.Authority`) | Judged by the parked authority |
+| `KillSwitch` | Kill-switch sweep | Cancel-only; any submit is refused (`KILL_SWITCH_SUBMIT_NOT_ALLOWED`) |
+| `Unattributed` | Legacy `PlaceOrderAsync`, and operator orders that name no account | Paper routes unchanged. Live is refused before readiness (`ORDER_ORIGIN_UNATTRIBUTED_LIVE`) |
+
+`OrderAuthorityResolver` runs at two checkpoints:
+
+- **Preflight.** It runs where the live readiness gate used to run, so every other gate keeps its
+  refusal order. It checks the account grant (`ACCOUNT_GRANT_MISSING`, `_MISMATCH`, `_STALE`
+  against `OrderAuthorityOptions.MaxGrantAge`, 8 hours by default). Then, through
+  `IStrategyRunAuthoritySource`, it checks the run binding for live strategy orders
+  (`RUN_NOT_FOUND`, `RUN_NOT_ACTIVE`, `RUN_NOT_PROMOTED_TARGET`, `RUN_ARTIFACT_MISMATCH`), and
+  finally readiness (`LIVE_ORDER_READINESS_REJECTED`). If the source cannot answer, the result is
+  `AUTHORITY_SOURCE_UNAVAILABLE`. Security Master stays in `OrderAdmissionPolicy`, after operator
+  controls.
+- **Dispatch.** This runs after risk validation and before the dispatch lease, so authority lookups
+  never lengthen the window a kill-switch sweep waits on. For typed authority it rechecks grant age,
+  the run binding and readiness for live strategy orders (`READINESS_CHANGED_BEFORE_DISPATCH`), and
+  Security Master (`SECURITY_MASTER_REJECTED_AT_DISPATCH`). A refusal releases risk reservations and
+  consumed approvals, the same way an operator-control refusal does. Untyped orders have no dispatch
+  recheck.
+
+Retention and reporting:
+
+- Typed authority is retained on journal intents (`ExecutionJournalEntry.Authority`) and in
+  `OrderSubmitted` audit metadata (`orderOrigin`, `accountGrant`, `accountGrantSource`,
+  `releasedFromOrigin`). Untyped records are unchanged.
+- On a typed release, `actor` is the approver and `riskSubmitter` is the original submitter, as on
+  the untyped release path.
+- `OrderState.Origin` records who originated each order created by submission, including refused and
+  parked orders.
+- `OrderResult.AuthorityDecision` reports refusals by order authority, with their checkpoint
+  (`preflight` or `dispatch`) and reason code. It also reports admitted typed submissions.
+- The workstation trading payload exposes origin on working orders, plus `ManualOrderEntry`. The
+  browser ticket uses `ManualOrderEntry` to disable manual entry on a live path.
+
+Open owner decisions are in the blueprint's Open Questions:
+
+- the manual-intent contract;
+- live position closes;
+- whether a paused run keeps authority;
+- whether every operator order must name an account;
+- whether untyped *paper* orders should also be refused.
 
 ## Important workflows
 
@@ -715,6 +743,7 @@ See `DIA-PAPER-SESSION-REPLAY` in `docs/source/data/diagram-index.yml`.
 dotnet test tests/Meridian.Execution.Tests/Meridian.Execution.Tests.csproj --filter "FullyQualifiedName~PaperTradingGatewayTests|FullyQualifiedName~PaperTradingPortfolioBasisParityTests|FullyQualifiedName~PaperTradingPortfolioAccountingEvidenceTests|FullyQualifiedName~OrderFillProcessorTests|FullyQualifiedName~TradeFillAccountingEvidencePersistenceTests" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Execution.Tests/Meridian.Execution.Tests.csproj --filter "FullyQualifiedName~ExecutionWorkflowTests|FullyQualifiedName~ExecutionJournalAttemptTests" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests|FullyQualifiedName~TradeFillLedgerPostingHostCompositionTests|FullyQualifiedName~EquityOrderSessionPolicyTests" --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~OrderAuthority|FullyQualifiedName~OrderSubmissionAuthority|FullyQualifiedName~OrderManagementSystemTypedSubmit|FullyQualifiedName~OrderManagementSystemFactory|FullyQualifiedName~ExecutionOrderMetadataPolicy|FullyQualifiedName~RiskEscalationAuthorityRetention|FullyQualifiedName~StrategyRunAuthoritySource|FullyQualifiedName~WorkstationManualOrderEntry|FullyQualifiedName~ExecutionGovernance|FullyQualifiedName~RiskEndpoints" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
 ```
 

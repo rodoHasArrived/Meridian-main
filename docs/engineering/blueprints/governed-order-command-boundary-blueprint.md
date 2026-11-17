@@ -1,6 +1,6 @@
 # Blueprint — Governed Order Command Boundary (Typed Authority, Rechecked at Dispatch)
 
-**Status:** draft
+**Status:** implemented on source branch (Phases 0–5); owner decisions remain open (Open Questions 1, 2, 5, 6 and the untyped-paper option)
 **Owner:** Execution and Fund Accounts lane
 **Reviewed:** 2026-11-17
 **Depth mode:** full
@@ -14,7 +14,10 @@ blocks dispatch."
 **Builds on, does not replace:** [Risk Engine: Severity-Aware Evaluation and Pre-Trade Decision Journal](risk-engine-severity-and-decision-journal-blueprint.md).
 
 > This document is a design. It grants no roadmap acceptance, authorizes no live orders, and changes no
-> `W13-OMS-001` status. Line references were checked against source on 2026-11-17.
+> `W13-OMS-001` status. Line references were checked against source on 2026-11-17, before
+> implementation; they describe the code this design replaced. The Implementation Checklist records
+> what shipped, and `src/Meridian.Execution/README.md` ("Order authority") describes the current
+> behavior.
 
 ---
 
@@ -587,8 +590,11 @@ between preflight and dispatch using the same hook pattern as the existing opera
 - [ ] Recording kill-switch authority on the cancel-all sweep (carried from Phase 3). Cancels are never refused on authority, and the sweep's audit already names its actor, so this stays open as an audit enhancement.
 
 ### Phase 5: Wrap-up
-- [ ] Update `src/Meridian.Execution/README.md` (authority section), `docs/architecture/write-path-invariants.md` if it lists OMS invariants, and register this blueprint in `docs/engineering/blueprints/README.md`
-- [ ] Targeted validation: `dotnet test tests/Meridian.Execution.Tests`, `--filter "FullyQualifiedName~Risk|FullyQualifiedName~ExecutionGovernance"` in `tests/Meridian.Tests`, and `npm --prefix src/Meridian.Ui/dashboard run test`
+- [x] `src/Meridian.Execution/README.md` has an "Order authority" section. It covers the origins and their live behavior, both resolver checkpoints with their reason codes, retention and reporting, and the open owner decisions. The OMS ownership table now lists `OrderAuthorityResolver`, `OrderAuthorityMetadata` and `OrderManagementSystemFactory`. The Validation block has a command for the authority suites.
+- [x] `docs/architecture/write-path-invariants.md` was checked. It lists persistence invariants for fund, account, lending, banking and MMF writes, and no OMS invariants, so it is unchanged.
+- [x] This blueprint is registered in `docs/engineering/blueprints/README.md`; its row now records the implemented status.
+- [x] Targeted validation: `dotnet test tests/Meridian.Execution.Tests`, `--filter "FullyQualifiedName~Risk|FullyQualifiedName~ExecutionGovernance"` in `tests/Meridian.Tests`, and `npm --prefix src/Meridian.Ui/dashboard run test`. That filter misses most of the authority suites, which live under `Meridian.Tests/Execution`, so they also ran through the README's authority filter. Results are in the PR.
+- [ ] Separate AI critique before merge (see Review above). The developer owns acceptance.
 
 ---
 
@@ -609,6 +615,6 @@ between preflight and dispatch using the same hook pattern as the existing opera
 | --- | --- | --- | --- |
 | Phase 0 breaks an undiscovered automation that sends `runId` | Medium | Low | Search first; the 403 message names the server-owned key |
 | Moving readiness and Security Master changes the refusal order seen by tests | Medium | Medium | Keep the call at the same position in the preflight sequence; existing `OrderAdmissionPolicyTests` are the guard |
-| Dispatch recheck adds latency inside the dispatch lease | Low | Medium | Version short-circuit; measure with the existing OMS benchmarks before and after |
+| Dispatch recheck adds latency inside the dispatch lease | Low | Medium | Delivered: the recheck runs before the lease is taken, so it adds per-order latency but never lengthens a kill-switch sweep's wait. The version short-circuit (Open Question 4) and a benchmark comparison are not done |
 | Legacy parked escalations (no authority) become unreleasable in Live | Low | Medium | They release as `Unattributed` and are refused with an explicit reason; the operator re-submits under a typed path |
 | Fail-closed manual live is read as a regression | Medium | Low | It is called out in the Breaking Change table and in the UI reason text; no supported manual live path exists today without borrowing a run id |
