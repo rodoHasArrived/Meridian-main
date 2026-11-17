@@ -384,7 +384,22 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
             // age out, a run can end, readiness can be withdrawn, or an instrument suspended.
             // Placed before the lease so authority lookups never extend the window a kill-switch
             // sweep waits on; the operator-control recheck below still runs after the lease.
-            if (await _admissionPolicy.EvaluateDispatchAuthorityAsync(prepared, ct).ConfigureAwait(false) is { } authorityRefusal)
+            OrderAdmissionRefusal? authorityRefusal;
+            try
+            {
+                authorityRefusal = await _admissionPolicy.EvaluateDispatchAuthorityAsync(prepared, ct).ConfigureAwait(false);
+            }
+            catch
+            {
+                // The recheck reads readiness and Security Master and honors cancellation, so it
+                // can throw after risk validation consumed a release approval. Nothing has been
+                // dispatched, so re-arm the approval as a refusal would; the catch below rolls
+                // back the risk reservations.
+                RestoreConsumedApprovals(consumedApprovalId, "the order authority recheck failed before dispatch", orderId);
+                throw;
+            }
+
+            if (authorityRefusal is not null)
             {
                 SettleRiskReservations(riskDecision, commit: false, orderId);
                 RestoreConsumedApprovals(consumedApprovalId, "order authority withdrawn before dispatch", orderId);

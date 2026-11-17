@@ -3,7 +3,9 @@ using Meridian.Execution;
 using Meridian.Execution.OrderManagement;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
+using Meridian.Tests.TestHelpers;
 using Microsoft.Extensions.Logging.Abstractions;
+using NSubstitute;
 using Xunit;
 
 using ExecutionGateway = Meridian.Execution.PaperTradingGateway;
@@ -97,6 +99,50 @@ public sealed class OrderManagementSystemTypedSubmitTests : IDisposable
         result.AuthorityDecision.ReasonCode.Should().Be(OrderAuthorityReasonCodes.AccountGrantMismatch);
         result.AuthorityDecision.Origin.Should().Be(OrderCommandOrigin.OperatorTicket);
         result.OrderState!.Origin.Should().Be(OrderCommandOrigin.OperatorTicket);
+    }
+
+    [Fact]
+    public async Task SubmitAsync_DispatchRecheckThrows_RearmsTheConsumedApproval()
+    {
+        var queue = new RiskEscalationQueueService(
+            NullLogger<RiskEscalationQueueService>.Instance,
+            options: new RiskEscalationQueueOptions(
+                Path.Combine(Path.GetTempPath(), "Meridian.Tests", $"escalations-{Guid.NewGuid():N}", "escalations.json")));
+        var parked = queue.Park(LimitOrder(), "above band");
+        queue.Approve(parked.EscalationId, actor: "risk-desk");
+        var releaseRequest = LimitOrder() with
+        {
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [RiskEscalationQueueService.ApprovalMetadataKey] = parked.EscalationId
+            }
+        };
+        queue.TryConsumeApproval(releaseRequest).Should().NotBeNull();
+
+        var riskValidator = RiskValidatorSubstitute.Create();
+        riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(RiskValidationResult.Approved() with { ConsumedApprovalId = parked.EscalationId });
+
+        // Security Master answers at preflight, then its lookup fails during the dispatch recheck.
+        var securityMaster = Substitute.For<ISecurityMasterGate>();
+        securityMaster.CheckAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(
+                _ => Task.FromResult(new SecurityMasterGateResult(true)),
+                _ => throw new TimeoutException("security master lookup timed out"));
+
+        using var oms = new OrderManagementSystem(
+            new ExecutionGateway(NullLogger<ExecutionGateway>.Instance),
+            NullLogger<OrderManagementSystem>.Instance,
+            riskValidator: riskValidator,
+            securityMasterGate: securityMaster,
+            escalationQueue: queue);
+        await oms.StartAsync();
+
+        var submit = () => oms.SubmitAsync(new OrderSubmitCommand(LimitOrder() with { ClientOrderId = "recheck-fault" }, Ticket()));
+
+        await submit.Should().ThrowAsync<TimeoutException>();
+        queue.TryConsumeApproval(releaseRequest).Should().NotBeNull(
+            "nothing was dispatched, so a failed authority recheck must not spend the desk's one-shot approval");
     }
 
     [Fact]
