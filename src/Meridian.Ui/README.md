@@ -106,6 +106,8 @@ view. The shared inbox filters by owner (Everyone, Mine, Unassigned) and adds ac
 snooze keys and bulk actions beside assign, and Today's provider items open that provider's retained
 verification history. Trial balance compares closing balances against the prior close through the
 posted-period comparison's ClosingBalances measure.
+Close Cockpit lays the close plan's tasks out by due day after period end, with owners, blockers and
+dependencies; it uses the existing close-plan contract unchanged.
 
 The host-served bundle carries the design-system consolidation. It includes one status
 component; one formatting module (year-bearing UTC timestamps; accounting negatives in

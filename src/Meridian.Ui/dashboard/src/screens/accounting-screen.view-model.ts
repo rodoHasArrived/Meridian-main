@@ -1,3 +1,4 @@
+import type { CloseBoardViewModel } from "@/lib/close-board";
 import {
   getReconciliationBreakQueue,
   getReconciliationCalibrationSummary,
@@ -2271,6 +2272,8 @@ export interface AccountingCloseWorkflowStepViewModel {
 }
 
 export interface AccountingCloseReportPackageViewModel {
+  /** The close plan's tasks by due day relative to period end; null without a loaded plan or tasks. */
+  closeBoard?: CloseBoardViewModel | null;
   title: string;
   description: string;
   ariaLabel: string;

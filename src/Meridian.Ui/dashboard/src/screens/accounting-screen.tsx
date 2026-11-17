@@ -1,3 +1,4 @@
+import { CloseBoard } from "@/components/meridian/close-board";
 import { BookCheck, Landmark, Network, RefreshCcw, Search, ShieldCheck, WalletCards } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -825,6 +826,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
           />
           {/* The queue leads; current checklist progress follows it in view rather than collapsed. */}
           {closeWorkflow?.closeChecklist ? <CloseChecklistProgressChart tasks={closeWorkflow.closeChecklist} /> : null}
+          {closeReportPackage.closeBoard ? <CloseBoard board={closeReportPackage.closeBoard} /> : null}
           <PrepareNextPeriodPanel initialWorkflowId={closeWorkflow?.workflowId} />
           {closeWorkflow ? <CloseChecklistHistoryChart workflowId={closeWorkflow.workflowId} workflowVersion={closeWorkflow.version} /> : null}
           <TechnicalDetails label="System details" className="panel-surface">

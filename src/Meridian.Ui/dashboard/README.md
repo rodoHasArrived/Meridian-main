@@ -1412,6 +1412,11 @@ period" (movements, matching the per-period trial balance on that screen) and "C
 prior close" (`measure="ClosingBalances"`, cumulative balances against the prior period's full close).
 The client and panel refuse a response whose `measure` differs from the request, so movements are
 never shown under a balance heading.
+Close Cockpit shows a close board (`src/lib/close-board.ts`, `CloseBoard`) built from the loaded
+close plan's own tasks: columns are calendar days after the period end (T+0), and each card shows
+the task's owner, status, blocker and dependencies by name, with met dependencies struck through.
+A task is overdue only when its due date has passed and it is not signed off; a task without a
+calendar due date is listed separately, never placed on a guessed day. No plan, no board.
 The Data overview's provider verification history is linkable: `?verificationConnection=`
 selects an exact connection and `?providerFamily=` its family's first connection (matched on
 `providerFamilyId`, never on display names; otherwise the first loaded connection), anchored at

@@ -277,7 +277,8 @@ connection or provider family, and Today's degraded-provider items open it. Tria
 "Compare prior period" is now "Closing balances vs prior close": the posted-period comparison gained a
 `ClosingBalances` measure that accumulates every posting through each period end (2026-11-17). Note
 that the Trial balance table itself reports the selected period's posted activity, not cumulative
-balances. A day-by-day close board still needs task due offsets and dependencies.
+balances. The day-by-day close board needed no contract change: `CloseTaskDto` already carries due
+dates, owners and dependencies, and Close Cockpit now lays them out by day after period end.
 
 #### C4 🔴 Speak operator language, not system language (follows the 11-10 copy pass)
 
