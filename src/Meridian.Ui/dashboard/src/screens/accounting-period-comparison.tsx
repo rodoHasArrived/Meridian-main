@@ -7,7 +7,12 @@ import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { TableWorkbench } from "@/components/meridian/table-workbench";
 import { formatTaxDecimal } from "@/lib/ledger-tax-results-format";
-import { getPostedPeriodComparison, type PostedComparisonQuery, type PostedPeriodComparison } from "@/lib/posted-period-comparison-api";
+import { getPostedPeriodComparison, type PostedComparisonLine, type PostedComparisonQuery, type PostedPeriodComparison } from "@/lib/posted-period-comparison-api";
+import { varianceColumns } from "@/components/meridian/variance-columns";
+import { defaultMaterialityPolicyForClass } from "@/lib/reporting-materiality";
+import { formatCurrency } from "@/lib/format";
+
+const COMPARISON_MATERIALITY = defaultMaterialityPolicyForClass("Accounting");
 import type { ApiRequestOptions } from "@/lib/api";
 
 type ComparisonService = (query: PostedComparisonQuery, options?: ApiRequestOptions) => Promise<PostedPeriodComparison>;
@@ -90,10 +95,15 @@ export function AccountingPeriodComparison({ bookId, periodId, expectedBasis, en
               columns={[
                 { id: "account", label: "Account", render: (line) => line.accountName, exportValue: (line) => line.accountName },
                 { id: "current", label: `Current movement · ${result.currency}`, align: "right", className: "tabular-nums", render: (line) => accountingDecimal(line.currentBalance), exportType: "decimal", exportValue: (line) => line.currentBalance },
-                { id: "prior", label: `Prior movement · ${result.currency}`, align: "right", className: "tabular-nums", render: (line) => accountingDecimal(line.priorBalance), exportType: "decimal", exportValue: (line) => line.priorBalance },
-                { id: "change", label: `Change · ${result.currency}`, align: "right", className: "tabular-nums", render: (line) => accountingDecimal(line.change), exportType: "decimal", exportValue: (line) => line.change },
-                { id: "percent", label: "Change %", align: "right", className: "tabular-nums", render: (line) => line.percentChange === null ? "Not comparable · prior zero" : `${formatTaxDecimal(line.percentChange)}%`, exportType: "decimal", exportValue: (line) => line.percentChange }
+                // Prior, variance and variance % from the server, flagged against the Accounting
+                // materiality policy (UX Phase E).
+                ...varianceColumns<PostedComparisonLine>({
+                  prior: (line) => line.priorBalance, change: (line) => line.change, percent: (line) => line.percentChange,
+                  formatAmount: accountingDecimal, formatPercent: (value) => `${formatTaxDecimal(value)}%`,
+                  unit: result.currency, priorLabel: "Prior movement", policy: COMPARISON_MATERIALITY
+                })
               ]} />
+            <p className="text-xs text-muted-foreground">Variances over {formatCurrency(COMPARISON_MATERIALITY.absoluteVariance ?? 0, { maximumFractionDigits: 0 })} are marked Material (Accounting materiality policy).</p>
             <TechnicalDetails label="Comparison source cut">
               <dl className="space-y-2 text-xs">
                 <div><dt>Population fingerprint</dt><dd className="break-all font-mono">{result.populationHash}</dd></div>
