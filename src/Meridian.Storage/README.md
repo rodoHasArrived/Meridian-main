@@ -72,7 +72,7 @@ PostgreSQL supplies authority leases through financial commit; file stores provi
 parity without a production or cross-process fencing claim. Migration keeps old journal/evidence
 bytes and refuses unresolved history. See [the operator procedure](../../docs/operators/intercompany-entity-controls.md).
 
-`PostgresIntercompanyAccrualScheduleStore` (ledger migration `074`, rewrite and truncate refused) and
+`PostgresIntercompanyAccrualScheduleStore` (ledger migration `075`, rewrite and truncate refused) and
 `FileIntercompanyAccrualScheduleStore` retain accrual-schedule versions append-only and tenant-scoped. See
 [opt-in accrual schedules](../../docs/domain/intercompany-agreements.md#opt-in-accrual-schedules).
 

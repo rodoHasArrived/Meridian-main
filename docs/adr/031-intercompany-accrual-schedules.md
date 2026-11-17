@@ -21,7 +21,7 @@ Meridian drafts governed loan-interest accruals on a schedule **only** where a r
 
 1. **A schedule is reviewed configuration.** It names one ledger book, one approved `LoanInterest` profile and its
    loan principal profile. One operator proposes it with a reason; someone else approves it. It can be rejected
-   or, once active, disabled, each with a reason. Versions are append-only (ledger migration `074`, or an atomic
+   or, once active, disabled, each with a reason. Versions are append-only (ledger migration `075`, or an atomic
    file store), and there is at most one proposed or active schedule per book and profile.
 2. **A run drafts, nothing more.** For each completed period of the loan's declared schedule that ends on or after
    the approval date, a run previews and drafts through exactly the path an operator uses, binding the draft to
@@ -40,7 +40,7 @@ Meridian drafts governed loan-interest accruals on a schedule **only** where a r
 |-----------|----------|---------|
 | Contracts | `src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs` | Schedule, requests, run result and store interface |
 | Rules | `src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualScheduleRules.cs` | Maker-checker transitions |
-| Stores | `src/Meridian.Storage/Ledger/PostgresIntercompanyAccrualScheduleStore.cs`, `FileIntercompanyAccrualScheduleStore.cs`, `Migrations/V_ledger_074__intercompany_accrual_schedules.sql` | Append-only versions |
+| Stores | `src/Meridian.Storage/Ledger/PostgresIntercompanyAccrualScheduleStore.cs`, `FileIntercompanyAccrualScheduleStore.cs`, `Migrations/V_ledger_075__intercompany_accrual_schedules.sql` | Append-only versions |
 | Service and runner | `src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleService.cs`, `IntercompanyAccrualScheduleRunner.cs` | Due periods, runs, background schedule |
 | Routes | `src/Meridian.Ui.Shared/Endpoints/IntercompanyAccrualScheduleEndpoints.cs` | `/api/ledger/intercompany/accrual-schedules` |
 | Surfaces | Browser Accrual schedules tab; WPF Accrual schedules tab | Propose, review, preview due periods, run now |

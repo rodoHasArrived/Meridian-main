@@ -6,7 +6,7 @@ using Meridian.Tests.TestSupport;
 
 namespace Meridian.Tests.Storage;
 
-/// <summary>Maker-checker schedule rules plus the same append-only contract over the file store and PostgreSQL (ledger migration 074).</summary>
+/// <summary>Maker-checker schedule rules plus the same append-only contract over the file store and PostgreSQL (ledger migration 075).</summary>
 public sealed class IntercompanyAccrualScheduleRulesTests
 {
     private static readonly DateTimeOffset At = new(2026, 7, 2, 9, 0, 0, TimeSpan.Zero);
