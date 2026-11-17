@@ -10326,6 +10326,7 @@ Meridian-main
 │   │   │   │   │   ├── strategy-designer-screen.tsx
 │   │   │   │   │   ├── strategy-designer-screen.view-model.test.ts
 │   │   │   │   │   ├── strategy-designer-screen.view-model.ts
+│   │   │   │   │   ├── strategy-overview-hub.test.ts
 │   │   │   │   │   ├── strategy-overview-hub.tsx
 │   │   │   │   │   ├── strategy-run-ledger-screen.test.tsx
 │   │   │   │   │   ├── strategy-run-ledger-screen.tsx

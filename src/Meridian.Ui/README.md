@@ -97,7 +97,9 @@ detail. Reconciliation commands and approvals remain owned by the existing share
 The host-served bundle carries the shell hierarchy pass: a one-row masthead with the environment
 in the trust pill, a provenance banner that becomes a stripe once seen, a two-row workspace header,
 route-first workspace screens with the sidebar as the only sub-navigation, and a pinned Today entry
-with Control Tower attention counts. No shared contract changed.
+with Control Tower attention counts. Accounting's sidebar keeps seven daily-use destinations and
+puts the rest behind "More"; Options screening is a Data sidebar entry, not a Market Data desk
+tab. No shared contract changed.
 
 The host-served bundle carries the design-system consolidation. It includes one status
 component; one formatting module (year-bearing UTC timestamps; accounting negatives in

@@ -1386,6 +1386,10 @@ Reporting queue selection uses `reportingWork` in the URL, preserving other quer
 and the hash. The selected item owns the inspector's evidence and actions. Removed or unknown
 items are explicitly unavailable, and changing financial scope clears the prior selection.
 The shared dense-row keyboard contract supports row selection, detail focus, and return focus.
+`DenseDataTable` marks its scroll viewport `data-overflow-end` while columns are clipped on the
+right and fades that edge, so wide tables show that more columns sit beyond the visible ones.
+Ledger Explorer nests posting lines under their journal (no date of their own, the journal's
+entity not repeated) and counts entries and posting lines separately.
 
 `src/lib/workstation-features.ts` supplies wired browser destinations to both sidebar navigation
 and local command search. Purpose descriptions and search-only aliases expose intents such as
@@ -1455,7 +1459,12 @@ Rules worth knowing when adding a signal:
 
 Workspace routes open on their own job: the route heading leads, the workspace KPI strip follows it,
 and the sidebar is the only sub-route navigation (Trading, Portfolio, Strategy and Data no longer
-repeat it as an in-page tab strip; Data's Backfill queue has its own sidebar entry). Off the Trading
+repeat it as an in-page tab strip; Data's Backfill queue has its own sidebar entry, and Options
+screening is a sidebar entry rather than a Market Data desk tab: `?view=options` renders it alone and
+the sidebar, heading and breadcrumb name that view). Accounting's sidebar lists the seven
+`primary` destinations in `src/lib/accounting-navigation.ts`; the rest sit behind a "More"
+disclosure that opens itself when the current page is one of them, and every destination stays in
+command search. Off the Trading
 overview the brokerage recovery panel is one blocked-state row with a Review link to the full panel,
 and nothing once evidence reconciles. With no fund account in scope and a brokerage environment that
 is known and not live, the panel and row are a neutral setup state with a "Choose account" action;
