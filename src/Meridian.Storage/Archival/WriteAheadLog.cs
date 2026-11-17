@@ -154,8 +154,10 @@ public sealed class WriteAheadLog : IAsyncDisposable
         long totalRecoveredEvents = 0;
 
         // Find and recover any existing WAL files
+        // Ordinal, like every other segment listing: a culture-aware sort can order segment
+        // names differently on another host and replay records out of sequence.
         var walFiles = Directory.GetFiles(_walDirectory, "*.wal")
-            .OrderBy(f => f)
+            .OrderBy(f => f, StringComparer.Ordinal)
             .ToList();
 
         if (walFiles.Count > 0)
@@ -222,6 +224,19 @@ public sealed class WriteAheadLog : IAsyncDisposable
 
     private async Task<WalRecord> AppendSerializedPayloadAsync(string payload, string recordType, CancellationToken ct)
     {
+        // Records are stored one per line as pipe-separated fields; the record type is a middle
+        // field and the payload the last. A separator or line break there would be written but
+        // could never be parsed back on recovery, so refuse it before it is acknowledged.
+        if (recordType.AsSpan().IndexOfAny('|', '\r', '\n') >= 0)
+        {
+            throw new ArgumentException("A WAL record type cannot contain '|' or a line break.", nameof(recordType));
+        }
+
+        if (payload.AsSpan().IndexOfAny('\r', '\n') >= 0)
+        {
+            throw new ArgumentException("A WAL payload cannot contain a raw line break.", nameof(payload));
+        }
+
         await _writeLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
@@ -1236,10 +1251,25 @@ public sealed class WriteAheadLog : IAsyncDisposable
     /// </summary>
     public async Task<WalRepairResult> RepairAsync(CancellationToken ct = default)
     {
+        // Truncation deletes and rewrites committed segments. Rewriting a segment while a
+        // truncation runs could restore records it has just removed, so they would replay.
+        await _truncateLock.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            return await RepairCoreAsync(ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            _truncateLock.Release();
+        }
+    }
+
+    private async Task<WalRepairResult> RepairCoreAsync(CancellationToken ct)
+    {
         _log.Information("Starting WAL repair in {WalDirectory}", _walDirectory);
 
         var walFiles = Directory.GetFiles(_walDirectory, "*.wal")
-            .OrderBy(f => f)
+            .OrderBy(f => f, StringComparer.Ordinal)
             .ToList();
 
         int totalRecords = 0;

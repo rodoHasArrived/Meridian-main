@@ -104,7 +104,7 @@ public static class IntercompanyAccrualSourceBuilder
             if (balance < 0m)
                 return Refuse($"Posted principal is negative on {start:yyyy-MM-dd}; resolve the principal balance before accruing interest.");
             segments.Add(new(start, boundaries[index + 1], balance,
-                $"ledger-principal:{sourceBookId:D}:{arrangement}:{start:yyyy-MM-dd}"));
+                FormattableString.Invariant($"ledger-principal:{sourceBookId:D}:{arrangement}:{start:yyyy-MM-dd}")));
         }
         var openingDigest = Sha256Digest.ComputeUtf8(string.Join("\n", opening.Select(item =>
             FormattableString.Invariant($"{item.JournalEntryId:D}:{item.EffectiveDate:yyyy-MM-dd}:{item.SignedAmount}"))));
@@ -202,7 +202,8 @@ public static class IntercompanyAccrualSourceBuilder
     public static Guid DraftId(string tenantId, IntercompanyAccrualRequestDto request, int generation = 0)
         => new(Sha256Digest.ComputeBytesUtf8(string.Join(":", IntercompanyAccrualRules.RuleVersion, tenantId,
             request.InterestArrangementId.ToString("D"), request.SourceBookId.ToString("D"),
-            request.AccrualFrom.ToString("yyyyMMdd"), request.AccrualTo.ToString("yyyyMMdd"))
+            request.AccrualFrom.ToString("yyyyMMdd", System.Globalization.CultureInfo.InvariantCulture),
+            request.AccrualTo.ToString("yyyyMMdd", System.Globalization.CultureInfo.InvariantCulture))
             + (generation == 0 ? string.Empty : FormattableString.Invariant($":g{generation}"))).AsSpan(0, 16));
 
     /// <summary>
@@ -308,8 +309,8 @@ public static class IntercompanyAccrualSourceBuilder
         var digest = IntercompanyAccrualEvidenceGuard.Digest(evidenceJson);
         var versions = string.Join(", ", computation.Slices.Select(slice => slice.AgreementVersion).Distinct().Order()
             .Select(version => "v" + version.ToString(System.Globalization.CultureInfo.InvariantCulture)));
-        var memo = new StringBuilder("Loan interest accrual ").Append(request.AccrualFrom.ToString("yyyy-MM-dd"))
-            .Append(" to ").Append(postingDate.ToString("yyyy-MM-dd")).Append(" under agreement ").Append(versions).ToString();
+        var memo = new StringBuilder("Loan interest accrual ").Append(request.AccrualFrom.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture))
+            .Append(" to ").Append(postingDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)).Append(" under agreement ").Append(versions).ToString();
         var links = new List<string>
         {
             $"accounting-arrangement:{posting.ArrangementId:D}/revision:{posting.RevisionId:D}",
