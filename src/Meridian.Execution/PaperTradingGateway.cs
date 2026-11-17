@@ -256,9 +256,17 @@ public sealed class PaperTradingGateway :
             request.Side, request.Type, request.LimitPrice, request.StopPrice,
             stopAlreadyTriggered: false, initialObservation);
 
+        // The order is already visible to the background evaluator and to CancelOrderAsync,
+        // so every terminal outcome decided here must claim it through TryCompleteResting.
+        // If another path claimed it first, that path owns the terminal report (a fill on
+        // the resting stream or the cancel result); report the order as accepted only.
         if (initialMatch.Outcome is PaperMatchOutcome.Filled)
         {
-            _restingOrders.TryRemove(orderId, out _);
+            if (!TryCompleteResting(orderId, out _))
+            {
+                return BuildAcceptedReport(request, orderId, gatewayOrderId);
+            }
+
             return await BuildFillReportAsync(
                 request, orderId, gatewayOrderId, initialMatch.FillPrice!.Value, initialObservation, ct)
                 .ConfigureAwait(false);
@@ -266,17 +274,30 @@ public sealed class PaperTradingGateway :
 
         if (request.TimeInForce is TimeInForce.ImmediateOrCancel or TimeInForce.FillOrKill)
         {
-            _restingOrders.TryRemove(orderId, out _);
+            if (!TryCompleteResting(orderId, out _))
+            {
+                return BuildAcceptedReport(request, orderId, gatewayOrderId);
+            }
+
             return BuildReport(request, orderId, gatewayOrderId, ExecutionReportType.Cancelled,
                 OrderStatus.Cancelled, filledQuantity: 0m, fillPrice: null, costs: null,
                 $"{request.TimeInForce} order was not immediately fillable against observed market data.");
         }
 
-        resting.StopTriggered = initialMatch.StopTriggered;
+        if (initialMatch.StopTriggered)
+        {
+            lock (resting.SyncRoot)
+            {
+                resting.StopTriggered = true;
+            }
+        }
 
-        return BuildReport(request, orderId, gatewayOrderId, ExecutionReportType.New,
-            OrderStatus.Accepted, filledQuantity: 0m, fillPrice: null, costs: null, rejectReason: null);
+        return BuildAcceptedReport(request, orderId, gatewayOrderId);
     }
+
+    private ExecutionReport BuildAcceptedReport(OrderRequest request, string orderId, string gatewayOrderId) =>
+        BuildReport(request, orderId, gatewayOrderId, ExecutionReportType.New,
+            OrderStatus.Accepted, filledQuantity: 0m, fillPrice: null, costs: null, rejectReason: null);
 
     /// <inheritdoc />
     public Task<ExecutionReport> CancelOrderAsync(string orderId, CancellationToken ct = default)

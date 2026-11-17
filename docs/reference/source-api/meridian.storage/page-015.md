@@ -71,7 +71,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Services.TierInfo</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:623](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L623).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:645](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L645).
 
 ```csharp
 public sealed record TierInfo(int FileCount, long TotalBytes, DateTime? OldestFile, DateTime? NewestFile);
@@ -103,7 +103,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Services.TierStatistics</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:618](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L618).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:640](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L640).
 
 ```csharp
 public sealed record TierStatistics(DateTimeOffset GeneratedAt, Dictionary<StorageTier, TierInfo> TierInfo);
@@ -285,7 +285,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Storage.Sinks.ParquetStorageOptions</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:728](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L728).
+Source: [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:732](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L732).
 
 Configuration options for Parquet storage.
 
@@ -297,12 +297,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public int BufferSize { get; init; } = 10000;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:733](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L733) | Number of events to buffer before writing to disk. |
-| <code>public TimeSpan FlushInterval { get; init; } = TimeSpan.FromSeconds(30);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:738](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L738) | Maximum time between flushes. |
-| <code>public CompressionMethod CompressionMethod { get; init; } = CompressionMethod.Snappy;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:743](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L743) | Compression method for Parquet files. |
-| <code>public static ParquetStorageOptions Default =&gt; …;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:745](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L745) |  |
-| <code>public static ParquetStorageOptions HighCompression =&gt; …;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:747](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L747) |  |
-| <code>public static ParquetStorageOptions LowLatency =&gt; …;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:753](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L753) |  |
+| <code>public int BufferSize { get; init; } = 10000;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:737](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L737) | Number of events to buffer before writing to disk. |
+| <code>public TimeSpan FlushInterval { get; init; } = TimeSpan.FromSeconds(30);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:742](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L742) | Maximum time between flushes. |
+| <code>public CompressionMethod CompressionMethod { get; init; } = CompressionMethod.Snappy;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:747](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L747) | Compression method for Parquet files. |
+| <code>public static ParquetStorageOptions Default =&gt; …;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:749](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L749) |  |
+| <code>public static ParquetStorageOptions HighCompression =&gt; …;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:751](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L751) |  |
+| <code>public static ParquetStorageOptions LowLatency =&gt; …;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:757](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L757) |  |
 
 ## ParquetStorageSink
 
@@ -323,7 +323,7 @@ Declared public members:
 | <code>public ParquetStorageSink(StorageOptions options, ParquetStorageOptions? parquetOptions = null, IStoragePolicy? policy = null) : this(options, parquetOptions, WriteAtomicallyAsync, policy);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:106](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L106) |  |
 | <code>public async ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:134](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L134) |  |
 | <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:156](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L156) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:682](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L682) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:686](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L686) |  |
 
 ## SinkHealth
 

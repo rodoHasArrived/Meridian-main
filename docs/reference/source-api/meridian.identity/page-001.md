@@ -799,7 +799,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Identity.PostgresScopedAccessAssignmentStore</code>. Kind: `class`.
 
-Source: [src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs:165](../../../../src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs#L165).
+Source: [src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs:178](../../../../src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs#L178).
 
 Stores scoped access assignments in PostgreSQL using the configured identity schema.
 
@@ -811,12 +811,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public PostgresScopedAccessAssignmentStore(ScopedAccessStoreOptions options);</code> | [src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs:174](../../../../src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs#L174) |  |
-| <code>public Task EnsureMigratedAsync(CancellationToken ct = default);</code> | [src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs:179](../../../../src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs#L179) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;UserAccessAssignmentDto&gt;&gt; ListAsync(CancellationToken ct = default);</code> | [src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs:201](../../../../src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs#L201) |  |
-| <code>public async Task&lt;UserAccessAssignmentDto?&gt; GetAsync(Guid assignmentId, CancellationToken ct = default);</code> | [src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs:216](../../../../src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs#L216) |  |
-| <code>public async Task&lt;UserAccessAssignmentDto&gt; CreateAsync(UserAccessAssignmentDto assignment, CancellationToken ct = default);</code> | [src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs:226](../../../../src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs#L226) |  |
-| <code>public async Task&lt;UserAccessAssignmentDto&gt; ReplaceAsync(UserAccessAssignmentDto assignment, long expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs:241](../../../../src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs#L241) |  |
+| <code>public PostgresScopedAccessAssignmentStore(ScopedAccessStoreOptions options);</code> | [src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs:187](../../../../src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs#L187) |  |
+| <code>public Task EnsureMigratedAsync(CancellationToken ct = default);</code> | [src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs:192](../../../../src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs#L192) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;UserAccessAssignmentDto&gt;&gt; ListAsync(CancellationToken ct = default);</code> | [src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs:214](../../../../src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs#L214) |  |
+| <code>public async Task&lt;UserAccessAssignmentDto?&gt; GetAsync(Guid assignmentId, CancellationToken ct = default);</code> | [src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs:229](../../../../src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs#L229) |  |
+| <code>public async Task&lt;UserAccessAssignmentDto&gt; CreateAsync(UserAccessAssignmentDto assignment, CancellationToken ct = default);</code> | [src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs:239](../../../../src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs#L239) |  |
+| <code>public async Task&lt;UserAccessAssignmentDto&gt; ReplaceAsync(UserAccessAssignmentDto assignment, long expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs:254](../../../../src/Meridian.Identity/Infrastructure/ScopedAccessAssignmentStore.cs#L254) |  |
 
 ## ScopedAccessService
 

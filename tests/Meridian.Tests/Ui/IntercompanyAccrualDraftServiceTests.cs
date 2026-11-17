@@ -40,6 +40,36 @@ public sealed class IntercompanyAccrualDraftServiceTests
     }
 
     [Fact]
+    public async Task AccrualRebook_MustCarryTheInverse_SoTheWindowIsNeverRecognizedTwice()
+    {
+        var posted = (await Service().PreviewAsync("tenant-a", "company-a", "preparer", Request())).Draft!;
+        var rebook = posted with { JournalEntryId = Guid.NewGuid(), RebookedFromJournalEntryId = posted.JournalEntryId };
+        static AccountingTemplateLineSideDto Flip(AccountingTemplateLineSideDto side)
+            => side == AccountingTemplateLineSideDto.Debit ? AccountingTemplateLineSideDto.Credit : AccountingTemplateLineSideDto.Debit;
+
+        // A plain copy of the posted lines under a new id would accrue the window again.
+        Assert.NotNull(IntercompanyAccrualEvidenceGuard.Validate(rebook));
+
+        // Changed amounts under the trusted evidence are refused too: amounts come from recomputation.
+        var inverse = posted.Lines.Select((line, i) => line with { LineId = $"inv-{i}", Side = Flip(line.Side) }).ToArray();
+        var inflated = posted.Lines.Select((line, i) => line with { LineId = $"rep-{i}", Amount = line.Amount * 2 });
+        Assert.NotNull(IntercompanyAccrualEvidenceGuard.Validate(rebook with { Lines = inverse.Concat(inflated).ToArray() }));
+
+        // The exact inverse plus an identical replacement nets to zero and is accepted.
+        var replacement = posted.Lines.Select((line, i) => line with { LineId = $"rep-{i}" });
+        Assert.Null(IntercompanyAccrualEvidenceGuard.Validate(rebook with { Lines = inverse.Concat(replacement).ToArray() }));
+
+        // A reversal is unaffected by the rebook rule.
+        var reversal = posted with
+        {
+            JournalEntryId = Guid.NewGuid(),
+            ReversalOfJournalEntryId = posted.JournalEntryId,
+            Lines = inverse
+        };
+        Assert.Null(IntercompanyAccrualEvidenceGuard.Validate(reversal));
+    }
+
+    [Fact]
     public async Task Preview_IsUnavailable_WhenAPostedAccrualAlreadyCoversTheWindow()
     {
         var posted = Journal(new(2026, 6, 30), Interest, "a-int-recv", IntercompanyAccrualEvidenceGuard.TransactionId(From, To), 4166.67m);

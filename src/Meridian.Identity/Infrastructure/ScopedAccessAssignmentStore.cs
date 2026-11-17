@@ -69,7 +69,7 @@ public sealed class FileScopedAccessAssignmentStore : IScopedAccessAssignmentSto
 
         lock (_gate)
         {
-            var snapshot = ReadSnapshotLocked();
+            var snapshot = ReadSnapshotLocked(forWrite: true);
             if (snapshot.Assignments.Any(candidate => candidate.AssignmentId == assignment.AssignmentId))
             {
                 throw new InvalidOperationException($"Access assignment '{assignment.AssignmentId}' already exists.");
@@ -98,7 +98,7 @@ public sealed class FileScopedAccessAssignmentStore : IScopedAccessAssignmentSto
 
         lock (_gate)
         {
-            var snapshot = ReadSnapshotLocked();
+            var snapshot = ReadSnapshotLocked(forWrite: true);
             var assignments = snapshot.Assignments.ToList();
             var index = assignments.FindIndex(candidate => candidate.AssignmentId == assignment.AssignmentId);
             if (index < 0)
@@ -126,7 +126,11 @@ public sealed class FileScopedAccessAssignmentStore : IScopedAccessAssignmentSto
         }
     }
 
-    private ScopedAccessAssignmentSnapshot ReadSnapshotLocked()
+    /// <param name="forWrite">
+    /// True on mutation paths. Reads fail safe to an empty list on a corrupt file, but a write
+    /// built on that empty list would replace every stored assignment, so writes refuse instead.
+    /// </param>
+    private ScopedAccessAssignmentSnapshot ReadSnapshotLocked(bool forWrite = false)
     {
         if (!File.Exists(_path))
         {
@@ -138,6 +142,15 @@ public sealed class FileScopedAccessAssignmentStore : IScopedAccessAssignmentSto
             var json = File.ReadAllText(_path);
             return JsonSerializer.Deserialize<ScopedAccessAssignmentSnapshot>(json, JsonOptions)
                 ?? new ScopedAccessAssignmentSnapshot([]);
+        }
+        catch (JsonException ex) when (forWrite)
+        {
+            _logger?.LogError(
+                ex,
+                "Refusing to write scoped access assignments: governance file at {Path} is corrupt. Manual data-integrity review required.",
+                _path);
+            throw new InvalidOperationException(
+                "The scoped access assignment file is corrupt; refusing to overwrite it. Repair or restore the file first.", ex);
         }
         catch (JsonException ex)
         {

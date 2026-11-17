@@ -212,7 +212,8 @@ When dashboard source changes, regenerate and commit the tracked bundle:
 npm --prefix src/Meridian.Ui/dashboard run build
 ```
 
-CI checks that `src/Meridian.Ui/wwwroot/workstation/` matches the dashboard source.
+`src/Meridian.Ui/wwwroot/workstation/` is gitignored. CI builds it from the dashboard source in the
+browser lane and passes it to later jobs as an artifact.
 See [Start Here](docs/start/README.md#the-workstation-bundle-the-demo-serves) for the bundle contract.
 
 ### MCP server

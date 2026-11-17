@@ -165,6 +165,12 @@ public sealed class LifecyclePolicyEngine : ILifecyclePolicyEngine
                                     ConvertFormat: action.TargetTier.Value >= StorageTier.Cold),
                                 ct);
 
+                            if (!RecordMigrationOutcome(result, action, errors))
+                            {
+                                failed++;
+                                break;
+                            }
+
                             bytesMigrated += action.EstimatedSizeBytes;
                         }
                         executed++;
@@ -200,7 +206,7 @@ public sealed class LifecyclePolicyEngine : ILifecyclePolicyEngine
                     case LifecycleActionType.Archive:
                         if (action.TargetTier.HasValue)
                         {
-                            await _tierMigration.MigrateAsync(
+                            var archiveResult = await _tierMigration.MigrateAsync(
                                 action.FilePath,
                                 action.TargetTier.Value,
                                 new MigrationOptions(
@@ -208,6 +214,13 @@ public sealed class LifecyclePolicyEngine : ILifecyclePolicyEngine
                                     VerifyChecksum: true,
                                     ConvertFormat: true),
                                 ct);
+
+                            if (!RecordMigrationOutcome(archiveResult, action, errors))
+                            {
+                                failed++;
+                                break;
+                            }
+
                             bytesMigrated += action.EstimatedSizeBytes;
                         }
                         executed++;
@@ -234,6 +247,23 @@ public sealed class LifecyclePolicyEngine : ILifecyclePolicyEngine
             BytesDeleted: bytesDeleted,
             DryRun: dryRun,
             Errors: errors);
+    }
+
+    /// <summary>
+    /// MigrateAsync reports per-file failures in its result rather than throwing, so a failed
+    /// migration must be counted as failed, not executed.
+    /// </summary>
+    private bool RecordMigrationOutcome(MigrationResult result, LifecycleAction action, List<string> errors)
+    {
+        if (result.Success && result.FilesFailed == 0)
+            return true;
+
+        var detail = result.Errors.Count > 0 ? string.Join("; ", result.Errors) : "migration reported failure";
+        errors.Add($"Failed to execute {action.ActionType} on {action.FilePath}: {detail}");
+        _logger.LogError(
+            "Lifecycle action {ActionType} failed for {FilePath}: {Detail}",
+            action.ActionType, action.FilePath, detail);
+        return false;
     }
 
     /// <inheritdoc />

@@ -671,6 +671,17 @@ public sealed partial class FileMaintenanceService : IFileMaintenanceService
                 $"TruncateCorrupted repair only supports plain .jsonl files; '{Path.GetFileName(filePath)}' must be repaired by re-ingest or restore.");
         }
 
+        // A file a sink still has open (typically today's file with a half-written last line)
+        // must not be rewritten: the atomic rename would leave the sink appending to the
+        // replaced inode, silently losing the rest of the day's events. Hold both writer fences
+        // across both passes and the rename, in the same order Defrag and compression take them.
+        if (!JsonlWriteFence.TryEnterExclusive(filePath, out var fence))
+            throw new IOException($"Refusing to repair a file that is open for writing: {filePath}");
+        using var fenceLease = fence;
+        if (!JsonlWriterLock.TryAcquireExclusive(filePath, out var writerLock))
+            throw new IOException($"Refusing to repair a file another process has open for writing: {filePath}");
+        using var writerLease = writerLock;
+
         // Pass 1: stream the file, buffering only the rejected lines (bounded by corruption
         // volume) so multi-GB day files are never loaded whole into memory.
         var validCount = 0;

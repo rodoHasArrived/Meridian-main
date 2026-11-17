@@ -98,6 +98,31 @@ public sealed class TierMigrationServiceTests : IDisposable
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task MigrateAsync_DeleteSource_RefusesAFileAWriterStillHasOpen(bool otherProcessWriter)
+    {
+        // Events appended after the copy would be deleted with the source.
+        var source = Path.Combine(_hot, "today.jsonl");
+        const string jsonl = "{\"symbol\":\"SPY\",\"price\":500.12}\n";
+        await File.WriteAllTextAsync(source, jsonl);
+
+        IDisposable writer = otherProcessWriter
+            ? await Meridian.Storage.Archival.JsonlWriterLock.AcquireSharedAsync(source, TimeSpan.FromSeconds(5), CancellationToken.None)
+            : await Meridian.Storage.Archival.JsonlWriteFence.EnterWriteAsync(source, CancellationToken.None);
+        MigrationResult result;
+        using (writer)
+        {
+            result = await _sut.MigrateAsync(source, StorageTier.Warm,
+                new MigrationOptions(DeleteSource: true, VerifyChecksum: true, ParallelFiles: 1));
+        }
+
+        result.Success.Should().BeFalse();
+        result.Errors.Should().Contain(error => error.Contains("open for writing"));
+        (await File.ReadAllTextAsync(source)).Should().Be(jsonl);
+    }
+
+    [Theory]
     [InlineData(CompressionCodec.None, "session.jsonl")]
     [InlineData(null, "session.jsonl.gz")]
     public async Task Scenario_ExistingGzipMigration_ExplicitNoneDecodesAndUnspecifiedCodecPreserves(CompressionCodec? targetCodec, string targetName)
