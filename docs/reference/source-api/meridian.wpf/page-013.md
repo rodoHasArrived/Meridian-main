@@ -1285,6 +1285,33 @@ Declared public members:
 | <code>Task&lt;int&gt; ImportFromCsvAsync(string csvContent, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:27](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L27) |  |
 | <code>string ExportToCsv();</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:29](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L29) |  |
 
+## KeyboardShortcutsViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.KeyboardShortcutsViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs:19](../../../../src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs#L19).
+
+ViewModel for the Keyboard Shortcuts page: the grouped shortcut catalog plus in-app rebinding (key-chord capture), per-shortcut enable/disable and reset, and reset-all. Every change goes through KeyboardShortcutService, which saves the operator&#x27;s overrides to the desktop shell preferences once its preference store is attached.
+
+```csharp
+public sealed partial class KeyboardShortcutsViewModel : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public KeyboardShortcutsViewModel(KeyboardShortcutService service, ILoggingService? logger = null);</code> | [src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs:45](../../../../src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs#L45) |  |
+| <code>public ObservableCollection&lt;ShortcutCategoryGroupViewModel&gt; Categories { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs:53](../../../../src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs#L53) | Shortcut groups in display order. |
+| <code>public ShortcutBindingRowViewModel? CapturingRow { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs:63](../../../../src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs#L63) | The row currently waiting for a key chord, or null. |
+| <code>public bool IsCapturing =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs:66](../../../../src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs#L66) | True while a row is waiting for a key chord. |
+| <code>public void Refresh();</code> | [src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs:71](../../../../src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs#L71) | Rebuilds the groups and rows from the service&#x27;s current shortcuts. |
+| <code>public ShortcutBindingRowViewModel? FindRow(string actionId) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs:101](../../../../src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs#L101) | Gets the row for an action id, or null. |
+| <code>public void CancelCapture();</code> | [src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs:144](../../../../src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs#L144) | Ends any chord capture without changing the binding and resumes global shortcut handling. |
+| <code>public bool HandleCapturedKey(Key key, ModifierKeys modifiers);</code> | [src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs:167](../../../../src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs#L167) | Feeds a key press to the active chord capture. Bare modifier presses are ignored and keep the capture waiting. Any other key ends the capture: the chord is applied when it is allowed for the action and free, and otherwise rejected with an inline reason. |
+| <code>public static Key ResolveCapturedKey(Key key, Key systemKey, Key imeProcessedKey = Key.None) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs:266](../../../../src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs#L266) | The key a chord capture should see: Alt chords arrive as Key.System with the real key in systemKey, and IME-processed keys carry it in imeProcessedKey. |
+| <code>public static bool IsModifierOrPlaceholderKey(Key key) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs:277](../../../../src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs#L277) | True for keys that cannot finish a chord on their own: Ctrl, Shift, Alt, and Windows presses, plus placeholder keys that carry no real key. |
+
 ## LatencyDisplayItem
 
 Qualified name: <code>Meridian.Wpf.ViewModels.LatencyDisplayItem</code>. Kind: `class`.
@@ -1750,26 +1777,3 @@ Declared public members:
 | <code>public string AutomationId { get; }</code> | [src/Meridian.Wpf/ViewModels/MainPageViewModel.cs:2326](../../../../src/Meridian.Wpf/ViewModels/MainPageViewModel.cs#L2326) |  |
 | <code>public string AutomationName { get; }</code> | [src/Meridian.Wpf/ViewModels/MainPageViewModel.cs:2328](../../../../src/Meridian.Wpf/ViewModels/MainPageViewModel.cs#L2328) |  |
 | <code>public bool IsActive { get; set; }</code> | [src/Meridian.Wpf/ViewModels/MainPageViewModel.cs:2330](../../../../src/Meridian.Wpf/ViewModels/MainPageViewModel.cs#L2330) |  |
-
-## MaintenanceHistoryItem
-
-Qualified name: <code>Meridian.Wpf.ViewModels.MaintenanceHistoryItem</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs:1207](../../../../src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs#L1207).
-
-Presents a retained maintenance run&#x27;s timestamp, operations, duration, and visual status.
-
-```csharp
-public sealed class MaintenanceHistoryItem
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string RunId { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs:1209](../../../../src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs#L1209) |  |
-| <code>public string TimeText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs:1210](../../../../src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs#L1210) |  |
-| <code>public string OperationsText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs:1211](../../../../src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs#L1211) |  |
-| <code>public string DurationText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs:1212](../../../../src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs#L1212) |  |
-| <code>public string StatusIcon { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs:1213](../../../../src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs#L1213) |  |
-| <code>public SolidColorBrush? StatusColor { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs:1214](../../../../src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs#L1214) |  |

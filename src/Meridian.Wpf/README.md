@@ -26,12 +26,18 @@ Windows; cross-compilation alone does not establish that proof.
 
 `KeyboardShortcutService` reapplies the operator's saved shortcut overrides at startup
 (`App.xaml.cs` attaches the shared desktop shell preference store) and saves only differences from
-the defaults after `UpdateShortcut`, `SetShortcutEnabled` or `ResetToDefaults`. Loading skips an
-override for an unknown action, an unparseable key or modifier, a collision with another shortcut,
-or a binding that would leave Start/Stop Collector, Toggle Connection or Delete Selected without
-Ctrl or Alt. `KeyboardShortcutsPage` reports how many shortcuts differ from their defaults and
-offers Reset to defaults; there is no in-app rebinding editor yet.
-`KeyboardShortcutServicePersistenceTests` covers this on isolated instances and requires Windows.
+the defaults after `UpdateShortcut`, `SetShortcutEnabled`, `TryResetShortcut` or `ResetToDefaults`.
+Loading skips an override for an unknown action, an unparseable key or modifier, a collision with
+another shortcut, or a binding that would leave Start/Stop Collector, Toggle Connection or Delete
+Selected without Ctrl or Alt. Collisions are judged against the whole saved set, so a saved swap of
+two chords applies both halves; when two saved rebindings claim one chord the earlier entry keeps it.
+`KeyboardShortcutsPage` (backed by `KeyboardShortcutsViewModel`) is the in-app rebinding editor:
+each row captures a new key chord (bare modifier presses are ignored and global shortcuts are
+suspended while capturing), toggles the shortcut on or off, and resets it to its default. A chord
+that fails `IsBindingAllowed` or collides per `HasConflict` is refused with an inline reason before
+`UpdateShortcut` runs; a per-row reset is refused while another shortcut has been rebound onto that
+default chord. `KeyboardShortcutServicePersistenceTests`, `KeyboardShortcutServiceRebindingTests` and
+`KeyboardShortcutsViewModelTests` cover this on isolated instances and require Windows.
 
 Settings workspace and Preferences include a shared activation-status banner reading the host's
 `GET /api/config/changes` contract. It refreshes on entry, every 15 seconds, on demand and after
