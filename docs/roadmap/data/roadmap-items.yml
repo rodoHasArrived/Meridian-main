@@ -3447,3 +3447,54 @@ items:
       - type: test
         path: tests/Meridian.Tests/Storage/IntercompanyAccrualPostAndDeliverPostgresTests.cs
     last_reviewed: 2026-11-17
+  - id: W12-ICFEE-001
+    title: Governed fixed intercompany management fees from declared terms
+    wave: W12
+    stage_gates:
+      - AccountingRecords
+    workspace:
+      - Accounting
+    owner_lane: Accounting and Ledger
+    status: in_progress
+    health: yellow
+    priority: high
+    evidence_posture: in_progress
+    status_note: Rule intercompany-fee-v1 charges a declared fixed management fee per period or per year as a reviewed source draft with a proposed counterpart; direction comes from declared roles. Percentage and loan fees stay open.
+    decision_ids:
+      - DEC-IC-FEE-001
+    pr_references: []
+    exit_criteria:
+      - Fixed management-fee terms declare a per-period or per-annum basis (per annum with a day count); retained revisions without one keep their review hashes and calculate no fee.
+      - Each day is charged under the approved ManagementFee profile revision applicable on that day; per-period fees prorate by covered days, per-annum fees by the declared day count, rounded once.
+      - The service provider books receivable against fee revenue and the recipient fee expense against payable, from the declared roles; the operator never chooses a direction.
+      - Fee evidence is pinned on the draft and posted journal; edited lines, overlapping posted fees and a retired or re-pinned revision stop the draft before review or posting.
+      - The counterpart is delivered by the existing proposal pipeline after the source posts; nothing posts automatically.
+      - Browser and WPF surfaces declare the basis, preview and draft a fee over the same routes and show exact decimal strings.
+    source_modules:
+      - SRC-CONTRACTS
+      - SRC-APP
+      - SRC-DESIGN-FINANCIAL-OPERATIONS
+      - SRC-UI-SHARED
+      - SRC-UI-SERVICES
+      - SRC-WPF
+      - SRC-UI-DASHBOARD
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    evidence:
+      - type: source
+        path: src/Meridian.Application/FundStructure/IntercompanyFeeAccrualPreviewService.cs
+      - type: source
+        path: src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs
+      - type: source
+        path: src/Meridian.Ui.Shared/Services/IntercompanyFeeAccrualDraftService.cs
+      - type: test
+        path: tests/Meridian.FundStructure.Tests/IntercompanyFeeAccrualPreviewServiceTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Ui/IntercompanyFeeAccrualDraftServiceTests.cs
+      - type: test
+        path: tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilderTests.cs
+      - type: source
+        path: src/Meridian.Wpf/Views/IntercompanyManagementFeeControl.xaml
+      - type: test
+        path: tests/Meridian.Ui.Tests/Services/IntercompanyManagementFeeWorkspaceTests.cs
+    last_reviewed: 2026-11-17

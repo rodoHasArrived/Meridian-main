@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-11-14
+last_reviewed: 2026-11-17
 ---
 
 # src/Meridian.Application
@@ -19,6 +19,10 @@ revisions and principal; it reads no ledger and authorizes no journal. An explic
 record external legal review while ordinary independent review remains available; legal lifecycle
 revisions retain the same separate audit facts. See
 [terms and review boundaries](../../docs/domain/intercompany-agreements.md).
+
+`IntercompanyFeeAccrualPreviewService` is the pure calculator for fixed management fees under rule
+`intercompany-fee-v1`: per-period fees prorate by covered days, per-annum fees by the declared day count.
+See [governed fixed management fees](../../docs/domain/intercompany-agreements.md#governed-fixed-management-fees).
 
 Structured decimal normalization preserves representable declarations when canonical formatting
 uses an exponent. Retrying an externally reviewed lifecycle append repairs an interrupted local

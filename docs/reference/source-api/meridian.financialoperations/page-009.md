@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementProfileVersion
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementProfileVersion</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:168](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L168).
+
+```csharp
+public sealed record StatementProfileVersion(string ProfileId, string Version);
+```
+
 ## StatementRawFileEvidenceReference
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementRawFileEvidenceReference</code>. Kind: `record`.

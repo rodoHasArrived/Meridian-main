@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-17
 ---
 
 # src/Meridian.Ui/dashboard
@@ -110,6 +110,14 @@ An approved loan-interest accounting profile exposes **Accrue interest**: the op
 loan principal profile of the same legal agreement and a window, previews the server-computed
 interest with its slices and evidence, and creates the source-book draft bound to that preview's
 evidence digest. No rate, principal or amount is entered, and nothing is approved or posted there.
+
+An approved management-fee accounting profile exposes **Accrue fee** (rule `intercompany-fee-v1`):
+the operator selects only the window, previews the server's amount, slices (period, basis, declared
+fee, fraction, unrounded amount and per-annum day count), direction from the agreement's declared
+roles and proposed lines, then creates the source-book draft bound to that preview's evidence digest.
+Structured management-fee terms declare **Fixed fee covers** (`fixedFeeBasis`: each schedule period,
+or per annum with a declared day count); without it, and for percentage fees, nothing is calculated.
+Nothing posts; each side reviews its own books and the counterpart is proposed only after posting.
 
 Accounting's journal workbench exposes **Accrual schedules** with reviewed fixed amounts, cadence,
 dates, accounts, source evidence, authoritative period preview, occurrence generation and the

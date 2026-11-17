@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StoredSecurityForwardCurveProvider
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Curves.StoredSecurityForwardCurveProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs:14](../../../../src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs#L14).
+
+Supplies forward curves to the cash-flow projection from stored curves: the one Forward definition whose index matches (trimmed, ignoring case), at its latest version dated on or before the as-of. No definition, no version by that date, or several definitions for the index (the same index in two currencies or tenors) all yield null, so the leg stays flat forward, as a host without curves does today; ambiguity is logged and never guessed.
+
+```csharp
+public sealed class StoredSecurityForwardCurveProvider : ISecurityForwardCurveProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StoredSecurityForwardCurveProvider(ISecurityCurveStore store, ILogger&lt;StoredSecurityForwardCurveProvider&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs:19](../../../../src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs#L19) |  |
+| <code>public Task&lt;SecurityForwardCurve?&gt; GetForwardCurveAsync(string indexName, DateOnly asOf, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs:25](../../../../src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs#L25) |  |
+| <code>public async Task&lt;SecurityForwardCurve?&gt; GetForwardCurveAsync(string indexName, BondCalculationContext context, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs:28](../../../../src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs#L28) |  |
+
 ## DataVendorEntitlementService
 
 Qualified name: <code>Meridian.Application.SecurityMaster.DataVendorEntitlementService</code>. Kind: `class`.
@@ -988,22 +1008,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public Task&lt;StructuredCreditReclassificationReportDto&gt; BuildReportAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:130](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L130) |  |
-
-## NullTradingParametersBackfillService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.NullTradingParametersBackfillService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:306](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L306).
-
-No-op trading-parameter backfill service used when Security Master is not configured.
-
-```csharp
-public sealed class NullTradingParametersBackfillService : Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task BackfillAllAsync(string initiatedBy, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:308](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L308) |  |
-| <code>public Task BackfillTickerAsync(string ticker, Guid securityId, string initiatedBy, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:310](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L310) |  |

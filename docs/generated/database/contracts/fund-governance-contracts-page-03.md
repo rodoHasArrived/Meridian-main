@@ -2,11 +2,20 @@
 
 # `fund-governance-contracts` data objects - page 3 of 3
 
-Objects 161-229 of 229. References crossing pages remain available in the dependency manifest.
+Objects 161-235 of 235. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% fund-governance-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_FundStructure_IntercompanyAgreementTermsDto["IntercompanyAgreementTermsDto"] {
+        +string? AllocationDescription
+        +decimal? FixedAnnualRate
+        +string? Notes
+        +string? RateDescription
+        +string? ScheduleDescription
+        +int? SettlementDays
+        +IntercompanyStructuredTermsDto? StructuredTerms
+    }
     class Meridian_Contracts_FundStructure_IntercompanyAgreementTypeDto["IntercompanyAgreementTypeDto"] {
     }
     class Meridian_Contracts_FundStructure_IntercompanyAgreementValidationException["IntercompanyAgreementValidationException"] {
@@ -55,6 +64,43 @@ classDiagram
     }
     class Meridian_Contracts_FundStructure_IntercompanyExternalReviewJsonContext["IntercompanyExternalReviewJsonContext"] {
     }
+    class Meridian_Contracts_FundStructure_IntercompanyFeeAccrualComputationInput["IntercompanyFeeAccrualComputationInput"] {
+        +DateOnly AccrualFrom
+        +DateOnly AccrualTo
+        +IReadOnlyList~IntercompanyAccrualAuthoritySegment~ Authority
+    }
+    class Meridian_Contracts_FundStructure_IntercompanyFeeAccrualPreviewDto["IntercompanyFeeAccrualPreviewDto"] {
+        +DateOnly AccrualFrom
+        +DateOnly AccrualTo
+        +Guid? AgreementId
+        +decimal? Amount
+        +IReadOnlyList~IntercompanyAccrualCalendarPinDto~ Calendars
+        +string? Currency
+        +IReadOnlyList~string~ Diagnostics
+        +string KernelVersion
+        +string RuleVersion
+        +IReadOnlyList~IntercompanyFeeAccrualSliceDto~ Slices
+        +string Status
+        +decimal? UnroundedAmount
+    }
+    class Meridian_Contracts_FundStructure_IntercompanyFeeAccrualRules["IntercompanyFeeAccrualRules"] {
+    }
+    class Meridian_Contracts_FundStructure_IntercompanyFeeAccrualSliceDto["IntercompanyFeeAccrualSliceDto"] {
+        +Guid AccountingArrangementRevisionId
+        +string AgreementPayloadHash
+        +int AgreementVersion
+        +IntercompanyFixedFeeBasisDto Basis
+        +string? DayCount
+        +decimal DeclaredFee
+        +decimal Fraction
+        +DateOnly From
+        +DateOnly PeriodEnd
+        +DateOnly PeriodStart
+        +int SchedulePeriodSequence
+        +int Sequence
+    }
+    class Meridian_Contracts_FundStructure_IntercompanyFixedFeeBasisDto["IntercompanyFixedFeeBasisDto"] {
+    }
     class Meridian_Contracts_FundStructure_IntercompanyFrequencyDto["IntercompanyFrequencyDto"] {
     }
     class Meridian_Contracts_FundStructure_IntercompanyGuaranteeTermsDto["IntercompanyGuaranteeTermsDto"] {
@@ -89,10 +135,10 @@ classDiagram
         +IntercompanyDayCountDto? DayCount
         +decimal? FixedAnnualRate
         +decimal? FixedFeeAmount
+        +IntercompanyFixedFeeBasisDto? FixedFeeBasis
         +string? FloatingIndexReference
         +IntercompanyGuaranteeTermsDto? Guarantee
         +IntercompanyRateBasisDto? RateBasis
-        +IntercompanyScheduleDto? Schedule
     }
     class Meridian_Contracts_FundStructure_IntercompanyStructuredTermsJsonContext["IntercompanyStructuredTermsJsonContext"] {
     }
@@ -516,10 +562,14 @@ classDiagram
         +string Name
         +Guid VehicleId
     }
+    Meridian_Contracts_FundStructure_IntercompanyAgreementTermsDto --> Meridian_Contracts_FundStructure_IntercompanyStructuredTermsDto
+    Meridian_Contracts_FundStructure_IntercompanyFeeAccrualPreviewDto --> Meridian_Contracts_FundStructure_IntercompanyFeeAccrualSliceDto
+    Meridian_Contracts_FundStructure_IntercompanyFeeAccrualSliceDto --> Meridian_Contracts_FundStructure_IntercompanyFixedFeeBasisDto
     Meridian_Contracts_FundStructure_IntercompanyScheduleDto --> Meridian_Contracts_FundStructure_IntercompanyFrequencyDto
     Meridian_Contracts_FundStructure_IntercompanyStructuredTermsDto --> Meridian_Contracts_FundStructure_IntercompanyAllocationDto
     Meridian_Contracts_FundStructure_IntercompanyStructuredTermsDto --> Meridian_Contracts_FundStructure_IntercompanyCompoundingDto
     Meridian_Contracts_FundStructure_IntercompanyStructuredTermsDto --> Meridian_Contracts_FundStructure_IntercompanyDayCountDto
+    Meridian_Contracts_FundStructure_IntercompanyStructuredTermsDto --> Meridian_Contracts_FundStructure_IntercompanyFixedFeeBasisDto
     Meridian_Contracts_FundStructure_IntercompanyStructuredTermsDto --> Meridian_Contracts_FundStructure_IntercompanyGuaranteeTermsDto
     Meridian_Contracts_FundStructure_IntercompanyStructuredTermsDto --> Meridian_Contracts_FundStructure_IntercompanyRateBasisDto
     Meridian_Contracts_FundStructure_IntercompanyStructuredTermsDto --> Meridian_Contracts_FundStructure_IntercompanyScheduleDto

@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderIntegrationActivationService
+
+Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationActivationService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs:10](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs#L10).
+
+Activates configured provider integrations after validating their retained setup evidence.
+
+```csharp
+public sealed class ProviderIntegrationActivationService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderIntegrationActivationService(IProviderIntegrationManifestStore store, ILogger&lt;ProviderIntegrationActivationService&gt;? logger = null);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs:15](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs#L15) |  |
+| <code>public async Task&lt;ProviderIntegrationActivationResultDto&gt; ActivateAsync(ProviderIntegrationActivationRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs:23](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs#L23) |  |
+| <code>public async Task&lt;ProviderIntegrationActivationResultDto&gt; ActivateAsync(string? tenantId, ProviderIntegrationActivationRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs:28](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs#L28) |  |
+
 ## ProviderIntegrationDryRunService
 
 Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationDryRunService</code>. Kind: `class`.
@@ -1008,21 +1028,3 @@ Declared public members:
 | <code>bool Release(in DedupReservation reservation);</code> | [src/Meridian.Application/Pipeline/IDedupStore.cs:78](../../../../src/Meridian.Application/Pipeline/IDedupStore.cs#L78) | Releases a pending reservation so the identity can be claimed again. |
 | <code>Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/IDedupStore.cs:81](../../../../src/Meridian.Application/Pipeline/IDedupStore.cs#L81) | Flushes in-memory state to durable backing storage. |
 | <code>Task CompactAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/IDedupStore.cs:84](../../../../src/Meridian.Application/Pipeline/IDedupStore.cs#L84) | Compacts the backing store by discarding expired entries. |
-
-## IEventValidator
-
-Qualified name: <code>Meridian.Application.Pipeline.IEventValidator</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/Pipeline/IEventValidator.cs:12](../../../../src/Meridian.Application/Pipeline/IEventValidator.cs#L12).
-
-Validates MarketEvent instances before they are persisted to the WAL or storage sinks. Implementations should be stateless and thread-safe so they can be invoked concurrently from the pipeline consumer.
-
-```csharp
-public interface IEventValidator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>ValidationResult Validate(in MarketEvent evt);</code> | [src/Meridian.Application/Pipeline/IEventValidator.cs:20](../../../../src/Meridian.Application/Pipeline/IEventValidator.cs#L20) | Validates a market event and returns a result indicating whether the event is acceptable for persistence. Invalid events should be routed to a dead-letter sink. |

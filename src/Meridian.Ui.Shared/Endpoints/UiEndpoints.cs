@@ -105,6 +105,7 @@ public static class UiEndpoints
                 LegacyIntercompanyAttributionJsonContext.Default,
                 IntercompanyProposalJsonContext.Default,
                 IntercompanyAccrualJsonContext.Default,
+                IntercompanyFeeAccrualJsonContext.Default,
                 IntercompanyBalanceScheduleJsonContext.Default,
                 IntercompanyObligationMonitorJsonContext.Default,
                 IntercompanyStructuredTermsJsonContext.Default,

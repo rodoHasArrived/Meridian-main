@@ -102,6 +102,12 @@ public static class IntercompanyAccrualEvidenceGuard
     {
         if (string.IsNullOrWhiteSpace(draft.IntercompanyAccrualEvidenceJson))
             return false;
+        if (IntercompanyFeeAccrualEvidenceGuard.IsFeeEvidence(draft.IntercompanyAccrualEvidenceJson))
+        {
+            try
+            { return IntercompanyFeeAccrualEvidenceGuard.Deserialize(draft.IntercompanyAccrualEvidenceJson)?.DraftId == draft.JournalEntryId; }
+            catch (JsonException) { return false; }
+        }
         try
         {
             return JsonSerializer.Deserialize(draft.IntercompanyAccrualEvidenceJson,
@@ -131,6 +137,9 @@ public static class IntercompanyAccrualEvidenceGuard
             || !Sha256Digest.IsCanonical(draft.IntercompanyAccrualEvidenceDigest)
             || !Sha256Digest.FixedEquals(draft.IntercompanyAccrualEvidenceDigest, Digest(draft.IntercompanyAccrualEvidenceJson)))
             return "Accrual provenance is missing or differs from the retained server computation.";
+        // Fixed management fees share the accrual-evidence fields under their own rule and their own line checks.
+        if (IntercompanyFeeAccrualEvidenceGuard.IsFeeEvidence(draft.IntercompanyAccrualEvidenceJson))
+            return IntercompanyFeeAccrualEvidenceGuard.Validate(draft);
         IntercompanyAccrualEvidenceDto? evidence;
         try
         { evidence = JsonSerializer.Deserialize(draft.IntercompanyAccrualEvidenceJson, IntercompanyAccrualJsonContext.Default.IntercompanyAccrualEvidenceDto); }

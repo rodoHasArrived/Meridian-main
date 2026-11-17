@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-16
+last_reviewed: 2026-11-17
 ---
 
 # src/Meridian.Ui.Shared
@@ -29,6 +29,10 @@ posted `Loan`-profile principal, calls the pure calculator, and retains a source
 through trusted workbench intake. It never submits, approves or posts. The workbench retains the
 accrual evidence against client saves, blocks review when lines no longer match it, refuses a draft
 whose window a posted accrual already covers, and carries the evidence onto the posted journal.
+
+`IntercompanyFeeAccrualDraftService` backs `/api/ledger/intercompany/fees/preview` and `/drafts`; the journal
+workbench refuses an overlapping posted fee and rechecks fee authority before review or posting. See
+[governed fixed management fees](../../docs/domain/intercompany-agreements.md#governed-fixed-management-fees).
 
 Account/group close advisories require canonical exact-scope membership and retained evidence;
 the book node ID is not substituted for a legal-entity ID. Missing membership yields unknown.

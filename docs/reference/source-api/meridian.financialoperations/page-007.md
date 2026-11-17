@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EngineReconciliationRequest
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.EngineReconciliationRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationEngineService.cs:222](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationEngineService.cs#L222).
+
+Request payload for ReconciliationEngineService.RunAsync.
+
+```csharp
+public sealed record EngineReconciliationRequest(string PortfolioId, DateTimeOffset AsOf, IReadOnlyList<PortfolioPositionInput> PortfolioPositions, IReadOnlyDictionary<string, decimal> LedgerBalances, IEnumerable<SecurityLookupKey> SecurityIdentifiers, decimal AmountTolerance = 0.01m, int MaxAsOfDriftMinutes = 5);
+```
+
 ## EngineReconciliationResult
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.EngineReconciliationResult</code>. Kind: `record`.
@@ -915,13 +927,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public StatementToleranceProfile ToStatementToleranceProfile() =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/MatchingTolerances.cs:7](../../../../src/Meridian.FinancialOperations/Reconciliation/MatchingTolerances.cs#L7) |  |
-
-## NormalizedStatementCashBalance
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.NormalizedStatementCashBalance</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:909](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L909).
-
-```csharp
-public sealed record NormalizedStatementCashBalance(string CashBalanceId, string Account, string Currency, decimal EndingBalance, string EvidenceReference, DateOnly AsOfDate, bool IsForStatementPeriodEnd = true) : IStatementMatchItem
-```

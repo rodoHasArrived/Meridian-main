@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IEventValidator
+
+Qualified name: <code>Meridian.Application.Pipeline.IEventValidator</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/Pipeline/IEventValidator.cs:12](../../../../src/Meridian.Application/Pipeline/IEventValidator.cs#L12).
+
+Validates MarketEvent instances before they are persisted to the WAL or storage sinks. Implementations should be stateless and thread-safe so they can be invoked concurrently from the pipeline consumer.
+
+```csharp
+public interface IEventValidator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ValidationResult Validate(in MarketEvent evt);</code> | [src/Meridian.Application/Pipeline/IEventValidator.cs:20](../../../../src/Meridian.Application/Pipeline/IEventValidator.cs#L20) | Validates a market event and returns a result indicating whether the event is acceptable for persistence. Invalid events should be routed to a dead-letter sink. |
+
 ## IngestionJobService
 
 Qualified name: <code>Meridian.Application.Pipeline.IngestionJobService</code>. Kind: `class`.
@@ -1046,27 +1064,3 @@ Declared public members:
 | <code>public double AverageRequestDurationMs { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:216](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L216) |  |
 | <code>public double MaxRequestDurationMs { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:217](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L217) |  |
 | <code>public double SuccessRate =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:222](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L222) | Success rate (0.0 - 1.0). |
-
-## ExecutionStatus
-
-Qualified name: <code>Meridian.Application.Scheduling.ExecutionStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:170](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L170).
-
-Status of a scheduled execution.
-
-```csharp
-public enum ExecutionStatus : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Pending</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:173](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L173) | Execution is queued. |
-| <code>Running</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:176](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L176) | Execution is running. |
-| <code>Completed</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:179](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L179) | Execution completed successfully. |
-| <code>PartialSuccess</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:182](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L182) | Execution completed with some failures. |
-| <code>Failed</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:185](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L185) | Execution failed. |
-| <code>Cancelled</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:188](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L188) | Execution was cancelled. |
-| <code>Skipped</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:191](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L191) | Execution was skipped (e.g., already running). |

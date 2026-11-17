@@ -84,6 +84,8 @@ export interface StructuredAgreementTerms {
   dayCount?: "Actual360" | "Actual365" | "Thirty360" | "Business252" | "ActualActualIsda" | "ThirtyE360" | "ThirtyE360Isda" | "ActualActualIcma" | "Nl365" | "Actual36525" | null;
   compounding?: "Simple" | "Monthly" | "Quarterly" | "SemiAnnual" | "Annual" | "Daily" | null;
   fixedFeeAmount?: string | null; annualFeeRate?: string | null; calculationBaseReference?: string | null;
+  /** Management fees with a fixed amount only. PerAnnum also requires dayCount; PerPeriod forbids it. Absent: no fee is calculated. */
+  fixedFeeBasis?: "PerPeriod" | "PerAnnum" | null;
   allocations?: { entityId: string; percent: string }[] | null; allocationDriverReference?: string | null;
   guarantee?: { beneficiaryReference: string; limitAmount?: string | null } | null;
 }

@@ -1145,6 +1145,24 @@ Source: [src/Meridian.Application/FundStructure/IntercompanyAgreementTimeline.cs
 public sealed record IntercompanyAgreementTimelineResult(IntercompanyAgreementRevisionDto? Revision, IntercompanyAgreementStatusDto Status, DateOnly? TerminationCutoff);
 ```
 
+## IntercompanyFeeAccrualPreviewService
+
+Qualified name: <code>Meridian.Application.FundStructure.IntercompanyFeeAccrualPreviewService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/FundStructure/IntercompanyFeeAccrualPreviewService.cs:20](../../../../src/Meridian.Application/FundStructure/IntercompanyFeeAccrualPreviewService.cs#L20).
+
+Turns a declared fixed management fee into an amount for a half-open window (rule IntercompanyFeeAccrualRules.RuleVersion). Pure: it reads no ledger and creates nothing.
+
+```csharp
+public sealed class IntercompanyFeeAccrualPreviewService(IBusinessDayCalendarSource calendars) : IIntercompanyFeeAccrualPreviewService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyFeeAccrualPreviewDto Preview(IntercompanyFeeAccrualComputationInput input);</code> | [src/Meridian.Application/FundStructure/IntercompanyFeeAccrualPreviewService.cs:22](../../../../src/Meridian.Application/FundStructure/IntercompanyFeeAccrualPreviewService.cs#L22) |  |
+
 ## IntercompanyStructuredTermsPreviewService
 
 Qualified name: <code>Meridian.Application.FundStructure.IntercompanyStructuredTermsPreviewService</code>. Kind: `class`.
@@ -1324,23 +1342,3 @@ Declared public members:
 | <code>public async Task&lt;ProviderIntegrationActivationReadinessDto&gt; EvaluateAsync(string manifestId, string? connectionId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs:30](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs#L30) |  |
 | <code>public async Task&lt;ProviderIntegrationActivationReadinessDto&gt; EvaluateAsync(string? tenantId, string manifestId, string? connectionId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs:36](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs#L36) |  |
 | <code>public static ProviderIntegrationActivationReadinessDto Evaluate(ProviderIntegrationManifestDto manifest, ProviderConnectionDto? connection = null);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs:160](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs#L160) |  |
-
-## ProviderIntegrationActivationService
-
-Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationActivationService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs:10](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs#L10).
-
-Activates configured provider integrations after validating their retained setup evidence.
-
-```csharp
-public sealed class ProviderIntegrationActivationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderIntegrationActivationService(IProviderIntegrationManifestStore store, ILogger&lt;ProviderIntegrationActivationService&gt;? logger = null);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs:15](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs#L15) |  |
-| <code>public async Task&lt;ProviderIntegrationActivationResultDto&gt; ActivateAsync(ProviderIntegrationActivationRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs:23](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs#L23) |  |
-| <code>public async Task&lt;ProviderIntegrationActivationResultDto&gt; ActivateAsync(string? tenantId, ProviderIntegrationActivationRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs:28](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs#L28) |  |

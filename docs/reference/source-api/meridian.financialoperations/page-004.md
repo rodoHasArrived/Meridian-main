@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TradeBooking
+
+Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.TradeBooking</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:161](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L161).
+
+A trade booked on trade date (T+0), carrying the settlement date derived from the instrument&#x27;s settlement cycle and the T+1 date its reconciliation is due.
+
+```csharp
+public sealed record TradeBooking(string BookingId, string AccountId, string Symbol, ReconciliationDimension Dimension, decimal Quantity, decimal Amount, string Currency, DateOnly TradeDate, DateOnly SettlementDate, int SettlementCycleDays, DateTimeOffset BookedAtUtc, string BookedBy)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DateOnly ReconciliationDueDate =&gt; …;</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:179](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L179) | The T+1 date on which this booking&#x27;s trade/cash/position reconciliation is due, counted in business days (a Friday trade reconciles the following Monday). |
+
 ## TradeBookingRequest
 
 Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.TradeBookingRequest</code>. Kind: `record`.
@@ -1131,25 +1149,3 @@ Exact server-owned scope used to resolve the capital-account tie-out that suppor
 ```csharp
 public sealed record AutomatedJournalCapitalAccountReconciliationScope(string TenantId, string CompanyId, string FundProfileId, Guid LedgerBookId, string EntityId, string PeriodId, string Currency, DateTimeOffset EvaluatedAtUtc);
 ```
-
-## CommitmentRollForwardCalculator
-
-Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.CommitmentRollForwardCalculator</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs:12](../../../../src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs#L12).
-
-Folds posted private-capital activity against an investor commitment into the uncalled-commitment roll-forward, enforcing the invariant net-called + uncalled + expired = total on every step. Pure and deterministic: the same events always produce the same steps.
-
-```csharp
-public static class CommitmentRollForwardCalculator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string InvariantBreachIssueCode = &quot;private-capital.commitment-invariant-breach&quot;;</code> | [src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs:14](../../../../src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs#L14) |  |
-| <code>public const string OverCallIssueCode = &quot;private-capital.commitment-over-call&quot;;</code> | [src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs:15](../../../../src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs#L15) |  |
-| <code>public const string OverExpiryIssueCode = &quot;private-capital.commitment-over-expiry&quot;;</code> | [src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs:16](../../../../src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs#L16) |  |
-| <code>public static CommitmentRollForward Build(InvestorCommitment commitment, IReadOnlyList&lt;CommitmentActivityEvent&gt; events, IReadOnlyList&lt;CommitmentExpiryEvent&gt;? expiryEvents = null);</code> | [src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs:21](../../../../src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs#L21) | Builds the roll-forward for one commitment from dated activity and governed expiry events. |
-| <code>public static CommitmentRollForward BuildFromFundEvents(InvestorCommitment commitment, IReadOnlyList&lt;PrivateCapitalFundEventDto&gt; fundEvents, Func&lt;PrivateCapitalFundEventDto, DistributionRecallability&gt;? recallabilityClassifier = null, IReadOnlyList&lt;CommitmentExpiryEvent&gt;? expiryEvents = null, bool includeUnposted = false);</code> | [src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs:159](../../../../src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs#L159) | Adapts the private-capital fund-event projection for one commitment. Events are matched by capital account (and investor when both sides declare one) in the commitment currency; recallability is read from the supplied classifier because the projection does not carry it structurally (it rides journal metadata tags). |

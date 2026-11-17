@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ExecutionStatus
+
+Qualified name: <code>Meridian.Application.Scheduling.ExecutionStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:170](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L170).
+
+Status of a scheduled execution.
+
+```csharp
+public enum ExecutionStatus : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Pending</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:173](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L173) | Execution is queued. |
+| <code>Running</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:176](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L176) | Execution is running. |
+| <code>Completed</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:179](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L179) | Execution completed successfully. |
+| <code>PartialSuccess</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:182](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L182) | Execution completed with some failures. |
+| <code>Failed</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:185](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L185) | Execution failed. |
+| <code>Cancelled</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:188](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L188) | Execution was cancelled. |
+| <code>Skipped</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:191](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L191) | Execution was skipped (e.g., already running). |
+
 ## ExecutionTrigger
 
 Qualified name: <code>Meridian.Application.Scheduling.ExecutionTrigger</code>. Kind: `enum`.
@@ -997,23 +1021,3 @@ Declared public members:
 | <code>public CoverageInvalidationHandler(IMultiAssetCoverageInvalidator invalidator, ILogger&lt;CoverageInvalidationHandler&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/CoverageInvalidationHandler.cs:20](../../../../src/Meridian.Application/SecurityMaster/CoverageInvalidationHandler.cs#L20) |  |
 | <code>public int Order =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/CoverageInvalidationHandler.cs:28](../../../../src/Meridian.Application/SecurityMaster/CoverageInvalidationHandler.cs#L28) |  |
 | <code>public async Task HandleAsync(SecurityMasterRevisionPublishedEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CoverageInvalidationHandler.cs:30](../../../../src/Meridian.Application/SecurityMaster/CoverageInvalidationHandler.cs#L30) |  |
-
-## StoredSecurityForwardCurveProvider
-
-Qualified name: <code>Meridian.Application.SecurityMaster.Curves.StoredSecurityForwardCurveProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs:14](../../../../src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs#L14).
-
-Supplies forward curves to the cash-flow projection from stored curves: the one Forward definition whose index matches (trimmed, ignoring case), at its latest version dated on or before the as-of. No definition, no version by that date, or several definitions for the index (the same index in two currencies or tenors) all yield null, so the leg stays flat forward, as a host without curves does today; ambiguity is logged and never guessed.
-
-```csharp
-public sealed class StoredSecurityForwardCurveProvider : ISecurityForwardCurveProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StoredSecurityForwardCurveProvider(ISecurityCurveStore store, ILogger&lt;StoredSecurityForwardCurveProvider&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs:19](../../../../src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs#L19) |  |
-| <code>public Task&lt;SecurityForwardCurve?&gt; GetForwardCurveAsync(string indexName, DateOnly asOf, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs:25](../../../../src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs#L25) |  |
-| <code>public async Task&lt;SecurityForwardCurve?&gt; GetForwardCurveAsync(string indexName, BondCalculationContext context, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs:28](../../../../src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs#L28) |  |

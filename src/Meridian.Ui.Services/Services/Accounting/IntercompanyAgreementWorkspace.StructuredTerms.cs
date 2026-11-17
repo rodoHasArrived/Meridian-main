@@ -17,6 +17,7 @@ public sealed partial class IntercompanyAgreementWorkspace
     private IntercompanyFrequencyDto _frequency;
     private IntercompanyDayCountDto _dayCount;
     private IntercompanyCompoundingDto _compounding;
+    private string _fixedFeeBasis = "";
     private BusinessDayConvention _businessDayConvention;
     private string _externalReviewer = "", _reviewerReference = "", _reviewedOn = "", _reviewEvidence = "", _reviewArtifact = "", _reviewEvidenceHash = "";
     private string _datePreviewStatus = "Preview retained terms to inspect dates. No charge amounts or journals are calculated.";
@@ -31,6 +32,8 @@ public sealed partial class IntercompanyAgreementWorkspace
     public IReadOnlyList<IntercompanyDayCountDto> DayCounts { get; } = Enum.GetValues<IntercompanyDayCountDto>();
     public IReadOnlyList<IntercompanyCompoundingDto> CompoundingChoices { get; } = Enum.GetValues<IntercompanyCompoundingDto>();
     public IReadOnlyList<BusinessDayConvention> BusinessDayConventions { get; } = Enum.GetValues<BusinessDayConvention>();
+    /// <summary>Blank (undeclared, no fee is calculated), PerPeriod or PerAnnum.</summary>
+    public IReadOnlyList<string> FixedFeeBasisChoices { get; } = ["", nameof(IntercompanyFixedFeeBasisDto.PerPeriod), nameof(IntercompanyFixedFeeBasisDto.PerAnnum)];
     public ObservableCollection<IntercompanyAllocationEditor> StructuredAllocations { get; } = [];
     public ObservableCollection<IntercompanyDatePeriodDto> DatePreviewPeriods { get; } = [];
     public ObservableCollection<IntercompanyObligationFindingDto> ObligationFindings { get; } = [];
@@ -54,6 +57,8 @@ public sealed partial class IntercompanyAgreementWorkspace
     public string SpreadBps { get => _spread; set => Edit(ref _spread, value); }
     public string FixedFeeAmount { get => _feeAmount; set => Edit(ref _feeAmount, value); }
     public string AnnualFeeRate { get => _feeRate; set => Edit(ref _feeRate, value); }
+    /// <summary>Fixed management fees: whether the amount covers each schedule period or one year (per annum uses <see cref="DayCount"/>).</summary>
+    public string FixedFeeBasis { get => _fixedFeeBasis; set => Edit(ref _fixedFeeBasis, value ?? ""); }
     public string CalculationBaseReference { get => _feeBase; set => Edit(ref _feeBase, value); }
     public string AllocationDriverReference { get => _driver; set => Edit(ref _driver, value); }
     public string BeneficiaryReference { get => _beneficiary; set => Edit(ref _beneficiary, value); }
@@ -113,7 +118,7 @@ public sealed partial class IntercompanyAgreementWorkspace
         {
             IntercompanyAgreementTypeDto.Loan => new(schedule, RateBasis, RateBasis == IntercompanyRateBasisDto.Fixed ? DecimalValue(FixedAnnualRate, "Annual rate") : null,
                 RateBasis == IntercompanyRateBasisDto.Floating ? FloatingIndexReference : null, RateBasis == IntercompanyRateBasisDto.Floating ? DecimalValue(SpreadBps, "Spread basis points") : null, DayCount, Compounding),
-            IntercompanyAgreementTypeDto.ManagementFee => new(schedule, FixedFeeAmount: DecimalValue(FixedFeeAmount, "Fixed fee amount"), AnnualFeeRate: DecimalValue(AnnualFeeRate, "Annual fee rate"), CalculationBaseReference: OptionalText(CalculationBaseReference)),
+            IntercompanyAgreementTypeDto.ManagementFee => FeeTerms(schedule),
             IntercompanyAgreementTypeDto.CostShare => new(schedule, Allocations: string.IsNullOrWhiteSpace(AllocationDriverReference)
                 ? StructuredAllocations.Select(x => new IntercompanyAllocationDto(ParseId(x.EntityId, "Allocation entity"), DecimalValue(x.Percent, "Allocation percent") ?? throw new InvalidOperationException("Allocation percentage is required."))).ToArray() : null,
                 AllocationDriverReference: OptionalText(AllocationDriverReference)),
@@ -121,6 +126,17 @@ public sealed partial class IntercompanyAgreementWorkspace
         };
     }
     private static string? OptionalText(string text) => string.IsNullOrWhiteSpace(text) ? null : text;
+    // A per-annum fixed fee also states the day count that measures its year; a per-period fee never carries one.
+    private IntercompanyStructuredTermsDto FeeTerms(IntercompanyScheduleDto schedule)
+    {
+        var fixedAmount = DecimalValue(FixedFeeAmount, "Fixed fee amount");
+        IntercompanyFixedFeeBasisDto? basis = fixedAmount is null || string.IsNullOrWhiteSpace(FixedFeeBasis) ? null
+            : Enum.TryParse<IntercompanyFixedFeeBasisDto>(FixedFeeBasis, out var parsed) ? parsed
+            : throw new InvalidOperationException("Choose whether the fixed fee covers each period or one year.");
+        return new(schedule, DayCount: basis == IntercompanyFixedFeeBasisDto.PerAnnum ? DayCount : null, FixedFeeAmount: fixedAmount,
+            AnnualFeeRate: DecimalValue(AnnualFeeRate, "Annual fee rate"), CalculationBaseReference: OptionalText(CalculationBaseReference),
+            FixedFeeBasis: basis);
+    }
     private void FillStructuredTerms(IntercompanyStructuredTermsDto? terms)
     {
         UseStructuredTerms = terms is not null;
@@ -139,6 +155,7 @@ public sealed partial class IntercompanyAgreementWorkspace
         DayCount = terms?.DayCount ?? IntercompanyDayCountDto.Actual365;
         Compounding = terms?.Compounding ?? IntercompanyCompoundingDto.Simple;
         FixedFeeAmount = Value(terms?.FixedFeeAmount);
+        FixedFeeBasis = terms?.FixedFeeBasis?.ToString() ?? "";
         AnnualFeeRate = Value(terms?.AnnualFeeRate);
         CalculationBaseReference = terms?.CalculationBaseReference ?? "";
         AllocationDriverReference = terms?.AllocationDriverReference ?? "";
@@ -219,7 +236,7 @@ public sealed partial class IntercompanyAgreementWorkspace
         => terms is null ? "Terms format: Unstructured" : $"Terms format: StructuredV1 · schema {terms.SchemaVersion}\n"
             + $"Rate {terms.RateBasis} · fixed annual {Value(terms.FixedAnnualRate)} · {terms.FloatingIndexReference} + {Value(terms.SpreadBps)} bps · {terms.DayCount} · {terms.Compounding}\n"
             + $"Schedule {terms.Schedule?.StartDate:yyyy-MM-dd}–{terms.Schedule?.EndDate:yyyy-MM-dd} · {terms.Schedule?.Frequency} · {terms.Schedule?.CalendarId} · {terms.Schedule?.BusinessDayConvention} · {terms.Schedule?.SettlementBusinessDays} business days\n"
-            + $"Fee {Value(terms.FixedFeeAmount)} or annual {Value(terms.AnnualFeeRate)} · base {terms.CalculationBaseReference}\n"
+            + $"Fee {Value(terms.FixedFeeAmount)}{(terms.FixedFeeBasis is { } basis ? $" {basis}" : "")} or annual {Value(terms.AnnualFeeRate)} · base {terms.CalculationBaseReference}\n"
             + $"Allocation driver {terms.AllocationDriverReference} · {string.Join(", ", (terms.Allocations ?? []).Select(x => $"{x.EntityId}: {Value(x.Percent)}%"))}\n"
             + $"Guarantee beneficiary {terms.Guarantee?.BeneficiaryReference} · declared limit {Value(terms.Guarantee?.LimitAmount)}";
     private void NotifyStructuredCommands()

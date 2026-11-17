@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterProfilePromotionService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterProfilePromotionService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterProfilePromotionService.cs:27](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProfilePromotionService.cs#L27).
+
+Builds the report-first promotion inventory for one reclassifying profile (ADR-022): every active CustomAsset record pinned to the profile, with the result of a dry run under the profile&#x27;s target class. The dry run applies the main checks an envelope amendment applies on the write path: the classification-metadata check, the target decode, the target kind&#x27;s domain invariants, the profile catalog validation and asset-pack admission (schema write validation and the schedule-terms write rules). It is not full write-path parity: it decodes with the read-tolerant mapping rather than the strict write-mode command mapping and does not run the re-serialization round-trip guards, so a Ready candidate can still be refused when it is amended. Nothing is written. Promotion itself is any write that carries the pinned envelope as its terms patch: an envelope amendment, an approved workbench field edit or a term-block patch (both rebuild a full envelope patch from the stored terms). A write without a terms patch, and a deactivation, keep the stored CustomAsset class.
+
+```csharp
+public sealed class SecurityMasterProfilePromotionService : ISecurityMasterProfilePromotionService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterProfilePromotionService(ISecurityMasterStore securityStore, ILogger&lt;SecurityMasterProfilePromotionService&gt; logger, ISecurityAssetProfileCatalog? assetProfileCatalog = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProfilePromotionService.cs:38](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProfilePromotionService.cs#L38) |  |
+| <code>public async Task&lt;SecurityMasterProfilePromotionReportDto&gt; BuildReportAsync(string profileId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProfilePromotionService.cs:48](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProfilePromotionService.cs#L48) |  |
+
 ## SecurityMasterProjectionChangeHandler
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterProjectionChangeHandler</code>. Kind: `class`.
@@ -1095,25 +1114,3 @@ Declared public members:
 | <code>public async Task&lt;WizardResult&gt; RunAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:51](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L51) | Runs the interactive configuration wizard using the step-graph coordinator. |
 | <code>public WizardResult RunQuickSetup();</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:83](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L83) | Runs a quick auto-configuration without interactive prompts. |
 | <code>public async Task&lt;WizardResult&gt; RunQuickstartAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:138](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L138) | Runs a quickstart flow: auto-configures, validates, and returns a config ready to launch. |
-
-## ConnectivityProbeService
-
-Qualified name: <code>Meridian.Application.Services.ConnectivityProbeService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/ConnectivityProbeService.cs:17](../../../../src/Meridian.Application/Services/ConnectivityProbeService.cs#L17).
-
-Sealed implementation that probes connectivity every 60 seconds using HTTP GET to Google&#x27;s connectivity check endpoint.
-
-```csharp
-public sealed class ConnectivityProbeService : IConnectivityProbeService, IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsOnline { get; private set; }</code> | [src/Meridian.Application/Services/ConnectivityProbeService.cs:30](../../../../src/Meridian.Application/Services/ConnectivityProbeService.cs#L30) |  |
-| <code>public event EventHandler&lt;bool&gt;? ConnectivityChanged;</code> | [src/Meridian.Application/Services/ConnectivityProbeService.cs:43](../../../../src/Meridian.Application/Services/ConnectivityProbeService.cs#L43) |  |
-| <code>public ConnectivityProbeService(IHttpClientFactory httpClientFactory, ILogger? log = null);</code> | [src/Meridian.Application/Services/ConnectivityProbeService.cs:49](../../../../src/Meridian.Application/Services/ConnectivityProbeService.cs#L49) | Initializes ConnectivityProbeService using IHttpClientFactory for HTTP calls. Per ADR-010, HttpClient is never instantiated directly. |
-| <code>public void Start();</code> | [src/Meridian.Application/Services/ConnectivityProbeService.cs:63](../../../../src/Meridian.Application/Services/ConnectivityProbeService.cs#L63) | Starts the periodic connectivity probe. |
-| <code>public void Dispose();</code> | [src/Meridian.Application/Services/ConnectivityProbeService.cs:143](../../../../src/Meridian.Application/Services/ConnectivityProbeService.cs#L143) |  |

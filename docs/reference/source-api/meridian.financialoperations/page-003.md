@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountingJournalDraftService
+
+Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingJournalDraftService</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs:74](../../../../src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs#L74).
+
+Builds journal drafts using accounting policy and supplied line evidence.
+
+```csharp
+public sealed class AccountingJournalDraftService : IAccountingJournalDraftService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public AccountingJournalDraftService(IAccountingPolicyService accountingPolicyService, IAccountingBasisProjectionService projectionService);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs:79](../../../../src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs#L79) |  |
+| <code>public async Task&lt;AccountingJournalDraftResult&gt; BuildDraftAsync(AccountingJournalDraftRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs:87](../../../../src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs#L87) |  |
+
 ## AccountingPolicyService
 
 Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingPolicyService</code>. Kind: `class`.
@@ -968,21 +987,3 @@ Enum declarations:
 | <code>Trade</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:134](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L134) | Trade / transaction reconciliation. |
 | <code>Cash</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:137](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L137) | Cash balance reconciliation. |
 | <code>Position</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:140](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L140) | Security position reconciliation. |
-
-## TradeBooking
-
-Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.TradeBooking</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:161](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L161).
-
-A trade booked on trade date (T+0), carrying the settlement date derived from the instrument&#x27;s settlement cycle and the T+1 date its reconciliation is due.
-
-```csharp
-public sealed record TradeBooking(string BookingId, string AccountId, string Symbol, ReconciliationDimension Dimension, decimal Quantity, decimal Amount, string Currency, DateOnly TradeDate, DateOnly SettlementDate, int SettlementCycleDays, DateTimeOffset BookedAtUtc, string BookedBy)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DateOnly ReconciliationDueDate =&gt; …;</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:179](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L179) | The T+1 date on which this booking&#x27;s trade/cash/position reconciliation is due, counted in business days (a Friday trade reconciles the following Monday). |

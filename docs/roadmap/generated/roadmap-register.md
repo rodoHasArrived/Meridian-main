@@ -2738,6 +2738,54 @@ W12-ICAGREE-001: accepted; health green; evidence complete. Accepted by the repo
 - `SRC-STORAGE`
 - `SRC-UI-SHARED`
 
+## W12-ICFEE-001 - Governed fixed intercompany management fees from declared terms
+| Field | Value |
+| --- | --- |
+| Wave | W12 |
+| Status | in_progress |
+| Health | yellow |
+| Priority | high |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-11-17 |
+
+### Current Summary
+
+W12-ICFEE-001: in_progress; health yellow; evidence in_progress. Rule intercompany-fee-v1 charges a declared fixed management fee per period or per year as a reviewed source draft with a proposed counterpart; direction comes from declared roles. Percentage and loan fees stay open.
+
+### Status References
+
+- Decisions: DEC-IC-FEE-001
+- PR references (not inferred acceptance): none recorded
+- Evidence: [src/Meridian.Application/FundStructure/IntercompanyFeeAccrualPreviewService.cs](../../../src/Meridian.Application/FundStructure/IntercompanyFeeAccrualPreviewService.cs)
+- Evidence: [src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs](../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs)
+- Evidence: [src/Meridian.Ui.Shared/Services/IntercompanyFeeAccrualDraftService.cs](../../../src/Meridian.Ui.Shared/Services/IntercompanyFeeAccrualDraftService.cs)
+- Evidence: [tests/Meridian.FundStructure.Tests/IntercompanyFeeAccrualPreviewServiceTests.cs](../../../tests/Meridian.FundStructure.Tests/IntercompanyFeeAccrualPreviewServiceTests.cs)
+- Evidence: [tests/Meridian.Tests/Ui/IntercompanyFeeAccrualDraftServiceTests.cs](../../../tests/Meridian.Tests/Ui/IntercompanyFeeAccrualDraftServiceTests.cs)
+- Evidence: [tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilderTests.cs](../../../tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilderTests.cs)
+- Evidence: [src/Meridian.Wpf/Views/IntercompanyManagementFeeControl.xaml](../../../src/Meridian.Wpf/Views/IntercompanyManagementFeeControl.xaml)
+- Evidence: [tests/Meridian.Ui.Tests/Services/IntercompanyManagementFeeWorkspaceTests.cs](../../../tests/Meridian.Ui.Tests/Services/IntercompanyManagementFeeWorkspaceTests.cs)
+
+
+### Exit Criteria
+
+- Fixed management-fee terms declare a per-period or per-annum basis (per annum with a day count); retained revisions without one keep their review hashes and calculate no fee.
+- Each day is charged under the approved ManagementFee profile revision applicable on that day; per-period fees prorate by covered days, per-annum fees by the declared day count, rounded once.
+- The service provider books receivable against fee revenue and the recipient fee expense against payable, from the declared roles; the operator never chooses a direction.
+- Fee evidence is pinned on the draft and posted journal; edited lines, overlapping posted fees and a retired or re-pinned revision stop the draft before review or posting.
+- The counterpart is delivered by the existing proposal pipeline after the source posts; nothing posts automatically.
+- Browser and WPF surfaces declare the basis, preview and draft a fee over the same routes and show exact decimal strings.
+
+### Source Modules
+
+- `SRC-CONTRACTS`
+- `SRC-APP`
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-UI-SHARED`
+- `SRC-UI-SERVICES`
+- `SRC-WPF`
+- `SRC-UI-DASHBOARD`
+
 ## W12-ICINCOME-001 - Policy-governed intercompany revenue and expense elimination
 | Field | Value |
 | --- | --- |

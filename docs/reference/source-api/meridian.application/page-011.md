@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ConnectivityProbeService
+
+Qualified name: <code>Meridian.Application.Services.ConnectivityProbeService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Services/ConnectivityProbeService.cs:17](../../../../src/Meridian.Application/Services/ConnectivityProbeService.cs#L17).
+
+Sealed implementation that probes connectivity every 60 seconds using HTTP GET to Google&#x27;s connectivity check endpoint.
+
+```csharp
+public sealed class ConnectivityProbeService : IConnectivityProbeService, IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsOnline { get; private set; }</code> | [src/Meridian.Application/Services/ConnectivityProbeService.cs:30](../../../../src/Meridian.Application/Services/ConnectivityProbeService.cs#L30) |  |
+| <code>public event EventHandler&lt;bool&gt;? ConnectivityChanged;</code> | [src/Meridian.Application/Services/ConnectivityProbeService.cs:43](../../../../src/Meridian.Application/Services/ConnectivityProbeService.cs#L43) |  |
+| <code>public ConnectivityProbeService(IHttpClientFactory httpClientFactory, ILogger? log = null);</code> | [src/Meridian.Application/Services/ConnectivityProbeService.cs:49](../../../../src/Meridian.Application/Services/ConnectivityProbeService.cs#L49) | Initializes ConnectivityProbeService using IHttpClientFactory for HTTP calls. Per ADR-010, HttpClient is never instantiated directly. |
+| <code>public void Start();</code> | [src/Meridian.Application/Services/ConnectivityProbeService.cs:63](../../../../src/Meridian.Application/Services/ConnectivityProbeService.cs#L63) | Starts the periodic connectivity probe. |
+| <code>public void Dispose();</code> | [src/Meridian.Application/Services/ConnectivityProbeService.cs:143](../../../../src/Meridian.Application/Services/ConnectivityProbeService.cs#L143) |  |
+
 ## ConnectivityTestService
 
 Qualified name: <code>Meridian.Application.Services.ConnectivityTestService</code>. Kind: `class`.
@@ -933,29 +955,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;Guid&gt; QueueAsync(PortfolioImportRun run, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/PortfolioImportRunService.cs:13](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioImportRunService.cs#L13) |  |
-
-## MetadataEnrichmentService
-
-Qualified name: <code>Meridian.Application.Subscriptions.Services.MetadataEnrichmentService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs:15](../../../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs#L15).
-
-Service for enriching symbols with metadata (industry, sector, market cap). Provides filtering capabilities based on symbol metadata.
-
-```csharp
-public sealed class MetadataEnrichmentService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public MetadataEnrichmentService(string? cachePath = null, ILogger? log = null);</code> | [src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs:26](../../../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs#L26) |  |
-| <code>public async Task&lt;SymbolMetadata?&gt; GetMetadataAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs:38](../../../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs#L38) | Get metadata for a specific symbol. |
-| <code>public async Task&lt;IReadOnlyDictionary&lt;string, SymbolMetadata&gt;&gt; GetMetadataBatchAsync(IEnumerable&lt;string&gt; symbols, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs:57](../../../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs#L57) | Get metadata for multiple symbols. |
-| <code>public async Task&lt;MetadataFilterResult&gt; FilterSymbolsAsync(SymbolMetadataFilter filter, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs:78](../../../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs#L78) | Filter symbols based on metadata criteria. |
-| <code>public async Task&lt;IReadOnlyList&lt;string&gt;&gt; GetAvailableSectorsAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs:153](../../../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs#L153) | Get available sectors from cached metadata. |
-| <code>public async Task&lt;IReadOnlyList&lt;string&gt;&gt; GetAvailableIndustriesAsync(string? sector = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs:168](../../../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs#L168) | Get available industries from cached metadata. |
-| <code>public async Task UpdateMetadataAsync(SymbolMetadata metadata, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs:193](../../../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs#L193) | Update metadata for a symbol. |
-| <code>public async Task UpdateMetadataBatchAsync(IEnumerable&lt;SymbolMetadata&gt; metadataList, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs:203](../../../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs#L203) | Update metadata for multiple symbols. |
-| <code>public static MarketCapCategory CategorizeMarketCap(decimal marketCap);</code> | [src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs:219](../../../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs#L219) | Categorize market cap value. |

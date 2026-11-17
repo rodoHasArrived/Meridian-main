@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** Accounting and Ledger
-**Reviewed:** 2026-11-14
+**Reviewed:** 2026-11-17
 
 An intercompany agreement records the reviewed terms between two legal entities in one tenant.
 It explains the contractual source of intercompany activity; it is not a journal, a payment or
@@ -92,8 +92,27 @@ profile revision, falls outside the declared schedule or lacks provable principa
 unstructured, floating-rate or compounding; when the calendar is missing; when a posted, unreversed
 accrual already covers part of the window; or when the source book has no single open period
 containing the posting date. A cross-currency loan converts through the governed FX authority or is
-unavailable. Fees are not calculated: a fixed fee has no declared amount period and a percentage fee
-has no measured base in terms schema v1.
+unavailable. Fees follow their own rule, described next.
+
+## Governed fixed management fees
+
+A fixed management fee is calculated under rule `intercompany-fee-v1`
+([ADR-029](../adr/029-governed-intercompany-fixed-management-fees.md)) once its terms declare what the amount
+covers: `PerPeriod` (each schedule period) or `PerAnnum` (one year, with a declared day count). Without that
+declaration, or for a percentage fee, nothing is calculated, because a percentage fee has no measured base.
+
+An operator requests the fee from an approved `ManagementFee` accounting profile in the browser ("Accrue fee")
+or from the WPF Management fee tab, choosing only the book and the window. Each day is charged under the
+approved profile revision applicable on that day. A per-period fee earns covered days over the period's days,
+so a whole period earns exactly the declared amount; a per-annum fee earns the declared day-count fraction of
+a year. Slices are summed unrounded and rounded once.
+
+Direction comes from the agreement's declared roles. The service provider's book debits its fee receivable
+and credits fee revenue; the recipient's book debits fee expense and credits its fee payable. The fee becomes
+a draft in the source book's ordinary review, pinned to its evidence like an interest accrual, and its
+counterpart is proposed to the other entity only after it posts. Nothing posts automatically, a window already
+covered by a posted, unreversed fee of the profile is refused, and a draft whose profile or legal revision has
+since been retired or re-pinned cannot be submitted, approved or posted.
 
 ## External-review attestation
 
