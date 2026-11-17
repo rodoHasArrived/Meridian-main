@@ -63,7 +63,8 @@ public sealed class KeyboardShortcutsViewModelTests
         row.HasValidationMessage.Should().BeFalse();
         _service.GetShortcut("StopCollector")!.Key.Should().Be(Key.F12);
         _saves.Should().ContainSingle()
-            .Which["StopCollector"].Should().Be(new DesktopShortcutOverride("F12", "Control, Alt"));
+            // ModifierKeys.ToString() lists flags in enum-value order (Alt = 1, Control = 2).
+            .Which["StopCollector"].Should().Be(new DesktopShortcutOverride("F12", "Alt, Control"));
         vm.OverrideStatusText.Should().Be("1 shortcut differs from its default and is saved for this machine.");
         vm.ResetAllCommand.CanExecute(null).Should().BeTrue();
         row.ResetCommand.CanExecute(null).Should().BeTrue();
