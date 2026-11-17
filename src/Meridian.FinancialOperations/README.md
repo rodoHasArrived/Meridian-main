@@ -71,6 +71,15 @@ agreement's declared roles and detects overlapping posted fees; `IntercompanyLed
 re-resolves every fee slice's authority before review or posting. See
 [governed fixed management fees](../../docs/domain/intercompany-agreements.md#governed-fixed-management-fees).
 
+`IntercompanyLedgerPostingAuthority` also re-reads every fixing a floating accrual pinned, so a value
+re-approved after drafting stops the draft before review or posting; the source builder retains the
+computation's own rule version. See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
+
+`IntercompanyBalanceConfirmationRules` and `IntercompanyBalanceConfirmationService` pin both sides'
+posted schedule balances for one approved accounting profile at a date, then record confirm, dispute
+and resolve steps against the exact version and balance digest shown. Advisory only; close is
+unchanged. See [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
+
 Intercompany services own approved accounting-profile revisions and governed counterpart templates;
 canonical legal terms and independent review remain in Application/FundStructure.
 Consolidation dispatches exact book policy versions: retained v1, stable-role/N-entity v2, whole-book

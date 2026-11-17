@@ -156,6 +156,40 @@ synthetic fixtures.
 
 Percentage fees, loan commitment or utilisation fees and scheduled runs remain out of scope.
 
+### Floating-rate extension (2026-11-17)
+
+`DEC-IC-FLOAT-001` and the ADR-028 extension add rule `intercompany-accrual-v2`; roadmap row
+`W12-ICFLOAT-001` carries its status. Development verification only, over synthetic fixtures.
+
+| Piece | Decision and boundary | Verification |
+| --- | --- | --- |
+| Terms | Floating loans declare `FixingLagBusinessDays` (0-10). Null-omitted, so earlier revisions keep their review hashes. | `IntercompanyStructuredTermsTests` |
+| Fixings | `IntercompanyRateFixingService` with append-only, tenant-scoped versions: propose, approve by someone else, reject with a reason, correct by a new approved value. PostgreSQL store in fund-structure migration `009`, or an atomic file store. | `IntercompanyRateFixingServiceTests`; `IntercompanyRateFixingStoreTests` (file and PostgreSQL) |
+| Calculation | Each period uses exactly the approved fixing observed the lag before its start, plus the spread. A missing fixing refuses the window. All-fixed windows stay v1. | `IntercompanyFloatingAccrualPreviewTests` (hand-derived amounts) |
+| Evidence and staleness | Floating slices pin fixing identity, rate, spread, lag and value digest. The evidence guard refuses a rate that differs from its pin; the posting authority re-reads each pin before review or posting. | `IntercompanyAccrualDraftServiceTests.Floating` |
+| Routes | `/api/ledger/intercompany/rate-fixings` list, propose, decide. Manage-ledger permission and tenant scope for mutations; exact decimal strings. | `IntercompanyRateFixingEndpointTests` |
+| Surfaces | Browser Rate fixings tab and fixing column; WPF Rate fixings tab, fixing column and the lag field in both agreement editors. | `IntercompanyRateFixingWorkspaceTests`, browser tests; WPF smoke test compiles on Linux and runs only on Windows |
+
+Fees, compounding, in-arrears or averaged rates, floors, caps and scheduled runs remain out of scope.
+
+## Reciprocal balance confirmation extension (2026-11-17)
+
+`DEC-IC-CONFIRM-001` brings the advisory slice of reciprocal balance confirmation into scope; roadmap
+row `W12-ICCONFIRM-001` carries its status. Semantics are in the
+[domain document](../../domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
+
+| Piece | What exists | Verification |
+| --- | --- | --- |
+| Rules | `IntercompanyBalanceConfirmationRules`: proposal, confirm, dispute, resolve and advisory findings over a pinned balance digest. | `IntercompanyBalanceConfirmationRulesTests` |
+| Storage | `V_ledger_073__intercompany_balance_confirmations.sql` (append-only, one confirmation per tenant, company, profile and date) behind `PostgresIntercompanyBalanceConfirmationStore`; `FileIntercompanyBalanceConfirmationStore` for hosts without a ledger database. | `IntercompanyBalanceConfirmationStoreTests` (file and PostgreSQL) |
+| Service and routes | `IntercompanyBalanceConfirmationService` reads each side from the balance schedule and checks each side's book; `/api/ledger/intercompany/confirmations` (summary, propose, actions) sends exact decimal strings. | `IntercompanyBalanceConfirmationServiceTests`, `IntercompanyBalanceConfirmationEndpointTests` |
+| Close readiness | Findings join the existing intercompany close advisory as `intercompany.confirmation.*` warnings, after eligibility is decided. | `IntercompanyCloseAdvisoryAuthorizationTests` |
+| Browser | "Balance confirmation" tab in Accounting's entity operations (`accounting-screen.entity-confirmations.tsx`). | `accounting-screen.entity-confirmations.test.tsx` |
+| Desktop | Balance confirmation tab on the Fund Ledger page (`IntercompanyBalanceConfirmationControl.xaml` over `IntercompanyBalanceConfirmationWorkspace`). The ledger book is a typed ID, as on the other desktop intercompany tabs; profiles are chosen from a list. | `IntercompanyBalanceConfirmationWorkspaceTests`, `WorkstationIntercompanyAgreementApiClientTests` (Linux); `IntercompanyNativeControlSmokeTests.BalanceConfirmationControl_*` runs only on Windows |
+
+Not in this slice: opt-in close blocking (needs its own decision and a reviewed policy revision),
+pairs spanning two companies of one tenant, and posting adjustments from a dispute.
+
 ## Verification record (2026-11-14)
 
 This records development verification for `W12-ICAGREE-001`, `W12-ENTITY-001`, `W12-ICPAIR-001`

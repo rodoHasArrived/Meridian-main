@@ -485,13 +485,49 @@
       "target_kind": "table column",
       "target_name": "intercompany_agreement",
       "target_schema": "fund_structure"
+    },
+    {
+      "fingerprint": "236aacb4d095d6afdc8edfdfd809229c4ba58282ef0823c67869ef7086e64cdb",
+      "kind": "normal",
+      "source": "fund_structure.intercompany_rate_fixings_index_key_check on fund_structure.intercompany_rate_fixings",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "fund_structure",
+      "target": "fund_structure.intercompany_rate_fixings.index_key",
+      "target_kind": "table column",
+      "target_name": "intercompany_rate_fixings",
+      "target_schema": "fund_structure"
+    },
+    {
+      "fingerprint": "eeab26b5cabcb552ce166b6f1a6c9211eb52667052cbcd5bdcc6684f8a654794",
+      "kind": "normal",
+      "source": "fund_structure.intercompany_rate_fixings_tenant_id_check on fund_structure.intercompany_rate_fixings",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "fund_structure",
+      "target": "fund_structure.intercompany_rate_fixings.tenant_id",
+      "target_kind": "table column",
+      "target_name": "intercompany_rate_fixings",
+      "target_schema": "fund_structure"
+    },
+    {
+      "fingerprint": "6dbe71820447ba4b7df6bcd15f95bd8a53d2e1990d4aec473e538307c8b281ed",
+      "kind": "normal",
+      "source": "fund_structure.intercompany_rate_fixings_version_check on fund_structure.intercompany_rate_fixings",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "fund_structure",
+      "target": "fund_structure.intercompany_rate_fixings.version",
+      "target_kind": "table column",
+      "target_name": "intercompany_rate_fixings",
+      "target_schema": "fund_structure"
     }
   ],
   "domains": [],
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "ad4a8d01d9900f56677bf55fca20f88d82c2cafff94c74bc3e80d1e4ad30661b",
+  "fingerprint": "42bff6fe8eb3072c151790e63018116aeeaca25fb52a04d92741a0217e516ce3",
   "foreign_tables": [],
   "functions": [
     {
@@ -553,6 +589,37 @@
       "security_definer": false,
       "security_labels": [],
       "signature": "refuse_intercompany_accounting_arrangement_history_mutation()",
+      "strict": false,
+      "volatility": "volatile"
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "PUBLIC",
+          "grantor": "meridian",
+          "privilege": "execute"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "execute"
+        }
+      ],
+      "comment": null,
+      "definition_hash": "3bdd7bdccde2028e12006ed232fe11b8883e6d059e8ccbeba6e272f174ae0915",
+      "fingerprint": "5a56c9ffc918ea3ba6025d2ea38248cb0ce9cfdb75aae09983b9e7cbce8f9029",
+      "kind": "function",
+      "language": "plpgsql",
+      "name": "refuse_intercompany_rate_fixing_rewrite",
+      "owner": "meridian",
+      "parallel_safety": "unsafe",
+      "result_type": "trigger",
+      "schema": "fund_structure",
+      "security_definer": false,
+      "security_labels": [],
+      "signature": "refuse_intercompany_rate_fixing_rewrite()",
       "strict": false,
       "volatility": "volatile"
     },
@@ -5549,6 +5616,381 @@
       ],
       "columns": [
         {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "7f116867eb8f0e94c2a8158c8dbdea62560a5b0abd172634361af79a970ebe4c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "a6d9e61afe012b04d4ea0e58febd35976e3fd28a724171ac457014b86ab2a327",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "fixing_id",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": null,
+          "fingerprint": "5fe17deb22814a0cd8ff2e935c9cc02b059b549c85d2137b61ba2dbddab9f0f1",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "version",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "bfd985b7c1460194e937c6069edf8d941292f9f1173b71621f9336411904236a",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "index_key",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "date",
+          "default": null,
+          "fingerprint": "651f30393ba3e03300636b69e42b228561ba2bbfbcaec6194764fcd0edd3aa5f",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "fixing_date",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "date",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "5ef7ac30727f39af16e88e66342a80762d9d1ec4f4376dc98344d1f63421d16e",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "2c76b5c6cc5247a461f6a51df2f12430546e959a81d79261665ea40c2d4098d8",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "recorded_at",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "index_key"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (index_key = upper(TRIM(BOTH FROM index_key)) AND index_key <> ''::text)",
+          "delete_action": null,
+          "fingerprint": "6c4275076b1644c3d33f995f3559c2c977f18fed7ed7a607012d1ac880a59df1",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "intercompany_rate_fixings_index_key_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (tenant_id = lower(TRIM(BOTH FROM tenant_id)) AND tenant_id <> ''::text AND tenant_id <> 'all'::text)",
+          "delete_action": null,
+          "fingerprint": "18a863cc33923b67eb017a33c358375c21ea382e575fe1a1194d1e84c00e5e45",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "intercompany_rate_fixings_tenant_id_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "version"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (version > 0)",
+          "delete_action": null,
+          "fingerprint": "090a0d7add47eb925bd38543d7c0e2a50b021a782aa5ebac60ee7bebbbc07bca",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "intercompany_rate_fixings_version_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "fixing_id",
+            "version"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (tenant_id, fixing_id, version)",
+          "delete_action": null,
+          "fingerprint": "6c5f94dfb0c006b9b0565c21570b0527cd94cc44c89089b348426fde55848b97",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "intercompany_rate_fixings_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "efe3a0e3af3b9bbb4113834479a1edba5dac674b898014173322b82761abb8b4",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX intercompany_rate_fixings_by_index_date ON fund_structure.intercompany_rate_fixings USING btree (tenant_id, index_key, fixing_date, version)",
+          "expression": null,
+          "fingerprint": "f1d6549ea71b1e16b356c0e6b73e8536e14f61b269215e18ab842f70fb2753e9",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "tenant_id",
+            "index_key",
+            "fixing_date",
+            "version"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "intercompany_rate_fixings_by_index_date",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX intercompany_rate_fixings_first_version ON fund_structure.intercompany_rate_fixings USING btree (tenant_id, index_key, fixing_date) WHERE (version = 1)",
+          "expression": null,
+          "fingerprint": "c01b72d4ee38b0d4e4b296c43f2d12ca8f7cc1022cc0d027fd9452dbe8dfcb97",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "tenant_id",
+            "index_key",
+            "fixing_date"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "intercompany_rate_fixings_first_version",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "version = 1",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX intercompany_rate_fixings_pkey ON fund_structure.intercompany_rate_fixings USING btree (tenant_id, fixing_id, version)",
+          "expression": null,
+          "fingerprint": "6888fdbc97558dd0ebb0439de3c228b9e9abf09416e6e033b458964f06920974",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "tenant_id",
+            "fixing_id",
+            "version"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "intercompany_rate_fixings_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "intercompany_rate_fixings",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "fund_structure",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER intercompany_rate_fixings_immutable BEFORE DELETE OR UPDATE ON fund_structure.intercompany_rate_fixings FOR EACH ROW EXECUTE FUNCTION fund_structure.refuse_intercompany_rate_fixing_rewrite()",
+          "definition_hash": "5f1c1ce62541118a16b1e41360cd5a565ff2cc497ade3e513ff6ad217fa981b0",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "7f119394f8d317633c10bc06635b6178ef3e85d3cb84b05f3c7f8a89d741c9b9",
+          "function_schema": "fund_structure",
+          "function_signature": "refuse_intercompany_rate_fixing_rewrite()",
+          "level": "row",
+          "name": "intercompany_rate_fixings_immutable",
+          "relation": "intercompany_rate_fixings",
+          "schema": "fund_structure",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER intercompany_rate_fixings_no_truncate BEFORE TRUNCATE ON fund_structure.intercompany_rate_fixings FOR EACH STATEMENT EXECUTE FUNCTION fund_structure.refuse_intercompany_rate_fixing_rewrite()",
+          "definition_hash": "710790199cb3d1425c1bdf4b3b4a8ed06c203a831bedf0966f809a102b27f7fd",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "38cd22163bfcb3be730c1e9d54f1f11eee722ba205168f70619071c17c9b0da3",
+          "function_schema": "fund_structure",
+          "function_signature": "refuse_intercompany_rate_fixing_rewrite()",
+          "level": "statement",
+          "name": "intercompany_rate_fixings_no_truncate",
+          "relation": "intercompany_rate_fixings",
+          "schema": "fund_structure",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
           "collation": null,
           "comment": null,
           "data_type": "uuid",
@@ -7826,6 +8268,14 @@
       "forced": false,
       "policies": [],
       "relation": "intercompany_agreement_snapshot",
+      "schema": "fund_structure"
+    },
+    {
+      "enabled": false,
+      "fingerprint": "a1c93b1c5d8517b1a737b00fb2ce5e7a3c70ee322c07811077ac9dbeb3f5eca0",
+      "forced": false,
+      "policies": [],
+      "relation": "intercompany_rate_fixings",
       "schema": "fund_structure"
     },
     {
@@ -12769,6 +13219,381 @@
       ],
       "columns": [
         {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "7f116867eb8f0e94c2a8158c8dbdea62560a5b0abd172634361af79a970ebe4c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "a6d9e61afe012b04d4ea0e58febd35976e3fd28a724171ac457014b86ab2a327",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "fixing_id",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": null,
+          "fingerprint": "5fe17deb22814a0cd8ff2e935c9cc02b059b549c85d2137b61ba2dbddab9f0f1",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "version",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "bfd985b7c1460194e937c6069edf8d941292f9f1173b71621f9336411904236a",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "index_key",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "date",
+          "default": null,
+          "fingerprint": "651f30393ba3e03300636b69e42b228561ba2bbfbcaec6194764fcd0edd3aa5f",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "fixing_date",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "date",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "5ef7ac30727f39af16e88e66342a80762d9d1ec4f4376dc98344d1f63421d16e",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "2c76b5c6cc5247a461f6a51df2f12430546e959a81d79261665ea40c2d4098d8",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "recorded_at",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "index_key"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (index_key = upper(TRIM(BOTH FROM index_key)) AND index_key <> ''::text)",
+          "delete_action": null,
+          "fingerprint": "6c4275076b1644c3d33f995f3559c2c977f18fed7ed7a607012d1ac880a59df1",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "intercompany_rate_fixings_index_key_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (tenant_id = lower(TRIM(BOTH FROM tenant_id)) AND tenant_id <> ''::text AND tenant_id <> 'all'::text)",
+          "delete_action": null,
+          "fingerprint": "18a863cc33923b67eb017a33c358375c21ea382e575fe1a1194d1e84c00e5e45",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "intercompany_rate_fixings_tenant_id_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "version"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (version > 0)",
+          "delete_action": null,
+          "fingerprint": "090a0d7add47eb925bd38543d7c0e2a50b021a782aa5ebac60ee7bebbbc07bca",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "intercompany_rate_fixings_version_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "fixing_id",
+            "version"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (tenant_id, fixing_id, version)",
+          "delete_action": null,
+          "fingerprint": "6c5f94dfb0c006b9b0565c21570b0527cd94cc44c89089b348426fde55848b97",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "intercompany_rate_fixings_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "efe3a0e3af3b9bbb4113834479a1edba5dac674b898014173322b82761abb8b4",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX intercompany_rate_fixings_by_index_date ON fund_structure.intercompany_rate_fixings USING btree (tenant_id, index_key, fixing_date, version)",
+          "expression": null,
+          "fingerprint": "f1d6549ea71b1e16b356c0e6b73e8536e14f61b269215e18ab842f70fb2753e9",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "tenant_id",
+            "index_key",
+            "fixing_date",
+            "version"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "intercompany_rate_fixings_by_index_date",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX intercompany_rate_fixings_first_version ON fund_structure.intercompany_rate_fixings USING btree (tenant_id, index_key, fixing_date) WHERE (version = 1)",
+          "expression": null,
+          "fingerprint": "c01b72d4ee38b0d4e4b296c43f2d12ca8f7cc1022cc0d027fd9452dbe8dfcb97",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "tenant_id",
+            "index_key",
+            "fixing_date"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "intercompany_rate_fixings_first_version",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "version = 1",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX intercompany_rate_fixings_pkey ON fund_structure.intercompany_rate_fixings USING btree (tenant_id, fixing_id, version)",
+          "expression": null,
+          "fingerprint": "6888fdbc97558dd0ebb0439de3c228b9e9abf09416e6e033b458964f06920974",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "tenant_id",
+            "fixing_id",
+            "version"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "intercompany_rate_fixings_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "intercompany_rate_fixings",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "fund_structure",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER intercompany_rate_fixings_immutable BEFORE DELETE OR UPDATE ON fund_structure.intercompany_rate_fixings FOR EACH ROW EXECUTE FUNCTION fund_structure.refuse_intercompany_rate_fixing_rewrite()",
+          "definition_hash": "5f1c1ce62541118a16b1e41360cd5a565ff2cc497ade3e513ff6ad217fa981b0",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "7f119394f8d317633c10bc06635b6178ef3e85d3cb84b05f3c7f8a89d741c9b9",
+          "function_schema": "fund_structure",
+          "function_signature": "refuse_intercompany_rate_fixing_rewrite()",
+          "level": "row",
+          "name": "intercompany_rate_fixings_immutable",
+          "relation": "intercompany_rate_fixings",
+          "schema": "fund_structure",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER intercompany_rate_fixings_no_truncate BEFORE TRUNCATE ON fund_structure.intercompany_rate_fixings FOR EACH STATEMENT EXECUTE FUNCTION fund_structure.refuse_intercompany_rate_fixing_rewrite()",
+          "definition_hash": "710790199cb3d1425c1bdf4b3b4a8ed06c203a831bedf0966f809a102b27f7fd",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "38cd22163bfcb3be730c1e9d54f1f11eee722ba205168f70619071c17c9b0da3",
+          "function_schema": "fund_structure",
+          "function_signature": "refuse_intercompany_rate_fixing_rewrite()",
+          "level": "statement",
+          "name": "intercompany_rate_fixings_no_truncate",
+          "relation": "intercompany_rate_fixings",
+          "schema": "fund_structure",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
           "collation": null,
           "comment": null,
           "data_type": "uuid",
@@ -15224,6 +16049,41 @@
       "level": "statement",
       "name": "intercompany_agreement_snapshot_no_truncate",
       "relation": "intercompany_agreement_snapshot",
+      "schema": "fund_structure",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER intercompany_rate_fixings_immutable BEFORE DELETE OR UPDATE ON fund_structure.intercompany_rate_fixings FOR EACH ROW EXECUTE FUNCTION fund_structure.refuse_intercompany_rate_fixing_rewrite()",
+      "definition_hash": "5f1c1ce62541118a16b1e41360cd5a565ff2cc497ade3e513ff6ad217fa981b0",
+      "enabled": "origin",
+      "events": [
+        "delete",
+        "update"
+      ],
+      "fingerprint": "7f119394f8d317633c10bc06635b6178ef3e85d3cb84b05f3c7f8a89d741c9b9",
+      "function_schema": "fund_structure",
+      "function_signature": "refuse_intercompany_rate_fixing_rewrite()",
+      "level": "row",
+      "name": "intercompany_rate_fixings_immutable",
+      "relation": "intercompany_rate_fixings",
+      "schema": "fund_structure",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER intercompany_rate_fixings_no_truncate BEFORE TRUNCATE ON fund_structure.intercompany_rate_fixings FOR EACH STATEMENT EXECUTE FUNCTION fund_structure.refuse_intercompany_rate_fixing_rewrite()",
+      "definition_hash": "710790199cb3d1425c1bdf4b3b4a8ed06c203a831bedf0966f809a102b27f7fd",
+      "enabled": "origin",
+      "events": [
+        "truncate"
+      ],
+      "fingerprint": "38cd22163bfcb3be730c1e9d54f1f11eee722ba205168f70619071c17c9b0da3",
+      "function_schema": "fund_structure",
+      "function_signature": "refuse_intercompany_rate_fixing_rewrite()",
+      "level": "statement",
+      "name": "intercompany_rate_fixings_no_truncate",
+      "relation": "intercompany_rate_fixings",
       "schema": "fund_structure",
       "timing": "before"
     }

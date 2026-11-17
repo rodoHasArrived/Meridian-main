@@ -11,7 +11,7 @@ namespace Meridian.Ui.Services.Services.Accounting;
 public sealed partial class IntercompanyAgreementWorkspace
 {
     private bool _useStructuredTerms, _useExternalReview;
-    private string _scheduleStart = "", _scheduleEnd = "", _calendar = "", _floatingIndex = "", _spread = "", _feeAmount = "", _feeRate = "", _feeBase = "", _driver = "", _beneficiary = "", _guaranteeLimit = "";
+    private string _scheduleStart = "", _scheduleEnd = "", _calendar = "", _floatingIndex = "", _spread = "", _fixingLag = "", _feeAmount = "", _feeRate = "", _feeBase = "", _driver = "", _beneficiary = "", _guaranteeLimit = "";
     private int _businessDays, _expiryDays = 30;
     private IntercompanyRateBasisDto _rateBasis;
     private IntercompanyFrequencyDto _frequency;
@@ -55,6 +55,8 @@ public sealed partial class IntercompanyAgreementWorkspace
     public string CalendarId { get => _calendar; set => Edit(ref _calendar, value); }
     public string FloatingIndexReference { get => _floatingIndex; set => Edit(ref _floatingIndex, value); }
     public string SpreadBps { get => _spread; set => Edit(ref _spread, value); }
+    /// <summary>Floating loans: business days before each period start at which the fixing is observed. Blank = undeclared.</summary>
+    public string FixingLagBusinessDays { get => _fixingLag; set => Edit(ref _fixingLag, value); }
     public string FixedFeeAmount { get => _feeAmount; set => Edit(ref _feeAmount, value); }
     public string AnnualFeeRate { get => _feeRate; set => Edit(ref _feeRate, value); }
     /// <summary>Fixed management fees: whether the amount covers each schedule period or one year (per annum uses <see cref="DayCount"/>).</summary>
@@ -117,7 +119,8 @@ public sealed partial class IntercompanyAgreementWorkspace
         return AgreementType switch
         {
             IntercompanyAgreementTypeDto.Loan => new(schedule, RateBasis, RateBasis == IntercompanyRateBasisDto.Fixed ? DecimalValue(FixedAnnualRate, "Annual rate") : null,
-                RateBasis == IntercompanyRateBasisDto.Floating ? FloatingIndexReference : null, RateBasis == IntercompanyRateBasisDto.Floating ? DecimalValue(SpreadBps, "Spread basis points") : null, DayCount, Compounding),
+                RateBasis == IntercompanyRateBasisDto.Floating ? FloatingIndexReference : null, RateBasis == IntercompanyRateBasisDto.Floating ? DecimalValue(SpreadBps, "Spread basis points") : null, DayCount, Compounding,
+                FixingLagBusinessDays: RateBasis == IntercompanyRateBasisDto.Floating ? LagValue(FixingLagBusinessDays) : null),
             IntercompanyAgreementTypeDto.ManagementFee => FeeTerms(schedule),
             IntercompanyAgreementTypeDto.CostShare => new(schedule, Allocations: string.IsNullOrWhiteSpace(AllocationDriverReference)
                 ? StructuredAllocations.Select(x => new IntercompanyAllocationDto(ParseId(x.EntityId, "Allocation entity"), DecimalValue(x.Percent, "Allocation percent") ?? throw new InvalidOperationException("Allocation percentage is required."))).ToArray() : null,
@@ -137,6 +140,10 @@ public sealed partial class IntercompanyAgreementWorkspace
             AnnualFeeRate: DecimalValue(AnnualFeeRate, "Annual fee rate"), CalculationBaseReference: OptionalText(CalculationBaseReference),
             FixedFeeBasis: basis);
     }
+
+    private static int? LagValue(string text)
+        => string.IsNullOrWhiteSpace(text) ? null : int.TryParse(text.Trim(), NumberStyles.None, CultureInfo.InvariantCulture, out var days)
+            ? days : throw new InvalidOperationException("Fixing lag must be a whole number of business days.");
     private void FillStructuredTerms(IntercompanyStructuredTermsDto? terms)
     {
         UseStructuredTerms = terms is not null;
@@ -152,6 +159,7 @@ public sealed partial class IntercompanyAgreementWorkspace
             FixedAnnualRate = Value(rate);
         FloatingIndexReference = terms?.FloatingIndexReference ?? "";
         SpreadBps = Value(terms?.SpreadBps);
+        FixingLagBusinessDays = terms?.FixingLagBusinessDays?.ToString(CultureInfo.InvariantCulture) ?? "";
         DayCount = terms?.DayCount ?? IntercompanyDayCountDto.Actual365;
         Compounding = terms?.Compounding ?? IntercompanyCompoundingDto.Simple;
         FixedFeeAmount = Value(terms?.FixedFeeAmount);
@@ -234,7 +242,8 @@ public sealed partial class IntercompanyAgreementWorkspace
     { ResetLegacyCoverage(); SelectedGuaranteeDisclosure = null; SelectedObligationFinding = null; ObligationMonitor = null; ObligationFindings.Clear(); GuaranteeDisclosures.Clear(); ObligationBalances.Clear(); ObligationStatus = "Not evaluated for the selected book/date. Findings never block close."; }
     private static string StructuredSummary(IntercompanyStructuredTermsDto? terms)
         => terms is null ? "Terms format: Unstructured" : $"Terms format: StructuredV1 · schema {terms.SchemaVersion}\n"
-            + $"Rate {terms.RateBasis} · fixed annual {Value(terms.FixedAnnualRate)} · {terms.FloatingIndexReference} + {Value(terms.SpreadBps)} bps · {terms.DayCount} · {terms.Compounding}\n"
+            + $"Rate {terms.RateBasis} · fixed annual {Value(terms.FixedAnnualRate)} · {terms.FloatingIndexReference} + {Value(terms.SpreadBps)} bps"
+            + (terms.FixingLagBusinessDays is { } lag ? $" · fixed {lag} business days before each period start" : "") + $" · {terms.DayCount} · {terms.Compounding}\n"
             + $"Schedule {terms.Schedule?.StartDate:yyyy-MM-dd}–{terms.Schedule?.EndDate:yyyy-MM-dd} · {terms.Schedule?.Frequency} · {terms.Schedule?.CalendarId} · {terms.Schedule?.BusinessDayConvention} · {terms.Schedule?.SettlementBusinessDays} business days\n"
             + $"Fee {Value(terms.FixedFeeAmount)}{(terms.FixedFeeBasis is { } basis ? $" {basis}" : "")} or annual {Value(terms.AnnualFeeRate)} · base {terms.CalculationBaseReference}\n"
             + $"Allocation driver {terms.AllocationDriverReference} · {string.Join(", ", (terms.Allocations ?? []).Select(x => $"{x.EntityId}: {Value(x.Percent)}%"))}\n"

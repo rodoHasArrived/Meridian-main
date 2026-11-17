@@ -6,6 +6,44 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IFetchingStatementConnector
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.IFetchingStatementConnector</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:232](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L232).
+
+A connector that can pull statements from a remote source. Fetch yields a retained document that IStatementConnector.ParseAsync then consumes, keeping a single parse path and raw evidence for every import regardless of origin. A connector must not silently ignore StatementFetchRequest.UntilExclusive.
+
+```csharp
+public interface IFetchingStatementConnector : IStatementConnector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;StatementSourceDocument&gt; FetchAsync(StatementFetchRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:234](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L234) |  |
+
+## IStatementConnector
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.IStatementConnector</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:195](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L195).
+
+Parses a source statement document into normalized statement entities and parse issues.
+
+```csharp
+public interface IStatementConnector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>StatementConnectorDescriptor Descriptor { get; }</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:197](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L197) |  |
+| <code>bool CanHandle(StatementSourceDocument document);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:200](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L200) | Extension and content sniffing; used for connector auto-detection. |
+| <code>Task&lt;StatementParseResult&gt; ParseAsync(StatementSourceDocument document, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:202](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L202) |  |
+
 ## IStatementFetchIngestionAuthority
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.IStatementFetchIngestionAuthority</code>. Kind: `interface`.
@@ -822,41 +860,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static string Compute(string value);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationService.cs:1094](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationService.cs#L1094) |  |
-
-## EmptyInternalReconciliationBookSource
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.EmptyInternalReconciliationBookSource</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationBook.cs:42](../../../../src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationBook.cs#L42).
-
-Default internal-book source that returns an empty book. It never fabricates an internal side: with no internal records, the sided matcher reports every statement row as an unmatched break, which is the truthful state for an account whose internal book has not been wired in.
-
-```csharp
-public sealed class EmptyInternalReconciliationBookSource : IInternalReconciliationBookSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static EmptyInternalReconciliationBookSource Instance { get; } = new ();</code> | [src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationBook.cs:44](../../../../src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationBook.cs#L44) |  |
-| <code>public Task&lt;InternalReconciliationBook&gt; GetBookAsync(StatementRunRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationBook.cs:46](../../../../src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationBook.cs#L46) |  |
-
-## EmptyInternalReconciliationPopulationProvider
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.EmptyInternalReconciliationPopulationProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationPopulations.cs:55](../../../../src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationPopulations.cs#L55).
-
-The safe default provider: returns an empty internal book. With no internal populations, the matching engine reports every statement line as unmatched — the correct, fail-closed behavior when no book is connected (as opposed to fabricating matches). Wire a real provider to reconcile against live positions, cash, and ledger.
-
-```csharp
-public sealed class EmptyInternalReconciliationPopulationProvider : IInternalReconciliationPopulationProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static EmptyInternalReconciliationPopulationProvider Instance { get; } = new ();</code> | [src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationPopulations.cs:57](../../../../src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationPopulations.cs#L57) |  |
-| <code>public Task&lt;InternalReconciliationPopulations&gt; GetPopulationsAsync(InternalReconciliationPopulationContext context, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationPopulations.cs:59](../../../../src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationPopulations.cs#L59) |  |

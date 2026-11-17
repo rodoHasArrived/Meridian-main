@@ -6,6 +6,38 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementMatchVariance
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementMatchVariance</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1019](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1019).
+
+```csharp
+public sealed record StatementMatchVariance(decimal? Quantity = null, decimal? MarketValue = null, decimal? Amount = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal LargestAbsoluteAmount =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1024](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1024) |  |
+
+## StatementNormalizedEntities
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementNormalizedEntities</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:218](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L218).
+
+```csharp
+public sealed record StatementNormalizedEntities(string RunId, string ImportId, IReadOnlyList<StatementPosition> Positions, IReadOnlyList<StatementCashBalance> CashBalances, IReadOnlyList<StatementTransaction> Transactions, IReadOnlyList<StatementSecurityReference> Securities, IReadOnlyList<StatementSourceRowReference> SourceRows)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static StatementNormalizedEntities FromImport(string runId, NormalizedStatementImportResult import);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:227](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L227) |  |
+
 ## StatementProfileVersion
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementProfileVersion</code>. Kind: `record`.

@@ -6,6 +6,60 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BackfillSchedulePresets
+
+Qualified name: <code>Meridian.Application.Scheduling.BackfillSchedulePresets</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Scheduling/BackfillSchedule.cs:225](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L225).
+
+Preset schedule templates for common use cases.
+
+```csharp
+public static class BackfillSchedulePresets
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static BackfillSchedule DailyGapFill(string name, IEnumerable&lt;string&gt;? symbols = null) =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:235](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L235) | Daily gap-fill at 2 AM UTC. |
+| <code>public static BackfillSchedule WeeklyFullBackfill(string name, IEnumerable&lt;string&gt;? symbols = null) =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:249](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L249) | Weekly full backfill on Sunday at 3 AM UTC. |
+| <code>public static BackfillSchedule EndOfDayUpdate(string name, IEnumerable&lt;string&gt;? symbols = null) =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:263](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L263) | End-of-day update weekdays at 6 PM EST (11 PM UTC). |
+| <code>public static BackfillSchedule MonthlyDeepBackfill(string name, IEnumerable&lt;string&gt;? symbols = null) =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:277](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L277) | Monthly deep historical backfill on first Sunday at 1 AM UTC. |
+
+## ExecutionStatistics
+
+Qualified name: <code>Meridian.Application.Scheduling.ExecutionStatistics</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:197](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L197).
+
+Statistics from a scheduled execution.
+
+```csharp
+public sealed class ExecutionStatistics
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int TotalSymbols { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:199](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L199) |  |
+| <code>public int SuccessfulSymbols { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:200](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L200) |  |
+| <code>public int FailedSymbols { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:201](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L201) |  |
+| <code>public int SkippedSymbols { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:202](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L202) |  |
+| <code>public int GapsDetected { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:204](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L204) |  |
+| <code>public int GapsFilled { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:205](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L205) |  |
+| <code>public int GapsRemaining =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:206](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L206) |  |
+| <code>public long TotalBarsRetrieved { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:208](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L208) |  |
+| <code>public long TotalBytesDownloaded { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:209](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L209) |  |
+| <code>public int TotalRequests { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:211](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L211) |  |
+| <code>public int SuccessfulRequests { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:212](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L212) |  |
+| <code>public int FailedRequests { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:213](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L213) |  |
+| <code>public int RateLimitedRequests { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:214](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L214) |  |
+| <code>public double AverageRequestDurationMs { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:216](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L216) |  |
+| <code>public double MaxRequestDurationMs { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:217](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L217) |  |
+| <code>public double SuccessRate =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:222](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L222) | Success rate (0.0 - 1.0). |
+
 ## ExecutionStatus
 
 Qualified name: <code>Meridian.Application.Scheduling.ExecutionStatus</code>. Kind: `enum`.
@@ -982,42 +1036,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public SecurityMasterCorporateActionCommandService(ISecurityMasterEventStore eventStore, ILogger&lt;SecurityMasterCorporateActionCommandService&gt; logger, ISecurityMasterStore? store = null, ICorporateActionRestatementTrigger? restatementTrigger = null, ICorporateActionOperationsService? durableOperations = null);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterCorporateActionCommandService.cs:18](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterCorporateActionCommandService.cs#L18) |  |
 | <code>public async Task&lt;SecurityMasterCorporateActionAppendResultDto&gt; AppendAsync(SecurityMasterCorporateActionAppendRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterCorporateActionCommandService.cs:32](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterCorporateActionCommandService.cs#L32) |  |
-
-## SecurityMasterTickerChangeService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.SecurityMasterTickerChangeService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterTickerChangeService.cs:26](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterTickerChangeService.cs#L26).
-
-Records ticker changes through the standard amend path: the old ticker identifier&#x27;s validity interval is closed at the change date and the new ticker&#x27;s interval opens there. Because this flows through the event store, historical as-of resolution answers lookups for the old ticker at pre-change dates, and the change is visible in the security&#x27;s event history like any other amendment.
-
-```csharp
-public sealed class SecurityMasterTickerChangeService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterTickerChangeService(ContractSecurityMasterQueryService queryService, ISecurityMasterService commandService, ILogger&lt;SecurityMasterTickerChangeService&gt; logger, ISecurityMasterAmender? systemAmender = null);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterTickerChangeService.cs:33](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterTickerChangeService.cs#L33) |  |
-| <code>public async Task&lt;SecurityDetailDto&gt; RecordAsync(RecordTickerChangeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterTickerChangeService.cs:47](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterTickerChangeService.cs#L47) |  |
-
-## CoverageInvalidationHandler
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CoverageInvalidationHandler</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/CoverageInvalidationHandler.cs:15](../../../../src/Meridian.Application/SecurityMaster/CoverageInvalidationHandler.cs#L15).
-
-Published-revision side effect (Order = 20, runs after the projection rebuild): evicts any cached multi-asset coverage / operational-readiness view affected by the edit, via IMultiAssetCoverageInvalidator, so the next coverage read recomputes against the freshly-rebuilt projection. Idempotent: invalidation is safe to repeat on a retried publish. The default invalidator is a no-op while the coverage read path is recomputed per request (uncached).
-
-```csharp
-public sealed class CoverageInvalidationHandler : ISecurityMasterRevisionPublishedHandler
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CoverageInvalidationHandler(IMultiAssetCoverageInvalidator invalidator, ILogger&lt;CoverageInvalidationHandler&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/CoverageInvalidationHandler.cs:20](../../../../src/Meridian.Application/SecurityMaster/CoverageInvalidationHandler.cs#L20) |  |
-| <code>public int Order =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/CoverageInvalidationHandler.cs:28](../../../../src/Meridian.Application/SecurityMaster/CoverageInvalidationHandler.cs#L28) |  |
-| <code>public async Task HandleAsync(SecurityMasterRevisionPublishedEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CoverageInvalidationHandler.cs:30](../../../../src/Meridian.Application/SecurityMaster/CoverageInvalidationHandler.cs#L30) |  |

@@ -144,9 +144,16 @@ public static class IntercompanyAccrualEvidenceGuard
         try
         { evidence = JsonSerializer.Deserialize(draft.IntercompanyAccrualEvidenceJson, IntercompanyAccrualJsonContext.Default.IntercompanyAccrualEvidenceDto); }
         catch (JsonException) { return "Accrual provenance is invalid."; }
-        if (evidence is null || evidence.RuleVersion != IntercompanyAccrualRules.RuleVersion
-            || evidence.Computation is not { IsReady: true, Amount: { } amount } || evidence.Principal is null)
+        if (evidence is null || !IntercompanyAccrualRules.IsSupported(evidence.RuleVersion)
+            || evidence.Computation is not { IsReady: true, Amount: { } amount } || evidence.Principal is null
+            || evidence.Computation.RuleVersion != evidence.RuleVersion)
             return "Accrual provenance uses an unsupported calculation rule.";
+        // v1 never carries a fixing; under v2 every pinned slice's rate is exactly its fixing plus the declared spread.
+        if (evidence.Computation.Slices.Any(slice => slice.Fixing is { } pin
+                ? evidence.RuleVersion != IntercompanyAccrualRules.FloatingRuleVersion || slice.AnnualRate != pin.IndexRate + pin.SpreadBps / 10_000m
+                : false)
+            || (evidence.RuleVersion == IntercompanyAccrualRules.FloatingRuleVersion && evidence.Computation.Slices.All(slice => slice.Fixing is null)))
+            return "Accrual provenance states a floating rate that differs from its pinned fixing.";
         // A reversal or rebook of a posted accrual is a different journal; its inverse is proved by the
         // correction workflow against the immutable original, not by restating the original computation.
         // A rebook carries the posted accrual's inverse plus its replacement, so it must net to zero on

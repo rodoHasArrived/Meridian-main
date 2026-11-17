@@ -1342,6 +1342,15 @@
       "sha256": "720f57be8f8ac59f1ca7c5dc4466adeae5f7c1ad8004e125da5fb3e723aee72b"
     },
     {
+      "filename": "V_ledger_073__intercompany_balance_confirmations.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_073__intercompany_balance_confirmations.sql",
+      "schema": "ledger",
+      "sha256": "9305e1acd0d4f9042339a16a40189f9f7c2a86f01e75b51a057011c709f17daf"
+    },
+    {
       "filename": "001_fund_structure.sql",
       "immutable": true,
       "migration_set_id": "fund-structure",
@@ -1412,6 +1421,15 @@
       "path": "src/Meridian.Storage/FundStructure/Migrations/008_intercompany_accounting_arrangements.sql",
       "schema": "fund_structure",
       "sha256": "1e740f559da78d0e04311b42baf60923189824ec45c977382cf2676cfee475ef"
+    },
+    {
+      "filename": "009_intercompany_rate_fixings.sql",
+      "immutable": true,
+      "migration_set_id": "fund-structure",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/FundStructure/Migrations/009_intercompany_rate_fixings.sql",
+      "schema": "fund_structure",
+      "sha256": "7fe2953738b221fba55970204a6b9137370bfe499eb7ae55dfd84a2219a4d91c"
     },
     {
       "filename": "001_fund_accounts.sql",
@@ -1676,7 +1694,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "0fd847198feddb33de03ce79d85bf5bddd2ea78a90d50e246ba1fc544c8324af",
+  "fingerprint": "7f6e8cbb6b1921e3e217b2a268470fd5e8e0bf14c253d84d9fceba60040745bf",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1938,9 +1956,9 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 186,
+    "files": 188,
     "migration_sets": 11,
-    "waivers": 46,
+    "waivers": 50,
     "warnings": 0
   },
   "waivers": [
@@ -1984,6 +2002,20 @@
       "path": "src/Meridian.Storage/FundStructure/Migrations/008_intercompany_accounting_arrangements.sql",
       "reason": "The lexical TRUNCATE matches declare only BEFORE TRUNCATE rejection triggers protecting the new accounting-arrangement event history. They execute no TRUNCATE command and remove no table, column, row or retained fact. Preserve these rejection triggers and the UPDATE/DELETE protections. This exact path/rule exception follows V_ledger_030 and V_ledger_031 and covers only these truncation-rejection declarations; it does not authorize data truncation or a history-removing downgrade.",
       "review_after": "2027-05-13",
+      "rule_id": "migration-truncate"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/FundStructure/Migrations/009_intercompany_rate_fixings.sql",
+      "reason": "Each DROP TRIGGER IF EXISTS is immediately followed by recreation of the same named protection trigger on the same table, making the new intercompany rate-fixing version-history rejection triggers reapply-idempotent. The migration runner executes the DDL and migration-ledger change in its transaction under the advisory migration lock, so failed recreation restores the prior protections. No table, column, row, retained receipt or history is removed. This exact path/rule exception follows 008's drop-and-recreate idiom and does not authorize omission of any replacement trigger.",
+      "review_after": "2027-05-17",
+      "rule_id": "migration-drop-object"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/FundStructure/Migrations/009_intercompany_rate_fixings.sql",
+      "reason": "The lexical TRUNCATE matches declare only BEFORE TRUNCATE rejection triggers protecting the new intercompany rate-fixing version history. They execute no TRUNCATE command and remove no table, column, row or retained fact. Preserve these rejection triggers and the UPDATE/DELETE protections. This exact path/rule exception follows 008 and covers only these truncation-rejection declarations; it does not authorize data truncation or a history-removing downgrade.",
+      "review_after": "2027-05-17",
       "rule_id": "migration-truncate"
     },
     {
@@ -2153,6 +2185,20 @@
       "reason": "Scoped schema review exception for automatic synthetic fill accounting: replaces only ledger_event_audit_events_subject_kind_check with a strict superset preserving journal and period and admitting automation-grant. The migration runner performs drop and replacement within one transaction; no rows, columns, audit events or immutability triggers are removed. Failure rolls back the original constraint. PostgreSQL tests verify existing audit coverage and actor-attributed grant activation/revocation. Independent human schema/storage review remains pending before production activation; never narrow this check while grant audit events exist.",
       "review_after": "2027-02-14",
       "rule_id": "migration-drop-table-member"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_073__intercompany_balance_confirmations.sql",
+      "reason": "Each DROP TRIGGER IF EXISTS is immediately followed by recreation of the same named protection trigger on the same table, making the new balance-confirmation version-history rejection triggers reapply-idempotent. The migration runner executes the DDL and migration-ledger change in its transaction under the advisory migration lock, so failed recreation restores the prior protections. No table, column, row, retained receipt or history is removed. This exact path/rule exception follows V_ledger_030/V_ledger_031's drop-and-recreate idiom and does not authorize omission of any replacement trigger.",
+      "review_after": "2027-05-13",
+      "rule_id": "migration-drop-object"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_073__intercompany_balance_confirmations.sql",
+      "reason": "The lexical TRUNCATE matches declare only BEFORE TRUNCATE rejection triggers protecting the new reciprocal intercompany balance confirmation versions. They execute no TRUNCATE command and remove no table, column, row or retained fact. Preserve these rejection triggers and the UPDATE/DELETE protections. This exact path/rule exception follows V_ledger_030 and V_ledger_031 and covers only these truncation-rejection declarations; it does not authorize data truncation or a history-removing downgrade.",
+      "review_after": "2027-05-13",
+      "rule_id": "migration-truncate"
     },
     {
       "category": "destructive_changes",

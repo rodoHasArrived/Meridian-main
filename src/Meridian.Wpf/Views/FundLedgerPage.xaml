@@ -2083,6 +2083,12 @@
                 <TabItem Header="Management fee">
                     <agreementViews:IntercompanyManagementFeeControl DataContext="{Binding ManagementFee}" />
                 </TabItem>
+                <TabItem Header="Rate fixings">
+                    <agreementViews:IntercompanyRateFixingsControl DataContext="{Binding RateFixings}" />
+                </TabItem>
+                <TabItem Header="Balance confirmation">
+                    <agreementViews:IntercompanyBalanceConfirmationControl DataContext="{Binding BalanceConfirmation}" />
+                </TabItem>
             </TabControl>
         </StackPanel>
     </ScrollViewer>

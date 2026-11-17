@@ -7,8 +7,9 @@ using Meridian.Contracts.SecurityMaster.Schedules;
 namespace Meridian.Application.FundStructure;
 
 /// <summary>
-/// Turns declared fixed-rate loan terms into an interest amount for a half-open accrual window.
-/// Pure: it never reads a ledger, fetches a fixing, creates a draft or authorizes a journal.
+/// Turns declared fixed- or floating-rate loan terms into an interest amount for a half-open accrual window.
+/// Pure: it never reads a ledger, fetches a fixing, creates a draft or authorizes a journal. Floating slices use
+/// only the approved fixings the server placed on the input (rule <see cref="IntercompanyAccrualRules.FloatingRuleVersion"/>).
 /// </summary>
 /// <remarks>
 /// Proration (<see cref="IntercompanyAccrualRules.RuleVersion"/>): every day accrues under the approved
@@ -26,8 +27,11 @@ public sealed class IntercompanyAccrualPreviewService(IBusinessDayCalendarSource
         ArgumentNullException.ThrowIfNull(input);
         var agreementId = input.Authority?.FirstOrDefault()?.LegalRevision?.AgreementId;
         var currency = input.Authority?.FirstOrDefault()?.LegalRevision?.Terms?.Currency;
+        // Any floating day makes the whole window a v2 computation; an all-fixed window stays exactly v1.
+        var rule = input.Authority?.Any(item => item.LegalRevision?.Terms?.Terms?.StructuredTerms?.RateBasis == IntercompanyRateBasisDto.Floating) == true
+            ? IntercompanyAccrualRules.FloatingRuleVersion : IntercompanyAccrualRules.RuleVersion;
         IntercompanyAccrualPreviewDto Unavailable(string reason) => new(IntercompanyAccrualRules.StatusUnavailable,
-            IntercompanyAccrualRules.RuleVersion, agreementId, currency, input.AccrualFrom, input.AccrualTo, null, null,
+            rule, agreementId, currency, input.AccrualFrom, input.AccrualTo, null, null,
             ScheduleGenerator.KernelVersion, [], [], [reason]);
 
         if (input.AccrualTo <= input.AccrualFrom)
@@ -57,8 +61,11 @@ public sealed class IntercompanyAccrualPreviewService(IBusinessDayCalendarSource
             { IntercompanyAgreementRules.ValidateComplete(draft); }
             catch (IntercompanyAgreementValidationException error)
             { return Unavailable($"Agreement version {legal.AgreementVersion}: {error.Message}"); }
-            if (terms.RateBasis != IntercompanyRateBasisDto.Fixed || terms.FixedAnnualRate is not { } rate)
-                return Unavailable("Floating-rate loans need a governed fixing authority that this release does not provide.");
+            var floating = terms.RateBasis == IntercompanyRateBasisDto.Floating;
+            if (floating && terms.FixingLagBusinessDays is null)
+                return Unavailable($"Agreement version {legal.AgreementVersion} declares a floating rate without a fixing lag; no fixing date is inferred.");
+            if (!floating && terms.FixedAnnualRate is null)
+                return Unavailable($"Agreement version {legal.AgreementVersion} declares no fixed annual rate.");
             if (terms.Compounding != IntercompanyCompoundingDto.Simple)
                 return Unavailable("Only simple interest is calculated; compounding needs retained capitalization history.");
             var schedule = terms.Schedule!;
@@ -81,7 +88,16 @@ public sealed class IntercompanyAccrualPreviewService(IBusinessDayCalendarSource
                     continue;
                 if (from != cursor)
                     break;
-                foreach (var principal in input.Principal)
+                IntercompanyAccrualFixingPinDto? pin = null;
+                var rate = terms.FixedAnnualRate ?? 0m;
+                if (floating)
+                {
+                    if (Fixing(input, terms, calendar, period.AccrualStart) is not { } found)
+                        return Unavailable(FixingRefusal(terms, calendar, period.AccrualStart));
+                    pin = found;
+                    rate = found.IndexRate + found.SpreadBps / 10_000m;
+                }
+                foreach (var principal in input.Principal!)
                 {
                     var start = Later(from, principal.From);
                     var end = Earlier(to, principal.To);
@@ -96,7 +112,8 @@ public sealed class IntercompanyAccrualPreviewService(IBusinessDayCalendarSource
                     slices.Add(new(slices.Count + 1, start, end, authority.AccountingArrangementRevisionId,
                         legal.AgreementVersion, legal.PayloadHash, period.Sequence, principal.Principal, rate,
                         DayCountConventions.TermLabel(convention), fraction, principal.Principal * rate * fraction,
-                        principal.EvidenceReference));
+                        principal.EvidenceReference)
+                    { Fixing = pin });
                 }
                 cursor = to;
             }
@@ -109,13 +126,42 @@ public sealed class IntercompanyAccrualPreviewService(IBusinessDayCalendarSource
         var calendarPins = pins.OrderBy(pin => pin.Key, StringComparer.Ordinal)
             .Select(pin => new IntercompanyAccrualCalendarPinDto(pin.Key, pin.Value)).ToArray();
         if (amount <= 0m)
-            return new(IntercompanyAccrualRules.StatusUnavailable, IntercompanyAccrualRules.RuleVersion, agreementId, currency,
+            return new(IntercompanyAccrualRules.StatusUnavailable, rule, agreementId, currency,
                 input.AccrualFrom, input.AccrualTo, null, null, ScheduleGenerator.KernelVersion, calendarPins, slices,
                 ["The window produces no positive interest in the agreement currency; nothing is proposed."]);
-        return new(IntercompanyAccrualRules.StatusReady, IntercompanyAccrualRules.RuleVersion, agreementId, currency,
+        return new(IntercompanyAccrualRules.StatusReady, rule, agreementId, currency,
             input.AccrualFrom, input.AccrualTo, amount, unrounded, ScheduleGenerator.KernelVersion, calendarPins, slices,
             ["Calculated proposal input only. Nothing is posted; each side still requires its own review."]);
     }
+
+    /// <summary>
+    /// The fixing observed the declared lag before the period's accrual start, on the schedule calendar. Exactly
+    /// that date's approved value is used: never the nearest, latest or a carried-forward rate.
+    /// </summary>
+    private static IntercompanyAccrualFixingPinDto? Fixing(IntercompanyAccrualComputationInput input, IntercompanyStructuredTermsDto terms,
+        IBusinessDayCalendar calendar, DateOnly periodStart)
+    {
+        if (FixingDate(terms, calendar, periodStart) is not { } date)
+            return null;
+        var index = terms.FloatingIndexReference!.Trim().ToUpperInvariant();
+        var matches = (input.Fixings ?? []).Where(item => item.FixingDate == date
+            && string.Equals(item.IndexReference.Trim(), index, StringComparison.OrdinalIgnoreCase)).ToArray();
+        return matches.Length == 1
+            ? new(matches[0].FixingId, index, date, matches[0].RateFraction, terms.SpreadBps!.Value, terms.FixingLagBusinessDays!.Value, matches[0].ValueDigest)
+            : null;
+    }
+
+    private static DateOnly? FixingDate(IntercompanyStructuredTermsDto terms, IBusinessDayCalendar calendar, DateOnly periodStart)
+    {
+        try
+        { return calendar.AddBusinessDays(periodStart, -terms.FixingLagBusinessDays!.Value); }
+        catch (InvalidOperationException) { return null; }
+    }
+
+    private static string FixingRefusal(IntercompanyStructuredTermsDto terms, IBusinessDayCalendar calendar, DateOnly periodStart)
+        => FixingDate(terms, calendar, periodStart) is { } date
+            ? $"No single approved {terms.FloatingIndexReference!.Trim().ToUpperInvariant()} fixing exists for {date:yyyy-MM-dd} (the period starting {periodStart:yyyy-MM-dd}); a missing fixing is never inferred."
+            : $"The fixing date for the period starting {periodStart:yyyy-MM-dd} cannot be derived on calendar {calendar.CalendarId}.";
 
     /// <summary>Segments must tile the window exactly, in order, with no gap, overlap or overhang.</summary>
     private static string? Coverage(IEnumerable<(DateOnly From, DateOnly To)>? segments, IntercompanyAccrualComputationInput input)

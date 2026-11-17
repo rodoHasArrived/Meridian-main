@@ -6,6 +6,66 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterOperationalReadinessService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterOperationalReadinessService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs:47](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs#L47).
+
+Evaluates Security Master coverage for multi-asset operational readiness views.
+
+```csharp
+public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterOperationalReadinessService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterOperationalReadinessService(AssetClassValidatorRegistry? assetClassValidators = null, ISecurityAssetProfileCatalog? assetProfileCatalog = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs:59](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs#L59) |  |
+| <code>public Task&lt;MultiAssetCoverageSummaryDto&gt; GetReadinessAsync(SecurityMasterOperationalReadinessRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs:67](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs#L67) |  |
+
+## SecurityMasterPricingService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterPricingService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterPricingService.ClosePrices.cs:6](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterPricingService.ClosePrices.cs#L6).
+
+```csharp
+public sealed partial class SecurityMasterPricingService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;SecurityClosePriceSetDto&gt; CreateClosePriceSetAsync(CreateSecurityClosePriceSetRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterPricingService.ClosePrices.cs:8](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterPricingService.ClosePrices.cs#L8) |  |
+| <code>public async Task&lt;SecurityClosePriceSetDto&gt; ApproveClosePriceSetAsync(ApproveSecurityClosePriceSetRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterPricingService.ClosePrices.cs:86](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterPricingService.ClosePrices.cs#L86) |  |
+| <code>public Task&lt;SecurityClosePriceSetDto?&gt; GetClosePriceSetAsync(string accountId, string bookId, DateOnly valuationDate, Guid snapshotId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterPricingService.ClosePrices.cs:122](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterPricingService.ClosePrices.cs#L122) |  |
+| <code>public Task&lt;IReadOnlyList&lt;SecurityClosePriceSetDto&gt;&gt; GetClosePriceSetsAsync(string accountId, string bookId, DateOnly valuationDate, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterPricingService.ClosePrices.cs:130](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterPricingService.ClosePrices.cs#L130) |  |
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterPricingService.cs:8](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterPricingService.cs#L8).
+
+Selects retained source prices using the hierarchy in force at the requested date.
+
+```csharp
+public sealed partial class SecurityMasterPricingService : ISecurityMasterPricingService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterPricingService(ISecurityMasterPricingStore store, ISecurityMasterQueryService queryService, ILogger&lt;SecurityMasterPricingService&gt; logger) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterPricingService.cs:14](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterPricingService.cs#L14) |  |
+| <code>public Task&lt;SecurityPricingHierarchyDto?&gt; GetPricingHierarchyAsync(Guid securityId, string? accountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterPricingService.cs:18](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterPricingService.cs#L18) |  |
+| <code>public Task UpsertPricingHierarchyAsync(SecurityPricingHierarchyDto hierarchy, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterPricingService.cs:22](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterPricingService.cs#L22) |  |
+| <code>public Task RecordRawPriceAsync(RecordRawPriceRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterPricingService.cs:32](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterPricingService.cs#L32) |  |
+| <code>public Task&lt;SecurityPriceGoldenCopyDto?&gt; GetGoldenCopyPriceAsync(Guid securityId, string? accountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterPricingService.cs:48](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterPricingService.cs#L48) |  |
+| <code>public async Task&lt;SecurityPriceGoldenCopyDto?&gt; GetGoldenCopyPriceAsOfAsync(Guid securityId, string? accountId, DateTimeOffset asOf, CancellationToken ct = default, DateTimeOffset? knownAt = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterPricingService.cs:52](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterPricingService.cs#L52) |  |
+| <code>public Task&lt;SecurityPriceGoldenCopyDto?&gt; GetGoldenCopySelectionAsync(Guid securityId, string? accountId, Guid receiptId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterPricingService.cs:114](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterPricingService.cs#L114) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;SecurityPriceGoldenCopyDto&gt;&gt; GetObservationSelectionsAsync(Guid securityId, string? accountId, DateTimeOffset asOf, CancellationToken ct = default, DateTimeOffset? knownAt = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterPricingService.cs:118](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterPricingService.cs#L118) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;SecurityComparisonPriceDto&gt;&gt; GetComparisonPricesAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterPricingService.cs:161](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterPricingService.cs#L161) |  |
+
 ## SecurityMasterProfilePromotionService
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterProfilePromotionService</code>. Kind: `class`.
@@ -1074,43 +1134,3 @@ Declared public members:
 | <code>public AppConfig GetConfig(string? configPath = null);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:551](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L551) | Returns the current on-disk config via ConfigStore. |
 | <code>public async Task SaveConfigAsync(AppConfig config, string? configPath = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:560](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L560) | Saves a modified config back to disk. |
 | <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Services/ConfigurationService.cs:568](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L568) |  |
-
-## ConfigurationServiceCredentialAdapter
-
-Qualified name: <code>Meridian.Application.Services.ConfigurationServiceCredentialAdapter</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/ConfigurationServiceCredentialAdapter.cs:10](../../../../src/Meridian.Application/Services/ConfigurationServiceCredentialAdapter.cs#L10).
-
-Adapter that wraps ConfigurationService to implement ICredentialResolver. Enables using ConfigurationService&#x27;s credential resolution with the unified ProviderFactory.
-
-```csharp
-public sealed class ConfigurationServiceCredentialAdapter : IProviderCredentialResolver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ConfigurationServiceCredentialAdapter(ConfigurationService configService);</code> | [src/Meridian.Application/Services/ConfigurationServiceCredentialAdapter.cs:14](../../../../src/Meridian.Application/Services/ConfigurationServiceCredentialAdapter.cs#L14) |  |
-| <code>public ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary&lt;string, string?&gt;? configuredValues = null);</code> | [src/Meridian.Application/Services/ConfigurationServiceCredentialAdapter.cs:19](../../../../src/Meridian.Application/Services/ConfigurationServiceCredentialAdapter.cs#L19) |  |
-
-## ConfigurationWizard
-
-Qualified name: <code>Meridian.Application.Services.ConfigurationWizard</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/ConfigurationWizard.cs:23](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L23).
-
-Interactive configuration wizard for first-time setup. Guides users through configuration with a step-by-step process. Delegates orchestration to WizardCoordinator and individual IWizardStep implementations.
-
-```csharp
-public sealed class ConfigurationWizard
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ConfigurationWizard(TextWriter? output = null, TextReader? input = null, ProviderCredentialOwnershipPolicy? ownershipPolicy = null);</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:39](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L39) |  |
-| <code>public async Task&lt;WizardResult&gt; RunAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:51](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L51) | Runs the interactive configuration wizard using the step-graph coordinator. |
-| <code>public WizardResult RunQuickSetup();</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:83](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L83) | Runs a quick auto-configuration without interactive prompts. |
-| <code>public async Task&lt;WizardResult&gt; RunQuickstartAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:138](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L138) | Runs a quickstart flow: auto-configures, validates, and returns a config ready to launch. |

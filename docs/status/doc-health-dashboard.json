@@ -1,11 +1,11 @@
 {
-  "total_files": 1276,
+  "total_files": 1278,
   "orphaned_count": 396,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 303,
   "health_score": 85,
-  "signal_digest": "sha256:5dd7757df660a3ac02553f5e521995409c77de7ffb052ef5671f2237e5cdcfac",
+  "signal_digest": "sha256:57c389a06af0301f792f8941471f302b536fad062db24fd40c39cf344c14d9c7",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -2796,6 +2796,13 @@
       "stale": false
     },
     {
+      "path": "docs/generated/database/contracts/fund-governance-contracts-page-04.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/generated/database/contracts/fund-governance-contracts.md",
       "has_heading": true,
       "todo_count": 0,
@@ -4568,6 +4575,13 @@
     },
     {
       "path": "docs/reference/source-api/meridian.contracts/page-077.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-078.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

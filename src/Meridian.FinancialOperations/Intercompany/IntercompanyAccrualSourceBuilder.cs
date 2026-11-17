@@ -198,7 +198,10 @@ public static class IntercompanyAccrualSourceBuilder
             && records.FirstOrDefault(candidate => candidate.Entry.JournalEntryId == source) is { } original
             && IntercompanyJournalCorrectionEvidence.IsExactInverse(record.Entry, original.Entry);
 
-    /// <summary>One window of one profile in one book has one live draft identity; a recomputation updates it.</summary>
+    /// <summary>
+    /// One window of one profile in one book has one live draft identity; a recomputation updates it. The identity
+    /// stays keyed on the v1 rule name whatever rule computed the amount, so a window never gains a second identity.
+    /// </summary>
     public static Guid DraftId(string tenantId, IntercompanyAccrualRequestDto request, int generation = 0)
         => new(Sha256Digest.ComputeBytesUtf8(string.Join(":", IntercompanyAccrualRules.RuleVersion, tenantId,
             request.InterestArrangementId.ToString("D"), request.SourceBookId.ToString("D"),
@@ -301,7 +304,7 @@ public static class IntercompanyAccrualSourceBuilder
                 EntityId: entity.ToString("D"), Dimensions: Dimensions(contra, contraBinding)) { TransactionCurrency = original }
         };
         var draftId = DraftId(tenantId, request, generation);
-        var evidence = new IntercompanyAccrualEvidenceDto(IntercompanyAccrualRules.RuleVersion, draftId, tenantId,
+        var evidence = new IntercompanyAccrualEvidenceDto(computation.RuleVersion, draftId, tenantId,
             book.LedgerBookId, entity, counterparty, posting.ArrangementId, posting.RevisionId,
             posting.CanonicalAgreementId, posting.CanonicalAgreementVersion, posting.CanonicalPayloadHash,
             transaction, postingDate, principal.Role, main.NodeId, contra.NodeId, book.BaseCurrency, functional, computation, principal, fx);

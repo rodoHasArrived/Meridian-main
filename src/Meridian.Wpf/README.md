@@ -142,6 +142,10 @@ Fund Operations adds a Management fee tab (`Views/IntercompanyManagementFeeContr
 `IntercompanyManagementFeeWorkspace`; the agreement editor declares the fixed-fee basis. See
 [governed fixed management fees](../../docs/domain/intercompany-agreements.md#governed-fixed-management-fees).
 
+Fund Operations adds a Rate fixings tab (`Views/IntercompanyRateFixingsControl.xaml`) over the shared
+`IntercompanyRateFixingWorkspace`; the agreement editor declares the fixing lag and the Interest
+accrual tab shows each slice's fixing. See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
+
 A Counterpart proposals tab (`Views/IntercompanyCounterpartProposalsControl.xaml`) binds the shared
 `IntercompanyCounterpartQueueWorkspace`: delivery records and aged booking breaks for a source
 book, retained source lines and provenance, delivery retry, explicit FX repricing with a
@@ -149,6 +153,10 @@ before-and-after preview, and linking an existing counterpart journal. The sourc
 existing counterpart book are chosen from lists rather than typed; the counterpart journal ID is
 still entered, as in the browser. The desktop holds no proposal state and never posts; the same
 Windows-only validation boundary applies.
+
+Fund Operations adds a Balance confirmation tab
+(`Views/IntercompanyBalanceConfirmationControl.xaml`) over the shared
+`IntercompanyBalanceConfirmationWorkspace`. See [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
 
 An Interest accrual tab (`Views/IntercompanyInterestAccrualControl.xaml`) binds the shared
 `IntercompanyInterestAccrualWorkspace`: preview the server-computed fixed-rate interest for a

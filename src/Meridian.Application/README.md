@@ -24,6 +24,12 @@ revisions retain the same separate audit facts. See
 `intercompany-fee-v1`: per-period fees prorate by covered days, per-annum fees by the declared day count.
 See [governed fixed management fees](../../docs/domain/intercompany-agreements.md#governed-fixed-management-fees).
 
+`IntercompanyAccrualPreviewService` computes floating slices under rule `intercompany-accrual-v2` from
+the approved fixing of each period plus the spread, and refuses a window with a missing fixing.
+`IntercompanyRateFixingRules` and `IntercompanyRateFixingService` own maker-checker fixing history;
+`IntercompanyEntityServiceRegistration` composes its PostgreSQL or file store. See
+[floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
+
 Structured decimal normalization preserves representable declarations when canonical formatting
 uses an exponent. Retrying an externally reviewed lifecycle append repairs an interrupted local
 profile projection from the latest retained revision while holding the history read lease.
@@ -114,6 +120,10 @@ book-control, atomic proposal and consolidation commit boundaries; local file co
 scope and explicit unavailable capabilities. Generic posting delegates validated consolidation to
 its specialized authority instead of reacquiring the same fences. See
 [the staged implementation plan](../../docs/engineering/plans/intercompany-entity-controls.md).
+
+`IntercompanyEntityServiceRegistration` also composes the advisory `IntercompanyBalanceConfirmationService` over a
+PostgreSQL store (ledger migration `073`) when a ledger database is configured, otherwise an atomic
+file store. See [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
 
 `DirectLendingJournalLines.ForEvent` owns the loan journal templates consumed by both
 `LoanAccountingProjector` and `DirectLendingOutboxDispatcher`. Their trading cash and loan-specific

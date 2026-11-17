@@ -35,6 +35,12 @@ rate text and source amounts. Rebuild with the canonical dashboard command after
 The served accounting bundle adds "Accrue fee" on approved management-fee profiles over
 `/api/ledger/intercompany/fees/*`. See [governed fixed management fees](../../docs/domain/intercompany-agreements.md#governed-fixed-management-fees).
 
+The served Entity operations bundle adds a Rate fixings tab over
+`/api/ledger/intercompany/rate-fixings`. See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
+
+The served Entity operations bundle adds a Balance confirmation tab over
+`/api/ledger/intercompany/confirmations`. See [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
+
 The rebuilt bundle also includes explicit retained quote and observed-fixing selection, typed
 rates ingestion, provider identity-review evidence and shared chart accessibility. Dashboard reads
 preserve exact decimal text from fixed-income responses; calculation and review authority remains

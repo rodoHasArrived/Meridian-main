@@ -6,6 +6,34 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PreparePeriodAdjustmentRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PreparePeriodAdjustmentRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/PeriodAdjustmentPreparationService.cs:9](../../../../src/Meridian.Ui.Shared/Services/PeriodAdjustmentPreparationService.cs#L9).
+
+```csharp
+public sealed record PreparePeriodAdjustmentRequest(Guid LedgerBookId, Guid SourceJournalEntryId, Guid TargetPeriodId, DateOnly AccountingDate, string IntentId, string Reason, bool ReversePeriodEndMark = false);
+```
+
+## PrivateCapitalBankObservationService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PrivateCapitalBankObservationService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalBankObservationService.cs:14](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalBankObservationService.cs#L14).
+
+Imports reviewed settled bank observations without creating a payment or posting cash.
+
+```csharp
+public sealed class PrivateCapitalBankObservationService(IEvidenceArtifactStore vault, IBankingStore store, TimeProvider? clock = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;PrivateCapitalBankObservationImportResultDto&gt; ImportAsync(PrivateCapitalScopeDto scope, ImportPrivateCapitalBankObservationRequest request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalBankObservationService.cs:28](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalBankObservationService.cs#L28) |  |
+
 ## PrivateCapitalFundEventCommandCenterService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.PrivateCapitalFundEventCommandCenterService</code>. Kind: `class`.
@@ -811,32 +839,3 @@ Exact output returned by the server-side renderer/artifact producer. Artifact id
 ```csharp
 public sealed record ReportingAuthoritativeAsOfCertification(DateOnly AsOfDate, ReportingOperationalScope Scope, ReportingAccessScope Access, ReportingCertifiedSnapshotScope Snapshot, string SourceCheckpointId, string SourceCheckpointHash, bool IsAuthoritative, ImmutableArray<string> EvidenceIds);
 ```
-
-## ReportingAuthoritativeSourceCapture
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingAuthoritativeSourceCapture</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:15](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L15).
-
-```csharp
-public sealed record ReportingAuthoritativeSourceCapture(ReportingAuthoritativeSourceCheckpoint Checkpoint, ImmutableArray<IReadOnlyDictionary<string, string>> DatasetRows, ReportingCertifiedLedgerPresentationInput? CertifiedLedgerPresentation = null);
-```
-
-## ReportingAuthoritativeSourceCaptureIntent
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingAuthoritativeSourceCaptureIntent</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:24](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L24).
-
-Template identity supplied by the governed certification/revalidation path when an authoritative source capture may require template-specific presentation evidence.
-
-```csharp
-public sealed record ReportingAuthoritativeSourceCaptureIntent(string TemplateId)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool RequiresCertifiedLedgerPresentation { get; init; }</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:27](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L27) |  |
-| <code>public static ReportingAuthoritativeSourceCaptureIntent FromTemplate(ReportingTemplateMetadata template);</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:29](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L29) |  |

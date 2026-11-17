@@ -28,6 +28,11 @@ Fixed management-fee terms add a null-omitted `FixedFeeBasis` (per period or per
 retained evidence and `IntercompanyFeeAccrualEvidenceGuard`, which the accrual guard dispatches to for fee
 evidence. See [governed fixed management fees](../../docs/domain/intercompany-agreements.md#governed-fixed-management-fees).
 
+Floating loan terms add a null-omitted `FixingLagBusinessDays`. `IntercompanyRateFixingDtos` define
+the reviewed fixing record, its propose and decide requests and `IIntercompanyRateFixingStore`; accrual
+slices gain a null-omitted `Fixing` pin, and `IntercompanyAccrualRules` adds `intercompany-accrual-v2`.
+See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
+
 Governed loan-interest accrual contracts (ADR-028) carry the computation input, slices and preview
 under rule `intercompany-accrual-v1`, plus the retained `IntercompanyAccrualEvidenceDto` and its
 guard. `ManualJournalEntryDraftDto` gains null-omitted `IntercompanyAccrualEvidenceJson` and digest
@@ -106,6 +111,10 @@ stable account-role bindings, approved FX sets and exact legacy-attribution dige
 ledger dimensions omit null fields to preserve legacy evidence hashes. Consolidation evidence pins
 participating policy versions; shared browser/WPF contracts carry translation and rounding separately.
 See [intercompany domain guidance](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md).
+
+`IntercompanyBalanceConfirmationDtos` define the advisory reciprocal confirmation record (both pinned
+sides, net, balance digest and append-only events), its propose/action requests, summary findings and
+`IIntercompanyBalanceConfirmationStore`. See [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
 
 `SecurityMasterLedgerSymbol` resolves a dated, unambiguous active ticker that the existing native
 lineage grammar can represent. It supplies server-owned instrument context for new non-lot

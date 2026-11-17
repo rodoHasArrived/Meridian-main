@@ -6,6 +6,44 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EmptyInternalReconciliationBookSource
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.EmptyInternalReconciliationBookSource</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationBook.cs:42](../../../../src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationBook.cs#L42).
+
+Default internal-book source that returns an empty book. It never fabricates an internal side: with no internal records, the sided matcher reports every statement row as an unmatched break, which is the truthful state for an account whose internal book has not been wired in.
+
+```csharp
+public sealed class EmptyInternalReconciliationBookSource : IInternalReconciliationBookSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static EmptyInternalReconciliationBookSource Instance { get; } = new ();</code> | [src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationBook.cs:44](../../../../src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationBook.cs#L44) |  |
+| <code>public Task&lt;InternalReconciliationBook&gt; GetBookAsync(StatementRunRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationBook.cs:46](../../../../src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationBook.cs#L46) |  |
+
+## EmptyInternalReconciliationPopulationProvider
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.EmptyInternalReconciliationPopulationProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationPopulations.cs:55](../../../../src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationPopulations.cs#L55).
+
+The safe default provider: returns an empty internal book. With no internal populations, the matching engine reports every statement line as unmatched — the correct, fail-closed behavior when no book is connected (as opposed to fabricating matches). Wire a real provider to reconcile against live positions, cash, and ledger.
+
+```csharp
+public sealed class EmptyInternalReconciliationPopulationProvider : IInternalReconciliationPopulationProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static EmptyInternalReconciliationPopulationProvider Instance { get; } = new ();</code> | [src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationPopulations.cs:57](../../../../src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationPopulations.cs#L57) |  |
+| <code>public Task&lt;InternalReconciliationPopulations&gt; GetPopulationsAsync(InternalReconciliationPopulationContext context, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationPopulations.cs:59](../../../../src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationPopulations.cs#L59) |  |
+
 ## EngineReconciliationRequest
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.EngineReconciliationRequest</code>. Kind: `record`.
@@ -887,43 +925,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task SaveAsync(string runId, IReadOnlyList&lt;StatementValidationIssueDto&gt; issues, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:26](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L26) |  |
 | <code>Task&lt;IReadOnlyList&lt;StatementValidationIssueDto&gt;&gt; GetAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:27](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L27) |  |
-
-## IStatementValidationReferenceData
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IStatementValidationReferenceData</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:390](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L390).
-
-Supplies account, mapping, import, currency, and other reference checks for statement validation.
-
-```csharp
-public interface IStatementValidationReferenceData
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;bool&gt; AccountExistsAsync(string accountId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:392](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L392) |  |
-| <code>Task&lt;bool&gt; MappingProfileExistsAsync(string mappingProfileId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:393](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L393) |  |
-| <code>Task&lt;bool&gt; ToleranceProfileExistsAsync(string toleranceProfileId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:394](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L394) |  |
-| <code>Task&lt;bool&gt; ImportExistsAsync(string importFingerprint, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:395](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L395) |  |
-| <code>Task&lt;bool&gt; CurrencySupportedAsync(string currency, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:396](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L396) |  |
-| <code>Task&lt;bool&gt; TryMapActivityTypeAsync(string transactionCode, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:397](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L397) |  |
-| <code>Task&lt;bool&gt; TryResolveSecurityAsync(string securityIdentifier, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs:398](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementValidationService.cs#L398) |  |
-
-## MatchingTolerances
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.MatchingTolerances</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/MatchingTolerances.cs:5](../../../../src/Meridian.FinancialOperations/Reconciliation/MatchingTolerances.cs#L5).
-
-```csharp
-public sealed record MatchingTolerances(decimal Quantity, decimal Price, decimal MarketValue, decimal CashAmount, TimeSpan TimingWindow)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StatementToleranceProfile ToStatementToleranceProfile() =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/MatchingTolerances.cs:7](../../../../src/Meridian.FinancialOperations/Reconciliation/MatchingTolerances.cs#L7) |  |

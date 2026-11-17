@@ -6,6 +6,129 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FixtureModeDetector
+
+Qualified name: <code>Meridian.Ui.Services.Services.FixtureModeDetector</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:23](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L23).
+
+Detects and tracks whether the application is running in fixture/offline mode. Provides a centralized check so UI pages can distinguish intentional demo data from backend-unreachable offline state.
+
+```csharp
+public sealed class FixtureModeDetector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static FixtureModeDetector Instance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:26](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L26) |  |
+| <code>public bool IsFixtureMode =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:54](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L54) | Gets whether the application is explicitly running in fixture mode. |
+| <code>public bool IsOfflineMode =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:59](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L59) | Gets whether the application is in offline mode (backend unreachable). |
+| <code>public bool IsBackendReachable =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:64](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L64) | Gets whether the backend is currently reachable. |
+| <code>public string? ServerDataProvenanceToken =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:71](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L71) | Non-real data provenance reported by the connected backend (for example seeded when the host is serving a seeded demo workspace), or null when the backend serves real data or has not reported yet. |
+| <code>public bool IsNonLiveMode =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:77](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L77) | Gets whether any non-live mode is active (fixture, offline, or a backend that reports simulated/seeded/sample data). |
+| <code>public FixtureModeKind ModeKind =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:82](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L82) | Gets the normalized non-live mode kind for UI tone selection. |
+| <code>public string ModeLabel =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:92](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L92) | Gets a human-readable mode label for display in the UI banner. |
+| <code>public string BannerColor =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:105](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L105) | Gets the banner background color suggestion. Fixture mode: blue informational, Offline: red. |
+| <code>public void SetFixtureMode(bool enabled);</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:110](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L110) | Sets explicit fixture mode state. |
+| <code>public void ReportServerDataProvenance(string? nonRealProvenanceToken);</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:123](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L123) | Records the data provenance the connected backend reports for the records it serves. Pass a non-real provenance token (simulated, seeded, sample) to surface the persistent shell banner, or null when the backend serves real data. W9-TRUTH-001: a workstation attached to a seeded demo workspace must keep labeling it. |
+| <code>public void UpdateBackendReachability(bool isReachable);</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:144](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L144) | Updates backend reachability state. Automatically triggers offline mode when backend is unreachable. |
+| <code>public string ScenarioLabel =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:159](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L159) | Gets the currently active fixture scenario label for display in the UI. |
+| <code>public FixtureScenario ActiveScenario =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:164](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L164) | Gets the currently active fixture scenario. |
+| <code>public FixtureScenario CycleScenario();</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:171](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L171) | Cycles to the next scenario in the FixtureScenario sequence. No-op when fixture mode is off. |
+| <code>public event EventHandler? ModeChanged;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:189](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L189) | Event raised when fixture/offline mode changes. UI pages should subscribe to this to update their visual state. |
+
+## FixtureModeKind
+
+Qualified name: <code>Meridian.Ui.Services.Services.FixtureModeKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:5](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L5).
+
+```csharp
+public enum FixtureModeKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Live</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:7](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L7) |  |
+| <code>Fixture</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:8](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L8) |  |
+| <code>Offline</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:9](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L9) |  |
+
+## FixtureScenario
+
+Qualified name: <code>Meridian.Ui.Services.Services.FixtureScenario</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ui.Services/Services/FixtureScenario.cs:9](../../../../src/Meridian.Ui.Services/Services/FixtureScenario.cs#L9).
+
+Named fixture scenarios for UI development and debugging. Each scenario corresponds to a distinct system state that can be activated at runtime without restarting the application, enabling rapid iteration over all visual states in a single session.
+
+```csharp
+public enum FixtureScenario
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Connected</code> | [src/Meridian.Ui.Services/Services/FixtureScenario.cs:15](../../../../src/Meridian.Ui.Services/Services/FixtureScenario.cs#L15) | System fully connected with healthy metrics — the happy-path state. Providers are active, throughput is nominal, no errors. |
+| <code>Disconnected</code> | [src/Meridian.Ui.Services/Services/FixtureScenario.cs:21](../../../../src/Meridian.Ui.Services/Services/FixtureScenario.cs#L21) | System disconnected from all providers. Useful for testing empty-state / reconnection UI paths. |
+| <code>Degraded</code> | [src/Meridian.Ui.Services/Services/FixtureScenario.cs:27](../../../../src/Meridian.Ui.Services/Services/FixtureScenario.cs#L27) | System partially connected with degraded metrics. Some providers are unavailable or rate-limited; throughput is reduced. |
+| <code>Error</code> | [src/Meridian.Ui.Services/Services/FixtureScenario.cs:33](../../../../src/Meridian.Ui.Services/Services/FixtureScenario.cs#L33) | System in error state — provider errors, high drop rate, low throughput. Useful for testing error banners, alerts, and recovery UI flows. |
+| <code>Loading</code> | [src/Meridian.Ui.Services/Services/FixtureScenario.cs:39](../../../../src/Meridian.Ui.Services/Services/FixtureScenario.cs#L39) | System is initializing or loading — connections pending, data not yet available. Useful for testing skeleton/loading states and progress indicators. |
+
+## FormValidationRules
+
+Qualified name: <code>Meridian.Ui.Services.Services.FormValidationRules</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/FormValidationRules.cs:9](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L9).
+
+Shared validation rules for form validation across desktop applications. Extracted from FormValidationService implementations to eliminate duplicate validation logic.
+
+```csharp
+public static class FormValidationRules
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ValidationResult ValidateRequired(string? value, string fieldName = &quot;This field&quot;);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:17](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L17) | Validates that a field is not empty. |
+| <code>public static ValidationResult ValidateSymbol(string? value);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:30](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L30) | Validates a stock symbol format. Symbols must be 1-10 characters, start with a letter, and contain only letters, numbers, dots, dashes, and slashes. |
+| <code>public static ValidationResult ValidateSymbolList(string? value, int maxSymbols = 100);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:52](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L52) | Validates a comma-separated list of symbols. |
+| <code>public static ValidationResult ValidateDateRange(DateTimeOffset? fromDate, DateTimeOffset? toDate);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:83](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L83) | Validates a date range for data collection or backfill. |
+| <code>public static ValidationResult ValidateDateRange(string? dateStr);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:104](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L104) | Validates a date string in ISO format (YYYY-MM-DD). |
+| <code>public static ValidationResult ValidateApiKey(string? value);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:121](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L121) | Validates an API key format. |
+| <code>public static ValidationResult ValidateUrl(string? value, string fieldName = &quot;URL&quot;);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:138](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L138) | Validates a URL format. |
+| <code>public static ValidationResult ValidatePort(int? value);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:154](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L154) | Validates a network port number. |
+| <code>public static ValidationResult ValidateFilePath(string? value);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:170](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L170) | Validates a file path format. |
+| <code>public static ValidationResult ValidateNumericRange(double? value, double min, double max, string fieldName = &quot;Value&quot;);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:193](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L193) | Validates that a numeric value is within a specified range. |
+
+## InfoBarConstants
+
+Qualified name: <code>Meridian.Ui.Services.Services.InfoBarConstants</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:19](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L19).
+
+Duration configuration for different severity levels. Shared across InfoBarService implementations.
+
+```csharp
+public static class InfoBarConstants
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int InfoDurationMs = 4000;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:22](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L22) | Informational messages - 4 seconds (user acknowledgment optional). |
+| <code>public const int SuccessDurationMs = 3000;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:25](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L25) | Success messages - 3 seconds (quick confirmation). |
+| <code>public const int WarningDurationMs = 6000;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:28](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L28) | Warning messages - 6 seconds (user should notice). |
+| <code>public const int ErrorDurationMs = 10000;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:31](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L31) | Error messages - 10 seconds (requires attention). |
+| <code>public const int CriticalDurationMs = 0;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:34](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L34) | Critical errors - no auto-dismiss (manual close required). |
+| <code>public static int GetDurationForSeverity(InfoBarSeverityLevel severity) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:37](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L37) | Gets the recommended duration for a severity level. |
+
 ## InfoBarSeverityLevel
 
 Qualified name: <code>Meridian.Ui.Services.Services.InfoBarSeverityLevel</code>. Kind: `enum`.
@@ -1017,121 +1140,3 @@ Declared public members:
 | <code>public double Score { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:161](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L161) |  |
 | <code>public int EventCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:162](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L162) |  |
 | <code>public int AlertCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:163](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L163) |  |
-
-## ValidationExtensions
-
-Qualified name: <code>Meridian.Ui.Services.Services.ValidationExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/FormValidationRules.cs:251](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L251).
-
-Extension methods for working with multiple validation results.
-
-```csharp
-public static class ValidationExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ValidationResult Combine(params ValidationResult[] results);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:258](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L258) | Combines multiple validation results, returning the first error or warning found. |
-
-## ValidationResult
-
-Qualified name: <code>Meridian.Ui.Services.Services.ValidationResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/FormValidationRules.cs:206](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L206).
-
-Represents the result of a validation operation.
-
-```csharp
-public sealed class ValidationResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsValid { get; private init; }</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:211](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L211) | Gets whether the validation passed. |
-| <code>public bool IsWarning { get; private init; }</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:216](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L216) | Gets whether this is a warning (valid but with advisory message). |
-| <code>public string Message { get; private init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:221](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L221) | Gets the validation message (empty for success, descriptive for errors/warnings). |
-| <code>public static ValidationResult Success() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:228](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L228) | Creates a successful validation result. |
-| <code>public static ValidationResult Error(string message) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:234](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L234) | Creates a failed validation result with an error message. |
-| <code>public static ValidationResult Warning(string message) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:240](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L240) | Creates a warning validation result (valid but with advisory message). |
-| <code>public static implicit operator bool(ValidationResult result) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:245](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L245) | Implicit conversion to bool for convenient checking. |
-
-## ServiceUrlChangedEventArgs
-
-Qualified name: <code>Meridian.Ui.Services.ServiceUrlChangedEventArgs</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/ApiClientService.cs:791](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L791).
-
-Event args for service URL changes.
-
-```csharp
-public sealed class ServiceUrlChangedEventArgs : EventArgs
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string OldUrl { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:793](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L793) |  |
-| <code>public string NewUrl { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:794](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L794) |  |
-
-## SessionState
-
-Qualified name: <code>Meridian.Ui.Services.SessionState</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:112](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L112).
-
-Session state for restore.
-
-```csharp
-public sealed class SessionState
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ActivePageTag { get; set; } = &quot;Dashboard&quot;;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:114](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L114) |  |
-| <code>public List&lt;WorkspacePage&gt; OpenPages { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:115](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L115) |  |
-| <code>public List&lt;string&gt; RecentPages { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:116](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L116) |  |
-| <code>public Dictionary&lt;string, WidgetPosition&gt; WidgetLayout { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:117](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L117) |  |
-| <code>public Dictionary&lt;string, string&gt; ActiveFilters { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:118](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L118) |  |
-| <code>public Dictionary&lt;string, string&gt; WorkspaceContext { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:119](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L119) |  |
-| <code>public WindowBounds? WindowBounds { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:120](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L120) |  |
-| <code>public DateTime SavedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:121](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L121) |  |
-| <code>public string? ActiveWorkspaceId { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:122](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L122) |  |
-| <code>public WorkstationLayoutState? WorkstationLayout { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:123](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L123) |  |
-| <code>public WorkspaceSummaryStats? CachedSummaryStats { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:126](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L126) |  |
-
-## SetupPreset
-
-Qualified name: <code>Meridian.Ui.Services.SetupPreset</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/SetupWizardService.cs:736](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L736).
-
-Setup preset for quick configuration.
-
-```csharp
-public sealed class SetupPreset
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Id { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:738](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L738) |  |
-| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:739](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L739) |  |
-| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:740](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L740) |  |
-| <code>public string Icon { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:741](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L741) |  |
-| <code>public string[] RecommendedProviders { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:742](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L742) |  |
-| <code>public string[] DefaultSymbols { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:743](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L743) |  |
-| <code>public bool SubscribeTrades { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:744](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L744) |  |
-| <code>public bool SubscribeDepth { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:745](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L745) |  |
-| <code>public bool SubscribeQuotes { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:746](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L746) |  |
-| <code>public int DepthLevels { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:747](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L747) |  |
-| <code>public bool EnableBackfill { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:748](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L748) |  |
-| <code>public string StorageTier { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:749](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L749) |  |

@@ -1282,7 +1282,8 @@ public static class WorkstationServiceCollectionExtensions
                 ? new IntercompanyAccrualDraftService(sp.GetRequiredService<IntercompanyAccountingArrangementService>(),
                     journals, bindings, sp.GetRequiredService<IAccountingConfigurationService>(),
                     sp.GetRequiredService<IManualJournalEntryDraftStore>(), workbench, calculator,
-                    sp.GetService<IConsolidationFxAuthority>(), sp.GetRequiredService<TimeProvider>()) : null!);
+                    sp.GetService<IConsolidationFxAuthority>(), sp.GetRequiredService<TimeProvider>(),
+                    sp.GetService<Meridian.Application.FundStructure.IntercompanyRateFixingService>()) : null!);
         if (services.Any(item => item.ServiceType == typeof(IIntercompanyProposalStore)
             && item.ImplementationType == typeof(PostgresIntercompanyProposalStore)))
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, IntercompanyProposalHostedService>());

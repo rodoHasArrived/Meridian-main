@@ -135,7 +135,7 @@ public sealed class IntercompanyAccrualPreviewServiceTests
     }
 
     [Theory]
-    [InlineData("floating", "fixing authority")]
+    [InlineData("floating", "without a fixing lag")]
     [InlineData("compounding", "simple interest")]
     [InlineData("unstructured", "unstructured terms")]
     [InlineData("terminated", "unterminated loan")]

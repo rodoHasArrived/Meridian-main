@@ -34,6 +34,16 @@ whose window a posted accrual already covers, and carries the evidence onto the 
 workbench refuses an overlapping posted fee and rechecks fee authority before review or posting. See
 [governed fixed management fees](../../docs/domain/intercompany-agreements.md#governed-fixed-management-fees).
 
+`IntercompanyAccrualDraftService` resolves the approved fixings of each declared floating index before
+computing. `IntercompanyRateFixingEndpoints` serves `/api/ledger/intercompany/rate-fixings` (list,
+propose and `/{id}/decisions`) with exact-decimal strings; mutations need tenant scope and ledger
+management. See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
+
+`IntercompanyBalanceConfirmationEndpoints` serves `/api/ledger/intercompany/confirmations` (summary,
+record, propose and `/{id}/actions`) with exact-decimal strings; mutations need tenant and company
+scope plus ledger management. Confirmation findings join the close advisory as warnings only. See
+[reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
+
 Account/group close advisories require canonical exact-scope membership and retained evidence;
 the book node ID is not substituted for a legal-entity ID. Missing membership yields unknown.
 

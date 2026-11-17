@@ -6,6 +6,43 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingScheduleWorkerOptions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingScheduleWorkerOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingScheduleHostedService.cs:7](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleHostedService.cs#L7).
+
+```csharp
+public sealed record ReportingScheduleWorkerOptions(TimeSpan PollInterval)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ReportingScheduleWorkerOptions Default { get; } = new (TimeSpan.FromMinutes(1));</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleHostedService.cs:9](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleHostedService.cs#L9) |  |
+
+## ReportingScheduleWorkerReadinessState
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingScheduleWorkerReadinessState</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:63](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L63).
+
+Process-local liveness receipt for the server-owned reporting schedule worker. Readiness is earned only by a successful cycle and is cleared by a cycle-level failure or worker stop.
+
+```csharp
+public sealed class ReportingScheduleWorkerReadinessState
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsReady =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:69](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L69) |  |
+| <code>public int ConsecutiveFailures =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:71](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L71) |  |
+| <code>public DateTimeOffset? LastSuccessfulCycleUtc =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:73](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L73) |  |
+| <code>public bool IsHealthy(DateTimeOffset nowUtc, TimeSpan maximumHeartbeatAge) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:76](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L76) |  |
+
 ## ReportingSecureDistributionApplicationService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingSecureDistributionApplicationService</code>. Kind: `class`.
@@ -837,26 +874,4 @@ Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationS
 
 ```csharp
 public sealed record SecureReportingGrantExchangeCommand(string BearerToken, string ArtifactId);
-```
-
-## SecureReportingGrantIssueCommand
-
-Qualified name: <code>Meridian.Ui.Shared.Services.SecureReportingGrantIssueCommand</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:44](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L44).
-
-```csharp
-public sealed record SecureReportingGrantIssueCommand(string RunId, string? RecipientPrincipalId, IReadOnlyList<string>? ArtifactIds = null, int? LifetimeSeconds = null, int? MaxUses = null, ReportingAccessPrincipalKind? RecipientPrincipalKind = null);
-```
-
-## SecureReportingGrantIssueResult
-
-Qualified name: <code>Meridian.Ui.Shared.Services.SecureReportingGrantIssueResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:56](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L56).
-
-The bearer is returned exactly once inside RecipientAccessUri&#x27;s fragment and is not duplicated into a second result property or persisted by the service.
-
-```csharp
-public sealed record SecureReportingGrantIssueResult(string GrantId, string RecipientAccessUri, DateTimeOffset ExpiresAtUtc, string Audience, string RunId, string PackageId, IReadOnlyList<string> ArtifactIds, ReportingAccessPrincipalKind AudienceKind = ReportingAccessPrincipalKind.User);
 ```

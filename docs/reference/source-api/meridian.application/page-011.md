@@ -6,6 +6,46 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ConfigurationServiceCredentialAdapter
+
+Qualified name: <code>Meridian.Application.Services.ConfigurationServiceCredentialAdapter</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Services/ConfigurationServiceCredentialAdapter.cs:10](../../../../src/Meridian.Application/Services/ConfigurationServiceCredentialAdapter.cs#L10).
+
+Adapter that wraps ConfigurationService to implement ICredentialResolver. Enables using ConfigurationService&#x27;s credential resolution with the unified ProviderFactory.
+
+```csharp
+public sealed class ConfigurationServiceCredentialAdapter : IProviderCredentialResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ConfigurationServiceCredentialAdapter(ConfigurationService configService);</code> | [src/Meridian.Application/Services/ConfigurationServiceCredentialAdapter.cs:14](../../../../src/Meridian.Application/Services/ConfigurationServiceCredentialAdapter.cs#L14) |  |
+| <code>public ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary&lt;string, string?&gt;? configuredValues = null);</code> | [src/Meridian.Application/Services/ConfigurationServiceCredentialAdapter.cs:19](../../../../src/Meridian.Application/Services/ConfigurationServiceCredentialAdapter.cs#L19) |  |
+
+## ConfigurationWizard
+
+Qualified name: <code>Meridian.Application.Services.ConfigurationWizard</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Services/ConfigurationWizard.cs:23](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L23).
+
+Interactive configuration wizard for first-time setup. Guides users through configuration with a step-by-step process. Delegates orchestration to WizardCoordinator and individual IWizardStep implementations.
+
+```csharp
+public sealed class ConfigurationWizard
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ConfigurationWizard(TextWriter? output = null, TextReader? input = null, ProviderCredentialOwnershipPolicy? ownershipPolicy = null);</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:39](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L39) |  |
+| <code>public async Task&lt;WizardResult&gt; RunAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:51](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L51) | Runs the interactive configuration wizard using the step-graph coordinator. |
+| <code>public WizardResult RunQuickSetup();</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:83](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L83) | Runs a quick auto-configuration without interactive prompts. |
+| <code>public async Task&lt;WizardResult&gt; RunQuickstartAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:138](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L138) | Runs a quickstart flow: auto-configures, validates, and returns a config ready to launch. |
+
 ## ConnectivityProbeService
 
 Qualified name: <code>Meridian.Application.Services.ConnectivityProbeService</code>. Kind: `class`.
@@ -925,33 +965,3 @@ Declared public members:
 | <code>public async Task&lt;IndexSubscribeResult&gt; SubscribeToIndexAsync(IndexSubscribeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs:72](../../../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs#L72) | Subscribe to all components of an index. |
 | <code>public async Task&lt;IndexSubscribeResult&gt; UnsubscribeFromIndexAsync(string indexId, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs:167](../../../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs#L167) | Unsubscribe from all components of an index. |
 | <code>public async Task&lt;IndexSubscriptionStatus&gt; GetSubscriptionStatusAsync(string indexId, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs:214](../../../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs#L214) | Check which index components are currently subscribed. |
-
-## IndexSubscriptionStatus
-
-Qualified name: <code>Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs:416](../../../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs#L416).
-
-Status of index subscription coverage.
-
-```csharp
-public sealed record IndexSubscriptionStatus(string IndexId, string? IndexName, int TotalComponents, int SubscribedCount, string[] SubscribedSymbols, string[] NotSubscribedSymbols);
-```
-
-## IPortfolioOpeningBalanceQueue
-
-Qualified name: <code>Meridian.Application.Subscriptions.Services.IPortfolioOpeningBalanceQueue</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/Subscriptions/Services/PortfolioImportRunService.cs:11](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioImportRunService.cs#L11).
-
-Queues the retained complete source population through the ordinary human approval lifecycle.
-
-```csharp
-public interface IPortfolioOpeningBalanceQueue
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;Guid&gt; QueueAsync(PortfolioImportRun run, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/PortfolioImportRunService.cs:13](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioImportRunService.cs#L13) |  |

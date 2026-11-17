@@ -6,6 +6,45 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IProviderIntegrationHttpTransport
+
+Qualified name: <code>Meridian.Application.Integrations.IProviderIntegrationHttpTransport</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/Integrations/ProviderIntegrationRestDryRunService.cs:17](../../../../src/Meridian.Application/Integrations/ProviderIntegrationRestDryRunService.cs#L17).
+
+Defines the HTTP request and response boundary used by provider integration dry runs.
+
+```csharp
+public interface IProviderIntegrationHttpTransport
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ProviderIntegrationHttpResponse&gt; SendAsync(ProviderIntegrationHttpRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationRestDryRunService.cs:19](../../../../src/Meridian.Application/Integrations/ProviderIntegrationRestDryRunService.cs#L19) |  |
+
+## ProviderIntegrationActivationReadinessService
+
+Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationActivationReadinessService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs:10](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs#L10).
+
+Evaluates whether a configured provider integration satisfies activation requirements.
+
+```csharp
+public sealed class ProviderIntegrationActivationReadinessService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderIntegrationActivationReadinessService(IProviderIntegrationManifestStore store, ILogger&lt;ProviderIntegrationActivationReadinessService&gt;? logger = null);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs:22](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs#L22) |  |
+| <code>public async Task&lt;ProviderIntegrationActivationReadinessDto&gt; EvaluateAsync(string manifestId, string? connectionId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs:30](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs#L30) |  |
+| <code>public async Task&lt;ProviderIntegrationActivationReadinessDto&gt; EvaluateAsync(string? tenantId, string manifestId, string? connectionId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs:36](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs#L36) |  |
+| <code>public static ProviderIntegrationActivationReadinessDto Evaluate(ProviderIntegrationManifestDto manifest, ProviderConnectionDto? connection = null);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs:160](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs#L160) |  |
+
 ## ProviderIntegrationActivationService
 
 Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationActivationService</code>. Kind: `class`.
@@ -982,49 +1021,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public FSharpEventValidator(SymbolConfig[]? symbolConfigs = null, bool useRealTimeMode = false, ILogger&lt;FSharpEventValidator&gt;? logger = null);</code> | [src/Meridian.Application/Pipeline/FSharpEventValidator.cs:52](../../../../src/Meridian.Application/Pipeline/FSharpEventValidator.cs#L52) | Initialises the validator. |
 | <code>public ValidationResult Validate(in MarketEvent evt);</code> | [src/Meridian.Application/Pipeline/FSharpEventValidator.cs:67](../../../../src/Meridian.Application/Pipeline/FSharpEventValidator.cs#L67) |  |
-
-## HotPathBatchSerializer
-
-Qualified name: <code>Meridian.Application.Pipeline.HotPathBatchSerializer</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs:34](../../../../src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs#L34).
-
-Batch-serializes hot-path struct events (RawTradeEvent, RawQuoteEvent) to JSONL-formatted UTF-8 bytes.
-
-```csharp
-public sealed class HotPathBatchSerializer
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public HotPathBatchSerializer(SymbolTable symbolTable, int initialBufferCapacity = 65_536);</code> | [src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs:55](../../../../src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs#L55) | Creates a new serializer backed by the given symbol table. |
-| <code>public ReadOnlyMemory&lt;byte&gt; SerializeTrades(ReadOnlySpan&lt;RawTradeEvent&gt; batch);</code> | [src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs:78](../../../../src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs#L78) | Serializes a batch of RawTradeEvent structs to JSONL UTF-8 bytes. |
-| <code>public ReadOnlyMemory&lt;byte&gt; SerializeQuotes(ReadOnlySpan&lt;RawQuoteEvent&gt; batch);</code> | [src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs:111](../../../../src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs#L111) | Serializes a batch of RawQuoteEvent structs to JSONL UTF-8 bytes. |
-
-## IDedupStore
-
-Qualified name: <code>Meridian.Application.Pipeline.IDedupStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/Pipeline/IDedupStore.cs:17](../../../../src/Meridian.Application/Pipeline/IDedupStore.cs#L17).
-
-Abstraction over the persistent event deduplication ledger. Implementations must be thread-safe and survive application restarts.
-
-```csharp
-public interface IDedupStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>long TotalChecked { get; }</code> | [src/Meridian.Application/Pipeline/IDedupStore.cs:20](../../../../src/Meridian.Application/Pipeline/IDedupStore.cs#L20) | Gets the total number of events checked for duplicates. |
-| <code>long TotalDuplicates { get; }</code> | [src/Meridian.Application/Pipeline/IDedupStore.cs:27](../../../../src/Meridian.Application/Pipeline/IDedupStore.cs#L27) | Gets the total number of duplicate events detected — deliveries suppressed by a committed entry. An unresolved pending reservation is not a detection and is not counted while it merely defers a caller. |
-| <code>Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/IDedupStore.cs:30](../../../../src/Meridian.Application/Pipeline/IDedupStore.cs#L30) | Loads persisted dedup state from durable storage on startup. |
-| <code>ValueTask&lt;bool&gt; IsDuplicateAsync(MarketEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/IDedupStore.cs:41](../../../../src/Meridian.Application/Pipeline/IDedupStore.cs#L41) | Returns true if evt has been seen before and records it if new. |
-| <code>ValueTask&lt;DedupReservationResult&gt; TryReserveAsync(MarketEvent evt, DedupLookupScope scope, CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/IDedupStore.cs:54](../../../../src/Meridian.Application/Pipeline/IDedupStore.cs#L54) | Attempts to claim the identity of evt for exclusive persistence. |
-| <code>Task CommitDurableAsync(IReadOnlyList&lt;DedupReservation&gt; reservations, CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/IDedupStore.cs:68](../../../../src/Meridian.Application/Pipeline/IDedupStore.cs#L68) | Durably commits held reservations as durability-confirmed (version 2) identities and flushes the backing store. |
-| <code>bool Release(in DedupReservation reservation);</code> | [src/Meridian.Application/Pipeline/IDedupStore.cs:78](../../../../src/Meridian.Application/Pipeline/IDedupStore.cs#L78) | Releases a pending reservation so the identity can be claimed again. |
-| <code>Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/IDedupStore.cs:81](../../../../src/Meridian.Application/Pipeline/IDedupStore.cs#L81) | Flushes in-memory state to durable backing storage. |
-| <code>Task CompactAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/IDedupStore.cs:84](../../../../src/Meridian.Application/Pipeline/IDedupStore.cs#L84) | Compacts the backing store by discarding expired entries. |
