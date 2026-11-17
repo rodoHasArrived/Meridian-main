@@ -196,6 +196,10 @@ host-owned OAuth token for each request, including connection, rotation, and rev
 distinguishes lifetime cancellation from request timeouts and retains authentication, throttling,
 and outage classifications for failed batches.
 
+Robinhood `GetPositionsAsync` fails when options positions cannot be read rather than returning
+equities alone, and still reads options when there are no equity positions. `GetAccountInfoAsync`
+refuses an empty account list instead of reporting an "unknown" active account with zero balances.
+
 Alpha Vantage adjusted OHLC uses the adjusted-close/raw-close ratio independently of the session's
 split coefficient. Yahoo daily history includes boundary padding and uses historical exchange
 timezone rules for session dates, falling back to the supplied offset and then UTC when absent.

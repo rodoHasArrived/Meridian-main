@@ -5656,6 +5656,7 @@ Meridian-main
 │   │   │   ├── PluginBacktestStrategyLiveSource.cs
 │   │   │   └── StrategyPluginLoader.cs
 │   │   ├── Portfolio
+│   │   │   ├── FillRejectedException.cs
 │   │   │   ├── ICommissionModel.cs
 │   │   │   ├── LinkedListExtensions.cs
 │   │   │   ├── SimulatedPortfolio.CanonicalActions.cs
@@ -14531,6 +14532,7 @@ Meridian-main
 │   │   │   ├── LiveRunMetricsTrackerTests.cs
 │   │   │   ├── LiveStrategyBaseTests.cs
 │   │   │   ├── LiveStrategyCatalogFallbackTests.cs
+│   │   │   ├── LiveStrategyExecutionContextAccountTests.cs
 │   │   │   ├── LiveStrategyRunSessionCompletionTests.cs
 │   │   │   ├── LiveStrategyRunSessionFillPriceTests.cs
 │   │   │   ├── LiveTradingEngineTests.AuditCancellation.cs
