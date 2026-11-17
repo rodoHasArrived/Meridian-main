@@ -138,17 +138,17 @@ internal sealed partial class SimulatedPortfolio
         account.Positions.TryGetValue(symbol, out var existingQty);
 
         if (_canonicalActions is not null && (existingQty + qty < 0 || account.Cash - qty * price - commission < 0m))
-            throw new NotSupportedException("Canonical raw-price replay permits long positions and fully funded fills only.");
+            throw new FillRejectedException("Canonical raw-price replay permits long positions and fully funded fills only.");
 
         // Any sell that leaves the position net short opens short exposure, including a sell
         // larger than the current long (long 100, sell 150 => short 50).
         if (qty < 0 && existingQty + qty < 0 && !account.Rules.AllowShortSelling)
-            throw new InvalidOperationException($"Account '{accountId}' does not permit short selling.");
+            throw new FillRejectedException($"Account '{accountId}' does not permit short selling.");
 
         var cashImpact = -(qty * price) - commission;
         var projectedCash = account.Cash + cashImpact;
         if (projectedCash < 0m && !account.Rules.AllowMargin)
-            throw new InvalidOperationException($"Account '{accountId}' does not permit margin borrowing.");
+            throw new FillRejectedException($"Account '{accountId}' does not permit margin borrowing.");
 
         account.Cash = projectedCash;
         account.MarginBalance = account.Cash < 0m ? account.Cash : 0m;

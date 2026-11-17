@@ -181,8 +181,12 @@ public sealed class CanonicalBacktestActionsTests : IDisposable
         var split = Dividend() with { EventType = CorporateActionEventTypes.ReverseStockSplit, SplitRatio = 0.3m, DividendPerShare = null };
         var fractional = () => Engine(new Query([split])).RunAsync(Request(Start.AddDays(1)), new TradingStrategy(quantity: 9));
         await fractional.Should().ThrowAsync<NotSupportedException>().WithMessage("*integral long-share*");
-        var oversell = () => Engine(new Query([])).RunAsync(Request(Start.AddDays(1)), new TradingStrategy(quantity: -10));
-        await oversell.Should().ThrowAsync<NotSupportedException>().WithMessage("*long positions*");
+
+        // An oversell is a fill the account refuses, not a reason to abandon the whole run:
+        // the fill is discarded before any state changes and the run completes long-only.
+        var oversold = await Engine(new Query([])).RunAsync(Request(Start.AddDays(1)), new TradingStrategy(quantity: -10));
+        oversold.Fills.Should().BeEmpty();
+        oversold.Snapshots[^1].Positions.Should().NotContainKey("XYZ");
     }
 
     [Fact]

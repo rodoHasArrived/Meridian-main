@@ -826,10 +826,12 @@ public sealed class BacktestEngine(
                 {
                     portfolio.ProcessFill(fill);
                 }
-                catch (InvalidOperationException ex)
+                catch (FillRejectedException ex)
                 {
-                    // Account rule violation (e.g. short-selling or margin disabled).
-                    // Reject this fill rather than crashing the entire backtest run.
+                    // The account refused the fill before changing any state (short selling or
+                    // margin disabled, or a fill raw-price replay cannot represent). Discard it
+                    // rather than ending the run. Other failures may leave the portfolio partly
+                    // updated, so they are not caught here and end the run instead.
                     logger.LogWarning(ex,
                         "Fill rejected for order {OrderId} on {Symbol}: {Message}. The fill has been discarded.",
                         fill.OrderId, fill.Symbol, ex.Message);

@@ -40,6 +40,23 @@ public sealed class WriteAheadLogTests : TempDirectoryAsyncTestBase
         r2.Sequence.Should().BeGreaterThan(r1.Sequence);
     }
 
+    [Theory]
+    [InlineData("trade|fill")]
+    [InlineData("trade\nfill")]
+    [InlineData("trade\r")]
+    public async Task AppendAsync_RecordTypeThatCannotBeReadBack_IsRefusedBeforeItIsWritten(string recordType)
+    {
+        await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions { SyncMode = WalSyncMode.NoSync });
+        await wal.InitializeAsync();
+        var before = await wal.AppendAsync(new { Symbol = "SPY", Price = 450.0 }, "trade");
+
+        var append = () => wal.AppendAsync(new { Symbol = "SPY", Price = 451.0 }, recordType);
+
+        await append.Should().ThrowAsync<ArgumentException>().WithMessage("*record type*");
+        var after = await wal.AppendAsync(new { Symbol = "SPY", Price = 452.0 }, "trade");
+        after.Sequence.Should().Be(before.Sequence + 1, "a refused record consumes no sequence number");
+    }
+
     [Fact]
     public async Task AppendAsync_SetsRecordType()
     {
