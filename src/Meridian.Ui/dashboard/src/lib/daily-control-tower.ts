@@ -8,6 +8,8 @@ import type {
   AppShellWorkflowContinuityStatusTone,
   AppShellWorkflowContinuityViewModel
 } from "@/app-shell.view-model";
+import { describeDue } from "@/lib/due-urgency";
+import { latestInstant, type SinceLastVisitTimes } from "@/lib/since-last-visit";
 import {
   ATTENTION_SOURCE_LABELS, attentionItemFromInbox, attentionItemFromWorkspaceSignal, attentionItemKey,
   attentionSeverityRank, buildAttentionItems, countAttention, isSignalInInbox,
@@ -243,7 +245,8 @@ export const todayQueueRowKey = attentionItemKey;
 export function buildTodayQueueRows(
   focusRows: readonly DailyControlTowerFocusRow[],
   inboxItems: readonly OperatorTriageItem[],
-  loadedInboxItems: readonly OperatorTriageItem[] | null = inboxItems
+  loadedInboxItems: readonly OperatorTriageItem[] | null = inboxItems,
+  nowMs: number = Date.now()
 ): TodayQueueRow[] {
   const rows: TodayQueueRow[] = [
     ...focusRows.filter((focus) => !isSignalInInbox(focus.item.id, loadedInboxItems)).map((focus): TodayQueueRow => ({
@@ -259,12 +262,30 @@ export function buildTodayQueueRows(
     const value = Date.parse(row.observedAt ?? "");
     return Number.isFinite(value) ? value : Number.POSITIVE_INFINITY;
   };
+  // Overdue work ranks first (UX Phase E); within each group, severity then oldest first.
   return rows
-    .map((row, index) => ({ row, index, observed: observedMs(row) }))
-    .sort((left, right) => attentionSeverityRank(left.row.severity) - attentionSeverityRank(right.row.severity)
+    .map((row, index) => ({ row, index, observed: observedMs(row), overdue: isTodayRowOverdue(row, nowMs) }))
+    .sort((left, right) => Number(right.overdue) - Number(left.overdue)
+      || attentionSeverityRank(left.row.severity) - attentionSeverityRank(right.row.severity)
       || (left.observed === right.observed ? 0 : left.observed < right.observed ? -1 : 1)
       || left.index - right.index)
     .map(({ row }) => row);
+}
+
+/**
+ * The times a Today row is compared on for "new since you last looked": an inbox item appeared
+ * when it was created and changed with its newest activity; a workspace signal appeared when its
+ * evidence was observed.
+ */
+export function todayRowVisitTimes(row: TodayQueueRow): SinceLastVisitTimes {
+  return row.source === "inbox"
+    ? { detectedAt: row.item.createdAt, lastUpdatedAt: latestInstant(row.item.activity.map((entry) => entry.occurredAt)) }
+    : { detectedAt: row.observedAt, lastUpdatedAt: null };
+}
+
+/** A queue row is overdue when its due date is before today (calendar days, UTC). */
+export function isTodayRowOverdue(row: Pick<TodayQueueRow, "dueAt">, nowMs: number = Date.now()): boolean {
+  return describeDue(row.dueAt, nowMs).state === "overdue";
 }
 
 export function dailyControlTowerProofPassportLabels(): string[] {
@@ -510,11 +531,13 @@ const SEVERITY_WORDS: Record<TodayQueueRow["severity"], string> = { blocked: "bl
  * severity first, then the oldest observed time, then the source's own order. `rows` is the
  * queue as shown, so the position matches what the operator sees.
  */
-export function describeTodayQueueRank(rows: readonly TodayQueueRow[], key: string): string | null {
+export function describeTodayQueueRank(rows: readonly TodayQueueRow[], key: string, nowMs: number = Date.now()): string | null {
   const index = rows.findIndex((row) => row.key === key);
   if (index < 0) return null;
   const row = rows[index]!;
-  const peers = rows.filter((candidate) => candidate.severity === row.severity);
+  const overdue = isTodayRowOverdue(row, nowMs);
+  const overdueCount = rows.filter((candidate) => isTodayRowOverdue(candidate, nowMs)).length;
+  const peers = rows.filter((candidate) => candidate.severity === row.severity && isTodayRowOverdue(candidate, nowMs) === overdue);
   const position = peers.indexOf(row) + 1;
   const observed = Number.isFinite(Date.parse(row.observedAt ?? ""));
   const word = SEVERITY_WORDS[row.severity];
@@ -525,7 +548,8 @@ export function describeTodayQueueRank(rows: readonly TodayQueueRow[], key: stri
       : position === 1
         ? `the oldest of ${peers.length} ${word} items`
         : `${ordinal(position)} oldest of ${peers.length} ${word} items`;
-  return `Ranked ${index + 1} of ${rows.length}. Sorted by severity (${word}), then oldest first: ${order}.`;
+  const group = overdue ? `${describeDue(row.dueAt, nowMs).label}; overdue items rank first, then ` : overdueCount > 0 ? "After the overdue items, sorted " : "Sorted ";
+  return `Ranked ${index + 1} of ${rows.length}. ${group}by severity (${word}), then oldest first: ${order}.`;
 }
 
 function ordinal(value: number): string {

@@ -1,4 +1,6 @@
 import { FileSearch } from "lucide-react";
+import { DueChip } from "@/components/meridian/due-chip";
+import { describeDue, sortByUrgency } from "@/lib/due-urgency";
 import { MonthCalendar, type MonthCalendarItem } from "@/components/meridian/month-calendar";
 import { useEffect, useMemo, useState } from "react";
 import { TableWorkbench } from "@/components/meridian/table-workbench";
@@ -929,7 +931,8 @@ export function CloseCalendarScreen({ data: _data }: FinanceStandardScreenProps)
     "close workflows"
   );
   const items = fundScope.rows;
-  const closeRows = items.map((item) => {
+  // Overdue workflows first (UX Phase E); a workflow ready to close is never overdue.
+  const closeRows = sortByUrgency(items, (item) => describeDue(item.nextDueDate, Date.now(), { done: item.isReadyToClose })).map((item) => {
     const nextTask = item.nextDueLabel ?? "No next task retained";
     const owner = item.nextDueOwner ?? "Unassigned";
     const due = item.nextDueDate ? presentFinanceDate(item.nextDueDate) : "No due date";
@@ -1016,6 +1019,7 @@ export function CloseCalendarScreen({ data: _data }: FinanceStandardScreenProps)
                     <div className="min-w-0 space-y-2">
                       <div className="text-sm text-foreground">{summary}</div>
                       <div className="flex flex-wrap gap-2">
+                        <DueChip dueAt={item.nextDueDate} done={item.isReadyToClose} fallback={null} />
                         <Badge variant={item.blockerCount > 0 ? "warning" : "outline"}>
                           {item.blockerCount} blocker{item.blockerCount === 1 ? "" : "s"}
                         </Badge>

@@ -806,6 +806,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
           {closeWorkflow?.closeChecklist ? <section aria-label="Close task progress" className="space-y-2"><h3 className="text-sm font-semibold">Close task progress</h3><CloseChecklistProgressChart tasks={closeWorkflow.closeChecklist} /></section> : null}
           <AccountingCaseWorkbench
             breakRows={reconciliation.rows}
+            visitBaseline={breakQueueVisit.baseline}
             selectedBreakId={reconciliation.selectedBreakId}
             selectedBreakDetail={reconciliation.selectedDetail}
             closeCommandCenter={closeCommandCenter}

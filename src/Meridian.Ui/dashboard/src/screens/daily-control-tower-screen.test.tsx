@@ -9,6 +9,7 @@ import { renderWithRouter } from "@/test/render";
 import type { DataWorkspaceResponse, TradingWorkspaceResponse } from "@/types";
 import { commandOperatorTriage, getOperatorTriageInbox, type OperatorTriageInbox, type OperatorTriageItem } from "@/lib/operator-inbox-triage";
 
+import { resetSinceLastVisitCache, type SurfaceVisitServices } from "@/lib/since-last-visit";
 vi.mock("@/lib/operator-inbox-triage", async (load) => ({ ...await load<typeof import("@/lib/operator-inbox-triage")>(), getOperatorTriageInbox: vi.fn(), commandOperatorTriage: vi.fn(), bulkAssignOperatorTriage: vi.fn() }));
 vi.mock("@/lib/table-workbench", async (load) => ({ ...await load<typeof import("@/lib/table-workbench")>(), loadTableViews: vi.fn(async () => []), saveTableView: vi.fn() }));
 
@@ -100,10 +101,12 @@ const payload: AppShellWorkspacePayload = {
 
 function renderScreen({
   refreshing = false,
-  search = "?symbol=MSFT"
+  search = "?symbol=MSFT",
+  visitServices
 }: {
   refreshing?: boolean;
   search?: string;
+  visitServices?: Partial<SurfaceVisitServices>;
 } = {}) {
   const shell = buildAppShellViewState({
     pathname: "/",
@@ -119,6 +122,7 @@ function renderScreen({
       trustStrip={shell.trustStrip}
       attention={shell.attention}
       refreshing={refreshing}
+      visitServices={visitServices}
     />
   );
 }
@@ -133,6 +137,34 @@ async function renderLoaded(options: Parameters<typeof renderScreen>[0] = {}) {
   await screen.findByRole("row", { name: "Cash break triage" });
   return result;
 }
+
+describe("DailyControlTowerScreen new since you last looked", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    resetSinceLastVisitCache();
+    window.sessionStorage.clear();
+  });
+
+  it("marks inbox items created or changed after the viewer's previous visit", async () => {
+    vi.mocked(getOperatorTriageInbox).mockResolvedValue({
+      ...inboxResponse,
+      items: [
+        { ...inboxBlocker, activity: [{ commandId: "c-1", action: "Acknowledge", actorId: "operator-2", reason: "Looking", occurredAt: "2026-05-14T19:30:00Z" }] },
+        { ...inboxInfo, createdAt: "2026-05-14T20:30:00Z" }
+      ]
+    } as OperatorTriageInbox);
+    const visit = { surface: "today-queue", visitedAt: "2026-05-14T21:30:00Z", previousVisitAt: "2026-05-14T19:00:00Z" };
+    const record = vi.fn(async () => visit);
+    renderScreen({ search: "?symbol=MSFT", visitServices: { record, read: record } });
+    await screen.findByRole("row", { name: "Cash break triage" });
+    expect(record).toHaveBeenCalledWith("today-queue");
+    expect(await screen.findByTestId("today-since-last-visit")).toHaveTextContent(/2 new and 1 updated since your last visit \(May 14, 2026, 19:00 UTC\)/);
+    const blockerRow = screen.getByRole("row", { name: "Cash break triage" });
+    expect(blockerRow.querySelector("[data-since-last-visit='updated']")).not.toBeNull();
+    // The workspace signal observed at 20:00 is new as well; one observed earlier is not marked.
+    expect(document.querySelectorAll("[data-since-last-visit='new']").length).toBe(2);
+  });
+});
 
 describe("DailyControlTowerScreen", () => {
   beforeEach(() => {
@@ -300,7 +332,7 @@ describe("DailyControlTowerScreen", () => {
     const user = userEvent.setup();
     await renderLoaded();
     expect(within(screen.getByRole("row", { name: "Brokerage sync failed" })).queryByRole("checkbox")).not.toBeInTheDocument();
-    await user.click(screen.getByRole("checkbox", { name: "Select Cash break triage for assignment" }));
+    await user.click(screen.getByRole("checkbox", { name: "Select Cash break triage for bulk actions" }));
     await user.click(screen.getByRole("button", { name: "Assign 1 selected" }));
     expect(screen.getByRole("dialog")).toHaveAccessibleName("Assign 1 selected items");
   });

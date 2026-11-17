@@ -17,6 +17,13 @@ import type {
 // The report-run live indicator is additive over the SSE hook; mock it so the default (unhealthy,
 // matching jsdom where EventSource is undefined) leaves every existing test untouched, and the tests
 // below can drive the healthy/pushed-status and run-selection paths.
+// The per-viewer visit record behind "new since you last looked" is not part of these flows; keep it
+// off the ordered fetch mock.
+vi.mock("@/lib/api/operator-workstation.api", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/api/operator-workstation.api")>()),
+  getOperatorSurfaceVisit: vi.fn(async () => { throw new Error("visit record not used in this test"); }),
+  recordOperatorSurfaceVisit: vi.fn(async () => { throw new Error("visit record not used in this test"); })
+}));
 vi.mock("@/hooks/use-report-run-stream", () => ({
   useReportRunStream: vi.fn(() => ({ status: null, healthy: false }))
 }));

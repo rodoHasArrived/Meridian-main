@@ -15,6 +15,10 @@ import { formatTimestamp } from "@/lib/format";
 import type { OperatorSurfaceVisit } from "@/types/operator-surface-visit";
 
 export const BREAK_QUEUE_VISIT_SURFACE = "reconciliation-breaks";
+// Further surfaces with per-viewer "new since you last looked" markers (UX Phase E).
+export const TODAY_QUEUE_VISIT_SURFACE = "today-queue";
+export const APPROVALS_VISIT_SURFACE = "approvals";
+export const REPORTING_TRIAGE_VISIT_SURFACE = "reporting-triage";
 const SESSION_KEY_PREFIX = "meridian.workstation.surface-visit.v1:";
 
 export type SinceLastVisitMark = "new" | "updated";
@@ -194,11 +198,11 @@ export function summarizeSinceLastVisit(
   return { newCount, updatedCount };
 }
 
-/** One line for the queue: what changed, and the visit it is measured from. */
-export function describeSinceLastVisit(state: SinceLastVisitState, summary: SinceLastVisitSummary): string | null {
+/** One line for the queue: what changed, and the visit it is measured from. `noun` names the rows ("Breaks", "Items"). */
+export function describeSinceLastVisit(state: SinceLastVisitState, summary: SinceLastVisitSummary, noun = "Breaks"): string | null {
   if (state.status !== "ready") return null;
   const since = parseTime(state.baseline);
-  if (since === null) return "This is your first recorded visit. Breaks that change from now on are marked next time.";
+  if (since === null) return `This is your first recorded visit. ${noun} that change from now on are marked next time.`;
   const parts = [
     summary.newCount > 0 ? `${summary.newCount} new` : null,
     summary.updatedCount > 0 ? `${summary.updatedCount} updated` : null
@@ -212,4 +216,21 @@ export function describeSinceLastVisit(state: SinceLastVisitState, summary: Sinc
 /** KPI delta with its basis, e.g. "2 new since your last visit"; empty when nothing is new. */
 export function sinceLastVisitDelta(summary: SinceLastVisitSummary): string {
   return summary.newCount > 0 ? `${summary.newCount} new since your last visit` : "";
+}
+
+/** The times a row is compared on: when it appeared and when it last changed. */
+export interface SinceLastVisitTimes {
+  detectedAt?: string | null;
+  lastUpdatedAt?: string | null;
+}
+
+/** The newest of several instants (ISO strings), or null when none parses. */
+export function latestInstant(values: ReadonlyArray<string | null | undefined>): string | null {
+  let latest: string | null = null;
+  let latestMs = Number.NEGATIVE_INFINITY;
+  for (const value of values) {
+    const time = parseTime(value);
+    if (time !== null && time > latestMs) { latestMs = time; latest = value ?? null; }
+  }
+  return latest;
 }

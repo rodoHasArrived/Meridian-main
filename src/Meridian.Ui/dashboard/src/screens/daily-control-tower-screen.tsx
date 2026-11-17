@@ -1,4 +1,4 @@
-import { TimeText } from "@/components/ui/time-text";
+import { DueChip } from "@/components/meridian/due-chip";
 import { StatStrip } from "@/components/meridian/stat-strip";
 import { WORKSPACE_KPI_IDS } from "@/lib/kpi-registry";
 import { useState } from "react";
@@ -25,13 +25,18 @@ import { ATTENTION_COUNT_RULE, countAttention, needsAttention } from "@/lib/atte
 import { useQueueKeyboard } from "@/lib/use-queue-keyboard";
 import { SeverityBadge } from "@/components/operations";
 import {
-  buildDailyControlTowerModel, buildTodayQueueRows, describeTodayQueueRank, todayQueueRowKey, type TodayQueueRow
+  buildDailyControlTowerModel, buildTodayQueueRows, describeTodayQueueRank, todayQueueRowKey, todayRowVisitTimes, type TodayQueueRow
 } from "@/lib/daily-control-tower";
 import { routeForTriageItem } from "@/lib/operator-inbox-triage";
 import { eyebrowClassName } from "@/design-system/label-case";
 import { pluralizeCount } from "@/lib/format";
 import { toSeverity } from "@/design-system/status-styles";
 import { SegmentedControl } from "@/components/ui/segmented-control";
+import { SinceLastVisitBadge } from "@/components/meridian/since-last-visit-badge";
+import {
+  classifySinceLastVisit, describeSinceLastVisit, summarizeSinceLastVisit, TODAY_QUEUE_VISIT_SURFACE, useSinceLastVisit,
+  type SurfaceVisitServices
+} from "@/lib/since-last-visit";
 
 /** Which source the one Today queue shows (UX consolidation P1). */
 export type TodayQueueSource = "all" | "workspace" | "inbox";
@@ -47,6 +52,8 @@ export interface DailyControlTowerScreenProps {
    */
   triage?: OperatorTriageInboxState;
   refreshing?: boolean;
+  /** Test seam for the per-viewer visit record behind "new since you last looked". */
+  visitServices?: Partial<SurfaceVisitServices>;
 }
 
 type QueueSelection = { source: "workspace"; id: string } | { source: "inbox" } | null;
@@ -72,7 +79,8 @@ function DailyControlTowerQueue({
   viewModel,
   trustStrip,
   attention,
-  triage
+  triage,
+  visitServices
 }: DailyControlTowerScreenProps & { triage: OperatorTriageInboxState }) {
   const model = buildDailyControlTowerModel(viewModel, trustStrip);
   const fundAccountId = viewModel.operatingScope.fundAccountId;
@@ -105,6 +113,11 @@ function DailyControlTowerQueue({
     ?? null;
   const selectedInboxItem = selectedRow?.source === "inbox" ? selectedRow.item : null;
   const rankReason = selectedRow ? describeTodayQueueRank(queueRows, selectedRow.key) : null;
+  // New since you last looked (UX Phase E): rows that appeared or changed after this viewer's
+  // previous visit to Today, kept per operator by the server.
+  const sinceLastVisit = useSinceLastVisit(TODAY_QUEUE_VISIT_SURFACE, visitServices);
+  const visitBaseline = sinceLastVisit.baseline;
+  const sinceLastVisitLine = describeSinceLastVisit(sinceLastVisit, summarizeSinceLastVisit(queueRows.map(todayRowVisitTimes), visitBaseline), "Items");
 
   const selectRow = (row: TodayQueueRow) => {
     if (row.source === "inbox") {
@@ -128,7 +141,7 @@ function DailyControlTowerQueue({
     {
       id: "select",
       label: "",
-      srLabel: "Select inbox item for assignment",
+      srLabel: "Select inbox item for bulk actions",
       render: (row) => row.source === "inbox" ? <TriageAssignCheckbox triage={triage} item={row.item} /> : null
     },
     {
@@ -144,6 +157,7 @@ function DailyControlTowerQueue({
               : <TriageSeverityStatus item={row.item} />}
           </span>
           <span className="truncate font-medium text-foreground" title={`${row.label}. ${row.detail}`}>{row.label}</span>
+          {(() => { const mark = classifySinceLastVisit(todayRowVisitTimes(row), visitBaseline); return mark ? <SinceLastVisitBadge mark={mark} /> : null; })()}
         </div>
       )
     },
@@ -176,7 +190,7 @@ function DailyControlTowerQueue({
       exportValue: (row) => row.dueAt,
       hideWhenEmpty: (row) => !row.dueAt,
       emptyNote: "Due: no item has a due time",
-      render: (row) => <TimeText value={row.dueAt} display="compact" fallback="—" />
+      render: (row) => <DueChip dueAt={row.dueAt} />
     },
     {
       id: "state",
@@ -303,6 +317,7 @@ function DailyControlTowerQueue({
           />
         </div>
 
+        {sinceLastVisitLine ? <p className="text-xs text-muted-foreground" data-testid="today-since-last-visit">{sinceLastVisitLine}</p> : null}
         {/* Command outcome and unconfirmed-command recovery stay visible under every Source filter. */}
         <OperatorTriageNotices triage={triage} showPersistence={false} />
 

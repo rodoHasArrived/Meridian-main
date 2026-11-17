@@ -286,6 +286,16 @@ describe("buildTodayQueueRows", () => {
     expect(describeTodayQueueRank(rows, "inbox:missing")).toBeNull();
   });
 
+  it("ranks overdue items first, then severity and age within each group (frozen clock)", () => {
+    const now = Date.parse("2026-05-20T12:00:00Z");
+    const overdueInfo = { ...inbox("in-info-late", "Info", "2026-05-14T09:00:00Z"), dueAt: "2026-05-17" };
+    const dueLater = { ...inbox("in-critical-later", "Critical", "2026-05-14T08:00:00Z"), dueAt: "2026-05-28" };
+    const rows = buildTodayQueueRows([focus("ws-blocked", "blocked", "2026-05-14T20:00:00Z")], [overdueInfo, dueLater], undefined, now);
+    expect(rows.map((row) => row.key)).toEqual(["inbox:in-info-late", "inbox:in-critical-later", "workspace:ws-blocked"]);
+    expect(describeTodayQueueRank(rows, "inbox:in-info-late", now)).toBe("Ranked 1 of 3. Overdue 3 days; overdue items rank first, then by severity (informational), then oldest first: the only informational item.");
+    expect(describeTodayQueueRank(rows, "workspace:ws-blocked", now)).toBe("Ranked 3 of 3. After the overdue items, sorted by severity (blocked), then oldest first: 2nd oldest of 2 blocked items.");
+  });
+
   it("writes the selected item's summary as a sentence, not comma-joined labels", () => {
     expect(describeFocus("Cash variance needs review", "blocked", "Accounting record or close evidence", null)).toBe(
       "Cash variance needs review. It is blocked and affects the accounting record or close evidence. No timestamped evidence is linked yet."

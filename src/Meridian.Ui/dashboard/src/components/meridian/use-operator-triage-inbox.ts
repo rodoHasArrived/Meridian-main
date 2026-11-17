@@ -11,7 +11,30 @@ export interface PendingTriageCommand {
 }
 
 export type OperatorTriageCapability = "canAssign" | "canAcknowledge" | "canSnooze" | "canUnsnooze";
-export type OperatorTriageDialogAction = OperatorTriageAction | "BulkAssign";
+export type OperatorTriageDialogAction = OperatorTriageAction | "BulkAssign" | "BulkAcknowledge" | "BulkSnooze";
+/** Bulk actions sent as one command per item, each confirmed in the dialog (UX Phase E). */
+export type OperatorTriageEachAction = "BulkAcknowledge" | "BulkSnooze";
+
+/** One item's outcome in a per-item bulk action. */
+export interface OperatorTriageBulkItemResult {
+  workItemId: string;
+  label: string;
+  outcome: "Applied" | "Conflict" | "Rejected" | "NotFound" | "Unavailable" | "Forbidden" | "Unconfirmed";
+  detail: string | null;
+}
+
+/** Whether a checked item can take a per-item bulk action, and why not. */
+export interface OperatorTriageBulkEligibility {
+  item: OperatorTriageItem;
+  eligible: boolean;
+  reason: string | null;
+}
+
+export const OPERATOR_TRIAGE_BULK_LIMIT = 100;
+
+function isEachAction(action: OperatorTriageDialogAction | null): action is OperatorTriageEachAction {
+  return action === "BulkAcknowledge" || action === "BulkSnooze";
+}
 export type OperatorTriageVisibility = "active" | "all" | "snoozed";
 
 /** The shared inbox searchable text; Today's merged grid reuses it for inbox rows. */
@@ -44,6 +67,8 @@ export function useOperatorTriageInbox({ fundAccountId, refreshKey = false }: {
   const [until, setUntil] = useState("");
   const [busy, setBusy] = useState(false);
   const [uncertain, setUncertain] = useState<PendingTriageCommand | null>(null);
+  const [confirmedIds, setConfirmedIds] = useState<string[]>([]);
+  const [bulkResults, setBulkResults] = useState<OperatorTriageBulkItemResult[] | null>(null);
   const [tick, setTick] = useState(0);
   const [reloadSequence, setReloadSequence] = useState(0);
   const readInvocation = useRef(0);
@@ -63,7 +88,7 @@ export function useOperatorTriageInbox({ fundAccountId, refreshKey = false }: {
     actor.current = null;
     uncertainRef.current = null;
     setInbox(null); setBusy(false); setUncertain(null); setAction(null); setActionTargetId(null);
-    setSelectedId(null); setCheckedIds([]); setNotice(null);
+    setSelectedId(null); setCheckedIds([]); setNotice(null); setConfirmedIds([]); setBulkResults(null);
     setReason(""); setAssignee(""); setUntil(""); setMineOnly(false);
     return () => {
       commandInvocation.current += 1;
@@ -101,7 +126,7 @@ export function useOperatorTriageInbox({ fundAccountId, refreshKey = false }: {
         setNotice("The retained activity confirms the command. Review the refreshed item state.");
       }
       setInbox(result);
-      setCheckedIds((ids) => ids.filter((id) => result.items.some((item) => item.workItemId === id && item.capabilities.canAssign)));
+      setCheckedIds((ids) => ids.filter((id) => result.items.some((item) => item.workItemId === id && isBulkSelectable(item))));
     }).catch((failure) => {
       if (!controller.signal.aborted && readInvocation.current === current) {
         setInbox(null);
@@ -132,19 +157,36 @@ export function useOperatorTriageInbox({ fundAccountId, refreshKey = false }: {
   const actionsAvailable = Boolean(inbox?.persistenceAvailable && !loading && !busy && !uncertain);
   const capability = (item: OperatorTriageItem | null, key: OperatorTriageCapability) =>
     Boolean(actionsAvailable && item?.capabilities[key] && (key !== "canSnooze" || item.tone !== "Critical"));
-  /** Opens the reviewed action dialog for one item, or for the checked items (BulkAssign). */
+  /** Each checked item and whether it can take a per-item bulk action, with the reason when not. */
+  const bulkEligibility = (next: OperatorTriageEachAction): OperatorTriageBulkEligibility[] =>
+    (inbox?.items ?? []).filter((item) => checkedIds.includes(item.workItemId)).map((item) => {
+      const key: OperatorTriageCapability = next === "BulkAcknowledge" ? "canAcknowledge" : "canSnooze";
+      const eligible = capability(item, key);
+      const reason = eligible ? null
+        : next === "BulkAcknowledge" && item.acknowledgedAt ? "Already acknowledged."
+          : next === "BulkSnooze" && item.tone === "Critical" ? "Blocked items remain visible."
+            : next === "BulkSnooze" && isActiveTriageSnooze(item) ? "Already snoozed."
+              : item.capabilities.disabledReason ?? `You cannot ${next === "BulkAcknowledge" ? "acknowledge" : "snooze"} this item.`;
+      return { item, eligible, reason };
+    });
+  /** Opens the reviewed action dialog for one item, or for the checked items (bulk actions). */
   const openAction = (next: OperatorTriageDialogAction, target: OperatorTriageItem | null = null) => {
     setReason(""); setAssignee("");
     setUntil(new Date(Date.now() + 60 * 60 * 1000).toISOString().slice(0, 16));
-    setNotice(null); setActionTargetId(next === "BulkAssign" ? null : target?.workItemId ?? null); setAction(next);
+    // Per-item bulk actions start with every eligible checked item confirmed; the operator can untick any.
+    setConfirmedIds(isEachAction(next) ? bulkEligibility(next).filter((entry) => entry.eligible).map((entry) => entry.item.workItemId) : []);
+    setNotice(null); setBulkResults(null);
+    setActionTargetId(next === "BulkAssign" || isEachAction(next) ? null : target?.workItemId ?? null); setAction(next);
   };
+  const toggleConfirmed = (workItemId: string, confirmed: boolean) =>
+    setConfirmedIds((ids) => confirmed ? [...ids.filter((id) => id !== workItemId), workItemId] : ids.filter((id) => id !== workItemId));
   const closeAction = () => setAction(null);
   const setVisibility = (value: string) =>
     setVisibilityState(value === "all" || value === "snoozed" ? value : "active");
   const toggleChecked = (workItemId: string, checked: boolean) =>
     setCheckedIds((ids) => checked ? [...ids, workItemId] : ids.filter((id) => id !== workItemId));
   /** The item a single-item dialog acts on, re-read from the latest authorized inbox. */
-  const actionTarget = action && action !== "BulkAssign"
+  const actionTarget = action && action !== "BulkAssign" && !isEachAction(action)
     ? inbox?.items.find((item) => item.workItemId === actionTargetId) ?? null
     : null;
 
@@ -180,17 +222,67 @@ export function useOperatorTriageInbox({ fundAccountId, refreshKey = false }: {
     }
   }
 
+  /**
+   * A per-item bulk action: one command per confirmed item, sent in turn, each with its own command
+   * ID and the item's authoritative versions, so each item records its own activity entry. A failed
+   * request marks that item unconfirmed and the rest still run.
+   */
+  async function executeEach(next: OperatorTriageEachAction, items: OperatorTriageItem[], common: { commandId: string; reason: string; fundAccountId?: string | null }, snoozedUntil: string | null) {
+    if (commandController.current) return;
+    const controller = new AbortController();
+    commandController.current = controller;
+    const current = ++commandInvocation.current;
+    const signal = controller.signal;
+    setBusy(true); setNotice(null); setBulkResults(null);
+    const results: OperatorTriageBulkItemResult[] = [];
+    try {
+      for (const [index, item] of items.entries()) {
+        if (signal.aborted || current !== commandInvocation.current) return;
+        try {
+          const result = await commandOperatorTriage(item.workItemId, {
+            ...common, commandId: `${common.commandId}:${index}`,
+            action: next === "BulkAcknowledge" ? "Acknowledge" : "Snooze",
+            expectedVersion: item.version, expectedSourceVersion: item.sourceVersion,
+            ...(next === "BulkSnooze" && snoozedUntil ? { snoozedUntil } : {})
+          }, { signal });
+          const known = ["Applied", "Conflict", "Rejected", "NotFound", "Unavailable", "Forbidden"].includes(result?.status);
+          results.push({ workItemId: item.workItemId, label: item.label, outcome: known ? result.status as OperatorTriageBulkItemResult["outcome"] : "Unconfirmed", detail: known ? result.error ?? null : "The response could not be verified." });
+        } catch (failure) {
+          if (signal.aborted || current !== commandInvocation.current) return;
+          results.push({ workItemId: item.workItemId, label: item.label, outcome: "Unconfirmed", detail: failure instanceof Error ? failure.message : "Request failed." });
+        }
+      }
+      const applied = results.filter((result) => result.outcome === "Applied").length;
+      const unconfirmed = results.filter((result) => result.outcome === "Unconfirmed").length;
+      const refused = results.length - applied - unconfirmed;
+      setNotice(`${next === "BulkAcknowledge" ? "Acknowledge" : "Snooze"}: ${applied} of ${results.length} applied${refused ? `, ${refused} not applied` : ""}${unconfirmed ? `, ${unconfirmed} unconfirmed (check after the inbox reloads)` : ""}. Source readiness is unchanged.`);
+      setBulkResults(results); setAction(null); setCheckedIds([]);
+      reload();
+    } finally {
+      if (!signal.aborted && current === commandInvocation.current) {
+        commandController.current = null;
+        setBusy(false);
+      }
+    }
+  }
+
   const snoozeDate = Date.parse(`${until}Z`);
+  const eachTargets = isEachAction(action)
+    ? bulkEligibility(action).filter((entry) => entry.eligible && confirmedIds.includes(entry.item.workItemId)).map((entry) => entry.item)
+    : [];
   const canSubmit = Boolean(action && reason.trim() && !busy && (action !== "Assign" && action !== "BulkAssign" || assignee.trim())
-    && (action !== "Snooze" || Number.isFinite(snoozeDate) && snoozeDate > Date.now() && snoozeDate <= Date.now() + 7 * 24 * 60 * 60 * 1000)
-    && (action === "BulkAssign" ? checkedIds.length > 0 && checkedIds.length <= 100 && checkedIds.every((id) => capability(inbox?.items.find((item) => item.workItemId === id) ?? null, "canAssign"))
+    && (action !== "Snooze" && action !== "BulkSnooze" || Number.isFinite(snoozeDate) && snoozeDate > Date.now() && snoozeDate <= Date.now() + 7 * 24 * 60 * 60 * 1000)
+    && (isEachAction(action) ? eachTargets.length > 0 && eachTargets.length <= OPERATOR_TRIAGE_BULK_LIMIT
+      : action === "BulkAssign" ? checkedIds.length > 0 && checkedIds.length <= OPERATOR_TRIAGE_BULK_LIMIT && checkedIds.every((id) => capability(inbox?.items.find((item) => item.workItemId === id) ?? null, "canAssign"))
       : capability(actionTarget, action === "Assign" ? "canAssign" : action === "Acknowledge" ? "canAcknowledge" : action === "Snooze" ? "canSnooze" : "canUnsnooze")));
 
   /** Submits the open dialog with a fresh command ID and the authoritative versions. */
   const submit = () => {
     if (!canSubmit || !action || !inbox) return;
     const common = { commandId: crypto.randomUUID(), reason: reason.trim(), fundAccountId };
-    if (action === "BulkAssign") {
+    if (isEachAction(action)) {
+      void executeEach(action, eachTargets, common, action === "BulkSnooze" ? new Date(snoozeDate).toISOString() : null);
+    } else if (action === "BulkAssign") {
       void execute({ command: { ...common, action: "Assign", assigneeId: assignee.trim(), items: inbox.items.filter((item) => checkedIds.includes(item.workItemId)).map((item) => ({ workItemId: item.workItemId, expectedVersion: item.version, expectedSourceVersion: item.sourceVersion })) } });
     } else if (actionTarget) {
       void execute({ itemId: actionTarget.workItemId, command: { ...common, action, expectedVersion: actionTarget.version, expectedSourceVersion: actionTarget.sourceVersion, ...(action === "Assign" ? { assigneeId: assignee.trim() } : {}), ...(action === "Snooze" ? { snoozedUntil: new Date(snoozeDate).toISOString() } : {}) } });
@@ -206,8 +298,14 @@ export function useOperatorTriageInbox({ fundAccountId, refreshKey = false }: {
     mineOnly, setMineOnly, visibility, setVisibility, search, setSearch,
     actionsAvailable, capability,
     action, actionTarget, openAction, closeAction,
+    bulkEligibility, confirmedIds, toggleConfirmed, bulkResults, clearBulkResults: () => setBulkResults(null),
     reason, setReason, assignee, setAssignee, until, setUntil, canSubmit, submit
   };
 }
 
 export type OperatorTriageInboxState = ReturnType<typeof useOperatorTriageInbox>;
+
+/** A row can be checked when any bulk action could apply to it. */
+export function isBulkSelectable(item: OperatorTriageItem): boolean {
+  return item.capabilities.canAssign || item.capabilities.canAcknowledge || item.capabilities.canSnooze;
+}
