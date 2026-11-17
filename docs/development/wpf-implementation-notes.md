@@ -447,8 +447,16 @@ per machine with the other desktop shell preferences
 attaches the store. Only differences from the defaults are stored. At load, an override is skipped
 when its action is not a default shortcut, its key or modifiers do not parse, it collides with
 another shortcut, or it would leave Start/Stop Collector, Toggle Connection, or Delete Selected
-without Ctrl or Alt. **Reset to defaults** on `KeyboardShortcutsPage` clears every override. There
-is no in-app rebinding editor yet.
+without Ctrl or Alt. Overrides are applied together before collisions are checked, so a saved swap
+of two shortcuts survives a restart.
+
+`KeyboardShortcutsPage` is the editor. Each row has **Change** (press the new chord; Esc cancels),
+**Disable/Enable**, and **Reset** when the row differs from its default (the key badge's tooltip
+shows the default). **Reset to defaults** clears every override. While capturing, the page pauses
+the global shortcut handler, so pressing an existing chord does not run its command. A refused chord
+leaves the binding unchanged and shows why: a modifier pressed on its own, a chord another shortcut
+already uses (named), or a high-consequence action without Ctrl or Alt. Escape can't be bound from
+the editor because it cancels capture.
 
 ### One refresh control
 

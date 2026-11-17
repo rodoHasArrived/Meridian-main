@@ -26,12 +26,18 @@ Windows; cross-compilation alone does not establish that proof.
 
 `KeyboardShortcutService` reapplies the operator's saved shortcut overrides at startup
 (`App.xaml.cs` attaches the shared desktop shell preference store) and saves only differences from
-the defaults after `UpdateShortcut`, `SetShortcutEnabled` or `ResetToDefaults`. Loading skips an
-override for an unknown action, an unparseable key or modifier, a collision with another shortcut,
-or a binding that would leave Start/Stop Collector, Toggle Connection or Delete Selected without
-Ctrl or Alt. `KeyboardShortcutsPage` reports how many shortcuts differ from their defaults and
-offers Reset to defaults; there is no in-app rebinding editor yet.
-`KeyboardShortcutServicePersistenceTests` covers this on isolated instances and requires Windows.
+the defaults after `UpdateShortcut`, `SetShortcutEnabled`, `ResetShortcut` or `ResetToDefaults`.
+Loading applies every well-formed override first, so saved swaps and rotations hold, then reverts
+rebound actions that still collide, one at a time in ordinal order. It skips an override for an
+unknown action, an unparseable key or modifier, a collision, or a binding that would leave
+Start/Stop Collector, Toggle Connection or Delete Selected without Ctrl or Alt.
+`KeyboardShortcutsPage` is the rebinding editor: each row offers Change (capture the next chord;
+Esc cancels), Disable/Enable, and Reset when it differs from the default, plus a page-wide Reset to
+defaults. Capture pauses the global shortcut handler so pressing an existing chord does not run its
+command, and `TryUpdateShortcut` refuses modifier-only presses, in-use chords (naming the owner) and
+guardrail violations with an operator-facing reason. Escape cannot be bound through the editor.
+`KeyboardShortcutServicePersistenceTests` and `KeyboardShortcutRebindingTests` cover this on isolated
+instances and require Windows.
 
 Settings workspace and Preferences include a shared activation-status banner reading the host's
 `GET /api/config/changes` contract. It refreshes on entry, every 15 seconds, on demand and after

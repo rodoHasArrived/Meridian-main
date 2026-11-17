@@ -588,7 +588,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Services.ShortcutAction</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:680](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L680).
+Source: [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:800](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L800).
 
 Shortcut action definition.
 
@@ -600,19 +600,19 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string ActionId { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:685](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L685) | Gets or sets the unique action identifier. |
-| <code>public Key Key { get; set; }</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:690](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L690) | Gets or sets the key. |
-| <code>public ModifierKeys Modifiers { get; set; }</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:695](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L695) | Gets or sets the modifier keys. |
-| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:700](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L700) | Gets or sets the shortcut description. |
-| <code>public ShortcutCategory Category { get; set; }</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:705](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L705) | Gets or sets the shortcut category. |
-| <code>public bool IsEnabled { get; set; } = true;</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:710](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L710) | Gets or sets whether the shortcut is enabled. |
-| <code>public string FormattedShortcut =&gt; …;</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:715](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L715) | Gets the formatted shortcut string. |
+| <code>public string ActionId { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:805](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L805) | Gets or sets the unique action identifier. |
+| <code>public Key Key { get; set; }</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:810](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L810) | Gets or sets the key. |
+| <code>public ModifierKeys Modifiers { get; set; }</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:815](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L815) | Gets or sets the modifier keys. |
+| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:820](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L820) | Gets or sets the shortcut description. |
+| <code>public ShortcutCategory Category { get; set; }</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:825](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L825) | Gets or sets the shortcut category. |
+| <code>public bool IsEnabled { get; set; } = true;</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:830](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L830) | Gets or sets whether the shortcut is enabled. |
+| <code>public string FormattedShortcut =&gt; …;</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:835](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L835) | Gets the formatted shortcut string. |
 
 ## ShortcutCategory
 
 Qualified name: <code>Meridian.Wpf.Services.ShortcutCategory</code>. Kind: `enum`.
 
-Source: [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:721](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L721).
+Source: [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:841](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L841).
 
 Shortcut categories.
 
@@ -624,18 +624,18 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>General</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:726](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L726) | General application shortcuts. |
-| <code>Navigation</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:731](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L731) | Navigation shortcuts. |
-| <code>Collector</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:736](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L736) | Collector control shortcuts. |
-| <code>Backfill</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:741](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L741) | Backfill operation shortcuts. |
-| <code>Symbols</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:746](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L746) | Symbol management shortcuts. |
-| <code>View</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:751](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L751) | View and display shortcuts. |
+| <code>General</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:846](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L846) | General application shortcuts. |
+| <code>Navigation</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:851](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L851) | Navigation shortcuts. |
+| <code>Collector</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:856](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L856) | Collector control shortcuts. |
+| <code>Backfill</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:861](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L861) | Backfill operation shortcuts. |
+| <code>Symbols</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:866](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L866) | Symbol management shortcuts. |
+| <code>View</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:871](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L871) | View and display shortcuts. |
 
 ## ShortcutInvokedEventArgs
 
 Qualified name: <code>Meridian.Wpf.Services.ShortcutInvokedEventArgs</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:757](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L757).
+Source: [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:877](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L877).
 
 Shortcut invoked event args.
 
@@ -647,8 +647,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string ActionId { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:762](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L762) | Gets or sets the action identifier. |
-| <code>public ShortcutAction? Action { get; set; }</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:767](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L767) | Gets or sets the shortcut action. |
+| <code>public string ActionId { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:882](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L882) | Gets or sets the action identifier. |
+| <code>public ShortcutAction? Action { get; set; }</code> | [src/Meridian.Wpf/Services/KeyboardShortcutService.cs:887](../../../../src/Meridian.Wpf/Services/KeyboardShortcutService.cs#L887) | Gets or sets the shortcut action. |
 
 ## SingleInstanceService
 

@@ -82,6 +82,9 @@
 - **Problem:** `Ctrl+Shift+Q` "Stop collector" can clash with OS or remote-desktop shortcuts and can't be changed.
 - **Guardrail:** High-consequence actions (`StartCollector`, `StopCollector`, `DeleteSelected` — currently bare `Delete` with no modifier — and anything that submits orders) must require a modifier and keep their confirmation dialogs.
 - **Effort:** Medium. **Impact:** Medium.
+- *Update 2026-11-17: the WPF half is implemented — `KeyboardShortcutsPage` now rebinds, disables
+  and resets shortcuts with conflict and modifier checks, and the changes persist. The browser
+  `userOverrides` editor remains open.*
 
 ### Idea 5: Export/import "My workstation" bundle
 - **What:** Schema-versioned JSON bundle of preferences, user layouts, table views, pinned quote symbols and price alerts. Import offers "merge" or "replace" and shows a diff first.

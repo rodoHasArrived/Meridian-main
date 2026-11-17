@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using Meridian.Ui.Services.Services;
@@ -84,15 +85,117 @@ public sealed class KeyboardShortcutService
 
         RestoreDefaultBindings();
         var skipped = new List<string>();
+        var rebound = new List<string>();
+
+        // Phase 1: apply every well-formed, allowed override without checking collisions, so a
+        // saved swap of two shortcuts (A takes B's chord and B takes A's) applies as a whole
+        // instead of the first half colliding with the not-yet-moved second.
         foreach (var (actionId, shortcutOverride) in overrides)
         {
-            if (!TryApplyOverride(actionId, shortcutOverride))
+            if (!TryApplyOverride(actionId, shortcutOverride, out var rebinds))
             {
                 skipped.Add(actionId);
             }
+            else if (rebinds)
+            {
+                rebound.Add(actionId);
+            }
+        }
+
+        // Phase 2: revert rebound actions whose final chord collides with another shortcut, one at
+        // a time in ordinal order, until no rebound action collides. Collisions that exist only
+        // between default bindings (for example Escape, shared by Cancel Backfill and Close Dialog)
+        // are left as they were.
+        rebound.Sort(StringComparer.Ordinal);
+        while (rebound.FirstOrDefault(id =>
+                   HasConflict(_shortcuts[id].Key, _shortcuts[id].Modifiers, excludeActionId: id)) is { } colliding)
+        {
+            RestoreDefaultBinding(colliding);
+            rebound.Remove(colliding);
+            skipped.Add(colliding);
         }
 
         return skipped;
+    }
+
+    /// <summary>
+    /// Rebinds <paramref name="actionId"/> to the chord after checking it is allowed and free,
+    /// and saves the change when a preference store is attached.
+    /// </summary>
+    /// <returns>Null on success; otherwise an operator-facing reason the chord was refused.</returns>
+    public string? TryUpdateShortcut(string actionId, Key key, ModifierKeys modifiers)
+    {
+        if (!_shortcuts.TryGetValue(actionId, out var action))
+        {
+            return "This shortcut is no longer registered.";
+        }
+
+        if (key == Key.None || IsModifierKey(key))
+        {
+            return "Press a key together with any modifiers.";
+        }
+
+        if (!IsBindingAllowed(actionId, key, modifiers))
+        {
+            return $"{action.Description} must use Ctrl or Alt so it cannot be triggered by accident.";
+        }
+
+        var conflict = FindConflict(key, modifiers, excludeActionId: actionId);
+        if (conflict is not null)
+        {
+            return $"{FormatShortcut(key, modifiers)} is already used by {conflict.Description}.";
+        }
+
+        UpdateShortcut(actionId, key, modifiers);
+        return null;
+    }
+
+    /// <summary>
+    /// Restores one default shortcut's binding and enabled state and saves the change.
+    /// </summary>
+    public void ResetShortcut(string actionId)
+    {
+        if (RestoreDefaultBinding(actionId))
+        {
+            PersistOverrides();
+        }
+    }
+
+    /// <summary>True when the action's current binding or enabled state differs from its default.</summary>
+    public bool IsOverridden(string actionId) =>
+        _defaultBindings.TryGetValue(actionId, out var defaults)
+        && _shortcuts.TryGetValue(actionId, out var action)
+        && (action.Key != defaults.Key || action.Modifiers != defaults.Modifiers || action.IsEnabled != defaults.IsEnabled);
+
+    /// <summary>Gets the default chord of a default shortcut, formatted for display.</summary>
+    public string? GetDefaultShortcutText(string actionId) =>
+        _defaultBindings.TryGetValue(actionId, out var defaults) ? FormatShortcut(defaults.Key, defaults.Modifiers) : null;
+
+    /// <summary>
+    /// Turns a key-down event into a capturable chord. Alt chords arrive as <see cref="Key.System"/>
+    /// with the real key in <paramref name="systemKey"/>; a press of a modifier alone is not a chord.
+    /// </summary>
+    public static bool TryGetChord(Key key, Key systemKey, ModifierKeys modifiers, out Key chordKey)
+    {
+        chordKey = key == Key.System ? systemKey : key;
+        return chordKey != Key.None && !IsModifierKey(chordKey) && (modifiers & ModifierKeys.Windows) == ModifierKeys.None;
+    }
+
+    private static bool IsModifierKey(Key key) => key is Key.LeftCtrl or Key.RightCtrl or Key.LeftShift
+        or Key.RightShift or Key.LeftAlt or Key.RightAlt or Key.LWin or Key.RWin or Key.System
+        or Key.ImeProcessed or Key.DeadCharProcessed;
+
+    private ShortcutAction? FindConflict(Key key, ModifierKeys modifiers, string excludeActionId)
+    {
+        foreach (var (actionId, action) in _shortcuts)
+        {
+            if (actionId != excludeActionId && action.Key == key && action.Modifiers == modifiers)
+            {
+                return action;
+            }
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -150,8 +253,9 @@ public sealed class KeyboardShortcutService
                || (modifiers & (ModifierKeys.Control | ModifierKeys.Alt)) != ModifierKeys.None;
     }
 
-    private bool TryApplyOverride(string actionId, DesktopShortcutOverride? shortcutOverride)
+    private bool TryApplyOverride(string actionId, DesktopShortcutOverride? shortcutOverride, out bool rebinds)
     {
+        rebinds = false;
         if (shortcutOverride is null
             || !_defaultBindings.ContainsKey(actionId)
             || !_shortcuts.TryGetValue(actionId, out var action))
@@ -178,12 +282,14 @@ public sealed class KeyboardShortcutService
             const ModifierKeys knownModifiers =
                 ModifierKeys.Alt | ModifierKeys.Control | ModifierKeys.Shift | ModifierKeys.Windows;
             if (!Enum.IsDefined(key)
+                || IsModifierKey(key)
                 || (modifiers & ~knownModifiers) != ModifierKeys.None
-                || !IsBindingAllowed(actionId, key, modifiers)
-                || HasConflict(key, modifiers, excludeActionId: actionId))
+                || !IsBindingAllowed(actionId, key, modifiers))
             {
                 return false;
             }
+
+            rebinds = key != action.Key || modifiers != action.Modifiers;
         }
 
         action.Key = key;
@@ -207,6 +313,20 @@ public sealed class KeyboardShortcutService
                 action.IsEnabled = defaults.IsEnabled;
             }
         }
+    }
+
+    private bool RestoreDefaultBinding(string actionId)
+    {
+        if (!_defaultBindings.TryGetValue(actionId, out var defaults)
+            || !_shortcuts.TryGetValue(actionId, out var action))
+        {
+            return false;
+        }
+
+        action.Key = defaults.Key;
+        action.Modifiers = defaults.Modifiers;
+        action.IsEnabled = defaults.IsEnabled;
+        return true;
     }
 
     private void PersistOverrides() => _saveOverrides?.Invoke(GetOverrides());

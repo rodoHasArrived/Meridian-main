@@ -164,7 +164,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Views.KeyboardShortcutsPage</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Views/KeyboardShortcutsPage.xaml.cs:16](../../../../src/Meridian.Wpf/Views/KeyboardShortcutsPage.xaml.cs#L16).
+Source: [src/Meridian.Wpf/Views/KeyboardShortcutsPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/KeyboardShortcutsPage.xaml.cs#L17).
 
 Keyboard shortcuts reference page that dynamically loads shortcuts from the KeyboardShortcutService, ensuring the display always reflects the current registered shortcuts.
 
@@ -176,7 +176,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public KeyboardShortcutsPage();</code> | [src/Meridian.Wpf/Views/KeyboardShortcutsPage.xaml.cs:20](../../../../src/Meridian.Wpf/Views/KeyboardShortcutsPage.xaml.cs#L20) |  |
+| <code>public KeyboardShortcutsPage();</code> | [src/Meridian.Wpf/Views/KeyboardShortcutsPage.xaml.cs:23](../../../../src/Meridian.Wpf/Views/KeyboardShortcutsPage.xaml.cs#L23) |  |
 
 Source: [src/Meridian.Wpf/Views/Pages.cs:103](../../../../src/Meridian.Wpf/Views/Pages.cs#L103).
 

@@ -79,6 +79,15 @@
                            AutomationProperties.AutomationId="KeyboardShortcutsOverrideStatus" />
             </DockPanel>
 
+            <!-- Result of the last rebinding attempt; announced to screen readers -->
+            <TextBlock x:Name="ShortcutEditStatusText"
+                       Margin="0,0,0,16"
+                       TextWrapping="Wrap"
+                       Visibility="Collapsed"
+                       Style="{StaticResource CardDescriptionStyle}"
+                       AutomationProperties.AutomationId="KeyboardShortcutsEditStatus"
+                       AutomationProperties.LiveSetting="Polite" />
+
             <!-- Dynamically populated shortcuts panel -->
             <StackPanel x:Name="DynamicShortcutsPanel" />
 
