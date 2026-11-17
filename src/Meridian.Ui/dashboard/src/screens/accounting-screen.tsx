@@ -824,7 +824,6 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
               resolveDialog.open(breakId, "Dismissed");
             }}
           />
-          {/* The queue leads; current checklist progress follows it in view rather than collapsed. */}
           {closeWorkflow?.closeChecklist ? <CloseChecklistProgressChart tasks={closeWorkflow.closeChecklist} /> : null}
           {closeReportPackage.closeBoard ? <CloseBoard board={closeReportPackage.closeBoard} /> : null}
           <PrepareNextPeriodPanel initialWorkflowId={closeWorkflow?.workflowId} />

@@ -6,6 +6,91 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolMapping
+
+Qualified name: <code>Meridian.Ui.Services.SymbolMapping</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:700](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L700).
+
+A symbol mapping entry with provider-specific symbols.
+
+```csharp
+public sealed class SymbolMapping
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string CanonicalSymbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:705](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L705) | The canonical (internal) symbol representation. |
+| <code>public string? DisplayName { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:710](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L710) | Display name for the symbol. |
+| <code>public string SecurityType { get; set; } = &quot;STK&quot;;</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:715](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L715) | Security type (STK, OPT, FUT, etc.). |
+| <code>public string? PrimaryExchange { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:720](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L720) | Primary exchange. |
+| <code>public string Currency { get; set; } = &quot;USD&quot;;</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:725](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L725) | Currency. |
+| <code>public string? Figi { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:730](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L730) | FIGI identifier for cross-provider resolution. |
+| <code>public string? Isin { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:735](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L735) | ISIN identifier. |
+| <code>public string? Cusip { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:740](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L740) | CUSIP identifier. |
+| <code>public Dictionary&lt;string, string&gt;? ProviderSymbols { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:747](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L747) | Provider-specific symbol representations. Key: Provider ID (e.g., &quot;IB&quot;, &quot;Alpaca&quot;) Value: Provider-specific symbol |
+| <code>public string? Notes { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:752](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L752) | Notes about this symbol mapping. |
+| <code>public bool IsCustomMapping { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:757](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L757) | Whether this is a custom/override mapping vs auto-generated. |
+| <code>public DateTime CreatedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:762](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L762) | When this mapping was created. |
+| <code>public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:767](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L767) | When this mapping was last updated. |
+
+## SymbolMappingsConfig
+
+Qualified name: <code>Meridian.Ui.Services.SymbolMappingsConfig</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:690](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L690).
+
+Symbol mapping configuration stored on disk.
+
+```csharp
+public sealed class SymbolMappingsConfig
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Version { get; set; } = &quot;1.0&quot;;</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:692](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L692) |  |
+| <code>public DateTime LastUpdated { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:693](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L693) |  |
+| <code>public SymbolMapping[]? Mappings { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:694](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L694) |  |
+
+## SymbolMappingService
+
+Qualified name: <code>Meridian.Ui.Services.SymbolMappingService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:14](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L14).
+
+Service for managing provider-specific symbol mappings. Handles symbol translation between canonical format and provider-specific formats.
+
+```csharp
+public sealed class SymbolMappingService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static SymbolMappingService Instance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:17](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L17) |  |
+| <code>public static readonly IReadOnlyList&lt;MappingProviderInfo&gt; KnownProviders = new List&lt;MappingProviderInfo&gt;{ new (&quot;IB&quot;, &quot;Interactive Brokers&quot;, &quot;Dots to spaces (BRK.B → BRK B)&quot;, SymbolTransform.DotsToSpaces), new (&quot;Alpaca&quot;, &quot;Alpaca Markets&quot;, &quot;Uppercase (identity)&quot;, SymbolTransform.Uppercase), new (&quot;Polygon&quot;, &quot;Polygon.io&quot;, &quot;Uppercase (identity)&quot;, SymbolTransform.Uppercase), new (&quot;Yahoo&quot;, &quot;Yahoo Finance&quot;, &quot;Dots to dashes (BRK.B → BRK-B)&quot;, SymbolTransform.DotsToDashes), new (&quot;Stooq&quot;, &quot;Stooq&quot;, &quot;Lowercase + .us suffix (AAPL → aapl.us)&quot;, SymbolTransform.StooqFormat), new (&quot;Tiingo&quot;, &quot;Tiingo&quot;, &quot;Dots to dashes (BRK.B → BRK-B)&quot;, SymbolTransform.DotsToDashes), new (&quot;Finnhub&quot;, &quot;Finnhub&quot;, &quot;Uppercase (identity)&quot;, SymbolTransform.Uppercase), new (&quot;AlphaVantage&quot;, &quot;Alpha Vantage&quot;, &quot;Uppercase (identity)&quot;, SymbolTransform.Uppercase), new (&quot;NYSE&quot;, &quot;NYSE&quot;, &quot;Uppercase (identity)&quot;, SymbolTransform.Uppercase), };</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:33](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L33) | Known data providers with their display names and default transformations. |
+| <code>public event EventHandler? MappingsChanged;</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:46](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L46) |  |
+| <code>public SymbolMappingService(ICanonicalSymbolRegistry registry, IConfigService? configService = null) : this(configService?? new ConfigService());</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:63](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L63) | Creates the production adapter over the shared canonical registry. Legacy files are read only as idempotent migration and rollback inputs. |
+| <code>public async Task LoadAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:72](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L72) | Loads symbol mappings from disk. |
+| <code>public async Task SaveAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:120](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L120) | Saves symbol mappings to disk. |
+| <code>public IReadOnlyList&lt;SymbolMapping&gt; GetMappings();</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:151](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L151) | Gets all symbol mappings. |
+| <code>public SymbolMapping? GetMapping(string canonicalSymbol);</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:159](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L159) | Gets a specific symbol mapping by canonical symbol. |
+| <code>public async Task AddOrUpdateMappingAsync(SymbolMapping mapping, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:168](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L168) | Adds or updates a symbol mapping. |
+| <code>public async Task RemoveMappingAsync(string canonicalSymbol, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:219](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L219) | Removes a symbol mapping. |
+| <code>public string MapToProvider(string canonicalSymbol, string providerId);</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:251](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L251) | Maps a canonical symbol to a provider-specific format. |
+| <code>public string MapToCanonical(string providerSymbol, string providerId);</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:272](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L272) | Maps a provider-specific symbol back to canonical format. |
+| <code>public static string ApplyDefaultTransform(string symbol, string providerId);</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:295](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L295) | Applies the default transformation for a provider. |
+| <code>public static string ApplyReverseTransform(string providerSymbol, string providerId);</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:311](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L311) | Applies the reverse transformation to get canonical symbol. |
+| <code>public Dictionary&lt;string, string&gt; TestMapping(string canonicalSymbol);</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:337](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L337) | Tests symbol mapping across all providers. |
+| <code>public async Task&lt;int&gt; ImportFromCsvAsync(string csvContent, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:350](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L350) | Imports mappings from CSV. |
+| <code>public string ExportToCsv();</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:412](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L412) | Exports mappings to CSV format. |
+| <code>public SymbolMapping EnsureProviderEntries(SymbolMapping mapping);</code> | [src/Meridian.Ui.Services/Services/SymbolMappingService.cs:469](../../../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs#L469) | Gets or creates provider symbol entries for a mapping. |
+
 ## SymbolNode
 
 Qualified name: <code>Meridian.Ui.Services.SymbolNode</code>. Kind: `record`.
@@ -1068,70 +1153,3 @@ Declared public members:
 | <code>public string Content { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:488](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L488) |  |
 | <code>public string? TargetElement { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:489](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L489) |  |
 | <code>public TooltipPlacement Placement { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:490](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L490) |  |
-
-## TourStepEventArgs
-
-Qualified name: <code>Meridian.Ui.Services.TourStepEventArgs</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:545](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L545).
-
-Event args for tour step changes.
-
-```csharp
-public sealed class TourStepEventArgs : EventArgs
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string TourId { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:547](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L547) |  |
-| <code>public int StepIndex { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:548](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L548) |  |
-| <code>public int TotalSteps { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:549](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L549) |  |
-| <code>public TourStep Step { get; init; } = null !;</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:550](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L550) |  |
-| <code>public bool IsFirst { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:551](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L551) |  |
-| <code>public bool IsLast { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:552](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L552) |  |
-
-## TradeEvent
-
-Qualified name: <code>Meridian.Ui.Services.TradeEvent</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/LiveDataService.cs:188](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L188).
-
-Carries a live trade&#x27;s symbol, price, size, venue, sequence, and reported side.
-
-```csharp
-public sealed class TradeEvent
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:190](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L190) |  |
-| <code>public decimal Price { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:191](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L191) |  |
-| <code>public decimal Size { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:192](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L192) |  |
-| <code>public DateTime Timestamp { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:193](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L193) |  |
-| <code>public string Exchange { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:194](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L194) |  |
-| <code>public string Condition { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:195](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L195) |  |
-| <code>public long SequenceNumber { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:196](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L196) |  |
-| <code>public string Side { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:197](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L197) |  |
-
-## TradeEventArgs
-
-Qualified name: <code>Meridian.Ui.Services.TradeEventArgs</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:554](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L554).
-
-Event args for trade events.
-
-```csharp
-public sealed class TradeEventArgs : EventArgs
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:556](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L556) |  |
-| <code>public TradeRecord Trade { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:557](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L557) |  |

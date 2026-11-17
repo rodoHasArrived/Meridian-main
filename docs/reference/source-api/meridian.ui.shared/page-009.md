@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BackfillExecutionContractProjection
+
+Qualified name: <code>Meridian.Ui.Shared.Services.BackfillExecutionContractProjection</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/BackfillExecutionContractProjection.cs:14](../../../../src/Meridian.Ui.Shared/Services/BackfillExecutionContractProjection.cs#L14).
+
+Projects application-owned execution history into a stable workstation contract. Legacy warning metadata remains readable, but all callers receive the same typed SLA shape.
+
+```csharp
+public static class BackfillExecutionContractProjection
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static BackfillExecutionHistoryResponse Build(IReadOnlyList&lt;BackfillExecutionLog&gt; executions, string? defaultProvider, DateTimeOffset? nowUtc = null, TimeSpan? dueSoonWindow = null);</code> | [src/Meridian.Ui.Shared/Services/BackfillExecutionContractProjection.cs:18](../../../../src/Meridian.Ui.Shared/Services/BackfillExecutionContractProjection.cs#L18) |  |
+
 ## BacktestLedgerExportMapper
 
 Qualified name: <code>Meridian.Ui.Shared.Services.BacktestLedgerExportMapper</code>. Kind: `class`.
@@ -934,13 +952,3 @@ Declared public members:
 | <code>public async ValueTask&lt;IReadOnlyList&lt;CoveredCallRunSummary&gt;&gt; ListRunsAsync(CoveredCallRunScope scope, int limit = 50, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:408](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L408) |  |
 | <code>public ValueTask CancelAsync(string runId, CoveredCallRunScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:490](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L490) |  |
 | <code>public async ValueTask&lt;CoveredCallChainPreview&gt; PreviewChainAsync(CoveredCallChainPreviewRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:514](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L514) |  |
-
-## Start
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CoveredCall.CoveredCallBacktestService.CoveredCallCommand.Start</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:1127](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L1127).
-
-```csharp
-public sealed record Start(string RunId) : CoveredCallCommand(RunId);
-```

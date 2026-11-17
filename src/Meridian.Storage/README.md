@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-17
 ---
 
 # src/Meridian.Storage
@@ -71,6 +71,10 @@ intent, approved FX revisions and legacy-attribution sidecars over exact immutab
 PostgreSQL supplies authority leases through financial commit; file stores provide durable local/demo
 parity without a production or cross-process fencing claim. Migration keeps old journal/evidence
 bytes and refuses unresolved history. See [the operator procedure](../../docs/operators/intercompany-entity-controls.md).
+
+`PostgresIntercompanyBalanceConfirmationStore` (ledger migration `073`, rewrite and truncate refused)
+and `FileIntercompanyBalanceConfirmationStore` retain every confirmation version append-only under
+an expected-version check. See [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
 
 Entity lifecycle history uses immutable tenant-bound timeline revisions and authority leases.
 Ledger migration 061 initializes existing books in `LegacyWarning` and stamps new books
@@ -1636,7 +1640,7 @@ journal without scanning unrelated metadata. No projection-event-to-journal link
 schema, or new route is introduced.
 `LedgerJournalEntryQuery.FillId` and `.OrderId` find postings by the execution identifiers their
 metadata recorded: `fillId` exactly, and an order through the `source.orderId` tag or, for a GUID
-identifier, the `orderId` field. Migration `V_ledger_073` adds partial expression indexes on exactly
+identifier, the `orderId` field. Migration `V_ledger_074` adds partial expression indexes on exactly
 those three metadata expressions (only postings that recorded the identifier are indexed), so the
 lookup does not scan unrelated metadata; callers still bound it by book (the execution-lineage route
 always does). The filter SQL and the index expressions must stay textually identical for the planner

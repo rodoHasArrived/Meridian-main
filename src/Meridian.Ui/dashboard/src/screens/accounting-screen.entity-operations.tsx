@@ -12,11 +12,12 @@ import { EntityCounterpartProposals } from "./accounting-screen.entity-proposals
 import { EntityFxAuthority } from "./accounting-screen.entity-fx";
 import { EntityAccountBindings } from "./accounting-screen.entity-account-bindings";
 import { EntityObligationMonitor } from "./accounting-screen.entity-obligations";
+import { EntityBalanceConfirmations } from "./accounting-screen.entity-confirmations";
 import { EntityPerimeterTransition } from "./accounting-screen.entity-perimeter-transition";
 import { OperationError, useEntityData } from "./accounting-screen.entity-operations.shared";
 
 const tabs = [
-  { id: "profiles", label: "Accounting profiles" }, { id: "obligations", label: "Obligation monitor" }, { id: "timeline", label: "Entity timeline" },
+  { id: "profiles", label: "Accounting profiles" }, { id: "obligations", label: "Obligation monitor" }, { id: "confirmations", label: "Balance confirmation" }, { id: "timeline", label: "Entity timeline" },
   { id: "controls", label: "Book controls" }, { id: "accounts", label: "Account roles" },
   { id: "proposals", label: "Counterpart proposals" }, { id: "fx", label: "FX authority" }, { id: "perimeter", label: "Perimeter cutover" }
 ];
@@ -39,6 +40,7 @@ export function EntityOperationsPanel({ book }: { book: LedgerBook }) {
     {scope ? <Tabs value={active} tabs={tabs} onValueChange={setActive} aria-label="Entity operations">
       <TabPanel>{active === "profiles" ? <EntityAccountingArrangements scope={scope} /> : null}</TabPanel>
       <TabPanel>{active === "obligations" ? <EntityObligationMonitor scope={scope} /> : null}</TabPanel>
+      <TabPanel>{active === "confirmations" ? <EntityBalanceConfirmations scope={scope} /> : null}</TabPanel>
       <TabPanel>{active === "timeline" ? <EntityLifecycleTimeline key={graph.data ? "graph-ready" : "graph-pending"} scope={scope} /> : null}</TabPanel>
       <TabPanel>{active === "controls" ? <EntityBookControls scope={scope} /> : null}</TabPanel>
       <TabPanel>{active === "accounts" ? <EntityAccountBindings scope={scope} /> : null}</TabPanel>
