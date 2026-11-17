@@ -36,7 +36,7 @@ public sealed record QuantScriptExecutionRecord(
     string? Warning = null)
 {
     [JsonIgnore]
-    public string ExecutedAtText => UtcFormat.FormatUtcTimestamp(ExecutedAtUtc);
+    public string ExecutedAtText => UtcFormat.FormatDisplayTimestamp(ExecutedAtUtc);
 
     [JsonIgnore]
     public string DocumentKindLabel => DocumentKind == QuantScriptDocumentKind.Notebook ? "Notebook" : "Script";

@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ValidationResult
+
+Qualified name: <code>Meridian.Ui.Services.Services.ValidationResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/FormValidationRules.cs:206](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L206).
+
+Represents the result of a validation operation.
+
+```csharp
+public sealed class ValidationResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsValid { get; private init; }</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:211](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L211) | Gets whether the validation passed. |
+| <code>public bool IsWarning { get; private init; }</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:216](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L216) | Gets whether this is a warning (valid but with advisory message). |
+| <code>public string Message { get; private init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:221](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L221) | Gets the validation message (empty for success, descriptive for errors/warnings). |
+| <code>public static ValidationResult Success() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:228](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L228) | Creates a successful validation result. |
+| <code>public static ValidationResult Error(string message) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:234](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L234) | Creates a failed validation result with an error message. |
+| <code>public static ValidationResult Warning(string message) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:240](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L240) | Creates a warning validation result (valid but with advisory message). |
+| <code>public static implicit operator bool(ValidationResult result) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:245](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L245) | Implicit conversion to bool for convenient checking. |
+
 ## ServiceUrlChangedEventArgs
 
 Qualified name: <code>Meridian.Ui.Services.ServiceUrlChangedEventArgs</code>. Kind: `class`.
@@ -187,7 +211,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.StaleIndicatorResult</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/FormatHelpers.cs:141](../../../../src/Meridian.Ui.Services/Services/FormatHelpers.cs#L141).
+Source: [src/Meridian.Ui.Services/Services/FormatHelpers.cs:227](../../../../src/Meridian.Ui.Services/Services/FormatHelpers.cs#L227).
 
 Result of stale data indicator formatting. Used by pages to display consistent &quot;last update&quot; text with stale/fresh coloring.
 
@@ -199,9 +223,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string DisplayText { get; }</code> | [src/Meridian.Ui.Services/Services/FormatHelpers.cs:143](../../../../src/Meridian.Ui.Services/Services/FormatHelpers.cs#L143) |  |
-| <code>public bool IsStale { get; }</code> | [src/Meridian.Ui.Services/Services/FormatHelpers.cs:144](../../../../src/Meridian.Ui.Services/Services/FormatHelpers.cs#L144) |  |
-| <code>public StaleIndicatorResult(string displayText, bool isStale);</code> | [src/Meridian.Ui.Services/Services/FormatHelpers.cs:146](../../../../src/Meridian.Ui.Services/Services/FormatHelpers.cs#L146) |  |
+| <code>public string DisplayText { get; }</code> | [src/Meridian.Ui.Services/Services/FormatHelpers.cs:229](../../../../src/Meridian.Ui.Services/Services/FormatHelpers.cs#L229) |  |
+| <code>public bool IsStale { get; }</code> | [src/Meridian.Ui.Services/Services/FormatHelpers.cs:230](../../../../src/Meridian.Ui.Services/Services/FormatHelpers.cs#L230) |  |
+| <code>public StaleIndicatorResult(string displayText, bool isStale);</code> | [src/Meridian.Ui.Services/Services/FormatHelpers.cs:232](../../../../src/Meridian.Ui.Services/Services/FormatHelpers.cs#L232) |  |
 
 ## StorageAnalysisOptions
 
@@ -1175,22 +1199,3 @@ Declared public members:
 | <code>public DateTime? LastTradeTime { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:513](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L513) |  |
 | <code>public long TotalTrades { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:514](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L514) |  |
 | <code>public long TotalQuotes { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:515](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L515) |  |
-
-## SymbolListResponse
-
-Qualified name: <code>Meridian.Ui.Services.SymbolListResponse</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:662](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L662).
-
-Carries API symbol rows and their total count.
-
-```csharp
-public sealed class SymbolListResponse
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SymbolInfo[]? Symbols { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:664](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L664) |  |
-| <code>public int TotalCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:665](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L665) |  |

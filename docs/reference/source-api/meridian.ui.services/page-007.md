@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## HealthScoreBreakdown
+
+Qualified name: <code>Meridian.Ui.Services.HealthScoreBreakdown</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:470](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L470).
+
+Groups the stability, latency, completeness, and reconnection components of a health score.
+
+```csharp
+public sealed class HealthScoreBreakdown
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ScoreComponent ConnectionStability { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:472](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L472) |  |
+| <code>public ScoreComponent LatencyConsistency { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:473](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L473) |  |
+| <code>public ScoreComponent DataCompleteness { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:474](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L474) |  |
+| <code>public ScoreComponent ReconnectionFrequency { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:475](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L475) |  |
+
 ## HealthSummary
 
 Qualified name: <code>Meridian.Ui.Services.HealthSummary</code>. Kind: `class`.
@@ -1143,25 +1164,3 @@ Declared public members:
 | <code>public int FilesSuccessful { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs:933](../../../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs#L933) |  |
 | <code>public int FilesFailed { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs:934](../../../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs#L934) |  |
 | <code>public long BytesSaved { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs:935](../../../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs#L935) |  |
-
-## MaintenanceRunOptions
-
-Qualified name: <code>Meridian.Ui.Services.MaintenanceRunOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:53](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L53).
-
-Options for triggering a maintenance run.
-
-```csharp
-public sealed class MaintenanceRunOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool RunCompression { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:55](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L55) |  |
-| <code>public bool RunCleanup { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:56](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L56) |  |
-| <code>public bool RunIntegrityCheck { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:57](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L57) |  |
-| <code>public bool RunTierMigration { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:58](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L58) |  |
-| <code>public bool DryRun { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:59](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L59) |  |

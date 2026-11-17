@@ -6,6 +6,32 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ShellNavigationCoordinator
+
+Qualified name: <code>Meridian.Wpf.Shell.Services.ShellNavigationCoordinator</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:13](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L13).
+
+Resolves navigation routes and coordinates page creation and pane drop behavior.
+
+```csharp
+public sealed class ShellNavigationCoordinator : IShellNavigationCoordinator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ShellNavigationCoordinator(INavigationService navigationService, IShellRouteRegistry routeRegistry, IPageContentFactory pageContentFactory);</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:18](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L18) |  |
+| <code>public IShellRouteRegistry RouteRegistry { get; }</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:28](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L28) |  |
+| <code>public ShellRoute? ResolveRoute(string? pageTag) =&gt; …;</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:30](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L30) |  |
+| <code>public bool IsRouteRegistered(string? pageTag) =&gt; …;</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:32](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L32) |  |
+| <code>public bool NavigateToRoute(string pageTag, object? parameter = null);</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:34](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L34) |  |
+| <code>public PaneDropResult ApplyPaneDrop(PaneHostViewModel paneHost, string? pageTag, int targetPaneIndex, PaneDropAction action = PaneDropAction.Replace);</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:40](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L40) |  |
+| <code>public IReadOnlyList&lt;PaneContentState&gt; GetVisiblePaneContentStates(PaneHostViewModel paneHost);</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:66](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L66) |  |
+| <code>public FrameworkElement CreatePaneContent(PaneContentState state);</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:72](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L72) |  |
+| <code>public void InitializeNavigationFrame(Frame frame);</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:78](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L78) |  |
+
 ## ShellPageRegistryBuilder
 
 Qualified name: <code>Meridian.Wpf.Shell.Services.ShellPageRegistryBuilder</code>. Kind: `class`.
@@ -2087,57 +2113,3 @@ Declared public members:
 | <code>public void Deactivate();</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:250](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L250) |  |
 | <code>public void CancelActivation() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:264](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L264) |  |
 | <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:530](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L530) |  |
-
-## BatchBacktestViewModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.BatchBacktestViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:81](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L81).
-
-ViewModel for real batch backtest execution with request parameter sweeps.
-
-```csharp
-public sealed class BatchBacktestViewModel : BindableBase, IDisposable, IDataErrorInfo
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public BatchBacktestViewModel(IBatchBacktestService batchBacktestService);</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:111](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L111) |  |
-| <code>public ObservableCollection&lt;BatchSweepParameterOption&gt; SweepParameters { get; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:132](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L132) |  |
-| <code>public ObservableCollection&lt;BatchRunResultItem&gt; Results { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:133](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L133) |  |
-| <code>public IAsyncRelayCommand StartBatchCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:135](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L135) |  |
-| <code>public IRelayCommand CancelCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:136](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L136) |  |
-| <code>public IRelayCommand ClearResultsCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:137](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L137) |  |
-| <code>public string SymbolsText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:139](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L139) |  |
-| <code>public DateTime FromDate { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:151](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L151) |  |
-| <code>public DateTime ToDate { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:163](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L163) |  |
-| <code>public decimal InitialCash { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:175](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L175) |  |
-| <code>public double AnnualMarginRate { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:187](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L187) |  |
-| <code>public string DataRoot { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:199](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L199) |  |
-| <code>public BatchSweepParameterOption? SelectedSweepParameter { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:211](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L211) |  |
-| <code>public decimal SweepStart { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:227](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L227) |  |
-| <code>public decimal SweepStop { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:240](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L240) |  |
-| <code>public decimal SweepStep { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:253](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L253) |  |
-| <code>public int MaxConcurrency { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:266](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L266) |  |
-| <code>public int TotalRuns { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:278](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L278) |  |
-| <code>public int CompletedRuns { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:290](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L290) |  |
-| <code>public int SucceededRuns { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:302](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L302) |  |
-| <code>public int FailedRuns { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:308](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L308) |  |
-| <code>public double ProgressPercent { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:314](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L314) |  |
-| <code>public string CurrentLabel { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:320](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L320) |  |
-| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:332](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L332) |  |
-| <code>public string SummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:344](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L344) |  |
-| <code>public string ValidationSummary { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:356](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L356) |  |
-| <code>public string TotalDurationText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:368](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L368) |  |
-| <code>public bool IsRunning { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:374](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L374) |  |
-| <code>public bool CanStartBatch =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:390](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L390) |  |
-| <code>public bool HasResults =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:392](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L392) |  |
-| <code>public bool IsResultsEmptyStateVisible =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:394](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L394) |  |
-| <code>public string ResultsEmptyStateTitle { get; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:396](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L396) |  |
-| <code>public string ResultsEmptyStateDetail { get; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:424](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L424) |  |
-| <code>public string ParameterPreviewText { get; }</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:455](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L455) |  |
-| <code>public string Error =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:474](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L474) |  |
-| <code>public string this[string columnName] =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:476](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L476) |  |
-| <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs:757](../../../../src/Meridian.Wpf/ViewModels/BatchBacktestViewModel.cs#L757) |  |

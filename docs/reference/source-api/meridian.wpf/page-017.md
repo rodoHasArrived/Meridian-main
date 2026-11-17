@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkspaceShellViewModelBase
+
+Qualified name: <code>Meridian.Wpf.ViewModels.WorkspaceShellViewModelBase</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:20](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L20).
+
+Provides workspace definition, attention ribbon, and command-group state for shell view models.
+
+```csharp
+public abstract class WorkspaceShellViewModelBase : WorkspaceViewModelBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public event EventHandler&lt;string&gt;? AttentionPrimaryActionRequested;</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:33](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L33) |  |
+| <code>public WorkspaceShellDefinition WorkspaceDefinition { get; }</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:35](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L35) |  |
+| <code>public WorkspaceAttentionRibbonViewModel AttentionRibbon { get; protected set; }</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:37](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L37) |  |
+| <code>public WorkspaceCommandGroup CommandGroup { get; set; }</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:43](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L43) |  |
+
 ## WorkstationScopeOptionsViewModel
 
 Qualified name: <code>Meridian.Wpf.ViewModels.WorkstationScopeOptionsViewModel</code>. Kind: `class`.
@@ -1092,21 +1113,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public FundAccountsPage(FundAccountsViewModel viewModel);</code> | [src/Meridian.Wpf/Views/FundAccountsPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/FundAccountsPage.xaml.cs#L14) |  |
-
-## FundLedgerPage
-
-Qualified name: <code>Meridian.Wpf.Views.FundLedgerPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/FundLedgerPage.xaml.cs:13](../../../../src/Meridian.Wpf/Views/FundLedgerPage.xaml.cs#L13).
-
-Provides the desktop page to review journal, account, and accounting readiness in one view.
-
-```csharp
-public partial class FundLedgerPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FundLedgerPage(FundLedgerViewModel viewModel);</code> | [src/Meridian.Wpf/Views/FundLedgerPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/FundLedgerPage.xaml.cs#L17) |  |

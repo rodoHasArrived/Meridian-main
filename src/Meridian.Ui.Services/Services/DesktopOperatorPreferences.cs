@@ -144,25 +144,33 @@ public interface IDesktopPreferenceSurface
 /// <item>When the host cannot be read at start (no session, an older host, offline), the desktop
 /// stays local for the run and saves nothing. A failed save keeps the local change.</item>
 /// </list>
-/// The display time zone is read and exposed, but desktop formatters do not apply it yet.
+/// The display time zone is applied to <see cref="Meridian.Ui.Services.DisplayTimeZone"/>, which desktop
+/// timestamps are formatted in; it is read at start and again whenever the desktop saves.
 /// </summary>
 public sealed class DesktopOperatorPreferenceSync : IDisposable
 {
     private readonly IOperatorPreferencesApi _api;
     private readonly IDesktopPreferenceSurface _surface;
+    private readonly Action<TimeZoneInfo?> _applyDisplayTimeZone;
     private readonly SemaphoreSlim _saveGate = new(1, 1);
     private readonly CancellationTokenSource _lifetime = new();
     private bool _applyingHostValues;
     private bool _syncing;
     private int _disposed;
 
-    public DesktopOperatorPreferenceSync(IOperatorPreferencesApi api, IDesktopPreferenceSurface surface)
+    /// <param name="applyDisplayTimeZone">Where the resolved display zone goes; defaults to the shared
+    /// <see cref="Meridian.Ui.Services.DisplayTimeZone"/> that desktop timestamps read. Tests pass their own.</param>
+    public DesktopOperatorPreferenceSync(
+        IOperatorPreferencesApi api,
+        IDesktopPreferenceSurface surface,
+        Action<TimeZoneInfo?>? applyDisplayTimeZone = null)
     {
         _api = api ?? throw new ArgumentNullException(nameof(api));
         _surface = surface ?? throw new ArgumentNullException(nameof(surface));
+        _applyDisplayTimeZone = applyDisplayTimeZone ?? Meridian.Ui.Services.DisplayTimeZone.Set;
     }
 
-    /// <summary>The operator's display time zone from the host, when it resolves on this machine.</summary>
+    /// <summary>The operator's display time zone from the host, when it resolves on this machine (else null, meaning UTC).</summary>
     public TimeZoneInfo? DisplayTimeZone { get; private set; }
 
     /// <summary>True once the host was read and local changes are being saved.</summary>
@@ -207,12 +215,20 @@ public sealed class DesktopOperatorPreferenceSync : IDisposable
                 _surface.ApplyDensity(density);
             }
 
-            DisplayTimeZone = DesktopOperatorPreferenceMapping.TryResolveTimeZone(values.DisplayTimeZone, out var zone) ? zone : null;
+            ApplyDisplayTimeZone(values.DisplayTimeZone);
         }
         finally
         {
             _applyingHostValues = false;
         }
+    }
+
+    // Desktop timestamps (FormatHelpers.FormatDisplayTimestamp) read the shared display zone; a zone
+    // this machine cannot resolve leaves them in UTC.
+    private void ApplyDisplayTimeZone(string? ianaZone)
+    {
+        DisplayTimeZone = DesktopOperatorPreferenceMapping.TryResolveTimeZone(ianaZone, out var zone) ? zone : null;
+        _applyDisplayTimeZone(DisplayTimeZone);
     }
 
     private void OnPreferenceChanged(object? sender, EventArgs e)
@@ -249,6 +265,7 @@ public sealed class DesktopOperatorPreferenceSync : IDisposable
             }
 
             var current = latest.Preferences;
+            ApplyDisplayTimeZone(current.DisplayTimeZone);
             var next = current with
             {
                 Appearance = DesktopOperatorPreferenceMapping.ToAppearance(_surface.Theme),

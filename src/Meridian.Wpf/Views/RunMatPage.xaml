@@ -121,7 +121,7 @@
                                     <TextBlock Text="{Binding Name}"
                                                FontWeight="SemiBold"
                                                Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                    <TextBlock Text="{Binding LastWriteTimeUtc, StringFormat='Updated {0:yyyy-MM-dd HH:mm} UTC'}"
+                                    <TextBlock Text="{Binding LastWriteTimeUtc, Converter={StaticResource DisplayTimestampConverter}, StringFormat='Updated {0}'}"
                                                FontSize="11"
                                                Foreground="{StaticResource ConsoleTextMutedBrush}" />
                                 </StackPanel>

@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IDesktopPreferenceSurface
+
+Qualified name: <code>Meridian.Ui.Services.Services.IDesktopPreferenceSurface</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:121](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L121).
+
+The desktop presentation preferences the host sync reads and writes: the shell theme and density. Implemented by the WPF shell over its theme service and desktop shell preferences.
+
+```csharp
+public interface IDesktopPreferenceSurface
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>AppTheme Theme { get; }</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:123](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L123) |  |
+| <code>ShellDensityMode Density { get; }</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:125](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L125) |  |
+| <code>void ApplyTheme(AppTheme theme);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:127](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L127) |  |
+| <code>void ApplyDensity(ShellDensityMode density);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:129](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L129) |  |
+| <code>event EventHandler? PreferenceChanged;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:132](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L132) | Raised after the operator changes the theme or density on this desktop. |
+
 ## InfoBarConstants
 
 Qualified name: <code>Meridian.Ui.Services.Services.InfoBarConstants</code>. Kind: `class`.
@@ -1097,27 +1119,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static ValidationResult Combine(params ValidationResult[] results);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:258](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L258) | Combines multiple validation results, returning the first error or warning found. |
-
-## ValidationResult
-
-Qualified name: <code>Meridian.Ui.Services.Services.ValidationResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/FormValidationRules.cs:206](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L206).
-
-Represents the result of a validation operation.
-
-```csharp
-public sealed class ValidationResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsValid { get; private init; }</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:211](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L211) | Gets whether the validation passed. |
-| <code>public bool IsWarning { get; private init; }</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:216](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L216) | Gets whether this is a warning (valid but with advisory message). |
-| <code>public string Message { get; private init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:221](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L221) | Gets the validation message (empty for success, descriptive for errors/warnings). |
-| <code>public static ValidationResult Success() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:228](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L228) | Creates a successful validation result. |
-| <code>public static ValidationResult Error(string message) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:234](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L234) | Creates a failed validation result with an error message. |
-| <code>public static ValidationResult Warning(string message) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:240](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L240) | Creates a warning validation result (valid but with advisory message). |
-| <code>public static implicit operator bool(ValidationResult result) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:245](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L245) | Implicit conversion to bool for convenient checking. |

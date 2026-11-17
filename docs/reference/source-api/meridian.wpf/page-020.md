@@ -6,6 +6,29 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AsyncCommandViewModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Commands.AsyncCommandViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs:9](../../../../src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs#L9).
+
+Adds busy, error, and cancellation presentation to an asynchronous workstation command.
+
+```csharp
+public sealed class AsyncCommandViewModel : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CommandViewModel Command { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs:18](../../../../src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs#L18) |  |
+| <code>public bool IsBusy { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs:24](../../../../src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs#L24) |  |
+| <code>public string BusyMessage { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs:30](../../../../src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs#L30) |  |
+| <code>public string ErrorMessage { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs:36](../../../../src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs#L36) |  |
+| <code>public bool CanCancel { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs:42](../../../../src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs#L42) |  |
+| <code>public IRelayCommand? CancelCommand { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs:48](../../../../src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs#L48) |  |
+
 ## CommandViewModel
 
 Qualified name: <code>Meridian.Wpf.Workstation.Commands.CommandViewModel</code>. Kind: `class`.
@@ -867,23 +890,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public string OwnerLabel =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:124](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L124) |  |
 | <code>public string RepairInstruction =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:126](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L126) |  |
-
-## OperationsContinuityClosePresentation
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.OperationsContinuityClosePresentation</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:6](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L6).
-
-Displays the selected shared close decision; legacy gate totals cannot establish close readiness.
-
-```csharp
-public sealed record OperationsContinuityClosePresentation(bool IsReady, string Label, string Detail)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;CloseReadinessBlockerDto&gt; Blockers { get; init; } = [];</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:8](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L8) |  |
-| <code>public IReadOnlyList&lt;OperationsContinuityCloseBlockerPresentation&gt; BlockerRows =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:9](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L9) |  |
-| <code>public static OperationsContinuityClosePresentation Build(OperationsContinuityWorkflowDto? workflow, FinancialOperationsCommandCenterDto? commandCenter, CloseReadinessScopeDto? selectedScope);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:12](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L12) |  |

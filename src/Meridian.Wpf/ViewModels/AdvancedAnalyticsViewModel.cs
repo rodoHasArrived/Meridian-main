@@ -519,7 +519,7 @@ public sealed class AdvancedAnalyticsViewModel : BindableBase
                     {
                         Symbol = g.Symbol,
                         EventType = g.EventType,
-                        TimeRange = $"{FormatHelpers.AsUtc(g.StartTime).ToString("HH:mm", CultureInfo.InvariantCulture)} - {FormatHelpers.AsUtc(g.EndTime).ToString("HH:mm", CultureInfo.InvariantCulture)} UTC",
+                        TimeRange = FormatHelpers.FormatDisplayTimeRange(new DateTimeOffset(FormatHelpers.AsUtc(g.StartTime)), new DateTimeOffset(FormatHelpers.AsUtc(g.EndTime))),
                         DurationText = FormatDuration(g.Duration),
                         RepairableText = g.IsRepairable ? "Repairable" : "Manual",
                         RepairableBackground = new SolidColorBrush(g.IsRepairable

@@ -6,6 +6,31 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TourInfo
+
+Qualified name: <code>Meridian.Ui.Services.TourInfo</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:530](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L530).
+
+Tour information for listing.
+
+```csharp
+public sealed class TourInfo
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Id { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:532](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L532) |  |
+| <code>public string Title { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:533](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L533) |  |
+| <code>public string Description { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:534](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L534) |  |
+| <code>public int StepCount { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:535](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L535) |  |
+| <code>public bool IsCompleted { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:536](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L536) |  |
+| <code>public bool IsDismissed { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:537](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L537) |  |
+| <code>public TourCategory Category { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:538](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L538) |  |
+| <code>public int EstimatedDurationMinutes { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:539](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L539) |  |
+
 ## TourSession
 
 Qualified name: <code>Meridian.Ui.Services.TourSession</code>. Kind: `class`.

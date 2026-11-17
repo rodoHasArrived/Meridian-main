@@ -46,7 +46,7 @@ internal static class SecurityMasterPresentation
             ? string.Empty
             : $" • record {economicDefinition.WinningSourceRecordId}";
         var asOfText = economicDefinition.WinningSourceAsOf.HasValue
-            ? $" • {FormatHelpers.FormatUtcTimestamp(economicDefinition.WinningSourceAsOf.Value)}"
+            ? $" • {FormatHelpers.FormatDisplayTimestamp(economicDefinition.WinningSourceAsOf.Value)}"
             : string.Empty;
 
         return $"{source}{recordIdText}{asOfText}";

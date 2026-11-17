@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolListResponse
+
+Qualified name: <code>Meridian.Ui.Services.SymbolListResponse</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:662](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L662).
+
+Carries API symbol rows and their total count.
+
+```csharp
+public sealed class SymbolListResponse
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SymbolInfo[]? Symbols { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:664](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L664) |  |
+| <code>public int TotalCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:665](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L665) |  |
+
 ## SymbolListResult
 
 Qualified name: <code>Meridian.Ui.Services.SymbolListResult</code>. Kind: `class`.
@@ -1140,28 +1159,3 @@ Declared public members:
 | <code>public TourCategory Category { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:477](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L477) |  |
 | <code>public string? TriggerPage { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:478](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L478) |  |
 | <code>public List&lt;TourStep&gt; Steps { get; init; } = new ();</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:479](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L479) |  |
-
-## TourInfo
-
-Qualified name: <code>Meridian.Ui.Services.TourInfo</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:530](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L530).
-
-Tour information for listing.
-
-```csharp
-public sealed class TourInfo
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Id { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:532](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L532) |  |
-| <code>public string Title { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:533](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L533) |  |
-| <code>public string Description { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:534](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L534) |  |
-| <code>public int StepCount { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:535](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L535) |  |
-| <code>public bool IsCompleted { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:536](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L536) |  |
-| <code>public bool IsDismissed { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:537](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L537) |  |
-| <code>public TourCategory Category { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:538](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L538) |  |
-| <code>public int EstimatedDurationMinutes { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:539](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L539) |  |

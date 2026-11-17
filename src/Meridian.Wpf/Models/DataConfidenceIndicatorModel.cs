@@ -338,9 +338,9 @@ public sealed record DataConfidenceIndicatorModel(
         return $"{LabelFor(confidence)} value from {source}; {LabelFor(reconciliation)}; {freshness}.{noteText}";
     }
 
-    /// <summary>Converts to UTC before formatting: a nonzero offset must not keep its wall-clock value under a UTC label.</summary>
+    /// <summary>Formats in the operator's display time zone (UTC by default); a nonzero offset is converted, never relabelled.</summary>
     private static string? FormatUtc(DateTimeOffset? timestamp)
-        => timestamp?.ToUniversalTime().ToString("yyyy-MM-dd HH:mm 'UTC'", System.Globalization.CultureInfo.InvariantCulture);
+        => timestamp is { } value ? Meridian.Ui.Services.FormatHelpers.FormatDisplayTimestamp(value) : null;
 
     private static string LabelFor(DataConfidenceLevel level) => level switch
     {

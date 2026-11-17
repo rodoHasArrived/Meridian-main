@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderPoliciesResult
+
+Qualified name: <code>Meridian.Ui.Services.ProviderPoliciesResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/ProviderOperationsResults.cs:28](../../../../src/Meridian.Ui.Services/Services/ProviderOperationsResults.cs#L28).
+
+Result envelope for provider-operations policy queries.
+
+```csharp
+public sealed class ProviderPoliciesResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderOperationsResults.cs:30](../../../../src/Meridian.Ui.Services/Services/ProviderOperationsResults.cs#L30) |  |
+| <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderOperationsResults.cs:31](../../../../src/Meridian.Ui.Services/Services/ProviderOperationsResults.cs#L31) |  |
+| <code>public List&lt;ProviderPolicyDto&gt; Policies { get; set; } = [];</code> | [src/Meridian.Ui.Services/Services/ProviderOperationsResults.cs:32](../../../../src/Meridian.Ui.Services/Services/ProviderOperationsResults.cs#L32) |  |
+
 ## ProviderPresetApplyResult
 
 Qualified name: <code>Meridian.Ui.Services.ProviderPresetApplyResult</code>. Kind: `class`.
@@ -1086,28 +1106,3 @@ Declared public members:
 | <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:250](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L250) |  |
 | <code>public List&lt;StorageRetentionPolicy&gt; Policies { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:251](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L251) |  |
 | <code>public StorageRetentionPolicy? DefaultPolicy { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:252](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L252) |  |
-
-## RetentionPolicy
-
-Qualified name: <code>Meridian.Ui.Services.RetentionPolicy</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:38](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L38).
-
-Retention policy definition.
-
-```csharp
-public sealed class RetentionPolicy
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int TickDataDays { get; set; } = 30;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:40](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L40) |  |
-| <code>public int BarDataDays { get; set; } = 365;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:41](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L41) |  |
-| <code>public int QuoteDataDays { get; set; } = 30;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:42](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L42) |  |
-| <code>public int DepthDataDays { get; set; } = 7;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:43](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L43) |  |
-| <code>public int DeletedFilesPerRun { get; set; } = 100;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:44](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L44) |  |
-| <code>public bool CompressBeforeDelete { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:45](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L45) |  |
-| <code>public bool ArchiveToCloud { get; set; }</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:46](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L46) |  |
-| <code>public string? CloudArchiveDestination { get; set; }</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:47](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L47) |  |

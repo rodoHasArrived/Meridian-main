@@ -76,8 +76,8 @@
 - **Fit:** Builds on Idea 1. Migrate legacy `IsCompactMode` payloads as the existing loader already does.
 - *Update 2026-11-17: implemented for theme and density. `OperatorPreferenceVocabulary` (Contracts)
   is the one vocabulary; `DesktopOperatorPreferenceSync` makes WPF read and save the host set, with
-  `spacious` shown as Standard and kept on desktop saves. Not yet done: WPF timestamps honouring the
-  display time zone (WPF has no central formatter), and syncing WPF shortcut overrides.*
+  `spacious` shown as Standard and kept on desktop saves. WPF timestamps now honour the display time
+  zone through `FormatHelpers.FormatDisplayTimestamp`. Not yet done: syncing WPF shortcut overrides.*
 - **Effort:** Medium. **Impact:** High for the parity lane.
 
 ### Idea 3: Notifications & quiet-hours panel

@@ -86,7 +86,7 @@ public sealed class DesktopOperatorPreferenceSyncTests
     {
         var api = new FakeApi { Stored = Host(new OperatorPreferenceValuesDto(Appearance: "dark", Density: "compact", DisplayTimeZone: "UTC")) };
         var surface = new FakeSurface();
-        using var sync = new DesktopOperatorPreferenceSync(api, surface);
+        using var sync = new DesktopOperatorPreferenceSync(api, surface, _ => { });
 
         await sync.StartAsync();
 
@@ -99,11 +99,43 @@ public sealed class DesktopOperatorPreferenceSyncTests
     }
 
     [Fact]
+    public async Task DisplayTimeZone_IsAppliedAtStartAndRefreshedWhenTheDesktopSaves()
+    {
+        var applied = new List<TimeZoneInfo?>();
+        var api = new FakeApi { Stored = Host(new OperatorPreferenceValuesDto(Appearance: "light", DisplayTimeZone: "Europe/London")) };
+        var surface = new FakeSurface();
+        using var sync = new DesktopOperatorPreferenceSync(api, surface, applied.Add);
+
+        await sync.StartAsync();
+        applied.Should().ContainSingle().Which!.Id.Should().Be("Europe/London");
+
+        // The operator picks Tokyo in the browser, then changes the theme on the desktop.
+        api.Stored = Host(new OperatorPreferenceValuesDto(Appearance: "light", DisplayTimeZone: "Asia/Tokyo"));
+        surface.OperatorChangesTheme(AppTheme.Dark);
+        await WaitForAsync(() => applied.Count == 2);
+
+        applied[^1]!.Id.Should().Be("Asia/Tokyo");
+        sync.DisplayTimeZone!.Id.Should().Be("Asia/Tokyo");
+    }
+
+    [Fact]
+    public async Task DisplayTimeZone_FallsBackToUtcForAZoneThisMachineCannotResolve()
+    {
+        var applied = new List<TimeZoneInfo?>();
+        var api = new FakeApi { Stored = Host(new OperatorPreferenceValuesDto(DisplayTimeZone: "Mars/Olympus_Mons")) };
+        using var sync = new DesktopOperatorPreferenceSync(api, new FakeSurface(), applied.Add);
+
+        await sync.StartAsync();
+
+        applied.Should().ContainSingle().Which.Should().BeNull("null restores UTC");
+    }
+
+    [Fact]
     public async Task StartAsync_DoesNotUploadTheDesktopsDefaultThemeWhenTheHostHoldsNothing()
     {
         var api = new FakeApi();
         var surface = new FakeSurface();
-        using var sync = new DesktopOperatorPreferenceSync(api, surface);
+        using var sync = new DesktopOperatorPreferenceSync(api, surface, _ => { });
 
         await sync.StartAsync();
         await Task.Delay(50);
@@ -124,7 +156,7 @@ public sealed class DesktopOperatorPreferenceSyncTests
                 PageDescriptionsHidden: true, KeyBindings: bindings))
         };
         var surface = new FakeSurface();
-        using var sync = new DesktopOperatorPreferenceSync(api, surface);
+        using var sync = new DesktopOperatorPreferenceSync(api, surface, _ => { });
         await sync.StartAsync();
 
         surface.OperatorChangesTheme(AppTheme.Dark);
@@ -140,7 +172,7 @@ public sealed class DesktopOperatorPreferenceSyncTests
     {
         var api = new FakeApi { Stored = Host(new OperatorPreferenceValuesDto(Appearance: "light")) };
         var surface = new FakeSurface();
-        using var sync = new DesktopOperatorPreferenceSync(api, surface);
+        using var sync = new DesktopOperatorPreferenceSync(api, surface, _ => { });
         await sync.StartAsync();
 
         // The operator picks a zone in the browser while the desktop is open.
@@ -157,7 +189,7 @@ public sealed class DesktopOperatorPreferenceSyncTests
     {
         var api = new FakeApi { Stored = Host(new OperatorPreferenceValuesDto(Appearance: "light", Density: "spacious")) };
         var surface = new FakeSurface();
-        using var sync = new DesktopOperatorPreferenceSync(api, surface);
+        using var sync = new DesktopOperatorPreferenceSync(api, surface, _ => { });
         await sync.StartAsync();
         surface.Density.Should().Be(ShellDensityMode.Standard);
 
@@ -173,7 +205,7 @@ public sealed class DesktopOperatorPreferenceSyncTests
     {
         var api = new FakeApi { Unreachable = true };
         var surface = new FakeSurface();
-        using var sync = new DesktopOperatorPreferenceSync(api, surface);
+        using var sync = new DesktopOperatorPreferenceSync(api, surface, _ => { });
 
         await sync.StartAsync();
         surface.OperatorChangesTheme(AppTheme.Dark);
@@ -189,7 +221,7 @@ public sealed class DesktopOperatorPreferenceSyncTests
     {
         var api = new FakeApi { Stored = Host(new OperatorPreferenceValuesDto(Appearance: "light")), FailSaves = true };
         var surface = new FakeSurface();
-        using var sync = new DesktopOperatorPreferenceSync(api, surface);
+        using var sync = new DesktopOperatorPreferenceSync(api, surface, _ => { });
         await sync.StartAsync();
 
         await sync.SaveLocalChangeAsync();
@@ -210,7 +242,7 @@ public sealed class DesktopOperatorPreferenceSyncTests
     {
         var api = new FakeApi { Stored = Host(new OperatorPreferenceValuesDto(Appearance: "light")) };
         var surface = new FakeSurface();
-        var sync = new DesktopOperatorPreferenceSync(api, surface);
+        var sync = new DesktopOperatorPreferenceSync(api, surface, _ => { });
         await sync.StartAsync();
 
         sync.Dispose();

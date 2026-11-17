@@ -467,8 +467,18 @@ The shell theme and density come from the operator's host preferences
 the host holds are applied at startup; a desktop change saves only appearance and density and keeps
 the browser's other values. The browser's `spacious` density shows as Standard here and is not
 narrowed by a desktop save. With no reachable host (or in fixture mode) theme and density stay
-local; the theme then starts as Light as before. The operator's display time zone is read but not yet
-applied to desktop timestamps, and desktop shortcut overrides remain per machine.
+local; the theme then starts as Light as before. Desktop shortcut overrides remain per machine.
+
+### Timestamps follow the display time zone
+
+Timestamps that the desktop labels with a zone use `FormatHelpers.FormatDisplayTimestamp`
+(`Meridian.Ui.Services`), or `DisplayTimestampConverter` from XAML, never a hand-written `" UTC"`
+suffix. The zone is the operator's host display time zone, applied to `DisplayTimeZone` at startup
+and whenever the desktop saves preferences; it is UTC when unset, when the host cannot be read, or
+when this machine cannot resolve the zone. UTC labels are unchanged ("2026-07-05 12:00 UTC"); other
+zones show local time with the offset for that instant ("2026-07-05 13:00 UTC+01:00"). Code that
+parses a formatted label back uses `TryParseDisplayTimestamp`. Open screens reformat on their next
+refresh. This is display only: stored, audit and ledger values stay UTC.
 
 ### One refresh control
 

@@ -43,8 +43,12 @@ The shell theme and density follow the operator's host preferences, the same set
 workstation uses: `App.xaml.cs` starts `DesktopOperatorPreferenceSync` after the theme service is
 initialized (not in fixture mode) over `WpfDesktopPreferenceSurface`, which marshals host-applied
 theme changes onto the UI thread and reports only theme and density changes (shortcut overrides
-share the desktop shell preference store but stay per machine). Desktop timestamps do not use the
-operator's display time zone yet. `WpfDesktopPreferenceSurfaceTests` require Windows.
+share the desktop shell preference store but stay per machine). Desktop timestamps that used to be
+labelled UTC now go through `FormatHelpers.FormatDisplayTimestamp` (or `DisplayTimestampConverter` in
+XAML) and follow the operator's display time zone: "UTC" when unset, otherwise the local time with a
+`UTC±hh:mm` label. Open screens pick up a changed zone on their next refresh. Unlabelled local
+clocks (such as console line prefixes) are unchanged. `WpfDesktopPreferenceSurfaceTests` require
+Windows.
 
 Settings workspace and Preferences include a shared activation-status banner reading the host's
 `GET /api/config/changes` contract. It refreshes on entry, every 15 seconds, on demand and after

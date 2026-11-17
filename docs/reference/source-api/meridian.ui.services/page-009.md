@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PackageImportResult
+
+Qualified name: <code>Meridian.Ui.Services.PackageImportResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/PortablePackagerService.cs:897](../../../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs#L897).
+
+Reports package-import success, the number of imported files, and any error.
+
+```csharp
+public sealed class PackageImportResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/PortablePackagerService.cs:899](../../../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs#L899) |  |
+| <code>public int FilesImported { get; set; }</code> | [src/Meridian.Ui.Services/Services/PortablePackagerService.cs:900](../../../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs#L900) |  |
+| <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/PortablePackagerService.cs:901](../../../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs#L901) |  |
+
 ## PackageInfo
 
 Qualified name: <code>Meridian.Ui.Services.PackageInfo</code>. Kind: `class`.
@@ -1161,23 +1181,3 @@ Declared public members:
 | <code>public double LatencyMs { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderManagementService.cs:720](../../../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs#L720) |  |
 | <code>public string? Version { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderManagementService.cs:721](../../../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs#L721) |  |
 | <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderManagementService.cs:722](../../../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs#L722) |  |
-
-## ProviderPoliciesResult
-
-Qualified name: <code>Meridian.Ui.Services.ProviderPoliciesResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/ProviderOperationsResults.cs:28](../../../../src/Meridian.Ui.Services/Services/ProviderOperationsResults.cs#L28).
-
-Result envelope for provider-operations policy queries.
-
-```csharp
-public sealed class ProviderPoliciesResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderOperationsResults.cs:30](../../../../src/Meridian.Ui.Services/Services/ProviderOperationsResults.cs#L30) |  |
-| <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderOperationsResults.cs:31](../../../../src/Meridian.Ui.Services/Services/ProviderOperationsResults.cs#L31) |  |
-| <code>public List&lt;ProviderPolicyDto&gt; Policies { get; set; } = [];</code> | [src/Meridian.Ui.Services/Services/ProviderOperationsResults.cs:32](../../../../src/Meridian.Ui.Services/Services/ProviderOperationsResults.cs#L32) |  |

@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RecentPageEntry
+
+Qualified name: <code>Meridian.Wpf.ViewModels.MainPageViewModel.RecentPageEntry</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/ViewModels/MainPageViewModel.cs:2276](../../../../src/Meridian.Wpf/ViewModels/MainPageViewModel.cs#L2276).
+
+```csharp
+public sealed record RecentPageEntry(string PageTag, string DisplayName);
+```
+
 ## WorkspaceTileItem
 
 Qualified name: <code>Meridian.Wpf.ViewModels.MainPageViewModel.WorkspaceTileItem</code>. Kind: `class`.
@@ -1572,15 +1582,3 @@ Declared public members:
 | <code>public void Start();</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:465](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L465) |  |
 | <code>public void Stop();</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:480](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L480) |  |
 | <code>public async Task RefreshAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:495](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L495) |  |
-
-## ReportLedgerAmountSelection
-
-Qualified name: <code>Meridian.Wpf.ViewModels.ReportLedgerAmountSelection</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/ViewModels/LedgerAmountProofDrawerViewModel.cs:352](../../../../src/Meridian.Wpf/ViewModels/LedgerAmountProofDrawerViewModel.cs#L352).
-
-An exact generated amount selected from the governed report&#x27;s retained catalogue.
-
-```csharp
-public sealed record ReportLedgerAmountSelection(string SubjectId, LedgerAmountScopeDto Scope, decimal Amount, string Currency, string Label, IReadOnlyList<Guid> JournalEntryIds, IReadOnlyList<Guid> LedgerEntryIds);
-```

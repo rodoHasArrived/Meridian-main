@@ -6,6 +6,49 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyInterestAccrualWorkspace
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyInterestAccrualWorkspace</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:16](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L16).
+
+Desktop presentation state for requesting a governed loan-interest accrual. The operator supplies selections only; every rate, principal, amount and permission comes from the shared intercompany API, and a draft is bound to the evidence digest of the preview the operator saw. Nothing is calculated here.
+
+```csharp
+public sealed partial class IntercompanyInterestAccrualWorkspace : ObservableObject, IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyInterestAccrualWorkspace(IWorkstationIntercompanyAgreementApiClient client);</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:34](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L34) |  |
+| <code>public ObservableCollection&lt;IntercompanyChoice&gt; BookChoices { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:43](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L43) | Books the signed-in account can see; choosing one sets SourceBook. |
+| <code>public ObservableCollection&lt;IntercompanyChoice&gt; InterestProfileChoices { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:45](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L45) | Approved LoanInterest profiles that map the chosen book today. |
+| <code>public ObservableCollection&lt;IntercompanyChoice&gt; PrincipalProfileChoices { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:47](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L47) | Approved Loan profiles of the same legal agreement as the chosen interest profile. |
+| <code>public IAsyncRelayCommand LoadChoicesCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:48](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L48) |  |
+| <code>public string ChoicesStatus { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:50](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L50) | What the selection lists hold, or why one is empty. |
+| <code>public Task ProfileChoicesLoad { get; private set; } = Task.CompletedTask;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:52](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L52) | The latest profile read for the chosen book; completed when no read is outstanding. |
+| <code>public ObservableCollection&lt;IntercompanyInterestAccrualSliceRow&gt; Slices { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:54](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L54) |  |
+| <code>public ObservableCollection&lt;IntercompanyInterestAccrualLineRow&gt; Lines { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:55](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L55) |  |
+| <code>public ObservableCollection&lt;string&gt; Refusals { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:56](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L56) |  |
+| <code>public IAsyncRelayCommand PreviewCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:57](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L57) |  |
+| <code>public IAsyncRelayCommand CreateDraftCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:58](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L58) |  |
+| <code>public bool IsBusy { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:59](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L59) |  |
+| <code>public bool CanManageLedger { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:61](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L61) | The server&#x27;s answer for the signed-in account. Source-book authority is still checked per command. |
+| <code>public string PermissionNote =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:62](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L62) |  |
+| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:65](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L65) |  |
+| <code>public string Summary { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:67](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L67) | The previewed amount and journal date, or the reason no amount is shown. |
+| <code>public string Evidence { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:68](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L68) |  |
+| <code>public string DraftStatus { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:69](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L69) |  |
+| <code>public string SourceBook { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:70](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L70) |  |
+| <code>public string InterestProfile { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:79](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L79) |  |
+| <code>public string PrincipalProfile { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:88](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L88) |  |
+| <code>public string AccrualFrom { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:90](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L90) | First accrued day (yyyy-MM-dd). |
+| <code>public string AccrualTo { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:92](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L92) | First day not accrued (yyyy-MM-dd); the journal is dated the day before. |
+| <code>public void ResetSession();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:274](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L274) | Clear prior-session evidence and invalidate every outstanding response on account changes. |
+| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:300](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L300) |  |
+
 ## IntercompanyLegacyCoverageCandidate
 
 Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyLegacyCoverageCandidate</code>. Kind: `record`.
@@ -1070,9 +1113,9 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.Services.DesktopOperatorPreferenceSync</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:149](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L149).
+Source: [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:150](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L150).
 
-Keeps the desktop shell&#x27;s theme and density in step with the operator&#x27;s host preferences, the same set the browser workstation syncs (OperatorPreferencesDto). On start, the values the host holds are applied. Nothing is saved: the desktop does not persist its theme, so its startup theme is a default, not an operator choice. When the operator changes the theme or density here, the latest host set is re-read and saved with only the appearance and density replaced, so browser-only values (time zone, page descriptions, shortcut overrides, a spacious density) are kept. When the host cannot be read at start (no session, an older host, offline), the desktop stays local for the run and saves nothing. A failed save keeps the local change. The display time zone is read and exposed, but desktop formatters do not apply it yet.
+Keeps the desktop shell&#x27;s theme and density in step with the operator&#x27;s host preferences, the same set the browser workstation syncs (OperatorPreferencesDto). On start, the values the host holds are applied. Nothing is saved: the desktop does not persist its theme, so its startup theme is a default, not an operator choice. When the operator changes the theme or density here, the latest host set is re-read and saved with only the appearance and density replaced, so browser-only values (time zone, page descriptions, shortcut overrides, a spacious density) are kept. When the host cannot be read at start (no session, an older host, offline), the desktop stays local for the run and saves nothing. A failed save keeps the local change. The display time zone is applied to Meridian.Ui.Services.DisplayTimeZone, which desktop timestamps are formatted in; it is read at start and again whenever the desktop saves.
 
 ```csharp
 public sealed class DesktopOperatorPreferenceSync : IDisposable
@@ -1082,12 +1125,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public DesktopOperatorPreferenceSync(IOperatorPreferencesApi api, IDesktopPreferenceSurface surface);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:159](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L159) |  |
-| <code>public TimeZoneInfo? DisplayTimeZone { get; private set; }</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:166](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L166) | The operator&#x27;s display time zone from the host, when it resolves on this machine. |
-| <code>public bool IsSyncing =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:169](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L169) | True once the host was read and local changes are being saved. |
-| <code>public async Task StartAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:172](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L172) | Reads the host set, applies it, and starts saving operator changes. Safe to call once. |
-| <code>public async Task SaveLocalChangeAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:232](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L232) | Saves the current desktop theme and density into the operator&#x27;s host set, keeping every other stored value. Exposed for tests; the sync calls it after each operator change. |
-| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:278](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L278) |  |
+| <code>public DesktopOperatorPreferenceSync(IOperatorPreferencesApi api, IDesktopPreferenceSurface surface, Action&lt;TimeZoneInfo?&gt;? applyDisplayTimeZone = null);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:163](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L163) |  |
+| <code>public TimeZoneInfo? DisplayTimeZone { get; private set; }</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:174](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L174) | The operator&#x27;s display time zone from the host, when it resolves on this machine (else null, meaning UTC). |
+| <code>public bool IsSyncing =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:177](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L177) | True once the host was read and local changes are being saved. |
+| <code>public async Task StartAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:180](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L180) | Reads the host set, applies it, and starts saving operator changes. Safe to call once. |
+| <code>public async Task SaveLocalChangeAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:248](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L248) | Saves the current desktop theme and density into the operator&#x27;s host set, keeping every other stored value. Exposed for tests; the sync calls it after each operator change. |
+| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:295](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L295) |  |
 
 ## DesktopShellPreferences
 
@@ -1326,25 +1369,3 @@ Declared public members:
 | <code>public static ValidationResult ValidatePort(int? value);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:154](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L154) | Validates a network port number. |
 | <code>public static ValidationResult ValidateFilePath(string? value);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:170](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L170) | Validates a file path format. |
 | <code>public static ValidationResult ValidateNumericRange(double? value, double min, double max, string fieldName = &quot;Value&quot;);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:193](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L193) | Validates that a numeric value is within a specified range. |
-
-## IDesktopPreferenceSurface
-
-Qualified name: <code>Meridian.Ui.Services.Services.IDesktopPreferenceSurface</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:121](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L121).
-
-The desktop presentation preferences the host sync reads and writes: the shell theme and density. Implemented by the WPF shell over its theme service and desktop shell preferences.
-
-```csharp
-public interface IDesktopPreferenceSurface
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>AppTheme Theme { get; }</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:123](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L123) |  |
-| <code>ShellDensityMode Density { get; }</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:125](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L125) |  |
-| <code>void ApplyTheme(AppTheme theme);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:127](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L127) |  |
-| <code>void ApplyDensity(ShellDensityMode density);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:129](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L129) |  |
-| <code>event EventHandler? PreferenceChanged;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:132](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L132) | Raised after the operator changes the theme or density on this desktop. |

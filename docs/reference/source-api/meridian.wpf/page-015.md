@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportLedgerAmountSelection
+
+Qualified name: <code>Meridian.Wpf.ViewModels.ReportLedgerAmountSelection</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/ViewModels/LedgerAmountProofDrawerViewModel.cs:352](../../../../src/Meridian.Wpf/ViewModels/LedgerAmountProofDrawerViewModel.cs#L352).
+
+An exact generated amount selected from the governed report&#x27;s retained catalogue.
+
+```csharp
+public sealed record ReportLedgerAmountSelection(string SubjectId, LedgerAmountScopeDto Scope, decimal Amount, string Currency, string Label, IReadOnlyList<Guid> JournalEntryIds, IReadOnlyList<Guid> LedgerEntryIds);
+```
+
 ## RetentionAssuranceViewModel
 
 Qualified name: <code>Meridian.Wpf.ViewModels.RetentionAssuranceViewModel</code>. Kind: `class`.
@@ -1749,54 +1761,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static StorageOptimizationSymbolRow FromAnalytics(SymbolAnalyticsInfo info) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:528](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L528) |  |
-
-## StorageOptimizationViewModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.StorageOptimizationViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:17](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L17).
-
-Coordinates storage analytics, optimization analysis, and tier and symbol breakdown presentation.
-
-```csharp
-public sealed class StorageOptimizationViewModel : BindableBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StorageOptimizationViewModel() : this((forceRefresh, ct) =&gt; StorageAnalyticsService.Instance.GetAnalyticsAsync(forceRefresh, ct), ct =&gt; StorageAnalyticsService.Instance.GetDriveInfoAsync(ct), async ct =&gt;{ var config = await WpfConfigService.Instance.LoadConfigAsync(); ct.ThrowIfCancellationRequested(); return WpfConfigService.Instance.ResolveDataRoot(config); }, (basePath, options, ct) =&gt; UiStorageOptimizationAdvisorService.Instance.AnalyzeStorageAsync(basePath, options, ct : ct), ct =&gt; UiStorageOptimizationAdvisorService.Instance.GetTierStatisticsAsync(ct));</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:55](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L55) |  |
-| <code>public IAsyncRelayCommand RefreshAnalyticsCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:94](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L94) |  |
-| <code>public IAsyncRelayCommand RunAnalysisCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:96](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L96) |  |
-| <code>public IAsyncRelayCommand ViewTierStatisticsCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:98](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L98) |  |
-| <code>public ObservableCollection&lt;StorageOptimizationSymbolRow&gt; SymbolBreakdownRows { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:100](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L100) |  |
-| <code>public string OverviewStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:102](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L102) |  |
-| <code>public string OverviewStatusTone { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:108](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L108) |  |
-| <code>public bool IsAnalyticsLoading { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:114](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L114) |  |
-| <code>public bool CanRefreshAnalytics =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:127](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L127) |  |
-| <code>public string TotalSizeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:129](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L129) |  |
-| <code>public string TotalFilesText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:135](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L135) |  |
-| <code>public string DailyGrowthText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:141](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L141) |  |
-| <code>public string DaysUntilFullText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:147](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L147) |  |
-| <code>public string TradeSizeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:153](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L153) |  |
-| <code>public string TradeFilesText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:159](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L159) |  |
-| <code>public string DepthSizeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:165](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L165) |  |
-| <code>public string DepthFilesText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:171](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L171) |  |
-| <code>public string HistoricalSizeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:177](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L177) |  |
-| <code>public string HistoricalFilesText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:183](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L183) |  |
-| <code>public string SymbolBreakdownStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:189](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L189) |  |
-| <code>public string SymbolBreakdownTone { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:195](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L195) |  |
-| <code>public bool HasSymbolBreakdown =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:201](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L201) |  |
-| <code>public bool IsSymbolBreakdownEmpty =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:203](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L203) |  |
-| <code>public string DriveNameText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:205](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L205) |  |
-| <code>public string FreeSpaceText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:211](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L211) |  |
-| <code>public string UsedPercentText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:217](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L217) |  |
-| <code>public double DriveUsedPercent { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:223](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L223) |  |
-| <code>public string DriveUsageTone { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:229](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L229) |  |
-| <code>public bool IsOptimizationActionRunning { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:235](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L235) |  |
-| <code>public bool CanRunOptimizationActions =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:249](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L249) |  |
-| <code>public string AnalysisResultText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:251](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L251) |  |
-| <code>public bool HasAnalysisResult =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:263](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L263) |  |
-| <code>public string AnalysisResultTone { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:265](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L265) |  |
-| <code>public Task LoadAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:271](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L271) |  |

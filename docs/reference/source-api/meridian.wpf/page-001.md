@@ -923,6 +923,25 @@ Declared public members:
 | <code>public object Convert(object value, Type targetType, object parameter, CultureInfo culture);</code> | [src/Meridian.Wpf/Converters/ConsoleEntryKindToBrushConverter.cs:18](../../../../src/Meridian.Wpf/Converters/ConsoleEntryKindToBrushConverter.cs#L18) |  |
 | <code>public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =&gt; …;</code> | [src/Meridian.Wpf/Converters/ConsoleEntryKindToBrushConverter.cs:33](../../../../src/Meridian.Wpf/Converters/ConsoleEntryKindToBrushConverter.cs#L33) |  |
 
+## DisplayTimestampConverter
+
+Qualified name: <code>Meridian.Wpf.Converters.DisplayTimestampConverter</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Converters/DisplayTimestampConverter.cs:16](../../../../src/Meridian.Wpf/Converters/DisplayTimestampConverter.cs#L16).
+
+Formats a DateTime or DateTimeOffset instant in the operator&#x27;s display time zone with FormatHelpers.FormatDisplayTimestamp(DateTimeOffset, string), e.g. &quot;2026-07-05 13:00 UTC+01:00&quot;. The converter parameter, when given, is the date and time pattern. Any other value passes through unchanged.
+
+```csharp
+public sealed class DisplayTimestampConverter : IValueConverter
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture);</code> | [src/Meridian.Wpf/Converters/DisplayTimestampConverter.cs:18](../../../../src/Meridian.Wpf/Converters/DisplayTimestampConverter.cs#L18) |  |
+| <code>public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =&gt; …;</code> | [src/Meridian.Wpf/Converters/DisplayTimestampConverter.cs:29](../../../../src/Meridian.Wpf/Converters/DisplayTimestampConverter.cs#L29) |  |
+
 ## IntToVisibilityConverter
 
 Qualified name: <code>Meridian.Wpf.Converters.IntToVisibilityConverter</code>. Kind: `class`.
@@ -1233,25 +1252,3 @@ Declared public members:
 | <code>public static readonly WorkspaceDescriptorCopy Descriptor = new (WorkspaceId, WorkstationWorkspaceCatalog.SettingsLabel, WorkstationWorkspaceCatalog.SettingsDesktopDescription, WorkstationWorkspaceCatalog.SettingsDesktopSummary, WorkstationWorkspaceCatalog.SettingsDesktopTileSummary, WorkstationWorkspaceCatalog.SettingsDesktopShellDisplayName);</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:156](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L156) |  |
 | <code>public const string ShellTitle = &quot;Settings Workspace&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:164](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L164) |  |
 | <code>public const string ShellSubtitle = &quot;Pick the setup task you need.&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:165](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L165) |  |
-
-## Strategy
-
-Qualified name: <code>Meridian.Wpf.Copy.WorkspaceCopyCatalog.Strategy</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:113](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L113).
-
-Provides titles, descriptions, and scope copy for the strategy workspace.
-
-```csharp
-public static class Strategy
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string WorkspaceId = WorkstationWorkspaceCatalog.StrategyKey;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:115](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L115) |  |
-| <code>public static readonly WorkspaceDescriptorCopy Descriptor = new (WorkspaceId, WorkstationWorkspaceCatalog.StrategyLabel, WorkstationWorkspaceCatalog.StrategyDesktopDescription, WorkstationWorkspaceCatalog.StrategyDesktopSummary, WorkstationWorkspaceCatalog.StrategyDesktopTileSummary, WorkstationWorkspaceCatalog.StrategyDesktopShellDisplayName);</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:116](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L116) |  |
-| <code>public const string ShellTitle = &quot;Strategy Workspace&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:124](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L124) |  |
-| <code>public const string ShellSubtitle = &quot;Review recent strategy runs and open the one you want to work on.&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:125](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L125) |  |
-| <code>public const string PrimaryScopeLabel = &quot;Strategy&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:126](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L126) |  |

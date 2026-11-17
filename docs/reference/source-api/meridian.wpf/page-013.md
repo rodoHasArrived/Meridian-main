@@ -6,6 +6,22 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EvidenceAttestationDocumentChoice
+
+Qualified name: <code>Meridian.Wpf.ViewModels.EvidenceAttestationDocumentChoice</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs:369](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs#L369).
+
+```csharp
+public sealed record EvidenceAttestationDocumentChoice(string VaultId, string DocumentId, string Label)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string SubjectId =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs:371](../../../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs#L371) |  |
+
 ## EvidenceWorkbenchViewModel
 
 Qualified name: <code>Meridian.Wpf.ViewModels.EvidenceWorkbenchViewModel</code>. Kind: `class`.
@@ -1852,13 +1868,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public string AutomationId =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/MainPageViewModel.cs:2287](../../../../src/Meridian.Wpf/ViewModels/MainPageViewModel.cs#L2287) |  |
 | <code>public string StateLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/MainPageViewModel.cs:2289](../../../../src/Meridian.Wpf/ViewModels/MainPageViewModel.cs#L2289) |  |
-
-## RecentPageEntry
-
-Qualified name: <code>Meridian.Wpf.ViewModels.MainPageViewModel.RecentPageEntry</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/ViewModels/MainPageViewModel.cs:2276](../../../../src/Meridian.Wpf/ViewModels/MainPageViewModel.cs#L2276).
-
-```csharp
-public sealed record RecentPageEntry(string PageTag, string DisplayName);
-```

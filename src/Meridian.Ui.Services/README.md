@@ -133,9 +133,18 @@ persist its theme and its startup theme is a default rather than a choice. An op
 desktop re-reads the host set and saves it with only appearance and density replaced, so the time
 zone, page-descriptions setting and browser shortcut overrides are kept. A host that cannot be read at
 start leaves the desktop local for the run; a failed save keeps the local change and the next change
-retries. The display time zone is resolved with this machine's zone data and exposed as
-`DisplayTimeZone`; desktop formatters do not apply it yet. `OperatorPreferencesApiClient` is the HTTP
-client and `IDesktopPreferenceSurface` the seam the WPF shell implements.
+retries. The display time zone is resolved with this machine's zone data at start and again whenever
+the desktop saves, and applied to the shared `DisplayTimeZone` (UTC when unset or unknown here).
+`OperatorPreferencesApiClient` is the HTTP client and `IDesktopPreferenceSurface` the seam the WPF
+shell implements.
+
+`FormatHelpers.FormatDisplayTimestamp` (with `DateTime`, nullable and `FormatDisplayTimeRange`
+overloads) formats an instant in `DisplayTimeZone.Current`. In UTC the label is exactly the
+`FormatUtcTimestamp` form ("2026-07-05 12:00 UTC"); in any other zone the local time carries its
+offset for that instant ("2026-07-05 13:00 UTC+01:00"), so a zone that is at +00:00 for part of the
+year is never labelled UTC. `TryParseDisplayTimestamp` reads either form back to UTC. Display only:
+stored, audit and ledger values are unchanged. `DisplayTimestampTests` set the process-wide zone and
+run in a serial test collection.
 
 `DesktopShellPreferences` holds the desktop shell density and the operator's keyboard shortcut
 overrides (`ShortcutOverrides`, keyed by action id, with keys and modifiers stored as WPF enum
