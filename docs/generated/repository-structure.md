@@ -6873,6 +6873,9 @@ Meridian-main
 │   │   │   ├── FundAdministrationControlService.cs
 │   │   │   ├── FundAdministrationModels.cs
 │   │   │   ├── FundAdministrationRegisters.cs
+│   │   │   ├── PostgresRecurringJournalStore.cs
+│   │   │   ├── RecurringJournalDocumentRules.cs
+│   │   │   ├── RecurringJournalDocumentSession.cs
 │   │   │   └── RecurringJournalState.cs
 │   │   ├── Intercompany
 │   │   │   ├── FundStructureIntercompanyAccountingArrangementScopeAuthority.cs
@@ -8266,7 +8269,8 @@ Meridian-main
 │   │   │   │   ├── V_ledger_069__automated_posting_grants.sql
 │   │   │   │   ├── V_ledger_070__automatic_policy_snapshot.sql
 │   │   │   │   ├── V_ledger_071__fee_economic_identity.sql
-│   │   │   │   └── V_ledger_072__onboarding_workspaces.sql
+│   │   │   │   ├── V_ledger_072__onboarding_workspaces.sql
+│   │   │   │   └── V_ledger_073__recurring_journal_state.sql
 │   │   │   ├── AccountingPostingCommandFingerprintJsonContext.cs
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── AtomicTaxLotJournalFingerprint.cs
@@ -14481,6 +14485,7 @@ Meridian-main
 │   │   │   ├── QuotaEnforcementServiceTests.cs
 │   │   │   ├── RecurringJournalCalculationPostgresTests.cs
 │   │   │   ├── RecurringJournalPeriodAuthorityPostgresTests.cs
+│   │   │   ├── RecurringJournalPostgresStoreTests.cs
 │   │   │   ├── ReportingOperationalStoreTests.cs
 │   │   │   ├── RetainedDataQueryStoreTests.cs
 │   │   │   ├── SecurityEntitlementInventoryPostgresTests.cs
