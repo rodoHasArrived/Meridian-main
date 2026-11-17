@@ -196,6 +196,10 @@ public sealed partial class EntityConsolidationViewModel : BindableBase
         Status = Periods.Count == 0 ? "No periods are available for the selected elimination book." : "Select the elimination period and preview the consolidation.";
     });
 
+    // The browser timeline names a merger or roll-up successor on the state it applies to; this does the same.
+    private string SuccessorSummary(Guid? successor) => successor is not { } id ? ""
+        : Entities.FirstOrDefault(entity => entity.EntityId == id) is { } known ? $" · successor {known.Name} ({id:D})" : $" · successor {id:D}";
+
     public Task LoadTimelineAsync()
     {
         if (SelectedOrganization is not { } organization || SelectedEntity is not { } entity || AsOf is not { } date)
@@ -217,7 +221,7 @@ public sealed partial class EntityConsolidationViewModel : BindableBase
             Replace(Warnings, timeline.Warnings);
             Replace(TimelineRows, timeline.LifecycleRevisions.OrderByDescending(item => item.Revision).SelectMany(revision => revision.Timeline.Select(state =>
                 new AccountingWorkbenchRow($"Revision {revision.Revision} · {state.Status}", state.EventKind.ToString(),
-                    $"[{state.EffectiveFrom:O}, {state.EffectiveTo?.ToString("O", CultureInfo.InvariantCulture) ?? "open"})",
+                    $"[{state.EffectiveFrom:O}, {state.EffectiveTo?.ToString("O", CultureInfo.InvariantCulture) ?? "open"})" + SuccessorSummary(state.SuccessorEntityId),
                     $"{revision.RecordedBy} · {revision.Reason} · {revision.EvidenceReference} · hash {revision.ContentHash}" + LifecycleExternalReviewSummary(revision)))));
             foreach (var item in timeline.Entity.LifecycleEvents ?? [])
                 TimelineRows.Add(new($"Legal event · {item.EventKind}", "Recorded event", item.OccurredAt.ToString("O", CultureInfo.InvariantCulture),
