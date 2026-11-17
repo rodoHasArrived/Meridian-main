@@ -600,7 +600,9 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         # screen, which gives the browser the direct-lending read surface that previously
         # only the desktop client reached.
         # 82 includes dedicated Factor Paydown and Consolidation child workflows.
-        self.assertEqual(82, len(captures))
+        # 85 after adding 1024px captures of Close Cockpit, Ledger Explorer and Trading
+        # (UX Phase C), which check the narrow layout of the finance grid.
+        self.assertEqual(85, len(captures))
         self.assertEqual("/accounting/factor-paydown", captures["W03FP"].get("path"))
         self.assertEqual("/accounting/consolidation", captures["W03CO"].get("path"))
         self.assertNotIn("W05E", captures)
