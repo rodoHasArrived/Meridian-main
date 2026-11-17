@@ -110,12 +110,23 @@ repository owner accepts it.
 | --- | --- | --- |
 | Browser | "Accrue interest" on an approved `LoanInterest` profile in Accounting's accounting-profile panel (`accounting-screen.entity-interest-accrual.tsx`). The operator picks the loan principal profile of the same legal agreement and the window; the rate, principal and amount come from the server. Changing the selection withdraws the preview. | `accounting-screen.entity-interest-accrual.test.tsx` (Linux) |
 | Desktop | Interest accrual tab on the Fund Ledger page (`IntercompanyInterestAccrualControl.xaml` over `IntercompanyInterestAccrualWorkspace`), using the same `/api/ledger/intercompany/accruals/preview` and `/drafts` routes. Profiles and book are typed identifiers, as in the counterpart queue. | `IntercompanyInterestAccrualWorkspaceTests`, `WorkstationIntercompanyAgreementApiClientTests` (Linux); `IntercompanyNativeControlSmokeTests.InterestAccrualControl_*` compiles on Linux and runs only on Windows |
-| Post and deliver | `IntercompanyAccrualPostAndDeliverPostgresTests`: a posted drawdown, the accrual drafted from approved terms, ordinary review and posting in the lender's book, one counterpart draft delivered to the borrower, and the borrower's own review and posting. No second proposal is mirrored back and the same days cannot be accrued again. | PostgreSQL |
+| Post and deliver | `IntercompanyAccrualPostAndDeliverPostgresTests`: a posted drawdown, the accrual drafted from approved terms, ordinary review and posting in the lender's book, one counterpart draft delivered to the borrower, and the borrower's own review and posting. No second proposal is mirrored back and the same days cannot be accrued again. A second case dissolves the borrower in its lifecycle history before the accrual date; the production lifecycle control then refuses the borrower's counterpart and its book stays empty. | PostgreSQL |
 
-In the PostgreSQL run the ledger, proposal outbox, account bindings, chart and book ownership are
-the durable stores and `IntercompanyLedgerPostingAuthority` is the production class. The legal
-agreement registry, the accounting-profile history, entity lifecycle and journal drafts are
-in-memory stand-ins, so the run does not prove those stores together with the accrual.
+In the PostgreSQL run every store the accrual touches is durable (updated 2026-11-17):
+
+- The ledger, proposal outbox, account bindings, chart and book ownership are in the ledger schema.
+- The native legal agreement registry, accounting-profile history, legal-entity graph and entity
+  lifecycle history are in a fund-structure schema of the same database. The loan is created,
+  submitted and approved by different people through `IntercompanyAgreementService`, and both
+  profiles pin that exact approved revision.
+- Journal drafts are in `FileManualJournalEntryDraftStore`, the store the workstation host
+  registers. There is no PostgreSQL draft store. The run reopens the file to show the reviewed
+  source and delivered counterpart survive a restart.
+
+`IntercompanyLedgerPostingAuthority`, `PostgresIntercompanyAgreementPostingAuthority` and
+`LifecycleLedgerPostingAuthority` (over `PostgresFundStructureService` and the graph store's
+consolidation lease) are the production classes. Only the agreement access scope, the evidence
+vault, the accounting-profile scope authority and the fund-account read service are synthetic.
 
 **Defect found and fixed.** Every generated counterpart draft carries the treasury label
 `IntercompanyMirror` as its fund event type. Both the journal workbench and the durable ledger guard
