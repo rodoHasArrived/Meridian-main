@@ -1,11 +1,12 @@
-import { screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { renderWithRouter } from "@/test/render";
 import { PeriodComparisonPanel } from "./period-comparison-panel";
 import { normalizePeriodComparison, type PeriodComparison } from "@/lib/api/period-comparison.api";
 import { defaultMaterialityPolicyForClass } from "@/lib/reporting-materiality";
-import { NavComparisonScreen } from "@/screens/nav-comparison-screen";
+import { NavComparisonScreen, fundProfileOptionsFromBooks } from "@/screens/nav-comparison-screen";
+import type { LedgerBook } from "@/types";
 import { CashLadderPeriodComparison } from "@/screens/cash-ladder-screen.comparison";
 import { RunAttributionPeriodComparison } from "@/screens/portfolio-screen.attribution-comparison";
 import { NavTrendChart } from "@/components/meridian/nav-trend-chart";
@@ -96,6 +97,27 @@ describe("prior-period surfaces", () => {
     expect(screen.getByText("Choose a fund profile to compare its NAV with a prior date.")).toBeInTheDocument();
     expect(service).not.toHaveBeenCalled();
     expect(trendService).not.toHaveBeenCalled();
+  });
+
+  it("NAV offers fund profiles from the ledger books instead of a free-text ID (Phase 1)", async () => {
+    const service = vi.fn(async () => comparison());
+    const trendService = vi.fn(async () => trend([["2026-10-31", 1_250_000], ["2026-11-17", 1_450_000]]));
+    const booksService = vi.fn(async () => [
+      { ledgerBookId: "b1", fundProfileId: "alpha-income", displayName: "Alpha Master Book" },
+      { ledgerBookId: "b2", fundProfileId: "alpha-income", displayName: "Alpha Tax Book" },
+      { ledgerBookId: "b3", fundProfileId: "beta-growth", displayName: "Beta Book" }
+    ] as unknown as LedgerBook[]);
+    renderWithRouter(<NavComparisonScreen service={service} trendService={trendService} booksService={booksService} />, { initialEntries: ["/portfolio/nav"] });
+    const picker = await screen.findByRole("combobox", { name: "Fund profile" });
+    await userEvent.click(picker);
+    await userEvent.click(await screen.findByRole("option", { name: "Alpha Master Book, Alpha Tax Book · alpha-income" }));
+    await waitFor(() => expect(service).toHaveBeenCalledWith(expect.objectContaining({ fundProfileId: "alpha-income" }), expect.anything()));
+  });
+
+  it("NAV keeps typed entry when the ledger books cannot be read", async () => {
+    renderWithRouter(<NavComparisonScreen service={vi.fn()} trendService={vi.fn()} booksService={() => Promise.reject(new Error("offline"))} />, { initialEntries: ["/portfolio/nav"] });
+    expect(await screen.findByPlaceholderText("Fund profile ID")).toBeInTheDocument();
+    expect(fundProfileOptionsFromBooks([], "x")).toEqual([]);
   });
 
   it("the NAV trend needs two dated points and lists its notes", async () => {
