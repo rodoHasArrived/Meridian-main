@@ -8,6 +8,7 @@ import {
   workflowTargetPath,
 } from "@/lib/workspace";
 import {
+  formatAccountingDate,
   formatDateOnly,
   formatDateTimeLabel,
 } from "./accounting-screen.formatting";
@@ -160,7 +161,7 @@ export function buildReconciliationDetailViewState(
     buildReconciliationDetailField("Run status", item.status, "default"),
     buildReconciliationDetailField("Break count", String(item.breakCount), "default"),
     buildReconciliationDetailField("Open breaks", String(item.openBreakCount), openBreakTone),
-    buildReconciliationDetailField("Last updated", item.lastUpdated, "default")
+    buildReconciliationDetailField("Last updated", /^\d{4}-\d{2}-\d{2}/.test(item.lastUpdated) ? formatAccountingDate(item.lastUpdated) : item.lastUpdated, "default")
   ];
 
   return {
@@ -920,8 +921,8 @@ export function buildReconciliationBreakRows(
       varianceLabel: formatSignedCurrency(item.variance, { minimumFractionDigits: 2, zeroLabel: "$0" }),
       varianceTone: item.variance > 0 ? "success" : item.variance < 0 ? "danger" : "default",
       statusBadgeVariant: reconciliationBreakStatusBadgeVariant(item.status),
-      detectedAtLabel: formatDateTimeLabel(item.detectedAt),
-      lastUpdatedAtLabel: formatDateTimeLabel(item.lastUpdatedAt),
+      detectedAtLabel: formatAccountingDate(item.detectedAt),
+      lastUpdatedAtLabel: formatAccountingDate(item.lastUpdatedAt),
       ownerLabel: item.assignedTo ?? "Unassigned",
       rowAriaLabel: `${financeLabel} ${item.breakId}. ${item.status}. Variance ${formatSignedCurrency(item.variance, { minimumFractionDigits: 2, zeroLabel: "$0" })}. ${item.reason}`,
       rowSelectAriaLabel: `Inspect reconciliation break ${item.breakId}`,
@@ -998,7 +999,7 @@ function buildReconciliationBreakDetail(row: ReconciliationBreakRowViewModel): R
       { label: "Comparison scope", value: row.lineage?.comparisonScopeId ?? "Not tracked" },
       { label: "Source lineage", value: row.lineage?.lineageId ?? "No stable source identity retained" },
       { label: "Occurrence", value: row.lineage ? `${row.lineage.occurrenceNumber} · ${row.lineage.occurrenceId}` : "Not tracked" },
-      { label: "First observed", value: row.lineage?.firstObservedAt ?? "Not tracked" },
+      { label: "First observed", value: row.lineage?.firstObservedAt ? formatAccountingDate(row.lineage.firstObservedAt) : "Not tracked" },
       { label: "Last observed run", value: row.lineage?.lastObservedRunId ?? "Not tracked" },
       { label: "Source clearing", value: row.lineage?.clearedByRunId ? `Absent from completed run ${row.lineage.clearedByRunId}; casework still requires disposition` : "No clearing established" },
       { label: "Root cause", value: formatReconciliationMetadata(row.rootCauseCode, "Unset") },
@@ -1048,13 +1049,13 @@ function formatReconciliationList(values: string[] | null | undefined, fallback:
 function buildReconciliationSlaText(row: Pick<ReconciliationBreakQueueItem, "slaState" | "slaDueAt" | "slaWarningAt" | "slaBreachedAt">): string {
   const state = reconciliationSlaStateLabel(row.slaState);
   if (row.slaBreachedAt) {
-    return `${state}; breached ${formatDateTimeLabel(row.slaBreachedAt)}`;
+    return `${state}; breached ${formatAccountingDate(row.slaBreachedAt)}`;
   }
   if (row.slaDueAt) {
-    return `${state}; due ${formatDateTimeLabel(row.slaDueAt)}`;
+    return `${state}; due ${formatAccountingDate(row.slaDueAt)}`;
   }
   if (row.slaWarningAt) {
-    return `${state}; warning ${formatDateTimeLabel(row.slaWarningAt)}`;
+    return `${state}; warning ${formatAccountingDate(row.slaWarningAt)}`;
   }
   return state;
 }

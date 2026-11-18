@@ -622,7 +622,9 @@ export const CAPTURE_CONTENT_ISSUE_KINDS = [
   "table-overflow-without-cue",
   "monospace-prose",
   "nav-row-budget",
-  "chart-without-table"
+  "chart-without-table",
+  "detail-rail-clipped",
+  "chart-label-overlap"
 ];
 
 /** How often the same "… unavailable" line may repeat in a route's main content. */
@@ -697,9 +699,15 @@ export function isSlugIdentifier(token) {
  *     (`[role="img"]` at least 200px wide) whose section holds neither a table nor a
  *     `[data-chart-table]` alternative. Every chart has a table a screen reader or a copy-paste can
  *     use. Read from the DOM by the caller.
+ *   - detail-rail-clipped: a detail panel (the workbench inspector, an aside or a dense-row detail
+ *     panel), or a box inside one, that hides content below its visible area with no way to see it:
+ *     it neither scrolls nor shows the `data-more-below` cue. Hidden fields look absent. Measured by
+ *     the caller.
+ *   - chart-label-overlap: two text labels in the same chart whose boxes overlap, such as the last
+ *     two x-axis dates. Measured by the caller.
  * Returns one entry per distinct offending excerpt.
  */
-export function findCaptureContentIssues(text, { unexplainedDisabledActions = [], statusContradictions = [], truncatedBadges = [], unsourcedPositionTables = [], primaryTaskIssues = [], failureNoticeIssues = [], wrappedDetailValues = [], uncuedOverflowTables = [], monospaceProse = [], navRowIssues = [], chartsWithoutTables = [] } = {}) {
+export function findCaptureContentIssues(text, { unexplainedDisabledActions = [], statusContradictions = [], truncatedBadges = [], unsourcedPositionTables = [], primaryTaskIssues = [], failureNoticeIssues = [], wrappedDetailValues = [], uncuedOverflowTables = [], monospaceProse = [], navRowIssues = [], chartsWithoutTables = [], clippedDetailPanels = [], overlappingChartLabels = [] } = {}) {
   const issues = [];
   const seen = new Set();
   const record = (kind, excerpt) => {
@@ -775,6 +783,12 @@ export function findCaptureContentIssues(text, { unexplainedDisabledActions = []
   }
   for (const chart of chartsWithoutTables) {
     record("chart-without-table", String(chart || "(unlabelled chart)"));
+  }
+  for (const panel of clippedDetailPanels) {
+    record("detail-rail-clipped", String(panel || "(unlabelled detail panel)"));
+  }
+  for (const pair of overlappingChartLabels) {
+    record("chart-label-overlap", String(pair));
   }
   for (const line of findRepeatedUnavailableLines(content)) {
     record("repeated-unavailable", line);
@@ -1403,6 +1417,53 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
       .map((badge) => (badge.textContent ?? "").replace(/\s+/g, " ").trim())
   );
   const truncatedBadges = Array.isArray(truncatedBadgeProbe) ? truncatedBadgeProbe : [];
+  // A detail panel that cuts its content off silently makes hidden fields look absent (UX Phase F).
+  // Flag the panel, or a tall box inside it, that overflows downward while neither scrolling nor
+  // showing the "More below" cue.
+  const clippedDetailProbe = await page.evaluate(() => {
+    const main = document.querySelector("main") ?? document.body;
+    const panels = Array.from(main.querySelectorAll("[data-workbench-slot='inspector'], aside, [role='complementary'], [data-dense-row-detail-panel]"))
+      .filter((panel) => panel.getClientRects().length > 0);
+    const name = (element) => (element.getAttribute("aria-label") || element.querySelector("h2, h3, h4")?.textContent || element.className || element.tagName)
+      .toString().replace(/\s+/g, " ").trim().slice(0, 80);
+    const clipped = new Set();
+    for (const panel of panels) {
+      for (const element of [panel, ...panel.querySelectorAll("*")]) {
+        if (element.getClientRects().length === 0 || element.clientHeight < 120) continue;
+        if (element.scrollHeight - element.clientHeight - element.scrollTop <= 4) continue;
+        const overflowY = getComputedStyle(element).overflowY;
+        const scrolls = overflowY === "auto" || overflowY === "scroll";
+        if (overflowY === "visible" || (scrolls && element.closest("[data-more-below]"))) continue;
+        if (scrolls && element === panel && element.hasAttribute("data-more-below")) continue;
+        if (scrolls && element !== panel) continue;
+        clipped.add(name(panel === element ? panel : element));
+      }
+    }
+    return Array.from(clipped);
+  });
+  const clippedDetailPanels = Array.isArray(clippedDetailProbe) ? clippedDetailProbe : [];
+  // Overlapping chart text (crowded x-axis dates) is unreadable: compare label boxes per chart.
+  const chartLabelOverlapProbe = await page.evaluate(() => {
+    const main = document.querySelector("main") ?? document.body;
+    const charts = Array.from(main.querySelectorAll("svg, [data-chart-label-layer]")).filter((chart) => chart.getClientRects().length > 0);
+    const overlaps = [];
+    for (const chart of charts) {
+      const labels = Array.from(chart.querySelectorAll(chart.tagName.toLowerCase() === "svg" ? "text" : "span"))
+        .filter((label) => (label.textContent ?? "").trim() && label.getClientRects().length > 0)
+        .map((label) => ({ text: (label.textContent ?? "").trim(), box: label.getBoundingClientRect() }));
+      for (let i = 0; i < labels.length; i += 1) {
+        for (let j = i + 1; j < labels.length; j += 1) {
+          const a = labels[i].box;
+          const b = labels[j].box;
+          const width = Math.min(a.right, b.right) - Math.max(a.left, b.left);
+          const height = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+          if (width > 1 && height > 1) overlaps.push(`"${labels[i].text}" overlaps "${labels[j].text}"`);
+        }
+      }
+    }
+    return overlaps;
+  });
+  const overlappingChartLabels = Array.isArray(chartLabelOverlapProbe) ? chartLabelOverlapProbe : [];
   if (textDir) {
     await fs.mkdir(textDir, { recursive: true });
     await fs.writeFile(path.join(textDir, `${capture.name}.txt`), `${mainText}\n`);
@@ -1478,7 +1539,7 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
         .map((chart) => chart.getAttribute("aria-label") ?? ""))
     : [];
   const chartsWithoutTables = Array.isArray(chartsWithoutTablesProbe) ? chartsWithoutTablesProbe : [];
-  const contentIssues = partitionCaptureContentIssues(mainText, capture, { unexplainedDisabledActions, statusContradictions, truncatedBadges, unsourcedPositionTables, primaryTaskIssues, failureNoticeIssues, wrappedDetailValues, uncuedOverflowTables, monospaceProse, navRowIssues, chartsWithoutTables });
+  const contentIssues = partitionCaptureContentIssues(mainText, capture, { unexplainedDisabledActions, statusContradictions, truncatedBadges, unsourcedPositionTables, primaryTaskIssues, failureNoticeIssues, wrappedDetailValues, uncuedOverflowTables, monospaceProse, navRowIssues, chartsWithoutTables, clippedDetailPanels, overlappingChartLabels });
   if (contentIssues.blocking.length > 0) {
     throw new Error(describeCaptureContentIssues(capture.name, contentIssues.blocking));
   }

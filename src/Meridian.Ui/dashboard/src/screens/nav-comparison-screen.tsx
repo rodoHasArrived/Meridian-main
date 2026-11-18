@@ -9,6 +9,8 @@ import { NavTrendChart } from "@/components/meridian/nav-trend-chart";
 import type { ApiRequestOptions } from "@/lib/api";
 import { defaultMaterialityPolicyForClass } from "@/lib/reporting-materiality";
 import { usePeriodComparison } from "@/lib/use-period-comparison";
+import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/ui/date-picker";
 
 type NavComparisonService = (query: { fundProfileId: string; baselineAsOf?: string | null }, options?: ApiRequestOptions) => Promise<PeriodComparison>;
 
@@ -55,7 +57,10 @@ export function NavComparisonScreen({ defaultFundProfileId = null, service = get
                 onKeyDown={(event) => { if (event.key === "Enter") update("fundProfileId", event.currentTarget.value); }} />
             </FormRow>
             <FormRow label="Prior date" labelFor={dateId} hint="Empty means the end of the previous month.">
-              <Input id={dateId} type="date" value={baselineDate} onChange={(event) => update("baselineAsOf", event.target.value)} />
+              <div className="flex items-center gap-2">
+                <DatePicker id={dateId} value={baselineDate || null} placeholder="End of previous month" onChange={(value) => update("baselineAsOf", value)} />
+                {baselineDate ? <Button type="button" size="sm" variant="ghost" onClick={() => update("baselineAsOf", "")}>Use previous month-end</Button> : null}
+              </div>
             </FormRow>
           </div>
           {fundProfileId ? <NavTrendChart fundProfileId={fundProfileId} service={trendService} /> : null}
