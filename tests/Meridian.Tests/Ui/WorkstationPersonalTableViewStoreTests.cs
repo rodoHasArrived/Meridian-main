@@ -74,7 +74,8 @@ public sealed class WorkstationPersonalTableViewStoreTests : IDisposable
         alice.Should().HaveCount(2);
         alice.Should().ContainSingle(view => view.ViewId == "old" && view.IsReadOnly);
         alice.Should().ContainSingle(view => !view.IsReadOnly && view.Label == "Cash");
-        (await NewStore().LoadPersonalViewsAsync("tenant", "bob", "ledger")).Should().ContainSingle();
+        // Legacy tenant views are visible to every operator; Bob keeps exactly his own personal view.
+        (await NewStore().LoadPersonalViewsAsync("tenant", "bob", "ledger")).Where(view => !view.IsReadOnly).Should().ContainSingle();
         (await NewStore().LoadPersonalViewsAsync("tenant", "alice", "strategy-runs")).Should().ContainSingle();
     }
 
