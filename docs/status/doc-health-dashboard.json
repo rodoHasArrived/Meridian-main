@@ -1,11 +1,11 @@
 {
-  "total_files": 1278,
+  "total_files": 1276,
   "orphaned_count": 396,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 303,
   "health_score": 85,
-  "signal_digest": "sha256:c60fda04770600fcb95bdc77e0ce3d0c0fe060bbbb83de80b67910631b734efd",
+  "signal_digest": "sha256:fee0d6010d03db9780b80d08c260527258a9308ef8263578a89a2cf4c64ab492",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -3405,13 +3405,6 @@
       "stale": false
     },
     {
-      "path": "docs/plans/desktop-workstation-screen-blueprint.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
       "path": "docs/plans/paper-trading-cockpit-reliability-sprint.md",
       "has_heading": true,
       "todo_count": 0,
@@ -3427,13 +3420,6 @@
     },
     {
       "path": "docs/plans/report-writer-auto-preview-blueprint.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/plans/research-backtest-trust-and-velocity-blueprint.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
