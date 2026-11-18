@@ -150,6 +150,28 @@ three routes to coexist.
   registry projection descriptor. The PostgreSQL variant covers the projection move only (064 rows
   cleared, the target registry row written); it does not exercise R1.
 
+## Amendment 2026-11-18: family taxonomy revision
+
+The classification table in `AssetClassRegistry` (`src/Meridian.FSharp/Domain/SecurityMaster.fs`)
+was corrected. These are label changes only; no class changed its home.
+
+| Class | Before | After |
+| --- | --- | --- |
+| Swap, Cfd | Derivative / `ListedDerivative` | Derivative / `OtcDerivative` |
+| FxForward, NonDeliverableForward, CreditDefaultSwap, Swaption, CapFloor | Derivative / `OtherFamily "OtcDerivative"` | Derivative / `OtcDerivative` (same label text) |
+| FxSpot | Other / no family | CashEquivalent / `ForeignExchange` |
+| InvestmentFund | Fund / no family | Fund / `PooledFund` |
+
+Warrant stays `ListedDerivative`: warrants are normally exchange-listed and are booked in contracts.
+
+Classification is derived on read, so no stored row is rewritten; retained events keep the labels
+they were written with. `POST /api/security-master/classification-drift/report` lists the affected
+securities, and the workstation change history labels the resulting difference "Taxonomy revision".
+`SecurityAssetClassFactParityTests` now holds the C# copies (`SecurityAssetClassNames`,
+`InstrumentTypeDescriptorCatalog` family and sub-type labels) to the F# table, and guards the table's
+own consistency (every class but OtherSecurity has a family, derivative flag ⇔ Derivative asset class
+⇔ a derivative family, notional-lot classes are OTC, listed derivatives are booked in contracts).
+
 ## References
 
 - [Security Master extensibility review](../../archive/docs/architecture/security-master-extensibility-review.md)
@@ -160,4 +182,4 @@ three routes to coexist.
 
 ---
 
-*Last Updated: 2026-11-13*
+*Last Updated: 2026-11-18*

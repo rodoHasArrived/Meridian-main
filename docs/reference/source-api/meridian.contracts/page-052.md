@@ -6,6 +6,81 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityCurveInterpolation
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCurveInterpolation</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:32](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L32).
+
+How a value between two pillars is read. Linear is linear in DateOnly.DayNumber on the stored value (the arithmetic of SecurityForwardCurve.RateAt). Before the first pillar Forward and Inflation curves hold flat, while a Discount curve is 1 on or before its as-of date and linear from (as-of, 1) to the first pillar; after the last pillar Forward and Inflation curves hold flat and a Discount curve refuses.
+
+```csharp
+public enum SecurityCurveInterpolation
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Linear</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:34](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L34) |  |
+
+## SecurityCurveKind
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCurveKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L11).
+
+What a stored curve&#x27;s values are: discount factors, projected index fixings or index levels.
+
+```csharp
+public enum SecurityCurveKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Discount</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L14) | Positive discount factors; legacy policy additionally requires (0, 1&#93; and nonincreasing pillars. At as-of the factor is 1. |
+| <code>Forward</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L17) | Projected annual fixings stored as fractions (0.04, never 4); signed values require an explicit SignedRates definition. |
+| <code>Inflation</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L20) | Projected levels of one inflation index; always positive. |
+
+## SecurityCurvePointDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCurvePointDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:46](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L46).
+
+One dated pillar. Value is a discount factor (Discount), an annual rate as a FRACTION (Forward: 0.04, never 4) or an index level (Inflation). Tenor is a label such as 3M; the date is authoritative.
+
+```csharp
+public sealed record SecurityCurvePointDto(DateOnly Date, decimal Value, string? Tenor = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public SecurityRatePointEvidenceDto? RateEvidence { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L49) |  |
+
+## SecurityCurveRatePolicy
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCurveRatePolicy</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L39).
+
+Write-once admission policy. Legacy definitions retain nonnegative-rate restrictions.
+
+```csharp
+public enum SecurityCurveRatePolicy
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>LegacyNonNegative</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L39) |  |
+| <code>SignedRates</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L39) |  |
+
 ## SecurityCurveRules
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCurveRules</code>. Kind: `class`.
@@ -680,9 +755,9 @@ public sealed record SecurityListItemBinding(string Key, string Member);
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityLotModel</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:40](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L40).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L49).
 
-The one lot model: every SecurityLotUnitKind maps to exactly one entry stating what its quantity means and which typed lot carries it. Consumers that need to know how a holding is sized read For(SecurityLotUnitKind) or ForAssetClass(string?) instead of switching on asset-class strings.
+The one lot model: every SecurityLotUnitKind maps to exactly one entry stating what its quantity means and which typed lot carries it. Consumers that need to know how a holding is sized read For(SecurityLotUnitKind) or ForAssetClass(string?) instead of switching on asset-class strings. Shares, listed contracts and currency amounts deliberately have no typed lot: the generic execution, backtesting and ledger lots carry them, with the catalog&#x27;s unit and multiplier (LotQuantity.UnitFor). Ledger relief-history lots are normalized to units with a multiplier of one and a monetary unit cost, so quantity times unit cost is the basis; they do not restate the instrument&#x27;s unit. Two guards keep the boundaries aligned with the catalog: LotQuantityBasisRules refuses a face-booked acquisition of a class that is not face-denominated, and PaperLotUnitCatalogAgreementTests holds paper fills to the catalog unit.
 
 ```csharp
 public static class SecurityLotModel
@@ -692,12 +767,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static IReadOnlyList&lt;SecurityLotUnitDescriptor&gt; All =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:57](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L57) | Every lot unit the model describes, in enum order. |
-| <code>public static SecurityLotUnitDescriptor For(SecurityLotUnitKind unitKind) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:60](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L60) | The entry for unitKind. |
-| <code>public static SecurityLotUnitDescriptor ForAssetClass(string? assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:66](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L66) | The entry for the lot unit the asset-class registry assigns to assetClass. |
-| <code>public static SecurityLotUnitDescriptor For(IUnitizedLot lot);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L70) | The entry for the unit a lot reports. |
-| <code>public static IReadOnlyList&lt;string&gt; AssetClassesWithUnit(SecurityLotUnitKind unitKind) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:77](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L77) | The asset classes whose lots carry unitKind, in catalog order. |
-| <code>public static bool IsCanonicalLot(IUnitizedLot lot);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:87](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L87) | True when lot is the canonical typed lot for its own unit, or its unit has no typed lot and any IUnitizedLot may carry it. |
+| <code>public static IReadOnlyList&lt;SecurityLotUnitDescriptor&gt; All =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:66](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L66) | Every lot unit the model describes, in enum order. |
+| <code>public static SecurityLotUnitDescriptor For(SecurityLotUnitKind unitKind) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:69](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L69) | The entry for unitKind. |
+| <code>public static SecurityLotUnitDescriptor ForAssetClass(string? assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:75](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L75) | The entry for the lot unit the asset-class registry assigns to assetClass. |
+| <code>public static SecurityLotUnitDescriptor For(IUnitizedLot lot);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:79](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L79) | The entry for the unit a lot reports. |
+| <code>public static IReadOnlyList&lt;string&gt; AssetClassesWithUnit(SecurityLotUnitKind unitKind) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:86](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L86) | The asset classes whose lots carry unitKind, in catalog order. |
+| <code>public static bool IsCanonicalLot(IUnitizedLot lot);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:96](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L96) | True when lot is the canonical typed lot for its own unit, or its unit has no typed lot and any IUnitizedLot may carry it. |
 
 ## SecurityLotUnitDescriptor
 
@@ -838,59 +913,3 @@ Declared public members:
 | <code>public const string IdentifierAmbiguity = &quot;IdentifierAmbiguity&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L13) | An identifier that multiple distinct securities claim from different providers. |
 | <code>public const string EconomicTermMismatch = &quot;EconomicTermMismatch&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L16) | Two source systems disagree on an economic term (maturity, coupon, day count, …) of the same security. |
 | <code>public const string CommonTermMismatch = &quot;CommonTermMismatch&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L19) | Two source systems disagree on a common term (currency, country of risk, …) of the same security. |
-
-## SecurityMasterConflictRouting
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterConflictRouting</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs#L28).
-
-Routes a SecurityMasterConflict to the review surface that owns it, by declared facts rather than by substrings of its field path. A path is split on dots and each segment is compared whole (case-insensitive, underscores ignored), so ProfileFields.providerName is not an identifier conflict because it contains &quot;provider&quot;, and EconomicTerms.issueDate is a terms conflict although no fixed word list names it.
-
-```csharp
-public static class SecurityMasterConflictRouting
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlySet&lt;string&gt; TermContainers { get; } = new[] { &quot;EconomicTerms&quot;, &quot;CommonTerms&quot;, &quot;ProfileFields&quot;, &quot;AssetSpecificTerms&quot;, &quot;EconomicDefinition&quot;, &quot;Terms&quot; }.Select(Normalize).ToFrozenSet(StringComparer.Ordinal);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs:37](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs#L37) | The path containers that hold a record&#x27;s terms: the three conflict detection writes (EconomicTerms, CommonTerms, ProfileFields), the stored terms document and the economic definition read model. |
-| <code>public static IReadOnlySet&lt;string&gt; ProviderEvidenceSegments { get; } = new[] { &quot;Provider&quot;, &quot;Providers&quot;, &quot;ProviderMapping&quot;, &quot;ProviderMappings&quot;, &quot;ProviderSymbol&quot;, &quot;ProviderSymbols&quot;, &quot;Mapping&quot;, &quot;Mappings&quot;, &quot;Alias&quot;, &quot;Aliases&quot; }.Select(Normalize).ToFrozenSet(StringComparer.Ordinal);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs#L48) | The path segments that name provider evidence rather than a declared identifier kind: provider mappings and aliases, which the identity panel reviews beside identifiers. |
-| <code>public static IReadOnlySet&lt;string&gt; TermRoutingKeys(string? assetClass);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs:60](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs#L60) | The term keys assetClass owns for routing: each field key and alias its terms schema declares, normalized. Empty for a class the schema does not declare. |
-| <code>public static bool IsIdentityConflict(SecurityMasterConflict conflict);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs:78](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs#L78) | Whether the conflict belongs to identity and provider evidence: an identifier ambiguity, a declared identifier name or kind in its path, or a provider-mapping or alias segment. |
-| <code>public static bool IsTermsConflict(SecurityMasterConflict conflict, string? assetClass);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs:89](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs#L89) | Whether the conflict is about the record&#x27;s terms: a declared term-mismatch kind, a path under a terms container, a classification or currency name, or a term key the record&#x27;s asset class owns. |
-| <code>public static bool HasSegment(string? fieldPath, string? name) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs:110](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs#L110) | Whether any whole segment of fieldPath equals name. |
-| <code>public static bool EndsWithValue(string? fieldPath, string? value);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs:117](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictRouting.cs#L117) | Whether fieldPath is, or ends with, the whole value value (which may itself contain dots, as a provider symbol such as AAPL.O does). |
-
-## SecurityMasterCorporateActionAppendRequestDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterCorporateActionAppendRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs#L21).
-
-FundProfileId optionally scopes downstream restatement-impact resolution when the append supersedes a prior event; a null scope yields an unscoped impact and no restatement proposal, mirroring the revision-publish path&#x27;s deliberate scoping rule.
-
-```csharp
-public sealed record SecurityMasterCorporateActionAppendRequestDto(Guid SecurityId, CorporateActionDto CorporateAction, string SourceSystem, string Actor, string? SourceRecordId = null, string? Reason = null, string? CorrelationId = null, string? FundProfileId = null);
-```
-
-## SecurityMasterCorporateActionAppendResultDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterCorporateActionAppendResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs:31](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs#L31).
-
-```csharp
-public sealed record SecurityMasterCorporateActionAppendResultDto(CorporateActionDto CorporateAction, SecurityMasterCorporateActionAuditDto Audit, SecurityMasterCorporateActionRestatementDto? Restatement = null);
-```
-
-## SecurityMasterCorporateActionAuditDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterCorporateActionAuditDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs:56](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs#L56).
-
-```csharp
-public sealed record SecurityMasterCorporateActionAuditDto(string AuditId, Guid SecurityId, Guid CorporateActionId, string EventType, string SourceSystem, string Actor, DateTimeOffset RecordedAtUtc, string? SourceRecordId, string? Reason, string? CorrelationId);
-```

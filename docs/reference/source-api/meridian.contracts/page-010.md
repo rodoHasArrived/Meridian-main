@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionAccountingProjectionScopeDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.CorporateActionAccountingProjectionScopeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:883](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L883).
+
+Exact book boundary whose facts participate in a corporate-action projection hash.
+
+```csharp
+public sealed record CorporateActionAccountingProjectionScopeDto(string TenantId, string CompanyId, string FundProfileId, Guid LedgerBookId, Guid PeriodId, long ExpectedPeriodVersion, string Jurisdiction);
+```
+
 ## CorporateActionAccountingTypeDto
 
 Qualified name: <code>Meridian.Contracts.AssetOperations.CorporateActionAccountingTypeDto</code>. Kind: `enum`.
@@ -897,20 +909,3 @@ Declared public members:
 | <code>public const string Liability = &quot;Liability&quot;;</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:34](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L34) |  |
 | <code>public const string Inflow = &quot;Inflow&quot;;</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:35](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L35) |  |
 | <code>public const string Outflow = &quot;Outflow&quot;;</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:36](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L36) |  |
-
-## InstrumentRoleDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.InstrumentRoleDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:50](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L50).
-
-```csharp
-public sealed record InstrumentRoleDto(Guid RoleId, Guid SecurityId, string OwnerScopeId, string OwnerScopeKind, string RoleKind, string AccountingSide, string EconomicSide, DateOnly EffectiveFrom, DateOnly? EffectiveTo = null, string? CounterpartyId = null, string? DefaultAccountId = null, long Version = 1, EconomicEventReferenceDto? OriginEvent = null, IReadOnlyList<string>? EvidenceLinks = null, JsonElement? ExtensionPayload = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:67](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L67) |  |
-| <code>public IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; RetainedEvidence { get; init; } = [];</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:69](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L69) |  |

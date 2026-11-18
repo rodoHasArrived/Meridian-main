@@ -6,6 +6,66 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategyRunContinuityWarning
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunContinuityWarning</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1067](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1067).
+
+Machine-readable continuity warning for shared run-centered workflows. Known warning codes include: missing-portfolio, missing-ledger, missing-cash-flow, missing-reconciliation, as-of-drift, open-reconciliation-breaks, security-coverage, lineage-parent-source-mismatch, lineage-missing-parent-with-source, promotion-target-run-missing, and promotion-lineage-shape-inconsistent.
+
+```csharp
+public sealed record StrategyRunContinuityWarning(string Code, StrategyRunContinuityWarningSeverity Severity, string Message, string SourceSeam);
+```
+
+## StrategyRunContinuityWarningSeverity
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunContinuityWarningSeverity</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1074](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1074).
+
+```csharp
+public enum StrategyRunContinuityWarningSeverity : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Info</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1076](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1076) |  |
+| <code>Warning</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1077](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1077) |  |
+| <code>Critical</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1078](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1078) |  |
+
+## StrategyRunContractCompatibility
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunContractCompatibility</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunContractCompatibility.cs:6](../../../../src/Meridian.Contracts/Workstation/StrategyRunContractCompatibility.cs#L6).
+
+Validates the canonical identity fields required on a strategy run summary.
+
+```csharp
+public static class StrategyRunContractCompatibility
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void EnsureCanonicalIdentity(StrategyRunSummary summary);</code> | [src/Meridian.Contracts/Workstation/StrategyRunContractCompatibility.cs:8](../../../../src/Meridian.Contracts/Workstation/StrategyRunContractCompatibility.cs#L8) |  |
+
+## StrategyRunCrossModeTransitionMetadata
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunCrossModeTransitionMetadata</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:745](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L745).
+
+Cross-mode transition metadata for lineage timeline events.
+
+```csharp
+public sealed record StrategyRunCrossModeTransitionMetadata(StrategyRunMode? SourceMode = null, StrategyRunMode? TargetMode = null, string? SourceRunId = null, string? TargetRunId = null, string? PromotionReference = null, string? ReplayAuditReference = null, DateTimeOffset? ReplayVerifiedAt = null, bool? HasReplayAudit = null);
+```
+
 ## StrategyRunDetail
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunDetail</code>. Kind: `record`.
@@ -622,63 +682,3 @@ Source: [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:45](..
 ```csharp
 public sealed record ThreeWayReconciliationCheckDto(string CheckId, string Measure, Guid? SecurityId, string? Symbol, string LeftSource, string RightSource, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? LeftAmount, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? RightAmount, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal Tolerance, string Status, string Explanation);
 ```
-
-## ThreeWayReconciliationRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ThreeWayReconciliationRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L6).
-
-A comparison request; source snapshots and owner identities are resolved by the server.
-
-```csharp
-public sealed record ThreeWayReconciliationRequestDto(Guid LedgerBookId, Guid AccountingPeriodId, string OperationId, DateTimeOffset? CutoffUtc = null);
-```
-
-## ThreeWayReconciliationResultDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ThreeWayReconciliationResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:58](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L58).
-
-```csharp
-public sealed record ThreeWayReconciliationResultDto(string RunId, string OperationId, ThreeWayReconciliationScopeDto Scope, DateTimeOffset CutoffUtc, DateTimeOffset RecordedAtUtc, string Status, IReadOnlyList<ThreeWaySourceSnapshotDto> Sources, IReadOnlyList<ThreeWayReconciliationCheckDto> Checks, IReadOnlyList<string> BreakIds, string DataProvenanceToken = "real")
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;ThreeWayAdjustmentProposalDto&gt; AdjustmentProposals { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:70](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L70) |  |
-| <code>public long? AccountingPeriodVersion { get; init; }</code> | [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:71](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L71) |  |
-
-## ThreeWayReconciliationScopeDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ThreeWayReconciliationScopeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L12).
-
-```csharp
-public sealed record ThreeWayReconciliationScopeDto(string TenantId, string CompanyId, string FundProfileId, Guid EntityId, Guid FinancialAccountId, Guid LedgerBookId, Guid AccountingPeriodId, string Currency, string ProviderId = "unlinked", string ExternalAccountId = "unlinked");
-```
-
-## ThreeWaySourceSnapshotDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ThreeWaySourceSnapshotDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:29](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L29).
-
-Retained independent source operands, including coverage failures rather than invented zeroes.
-
-```csharp
-public sealed record ThreeWaySourceSnapshotDto(string Source, DateTimeOffset AsOfUtc, string EvidenceReference, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? Cash, IReadOnlyList<ThreeWayPositionDto> Positions, string CostBasisConvention, IReadOnlyList<string> CoverageFailures, string DataProvenanceToken = "real")
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;ThreeWayCashActivityDto&gt; CashActivities { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:39](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L39) |  |
-| <code>public IReadOnlyList&lt;string&gt; PostedExternalTransactionIds { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:40](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L40) |  |
-| <code>public bool TransactionIdentityCoverageComplete { get; init; }</code> | [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:41](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L41) |  |
-| <code>public long? AccountingPeriodVersion { get; init; }</code> | [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:42](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L42) |  |

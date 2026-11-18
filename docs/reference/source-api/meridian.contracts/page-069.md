@@ -6,6 +6,50 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReconciliationTaxonomyValue
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationTaxonomyValue</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:673](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L673).
+
+```csharp
+public sealed record ReconciliationTaxonomyValue(string Code, string DisplayName, int Version, bool IsActive, IReadOnlyList<string>? RequiredEvidencePrefixes = null);
+```
+
+## RecordPreparerAttestationRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.RecordPreparerAttestationRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:31](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L31).
+
+```csharp
+public sealed record RecordPreparerAttestationRequestDto(Guid CommandId, long ExpectedDeclarationRevision, string ActionId, string SubjectKind, string SubjectId, string SubjectRevision, string SubjectHash, string Reason, string Confirmation, OperationsActionOriginDto Origin = OperationsActionOriginDto.HumanOperator);
+```
+
+## RecurringJournalOccurrenceDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.RecurringJournalOccurrenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/RecurringJournalDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/RecurringJournalDtos.cs#L8).
+
+Retained occurrence identity and approval-draft lineage shared by both Accounting queues. Evidence references identify retained source metadata; they do not assert that source bytes have been independently verified. State and approval status are authoritative server values.
+
+```csharp
+public sealed record RecurringJournalOccurrenceDto(string OccurrenceId, string ScheduleId, int ScheduleVersion, string TemplateId, int TemplateVersion, DateOnly EffectiveDate, string FundProfileId, Guid LedgerBookId, string EntityId, string? PeriodId, string State, Guid? JournalEntryId, string? ApprovalStatus, IReadOnlyList<string> Blockers, IReadOnlyList<string> SourceEvidenceReferences, string? PeriodLockOwner = null, string? GovernedReopenPath = null);
+```
+
+## RecurringJournalQueueDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.RecurringJournalQueueDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/RecurringJournalDtos.cs:28](../../../../src/Meridian.Contracts/Workstation/RecurringJournalDtos.cs#L28).
+
+An exact fund, book and entity projection. Unavailable state must fail the read.
+
+```csharp
+public sealed record RecurringJournalQueueDto(string FundProfileId, Guid LedgerBookId, string EntityId, IReadOnlyList<RecurringJournalOccurrenceDto> Occurrences);
+```
+
 ## RejectWorkflow
 
 Qualified name: <code>Meridian.Contracts.Workstation.RejectWorkflow</code>. Kind: `record`.
@@ -590,44 +634,4 @@ Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1808]
 
 ```csharp
 public sealed record ReportPackCreateRequestDto(string FundProfileId, string FundAccountId, string Period, VersionedReportTemplateIdDto TemplateId, IReadOnlyList<ReportPackLineProvenanceDto>? LineProvenance = null, ReportAccessPolicyDto? AccessPolicy = null);
-```
-
-## ReportPackDeliveryAccessLinkDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportPackDeliveryAccessLinkDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:883](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L883).
-
-```csharp
-public sealed record ReportPackDeliveryAccessLinkDto(string Kind, string Label, string Href, bool RequiresToken, DateTimeOffset? ExpiresAtUtc = null, string? Description = null);
-```
-
-## ReportPackDeliveryApprovalStepDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportPackDeliveryApprovalStepDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:911](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L911).
-
-```csharp
-public sealed record ReportPackDeliveryApprovalStepDto(DateTimeOffset At, string Actor, string Action, ReportPackWorkflowStateDto FromState, ReportPackWorkflowStateDto ToState, string? Note = null);
-```
-
-## ReportPackDeliveryArtifactDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportPackDeliveryArtifactDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:872](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L872).
-
-```csharp
-public sealed record ReportPackDeliveryArtifactDto(GovernanceReportArtifactFormatDto Format, string ArtifactName, string ContentType, string RetainedPath, long ByteSize, string EvidenceId, string ChecksumSha256 = "", string VersionStamp = "", string? DownloadRoute = null);
-```
-
-## ReportPackDeliveryAttemptDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportPackDeliveryAttemptDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:994](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L994).
-
-```csharp
-public sealed record ReportPackDeliveryAttemptDto(Guid AttemptId, Guid ReportId, string DistributionId, string Recipient, string RecipientRole, string Channel, ReportPackDeliveryStateDto State, DateTimeOffset AttemptedAtUtc, string Actor, int AttemptNumber, string DeliveryReference, string? Note = null, string? FailureReason = null, IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null, ReportPackDeliveryPackageDto? Package = null);
 ```

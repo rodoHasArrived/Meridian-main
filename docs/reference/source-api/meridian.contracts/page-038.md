@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerPostingKindDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.LedgerPostingKindDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:42](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L42).
+
+```csharp
+public enum LedgerPostingKindDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Originating = 0</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:44](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L44) |  |
+| <code>Adjustment = 1</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:45](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L45) |  |
+| <code>ClosingEntry = 2</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:53](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L53) | Period-close closing entries. Produced only by the governed period-close workflow after human approval, these are the sanctioned exception to the closed-period posting bar: they finalize the period being closed by zeroing temporary accounts and rolling net income to retained earnings, so the posting guard permits them into soft- and hard-closed periods. |
+
 ## LedgerReportSignatureDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.LedgerReportSignatureDto</code>. Kind: `record`.
@@ -766,22 +784,3 @@ Source: [src/Meridian.Contracts/Ledger/PriorPeriodAdjustmentDtos.cs:25](../../..
 ```csharp
 public sealed record PriorPeriodAdjustmentCorrectionDto(Guid JournalEntryId, bool ReverseSides, string Reason);
 ```
-
-## PriorPeriodAdjustmentSourceDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.PriorPeriodAdjustmentSourceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/PriorPeriodAdjustmentDtos.cs:4](../../../../src/Meridian.Contracts/Ledger/PriorPeriodAdjustmentDtos.cs#L4).
-
-Server-retained authority for a new review draft; it does not reopen its source period.
-
-```csharp
-public sealed record PriorPeriodAdjustmentSourceDto(Guid SourceJournalEntryId, Guid SourcePeriodId, DateOnly OriginalEffectiveDate, Guid TargetPeriodId, DateOnly AccountingDate, string IntentId, string Reason, bool ReversePeriodEndMark, IReadOnlyList<ManualJournalEntryLineDto>? ExpectedLines = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;ManualJournalEntryLineDto&gt; ExpectedLines { get; init; } = ExpectedLines??[];</code> | [src/Meridian.Contracts/Ledger/PriorPeriodAdjustmentDtos.cs:15](../../../../src/Meridian.Contracts/Ledger/PriorPeriodAdjustmentDtos.cs#L15) |  |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public PriorPeriodAdjustmentCorrectionDto? Correction { get; init; }</code> | [src/Meridian.Contracts/Ledger/PriorPeriodAdjustmentDtos.cs:22](../../../../src/Meridian.Contracts/Ledger/PriorPeriodAdjustmentDtos.cs#L22) | Server-retained immediate predecessor of a correction to an already posted adjustment. The original closed-period source above remains the root of the accounting lineage. |

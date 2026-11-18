@@ -6,6 +6,22 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RulePromotionApprovalDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.RulePromotionApprovalDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:408](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L408).
+
+```csharp
+public sealed record RulePromotionApprovalDto(string ApprovalId, string RequestedBy, DateTimeOffset RequestedAtUtc, ManualJournalEntryStatusDto ApprovalState, string? ApprovedBy = null, DateTimeOffset? ApprovedAtUtc = null, string? Notes = null, IReadOnlyList<string>? EvidenceLinks = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:418](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L418) |  |
+
 ## SaveManualJournalEntryDraftRequest
 
 Qualified name: <code>Meridian.Contracts.Ledger.SaveManualJournalEntryDraftRequest</code>. Kind: `record`.
@@ -973,21 +989,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>ValueTask&lt;OperationalCaseHistoryRecord&gt; AppendAsync(OperationalCaseHistoryAppendRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.Contracts/Operations/IOperationalCaseHistoryStore.cs:8](../../../../src/Meridian.Contracts/Operations/IOperationalCaseHistoryStore.cs#L8) |  |
 | <code>ValueTask&lt;IReadOnlyList&lt;OperationalCaseHistoryRecord&gt;&gt; ReadAsync(OperationalCaseHistoryQuery query, CancellationToken cancellationToken = default);</code> | [src/Meridian.Contracts/Operations/IOperationalCaseHistoryStore.cs:12](../../../../src/Meridian.Contracts/Operations/IOperationalCaseHistoryStore.cs#L12) |  |
-
-## IPreparerAttestationReferenceClassifier
-
-Qualified name: <code>Meridian.Contracts.Operations.IPreparerAttestationReferenceClassifier</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs:66](../../../../src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs#L66).
-
-Trusted server-side denial classifier for exact receipt identities in one authenticated scope. It exposes no receipt contents, never grants approval, and must not search other tenants. Missing state contains no receipts; unreadable state must throw instead of returning an ordinary classification.
-
-```csharp
-public interface IPreparerAttestationReferenceClassifier
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;bool&gt; IsPreparerReceiptReferenceAsync(string tenantId, string companyId, string? reference, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs:68](../../../../src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs#L68) |  |

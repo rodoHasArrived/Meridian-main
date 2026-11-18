@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ApplyUnappliedCashRequest
+
+Qualified name: <code>Meridian.Contracts.DirectLending.ApplyUnappliedCashRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:64](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L64).
+
+PRD-115: applies part of the loan&#x27;s unapplied cash to amounts owed, by the automatic waterfall or a manual Breakdown capped at what is owed. Whatever cannot be allocated stays unapplied; no new cash is received.
+
+```csharp
+public sealed record ApplyUnappliedCashRequest(decimal Amount, DateOnly EffectiveDate, PaymentBreakdownDto? Breakdown, string? ExternalRef);
+```
+
 ## ApplyWriteOffRequest
 
 Qualified name: <code>Meridian.Contracts.DirectLending.ApplyWriteOffRequest</code>. Kind: `record`.
@@ -653,14 +665,4 @@ Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:221](../../..
 
 ```csharp
 public sealed record LoanAggregateSnapshotDto(Guid LoanId, long AggregateVersion, LoanContractDetailDto Contract, LoanServicingStateDto Servicing);
-```
-
-## LoanContractDetailDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.LoanContractDetailDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:195](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L195).
-
-```csharp
-public sealed record LoanContractDetailDto(Guid LoanId, string FacilityName, BorrowerInfoDto Borrower, LoanStatus Status, DateOnly EffectiveDate, DateOnly? ActivationDate, DateOnly? CloseDate, int CurrentTermsVersion, DirectLendingTermsDto CurrentTerms, IReadOnlyList<LoanTermsVersionDto> TermsVersions);
 ```

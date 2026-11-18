@@ -1,5 +1,29 @@
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityClassificationDriftEntryDto["SecurityClassificationDriftEntryDto"] {
+        +string CurrentAssetClass
+        +string? CurrentAssetFamily
+        +int SecurityCount
+        +IReadOnlyList~Guid~ SecurityIds
+        +string StoredAssetClass
+        +string? StoredAssetFamily
+        +string TypeName
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityClassificationDriftReportDto["SecurityClassificationDriftReportDto"] {
+        +int DriftedSecurityCount
+        +IReadOnlyList~SecurityClassificationDriftEntryDto~ Entries
+        +DateTimeOffset GeneratedAt
+        +int SecuritiesScanned
+        +int UnreadableCount
+        +int WithoutRetainedClassificationCount
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityClosePriceApprovalDto["SecurityClosePriceApprovalDto"] {
+        +DateTimeOffset ApprovedAt
+        +string Rationale
+        +string Reviewer
+        +Guid SnapshotId
+        +string SnapshotSha256
+    }
     class Meridian_Contracts_SecurityMaster_SecurityClosePriceBlockerDto["SecurityClosePriceBlockerDto"] {
         +string Code
         +string Reason
@@ -411,28 +435,10 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityMasterProfilePromotionDisposition["SecurityMasterProfilePromotionDisposition"] {
     }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterProfilePromotionReportDto["SecurityMasterProfilePromotionReportDto"] {
-        +int AlreadyPromotedCount
-        +int BlockedCount
-        +int CandidateCount
-        +IReadOnlyList~SecurityMasterProfilePromotionCandidateDto~ Candidates
-        +DateTimeOffset GeneratedAt
-        +string ProfileId
-        +int ReadyCount
-        +int SecuritiesScanned
-        +string TargetAssetClass
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterProvenanceReader["SecurityMasterProvenanceReader"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterQualityReportDto["SecurityMasterQualityReportDto"] {
-        +DateTimeOffset RunAt
-        +int SecuritiesScanned
-        +int? UntaggedTermsPayloadCount
-        +int ViolationCount
-        +IReadOnlyList~DataQualityRuleViolationDto~ Violations
-    }
+    Meridian_Contracts_SecurityMaster_SecurityClassificationDriftReportDto --> Meridian_Contracts_SecurityMaster_SecurityClassificationDriftEntryDto
     Meridian_Contracts_SecurityMaster_SecurityClosePriceInputDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceOverrideDto
     Meridian_Contracts_SecurityMaster_SecurityClosePriceLineDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceOverrideDto
+    Meridian_Contracts_SecurityMaster_SecurityClosePriceSetDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceApprovalDto
     Meridian_Contracts_SecurityMaster_SecurityClosePriceSetDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceSnapshotDto
     Meridian_Contracts_SecurityMaster_SecurityClosePriceSnapshotDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceBlockerDto
     Meridian_Contracts_SecurityMaster_SecurityClosePriceSnapshotDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceLineDto
@@ -458,4 +464,3 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendResultDto --> Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionRestatementDto
     Meridian_Contracts_SecurityMaster_SecurityMasterProfilePromotionCandidateDto --> Meridian_Contracts_SecurityMaster_SecurityMasterProfilePromotionBlockerDto
     Meridian_Contracts_SecurityMaster_SecurityMasterProfilePromotionCandidateDto --> Meridian_Contracts_SecurityMaster_SecurityMasterProfilePromotionDisposition
-    Meridian_Contracts_SecurityMaster_SecurityMasterProfilePromotionReportDto --> Meridian_Contracts_SecurityMaster_SecurityMasterProfilePromotionCandidateDto

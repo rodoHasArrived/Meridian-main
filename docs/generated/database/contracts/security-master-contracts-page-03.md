@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 3 of 8
 
-Objects 161-240 of 594. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 597. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -265,6 +265,8 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_ISecurityMasterCashFlowService["ISecurityMasterCashFlowService"] {
     }
+    class Meridian_Contracts_SecurityMaster_ISecurityMasterClassificationDriftReportService["ISecurityMasterClassificationDriftReportService"] {
+    }
     class Meridian_Contracts_SecurityMaster_ISecurityMasterCorporateActionCommandService["ISecurityMasterCorporateActionCommandService"] {
     }
     class Meridian_Contracts_SecurityMaster_ISecurityMasterDataQualityService["ISecurityMasterDataQualityService"] {
@@ -429,20 +431,6 @@ classDiagram
         +DateOnly? TerminationDate
         +decimal ThresholdOurs
         +decimal ThresholdTheirs
-    }
-    class Meridian_Contracts_SecurityMaster_OtcCollateralBalanceDto["OtcCollateralBalanceDto"] {
-        +Guid BalanceId
-        +Guid CollateralAgreementId
-        +string Currency
-        +OtcCollateralDirection Direction
-        +string EligibleCollateralDescription
-        +decimal HaircutPercent
-        +OtcCollateralKind Kind
-        +string? Notes
-        +decimal Quantity
-        +string? Reference
-        +Guid? SecurityId
-        +decimal UnitValue
     }
     Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusal --> Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusalCode
     Meridian_Contracts_SecurityMaster_DeclaredScheduleResolution --> Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusal

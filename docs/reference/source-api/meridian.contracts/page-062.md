@@ -6,6 +6,83 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## GovernanceReportPackContract
+
+Qualified name: <code>Meridian.Contracts.Workstation.GovernanceReportPackContract</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:76](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L76).
+
+Version contract for governed local report-pack exports.
+
+```csharp
+public static class GovernanceReportPackContract
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ContractName = &quot;governance-report-pack&quot;;</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:78](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L78) |  |
+| <code>public const int CurrentSchemaVersion = 2;</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:79](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L79) |  |
+| <code>public const int MinimumReadableSchemaVersion = 1;</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:80](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L80) |  |
+| <code>public static bool IsReadableSchemaVersion(int schemaVersion) =&gt; …;</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:82](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L82) |  |
+
+## GovernanceReportPackStatusDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.GovernanceReportPackStatusDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:35](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L35).
+
+```csharp
+public enum GovernanceReportPackStatusDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unknown = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:37](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L37) |  |
+| <code>Draft = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:38](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L38) |  |
+| <code>Generated = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:39](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L39) |  |
+| <code>Validated = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:40](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L40) |  |
+| <code>ReviewRequired = 4</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:41](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L41) |  |
+| <code>Approved = 5</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:42](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L42) |  |
+| <code>Rejected = 6</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:43](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L43) |  |
+| <code>Exported = 7</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:44](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L44) |  |
+| <code>Retained = 8</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:45](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L45) |  |
+| <code>Superseded = 9</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:46](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L46) |  |
+| <code>Restated = 10</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:47](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L47) |  |
+| <code>InReview = 11</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:48](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L48) |  |
+| <code>Published = 12</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:49](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L49) |  |
+
+## GovernanceReportValidationSeverityDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.GovernanceReportValidationSeverityDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:53](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L53).
+
+```csharp
+public enum GovernanceReportValidationSeverityDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Info = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:55](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L55) |  |
+| <code>Warning = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:56](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L56) |  |
+| <code>Critical = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:57](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L57) |  |
+
+## HaircutRuleDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.HaircutRuleDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs:25](../../../../src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs#L25).
+
+```csharp
+public sealed record HaircutRuleDto(string AssetClass, decimal HaircutPercent, decimal AdvanceRatePercent);
+```
+
 ## IAutomatedJournalScheduleStatusSource
 
 Qualified name: <code>Meridian.Contracts.Workstation.IAutomatedJournalScheduleStatusSource</code>. Kind: `interface`.
@@ -627,67 +704,4 @@ Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:683](
 
 ```csharp
 public sealed record LedgerAmountApprovalStateDto(GovernanceReportPackStatusDto ReportStatus, string? LatestApprovalActor, DateTimeOffset? LatestApprovalAt, int LifecycleEventCount);
-```
-
-## LedgerAmountProofDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.LedgerAmountProofDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:31](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L31).
-
-One server-evaluated amount proof shared by the browser and desktop.
-
-```csharp
-public sealed record LedgerAmountProofDto(string SubjectId, LedgerAmountScopeDto Scope, decimal Amount, string Currency, EvidenceStatusDto Status, IReadOnlyList<LedgerAmountProofEvidenceDto> Evidence, IReadOnlyList<string> Warnings)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;AccountingPreparerAttestationDisclosureDto&gt;? AccountingPreparerAttestations { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:45](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L45) | Accounting decisions retained with contributing journals, independent of source readiness. An absent legacy value establishes no approval or coverage classification. |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public bool? OrdinaryRecordedApprovalSatisfied { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:49](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L49) | False for any preparer-attested or unclassified upstream dependency; null makes no claim. |
-
-## LedgerAmountProofEvidenceDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.LedgerAmountProofEvidenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L11).
-
-```csharp
-public sealed record LedgerAmountProofEvidenceDto(string EvidenceId, string Kind, string Label, string? Route, string SourceSystem, DateTimeOffset? RetainedAt, EvidenceStatusDto Status, string? ContentHash = null, string? Reason = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public LedgerAmountScopeDto? SourceScope { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:24](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L24) | The exact posted source boundary when this source supports a generated report amount. |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? SourceSubjectId { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:27](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L27) |  |
-
-## LedgerAmountProvenanceDetailDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.LedgerAmountProvenanceDetailDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:707](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L707).
-
-```csharp
-public sealed record LedgerAmountProvenanceDetailDto(Guid ReportId, string ScopeKey, string AccountName, string? Symbol, decimal Amount, string Currency, IReadOnlyList<LedgerAmountProvenanceEvidenceDto> Evidence, LedgerAmountSecurityMasterLinkDto? SecurityMaster, LedgerAmountReconciliationStateDto Reconciliation, LedgerAmountApprovalStateDto Approval, LedgerAmountReportUsageDto ReportUsage, IReadOnlyList<string> Warnings, IReadOnlyList<LedgerAmountStrategyRunLinkDto>? StrategyRuns = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LedgerAmountScopeDto? Scope { get; init; }</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:722](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L722) |  |
-| <code>public EvidenceStatusDto ProofStatus { get; init; } = EvidenceStatusDto.ReviewRequired;</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:723](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L723) |  |
-
-## LedgerAmountProvenanceEvidenceDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.LedgerAmountProvenanceEvidenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:610](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L610).
-
-```csharp
-public sealed record LedgerAmountProvenanceEvidenceDto(string EvidenceType, string EvidenceId, string? DisplayLabel = null, string? Route = null, string? SourceSystem = null, IReadOnlyList<string>? RelatedEvidenceIds = null, int? EvidenceCount = null, decimal? Amount = null, DateTimeOffset? CapturedAt = null, string? ProviderEventId = null, string? ProviderEventType = null, string? ProviderEvidenceSource = null, string? RequiredFeed = null, string? SecurityId = null, string? LedgerEffectKind = null, decimal? PrincipalAmount = null, decimal? IncomeAmount = null, int? JournalPreviewLineCount = null, DateOnly? EffectiveDate = null, decimal? Factor = null, decimal? CashAmount = null, string? Currency = null);
 ```

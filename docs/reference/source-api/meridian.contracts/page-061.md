@@ -6,6 +6,61 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FundAuditEvidenceCategoryKeyDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FundAuditEvidenceCategoryKeyDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:61](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L61).
+
+```csharp
+public enum FundAuditEvidenceCategoryKeyDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>SourceRecords = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:63](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L63) |  |
+| <code>NormalizedActivity = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:64](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L64) |  |
+| <code>ReconciliationCases = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:65](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L65) |  |
+| <code>LedgerEvidence = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:66](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L66) |  |
+| <code>Approvals = 4</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:67](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L67) |  |
+| <code>ReportPack = 5</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:68](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L68) |  |
+| <code>Exports = 6</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:69](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L69) |  |
+| <code>RestatementLineage = 7</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:70](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L70) |  |
+
+## FundAuditEvidenceCategorySummaryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FundAuditEvidenceCategorySummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:497](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L497).
+
+```csharp
+public sealed record FundAuditEvidenceCategorySummaryDto(FundAuditEvidenceCategoryKeyDto Key, string Label, bool IsComplete, string Status, int EvidenceCount, IReadOnlyList<string> EvidenceIds, string? Route = null);
+```
+
+## FundAuditPackReadinessDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FundAuditPackReadinessDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:506](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L506).
+
+```csharp
+public sealed record FundAuditPackReadinessDto(bool IsComplete, double GeneratedInSeconds, int SlaTargetSeconds, bool SlaMet, IReadOnlyList<FundAuditEvidenceCategoryKeyDto> MissingEvidenceCategories, IReadOnlyList<string> Warnings, IReadOnlyList<FundAuditEvidenceCategorySummaryDto> EvidenceCategorySummaries);
+```
+
+## FundJournalLine
+
+Qualified name: <code>Meridian.Contracts.Workstation.FundJournalLine</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundLedgerDtos.cs:50](../../../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs#L50).
+
+Journal row for a fund ledger view.
+
+```csharp
+public sealed record FundJournalLine(Guid JournalEntryId, DateTimeOffset Timestamp, string Description, decimal TotalDebits, decimal TotalCredits, int LineCount, IReadOnlyList<string>? FinancialAccountIds = null, LedgerDimensionSetDto? Dimensions = null);
+```
+
 ## FundLedgerDimensionSnapshot
 
 Qualified name: <code>Meridian.Contracts.Workstation.FundLedgerDimensionSnapshot</code>. Kind: `record`.
@@ -666,80 +721,3 @@ Enum declarations:
 | <code>AuditPackage = 9</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L19) |  |
 | <code>CertifiedDataset = 10</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:20](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L20) |  |
 | <code>CustomReport = 11</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:21](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L21) |  |
-
-## GovernanceReportPackContract
-
-Qualified name: <code>Meridian.Contracts.Workstation.GovernanceReportPackContract</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:76](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L76).
-
-Version contract for governed local report-pack exports.
-
-```csharp
-public static class GovernanceReportPackContract
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string ContractName = &quot;governance-report-pack&quot;;</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:78](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L78) |  |
-| <code>public const int CurrentSchemaVersion = 2;</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:79](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L79) |  |
-| <code>public const int MinimumReadableSchemaVersion = 1;</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:80](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L80) |  |
-| <code>public static bool IsReadableSchemaVersion(int schemaVersion) =&gt; …;</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:82](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L82) |  |
-
-## GovernanceReportPackStatusDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.GovernanceReportPackStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:35](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L35).
-
-```csharp
-public enum GovernanceReportPackStatusDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unknown = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:37](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L37) |  |
-| <code>Draft = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:38](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L38) |  |
-| <code>Generated = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:39](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L39) |  |
-| <code>Validated = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:40](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L40) |  |
-| <code>ReviewRequired = 4</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:41](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L41) |  |
-| <code>Approved = 5</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:42](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L42) |  |
-| <code>Rejected = 6</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:43](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L43) |  |
-| <code>Exported = 7</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:44](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L44) |  |
-| <code>Retained = 8</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:45](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L45) |  |
-| <code>Superseded = 9</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:46](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L46) |  |
-| <code>Restated = 10</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:47](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L47) |  |
-| <code>InReview = 11</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:48](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L48) |  |
-| <code>Published = 12</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:49](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L49) |  |
-
-## GovernanceReportValidationSeverityDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.GovernanceReportValidationSeverityDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:53](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L53).
-
-```csharp
-public enum GovernanceReportValidationSeverityDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Info = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:55](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L55) |  |
-| <code>Warning = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:56](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L56) |  |
-| <code>Critical = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:57](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L57) |  |
-
-## HaircutRuleDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.HaircutRuleDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs:25](../../../../src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs#L25).
-
-```csharp
-public sealed record HaircutRuleDto(string AssetClass, decimal HaircutPercent, decimal AdvanceRatePercent);
-```

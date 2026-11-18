@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BondAnalyticsBlocker
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondAnalyticsBlocker</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:44](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L44).
+
+```csharp
+public sealed record BondAnalyticsBlocker(string Code, string Reason);
+```
+
 ## BondAnalyticsCashFlow
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondAnalyticsCashFlow</code>. Kind: `record`.
@@ -724,16 +734,4 @@ Retained-input-bound preview, never permission to change a security or a posted 
 
 ```csharp
 public sealed record BondMigrationPreviewDto(BondMigrationPreviewRequest Request, string SecurityContentSha256, string PreviewSha256, StructuredCashFlowProjectionDto? PreviousProjection, StructuredCashFlowProjectionDto? CandidateProjection, IReadOnlyList<BondMigrationCashDifference> CashDifferences, IReadOnlyList<string> Gaps, bool CanStage);
-```
-
-## BondMigrationPreviewRequest
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondMigrationPreviewRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs:8](../../../../src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs#L8).
-
-Explicit reviewed assignment; no coupon-unit or calendar convention is inferred.
-
-```csharp
-public sealed record BondMigrationPreviewRequest(Guid SecurityId, long ExpectedVersion, BondCalculationContext Context, JsonElement ScheduleConventions);
 ```

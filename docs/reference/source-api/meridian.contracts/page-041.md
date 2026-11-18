@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IPreparerAttestationReferenceClassifier
+
+Qualified name: <code>Meridian.Contracts.Operations.IPreparerAttestationReferenceClassifier</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs:66](../../../../src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs#L66).
+
+Trusted server-side denial classifier for exact receipt identities in one authenticated scope. It exposes no receipt contents, never grants approval, and must not search other tenants. Missing state contains no receipts; unreadable state must throw instead of returning an ordinary classification.
+
+```csharp
+public interface IPreparerAttestationReferenceClassifier
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;bool&gt; IsPreparerReceiptReferenceAsync(string tenantId, string companyId, string? reference, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs:68](../../../../src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs#L68) |  |
+
 ## OperationalCaseApproval
 
 Qualified name: <code>Meridian.Contracts.Operations.OperationalCaseApproval</code>. Kind: `record`.
@@ -899,28 +917,3 @@ Declared public members:
 | <code>Task&lt;IReadOnlyList&lt;PlaidIdentitySnapshot&gt;&gt; GetIdentityAsync(PlaidClientCredentials credentials, string accessToken, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:320](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L320) |  |
 | <code>Task&lt;(string AuthorizationId, bool Approved, string? DecisionRationale)&gt; AuthorizeTransferAsync(PlaidClientCredentials credentials, string accessToken, PlaidTransferRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:325](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L325) |  |
 | <code>Task&lt;(string TransferId, string Status)&gt; CreateTransferAsync(PlaidClientCredentials credentials, string accessToken, PlaidTransferRequest request, string authorizationId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:331](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L331) |  |
-
-## IPlaidConnectionRepository
-
-Qualified name: <code>Meridian.Contracts.Plaid.IPlaidConnectionRepository</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:342](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L342).
-
-Retains Plaid items, accounts, sync cursors, status, and webhook processing state.
-
-```csharp
-public interface IPlaidConnectionRepository
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;PlaidItemDto&gt;&gt; ListItemsAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:344](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L344) |  |
-| <code>Task&lt;PlaidItemDto?&gt; GetItemAsync(string itemId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:346](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L346) |  |
-| <code>Task&lt;IReadOnlyList&lt;PlaidAccountDto&gt;&gt; ListAccountsAsync(string? itemId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:348](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L348) |  |
-| <code>Task UpsertItemAsync(PlaidItemDto item, IReadOnlyList&lt;PlaidAccountDto&gt; accounts, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:350](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L350) |  |
-| <code>Task UpdateTransactionsCursorAsync(string itemId, string? cursor, DateTimeOffset syncedAt, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:352](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L352) |  |
-| <code>Task UpdateItemStatusAsync(string itemId, PlaidItemStatusDto status, string? webhookType, string? webhookCode, string? error, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:354](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L354) |  |
-| <code>Task&lt;bool&gt; TryAppendWebhookAsync(PlaidWebhookEventDto webhook, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:362](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L362) |  |
-| <code>Task RecordTransferAsync(PlaidTransferResult result, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:364](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L364) |  |
