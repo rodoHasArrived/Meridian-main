@@ -6048,6 +6048,17 @@ const fixtures = {
   "/api/workstation/runs/run-42/ledger/trial-balance": fixtureLedgerTrialBalance,
   "/api/workstation/governance": fixtureAccountingWorkspace,
   [RECONCILIATION_API_ENDPOINTS.breakQueue]: fixtureAccountingWorkspace.breakQueue,
+  [RECONCILIATION_API_ENDPOINTS.breakQueueTaxonomy]: {
+    version: 1,
+    rootCauses: [
+      { code: "BrokerCashTiming", displayName: "Broker cash timing", version: 1, isActive: true },
+      { code: "LedgerClassification", displayName: "Ledger classification", version: 1, isActive: true }
+    ],
+    resolutionCodes: [
+      { code: "LedgerAdjusted", displayName: "Ledger adjusted", version: 1, isActive: true, requiredEvidencePrefixes: ["ledger-event:", "journal:"] },
+      { code: "EvidenceAccepted", displayName: "Evidence accepted", version: 1, isActive: true }
+    ]
+  },
   [RECONCILIATION_API_ENDPOINTS.statementRuns]: fixtureStatementRuns,
   [RECONCILIATION_API_ENDPOINTS.calibrationSummary]: fixtureCalibrationSummary,
   [STATEMENT_CONNECTOR_API_ENDPOINTS.connectors]: fixtureStatementConnectors,
