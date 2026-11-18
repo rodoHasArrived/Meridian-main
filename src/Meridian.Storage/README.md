@@ -555,6 +555,8 @@ locks through commit. Missing or stale authority refuses the new posting. Exact 
 precedes this guard; omitting the optional fingerprint field preserves historical receipts.
 Position status matches `Active` using ordinal case-insensitive equality, consistent with candidate
 validation. Inactive or other statuses still refuse new acquisition/disposal postings without writes.
+An acquisition booked with a `Face` quantity basis is refused unless the locked security's catalog
+lot unit is `FaceValue` (`LotQuantityBasisRules`); a face-value class may still be booked by units.
 See [the posting contract](../../docs/reference/ledger-journal-store.md#acquisition-and-disposal-reference-authority).
 
 Atomic lot commands bind explicit direction to their immutable acquisition facts. Historical

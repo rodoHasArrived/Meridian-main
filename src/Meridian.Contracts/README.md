@@ -399,6 +399,10 @@ An optional close-price creation `RequestId` binds the snapshot identity to a no
 including whether its knowledge cutoff was explicit or chosen at capture. Absent metadata is
 omitted from canonical JSON, preserving legacy snapshot and approval digests.
 
+`LotQuantityBasisRules.Permits` states which quantity basis an acquisition of a Security Master
+class may use: `Face` only for classes whose catalog `LotUnit` is `FaceValue`, `Units` for every
+class. The ledger acquisition reference authority enforces it against the locked security.
+
 Canonical acquisition facts and lot instructions retain an explicit `OpenLotDirection` while
 quantities remain non-negative. Historical `Long` is the omitted zero value, preserving existing
 JSON and receipt fingerprints; `Short` is serialized explicitly. The contract can describe a short
