@@ -90,11 +90,40 @@ the posted journal.
 
 Nothing is estimated. The accrual is unavailable, with no amount, when any day lacks a single approved
 profile revision, falls outside the declared schedule or lacks provable principal; when terms are
-unstructured or compounding; when a floating revision declares no fixing lag or a period has no
-approved fixing; when the calendar is missing; when a posted, unreversed
+unstructured; when a compounding loan fails the v3 checks below; when a floating revision declares
+no fixing lag or a period has no approved fixing; when the calendar is missing; when a posted, unreversed
 accrual already covers part of the window; or when the source book has no single open period
 containing the posting date. A cross-currency loan converts through the governed FX authority or is
-unavailable. Fees follow their own rule, described next.
+unavailable. Floating rates and compounding are described next; fees follow their own rule, below.
+
+### Floating rates and reviewed fixings
+
+A floating loan declares its index, its spread in basis points and a fixing lag of 0 to 10 business
+days. For each schedule period, the rate is the approved fixing of that index observed the lag before
+the period's accrual start on the schedule calendar, plus the spread, and it holds for the whole
+period. Exactly that date's approved value is used; a missing value refuses the whole window and no
+nearby, latest or carried-forward rate is used. In-arrears and averaged conventions, floors and caps
+are not calculated; periodic compounding follows the rule described next.
+
+Fixings are tenant-scoped reference data at `/api/ledger/intercompany/rate-fixings`, managed in the
+browser's Rate fixings tab and the WPF Rate fixings tab. An operator with ledger management records
+what the publisher showed, with a source and justification; someone else approves it before any
+accrual reads it. A correction is a new proposed value and replaces the approved value only once it is
+approved; a rejection needs a reason and leaves the approved value in force. Every step is retained
+append-only. Each floating slice of an accrual pins the fixing it used, and a draft whose pinned
+fixing has since been corrected cannot be submitted, approved or posted until it is recomputed.
+
+### Periodic compounding
+
+A loan that declares compounding is calculated under rule `intercompany-accrual-v3`
+([ADR-030](../adr/030-intercompany-interest-compounding.md)); simple loans stay on v1. The compounding
+frequency must equal the payment schedule frequency; daily compounding, at-maturity schedules and mismatched
+frequencies are refused. Each period's base is the posted principal plus the posted accrued interest of the
+`LoanInterest` profile at the period start, so interest settled before a period starts no longer compounds and
+nothing compounds on interest that is only computed or still in review. A window stays inside one schedule
+period and is refused unless posted, unreversed accruals cover every earlier day. The posted interest balance
+and covered windows are pinned in the evidence and read again before submit, approval and posting; a reversal,
+settlement or late accrual since drafting stops the draft until it is recomputed.
 
 ## Governed fixed management fees
 
@@ -116,40 +145,6 @@ counterpart is proposed to the other entity only after it posts. Nothing posts a
 covered by a posted, unreversed fee of the profile is refused, and a draft whose profile or legal revision has
 since been retired or re-pinned cannot be submitted, approved or posted.
 
-### Floating rates and reviewed fixings
-
-A floating loan declares its index, its spread in basis points and a fixing lag of 0 to 10 business
-days. For each schedule period, the rate is the approved fixing of that index observed the lag before
-the period's accrual start on the schedule calendar, plus the spread, and it holds for the whole
-period. Exactly that date's approved value is used; a missing value refuses the whole window and no
-nearby, latest or carried-forward rate is used. In-arrears and averaged conventions, floors, caps and
-compounding are not calculated.
-
-Fixings are tenant-scoped reference data at `/api/ledger/intercompany/rate-fixings`, managed in the
-browser's Rate fixings tab and the WPF Rate fixings tab. An operator with ledger management records
-what the publisher showed, with a source and justification; someone else approves it before any
-accrual reads it. A correction is a new proposed value and replaces the approved value only once it is
-approved; a rejection needs a reason and leaves the approved value in force. Every step is retained
-append-only. Each floating slice of an accrual pins the fixing it used, and a draft whose pinned
-fixing has since been corrected cannot be submitted, approved or posted until it is recomputed.
-
-### Floating rates and reviewed fixings
-
-A floating loan declares its index, its spread in basis points and a fixing lag of 0 to 10 business
-days. For each schedule period, the rate is the approved fixing of that index observed the lag before
-the period's accrual start on the schedule calendar, plus the spread, and it holds for the whole
-period. Exactly that date's approved value is used; a missing value refuses the whole window and no
-nearby, latest or carried-forward rate is used. In-arrears and averaged conventions, floors, caps and
-compounding are not calculated.
-
-Fixings are tenant-scoped reference data at `/api/ledger/intercompany/rate-fixings`, managed in the
-browser's Rate fixings tab and the WPF Rate fixings tab. An operator with ledger management records
-what the publisher showed, with a source and justification; someone else approves it before any
-accrual reads it. A correction is a new proposed value and replaces the approved value only once it is
-approved; a rejection needs a reason and leaves the approved value in force. Every step is retained
-append-only. Each floating slice of an accrual pins the fixing it used, and a draft whose pinned
-fixing has since been corrected cannot be submitted, approved or posted until it is recomputed.
-
 ### Opt-in accrual schedules
 
 A book can opt in to scheduled drafting ([ADR-031](../adr/031-intercompany-accrual-schedules.md)). A schedule names
@@ -158,7 +153,9 @@ someone else approves it, and it can later be disabled. From the approval date, 
 completed schedule period through the same preview and draft path an operator uses, with the schedule recorded as
 preparer. It never posts, never recomputes a draft that already exists, and reports any refused period with its
 reason so the next run can retry it. Operators can preview the periods a schedule would draft and run an active
-schedule on demand from the Accrual schedules tab in either workstation.
+schedule on demand from the Accrual schedules tab in either workstation, both backed by
+`/api/ledger/intercompany/accrual-schedules`. A background runner checks active schedules every six hours and drafts
+at most 24 periods per schedule per run, oldest first.
 
 ## External-review attestation
 
@@ -227,7 +224,7 @@ Enable it after every reachable writer, worker and importer supports the referen
 validation. The gate controls authoring availability; it never disables validation of a supplied
 reference. Rollback must retain compatible writers and historical readers after references exist.
 
-Registry approval does not post either side of an entry. Automatic or scheduled accruals, automatic
-paired posting, cash allocation/settlement, wider consolidation and FX translation remain outside P1.
-The operator-requested loan-interest accrual above produces reviewed drafts only. Native WPF runtime
-validation requires Windows; Linux source checks do not establish native interaction acceptance.
+Registry approval does not post either side of an entry. Accruals run automatically only for a reviewed,
+opt-in accrual schedule (above); automatic paired posting, cash allocation/settlement, wider consolidation and
+FX translation remain outside P1. Operator-requested and scheduled accruals produce reviewed drafts only.
+Native WPF runtime validation requires Windows; Linux source checks do not establish native interaction acceptance.
