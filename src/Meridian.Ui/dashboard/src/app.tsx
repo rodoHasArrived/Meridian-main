@@ -817,8 +817,8 @@ function AppShell({
   // Sidebar badges are per-workspace views of the one attention list Today's queue shows.
   const workspaceAttention = useMemo(() => countAttention(shell.attention.items), [shell.attention.items]);
   const breadcrumbItems = useMemo(
-    () => buildWorkspaceBreadcrumbItems(pathname, shell.activeWorkspace, navigate),
-    [pathname, shell.activeWorkspace, navigate]
+    () => buildWorkspaceBreadcrumbItems(pathname, shell.activeWorkspace, navigate, search),
+    [pathname, shell.activeWorkspace, navigate, search]
   );
   // Recent and pinned pages for the palette (UX Phase D): the page's own name and its query, so
   // reopening one restores its scope and filters.
@@ -854,7 +854,7 @@ function AppShell({
     search,
     hash,
     workspaceLabel: shell.activeWorkspace.label,
-    routeLabel: resolveWorkstationRouteBreadcrumbLabel(pathname, shell.activeWorkspace)
+    routeLabel: resolveWorkstationRouteBreadcrumbLabel(pathname, shell.activeWorkspace, search)
   }), [hash, pathname, search, shell.activeWorkspace]);
   const dataRouteElement = (
     <DataScreen
@@ -1325,7 +1325,8 @@ function focusRouteTargetWhenReady(
 function buildWorkspaceBreadcrumbItems(
   pathname: string,
   workspace: WorkspaceSummary,
-  navigate: ReturnType<typeof useNavigate>
+  navigate: ReturnType<typeof useNavigate>,
+  search = ""
 ): BreadcrumbItem[] {
   // The masthead already says "Meridian", so the trail starts at the workspace and ends in the
   // page name, which the header renders as the page heading.
@@ -1334,7 +1335,7 @@ function buildWorkspaceBreadcrumbItems(
     return [{ label: "Today", current: true }];
   }
 
-  const routeLabel = resolveWorkstationRouteBreadcrumbLabel(pathname, workspace);
+  const routeLabel = resolveWorkstationRouteBreadcrumbLabel(pathname, workspace, search);
   const workspaceIsCurrent = routeLabel === workspace.label;
 
   return [

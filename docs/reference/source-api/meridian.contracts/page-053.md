@@ -6,6 +6,40 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityProjectionRecordExtensions
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityProjectionRecordExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityProjectionRecordExtensions.cs:3](../../../../src/Meridian.Contracts/SecurityMaster/SecurityProjectionRecordExtensions.cs#L3).
+
+```csharp
+public static class SecurityProjectionRecordExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static SecurityDetailDto ToDetail(this SecurityProjectionRecord security);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityProjectionRecordExtensions.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityProjectionRecordExtensions.cs#L10) | The retained projection row viewed as the detail contract that terms resolvers, schedule factories and calculation policies consume. Identity, terms, version and effective window are carried unchanged; provenance and primary identifier are projection-only facts. |
+
+## SecurityQuotationConvention
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityQuotationConvention</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L36).
+
+```csharp
+public enum SecurityQuotationConvention
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unspecified</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L36) |  |
+| <code>Per100Face</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L36) |  |
+| <code>CurrencyPerUnit</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L36) |  |
+
 ## SecurityQuoteConvention
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityQuoteConvention</code>. Kind: `enum`.
@@ -874,23 +908,3 @@ Enum declarations:
 | <code>Warning = 1</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L9) |  |
 | <code>Error = 2</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L10) |  |
 | <code>Critical = 3</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L11) |  |
-
-## SecurityValidationSnapshotDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValidationSnapshotDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:56](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L56).
-
-```csharp
-public sealed record SecurityValidationSnapshotDto(Guid SnapshotId, Guid? SecurityId, string Scope, SecurityValidationWorkflowDto Workflow, string? WorkflowReference, string? Actor, string Reason, DateTimeOffset RecordedAtUtc, string ReportHashSha256, SecurityValidationReportDto Report, IReadOnlyList<SecurityEvidenceLinkDto> EvidenceLinks);
-```
-
-## SecurityValidationSnapshotRequestDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValidationSnapshotRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L49).
-
-```csharp
-public sealed record SecurityValidationSnapshotRequestDto(SecurityValidationWorkflowDto Workflow, string? WorkflowReference, string? Actor, string Reason, IReadOnlyList<SecurityEvidenceLinkDto> EvidenceLinks);
-```

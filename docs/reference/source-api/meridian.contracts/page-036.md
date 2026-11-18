@@ -645,7 +645,7 @@ public sealed record LedgerControlDecisionDto(string Control, string Code, bool 
 
 Qualified name: <code>Meridian.Contracts.Ledger.LedgerCrossPeriodPnlReportDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:503](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L503).
+Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:511](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L511).
 
 ```csharp
 public sealed record LedgerCrossPeriodPnlReportDto(DateTimeOffset GeneratedAtUtc, Guid? LedgerBookId, string? FundProfileId, Guid? FundStructureNodeId, AccountingBasisKindDto? AccountingBasis, DateOnly? StartDate, DateOnly? EndDate, IReadOnlyList<LedgerPeriodPnlSummaryDto> Periods, decimal TotalRevenue, decimal TotalExpenses, decimal NetIncome, decimal TotalRealizedNetIncome = 0m, decimal TotalAccrualBasisAdjustmentNetImpact = 0m);
@@ -655,7 +655,7 @@ public sealed record LedgerCrossPeriodPnlReportDto(DateTimeOffset GeneratedAtUtc
 
 Qualified name: <code>Meridian.Contracts.Ledger.LedgerCrossPeriodTrialBalanceLineDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:466](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L466).
+Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:474](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L474).
 
 ```csharp
 public sealed record LedgerCrossPeriodTrialBalanceLineDto(Guid PeriodId, Guid LedgerBookId, int FiscalYear, int PeriodNo, string PeriodLabel, string AccountName, string AccountType, string? Symbol, string? FinancialAccountId, decimal DebitTotal, decimal CreditTotal, decimal Balance, int EntryCount, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, string AccountingPolicyId = "legacy-v1", string AccountingPolicyVersion = "legacy-v1", string? RuleId = null, string? RuleVersion = null, string? SourceEventId = null, Guid? SourceJournalEntryId = null, LedgerDimensionSetDto? Dimensions = null);
@@ -665,7 +665,7 @@ public sealed record LedgerCrossPeriodTrialBalanceLineDto(Guid PeriodId, Guid Le
 
 Qualified name: <code>Meridian.Contracts.Ledger.LedgerCrossPeriodTrialBalanceReportDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:489](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L489).
+Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:497](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L497).
 
 ```csharp
 public sealed record LedgerCrossPeriodTrialBalanceReportDto(DateTimeOffset GeneratedAtUtc, Guid? LedgerBookId, string? FundProfileId, Guid? FundStructureNodeId, AccountingBasisKindDto? AccountingBasis, DateOnly? StartDate, DateOnly? EndDate, IReadOnlyList<LedgerPeriodDto> Periods, IReadOnlyList<LedgerCrossPeriodTrialBalanceLineDto> Lines, decimal TotalDebits, decimal TotalCredits, decimal NetIncome);

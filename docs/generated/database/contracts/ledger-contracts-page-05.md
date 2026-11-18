@@ -2,7 +2,7 @@
 
 # `ledger-contracts` data objects - page 5 of 6
 
-Objects 321-400 of 467. References crossing pages remain available in the dependency manifest.
+Objects 321-400 of 469. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -224,9 +224,9 @@ classDiagram
         +Guid? CorrelationId
         +DateTimeOffset CreatedAt
         +string Description
+        +LedgerJournalExecutionLineageDto? Execution
         +long GlobalSequence
         +bool IsBalanced
-        +Guid JournalEntryId
     }
     class Meridian_Contracts_Ledger_LedgerJournalEntryLineDto["LedgerJournalEntryLineDto"] {
         +string AccountName
@@ -240,6 +240,11 @@ classDiagram
         +Guid JournalEntryId
         +string? Symbol
         +DateTimeOffset Timestamp
+    }
+    class Meridian_Contracts_Ledger_LedgerJournalExecutionLineageDto["LedgerJournalExecutionLineageDto"] {
+        +Guid? FillId
+        +string? OrderId
+        +string? StrategyRunId
     }
     class Meridian_Contracts_Ledger_LedgerJournalTaxResultsDto["LedgerJournalTaxResultsDto"] {
         +IReadOnlyList~LedgerDisposalTaxResultDto~ Disposals
@@ -603,6 +608,8 @@ classDiagram
         +IReadOnlyList~string~ EvidenceLinks
         +string? TenantId
     }
+    class Meridian_Contracts_Ledger_PostedComparisonMeasureDto["PostedComparisonMeasureDto"] {
+    }
     class Meridian_Contracts_Ledger_PostedLedgerJournalEntryResultDto["PostedLedgerJournalEntryResultDto"] {
         +AccountingBasisKindDto AccountingBasis
         +Guid AggregateId
@@ -684,34 +691,6 @@ classDiagram
         +string? SuggestedAction
         +string? TargetId
     }
-    class Meridian_Contracts_Ledger_PostingRuleJournalCandidateRequestDto["PostingRuleJournalCandidateRequestDto"] {
-        +AccountingBasisKindDto AccountingBasis
-        +DateTimeOffset AccountingTimestamp
-        +string Actor
-        +LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval
-        +Guid AggregateId
-        +AssetLotMutationInstructionDto? AssetLotMutation
-        +Meridian_Contracts_Accounting_Lots_BondCouponRecognitionInstructionDto? BondCouponRecognition
-        +AccountingBookContextDto? BookContext
-        +Guid? BookPositionId
-        +string? CompanyId
-        +Guid? CorrelationId
-        +string? CounterpartyId
-    }
-    class Meridian_Contracts_Ledger_PostingRuleJournalCandidateResultDto["PostingRuleJournalCandidateResultDto"] {
-        +AccountingBookContextDto? BookContext
-        +Guid? BookPositionId
-        +bool CanPostWithoutAdditionalApproval
-        +bool CanSubmitForApproval
-        +RuleDryRunResultDto DryRunResult
-        +EconomicEventReferenceDto? EconomicEvent
-        +IReadOnlyList~string~ EvidenceLinks
-        +IReadOnlyList~GeneratedPostingLineDto~ GeneratedPostingLines
-        +bool HasBlockingIssues
-        +decimal Imbalance
-        +bool IsBalanced
-        +IReadOnlyList~PostingRuleJournalCandidateIssueDto~ Issues
-    }
     Meridian_Contracts_Ledger_LedgerBookControlPreflightDto --> Meridian_Contracts_Ledger_LedgerControlDecisionDto
     Meridian_Contracts_Ledger_LedgerBookControlProfileDto --> Meridian_Contracts_Ledger_LedgerBookControlModeDto
     Meridian_Contracts_Ledger_LedgerBookRolloutAssessmentDto --> Meridian_Contracts_Ledger_LedgerBookRolloutBookStatusDto
@@ -724,6 +703,7 @@ classDiagram
     Meridian_Contracts_Ledger_LedgerCrossPeriodTrialBalanceReportDto --> Meridian_Contracts_Ledger_LedgerPeriodDto
     Meridian_Contracts_Ledger_LedgerDisposalTaxResultDto --> Meridian_Contracts_Ledger_LedgerDisposalTaxParcelDto
     Meridian_Contracts_Ledger_LedgerJournalEntryDto --> Meridian_Contracts_Ledger_LedgerJournalEntryLineDto
+    Meridian_Contracts_Ledger_LedgerJournalEntryDto --> Meridian_Contracts_Ledger_LedgerJournalExecutionLineageDto
     Meridian_Contracts_Ledger_LedgerJournalEntryDto --> Meridian_Contracts_Ledger_LedgerPostingKindDto
     Meridian_Contracts_Ledger_LedgerJournalEntryLineDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
     Meridian_Contracts_Ledger_LedgerJournalTaxResultsDto --> Meridian_Contracts_Ledger_LedgerDisposalTaxResultDto
@@ -767,15 +747,11 @@ classDiagram
     Meridian_Contracts_Ledger_PaymentIntentWorkflowDto --> Meridian_Contracts_Ledger_PaymentIntentExpectedCashMovementDto
     Meridian_Contracts_Ledger_PaymentIntentWorkflowDto --> Meridian_Contracts_Ledger_PaymentIntentReconciliationLinkDto
     Meridian_Contracts_Ledger_PaymentIntentWorkflowDto --> Meridian_Contracts_Ledger_PaymentIntentWorkflowStatusDto
-    Meridian_Contracts_Ledger_PostPostingRuleJournalCandidateRequestDto --> Meridian_Contracts_Ledger_PostingRuleJournalCandidateRequestDto
     Meridian_Contracts_Ledger_PostedPeriodComparisonDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
+    Meridian_Contracts_Ledger_PostedPeriodComparisonDto --> Meridian_Contracts_Ledger_PostedComparisonMeasureDto
     Meridian_Contracts_Ledger_PostedPeriodComparisonDto --> Meridian_Contracts_Ledger_PostedPeriodComparisonLineDto
     Meridian_Contracts_Ledger_PostedPeriodComparisonDto --> Meridian_Contracts_Ledger_PostedPeriodComparisonRangeDto
     Meridian_Contracts_Ledger_PostedPeriodComparisonLineDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
     Meridian_Contracts_Ledger_PostedPostingRuleJournalCandidateResultDto --> Meridian_Contracts_Ledger_PostedLedgerJournalEntryResultDto
-    Meridian_Contracts_Ledger_PostedPostingRuleJournalCandidateResultDto --> Meridian_Contracts_Ledger_PostingRuleJournalCandidateResultDto
     Meridian_Contracts_Ledger_PostingRuleDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
-    Meridian_Contracts_Ledger_PostingRuleJournalCandidateRequestDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
-    Meridian_Contracts_Ledger_PostingRuleJournalCandidateRequestDto --> Meridian_Contracts_Ledger_LedgerPostingKindDto
-    Meridian_Contracts_Ledger_PostingRuleJournalCandidateResultDto --> Meridian_Contracts_Ledger_PostingRuleJournalCandidateIssueDto
 ```

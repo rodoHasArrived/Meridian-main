@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AcceptPrivateCapitalImport
+
+Qualified name: <code>Meridian.Contracts.PrivateCapital.AcceptPrivateCapitalImport</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:42](../../../../src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs#L42).
+
+```csharp
+public sealed record AcceptPrivateCapitalImport(Guid BatchId, string Fingerprint, Guid CommandId);
+```
+
+## CreatePrivateCapitalCommitment
+
+Qualified name: <code>Meridian.Contracts.PrivateCapital.CreatePrivateCapitalCommitment</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:16](../../../../src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs#L16).
+
+```csharp
+public sealed record CreatePrivateCapitalCommitment(Guid CommandId, Guid HolderEntityId, Guid VehicleSecurityId, string Currency, string SourceReference, PrivateCapitalEvidence Evidence);
+```
+
 ## PreviewPrivateCapitalImport
 
 Qualified name: <code>Meridian.Contracts.PrivateCapital.PreviewPrivateCapitalImport</code>. Kind: `record`.
@@ -561,53 +581,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>DecisionResult&lt;TScore&gt; Evaluate(TInput input, CancellationToken ct = default);</code> | [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:57](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L57) |  |
-
-## DataDictionary
-
-Qualified name: <code>Meridian.Contracts.Schema.DataDictionary</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Schema/EventSchema.cs:170](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L170).
-
-Data dictionary containing all schemas.
-
-```csharp
-public sealed class DataDictionary
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;version&quot;)] public string Version { get; set; } = &quot;1.0&quot;;</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:176](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L176) | Gets or sets the data dictionary version. |
-| <code>[JsonPropertyName(&quot;generatedAt&quot;)] public DateTime GeneratedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:182](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L182) | Gets or sets the timestamp when the dictionary was generated. |
-| <code>[JsonPropertyName(&quot;schemas&quot;)] public Dictionary&lt;string, EventSchema&gt; Schemas { get; set; } = new ();</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:188](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L188) | Gets or sets the schema definitions keyed by schema name. |
-| <code>[JsonPropertyName(&quot;exchangeCodes&quot;)] public Dictionary&lt;string, string&gt;? ExchangeCodes { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:194](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L194) | Gets or sets the exchange code mappings (code to name). |
-| <code>[JsonPropertyName(&quot;tradeConditions&quot;)] public Dictionary&lt;string, string&gt;? TradeConditions { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:200](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L200) | Gets or sets the trade condition code mappings (code to description). |
-| <code>[JsonPropertyName(&quot;quoteConditions&quot;)] public Dictionary&lt;string, string&gt;? QuoteConditions { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:206](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L206) | Gets or sets the quote condition code mappings (code to description). |
-
-## EventSchema
-
-Qualified name: <code>Meridian.Contracts.Schema.EventSchema</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Schema/EventSchema.cs:8](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L8).
-
-Schema definition for a data event type.
-
-```csharp
-public sealed class EventSchema
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;name&quot;)] public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:14](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L14) | Gets or sets the schema name. |
-| <code>[JsonPropertyName(&quot;version&quot;)] public string Version { get; set; } = &quot;1.0.0&quot;;</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:20](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L20) | Gets or sets the schema version (semantic versioning). |
-| <code>[JsonPropertyName(&quot;description&quot;)] public string? Description { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:26](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L26) | Gets or sets the schema description. |
-| <code>[JsonPropertyName(&quot;introducedAt&quot;)] public DateTime IntroducedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:32](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L32) | Gets or sets the date when this schema was introduced. |
-| <code>[JsonPropertyName(&quot;deprecatedAt&quot;)] public DateTime? DeprecatedAt { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:38](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L38) | Gets or sets the date when this schema was deprecated. |
-| <code>[JsonPropertyName(&quot;fields&quot;)] public SchemaField[] Fields { get; set; } = Array.Empty&lt;SchemaField&gt;();</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:44](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L44) | Gets or sets the array of field definitions. |
-| <code>[JsonPropertyName(&quot;primaryKey&quot;)] public string[]? PrimaryKey { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:50](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L50) | Gets or sets the primary key field names. |
-| <code>[JsonPropertyName(&quot;indexes&quot;)] public string[][]? Indexes { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:56](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L56) | Gets or sets the index definitions (array of field name arrays). |
-| <code>[JsonPropertyName(&quot;migrationFromVersion&quot;)] public string? MigrationFromVersion { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:62](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L62) | Gets or sets the previous version this schema migrates from. |
-| <code>[JsonPropertyName(&quot;sampleRecord&quot;)] public Dictionary&lt;string, object&gt;? SampleRecord { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:68](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L68) | Gets or sets a sample record for documentation purposes. |

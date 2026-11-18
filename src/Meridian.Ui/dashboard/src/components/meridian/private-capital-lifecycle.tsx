@@ -1,4 +1,5 @@
 import { useId, useState } from "react";
+import { Select } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { DetailTechnicalFields } from "@/components/meridian/detail-pane";
@@ -38,16 +39,16 @@ export function PrivateCapitalLifecycle({ commitments, activities = [], asOfDate
     <CardContent className="space-y-4">
       <div className="flex flex-wrap items-end gap-4">
         <label htmlFor={`${id}-group`} className="space-y-1 text-sm"><span className="block">Group vehicles by</span>
-          <select id={`${id}-group`} aria-label="Group vehicles by" className="rounded-sm border border-border bg-background p-2" value={grouping}
+          <Select id={`${id}-group`} aria-label="Group vehicles by" value={grouping}
             onChange={(event) => setGrouping(event.target.value as "vintage" | "strategy")}>
             <option value="vintage">Vintage</option><option value="strategy">Strategy</option>
-          </select>
+          </Select>
         </label>
         <label htmlFor={`${id}-currency`} className="space-y-1 text-sm"><span className="block">Lifecycle currency</span>
-          <select id={`${id}-currency`} aria-label="Lifecycle currency" className="rounded-sm border border-border bg-background p-2" value={currency}
+          <Select id={`${id}-currency`} aria-label="Lifecycle currency" value={currency}
             disabled={currencies.length === 0} onChange={(event) => setCurrencyChoice(event.target.value)}>
             {currencies.length === 0 ? <option value="">Unavailable</option> : currencies.map((item) => <option key={item}>{item}</option>)}
-          </select>
+          </Select>
         </label>
       </div>
       <p className="text-xs text-muted-foreground">Bars share a scale within the selected currency. The five measures are separate balances; distributions and NAV are not added to called capital. Unfunded uses the supplied balance, including any recallable-capital adjustments.</p>

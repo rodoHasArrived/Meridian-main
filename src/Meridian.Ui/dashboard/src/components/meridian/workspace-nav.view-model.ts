@@ -156,7 +156,7 @@ export function buildWorkspaceNavViewModel(
     ): WorkspaceNavSubItemViewModel => {
       const subActive = workspace.key === "accounting"
         ? isAccountingNavigationItemActive(pathname, sub as AccountingNavigationItemDefinition)
-        : isSubRouteActive(pathname, sub.route, sub.match);
+        : isSubRouteActiveForView(pathname, search, sub.route, sub.match, visibleWorkspaceSubroutes(workspace.key));
       const subRoute = buildWorkspaceNavigationRoute(workspace.key, sub.route, operatingScope, search);
       const subScopeSummary = summarizeOperatingScopeForRoute(sub.route, operatingScope);
       return {
@@ -297,7 +297,7 @@ function buildContextItems(
   return visibleWorkspaceSubroutes(workspaceKey).map((sub) => {
     const active = workspaceKey === "accounting"
       ? isAccountingNavigationItemActive(pathname, sub as AccountingNavigationItemDefinition)
-      : isSubRouteActive(pathname, sub.route, sub.match);
+      : isSubRouteActiveForView(pathname, search, sub.route, sub.match, visibleWorkspaceSubroutes(workspaceKey));
     const route = buildWorkspaceNavigationRoute(workspaceKey, sub.route, operatingScope, search);
     const scopeSummary = summarizeOperatingScopeForRoute(sub.route, operatingScope);
     return {
@@ -364,6 +364,37 @@ function workspaceContextDescription(workspaceKey: WorkspaceKey): string {
     default:
       return "Workspace routes.";
   }
+}
+
+/**
+ * Some destinations are one route with a `view` query (Data > Market data is `/data/quotes`,
+ * Data > Options screening is `/data/quotes?view=options`). The one whose view matches the page
+ * is active; the bare route is active only when no sibling claims the page's view.
+ */
+function isSubRouteActiveForView(
+  pathname: string,
+  search: string,
+  route: string,
+  match: "exact" | "prefix" | undefined,
+  siblings: readonly WorkspaceSubrouteDefinition[]
+): boolean {
+  const routeView = routeQueryView(route);
+  const pageView = new URLSearchParams(search).get("view");
+  if (!isSubRouteActive(pathname, route.split(/[?#]/)[0] ?? route, match)) {
+    return false;
+  }
+  if (routeView !== null) {
+    return routeView === pageView;
+  }
+  const routePath = route.split(/[?#]/)[0];
+  return !siblings.some((sibling) => sibling.route.split(/[?#]/)[0] === routePath
+    && routeQueryView(sibling.route) !== null
+    && routeQueryView(sibling.route) === pageView);
+}
+
+function routeQueryView(route: string): string | null {
+  const queryIndex = route.indexOf("?");
+  return queryIndex < 0 ? null : new URLSearchParams(route.slice(queryIndex).split("#")[0]).get("view");
 }
 
 function isSubRouteActive(pathname: string, route: string, match: "exact" | "prefix" = "prefix"): boolean {

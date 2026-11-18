@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Select } from "@/components/ui/select";
 import { AlertTriangle, Boxes, GitBranch, Landmark, Network, TableProperties, WalletCards } from "lucide-react";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -161,9 +162,9 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
       description={vm.route.description}
     >
       {entityStructure === undefined && availableClients.length > 0 ? <label className="block text-sm">Family office
-        <select className="ml-3 rounded border border-border bg-background p-2" value={familyOfficeId || (availableClients.length === 1 ? availableClients[0].clientId : "")} onChange={(event) => {
+        <Select className="ml-3" value={familyOfficeId || (availableClients.length === 1 ? availableClients[0].clientId : "")} onChange={(event) => {
           updateQuery((current) => { const next = new URLSearchParams(current); next.set("familyOfficeId", event.target.value); next.delete("ownershipNode"); return next; });
-        }}><option value="">Select a family office</option>{availableClients.map((client) => <option key={client.clientId} value={client.clientId}>{client.displayName}</option>)}</select>
+        }}><option value="">Select a family office</option>{availableClients.map((client) => <option key={client.clientId} value={client.clientId}>{client.displayName}</option>)}</Select>
       </label> : null}
       {entityStructure === undefined ? <form className="flex flex-wrap items-end gap-3 rounded-sm border border-border p-3" onSubmit={(event) => {
         event.preventDefault();

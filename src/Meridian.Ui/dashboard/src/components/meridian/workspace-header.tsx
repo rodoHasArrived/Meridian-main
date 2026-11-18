@@ -95,7 +95,7 @@ export function WorkspaceHeader({
           aria-label={viewModel.liveBanner.ariaLabel}
         >
           <AlertTriangle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-          <span className={cn("text-xs font-semibold", usesTrackedCaps(viewModel.liveBanner.label) && "font-mono uppercase tracking-[0.14em]")}>
+          <span className={cn("text-xs font-semibold", usesTrackedCaps(viewModel.liveBanner.label) && "type-label--caps")}>
             {viewModel.liveBanner.label}
           </span>
           <span className="text-xs leading-5 opacity-80">{viewModel.liveBanner.detail}</span>

@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StructuredReportingExportDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StructuredReportingExportDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:360](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L360).
+
+Structured export descriptor for governed downstream reporting consumers.
+
+```csharp
+public sealed record StructuredReportingExportDto(string ExportId, string Label, StructuredReportingExportPurposeDto Purpose, GovernanceReportArtifactFormatDto Format, string Dataset, string Consumer, int SchemaVersion, int RowCount, int FieldCount, int SourceCount, string Currency, DateTimeOffset AsOf, bool IsReady, string RetainedPath, string Route, string? DataDictionaryRoute = null, string? ValidationSummary = null, string? EvidenceRoute = null, string? VersionStamp = null, IReadOnlyList<string>? Tags = null, IReadOnlyList<string>? ReadinessBlockers = null, string? RetainedManifestPath = null, string? IntegrityHashSha256 = null, string? IntegritySummary = null, int? RowLineageCount = null);
+```
+
+## StructuredReportingExportPayloadDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StructuredReportingExportPayloadDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:409](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L409).
+
+```csharp
+public sealed record StructuredReportingExportPayloadDto(StructuredReportingExportDto Export, IReadOnlyList<StructuredReportingExportColumnDto> Columns, IReadOnlyList<IReadOnlyDictionary<string, string?>> Rows, IReadOnlyList<string> Warnings, DateTimeOffset GeneratedAtUtc, IReadOnlyList<StructuredReportingExportDataDictionaryFieldDto>? DataDictionary = null, IReadOnlyList<StructuredReportingExportValidationCheckDto>? ValidationChecks = null, string? GeneratedByPrincipalId = null, string? GeneratedForCompanyId = null, IReadOnlyList<string>? GeneratedForGroupPrincipalIds = null, IReadOnlyList<StructuredReportingExportRowLineageDto>? RowLineage = null);
+```
+
 ## StructuredReportingExportPurposeDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StructuredReportingExportPurposeDto</code>. Kind: `enum`.
@@ -596,28 +618,4 @@ Reusable action target that can be used by summaries, inbox routing, and workflo
 
 ```csharp
 public sealed record WorkflowActionDto(string ActionId, string Label, string Detail, string TargetPageTag, string Tone, OperatorWorkItemKindDto? WorkItemKind, IReadOnlyList<string> RoutePrefixes, IReadOnlyList<string> RouteContains, IReadOnlyList<string> Aliases);
-```
-
-## WorkflowBlockerSummary
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkflowBlockerSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs:42](../../../../src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs#L42).
-
-Primary blocker that explains why the operator cannot progress smoothly.
-
-```csharp
-public sealed record WorkflowBlockerSummary(string Code, string Label, string Detail, string Tone, bool IsBlocking);
-```
-
-## WorkflowDefinitionDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkflowDefinitionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:14](../../../../src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs#L14).
-
-User-facing workflow definition that groups actions, evidence, and target workspace.
-
-```csharp
-public sealed record WorkflowDefinitionDto(string WorkflowId, string Title, string Summary, string WorkspaceId, string WorkspaceTitle, string EntryPageTag, string Tone, IReadOnlyList<WorkflowActionDto> Actions, IReadOnlyList<string> EvidenceTags, IReadOnlyList<string> MarketPatternTags);
 ```
