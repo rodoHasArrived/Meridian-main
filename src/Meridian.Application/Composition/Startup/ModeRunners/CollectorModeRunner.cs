@@ -8,10 +8,12 @@ using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Meridian.Platform.Results;
 using Meridian.Application.Services;
+using Meridian.Application.UI;
 using Meridian.Contracts.Domain;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.DataIntegration.Monitoring;
+using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Models;
 using Meridian.Infrastructure;
@@ -96,6 +98,7 @@ public sealed class CollectorModeRunner
 
         ConnectionHealthMonitor? healthMonitor = null;
         StreamingFailoverService? failoverService = null;
+        ProviderConfigReconciler? providerReconciler = null;
         IMarketDataClient dataClient;
         var gapSources = new List<IReconnectionGapSource>();
 
@@ -128,6 +131,12 @@ public sealed class CollectorModeRunner
                         if (client is IReconnectionGapSource clientGapSource)
                             gapSources.Add(clientGapSource);
                         failoverService.RegisterProvider(providerId);
+                        if (source is { Enabled: false })
+                        {
+                            // The client exists so the source can be re-enabled live, but it is
+                            // excluded from failover selection while disabled.
+                            failoverService.SetProviderEnabled(providerId, enabled: false);
+                        }
                         _log.Information(
                             "Created streaming client for failover provider {ProviderId} ({Kind})",
                             providerId,
@@ -149,9 +158,7 @@ public sealed class CollectorModeRunner
                 }
                 else
                 {
-                    var initialProvider = providerMap.ContainsKey(rule.PrimaryProviderId)
-                        ? rule.PrimaryProviderId
-                        : providerMap.Keys.First();
+                    var initialProvider = SelectInitialProvider(rule, providerMap, failoverService);
 
                     failoverClient = new FailoverAwareMarketDataClient(
                         providerMap,
@@ -166,6 +173,11 @@ public sealed class CollectorModeRunner
                         {
                             [rule.Id] = initialProvider
                         });
+                    providerReconciler = new ProviderConfigReconciler(
+                        failoverService,
+                        providerMap.Keys,
+                        ctx.Config,
+                        _log);
                 }
             }
             catch
@@ -193,6 +205,9 @@ public sealed class CollectorModeRunner
         }
 
         using var failoverResources = new FailoverResourceLease(failoverService, healthMonitor);
+        // Declared after the resource lease so it is released first: endpoints stop seeing the
+        // coordinator and saves stop applying live before the coordinator is disposed.
+        using var liveRuntime = PublishLiveRuntime(hostStartup, ctx.ConfigPath, failoverService, providerReconciler);
         await using var dataClientDisposable = dataClient;
 
         // The failover wrapper is not itself a gap source; its inner clients were captured
@@ -301,9 +316,33 @@ public sealed class CollectorModeRunner
                         _ = statusWriter.WriteOnceAsync();
                         _log.Information("Applied hot-reloaded configuration: {Count} symbols", nextCfg.Symbols?.Length ?? 0);
                     }, TaskScheduler.Default);
+
+                    // Tolerance edits saved by a UI in another process reach this collector through the file.
+                    var qualityMonitor = hostStartup.GetService<DataQualityMonitoringService>();
+                    if (qualityMonitor is not null)
+                    {
+                        try
+                        {
+                            // UpdatePolicy validates; an out-of-bounds file edit keeps the current tolerances.
+                            qualityMonitor.CrossProvider.UpdatePolicy(CrossProviderTolerancePolicy.FromConfig(nextCfg));
+                        }
+                        catch (ArgumentException ex)
+                        {
+                            _log.Warning(ex, "Ignored hot-reloaded cross-provider tolerances outside supported bounds");
+                        }
+                    }
+
+                    if (providerReconciler is not null)
+                    {
+                        _ = providerReconciler.ApplyAsync(nextCfg, ct).ContinueWith(task =>
+                        {
+                            if (task.IsFaulted)
+                                _log.Error(task.Exception?.GetBaseException(), "Failed to apply hot-reloaded provider configuration");
+                        }, TaskScheduler.Default);
+                    }
                 }, ex => _log.Error(ex, "Configuration watcher error"));
 
-                _log.Information("Watching {ConfigPath} for subscription changes", ctx.ConfigPath);
+                _log.Information("Watching {ConfigPath} for subscription and provider changes", ctx.ConfigPath);
             }
 
             if (ctx.CliArgs.SimulateFeed)
@@ -372,6 +411,68 @@ public sealed class CollectorModeRunner
         }
 
         return 0;
+    }
+
+    /// <summary>
+    /// Picks the rule's primary when it has a client and is enabled, otherwise the first enabled
+    /// provider with a client. If every provider is disabled the primary (or first) is kept so the
+    /// collector still streams, and a warning is logged.
+    /// </summary>
+    internal static string SelectInitialProvider(
+        FailoverRuleConfig rule,
+        IReadOnlyDictionary<string, IMarketDataClient> providerMap,
+        StreamingFailoverService failoverService)
+    {
+        var ordered = new[] { rule.PrimaryProviderId }
+            .Concat(rule.BackupProviderIds ?? [])
+            .Where(providerMap.ContainsKey)
+            .ToArray();
+        var enabled = ordered.FirstOrDefault(failoverService.IsProviderEnabled);
+        if (enabled is not null)
+            return enabled;
+
+        var fallback = ordered.FirstOrDefault() ?? providerMap.Keys.First();
+        Log.ForContext<CollectorModeRunner>().Warning(
+            "Every streaming provider for failover rule {RuleId} is disabled; starting on {ProviderId} until one is enabled",
+            rule.Id,
+            fallback);
+        return fallback;
+    }
+
+    private IDisposable PublishLiveRuntime(
+        HostStartup hostStartup,
+        string configPath,
+        StreamingFailoverService? failoverService,
+        ProviderConfigReconciler? reconciler)
+    {
+        if (failoverService is null || reconciler is null)
+            return new LiveRuntimeRegistration(null, null, null, null);
+
+        var registry = hostStartup.GetService<StreamingFailoverRegistry>() ?? StreamingFailoverRegistry.Process;
+        registry.Service = failoverService;
+        if (!ReferenceEquals(registry, StreamingFailoverRegistry.Process))
+            StreamingFailoverRegistry.Process.Service = failoverService;
+
+        var attachment = ConfigurationRuntimeAppliers.Attach(configPath, reconciler);
+        _log.Information("Provider and failover settings saved to {ConfigPath} now apply to the running collector", configPath);
+        return new LiveRuntimeRegistration(registry, failoverService, attachment, reconciler);
+    }
+
+    private sealed class LiveRuntimeRegistration(
+        StreamingFailoverRegistry? registry,
+        StreamingFailoverService? service,
+        IDisposable? attachment,
+        ProviderConfigReconciler? reconciler) : IDisposable
+    {
+        public void Dispose()
+        {
+            attachment?.Dispose();
+            if (registry is not null && ReferenceEquals(registry.Service, service))
+                registry.Service = null;
+            if (ReferenceEquals(StreamingFailoverRegistry.Process.Service, service) && service is not null)
+                StreamingFailoverRegistry.Process.Service = null;
+            reconciler?.Dispose();
+        }
     }
 
     private async ValueTask DisposeClientAsync(IMarketDataClient client)

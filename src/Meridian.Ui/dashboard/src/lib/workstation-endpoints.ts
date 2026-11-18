@@ -1723,6 +1723,14 @@ export function qualityStaleSymbolsEndpoint(): string {
   return QUALITY_API_ENDPOINTS.anomaliesStale;
 }
 
+export function qualityCrossProviderPolicyEndpoint(): string {
+  return UI_API_ROUTES.QualityCrossProviderPolicy;
+}
+
+export function qualityCrossProviderPreviewEndpoint(): string {
+  return UI_API_ROUTES.QualityCrossProviderPreview;
+}
+
 export function reconciliationBreakRebuiltSnapshotEndpoint(breakId: string): string {
   return routeWithParam(UI_API_ROUTES.ReconciliationBreakRebuiltSnapshot, "breakId", breakId);
 }

@@ -1064,6 +1064,7 @@ Meridian-main
 │   │   ├── testing
 │   │   │   ├── pipeline-benchmark-profile.json
 │   │   │   └── test-skip-register.json
+│   │   ├── evidence-footprint-baseline.json
 │   │   ├── file-size-baseline.json
 │   │   └── postgresql-payload.json
 │   ├── dotnet
@@ -1146,6 +1147,7 @@ Meridian-main
 │       │   ├── check-doc-health-delta.py
 │       │   ├── check-duplicate-helpers.py
 │       │   ├── check-endpoint-cancellation.py
+│       │   ├── check-evidence-footprint.py
 │       │   ├── check-file-size.py
 │       │   ├── check-generated-output.py
 │       │   ├── check-inline-sha256.py
@@ -1831,6 +1833,7 @@ Meridian-main
 │   │   │   ├── bond-capability-expansion.md
 │   │   │   ├── browser-workstation-ux-program.md
 │   │   │   ├── carta-inspired-capital-lifecycle.md
+│   │   │   ├── desktop-workstation-screen-blueprint.checklist.json
 │   │   │   ├── desktop-workstation-screen-blueprint.md
 │   │   │   ├── god-file-burn-down-plan.md
 │   │   │   ├── intercompany-entity-controls.md
@@ -2032,12 +2035,9 @@ Meridian-main
 │   │   └── verified-outcome-recovery.md
 │   ├── plans
 │   │   ├── codebase-audit-cleanup-roadmap.md
-│   │   ├── desktop-workstation-screen-blueprint.checklist.json
-│   │   ├── desktop-workstation-screen-blueprint.md
 │   │   ├── paper-trading-cockpit-reliability-sprint.md
 │   │   ├── README.md
-│   │   ├── report-writer-auto-preview-blueprint.md
-│   │   └── research-backtest-trust-and-velocity-blueprint.md
+│   │   └── report-writer-auto-preview-blueprint.md
 │   ├── product
 │   │   ├── history
 │   │   │   └── production-readiness-2026-11-14.md
@@ -2097,7 +2097,8 @@ Meridian-main
 │   │   │   │   ├── page-009.md
 │   │   │   │   ├── page-010.md
 │   │   │   │   ├── page-011.md
-│   │   │   │   └── page-012.md
+│   │   │   │   ├── page-012.md
+│   │   │   │   └── page-013.md
 │   │   │   ├── meridian.audit
 │   │   │   │   └── page-001.md
 │   │   │   ├── meridian.backtesting
@@ -2184,13 +2185,15 @@ Meridian-main
 │   │   │   │   ├── page-075.md
 │   │   │   │   ├── page-076.md
 │   │   │   │   ├── page-077.md
-│   │   │   │   └── page-078.md
+│   │   │   │   ├── page-078.md
+│   │   │   │   └── page-079.md
 │   │   │   ├── meridian.core
 │   │   │   │   ├── page-001.md
 │   │   │   │   ├── page-002.md
 │   │   │   │   ├── page-003.md
 │   │   │   │   ├── page-004.md
-│   │   │   │   └── page-005.md
+│   │   │   │   ├── page-005.md
+│   │   │   │   └── page-006.md
 │   │   │   ├── meridian.dataintegration
 │   │   │   │   ├── page-001.md
 │   │   │   │   ├── page-002.md
@@ -2339,7 +2342,8 @@ Meridian-main
 │   │   │   │   ├── page-016.md
 │   │   │   │   ├── page-017.md
 │   │   │   │   ├── page-018.md
-│   │   │   │   └── page-019.md
+│   │   │   │   ├── page-019.md
+│   │   │   │   └── page-020.md
 │   │   │   ├── meridian.workflow
 │   │   │   │   └── page-001.md
 │   │   │   ├── meridian.wpf
@@ -3430,8 +3434,6 @@ Meridian-main
 │   ├── docs.mk
 │   ├── install.mk
 │   └── test.mk
-├── manifests
-│   └── meridian-runtime-observability.yaml
 ├── Meridian Design System
 │   ├── api
 │   │   ├── accounting.js
@@ -4946,8 +4948,6 @@ Meridian-main
 │   │   ├── security_master-company.html
 │   │   ├── security_master-print.html
 │   │   └── security_master.html
-│   ├── uploads
-│   │   └── ChatGPT Image Apr 24, 2026, 03_58_29 PM.png
 │   ├── .designsystem-cleaned
 │   ├── .gitignore
 │   ├── .thumbnail
@@ -5228,6 +5228,7 @@ Meridian-main
 │   │   │   │   ├── EventPipelineShutdownParticipant.cs
 │   │   │   │   ├── HostModeOrchestrator.cs
 │   │   │   │   ├── LifecycleSupervisorBridgeHostedService.cs
+│   │   │   │   ├── ProviderConfigReconciler.cs
 │   │   │   │   ├── RuntimeReadinessService.cs
 │   │   │   │   ├── RuntimeShutdownSequence.cs
 │   │   │   │   ├── SharedStartupBootstrapper.cs
@@ -5277,6 +5278,7 @@ Meridian-main
 │   │   │   └── IBGatewayProbe.cs
 │   │   ├── DataQuality
 │   │   │   ├── CompositeDataQualityReadService.cs
+│   │   │   ├── CrossProviderPolicyApplier.cs
 │   │   │   └── QualityMonitoringPublisher.cs
 │   │   ├── DirectLending
 │   │   │   ├── AccrualLedgerService.cs
@@ -5343,7 +5345,8 @@ Meridian-main
 │   │   │   ├── Endpoints
 │   │   │   │   └── StatusEndpointHandlers.cs
 │   │   │   ├── ConfigStore.cs
-│   │   │   └── ConfigurationChangeTracker.cs
+│   │   │   ├── ConfigurationChangeTracker.cs
+│   │   │   └── ConfigurationRuntimeAppliers.cs
 │   │   ├── Integrations
 │   │   │   ├── BondHoldingImportService.cs
 │   │   │   ├── ProviderIntegrationActivationReadinessService.cs
@@ -6402,11 +6405,13 @@ Meridian-main
 │   │   │   ├── ConfigWatcher.cs
 │   │   │   ├── CoordinationConfig.cs
 │   │   │   ├── CredentialPlaceholderDetector.cs
+│   │   │   ├── CrossProviderTolerancePolicy.cs
 │   │   │   ├── DataSourceConfig.cs
 │   │   │   ├── DataSourceKind.cs
 │   │   │   ├── DataSourceKindConverter.cs
 │   │   │   ├── DefaultConfigPathResolver.cs
 │   │   │   ├── DerivativesConfig.cs
+│   │   │   ├── FailoverRuleReferences.cs
 │   │   │   ├── FeatureCapabilityCatalog.cs
 │   │   │   ├── FeatureCapabilityDescriptor.cs
 │   │   │   ├── FeatureCapabilityOptions.cs
@@ -8882,6 +8887,9 @@ Meridian-main
 │   │   │   │   ├── run-vitest-stable.mjs
 │   │   │   │   ├── smoke-design-system-adoption.mjs
 │   │   │   │   ├── smoke-design-system.mjs
+│   │   │   │   ├── smoke-workstation-a11y.mjs
+│   │   │   │   ├── smoke-workstation-a11y.test.mjs
+│   │   │   │   ├── smoke-workstation-axe-baseline.json
 │   │   │   │   ├── smoke-workstation.mjs
 │   │   │   │   ├── sync-design-system-assets.d.mts
 │   │   │   │   ├── sync-design-system-assets.mjs
@@ -9028,6 +9036,8 @@ Meridian-main
 │   │   │   │   │   │   ├── TrialBalanceTable.test.tsx
 │   │   │   │   │   │   └── TrialBalanceTable.tsx
 │   │   │   │   │   ├── charts
+│   │   │   │   │   │   ├── axis-ticks.test.ts
+│   │   │   │   │   │   ├── axis-ticks.ts
 │   │   │   │   │   │   ├── CandleChart.tsx
 │   │   │   │   │   │   ├── CategoryBars.tsx
 │   │   │   │   │   │   ├── chart-a11y.tsx
@@ -9053,7 +9063,9 @@ Meridian-main
 │   │   │   │   │   │   ├── SelectionCompare.tsx
 │   │   │   │   │   │   ├── Sparkline.tsx
 │   │   │   │   │   │   ├── StatusTimeline.tsx
-│   │   │   │   │   │   └── ticks.ts
+│   │   │   │   │   │   ├── stretched-chart-labels.tsx
+│   │   │   │   │   │   ├── ticks.ts
+│   │   │   │   │   │   └── use-chart-size.ts
 │   │   │   │   │   ├── data
 │   │   │   │   │   │   ├── add-provider-drawer.tsx
 │   │   │   │   │   │   ├── concrete.ts
@@ -9308,6 +9320,8 @@ Meridian-main
 │   │   │   │   │   │   ├── ui-kit-primitives.test.tsx
 │   │   │   │   │   │   ├── ui-kit-primitives.tsx
 │   │   │   │   │   │   ├── ui-kit-primitives.virtualization.test.tsx
+│   │   │   │   │   │   ├── use-more-below.test.tsx
+│   │   │   │   │   │   ├── use-more-below.ts
 │   │   │   │   │   │   ├── use-operator-triage-inbox.ts
 │   │   │   │   │   │   ├── use-workspace-expansion.ts
 │   │   │   │   │   │   ├── variance-columns.tsx
@@ -9571,6 +9585,7 @@ Meridian-main
 │   │   │   │   │   │   ├── corporate-action-calendar.api.ts
 │   │   │   │   │   │   ├── covered-call.api.test.ts
 │   │   │   │   │   │   ├── covered-call.api.ts
+│   │   │   │   │   │   ├── cross-provider-tolerance.api.ts
 │   │   │   │   │   │   ├── data-operations-assurance.api.ts
 │   │   │   │   │   │   ├── data-quality-watch.api.ts
 │   │   │   │   │   │   ├── data-workspace.api.ts
@@ -9732,6 +9747,7 @@ Meridian-main
 │   │   │   │   │   ├── close-board.ts
 │   │   │   │   │   ├── combined-load-state.test.ts
 │   │   │   │   │   ├── combined-load-state.ts
+│   │   │   │   │   ├── configuration-apply.ts
 │   │   │   │   │   ├── consolidation-api.test.ts
 │   │   │   │   │   ├── consolidation-api.ts
 │   │   │   │   │   ├── cross-screen-counts-context.tsx
@@ -10081,7 +10097,10 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.prepare-next-period.test-fixtures.ts
 │   │   │   │   │   ├── accounting-screen.prepare-next-period.test.tsx
 │   │   │   │   │   ├── accounting-screen.prepare-next-period.tsx
+│   │   │   │   │   ├── accounting-screen.reconciliation-audit-timeline.tsx
 │   │   │   │   │   ├── accounting-screen.reconciliation-continuity.test.ts
+│   │   │   │   │   ├── accounting-screen.reconciliation-lifecycle.test.tsx
+│   │   │   │   │   ├── accounting-screen.reconciliation-lifecycle.tsx
 │   │   │   │   │   ├── accounting-screen.reconciliation-queue-utils.ts
 │   │   │   │   │   ├── accounting-screen.reconciliation-readiness.test.tsx
 │   │   │   │   │   ├── accounting-screen.reconciliation-readiness.tsx
@@ -10153,6 +10172,8 @@ Meridian-main
 │   │   │   │   │   ├── data-operations-maintenance.view-model.test.ts
 │   │   │   │   │   ├── data-operations-maintenance.view-model.ts
 │   │   │   │   │   ├── data-provider-display-view-model.ts
+│   │   │   │   │   ├── data-quality-watch.cross-provider-policy.test.tsx
+│   │   │   │   │   ├── data-quality-watch.cross-provider-policy.tsx
 │   │   │   │   │   ├── data-quality-watch.test.tsx
 │   │   │   │   │   ├── data-quality-watch.tsx
 │   │   │   │   │   ├── data-quality-watch.view-model.test.ts
@@ -10331,9 +10352,11 @@ Meridian-main
 │   │   │   │   │   ├── quant-lab-screen.tsx
 │   │   │   │   │   ├── quant-lab-screen.view-model.test.ts
 │   │   │   │   │   ├── quant-lab-screen.view-model.ts
+│   │   │   │   │   ├── reconciliation-break-lifecycle.ts
 │   │   │   │   │   ├── reconciliation-bulk-triage-bar.tsx
 │   │   │   │   │   ├── reconciliation-bulk-triage.test.ts
 │   │   │   │   │   ├── reconciliation-bulk-triage.ts
+│   │   │   │   │   ├── reconciliation-casework-command.ts
 │   │   │   │   │   ├── reconciliation-casework-outcome.ts
 │   │   │   │   │   ├── reconciliation-run-picker.test.tsx
 │   │   │   │   │   ├── reconciliation-source-observation.test.ts
@@ -10901,6 +10924,7 @@ Meridian-main
 │   │   │   ├── CoveredCallEndpoints.cs
 │   │   │   ├── CredentialEndpoints.cs
 │   │   │   ├── CronEndpoints.cs
+│   │   │   ├── CrossProviderToleranceEndpoints.cs
 │   │   │   ├── CryptoReferenceEndpoints.cs
 │   │   │   ├── DataQualityEndpoints.cs
 │   │   │   ├── DemoModeEndpoints.cs
@@ -12926,6 +12950,7 @@ Meridian-main
 │   │   │   │   ├── ProviderCapabilityContractRegistrationTests.cs
 │   │   │   │   ├── ProviderCatalogCompositionTests.cs
 │   │   │   │   ├── ProviderCompositionTests.cs
+│   │   │   │   ├── ProviderConfigReconcilerTests.cs
 │   │   │   │   ├── ProviderFeatureRegistrationTests.cs
 │   │   │   │   ├── ProviderModuleCompositionTests.cs
 │   │   │   │   ├── SecurityMasterStartupTests.cs
@@ -13129,6 +13154,7 @@ Meridian-main
 │   │   │   │   ├── ConfigStoreCredentialPersistenceTests.cs
 │   │   │   │   ├── ConfigStoreTests.cs
 │   │   │   │   ├── ConfigurationChangeTrackingTests.cs
+│   │   │   │   ├── ConfigurationRuntimeApplyTests.cs
 │   │   │   │   ├── ProviderCredentialStoreTests.cs
 │   │   │   │   ├── ProviderModuleCredentialSelectionTests.cs
 │   │   │   │   └── ProviderModuleSetupServiceTests.cs
@@ -13253,6 +13279,10 @@ Meridian-main
 │   │   │   └── ImmutableAuditLogServiceTests.cs
 │   │   ├── Contracts
 │   │   │   └── CoreExtensibilityContractsTests.cs
+│   │   ├── Core
+│   │   │   └── Config
+│   │   │       ├── CrossProviderTolerancePolicyTests.cs
+│   │   │       └── FailoverRuleReferencesTests.cs
 │   │   ├── CryptoCurrency
 │   │   │   └── CryptoProjectionServiceTests.cs
 │   │   ├── DataIntegration
@@ -13300,6 +13330,7 @@ Meridian-main
 │   │   │   │   └── HistoricalDataQueryServiceTests.cs
 │   │   │   ├── Monitoring
 │   │   │   │   ├── DataQuality
+│   │   │   │   │   ├── CrossProviderTolerancePolicyComparisonTests.cs
 │   │   │   │   │   ├── DataFreshnessSlaMonitorTests.cs
 │   │   │   │   │   ├── DataQualityReportExportTests.cs
 │   │   │   │   │   ├── DataQualityTests.cs
@@ -13730,6 +13761,7 @@ Meridian-main
 │   │   │   │   ├── CompositeProviderStaleDataTests.cs
 │   │   │   │   ├── CorporateActionFetchOutcomeTests.cs
 │   │   │   │   ├── CorporateActionFetchResultTests.cs
+│   │   │   │   ├── CrossProviderValidatorTests.cs
 │   │   │   │   ├── EdgarReferenceDataProviderTests.cs
 │   │   │   │   ├── EdgarSymbolSearchProviderTests.cs
 │   │   │   │   ├── FailoverAwareMarketDataClientTests.cs
@@ -13812,6 +13844,7 @@ Meridian-main
 │   │   │   │   ├── SharedProviderRequestBudgetTests.cs
 │   │   │   │   ├── StooqHistoricalDataProviderTests.cs
 │   │   │   │   ├── StoredProviderCredentialPreparationTests.cs
+│   │   │   │   ├── StreamingFailoverLiveConfigurationTests.cs
 │   │   │   │   ├── StreamingFailoverServiceTests.cs
 │   │   │   │   ├── SymbolSearchProviderLifetimeTests.cs
 │   │   │   │   ├── SyntheticHistoricalProviderContractTests.cs
@@ -14957,6 +14990,7 @@ Meridian-main
 │   │   │   ├── CredentialCompatibilityEndpointsTests.cs
 │   │   │   ├── CronEndpointsTests.cs
 │   │   │   ├── CrossProcessFileLockTests.cs
+│   │   │   ├── CrossProviderToleranceEndpointTests.cs
 │   │   │   ├── CrossScreenCountDefinitionsTests.cs
 │   │   │   ├── CustomAssetPromotionReportEndpointsTests.cs
 │   │   │   ├── DailyValuationBatchLifecycleServiceTests.cs
@@ -15785,6 +15819,7 @@ Meridian-main
 │   │   ├── test_check_dashboard_type_barrel.py
 │   │   ├── test_check_duplicate_helpers.py
 │   │   ├── test_check_endpoint_cancellation.py
+│   │   ├── test_check_evidence_footprint.py
 │   │   ├── test_check_file_size_ratchet.py
 │   │   ├── test_check_generated_output.py
 │   │   ├── test_check_inline_sha256.py

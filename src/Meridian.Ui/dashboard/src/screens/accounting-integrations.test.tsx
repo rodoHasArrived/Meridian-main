@@ -6,6 +6,7 @@ import type { LedgerBook } from "@/types";
 import type { AutomatedPostingGrant, ThreeWayReconciliation } from "@/types/accounting-integration";
 import { AutomaticPostingAuthorityPanel } from "./accounting-screen.automation-grant";
 import { ThreeWayAccountingPanel } from "./accounting-screen.three-way";
+import { FundAccountScopeSelectionProvider } from "@/lib/operating-scope/scope-picker-context";
 import { GeneralLedgerExportPanel } from "./reporting-screen.general-ledger-export";
 import { corporateActionSourceMode, updateCorporateActionSource } from "./quant-lab-corporate-actions";
 
@@ -66,6 +67,23 @@ describe("accounting integration panels", () => {
     expect(retained).toHaveTextContent("1 minute");
     expect(within(retained).getByRole("link", { name: "Open break synthetic-break" })).toHaveAttribute("href", expect.stringContaining("reconciliationBreak=synthetic-break"));
     expect(retained).toHaveTextContent("A comparison does not post an adjustment");
+  });
+
+  it("offers the scope's fund accounts instead of a raw UUID box when the shell knows them (Phase 1)", async () => {
+    api.runThreeWayReconciliation.mockResolvedValue(result);
+    renderWithRouter(
+      <FundAccountScopeSelectionProvider value={{ options: [{ id: accountId, label: "Alpha main cash" }, { id: "not-a-guid", label: "Legacy" }], select: vi.fn() }}>
+        <ThreeWayAccountingPanel />
+      </FundAccountScopeSelectionProvider>
+    );
+    await selectScope(false);
+    expect(screen.queryByLabelText("Financial account ID")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("combobox", { name: "Financial account" }));
+    expect(screen.queryByRole("option", { name: /Legacy/ })).not.toBeInTheDocument();
+    fireEvent.click(await screen.findByRole("option", { name: `Alpha main cash · ${accountId}` }));
+    fireEvent.click(await screen.findByRole("button", { name: "Run three-way comparison" }));
+    await screen.findByLabelText("Retained three-way comparison");
+    expect(api.runThreeWayReconciliation).toHaveBeenCalledWith(accountId, bookId, periodId, expect.any(String));
   });
 
   it("rejects a latest comparison from a different period", async () => {

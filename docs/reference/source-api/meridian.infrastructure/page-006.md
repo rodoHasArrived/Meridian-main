@@ -6,6 +6,33 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TemplateBrokerageGatewayOptions
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.TemplateBrokerageGatewayOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:303](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L303).
+
+```csharp
+public sealed record TemplateBrokerageGatewayOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string GatewayId { get; init; } = &quot;template&quot;;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:305](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L305) |  |
+| <code>public string BrokerDisplayName { get; init; } = &quot;Template Broker&quot;;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:306](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L306) |  |
+| <code>public BrokerageCapabilities Capabilities { get; init; } = BrokerageCapabilities.UsEquity(modification : true, partialFills : true, shortSelling : false, fractional : false, extendedHours : false);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:307](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L307) |  |
+| <code>public bool ConnectionReady { get; init; } = true;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:314](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L314) |  |
+| <code>public string ConnectionFailureMessage { get; init; } = &quot;Template broker connection is not ready.&quot;;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:315](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L315) |  |
+| <code>public string AccountId { get; init; } = &quot;template-account&quot;;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:316](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L316) |  |
+| <code>public decimal Equity { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:317](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L317) |  |
+| <code>public decimal Cash { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:318](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L318) |  |
+| <code>public decimal BuyingPower { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:319](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L319) |  |
+| <code>public string Currency { get; init; } = &quot;USD&quot;;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:320](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L320) |  |
+| <code>public string AccountStatus { get; init; } = &quot;paper-template&quot;;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:321](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L321) |  |
+| <code>public IReadOnlyList&lt;BrokerPosition&gt; Positions { get; init; } = Array.Empty&lt;BrokerPosition&gt;();</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:322](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L322) |  |
+
 ## TemplateBrokerDegradation
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.TemplateBrokerDegradation</code>. Kind: `enum`.
@@ -865,24 +892,3 @@ Declared public members:
 | <code>public abstract Task&lt;bool&gt; TestConnectivityAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:151](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L151) |  |
 | <code>public virtual async ValueTask DisposeAsync();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:154](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L154) |  |
 | <code>public ProviderRateLimitDiagnosticSnapshot GetRateLimitDiagnosticsSnapshot();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:387](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L387) |  |
-
-## DataSourceConfigurationExtensions
-
-Qualified name: <code>Meridian.Infrastructure.DataSources.DataSourceConfigurationExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:813](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L813).
-
-Extension methods for working with data source configuration.
-
-```csharp
-public static class DataSourceConfigurationExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static DataSourceOptions GetOptionsForSource(this UnifiedDataSourcesConfig config, string sourceId);</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:818](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L818) | Gets the DataSourceOptions for a specific source, merging with defaults. |
-| <code>public static DataSourceType ParseType(this SourceConfig config);</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:836](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L836) | Parses the DataSourceType from string. |
-| <code>public static DataSourceCategory ParseCategory(this SourceConfig config);</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:851](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L851) | Parses the DataSourceCategory from string. |
-| <code>public static IEnumerable&lt;string&gt; GetEnabledSourceIds(this UnifiedDataSourcesConfig config);</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:867](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L867) | Gets all enabled source IDs. |

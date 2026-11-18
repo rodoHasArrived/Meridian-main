@@ -1,11 +1,11 @@
 {
-  "total_files": 1285,
+  "total_files": 1287,
   "orphaned_count": 396,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 303,
   "health_score": 85,
-  "signal_digest": "sha256:ec38c11b6274ce1598d485644bf021a106bbbfc28afcd833bcd6b0861f258806",
+  "signal_digest": "sha256:d53f41dd7fcf6e7b3bc16ae454bc1a830ddc5c170e5ab8cb3f7dcf15ac269c03",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -3440,13 +3440,6 @@
       "stale": false
     },
     {
-      "path": "docs/plans/desktop-workstation-screen-blueprint.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
       "path": "docs/plans/paper-trading-cockpit-reliability-sprint.md",
       "has_heading": true,
       "todo_count": 0,
@@ -3462,13 +3455,6 @@
     },
     {
       "path": "docs/plans/report-writer-auto-preview-blueprint.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/plans/research-backtest-trust-and-velocity-blueprint.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4036,6 +4022,13 @@
     },
     {
       "path": "docs/reference/source-api/meridian.application/page-012.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.application/page-013.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4623,6 +4616,13 @@
       "stale": false
     },
     {
+      "path": "docs/reference/source-api/meridian.contracts/page-079.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/reference/source-api/meridian.core/page-001.md",
       "has_heading": true,
       "todo_count": 0,
@@ -4652,6 +4652,13 @@
     },
     {
       "path": "docs/reference/source-api/meridian.core/page-005.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.core/page-006.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5499,6 +5506,13 @@
     },
     {
       "path": "docs/reference/source-api/meridian.ui.shared/page-019.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.shared/page-020.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

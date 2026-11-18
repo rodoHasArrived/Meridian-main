@@ -4,9 +4,27 @@ import { TableWorkbench } from "@/components/meridian/table-workbench";
 import { formatNumber, pluralizeCount } from "@/lib/format";
 import type { CloseTask, OperationsCloseChecklistTask, ProviderConnectionRow, ReconciliationBreakQueueItem } from "@/types";
 
+/** Fewer categories than this read better as figures and a sentence than as a bar chart (UX Phase F). */
+export const CHART_MIN_CATEGORIES = 3;
+
 function EvidenceBars({ title, basis, rows, emptyText, note }: {
   title: string; basis: string; rows: CategoryBar[]; emptyText: string; note?: string;
 }) {
+  if (rows.length > 0 && rows.length < CHART_MIN_CATEGORIES) {
+    return <section aria-label={title} className="space-y-2" data-chart-figures={title}>
+      <div className="border border-border p-4">
+        <h3 className="text-sm font-medium">{title}</h3>
+        <dl className="mt-2 flex flex-wrap gap-x-8 gap-y-2">
+          {rows.map((row) => <div key={row.id}>
+            <dt className="text-xs text-muted-foreground">{row.label}</dt>
+            <dd className="text-xl font-semibold tabular-nums">{row.valueLabel}</dd>
+          </div>)}
+        </dl>
+        <p className="mt-2 text-xs text-muted-foreground">{basis}.</p>
+      </div>
+      {note ? <p className="text-xs text-muted-foreground">{note}</p> : null}
+    </section>;
+  }
   return <section aria-label={title} className="space-y-2">
     {rows.length > 0 ? <ChartCard title={title} subtitle={basis} height={Math.min(300, Math.max(110, rows.length * 40))}>
       <CategoryBars rows={rows} label={title} />

@@ -28,6 +28,10 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
         services.AddSingleton(sp => new NyseCredentialAccessPolicy(
             sp.GetRequiredService<ProviderCredentialOwnershipPolicy>().RequireExplicitOwnership));
         services.TryAddSingleton<IAtomicFileWriter, AtomicFileWriterAdapter>();
+
+        // Process-wide so the UI server's endpoints see the collector's live failover coordinator
+        // (desktop mode hosts both in one process with separate containers).
+        services.TryAddSingleton(Meridian.Infrastructure.Adapters.Failover.StreamingFailoverRegistry.Process);
         // Register credential resolver
         services.AddSingleton<IProviderCredentialResolver>(sp =>
         {

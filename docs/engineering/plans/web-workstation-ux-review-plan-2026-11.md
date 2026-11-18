@@ -1,7 +1,7 @@
 # Browser Workstation UX Review and Improvement Plan (2026-11)
 
 > **Status:** In progress (Phase 3 started 2026-11-10; trust fixes 2026-11-12) · **Created:** 2026-11-06 ·
-> **Extended:** 2026-11-10, 2026-11-12 (verified review corrections) · **Owner lane:** Workstation Shell and UX
+> **Extended:** 2026-11-10, 2026-11-12 (verified review corrections), 2026-11-18 (Phases F–J; Phase F delivered) · **Owner lane:** Workstation Shell and UX
 > **Builds on:** UI Phase 0–2 (merged 2026-11-04/05: font-fallback fix; A1–A5 task-first routes,
 > one-row masthead, Today front door, single StatusBadge; B2–B4 shared formatting, single table
 > system, three-tier type scale)
@@ -1019,3 +1019,71 @@ touched). Phase E went out in slices E1–E5, each pushed separately.
   - Positions merged inside asset operations are still current on the prior cash ladder.
   - The WPF comparison tests run on Windows CI only.
   - WPF parity items are listed in `wpf-web-ui-alignment-plan.md` (Phase E delta).
+
+## Phases F–J: 2026-11-18 review
+
+A screenshot review of all 86 catalog routes on `main` (`0adea571`) after Phases A–E. Proposals
+are numbered C1–C7 (clarity), V1–V7 (visual polish) and F1–F6 (functionality) within this section
+only; they do not reuse the 2026-11-10 numbering.
+
+| Phase | Scope | Items | Status |
+| --- | --- | --- | --- |
+| F | Rendering fixes, browser-only | V1 chart rendering, V5 page focus frame, C3 clipped detail panels, C5 ages and dates | Delivered (2026-11-18) |
+| G | Clarity and trust | C1 one name per page, C2 position source and divergence, C4 four status colours, C6 copy rules, C7 top-bar pill | Not started |
+| H | Visual system | V2 figure rows, V3 one toolbar per table, V4 monospace labels to zero, V6 pickers and money input, V7 two page layouts | Not started |
+| I | Throughput | F1 shared queue keyboard model, F2 saved views, F3 figure-to-rows links | Not started |
+| J | Insight | C7 Today headline row, F4 Live quotes, F5 NAV headline and presets, F6 "Since you last looked" | Not started |
+
+### Phase F: what changed
+
+- **Charts draw at real pixel size.** `useChartSize` (`components/charts/use-chart-size.ts`)
+  measures the chart box, and `EquityCurve`, `DrawdownChart`, `Histogram`, `CandleChart` and
+  `DepthChart` draw with a viewBox equal to it, so axis text is no longer stretched. `EquityCurve`
+  puts the value axis on the left, thins time ticks to at least 72px apart and value ticks to at
+  least 24px apart (`components/charts/axis-ticks.ts`), and reads ISO dates as "Aug '25" (or
+  "Aug 5" inside about two months). Axis text uses the body face with tabular figures.
+  `historical-chart.tsx` keeps its stretched plot but draws its labels in an HTML layer
+  (`stretched-chart-labels.tsx`).
+- **Small charts become figures.** Evidence charts with fewer than three categories (Close
+  checklist "Done 1", a single provider's evidence age) show the figures and a sentence instead
+  of a bar chart (`CHART_MIN_CATEGORIES`).
+- **No frame around the page.** Route focus still lands on `#workbench-content` for screen readers,
+  but the landmark draws no outline; controls inside keep their focus-visible rings.
+- **Detail panels say when there is more.** The workbench inspector shows a fade and a "More below"
+  button, and sets `data-more-below`, while it has content beneath its visible area
+  (`use-more-below.ts`).
+- **Ages and dates.** `formatRelativeTime` keeps hours to 48h and days to 60d, then reads
+  "since May 8, 2026"; Live quotes and the provider capability matrix use it instead of their own
+  builders. Reconciliation case dates (detected, updated, SLA, first observed) go through
+  `formatAccountingDate`, so UTC midnight reads as a date. NAV's prior date and the journal-entry
+  date use the shared `DatePicker` instead of a native `mm/dd/yyyy` input.
+- **New capture rules.** `detail-rail-clipped` (a detail panel that hides content with neither its
+  own scroll nor the cue) and `chart-label-overlap` (two labels in one chart overlap) run on
+  every capture in `scripts/dev/capture-web-screenshots.mjs`. The full catalog passes both.
+
+### Phase F: not done
+
+- Server-built age strings (`ActivityFeedService`, `IntegrityEventsService`, WPF view models) still
+  use unbounded hours and days. Aligning them changes WPF output and is a `W8-WPF-PARITY-001` item.
+- The provider evidence-age chart still uses a months unit ("4.2mo") for very old evidence.
+- Native date inputs remain on the bond, quant, settings, consolidation and entity panels.
+
+### Phases G–J acceptance criteria
+
+- **G:** sidebar, tab, breadcrumb and header agree on every route (`page-name-consistency`
+  rule); no more than two navigation levels below the sidebar; Trading never says "selected
+  account" with an empty picker; every position or exposure figure carries
+  `data-position-source`, with an inline flag when sources disagree, served from the shared read
+  model; red only for blocked or failed; no badge styled as a button (`badge-looks-like-button`);
+  one description sentence per section; the top-bar pill shows environment and overall health.
+- **H:** equal-width figure cells with sentence-case labels; `monospaceCapsLabels` at 0 for form and
+  section labels; one toolbar row per table; at most three visible Live quotes buttons; no free-text
+  fund, book, period, account or currency inputs where a read model exists; a tested money input;
+  Overview and Queue + detail layouts on every overview and at least ten queue routes.
+- **I:** one keyboard model (j/k, x, Enter, a, s, r) across Today, Reconciliation, Approvals and
+  Reporting triage, rebindable and shared with WPF; saved views that round-trip through preferences
+  sync and URLs; every registered figure links to a table showing exactly its count.
+- **J:** Today headline row (NAV and month-over-month, day P&L, cash, close progress, reports due)
+  from the shared figure definitions; Live quotes change, day range, sparklines and stale dimming;
+  NAV headline with presets and a fund picker; a "Since you last looked" panel with at least four
+  kinds of change.

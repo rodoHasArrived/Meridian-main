@@ -330,6 +330,7 @@ describe("App", () => {
   beforeEach(() => {
     document.title = "Meridian";
     window.localStorage.clear();
+    window.sessionStorage.clear();
     mockedUseWorkstationData.mockClear();
     vi.mocked(apiGetJson).mockReset();
     vi.mocked(apiGetJson).mockImplementation((path) => {
@@ -1118,6 +1119,37 @@ describe("App", () => {
     renderWithRouter(<App />, { initialEntries: ["/trading/orders"] });
     await waitFor(() => expect(scopeBar()).toHaveAccessibleName(new RegExp(`Account ${fundAccountId}`)));
     expect(screen.queryByRole("combobox", { name: "Fund account" })).not.toBeInTheDocument();
+  });
+
+  it("carries the tab's fund scope into a route opened without it, and keeps tabs independent (Phase 1)", async () => {
+    mockWorkstationData({
+      session: { displayName: "Ops Desk", role: "Operator", environment: "paper", activeWorkspace: "portfolio", commandCount: 7 },
+      overview,
+      loading: false
+    });
+    function LocationProbe() {
+      const location = useLocation();
+      return <output aria-label="Current route">{location.pathname}{location.search}</output>;
+    }
+    // Another tab last used fund-b; this tab chose fund-a.
+    window.localStorage.setItem(OPERATING_CONTEXT_STORAGE_KEY, JSON.stringify({ fundId: "fund-b" }));
+    window.sessionStorage.setItem(OPERATING_CONTEXT_STORAGE_KEY, JSON.stringify({ entityId: "entity-1", fundId: "fund-a" }));
+    const view = renderWithRouter(<><App /><LocationProbe /></>, { initialEntries: ["/portfolio?view=household"] });
+    await waitFor(() => {
+      const params = new URLSearchParams((screen.getByLabelText("Current route").textContent ?? "").split("?")[1]);
+      expect(params.get("fundId")).toBe("fund-a");
+      expect(params.get("entityId")).toBe("entity-1");
+      expect(params.get("view")).toBe("household");
+    });
+    view.unmount();
+
+    // A new tab starts from the last scope used in any tab.
+    window.sessionStorage.clear();
+    renderWithRouter(<><App /><LocationProbe /></>, { initialEntries: ["/portfolio"] });
+    await waitFor(() => {
+      const params = new URLSearchParams((screen.getByLabelText("Current route").textContent ?? "").split("?")[1]);
+      expect(params.get("fundId")).toBe("fund-b");
+    });
   });
 
   it("prints the scope on a figures strip inside the shell without per-screen wiring (P4)", async () => {

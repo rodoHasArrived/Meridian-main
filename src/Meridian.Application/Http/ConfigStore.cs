@@ -167,7 +167,8 @@ public sealed class ConfigStore
         {
             var snapshot = ProviderConfigurationCredentialGuard.Prepare(next, _ownershipPolicy);
             await SaveCoreAsync(snapshot, ct).ConfigureAwait(false);
-            ConfigurationChangeTracker.ForPath(ConfigPath).Record(current, snapshot);
+            var applied = await ApplyToRuntimeAsync(current, snapshot, ct).ConfigureAwait(false);
+            ConfigurationChangeTracker.ForPath(ConfigPath).Record(current, snapshot, applied);
         }
         return result;
     }
@@ -209,7 +210,57 @@ public sealed class ConfigStore
         using var lease = await AcquireWriteLockAsync(ct).ConfigureAwait(false);
         var current = LoadForUpdate();
         await SaveCoreAsync(snapshot, ct).ConfigureAwait(false);
-        ConfigurationChangeTracker.ForPath(ConfigPath).Record(current, snapshot);
+        var applied = await ApplyToRuntimeAsync(current, snapshot, ct).ConfigureAwait(false);
+        ConfigurationChangeTracker.ForPath(ConfigPath).Record(current, snapshot, applied);
+    }
+
+    /// <summary>
+    /// Offers a durably saved document to the runtime appliers attached to this file. The save has already
+    /// succeeded, so applier failures and cancellation become <see cref="ConfigurationApplyKind.Deferred"/>
+    /// outcomes (restart required) instead of failing the save.
+    /// </summary>
+    private async Task<IReadOnlyList<ConfigurationApplyEntry>?> ApplyToRuntimeAsync(
+        AppConfig previous,
+        AppConfig next,
+        CancellationToken ct)
+    {
+        var appliers = ConfigurationRuntimeAppliers.For(ConfigPath);
+        if (appliers.Count == 0)
+            return null;
+
+        var changedPaths = ConfigurationChangeTracker.ChangedPaths(previous, next);
+        if (changedPaths.Count == 0)
+            return null;
+
+        var entries = new List<ConfigurationApplyEntry>();
+        foreach (var applier in appliers)
+        {
+            var handled = changedPaths.Where(applier.Handles).ToArray();
+            if (handled.Length == 0)
+                continue;
+
+            try
+            {
+                var result = await applier.ApplyAsync(previous, next, handled, ct).ConfigureAwait(false);
+                entries.AddRange(result.Where(entry => handled.Contains(entry.Path, StringComparer.Ordinal)));
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                Log.Warning("Runtime apply by {Applier} was cancelled after the configuration was saved; {PathCount} setting(s) need a restart",
+                    applier.Name, handled.Length);
+                entries.AddRange(handled.Select(path => new ConfigurationApplyEntry(path, ConfigurationApplyKind.Deferred,
+                    "The runtime apply was cancelled; restart the host to use the saved value.")));
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Runtime apply by {Applier} failed after the configuration was saved; {PathCount} setting(s) need a restart",
+                    applier.Name, handled.Length);
+                entries.AddRange(handled.Select(path => new ConfigurationApplyEntry(path, ConfigurationApplyKind.Deferred,
+                    "The running host could not apply this change; restart the host to use the saved value.")));
+            }
+        }
+
+        return entries.Count == 0 ? null : entries;
     }
 
     private async Task SaveCoreAsync(AppConfig cfg, CancellationToken ct)

@@ -57,7 +57,8 @@ const offlineVisits: Partial<SurfaceVisitServices> = { record: offline, read: of
 function renderWorkbench(
   runSelector?: WorkbenchProps["runSelector"],
   bulkServices: BulkTriageServices = fakeBulkServices(),
-  visitServices: Partial<SurfaceVisitServices> = offlineVisits
+  visitServices: Partial<SurfaceVisitServices> = offlineVisits,
+  extra: { sourceRows?: ReconciliationBreakQueueItem[]; props?: Partial<WorkbenchProps> } = {}
 ) {
   const assignBreak = vi.fn().mockResolvedValue(undefined);
   const resolveBreak = vi.fn().mockResolvedValue(undefined);
@@ -68,9 +69,9 @@ function renderWorkbench(
     const [queueStatus, setQueueStatus] = useState("all");
     const [queueSort, setQueueSort] = useState("default");
     const state = buildReconciliationBreakQueueState({ breakQueue: breaks, selectedBreakId, loading: false, loadError: null, action: null, actionError: null });
-    const reconciliation = { ...state, selectBreak, assignBreak, beginBreakQueueUpdate: () => applyBreakQueueItems, detailActions: null } as unknown as WorkbenchProps["reconciliation"];
+    const reconciliation = { ...state, selectBreak, assignBreak, beginBreakQueueUpdate: () => applyBreakQueueItems, detailActions: null, sourceRows: extra.sourceRows } as unknown as WorkbenchProps["reconciliation"];
     const dialog = useReconciliationResolveDialogViewModel(resolveBreak);
-    return <ReconciliationWorkbench reconciliation={reconciliation} resolveDialog={dialog} runSelector={runSelector} bulkServices={bulkServices} visitServices={visitServices} controls={{ queueSearch, queueStatus, queueSort, setQueueSearch, setQueueStatus, setQueueSort, clearQueueFilters: () => { setQueueSearch(""); setQueueStatus("all"); } }} />;
+    return <ReconciliationWorkbench reconciliation={reconciliation} resolveDialog={dialog} runSelector={runSelector} bulkServices={bulkServices} visitServices={visitServices} {...extra.props} controls={{ queueSearch, queueStatus, queueSort, setQueueSearch, setQueueStatus, setQueueSort, clearQueueFilters: () => { setQueueSearch(""); setQueueStatus("all"); } }} />;
   }
   render(<MemoryRouter><Harness /></MemoryRouter>);
   return { assignBreak, resolveBreak, applyBreakQueueItems };
@@ -357,5 +358,33 @@ describe("Reconciliation workbench", () => {
     renderWorkbench();
     await waitFor(() => expect(within(breakTable()).getAllByRole("row")).toHaveLength(3));
     expect(screen.queryByText(/since your last visit/)).not.toBeInTheDocument();
+  });
+});
+
+describe("ReconciliationWorkbench lifecycle (Phase 1)", () => {
+  it("shows lifecycle decisions and activity for a break that carries a lifecycle state", async () => {
+    const taxonomy = vi.fn().mockResolvedValue({ version: 1, rootCauses: [], resolutionCodes: [] });
+    const lifecycleServices = {
+      read: vi.fn(), taxonomy, setRootCause: vi.fn(), setResolution: vi.fn(), waive: vi.fn(), signOff: vi.fn(), reopen: vi.fn()
+    };
+    const auditLoader = vi.fn().mockResolvedValue([]);
+    renderWorkbench(undefined, fakeBulkServices(), offlineVisits, {
+      sourceRows: breaks.map((item) => ({ ...item, version: 3, lifecycleState: "Investigating" as const })),
+      props: { lifecycleServices, auditLoader }
+    });
+    const rail = inspector();
+    const lifecycle = within(rail).getByRole("region", { name: "Break lifecycle" });
+    expect(lifecycle).toHaveTextContent("State: Investigating");
+    expect(within(lifecycle).getByRole("button", { name: "Waive" })).toBeEnabled();
+    expect(within(lifecycle).getByRole("button", { name: "Sign off" })).toBeDisabled();
+    await waitFor(() => expect(taxonomy).toHaveBeenCalled());
+    await userEvent.click(within(rail).getByText("Activity"));
+    expect(await within(rail).findByText("No history recorded yet.")).toBeInTheDocument();
+    expect(auditLoader).toHaveBeenCalledWith("cash-1");
+  });
+
+  it("offers no lifecycle decisions when the queue payload has no lifecycle state", () => {
+    renderWorkbench(undefined, fakeBulkServices(), offlineVisits, { sourceRows: breaks });
+    expect(within(inspector()).queryByRole("region", { name: "Break lifecycle" })).not.toBeInTheDocument();
   });
 });

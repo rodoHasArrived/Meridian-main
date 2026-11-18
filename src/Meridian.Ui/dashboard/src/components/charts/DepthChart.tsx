@@ -1,7 +1,9 @@
 // Meridian DepthChart — order-book market depth (volume profile). Cumulative bid size rises as a
 // green step area toward the mid from the left; cumulative ask size rises red to the right. The
 // mid price marks the spread. Reads a live order book at a glance. Explicit-height svg.
+import { AXIS_LABEL_STYLE } from "./axis-ticks";
 import { ChartSvg, type ChartA11yProps } from "./chart-a11y";
+import { useChartSize } from "./use-chart-size";
 
 export interface DepthLevel {
   price: number;
@@ -48,8 +50,9 @@ export function DepthChart({
   ariaDescription,
   accessibleData
 }: DepthChartProps) {
-  const W = 960;
-  const H = 360;
+  const [plotRef, size] = useChartSize({ width: 960, height: 360 });
+  const W = size.width;
+  const H = size.height;
   const padT = 16;
   const axisB = 26;
   const axisL = 8;
@@ -104,12 +107,13 @@ export function DepthChart({
   const bidPath = step(bidPts);
   const askPath = step(askPts);
 
-  const labelFont = { fontFamily: "var(--font-data, monospace)", fontSize: 11 };
+  const labelFont = { fontFamily: AXIS_LABEL_STYLE.fontFamily, fontVariantNumeric: "tabular-nums", fontSize: 12 };
   const sTicks = Array.from({ length: sizeTicks + 1 }, (_, i) => Math.round((i / sizeTicks) * maxDepth));
   const pStep = Math.max(1, Math.round(priceTicks));
   const priceLabels = Array.from({ length: pStep + 1 }, (_, i) => pLo + (i / pStep) * pSpan);
 
   return (
+    <div ref={plotRef} style={{ width: "100%", height: "100%", minHeight: 0 }}>
     <ChartSvg
       viewBox={`0 0 ${W} ${H}`}
       style={{ width: "100%", height: "100%", display: "block" }}
@@ -152,6 +156,7 @@ export function DepthChart({
       ))}
       <line x1={plotL} x2={plotR} y1={plotB} y2={plotB} stroke={BORDER} strokeWidth="1.2" />
     </ChartSvg>
+    </div>
   );
 }
 
