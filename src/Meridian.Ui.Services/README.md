@@ -89,6 +89,16 @@ book or computation is refused. It never approves or posts. The book is chosen f
 profiles of the same legal agreement. The lists only fill the selection; the server still
 authorizes every identifier, and a profile read for a book no longer chosen is ignored.
 
+`IntercompanyAccrualScheduleWorkspace` is the desktop state for opt-in, reviewed accrual schedules
+over `/api/ledger/intercompany/accrual-schedules*`, the routes the browser uses. Choosing a book
+lists its schedules and, for ledger managers, the LoanInterest profiles and same-agreement Loan
+principal profiles to propose one with a reason. A selected schedule is approved, rejected or
+disabled (reject and disable need a reason) against its exact version; due periods are previewed
+as of today's UTC date and an active schedule can be run now. Schedules only draft for ordinary
+review; nothing posts, and the server refuses approval by the proposer. A request identity is
+reused only for an identical retry, read-only operators get no mutation commands, and responses
+for another book, schedule, date or request are refused.
+
 `WorkstationOnboardingApiClient` and `OnboardingShadowWorkspace` bring shadow-mode onboarding
 (W11-SHADOW-001) to the desktop over the browser's onboarding routes. The panel covers:
 

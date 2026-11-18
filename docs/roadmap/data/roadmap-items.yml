@@ -3663,3 +3663,50 @@ items:
       - type: test
         path: tests/Meridian.Tests/Ui/IntercompanyAccrualDraftServiceTests.Compounding.cs
     last_reviewed: 2026-11-17
+  - id: W12-ICSCHEDULE-001
+    title: Opt-in, reviewed intercompany accrual schedules
+    wave: W12
+    stage_gates:
+      - AccountingRecords
+    workspace:
+      - Accounting
+    owner_lane: Accounting and Ledger
+    status: in_progress
+    health: yellow
+    priority: medium
+    evidence_posture: in_progress
+    status_note: Maker-checker schedules per book and loan-interest profile; a background runner drafts each completed period after approval through the ordinary path and never posts or overwrites a draft. Fee schedules follow fee drafting on main.
+    decision_ids:
+      - DEC-IC-SCHEDULE-001
+    pr_references: []
+    exit_criteria:
+      - A schedule names one book, one approved loan-interest profile and its principal profile, and becomes active only when someone other than its proposer approves it; it can be rejected or disabled with a reason.
+      - Schedule versions are retained append-only and tenant-scoped on durable storage; at most one proposed or active schedule exists per book and profile.
+      - A run drafts each completed period ending on or after approval through the operator's preview-then-draft path, records the schedule as preparer, and never posts.
+      - A period with an existing draft is skipped, never recomputed; a refused period is reported with its reason and retried on the next run.
+      - Browser and WPF surfaces propose, review, preview due periods and run active schedules over the same routes.
+    source_modules:
+      - SRC-CONTRACTS
+      - SRC-APP
+      - SRC-DESIGN-FINANCIAL-OPERATIONS
+      - SRC-STORAGE
+      - SRC-UI-SHARED
+      - SRC-UI-SERVICES
+      - SRC-WPF
+      - SRC-UI-DASHBOARD
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    evidence:
+      - type: source
+        path: src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleService.cs
+      - type: source
+        path: src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleRunner.cs
+      - type: source
+        path: src/Meridian.Storage/Ledger/Migrations/V_ledger_076__intercompany_accrual_schedules.sql
+      - type: test
+        path: tests/Meridian.Tests/Storage/IntercompanyAccrualScheduleStoreTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Ui/IntercompanyAccrualScheduleServiceTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Ui/IntercompanyAccrualScheduleEndpointTests.cs
+    last_reviewed: 2026-11-17

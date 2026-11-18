@@ -26,6 +26,14 @@ export const entityOperationEndpoints = {
   confirmations: "/api/ledger/intercompany/confirmations",
   confirmationSummary: (bookId: string, asOf: string) => `/api/ledger/intercompany/confirmations?${new URLSearchParams({ ledgerBookId: bookId, asOf })}`,
   confirmationActions: (confirmationId: string) => `/api/ledger/intercompany/confirmations/${encodeURIComponent(confirmationId)}/actions`,
+  accrualSchedules: "/api/ledger/intercompany/accrual-schedules",
+  accrualScheduleList: (bookId: string) => `/api/ledger/intercompany/accrual-schedules?${new URLSearchParams({ ledgerBookId: bookId })}`,
+  accrualScheduleDecisions: (scheduleId: string, bookId: string) =>
+    `/api/ledger/intercompany/accrual-schedules/${encodeURIComponent(scheduleId)}/decisions?${new URLSearchParams({ ledgerBookId: bookId })}`,
+  accrualScheduleDue: (scheduleId: string, bookId: string, asOf: string) =>
+    `/api/ledger/intercompany/accrual-schedules/${encodeURIComponent(scheduleId)}/due?${new URLSearchParams({ ledgerBookId: bookId, asOf })}`,
+  accrualScheduleRun: (scheduleId: string, bookId: string) =>
+    `/api/ledger/intercompany/accrual-schedules/${encodeURIComponent(scheduleId)}/run?${new URLSearchParams({ ledgerBookId: bookId })}`,
   rates: "/api/ledger/consolidation/fx/rate-sets",
   fxConfiguration: (bookId: string) => `/api/ledger/consolidation/fx/books/${encodeURIComponent(bookId)}/configuration`,
   bindings: (bookId: string, asOf: string) => `/api/ledger/intercompany/account-bindings?${new URLSearchParams({ ledgerBookId: bookId, asOf })}`

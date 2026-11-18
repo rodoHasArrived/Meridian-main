@@ -129,6 +129,9 @@ its specialized authority instead of reacquiring the same fences. See
 PostgreSQL store (ledger migration `073`) when a ledger database is configured, otherwise an atomic
 file store. See [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
 
+`IntercompanyEntityServiceRegistration` also composes the accrual-schedule store: PostgreSQL (ledger
+migration `074`) with a ledger database, otherwise an atomic file store. See [opt-in accrual schedules](../../docs/domain/intercompany-agreements.md#opt-in-accrual-schedules).
+
 `DirectLendingJournalLines.ForEvent` owns the loan journal templates consumed by both
 `LoanAccountingProjector` and `DirectLendingOutboxDispatcher`. Their trading cash and loan-specific
 account roles resolve through the shared `IChartOfAccounts` registry while preserving historical

@@ -642,6 +642,27 @@ Outstanding principal by day, read from posted journals of the reviewed loan pro
 public sealed record IntercompanyAccrualPrincipalResult(IReadOnlyList<IntercompanyAccrualPrincipalSegmentDto> Segments, IntercompanyAccrualPrincipalEvidenceDto? Evidence, string? Refusal);
 ```
 
+## IntercompanyAccrualScheduleRules
+
+Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyAccrualScheduleRules</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualScheduleRules.cs:9](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualScheduleRules.cs#L9).
+
+Pure transitions of an accrual schedule. A schedule drafts nothing until someone other than its proposer approves it; it is active from the approval date, and disabling it stops future runs without touching existing drafts.
+
+```csharp
+public static class IntercompanyAccrualScheduleRules
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int MaximumReasonLength = 500;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualScheduleRules.cs:11](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualScheduleRules.cs#L11) |  |
+| <code>public static IntercompanyAccrualScheduleDto Propose(string tenantId, string? companyId, string actor, ProposeIntercompanyAccrualScheduleRequest request, DateTimeOffset at);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualScheduleRules.cs:13](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualScheduleRules.cs#L13) |  |
+| <code>public static IntercompanyAccrualScheduleDto Decide(IntercompanyAccrualScheduleDto current, string actor, DecideIntercompanyAccrualScheduleRequest request, DateTimeOffset at);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualScheduleRules.cs:30](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualScheduleRules.cs#L30) |  |
+| <code>public static bool IsReplay(IntercompanyAccrualScheduleDto? current, Guid requestId, IntercompanyAccrualScheduleActionDto action);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualScheduleRules.cs:66](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualScheduleRules.cs#L66) | True when this request already produced a step of the schedule; a reused identity for another step conflicts. |
+
 ## IntercompanyAccrualSourceBuilder
 
 Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyAccrualSourceBuilder</code>. Kind: `class`.
@@ -890,21 +911,3 @@ Source: [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:62](
 ```csharp
 public sealed record AccountingBasisProjectionResult(AccountingPolicyDto Policy, LedgerJournalEntryWrite Write);
 ```
-
-## AccountingBasisProjectionService
-
-Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingBasisProjectionService</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:365](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L365).
-
-Builds accounting-basis projections using the resolved accounting policy.
-
-```csharp
-public sealed class AccountingBasisProjectionService(IAccountingPolicyService accountingPolicyService) : IAccountingBasisProjectionService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;AccountingBasisProjectionResult&gt; ProjectAsync(AccountingBasisProjectionRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:370](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L370) |  |

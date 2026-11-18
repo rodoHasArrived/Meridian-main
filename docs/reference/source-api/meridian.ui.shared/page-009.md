@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AutomatedJournalScheduleWorkItem
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalScheduleWorkItem</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:63](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L63).
+
+Persisted configuration and durable current-cycle cursor for one recurring monthly fund/book/entity/currency scope. Completed cycles remain immutable in RunHistory; fee-basis values and their capital-account reconciliation never roll into a later month. Recurring dividend quantities are never retained here; named snapshot scopes are resolved from durable position history at each execution.
+
+```csharp
+public sealed record AutomatedJournalScheduleWorkItem(string ScheduleId, AutomatedJournalScheduleKind Kind, string FundProfileId, Guid LedgerBookId, string PeriodId, string EntityId, string Currency, DateOnly PeriodStart, DateOnly PeriodEnd, DateOnly DueDate, TimeOnly DueTimeLocal, string TimeZoneId, string Actor, bool IsEnabled = true, IReadOnlyList<DividendAccrualPosition>? Positions = null, decimal? BeginningNav = null, decimal? EndingNavBeforeFees = null, decimal? HighWaterMark = null, decimal? ManagementFeeRate = null, decimal? PerformanceFeeRate = null, decimal WithholdingTaxRate = 0m, decimal MinimumCorporateActionConfidence = 0.75m, string? TenantId = null, string? CompanyId = null, DateTimeOffset? ScheduledForUtc = null, AutomatedJournalScheduleStateDto State = AutomatedJournalScheduleStateDto.Scheduled, DateTimeOffset? LastRunAtUtc = null, DateTimeOffset? LastScheduledForUtc = null, IReadOnlyList<Guid>? JournalEntryIds = null, string? LastSummary = null, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null, IReadOnlyList<string>? Blockers = null, IReadOnlyList<AutomatedJournalScheduleRunHistory>? RunHistory = null, bool RecurrenceEnabled = true, decimal MinimumCapitalAccountConfidence = 0.90m, AutomatedJournalCapitalAccountReconciliationDto? CapitalAccountReconciliation = null, string? CreatedBy = null, string? LastConfiguredBy = null, decimal? LastEvidenceConfidenceScore = null, AutomatedJournalEvidenceQualityDto? LastEvidenceQuality = null, long Version = 0, IReadOnlyList<AutomatedJournalPositionSnapshotScope>? PositionSnapshotScopes = null, int MaximumPositionAgeDays = 7)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PreparePeriodAdjustmentRequest? PeriodAdjustment { get; init; }</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:109](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L109) | Exact one-time source/target reversal intent; immutable once retained. |
+| <code>public IReadOnlyList&lt;DividendAccrualPosition&gt; Positions { get; init; } = Positions??[];</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:111](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L111) |  |
+| <code>public IReadOnlyList&lt;Guid&gt; JournalEntryIds { get; init; } = JournalEntryIds??[];</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:113](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L113) |  |
+| <code>public IReadOnlyList&lt;OperationsEvidenceLinkDto&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:115](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L115) |  |
+| <code>public IReadOnlyList&lt;string&gt; Blockers { get; init; } = Blockers??[];</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:117](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L117) |  |
+| <code>public IReadOnlyList&lt;AutomatedJournalScheduleRunHistory&gt; RunHistory { get; init; } = RunHistory??[];</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:119](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L119) |  |
+| <code>public IReadOnlyList&lt;AutomatedJournalPositionSnapshotScope&gt; PositionSnapshotScopes { get; init; } = PositionSnapshotScopes??[];</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:121](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L121) |  |
+
 ## BackfillCoordinator
 
 Qualified name: <code>Meridian.Ui.Shared.Services.BackfillCoordinator</code>. Kind: `class`.
@@ -932,25 +956,3 @@ Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:47](../
 ```csharp
 public sealed record CouponEvent(string EventId, string SecurityId, string AccountId, string Currency, decimal Amount, DateOnly ExDate, DateOnly PayDate, string Status);
 ```
-
-## CoveredCallBacktestOptions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CoveredCall.CoveredCallBacktestOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestOptions.cs:7](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestOptions.cs#L7).
-
-Host-level options for the covered-call backtest service. Hot-reloadable via IOptionsMonitor&lt;CoveredCallBacktestOptions&gt;.
-
-```csharp
-public sealed class CoveredCallBacktestOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string SectionName = &quot;Strategies:CoveredCall&quot;;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestOptions.cs:12](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestOptions.cs#L12) | Configuration section name (Strategies:CoveredCall). |
-| <code>public int MaxConcurrentRuns { get; init; } = 3;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestOptions.cs:15](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestOptions.cs#L15) | Soft cap on simultaneous in-flight covered-call runs. |
-| <code>public TimeSpan ResultCacheDuration { get; init; } = DefaultResultCacheDuration;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestOptions.cs:18](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestOptions.cs#L18) | How long a completed run&#x27;s full result stays cached in memory before re-hydration. |
-| <code>public int MaxStrikesPerExpiration { get; init; } = 80;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestOptions.cs:21](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestOptions.cs#L21) | Max strikes per expiration to materialise from the production chain provider. |
-| <code>public string? DataRootOverride { get; init; }</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestOptions.cs:27](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestOptions.cs#L27) | Optional override of the underlying-bar DataRoot for the backtest engine. When null, callers must supply a data root in the request (or the engine falls back to its default). |

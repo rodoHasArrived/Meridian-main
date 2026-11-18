@@ -6,6 +6,69 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerClientReportDocumentPackage
+
+Qualified name: <code>Meridian.Ui.Shared.Services.LedgerClientReportDocumentPackage</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs:10](../../../../src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs#L10).
+
+The complete binary primary-document pair rendered from one immutable ledger report pack. Construction is all-or-nothing: callers do not receive a package unless both documents were rendered successfully and contain bytes.
+
+```csharp
+public sealed record LedgerClientReportDocumentPackage(byte[] Pdf, byte[] Workbook);
+```
+
+## LedgerClientReportExportService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.LedgerClientReportExportService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs:23](../../../../src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs#L23).
+
+Shared, DI-resolved seam that turns a governed ledger report pack into client-grade delivery artifacts (branded PDF + multi-sheet XLSX) plus the retained hash/provenance manifest. It uses the composition root&#x27;s registered ILedgerReportBinaryRenderer — the QuestPDF/ClosedXML renderer once AddFinancialReportDocumentRenderer is wired — so both the browser workstation and the WPF desktop consume one export path rather than each re-rendering deliverables. The renderer is optional so lightweight hosts that never registered it still degrade to the dependency-free plain-text fallback instead of failing to construct.
+
+```csharp
+public sealed class LedgerClientReportExportService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public LedgerClientReportExportService(ILedgerReportBinaryRenderer? renderer = null);</code> | [src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs:27](../../../../src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs#L27) |  |
+| <code>public bool HasClientGradeRenderer =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs:33](../../../../src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs#L33) | True when a client-grade binary renderer is wired (not the plain-text fallback). |
+| <code>public LedgerClientReportDocumentPackage BuildClientDocumentPackage(LedgerFinancialReportPack reportPack);</code> | [src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs:40](../../../../src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs#L40) | Renders the atomic PDF/XLSX primary-document pair for a governed client package from the exact supplied report pack. Both documents flow through the same composition-root renderer; if either render fails or returns no bytes, no package is returned. |
+| <code>public IReadOnlyList&lt;LedgerReportPackArtifact&gt; BuildClientDeliverables(LedgerFinancialReportPack reportPack, LedgerReportScheduledExport scheduledExport);</code> | [src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs:60](../../../../src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs#L60) | Builds the scheduled-export delivery artifacts (manifest + one artifact per declared format) for reportPack, rendering PDF/XLSX through the wired renderer. |
+
+## LedgerExportEvidenceUnavailableException
+
+Qualified name: <code>Meridian.Ui.Shared.Services.LedgerExportEvidenceUnavailableException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/BacktestLedgerExportMapper.cs:9](../../../../src/Meridian.Ui.Shared/Services/BacktestLedgerExportMapper.cs#L9).
+
+The journal remains exportable but the requested lot evidence was not retained.
+
+```csharp
+public sealed class LedgerExportEvidenceUnavailableException(string message) : InvalidOperationException(message);
+```
+
+## LedgerMarkToMarketCarryingValueSource
+
+Qualified name: <code>Meridian.Ui.Shared.Services.LedgerMarkToMarketCarryingValueSource</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/LedgerMarkToMarketCarryingValueSource.cs:13](../../../../src/Meridian.Ui.Shared/Services/LedgerMarkToMarketCarryingValueSource.cs#L13).
+
+Reads the requested ledger book&#x27;s as-of trial balance once and returns the durable securities-account carrying value for every requested security/account key within the requested entity. Missing accounts are explicit null results; present zero-balance accounts remain zero.
+
+```csharp
+public sealed class LedgerMarkToMarketCarryingValueSource(ILedgerJournalStore store) : IMarkToMarketCarryingValueSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IReadOnlyDictionary&lt;MarkToMarketCarryingValueKey, MarkToMarketCarryingValue&gt;&gt; GetCarryingValuesAsync(MarkToMarketCarryingValueRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerMarkToMarketCarryingValueSource.cs:16](../../../../src/Meridian.Ui.Shared/Services/LedgerMarkToMarketCarryingValueSource.cs#L16) |  |
+
 ## LedgerRecurringJournalCalculationInputs
 
 Qualified name: <code>Meridian.Ui.Shared.Services.LedgerRecurringJournalCalculationInputs</code>. Kind: `class`.
@@ -993,80 +1056,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;Guid&gt; QueueAsync(PortfolioImportRun run, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PortfolioOpeningBalanceQueue.cs:22](../../../../src/Meridian.Ui.Shared/Services/PortfolioOpeningBalanceQueue.cs#L22) |  |
-
-## PositionSnapshotAutomatedJournalDividendPositionResolver
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PositionSnapshotAutomatedJournalDividendPositionResolver</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs:36](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs#L36).
-
-Loads exact-owner durable position history for a recurring dividend cycle. Each snapshot is expanded with zero-quantity tombstones for symbols absent from later snapshots, allowing the corporate-action producer to reconstruct the quantity actually held on each ex-date.
-
-```csharp
-public sealed class PositionSnapshotAutomatedJournalDividendPositionResolver : IAutomatedJournalDividendPositionResolver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PositionSnapshotAutomatedJournalDividendPositionResolver(IPositionSnapshotStore? snapshotStore);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs:41](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs#L41) |  |
-| <code>public async Task&lt;AutomatedJournalDividendPositionResolution&gt; ResolveAsync(AutomatedJournalScheduleWorkItem workItem, DateTimeOffset evaluatedAtUtc, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs:46](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs#L46) |  |
-
-## PostedLedgerAccountReconciliationSource
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PostedLedgerAccountReconciliationSource</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/PostedLedgerAccountReconciliationSource.cs:16](../../../../src/Meridian.Ui.Shared/Services/PostedLedgerAccountReconciliationSource.cs#L16).
-
-Compares broker evidence with posted cash and canonical open lots. Carrying-value marks are excluded from cost basis only after validating their retained evidence. Incomplete acquisition coverage or a moved read population is unavailable, never a fabricated zero or a matched custodian-to-provider comparison.
-
-```csharp
-public sealed class PostedLedgerAccountReconciliationSource(ILedgerJournalStore store)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyList&lt;ProviderShadowBookComparisonLineDto&gt;&gt; CompareAsync(LedgerBookDto book, Guid accountId, FundAccountBrokerageSyncActivityDto provider, decimal tolerance, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PostedLedgerAccountReconciliationSource.cs:18](../../../../src/Meridian.Ui.Shared/Services/PostedLedgerAccountReconciliationSource.cs#L18) |  |
-
-## PostedLedgerAmountProvenanceService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PostedLedgerAmountProvenanceService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs:13](../../../../src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs#L13).
-
-Resolves immutable posted-line identities without account-name, symbol, or case searches.
-
-```csharp
-public sealed class PostedLedgerAmountProvenanceService(ILedgerJournalStore? journals, ILedgerBookService? books, IFundProfileTenancyRegistry? tenancy, IEvidenceArtifactStore? artifacts)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static string BuildRetainedSubjectId(string subjectId, LedgerAmountScopeDto scope) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs:19](../../../../src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs#L19) |  |
-| <code>public async Task&lt;EvidencePacketDto?&gt; GetPacketAsync(string subjectId, LedgerAmountScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs:22](../../../../src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs#L22) |  |
-
-## PostedPeriodComparisonService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PostedPeriodComparisonService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs:11](../../../../src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs#L11).
-
-Source-backed comparisons of posted accounting periods under retained fund ownership.
-
-```csharp
-public sealed class PostedPeriodComparisonService(ILedgerJournalStore journals, ILedgerBookService books, IFundProfileTenancyRegistry tenancy)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;PostedPeriodComparisonDto&gt; GetAsync(string tenantId, string companyId, Guid bookId, Guid currentPeriodId, Guid? baselinePeriodId, DateTimeOffset asOf, LedgerDimensionSetDto? dimensions, Func&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;, IReadOnlyList&lt;LedgerJournalEntryDto&gt;&gt; project, CancellationToken ct = default, AccountingBasisKindDto? accountingBasis = null, PostedComparisonMeasureDto measure = PostedComparisonMeasureDto.Movements);</code> | [src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs:14](../../../../src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs#L14) |  |
-| <code>public static (PostedPeriodComparisonRangeDto Current, PostedPeriodComparisonRangeDto? Baseline, string? Reason) SelectClosingWindows(LedgerAccountingPeriod current, LedgerAccountingPeriod baseline, DateTimeOffset asOf);</code> | [src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs:178](../../../../src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs#L178) | Closing-balance windows: the current period to the cutoff (partial while open), against the baseline period&#x27;s full close. |
-| <code>public static (PostedPeriodComparisonRangeDto Current, PostedPeriodComparisonRangeDto? Baseline, string? Reason) SelectWindows(LedgerAccountingPeriod current, LedgerAccountingPeriod baseline, DateTimeOffset asOf);</code> | [src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs:188](../../../../src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs#L188) |  |
-| <code>public static IReadOnlyList&lt;PostedPeriodComparisonLineDto&gt; CompareLines(IReadOnlyList&lt;LedgerJournalEntryDto&gt; current, IReadOnlyList&lt;LedgerJournalEntryDto&gt; baseline);</code> | [src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs:218](../../../../src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs#L218) |  |

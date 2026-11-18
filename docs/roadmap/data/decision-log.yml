@@ -471,3 +471,21 @@ decisions:
     related_roadmap_items:
       - W12-ICCOMPOUND-001
       - W12-ICACCRUAL-001
+  - id: DEC-IC-SCHEDULE-001
+    title: Bring opt-in, reviewed intercompany accrual schedules into scope; register W12-ICSCHEDULE-001
+    status: accepted
+    decided_on: 2026-11-17
+    owner_lane: Accounting and Ledger
+    summary: >-
+      Recorded on the repository owner's instruction of 2026-11-17, which chose opt-in, reviewed schedules for
+      scheduled accrual runs (ADR-031). A schedule names one book, one approved loan-interest profile and its
+      principal profile; one person proposes it and another approves it, and it can be rejected or disabled with a
+      reason. A background runner drafts each completed period ending on or after approval through the ordinary
+      preview-then-draft path, never posts, never recomputes an existing draft, and reports refusals for retry.
+      Automatic accrual of unscheduled profiles and management-fee schedules are not brought into scope here.
+      W12-ICSCHEDULE-001 is registered as in_progress with yellow health under active implementation. The decision
+      changes no existing row's rank, status, dependency or acceptance, weakens no review, posting or authorization
+      control, and grants no release authority.
+    related_roadmap_items:
+      - W12-ICSCHEDULE-001
+      - W12-ICACCRUAL-001

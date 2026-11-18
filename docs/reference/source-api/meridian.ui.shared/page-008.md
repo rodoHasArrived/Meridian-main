@@ -6,6 +6,35 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LeanSymbolMapper
+
+Qualified name: <code>Meridian.Ui.Shared.LeanSymbolMapper</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/LeanSymbolMapper.cs:15](../../../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs#L15).
+
+Maps between Meridian symbol format and QuantConnect Lean&#x27;s SecurityIdentifier format. Meridian symbols are plain tickers like &quot;SPY&quot; or &quot;AAPL&quot;; Lean uses qualified identifiers that encode market, security type, and an exchange-specific sid component.
+
+```csharp
+public static class LeanSymbolMapper
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string UsaMarket = &quot;usa&quot;;</code> | [src/Meridian.Ui.Shared/LeanSymbolMapper.cs:18](../../../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs#L18) | Lean market code for US equities. |
+| <code>public const string EquitySecurityType = &quot;equity&quot;;</code> | [src/Meridian.Ui.Shared/LeanSymbolMapper.cs:21](../../../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs#L21) | Lean security type folder for equities. |
+| <code>public const string CryptoSecurityType = &quot;crypto&quot;;</code> | [src/Meridian.Ui.Shared/LeanSymbolMapper.cs:24](../../../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs#L24) | Lean security type folder for crypto. |
+| <code>public const string ForexSecurityType = &quot;forex&quot;;</code> | [src/Meridian.Ui.Shared/LeanSymbolMapper.cs:27](../../../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs#L27) | Lean security type folder for forex. |
+| <code>public static string ToLeanTicker(string mdcSymbol) =&gt; …;</code> | [src/Meridian.Ui.Shared/LeanSymbolMapper.cs:40](../../../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs#L40) | Converts an Meridian ticker symbol to a lowercase Lean ticker (used in data paths). Lean expects lower-case tickers in file/directory names. |
+| <code>public static string FromLeanTicker(string leanTicker) =&gt; …;</code> | [src/Meridian.Ui.Shared/LeanSymbolMapper.cs:48](../../../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs#L48) | Converts a Lean lower-case ticker back to an Meridian upper-case symbol. |
+| <code>public static string DetectSecurityType(string mdcSymbol);</code> | [src/Meridian.Ui.Shared/LeanSymbolMapper.cs:54](../../../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs#L54) | Detects the Lean security type folder name for the given Meridian symbol. |
+| <code>public static string DetectMarket(string mdcSymbol);</code> | [src/Meridian.Ui.Shared/LeanSymbolMapper.cs:70](../../../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs#L70) | Detects the Lean market for the given symbol. |
+| <code>public static string BuildLeanDataDirectory(string baseDir, string mdcSymbol, string resolution = &quot;tick&quot;, string? securityType = null, string? market = null);</code> | [src/Meridian.Ui.Shared/LeanSymbolMapper.cs:87](../../../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs#L87) | Builds the Lean data directory path for a symbol, resolution, and data type. Path pattern: {baseDir}/{securityType}/{market}/{resolution}/{ticker} |
+| <code>public static string BuildLeanFileName(DateTime date, string mdcEventType) =&gt; …;</code> | [src/Meridian.Ui.Shared/LeanSymbolMapper.cs:108](../../../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs#L108) | Builds the Lean zip file name for a given date and event type. Lean names trade files &quot;{yyyyMMdd}_trade.zip&quot; and quote files &quot;{yyyyMMdd}_quote.zip&quot;. |
+| <code>public static string MapEventTypeToLean(string mdcEventType);</code> | [src/Meridian.Ui.Shared/LeanSymbolMapper.cs:114](../../../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs#L114) | Maps an Meridian event type name to the Lean data type name used in file names. |
+| <code>public static string MapResolutionToMdc(string leanResolution) =&gt; …;</code> | [src/Meridian.Ui.Shared/LeanSymbolMapper.cs:130](../../../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs#L130) | Maps a Lean resolution string to an Meridian-friendly description. |
+
 ## ScoreExplanationProjection
 
 Qualified name: <code>Meridian.Ui.Shared.ScoreExplanationProjection</code>. Kind: `record`.
@@ -883,27 +912,3 @@ Declared public members:
 | <code>public IReadOnlyList&lt;Guid&gt; JournalEntryIds { get; init; } = JournalEntryIds??[];</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:49](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L49) |  |
 | <code>public IReadOnlyList&lt;OperationsEvidenceLinkDto&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:51](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L51) |  |
 | <code>public IReadOnlyList&lt;string&gt; Blockers { get; init; } = Blockers??[];</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:53](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L53) |  |
-
-## AutomatedJournalScheduleWorkItem
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalScheduleWorkItem</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:63](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L63).
-
-Persisted configuration and durable current-cycle cursor for one recurring monthly fund/book/entity/currency scope. Completed cycles remain immutable in RunHistory; fee-basis values and their capital-account reconciliation never roll into a later month. Recurring dividend quantities are never retained here; named snapshot scopes are resolved from durable position history at each execution.
-
-```csharp
-public sealed record AutomatedJournalScheduleWorkItem(string ScheduleId, AutomatedJournalScheduleKind Kind, string FundProfileId, Guid LedgerBookId, string PeriodId, string EntityId, string Currency, DateOnly PeriodStart, DateOnly PeriodEnd, DateOnly DueDate, TimeOnly DueTimeLocal, string TimeZoneId, string Actor, bool IsEnabled = true, IReadOnlyList<DividendAccrualPosition>? Positions = null, decimal? BeginningNav = null, decimal? EndingNavBeforeFees = null, decimal? HighWaterMark = null, decimal? ManagementFeeRate = null, decimal? PerformanceFeeRate = null, decimal WithholdingTaxRate = 0m, decimal MinimumCorporateActionConfidence = 0.75m, string? TenantId = null, string? CompanyId = null, DateTimeOffset? ScheduledForUtc = null, AutomatedJournalScheduleStateDto State = AutomatedJournalScheduleStateDto.Scheduled, DateTimeOffset? LastRunAtUtc = null, DateTimeOffset? LastScheduledForUtc = null, IReadOnlyList<Guid>? JournalEntryIds = null, string? LastSummary = null, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null, IReadOnlyList<string>? Blockers = null, IReadOnlyList<AutomatedJournalScheduleRunHistory>? RunHistory = null, bool RecurrenceEnabled = true, decimal MinimumCapitalAccountConfidence = 0.90m, AutomatedJournalCapitalAccountReconciliationDto? CapitalAccountReconciliation = null, string? CreatedBy = null, string? LastConfiguredBy = null, decimal? LastEvidenceConfidenceScore = null, AutomatedJournalEvidenceQualityDto? LastEvidenceQuality = null, long Version = 0, IReadOnlyList<AutomatedJournalPositionSnapshotScope>? PositionSnapshotScopes = null, int MaximumPositionAgeDays = 7)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PreparePeriodAdjustmentRequest? PeriodAdjustment { get; init; }</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:109](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L109) | Exact one-time source/target reversal intent; immutable once retained. |
-| <code>public IReadOnlyList&lt;DividendAccrualPosition&gt; Positions { get; init; } = Positions??[];</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:111](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L111) |  |
-| <code>public IReadOnlyList&lt;Guid&gt; JournalEntryIds { get; init; } = JournalEntryIds??[];</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:113](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L113) |  |
-| <code>public IReadOnlyList&lt;OperationsEvidenceLinkDto&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:115](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L115) |  |
-| <code>public IReadOnlyList&lt;string&gt; Blockers { get; init; } = Blockers??[];</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:117](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L117) |  |
-| <code>public IReadOnlyList&lt;AutomatedJournalScheduleRunHistory&gt; RunHistory { get; init; } = RunHistory??[];</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:119](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L119) |  |
-| <code>public IReadOnlyList&lt;AutomatedJournalPositionSnapshotScope&gt; PositionSnapshotScopes { get; init; } = PositionSnapshotScopes??[];</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:121](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L121) |  |

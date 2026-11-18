@@ -47,6 +47,11 @@ scope plus ledger management. Confirmation findings join the close advisory as w
 `IntercompanyAccrualDraftService` resolves posted accrued interest for compounding loans; the journal workbench
 re-reads those facts before review or posting. See [periodic compounding](../../docs/domain/intercompany-agreements.md#periodic-compounding).
 
+`IntercompanyAccrualScheduleService` and `IntercompanyAccrualScheduleRunner` draft completed periods of active
+schedules through the ordinary preview-then-draft path, never posting or overwriting a draft;
+`/api/ledger/intercompany/accrual-schedules` serves proposal, review, due preview and run now. See
+[opt-in accrual schedules](../../docs/domain/intercompany-agreements.md#opt-in-accrual-schedules).
+
 Account/group close advisories require canonical exact-scope membership and retained evidence;
 the book node ID is not substituted for a legal-entity ID. Missing membership yields unknown.
 

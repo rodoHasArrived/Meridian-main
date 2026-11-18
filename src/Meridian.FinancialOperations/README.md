@@ -83,6 +83,10 @@ unchanged. See [reciprocal balance confirmation](../../docs/domain/intercompany-
 `IntercompanyAccrualSourceBuilder` reads compounding facts (posted accrued-interest balance and standing
 accrual windows) and re-verifies them before review or posting. See [periodic compounding](../../docs/domain/intercompany-agreements.md#periodic-compounding).
 
+`IntercompanyAccrualScheduleRules` hold the maker-checker transitions of accrual schedules: active only once
+someone other than the proposer approves, rejected or disabled with a reason. See
+[opt-in accrual schedules](../../docs/domain/intercompany-agreements.md#opt-in-accrual-schedules).
+
 Intercompany services own approved accounting-profile revisions and governed counterpart templates;
 canonical legal terms and independent review remain in Application/FundStructure.
 Consolidation dispatches exact book policy versions: retained v1, stable-role/N-entity v2, whole-book

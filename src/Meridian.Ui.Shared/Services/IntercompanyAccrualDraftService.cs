@@ -17,6 +17,7 @@ public sealed class IntercompanyAccrualDraftService(IntercompanyAccountingArrang
     IManualJournalEntryDraftStore drafts, ManualJournalEntryWorkbenchService workbench,
     IIntercompanyAccrualPreviewService calculator, IConsolidationFxAuthority? fx = null, TimeProvider? time = null,
     Meridian.Application.FundStructure.IntercompanyRateFixingService? fixings = null)
+    : IIntercompanyInterestAccrualDrafter
 {
     private readonly TimeProvider _clock = time ?? TimeProvider.System;
 
@@ -211,4 +212,11 @@ public sealed class IntercompanyAccrualDraftService(IntercompanyAccountingArrang
     }
 
     private static DateTimeOffset EndOfDay(DateOnly day) => new(day.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
+}
+
+/// <summary>The preview-then-draft contract an accrual schedule runs through; the same one operators use.</summary>
+public interface IIntercompanyInterestAccrualDrafter
+{
+    Task<IntercompanyAccrualProposalDto> PreviewAsync(string tenantId, string? companyId, string actor, IntercompanyAccrualRequestDto request, CancellationToken ct = default);
+    Task<ManualJournalEntryDraftDto> CreateDraftAsync(string tenantId, string? companyId, string actor, CreateIntercompanyAccrualDraftRequest request, CancellationToken ct = default);
 }

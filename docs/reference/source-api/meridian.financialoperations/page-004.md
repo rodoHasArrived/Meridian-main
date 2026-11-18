@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FileDistributionRequest
+
+Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.FileDistributionRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:300](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L300).
+
+Request to distribute one normalized file to a set of recipients. ContentLocation is the durable, retrievable location of the deliverable — a storage handle or URI into the platform&#x27;s secure-distribution artifact store. A production transport fetches the bytes from there and verifies them against ContentSha256 before dispatch, so the archived delivery evidence reflects a real transfer of an identified artifact rather than metadata alone.
+
+```csharp
+public sealed record FileDistributionRequest(string FileName, string ContentType, string ContentSha256, long ContentLength, string ContentLocation, IReadOnlyList<DistributionRecipient> Recipients, string DistributedBy, string? SubjectId = null, DateTimeOffset? DistributedAtUtc = null);
+```
+
 ## IFileDistributionTransport
 
 Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.IFileDistributionTransport</code>. Kind: `interface`.
@@ -1141,19 +1153,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public OperationsWorkflowStatusDto Derive(OperationsContinuityWorkflow workflow);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsStatusDerivationService.cs:19](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsStatusDerivationService.cs#L19) |  |
-
-## OperationsWorkflowAuditDraft
-
-Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.OperationsWorkflowAuditDraft</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:75](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L75).
-
-```csharp
-public sealed record OperationsWorkflowAuditDraft(Guid WorkflowId, Guid FundAccountId, string PeriodId, string EventType, OperationsWorkflowStatusDto FromState, OperationsWorkflowStatusDto ToState, OperationsGateKeyDto? Gate, OperationsGateStatusDto? FromGateStatus, OperationsGateStatusDto? ToGateStatus, string Actor, string? Rationale, string? CorrelationId, IReadOnlyList<OperationsEvidenceLinkDto> References, OperationsContinuityCorrelationKeysDto? CorrelationKeys = null, Meridian.Contracts.Operations.VerifiedOperationOutcome? Outcome = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public OperationsCloseChecklistSnapshotDto? CloseChecklistSnapshot { get; init; }</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:93](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L93) |  |

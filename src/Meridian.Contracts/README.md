@@ -37,6 +37,9 @@ See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreeme
 null-omitted `CompoundedInterest`, and accrual evidence retains `IntercompanyAccrualCompoundingEvidenceDto`.
 See [periodic compounding](../../docs/domain/intercompany-agreements.md#periodic-compounding).
 
+`IntercompanyAccrualScheduleDtos` define opt-in, reviewed accrual schedules, their run results and
+`IIntercompanyAccrualScheduleStore`. See [opt-in accrual schedules](../../docs/domain/intercompany-agreements.md#opt-in-accrual-schedules).
+
 Governed loan-interest accrual contracts (ADR-028) carry the computation input, slices and preview
 under rule `intercompany-accrual-v1`, plus the retained `IntercompanyAccrualEvidenceDto` and its
 guard. `ManualJournalEntryDraftDto` gains null-omitted `IntercompanyAccrualEvidenceJson` and digest

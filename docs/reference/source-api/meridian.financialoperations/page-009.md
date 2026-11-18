@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementMatchResultArtifact
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementMatchResultArtifact</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:243](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L243).
+
+```csharp
+public sealed record StatementMatchResultArtifact(string RunId, string ImportId, IReadOnlyList<ReconciliationMatchLink> Matches, IReadOnlyList<StatementBreakRecord> Breaks, IReadOnlyList<StatementCaseLink> CaseLinks);
+```
+
 ## StatementMatchTier
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementMatchTier</code>. Kind: `enum`.

@@ -204,6 +204,21 @@ pairs spanning two companies of one tenant, and posting adjustments from a dispu
 
 Daily compounding and compounding that differs from the schedule frequency remain out of scope.
 
+### Opt-in accrual schedules (2026-11-17)
+
+`DEC-IC-SCHEDULE-001` and [ADR-031](../../adr/031-intercompany-accrual-schedules.md); roadmap row
+`W12-ICSCHEDULE-001`. Development verification only.
+
+| Piece | Decision and boundary | Verification |
+| --- | --- | --- |
+| Schedule | Book, loan-interest profile and principal profile; maker-checker; reject or disable with a reason; one open schedule per book and profile. | `IntercompanyAccrualScheduleRulesTests`, `IntercompanyAccrualScheduleServiceTests` |
+| Storage | Append-only versions in ledger migration `076` or an atomic file store. | `IntercompanyAccrualScheduleStoreTests` (file and PostgreSQL) |
+| Runs | Completed periods ending on or after approval; drafts through the operator path; existing drafts skipped; refusals reported; 24 periods per run. | `IntercompanyAccrualScheduleServiceTests` |
+| Runner | Every six hours after a one-minute start-up delay; disabled schedules ignored; one failure never stops the rest. | `IntercompanyAccrualScheduleServiceTests` |
+| Routes and surfaces | `/api/ledger/intercompany/accrual-schedules`, due preview and run now; browser and WPF tabs. | `IntercompanyAccrualScheduleEndpointTests`, workspace and browser tests |
+
+Management-fee schedules follow once governed fee drafting is composed on main.
+
 ## Verification record (2026-11-14)
 
 This records development verification for `W12-ICAGREE-001`, `W12-ENTITY-001`, `W12-ICPAIR-001`

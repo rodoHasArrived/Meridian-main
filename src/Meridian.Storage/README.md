@@ -76,6 +76,10 @@ bytes and refuses unresolved history. See [the operator procedure](../../docs/op
 and `FileIntercompanyBalanceConfirmationStore` retain every confirmation version append-only under
 an expected-version check. See [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
 
+`PostgresIntercompanyAccrualScheduleStore` (ledger migration `076`, rewrite and truncate refused) and
+`FileIntercompanyAccrualScheduleStore` retain accrual-schedule versions append-only and tenant-scoped. See
+[opt-in accrual schedules](../../docs/domain/intercompany-agreements.md#opt-in-accrual-schedules).
+
 Entity lifecycle history uses immutable tenant-bound timeline revisions and authority leases.
 Ledger migration 061 initializes existing books in `LegacyWarning` and stamps new books
 `Enforced` at insertion. Activation recomputes migration preflight while holding its authority

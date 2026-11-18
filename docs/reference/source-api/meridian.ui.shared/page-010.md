@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CoveredCallBacktestOptions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.CoveredCall.CoveredCallBacktestOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestOptions.cs:7](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestOptions.cs#L7).
+
+Host-level options for the covered-call backtest service. Hot-reloadable via IOptionsMonitor&lt;CoveredCallBacktestOptions&gt;.
+
+```csharp
+public sealed class CoveredCallBacktestOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string SectionName = &quot;Strategies:CoveredCall&quot;;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestOptions.cs:12](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestOptions.cs#L12) | Configuration section name (Strategies:CoveredCall). |
+| <code>public int MaxConcurrentRuns { get; init; } = 3;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestOptions.cs:15](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestOptions.cs#L15) | Soft cap on simultaneous in-flight covered-call runs. |
+| <code>public TimeSpan ResultCacheDuration { get; init; } = DefaultResultCacheDuration;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestOptions.cs:18](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestOptions.cs#L18) | How long a completed run&#x27;s full result stays cached in memory before re-hydration. |
+| <code>public int MaxStrikesPerExpiration { get; init; } = 80;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestOptions.cs:21](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestOptions.cs#L21) | Max strikes per expiration to materialise from the production chain provider. |
+| <code>public string? DataRootOverride { get; init; }</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestOptions.cs:27](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestOptions.cs#L27) | Optional override of the underlying-bar DataRoot for the backtest engine. When null, callers must supply a data root in the request (or the engine falls back to its default). |
+
 ## CoveredCallBacktestService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.CoveredCall.CoveredCallBacktestService</code>. Kind: `class`.
@@ -913,27 +935,3 @@ Request to produce period fee accruals from fund fee terms. Amount conventions m
 ```csharp
 public sealed record FeeScheduleAccrualRequest(string FundId, string PeriodId, DateTimeOffset AsOf, decimal BeginningNav, decimal EndingNavBeforeFees, decimal HighWaterMark, decimal ManagementFeeRate, decimal PerformanceFeeRate);
 ```
-
-## FileAccountingAuditChainAnchor
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FileAccountingAuditChainAnchor</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs:60](../../../../src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs#L60).
-
-The monotonic head of a file-backed accounting audit chain, retained outside the snapshot it protects.
-
-```csharp
-public sealed class FileAccountingAuditChainAnchor
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const int CurrentSchemaVersion = 2;</code> | [src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs:70](../../../../src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs#L70) | Anchor journal format version. |
-| <code>public FileAccountingAuditChainAnchor(string anchorPath);</code> | [src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs:83](../../../../src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs#L83) |  |
-| <code>public string AnchorPath { get; }</code> | [src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs:90](../../../../src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs#L90) | Full path of the head journal. |
-| <code>public static string AnchorPathFor(string snapshotPath);</code> | [src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs:93](../../../../src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs#L93) | The conventional journal path for a snapshot file. |
-| <code>public async Task&lt;AccountingAuditChainAnchorRecord?&gt; ReadHeadAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs:103](../../../../src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs#L103) | Reads the current head, verifying the journal&#x27;s own hash chain first so a forged or edited line is rejected rather than trusted. Returns null when no append has ever been anchored. |
-| <code>public Task&lt;AccountingAuditChainAnchorRecord&gt; DeclareAsync(long sequence, string entryHash, long genesisSequence, int preChainEventCount, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs:113](../../../../src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs#L113) | Records the intent to append sequence. Refuses a sequence that does not advance the journal, so a replayed or rewound append cannot quietly reuse a position. |
-| <code>public Task&lt;AccountingAuditChainAnchorRecord&gt; CommitAsync(long sequence, string entryHash, long genesisSequence, int preChainEventCount, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs:124](../../../../src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs#L124) | Confirms that the snapshot carrying sequence was written. |
