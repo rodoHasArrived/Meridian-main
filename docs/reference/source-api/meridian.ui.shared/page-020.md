@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkflowPresetSnapshot
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.WorkflowPresetSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs:75](../../../../src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs#L75).
+
+```csharp
+public sealed record WorkflowPresetSnapshot(int Version, IReadOnlyList<WorkflowPresetDto> Presets);
+```
+
 ## WorkflowRegistry
 
 Qualified name: <code>Meridian.Ui.Shared.Workflows.WorkflowRegistry</code>. Kind: `class`.

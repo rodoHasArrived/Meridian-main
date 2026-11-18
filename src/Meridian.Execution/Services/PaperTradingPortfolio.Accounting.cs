@@ -84,6 +84,76 @@ public sealed partial class PaperTradingPortfolio
 
     private string? LedgerScope(AccountState account) => _scopeLedgerAccounts ? account.AccountId : null;
 
+    /// <summary>
+    /// Settles the accrued interest a face-value bond fill carries on top of its clean
+    /// consideration, so cash moves the dirty amount. A purchase pays the interest into Accrued
+    /// Interest Receivable (it is not capitalized into cost basis). A sale receives it, relieves
+    /// the receivable pro rata to the face sold and books the remainder as coupon income earned
+    /// while held. Only long-side fills are settled dirty: a fill that opens, covers or flips
+    /// through a short keeps its clean settlement, because short-sale interest is a payable with
+    /// its own entitlement rules. Called under <c>_lock</c>.
+    /// </summary>
+    private (decimal Accrued, decimal Relieved) ApplyAccruedInterestSettlement(
+        AccountState account,
+        Meridian.Execution.Sdk.ExecutionReport report,
+        bool faceValueSizing,
+        decimal signedQty,
+        decimal quantityBefore,
+        decimal purchasedAccruedBefore)
+    {
+        if (!faceValueSizing || report.AccruedInterestPer100 is not { } per100 || per100 == 0m)
+            return (0m, 0m);
+        if (per100 < 0m)
+            throw new ArgumentOutOfRangeException(nameof(report), "Accrued interest per 100 face must be nonnegative.");
+
+        var buysOntoLong = signedQty > 0m && quantityBefore >= 0m;
+        var sellsFromLong = signedQty < 0m && quantityBefore >= -signedQty;
+        if (!buysOntoLong && !sellsFromLong)
+            return (0m, 0m);
+
+        var face = Math.Abs(signedQty);
+        var accrued = decimal.Round(face * per100 / 100m, 2, MidpointRounding.AwayFromZero);
+        if (accrued == 0m)
+            return (0m, 0m);
+
+        var scope = LedgerScope(account);
+        var cashAccount = _chartOfAccounts.Resolve(LedgerAccountRole.Cash, scope);
+        var receivable = LedgerAccounts.AccruedInterestReceivable(report.Symbol, scope);
+        account.Positions.TryGetValue(report.Symbol, out var position);
+
+        if (buysOntoLong)
+        {
+            account.Cash -= accrued;
+            if (position is not null)
+                position.PurchasedAccruedInterest += accrued;
+            _ledger?.PostLines(report.Timestamp, $"Purchased accrued interest — {report.Symbol}",
+            [
+                (receivable, accrued, 0m),
+                (cashAccount, 0m, accrued)
+            ]);
+            return (accrued, 0m);
+        }
+
+        var relieved = quantityBefore == 0m
+            ? 0m
+            : decimal.Round(purchasedAccruedBefore * face / quantityBefore, 2, MidpointRounding.AwayFromZero);
+        account.Cash += accrued;
+        if (position is not null)
+            position.PurchasedAccruedInterest = purchasedAccruedBefore - relieved;
+
+        var income = accrued - relieved;
+        var couponIncome = _chartOfAccounts.Resolve(LedgerAccountRole.CouponIncome, scope);
+        var lines = new List<(LedgerAccount account, decimal debit, decimal credit)> { (cashAccount, accrued, 0m) };
+        if (relieved > 0m)
+            lines.Add((receivable, 0m, relieved));
+        if (income > 0m)
+            lines.Add((couponIncome, 0m, income));
+        else if (income < 0m)
+            lines.Add((couponIncome, -income, 0m));
+        _ledger?.PostLines(report.Timestamp, $"Accrued interest received — {report.Symbol}", lines);
+        return (accrued, relieved);
+    }
+
     private bool CanCertifyAccountingOwner(AccountState account, PaperPosition? position, string? ownerAccountId)
     {
         var owner = NormalizeOptional(ownerAccountId);

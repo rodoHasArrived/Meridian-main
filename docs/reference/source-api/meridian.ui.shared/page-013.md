@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## InMemoryDailyValuationPortfolioSource
+
+Qualified name: <code>Meridian.Ui.Shared.Services.InMemoryDailyValuationPortfolioSource</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:85](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L85).
+
+In-memory schedule source used for deterministic scheduling tests and composition.
+
+```csharp
+public sealed class InMemoryDailyValuationPortfolioSource : IDailyValuationPortfolioSource, IDailyValuationScheduleStatusSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;IReadOnlyList&lt;DailyValuationScheduleWorkItem&gt;&gt; ListAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:93](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L93) |  |
+| <code>public Task&lt;DailyValuationScheduleWorkItem?&gt; GetAsync(string scheduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:106](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L106) |  |
+| <code>public Task&lt;DailyValuationScheduleWorkItem&gt; SaveAsync(DailyValuationScheduleWorkItem workItem, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:117](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L117) |  |
+| <code>public async Task&lt;DailyValuationScheduleStatusDto&gt; GetStatusAsync(string? fundProfileId, Guid? ledgerBookId, string? periodId, CancellationToken ct = default, string? entityId = null, string? tenantId = null, string? companyId = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:136](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L136) |  |
+
 ## InMemoryFundStructureTenancyGuard
 
 Qualified name: <code>Meridian.Ui.Shared.Services.InMemoryFundStructureTenancyGuard</code>. Kind: `class`.
@@ -578,7 +599,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IReportingMigrationStartup</code>. Kind: `interface`.
 
-Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1647](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1647).
+Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1657](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1657).
 
 Completes the existing checksummed reporting migration workflow before services that query the reporting authority are constructed.
 
@@ -590,7 +611,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task EnsureReadyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1649](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1649) |  |
+| <code>Task EnsureReadyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1659](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1659) |  |
 
 ## IReportingPrimaryDocumentRenderer
 
@@ -940,21 +961,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;StatementAccountingScope&gt; ResolveAccountingScopeAsync(StatementReconciliationIntakeScopeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs:43](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs#L43) |  |
 | <code>Task&lt;StatementReconciliationIntakeReceipt&gt; PublishAsync(string statementWorkflowId, StatementImportCommitResultDto import, StatementAccountingScope accountingScope, string tenantId, string companyId, string actor, string sourceInstitution, IReadOnlyList&lt;string&gt; evidenceReferences, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs:47](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs#L47) |  |
-
-## IThreeWayReconciliationSourceReader
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IThreeWayReconciliationSourceReader</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:29](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L29).
-
-```csharp
-public interface IThreeWayReconciliationSourceReader
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;ThreeWayReconciliationScopeDto&gt; AuthorizeAsync(Guid accountId, ReconciliationBreakQueueScope accessScope, Guid ledgerBookId, Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:31](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L31) |  |
-| <code>Task CaptureAsync(ThreeWayReconciliationScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:33](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L33) |  |
-| <code>Task&lt;IReadOnlyList&lt;ThreeWaySourceSnapshotDto&gt;&gt; ReadAsync(ThreeWayReconciliationScopeDto scope, DateTimeOffset cutoffUtc, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:34](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L34) |  |

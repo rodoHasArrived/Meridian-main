@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingRetainedManifestArtifactDescriptor
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRetainedManifestArtifactDescriptor</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs:22](../../../../src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs#L22).
+
+Hash and byte-length declaration embedded in the retained manifest. The manifest entry itself intentionally has no hash/length to avoid a circular self-hash; its exact hash and length are authoritatively carried by the immutable package catalog.
+
+```csharp
+public sealed record ReportingRetainedManifestArtifactDescriptor(string ArtifactId, string FileName, string ContentType, long? ByteLength, string? ContentHashSha256);
+```
+
 ## ReportingRetainedManifestDocument
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRetainedManifestDocument</code>. Kind: `record`.
@@ -952,16 +964,4 @@ Request to record LP cash receipts against an issued capital call and land the p
 
 ```csharp
 public sealed record RunCapitalCallFundingDraftIntakeRequest(string FundProfileId, string Currency, string Actor, string CallId, DateOnly ReceivedDate, IReadOnlyList<CapitalCallFundingInput> Fundings, Guid? LedgerBookId = null, string? PeriodId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null, DateTimeOffset? AsOf = null);
-```
-
-## RunCapitalCallIssuanceDraftIntakeRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RunCapitalCallIssuanceDraftIntakeRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CapitalCallIssuanceIntake.cs:32](../../../../src/Meridian.Ui.Shared/Services/CapitalCallIssuanceIntake.cs#L32).
-
-Request to plan a fund-level capital call over the supplied commitment register and land the per-LP issuance drafts in the manual journal workbench queue. Drafts flow through the same governed submit → approve → post lifecycle as every other automated intake lane; this run never posts anything.
-
-```csharp
-public sealed record RunCapitalCallIssuanceDraftIntakeRequest(string FundProfileId, string Currency, string Actor, string CallId, decimal AmountToCall, DateOnly NoticeDate, DateOnly DueDate, IReadOnlyList<CapitalCallCommitmentInput> Commitments, CapitalCallAllocationBasis AllocationBasis = CapitalCallAllocationBasis.ProRataByUncalled, string? Purpose = null, Guid? LedgerBookId = null, string? PeriodId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null, DateTimeOffset? AsOf = null);
 ```

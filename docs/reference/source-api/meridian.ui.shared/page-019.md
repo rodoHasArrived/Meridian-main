@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ThreeWayReconciliationService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayReconciliationService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationService.cs:10](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationService.cs#L10).
+
+Retains source operands and routes discrepancies into existing governed casework.
+
+```csharp
+public sealed class ThreeWayReconciliationService(IThreeWayReconciliationSourceReader sources, FileThreeWayReconciliationEvidenceStore store, IReconciliationBreakQueueRepository queue, ThreeWayReconciliationOptions options, TimeProvider? timeProvider = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;ThreeWayReconciliationResultDto&gt; RunAsync(Guid accountId, ReconciliationBreakQueueScope access, ThreeWayReconciliationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationService.cs:19](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationService.cs#L19) |  |
+| <code>public async Task&lt;ThreeWayReconciliationResultDto?&gt; GetLatestAsync(Guid accountId, ReconciliationBreakQueueScope access, Guid bookId, Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationService.cs:69](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationService.cs#L69) |  |
+
 ## ThreeWayReconciliationServiceRegistration
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayReconciliationServiceRegistration</code>. Kind: `class`.
@@ -294,7 +313,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:90](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L90) |  |
-| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1591](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1591) |  |
+| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1601](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1601) |  |
 
 ## WorkstationWorkflowReadScope
 
@@ -928,13 +947,3 @@ Declared public members:
 | <code>public async Task&lt;WorkflowPresetMutationResult&gt; SetPinnedAsync(string presetId, bool isPinned, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs:77](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs#L77) |  |
 | <code>public async Task&lt;WorkflowPresetMutationResult&gt; MarkUsedAsync(string presetId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs:111](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs#L111) |  |
 | <code>public async Task&lt;bool&gt; DeleteAsync(string presetId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs:143](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs#L143) |  |
-
-## WorkflowPresetSnapshot
-
-Qualified name: <code>Meridian.Ui.Shared.Workflows.WorkflowPresetSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs:75](../../../../src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs#L75).
-
-```csharp
-public sealed record WorkflowPresetSnapshot(int Version, IReadOnlyList<WorkflowPresetDto> Presets);
-```

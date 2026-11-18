@@ -388,6 +388,12 @@ sizes the order at. Cost basis, lot entry prices and marks stay per-unit quotes,
 apply the multiplier themselves; the aggregate position view carries the multiplier its P&L used,
 and `PortfolioStatePositionTracker` divides by it when recovering a mark. Face-value fills and every
 other asset class stay at 1×.
+Paper bond fills settle at the dirty price when the composed `IBondAnalyticsService` prices accrued
+interest at the clean fill price and a T+1 weekday settlement date (`PaperBondSettlement`); the
+report carries `AccruedInterestPer100` and `SettlementDate`. Purchased interest goes to Accrued
+Interest Receivable, never cost basis; a sale relieves it pro rata and books the rest as coupon
+income, and `LedgerPostingConsumer` posts the matching `trade-accrued-interest` journal. An
+analytics refusal, and any short-side bond fill, settles clean.
 A fill whose multiplier differs from the open position's is refused. The OMS stamps the multiplier
 on each fill increment, and stamps `BookedMoneyMultiplier` when the scale is not 1, so session
 replay reproduces the same cash; records written before that stamp replay at the 1× they were booked

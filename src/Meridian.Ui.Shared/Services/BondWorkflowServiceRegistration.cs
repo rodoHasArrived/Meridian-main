@@ -72,6 +72,7 @@ internal static class BondWorkflowServiceRegistration
                         sp.GetRequiredService<Meridian.Storage.AssetOperations.IInstrumentPositionProjectionStore>(),
                         sp.GetRequiredService<IAccountingPolicyService>(), spine,
                         sp.GetRequiredService<IBondIncomePreparationEvidenceStore>()) : null!);
+            services.TryAddSingleton<IBondIncomePreparationService>(sp => sp.GetService<BondIncomePreparationService>()!);
         }
         if (services.Any(descriptor => descriptor.ServiceType == typeof(IBondCouponRecognitionStore))
             && services.Any(descriptor => descriptor.ServiceType == typeof(IBondIncomeService)))

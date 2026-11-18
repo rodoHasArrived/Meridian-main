@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FileDeliveryStatus
+
+Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.FileDeliveryStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:312](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L312).
+
+Terminal delivery outcome for one recipient.
+
+```csharp
+public enum FileDeliveryStatus
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Delivered</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:314](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L314) |  |
+| <code>Failed</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:315](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L315) |  |
+
 ## FileDistributionRequest
 
 Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.FileDistributionRequest</code>. Kind: `record`.
@@ -1135,21 +1154,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static OperationsGateState Create(OperationsGateKeyDto gateKey) =&gt; …;</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:2012](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L2012) |  |
 | <code>public OperationsGateState WithStatus(OperationsGateStatusDto status, IReadOnlyList&lt;OperationsWorkflowBlockerDto&gt;? blockers = null, IReadOnlyList&lt;OperationsNextActionDto&gt;? nextActions = null, DateTimeOffset? completedAtUtc = null, string? completedBy = null) =&gt; …;</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs:2015](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs#L2015) |  |
-
-## OperationsStatusDerivationService
-
-Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.OperationsStatusDerivationService</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsStatusDerivationService.cs:17](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsStatusDerivationService.cs#L17).
-
-Calculates workflow status from retained operations state and control evidence.
-
-```csharp
-public sealed class OperationsStatusDerivationService : IOperationsStatusDerivationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public OperationsWorkflowStatusDto Derive(OperationsContinuityWorkflow workflow);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsStatusDerivationService.cs:19](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsStatusDerivationService.cs#L19) |  |

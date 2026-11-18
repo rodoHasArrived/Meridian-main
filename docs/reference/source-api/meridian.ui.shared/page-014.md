@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IThreeWayReconciliationSourceReader
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IThreeWayReconciliationSourceReader</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:29](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L29).
+
+```csharp
+public interface IThreeWayReconciliationSourceReader
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ThreeWayReconciliationScopeDto&gt; AuthorizeAsync(Guid accountId, ReconciliationBreakQueueScope accessScope, Guid ledgerBookId, Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:31](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L31) |  |
+| <code>Task CaptureAsync(ThreeWayReconciliationScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:33](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L33) |  |
+| <code>Task&lt;IReadOnlyList&lt;ThreeWaySourceSnapshotDto&gt;&gt; ReadAsync(ThreeWayReconciliationScopeDto scope, DateTimeOffset cutoffUtc, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:34](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L34) |  |
+
 ## ITradingOperatorReadinessProvider
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ITradingOperatorReadinessProvider</code>. Kind: `interface`.
@@ -1000,22 +1018,3 @@ Declared public members:
 | <code>public const string BrokerageSource = &quot;brokerage-balance-snapshots&quot;;</code> | [src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs:14](../../../../src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs#L14) | Source label for figures measured from synced brokerage balance snapshots. |
 | <code>public static PerformanceReturnFigureDto ToDto(ReturnFigure figure, string source);</code> | [src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs:23](../../../../src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs#L23) |  |
 | <code>public static IReadOnlyList&lt;PerformanceReturnFigureDto&gt; MeasureBrokerage(IEnumerable&lt;(DateOnly AsOf, decimal Equity, string Currency)&gt; valuations, IEnumerable&lt;BrokerageCashFlowEntryDto&gt; cashEntries, string currency);</code> | [src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs:49](../../../../src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs#L49) | Time-weighted and money-weighted figures for a brokerage account from its balance snapshots and categorized cash activity. Snapshot equity is end-of-day; deposits, withdrawals, and transfers are the only external flows. Any cash transaction the categorizer could not classify makes every figure review-required, because an unrecognized deposit would otherwise be reported as performance. |
-
-## PeriodAdjustmentPreparationService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PeriodAdjustmentPreparationService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/PeriodAdjustmentPreparationService.cs:23](../../../../src/Meridian.Ui.Shared/Services/PeriodAdjustmentPreparationService.cs#L23).
-
-Prepares a source-linked inverse in an explicitly selected open period. Source journals and their closed workbench records remain immutable; independent approval and posting are separate. Delta mark accounting remains the default. Reversing a period-end mark is an explicit policy.
-
-```csharp
-public sealed class PeriodAdjustmentPreparationService(ILedgerJournalStore store, AutomatedJournalDraftIntakeService intake, IAutomatedJournalScheduleStore? schedules = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;AutomatedJournalDraftIntakeResult&gt; PrepareAsync(PreparePeriodAdjustmentRequest request, string actor, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PeriodAdjustmentPreparationService.cs:30](../../../../src/Meridian.Ui.Shared/Services/PeriodAdjustmentPreparationService.cs#L30) |  |
-| <code>public async Task&lt;AutomatedJournalScheduleWorkItem&gt; ScheduleMarkReversalAsync(PreparePeriodAdjustmentRequest request, string actor, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PeriodAdjustmentPreparationService.cs:42](../../../../src/Meridian.Ui.Shared/Services/PeriodAdjustmentPreparationService.cs#L42) | Retains an opt-in, one-time next-period mark reversal for the existing scheduler. |
