@@ -223,6 +223,38 @@ export function appendOperatingScopeToRoute(route: string, operatingScope: AppSh
 }
 
 /**
+ * Scope dimensions the shell writes into any in-app URL that lacks them (Phase 1, P2 step 1).
+ * Only the fund hierarchy travels this way: these are what URL-reading screens filter by, and
+ * losing them after a plain catalog link silently widened the data while the scope bar still
+ * showed the stored scope. Symbol, run, provider and date windows keep travelling only through
+ * the view-model link builders that already add them.
+ */
+const CENTRALLY_CARRIED_SCOPE_PARAMS: ReadonlySet<string> = new Set(["entityId", "fundId", "fundAccountId"]);
+
+/**
+ * Returns `search` with the stored scope's fund hierarchy added for the keys the route's workspace
+ * carries. Values already on the URL win, and `accountId` counts as an explicit fund account.
+ * Returns the original string when nothing needs adding, so callers can compare by identity.
+ */
+export function carryOperatingScopeIntoSearch(pathname: string, search: string, scope: AppShellOperatingScopeInput | null | undefined): string {
+  if (!scope) return search;
+  const state = buildOperatingScopeFromSearch("", scope);
+  if (!state.hasScope) return search;
+  const carried = operatingScopeCarriedKeysForRoute(pathname);
+  const params = new URLSearchParams(search);
+  let changed = false;
+  for (const item of state.queryParams) {
+    if (!CENTRALLY_CARRIED_SCOPE_PARAMS.has(item.key) || !carried.has(item.scopeKey) || params.has(item.key)) continue;
+    if (item.key === "fundAccountId" && params.has("accountId")) continue;
+    params.set(item.key, item.value);
+    changed = true;
+  }
+  if (!changed) return search;
+  const next = params.toString();
+  return next ? `?${next}` : "";
+}
+
+/**
  * Routes whose screen narrows its fund-account rows to the chosen entity and fund client-side,
  * using the organization graph (`lib/operating-scope/fund-scope-narrowing.ts`): the Portfolio
  * brokerage household (accounts and positions), the Accounting close calendar (close workflows),

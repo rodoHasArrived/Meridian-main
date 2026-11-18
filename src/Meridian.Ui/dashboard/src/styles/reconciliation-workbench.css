@@ -30,3 +30,24 @@
 @media (max-width: 1279px) { .reconciliation-run-context { grid-template-columns: minmax(0, 1fr); } }
 /* The queue owns both axes so one history offset restores the working position. */
 .reconciliation-queue-scroll .dense-data-table-wrap { max-height: none; overflow: visible; }
+/*
+ * The inspector still scrolls within its own column (UX Phase C), but at full height rather than
+ * the queue's height, and the break's action row stays in view while the operator reads further down
+ * (Phase 1, B10). scroll-padding keeps a focused field from being hidden under the sticky row
+ * (WCAG 2.2 SC 2.4.11).
+ */
+@media (min-width: 1280px) {
+  .reconciliation-workbench-shell .workspace-workbench-shell-layout--with-inspector > .workspace-workbench-shell-inspector {
+    min-height: min(calc(100dvh - 9rem), 48rem);
+    scroll-padding-top: 4.5rem;
+  }
+  .reconciliation-inspector > div:has(> .reconciliation-break-actions) {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    margin-inline: -0.75rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--ws-surface);
+    border-bottom: 1px solid var(--ws-border);
+  }
+}

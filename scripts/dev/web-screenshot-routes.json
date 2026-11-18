@@ -422,9 +422,9 @@
         "/api/accounting-system/reconciliation/latest"
       ],
       "waitForTexts": [
-        "Case queue",
+        "in the reconciliation break queue below",
         "Approval gate",
-        "Workflow next steps"
+        "Reconciliation break queue"
       ]
     },
     {

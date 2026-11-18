@@ -1,6 +1,7 @@
 // Statement connector library endpoints. Re-exported through @/lib/api.
-import type { MarginControlCenter, MarginCertificationRequest, MarginCertificationResult, ReconciliationBreakQueueItem, ReconciliationBulkCaseworkRequest, ReconciliationBulkCaseworkResult, ReconciliationCalibrationSummary, StatementConnectorDescriptor, StatementFetchPreviewRequest, StatementFetchSchedule, StatementFetchScheduleUpsertRequest, StatementImportCommitResult, StatementImportPreview, StatementImportPreviewRequest, StatementImportSourceKind, StatementMappingProfile, ReconciliationCaseworkCommand, ReconciliationCaseworkOperationResult, ResolveReconciliationBreakRequest, ReviewReconciliationBreakRequest } from "@/types";
+import type { ReconciliationBreakQueueAuditEvent, MarginControlCenter, MarginCertificationRequest, MarginCertificationResult, ReconciliationBreakQueueItem, ReconciliationBulkCaseworkRequest, ReconciliationBulkCaseworkResult, ReconciliationCalibrationSummary, StatementConnectorDescriptor, StatementFetchPreviewRequest, StatementFetchSchedule, StatementFetchScheduleUpsertRequest, StatementImportCommitResult, StatementImportPreview, StatementImportPreviewRequest, StatementImportSourceKind, StatementMappingProfile, ReconciliationCaseworkCommand, ReconciliationCaseworkOperationResult, ResolveReconciliationBreakRequest, ReviewReconciliationBreakRequest } from "@/types";
 import { RECONCILIATION_API_ENDPOINTS, reconciliationBreakAssignEndpoint, reconciliationBreakAuditEndpoint, reconciliationBreakBulkDryRunEndpoint, reconciliationBreakBulkExecuteEndpoint, reconciliationBreakBulkStatusEndpoint, reconciliationBreakCommentEndpoint, reconciliationBreakCommentsEndpoint, reconciliationBreakEndpoint, reconciliationBreakQueueEndpoint, reconciliationBreakReopenEndpoint, reconciliationBreakResolutionEndpoint, reconciliationBreakResolveEndpoint, reconciliationBreakReviewEndpoint, reconciliationBreakSupersedeEndpoint, reconciliationBreakRootCauseEndpoint, reconciliationBreakSignOffEndpoint, reconciliationBreakTransitionEndpoint, reconciliationBreakWaiveEndpoint, reconciliationStatementFetchScheduleEndpoint, reconciliationStatementFetchScheduleRunEndpoint, reconciliationStatementMappingProfileEndpoint, STATEMENT_CONNECTOR_API_ENDPOINTS } from "@/lib/workstation-endpoints";
+import { isApiError } from "@/lib/api-errors";
 import { deleteJson, getJson, postFormData, postJson, putJson, type ApiRequestOptions } from "@/lib/api/http-client";
 
 // --- Statement connector library ---
@@ -110,7 +111,16 @@ export function getReconciliationBreakQueue(status?: string, fundAccountId?: str
 
 export function getReconciliationBreakDetail(breakId: string) { return getJson<ReconciliationBreakQueueItem>(reconciliationBreakEndpoint(breakId)); }
 
-export function getReconciliationBreakAudit(breakId: string) { return getJson<unknown>(reconciliationBreakAuditEndpoint(breakId)); }
+/** Audit history for one break. The endpoint answers 404 when nothing is retained yet; that is an empty history. */
+export async function getReconciliationBreakAudit(breakId: string): Promise<ReconciliationBreakQueueAuditEvent[]> {
+  try {
+    const events = await getJson<ReconciliationBreakQueueAuditEvent[]>(reconciliationBreakAuditEndpoint(breakId), { allowDevelopmentFallback: false });
+    return Array.isArray(events) ? events : [];
+  } catch (failure) {
+    if (isApiError(failure) && failure.status === 404) return [];
+    throw failure;
+  }
+}
 
 export function reviewReconciliationBreak(request: ReviewReconciliationBreakRequest) {
   return postJson<ReconciliationCaseworkOperationResult>(

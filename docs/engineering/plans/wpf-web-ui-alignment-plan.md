@@ -56,6 +56,16 @@ WPF changes in this delta were compile-checked with the full WPF build; WPF test
 | Bulk Acknowledge and Snooze with a confirmation per item | Not ported; WPF can loop the same per-item triage command. |
 | Strategy comparison of up to four runs with overlaid curves | Not ported. |
 
+## Browser UX Phase 1 delta — trustworthy queue — 2026-11-18
+
+| Browser change | WPF state |
+| --- | --- |
+| Reconciliation inspector offers root cause, resolution, waive, sign-off and reopen, with an eligibility reason, a before/after preview and plain refusal text | Shared seam exists: the break-queue casework endpoints (`/api/workstation/reconciliation/break-queue/{breakId}/root-cause`, `/resolution`, `/waive`, `/sign-off`, `/reopen`) and the taxonomy endpoint. Not consumed by WPF. WPF must read `transitionStatus` and `errorCode`, because refusals answer HTTP 200. |
+| Activity (audit history) for the selected break | Shared seam exists (`GET .../break-queue/{breakId}/audit`, 404 when empty). Not consumed by WPF. |
+| The fund scope (entity, fund, fund account) is added to any in-app link that lacks it; scope is kept per tab | Browser-only. WPF has one window-level scope and no URL. |
+| Fund-account picker for the three-way comparison; fund-profile picker for NAV vs prior period | Not ported. WPF NAV comparison still takes the fund profile from the Fund Operations selection. |
+| Exceptions page lists each break once, in the break queue | Not ported; no WPF equivalent page duplicates it today. |
+
 ## Provider configuration delta — live apply and cross-provider tolerances — 2026-11-18
 
 | Browser change | WPF state |

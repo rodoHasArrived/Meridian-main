@@ -5,9 +5,8 @@ import { Input } from "@/components/ui/input";
 import { TextArea } from "@/components/ui/text-area";
 import { FormRow } from "@/components/ui/form";
 import { StatusBanner } from "@/components/ui/status-banner";
-import { isApiError } from "@/lib/api-errors";
 import { formatDateTimeLabel } from "./accounting-screen.formatting";
-import { requireSuccessfulReconciliationCasework } from "./reconciliation-casework-outcome";
+import { runReconciliationCaseworkCommand } from "./reconciliation-casework-command";
 import type { ReconciliationBreakQueueItem, ReconciliationCaseworkCommand, ReconciliationCaseworkOperationResult } from "@/types";
 
 export interface CaseDiscussionServices {
@@ -88,28 +87,24 @@ export function ReconciliationCaseDiscussion({ breakId, onUpdated, services = de
         : { assignee: assignee.trim(), reason: reason.trim() })
     };
     setPending(command); setBusy(true); setError(null); setStatus(null);
-    let confirmedConflict = false;
     try {
-      const result = await (command.action === "AddComment" ? services.comment(command) : services.assign(command));
-      confirmedConflict = result.transitionStatus === "Conflict" || result.errorCode === "ConcurrencyConflict";
-      if (confirmedConflict) throw new Error(result.error ?? "The case changed after it was loaded.");
-      const updated = requireSuccessfulReconciliationCasework(result);
+      const outcome = await runReconciliationCaseworkCommand(command, command.action === "AddComment" ? services.comment : services.assign);
       if (revision.current !== current) return;
-      if (updated.breakId !== breakId) throw new Error("The casework result belongs to another case. Refresh the case before continuing.");
+      if (outcome.kind === "conflict") {
+        setPending(null);
+        setRequiresReload(true);
+        setError("This case changed after it was loaded. Reload retained case, inspect the current version, then submit again. Your draft text is retained.");
+        return;
+      }
+      if (outcome.kind !== "succeeded") {
+        setError(`${outcome.message}${outcome.kind === "refused" ? " Retry uses the same command identity; no case resolution is implied." : ""}`);
+        return;
+      }
+      const updated = outcome.item;
       setItem(updated); setPending(null); onUpdated?.(updated);
       if (command.action === "AddComment") { setNote(""); setMentions(""); }
       else setReason("");
       setStatus(command.action === "AddComment" ? "Comment retained in case history." : "Assignment retained in case history.");
-    } catch (failure) {
-      if (revision.current === current) {
-        if (confirmedConflict || (isApiError(failure) && failure.status === 409)) {
-          setPending(null);
-          setRequiresReload(true);
-          setError("This case changed after it was loaded. Reload retained case, inspect the current version, then submit again. Your draft text is retained.");
-        } else {
-          setError(`${failure instanceof Error ? failure.message : "Casework request failed."} Retry uses the same command identity; no case resolution is implied.`);
-        }
-      }
     } finally { if (revision.current === current) setBusy(false); }
   }
 
