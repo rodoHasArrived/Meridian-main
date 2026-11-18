@@ -16,6 +16,10 @@ on:
         type: boolean
         required: false
         default: true
+  # A weekly refresh keeps the published catalog from silently going stale:
+  # pull_request runs below only validate and never publish.
+  schedule:
+    - cron: "17 9 * * 1"
   # Dispatch always captures from the default branch (optionally publishing), so
   # it can only ever report on what has already merged. Every route that broke
   # in the 2026-08-26 run broke in a pull request that this workflow never saw.
@@ -47,7 +51,7 @@ concurrency:
   # screenshot PR from the same base after the first PR merges. Pull-request
   # validation publishes nothing, so each PR takes its own lane instead --
   # sharing the publish lane would let an ordinary PR cancel a refresh run.
-  group: web-screenshot-capture-${{ github.event.pull_request.number || 'dispatch' }}
+  group: web-screenshot-capture-${{ github.event.pull_request.number || 'publish' }}
   cancel-in-progress: true
 
 env:
@@ -60,8 +64,8 @@ env:
 jobs:
   capture-web-screenshots:
     name: Capture Web Workstation Screenshots
-    # Only dispatch may write the automation branch and open a refresh PR.
-    if: ${{ github.event_name == 'workflow_dispatch' }}
+    # Only dispatch or the weekly schedule may write the automation branch and open a refresh PR.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' }}
     runs-on: ubuntu-latest
     timeout-minutes: 50
     permissions:
@@ -114,6 +118,36 @@ jobs:
 
           echo "safe_output_dir=$resolved" >> "$GITHUB_OUTPUT"
 
+      - name: Validate routes config path
+        id: validate_config
+        env:
+          REQUESTED_CONFIG: ${{ inputs.config }}
+        run: |
+          set -euo pipefail
+          requested="${REQUESTED_CONFIG:-scripts/dev/web-screenshot-routes.json}"
+          export REQUESTED_CONFIG="$requested"
+          resolved="$(python - <<'PYTHON'
+          import os
+          from pathlib import Path
+
+          repo_root = Path(os.environ["GITHUB_WORKSPACE"]).resolve()
+          base_dir = (repo_root / "scripts/dev").resolve()
+          requested = os.environ["REQUESTED_CONFIG"]
+          candidate = (repo_root / requested).resolve()
+
+          try:
+              candidate.relative_to(base_dir)
+          except ValueError:
+              raise SystemExit(f"::error::config must be a JSON file under 'scripts/dev'. Received '{requested}'.")
+          if candidate.suffix != ".json" or not candidate.is_file():
+              raise SystemExit(f"::error::config must name an existing JSON file under 'scripts/dev'. Received '{requested}'.")
+
+          print(candidate.relative_to(repo_root).as_posix())
+          PYTHON
+          )"
+
+          echo "safe_config=$resolved" >> "$GITHUB_OUTPUT"
+
       - name: Set up Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
@@ -146,46 +180,11 @@ jobs:
 
       - name: Install Playwright browser
         id: install_playwright
-        run: |
-          set -euo pipefail
-          install_attempts="${PLAYWRIGHT_INSTALL_ATTEMPTS:-2}"
-          install_timeout_seconds="${PLAYWRIGHT_INSTALL_TIMEOUT_SECONDS:-720}"
-
-          run_playwright_install() {
-            set +e
-            timeout "$install_timeout_seconds" npx --prefix src/Meridian.Ui/dashboard playwright install chromium --only-shell
-            install_exit_code=$?
-            set -e
-            return "$install_exit_code"
-          }
-
-          attempt=1
-          while [ "$attempt" -le "$install_attempts" ]; do
-            echo "[INFO] Installing Playwright Chromium browser (attempt ${attempt}/${install_attempts}; timeout ${install_timeout_seconds}s)."
-            if run_playwright_install; then
-              echo "[INFO] Playwright Chromium browser install completed."
-              exit 0
-            else
-              install_exit_code=$?
-            fi
-
-            if [ "$attempt" -eq "$install_attempts" ]; then
-              if [ "$install_exit_code" -eq 124 ]; then
-                echo "::error::Playwright Chromium browser install timed out after ${install_timeout_seconds}s on attempt ${attempt}."
-              else
-                echo "::error::Playwright Chromium browser install failed with exit code ${install_exit_code} on attempt ${attempt}."
-              fi
-              exit "$install_exit_code"
-            fi
-
-            if [ "$install_exit_code" -eq 124 ]; then
-              echo "::warning::Playwright Chromium browser install timed out after ${install_timeout_seconds}s on attempt ${attempt}; retrying."
-            else
-              echo "::warning::Playwright Chromium browser install failed with exit code ${install_exit_code} on attempt ${attempt}; retrying."
-            fi
-
-            attempt=$((attempt + 1))
-          done
+        # Shared bounded install (same browser and cache format in both jobs).
+        uses: ./.github/actions/install-playwright-chromium
+        with:
+          attempts: ${{ env.PLAYWRIGHT_INSTALL_ATTEMPTS }}
+          timeout-seconds: ${{ env.PLAYWRIGHT_INSTALL_TIMEOUT_SECONDS }}
 
       # Save a verified installation before route validation can fail the job.
       # The combined cache action saves only on success during post-job cleanup.
@@ -200,7 +199,7 @@ jobs:
         id: capture_web
         env:
           OUTPUT_DIR: ${{ env.CAPTURE_DIR }}
-          ROUTES_CONFIG: ${{ inputs.config || 'scripts/dev/web-screenshot-routes.json' }}
+          ROUTES_CONFIG: ${{ steps.validate_config.outputs.safe_config }}
         run: |
           if [ -d "$OUTPUT_DIR" ]; then
             find "$OUTPUT_DIR" -maxdepth 1 -type f -name '*.png' -delete
@@ -215,7 +214,7 @@ jobs:
         if: ${{ steps.capture_web.outcome == 'success' }}
         env:
           OUTPUT_DIR: ${{ env.CAPTURE_DIR }}
-          ROUTES_CONFIG: ${{ inputs.config || 'scripts/dev/web-screenshot-routes.json' }}
+          ROUTES_CONFIG: ${{ steps.validate_config.outputs.safe_config }}
         run: >
           python scripts/dev/validate-screenshot-captures.py
           --surface web
@@ -225,7 +224,7 @@ jobs:
           --require-fresh
 
       - name: Stage validated catalog refresh
-        if: ${{ success() && inputs.create_pr && steps.validate_web.outcome == 'success' }}
+        if: ${{ success() && (inputs.create_pr || github.event_name == 'schedule') && steps.validate_web.outcome == 'success' }}
         env:
           OUTPUT_DIR: ${{ steps.validate_output_dir.outputs.safe_output_dir }}
         run: |
@@ -236,9 +235,14 @@ jobs:
 
       - name: Open screenshot refresh pull request
         id: refresh_pr
-        if: ${{ success() && inputs.create_pr && steps.validate_web.outcome == 'success' }}
+        if: ${{ success() && (inputs.create_pr || github.event_name == 'schedule') && steps.validate_web.outcome == 'success' }}
         uses: peter-evans/create-pull-request@3ffccacd46053766916f087ce41d627c0b8cf2d1 # v8
         with:
+          # A PR opened with the default GITHUB_TOKEN starts no other workflows,
+          # so the required checks would never run on it. SCREENSHOT_PR_TOKEN
+          # (a GitHub App or fine-grained token with contents and pull-requests
+          # write) lets them run; without it the PR still opens, unchecked.
+          token: ${{ secrets.SCREENSHOT_PR_TOKEN || github.token }}
           branch: automation/web-screenshot-capture
           base: ${{ github.event.repository.default_branch }}
           title: "chore: refresh web workstation screenshot catalog"
@@ -329,48 +333,11 @@ jobs:
 
       - name: Install Playwright browser
         id: install_playwright
-        # Keep this bounded install in sync with dispatch: both jobs use the
-        # same headless browser and cache format.
-        run: |
-          set -euo pipefail
-          install_attempts="${PLAYWRIGHT_INSTALL_ATTEMPTS:-2}"
-          install_timeout_seconds="${PLAYWRIGHT_INSTALL_TIMEOUT_SECONDS:-720}"
-
-          run_playwright_install() {
-            set +e
-            timeout "$install_timeout_seconds" npx --prefix src/Meridian.Ui/dashboard playwright install chromium --only-shell
-            install_exit_code=$?
-            set -e
-            return "$install_exit_code"
-          }
-
-          attempt=1
-          while [ "$attempt" -le "$install_attempts" ]; do
-            echo "[INFO] Installing Playwright Chromium browser (attempt ${attempt}/${install_attempts}; timeout ${install_timeout_seconds}s)."
-            if run_playwright_install; then
-              echo "[INFO] Playwright Chromium browser install completed."
-              exit 0
-            else
-              install_exit_code=$?
-            fi
-
-            if [ "$attempt" -eq "$install_attempts" ]; then
-              if [ "$install_exit_code" -eq 124 ]; then
-                echo "::error::Playwright Chromium browser install timed out after ${install_timeout_seconds}s on attempt ${attempt}."
-              else
-                echo "::error::Playwright Chromium browser install failed with exit code ${install_exit_code} on attempt ${attempt}."
-              fi
-              exit "$install_exit_code"
-            fi
-
-            if [ "$install_exit_code" -eq 124 ]; then
-              echo "::warning::Playwright Chromium browser install timed out after ${install_timeout_seconds}s on attempt ${attempt}; retrying."
-            else
-              echo "::warning::Playwright Chromium browser install failed with exit code ${install_exit_code} on attempt ${attempt}; retrying."
-            fi
-
-            attempt=$((attempt + 1))
-          done
+        # Shared bounded install (same browser and cache format in both jobs).
+        uses: ./.github/actions/install-playwright-chromium
+        with:
+          attempts: ${{ env.PLAYWRIGHT_INSTALL_ATTEMPTS }}
+          timeout-seconds: ${{ env.PLAYWRIGHT_INSTALL_TIMEOUT_SECONDS }}
 
       # Save a verified installation before route validation can fail the job.
       # The combined cache action saves only on success during post-job cleanup.
