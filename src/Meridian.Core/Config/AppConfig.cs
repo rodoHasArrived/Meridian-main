@@ -79,6 +79,10 @@ public sealed record AppConfig(
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public ProviderQuotasConfig? ProviderQuotas { get; init; }
 
+    /// <summary>User-editable data-quality tolerances (cross-provider comparison); absent keeps built-in defaults.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public DataQualityConfig? DataQuality { get; init; }
+
     /// <summary>
     /// Preserves top-level configuration sections this model does not declare (host-level
     /// sections such as <c>ApiHost</c>, <c>PaperTrading</c>, <c>Status</c>, and

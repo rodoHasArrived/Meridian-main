@@ -83,15 +83,12 @@
     "src/screens/trading-screen.tsx": 2
   },
   "monospaceCapsLabels": {
-    "src/screens/accounting-screen.configuration-panel.tsx": 1,
-    "src/screens/accounting-screen.configure-panel.tsx": 1,
     "src/screens/accounting-screen.operations-panels.tsx": 2,
-    "src/screens/asset-detail-screen.tsx": 7,
-    "src/screens/data-screen.tsx": 3,
-    "src/screens/price-alerts-screen.tsx": 1,
+    "src/screens/asset-detail-screen.tsx": 5,
     "src/screens/settings-screen.brokerage-sections.tsx": 1,
     "src/screens/statement-import-panel.tsx": 9,
     "src/screens/statement-import-preview.tsx": 3,
-    "src/screens/strategy-screen.tsx": 2
-  }
+    "src/screens/strategy-screen.tsx": 1
+  },
+  "rawSelects": {}
 }

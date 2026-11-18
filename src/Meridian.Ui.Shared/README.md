@@ -30,6 +30,10 @@ through trusted workbench intake. It never submits, approves or posts. The workb
 accrual evidence against client saves, blocks review when lines no longer match it, refuses a draft
 whose window a posted accrual already covers, and carries the evidence onto the posted journal.
 
+`IntercompanyFeeAccrualDraftService` backs `/api/ledger/intercompany/fees/preview` and `/drafts`; the journal
+workbench refuses an overlapping posted fee and rechecks fee authority before review or posting. See
+[governed fixed management fees](../../docs/domain/intercompany-agreements.md#governed-fixed-management-fees).
+
 `IntercompanyAccrualDraftService` resolves the approved fixings of each declared floating index before
 computing. `IntercompanyRateFixingEndpoints` serves `/api/ledger/intercompany/rate-fixings` (list,
 propose and `/{id}/decisions`) with exact-decimal strings; mutations need tenant scope and ledger
@@ -39,6 +43,14 @@ management. See [floating rates and reviewed fixings](../../docs/domain/intercom
 record, propose and `/{id}/actions`) with exact-decimal strings; mutations need tenant and company
 scope plus ledger management. Confirmation findings join the close advisory as warnings only. See
 [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
+
+`IntercompanyAccrualDraftService` resolves posted accrued interest for compounding loans; the journal workbench
+re-reads those facts before review or posting. See [periodic compounding](../../docs/domain/intercompany-agreements.md#periodic-compounding).
+
+`IntercompanyAccrualScheduleService` and `IntercompanyAccrualScheduleRunner` draft completed periods of active
+schedules through the ordinary preview-then-draft path, never posting or overwriting a draft;
+`/api/ledger/intercompany/accrual-schedules` serves proposal, review, due preview and run now. See
+[opt-in accrual schedules](../../docs/domain/intercompany-agreements.md#opt-in-accrual-schedules).
 
 Account/group close advisories require canonical exact-scope membership and retained evidence;
 the book node ID is not substituted for a legal-entity ID. Missing membership yields unknown.
@@ -67,7 +79,16 @@ unavailable or rejected transitions. Config reads with `configurationOnly=true` 
 while streaming is stopped and report unknown active providers explicitly. Rule quality, latency,
 failure and recovery threshold relaxations require an operator reason; the rule and immutable audit
 entry persist together. Saves return the shared setting-change impact; failover timing diagnostics
-report retained `DataSourcesConfig` values rather than placeholder thresholds.
+report retained `DataSourcesConfig` values rather than placeholder thresholds. Rules that name a
+provider ID with no `DataSources.Sources` entry are refused (rule POST and UI saves, changed rules
+only). The process-wide `StreamingFailoverRegistry.Process` lets the UI server see the collector's
+live coordinator in desktop mode.
+
+`CrossProviderToleranceEndpoints` serve `GET`/`PUT /api/quality/cross-provider/policy` (bounds,
+defaults, audit; `ModifyConfig`, rate-limited, reason required when loosening, atomic audit, live
+apply reported through the change status) and `POST /api/quality/cross-provider/preview` (one
+symbol, two non-simulated historical providers, at most 30 days, about two provider calls).
+Whole-document saves cannot change `DataQuality.CrossProvider` or its audit.
 Rule deletion requires a JSON body with an operator-supplied `reason` and retains the removed
 provider chain and thresholds atomically. Recreating the rule cannot erase that deletion evidence.
 
@@ -602,6 +623,10 @@ Blocked/critical work cannot be snoozed; observed escalation permanently cancels
 Account-scoped single and bulk commands carry the selected `FundAccountId`, recheck its retained
 ownership, and rebuild that account's source inbox before acting. Exact retries retain the original
 command identity; omitted account scope preserves legacy command fingerprints.
+`POST /operator/triage/bulk` applies one assign, acknowledge or snooze to 1–100 items, each under
+`{CommandId}:{index}` through the same per-item authorization and policy (a blocker still cannot be
+snoozed); assign without an assignee, snooze without a snooze-until time, and Unsnooze are refused
+with 400 before anything is written.
 Production uses PostgreSQL through `MERIDIAN_OPERATOR_TRIAGE_CONNECTION_STRING` (falling back to the
 ledger connection); missing persistence disables triage actions explicitly. Synthetic hosts use a
 durable file adapter. No notification delivery is implied by assignment or acknowledgement.
@@ -610,7 +635,31 @@ Posted-period comparison reads require retained fund ownership for the exact ten
 ledger book. The shared route recomputes filtered totals from immutable journals with exact decimal
 transport, policy/currency checks and source population identities. An open period compares the
 same elapsed fiscal interval in a completed baseline; missing or too-short baselines remain
-unavailable. These comparisons never consume the strategy-run simulated ledger.
+unavailable. `measure=ClosingBalances` instead compares cumulative balances: every posting in the
+book's earlier periods (by posting period) plus the period's own postings to the cutoff, against the
+baseline's full close; postings assigned to a period outside the book make the result Unavailable
+rather than guessed. These comparisons never consume the strategy-run simulated ledger.
+
+The Accounting workspace's open-breaks card carries a 14-day history from `OpenBreakHistory`: the
+count at each UTC day end rebuilt from break detection, resolution and reopen times in the retained
+queue (which keeps every status), with today's live count as the last point. A closed break without a
+resolution time, or any day before a reopen (reopen clears the earlier resolution time), is null,
+not guessed. No metric snapshots are stored.
+The timing-drift card carries a 14-day history from `TimingDriftHistory`: at each UTC day end, the
+workspace's most recent runs (six, newest start first) that had started by then, each judged by its
+latest retained reconciliation created before then (`IReconciliationRunService.GetHistoryForRunAsync`),
+with today's live count as the last point. Run start times never move (a restart is a new run), so the
+population is known from today's list, except when that list may have been cut off by the run read
+limit and holds fewer than six runs started by then; those days are null. Without a reconciliation
+service the card carries no history. The other accounting cards (security gaps, audit ready) have no
+retained timestamped source and carry none.
+
+Journal-entry DTOs carry `Execution` lineage from the posting's own metadata: the order id from the
+retained `source.orderId` tag (the execution journal's identifier) before the GUID `OrderId`, the
+`FillId`, and the `strategy.runId` tag. Nothing is matched by symbol, amount or time.
+`GET /api/ledger/books/{ledgerBookId}/execution-journal-entries?fillId=|orderId=` (exactly one) returns
+that book's postings recorded from a fill or order, with the period-comparison read checks. Automated
+fill accounting records the fill but not the order, so callers also look up fills.
 
 The posted-account running-balance read requires the same authenticated tenant/company and
 retained book ownership, including exact returned period, book and fund identities. Its optional

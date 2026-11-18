@@ -18,7 +18,8 @@ before project evaluation; commit authored inputs and reviewed documentation, no
 mechanical trackers. See [generated output delivery](../../docs/engineering/generated-output-delivery.md).
 
 The Providers workstation includes guarded failover, historical provider limits and routing previews,
-symbol rollout, validation profiles and quota history. Data and Settings share pending activation
+symbol rollout, validation profiles and quota history, plus the cross-provider tolerance editor in
+data-quality watch. Data and Settings share pending activation
 status from the host; rebuild the dashboard to refresh these served controls. See the dashboard and
 shared-service READMEs for validation and runtime boundaries.
 
@@ -31,6 +32,9 @@ revision/evidence inspection and governed proposal review over shared tenant-sco
 journal-line reference editing follows the server's rollout capability; the browser retains exact
 rate text and source amounts. Rebuild with the canonical dashboard command after changes. See
 [intercompany agreements](../../docs/domain/intercompany-agreements.md) for authority and configuration.
+
+The served accounting bundle adds "Accrue fee" on approved management-fee profiles over
+`/api/ledger/intercompany/fees/*`. See [governed fixed management fees](../../docs/domain/intercompany-agreements.md#governed-fixed-management-fees).
 
 The served Entity operations bundle adds a Rate fixings tab over
 `/api/ledger/intercompany/rate-fixings`. See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
@@ -109,7 +113,16 @@ detail. Reconciliation commands and approvals remain owned by the existing share
 The host-served bundle carries the shell hierarchy pass: a one-row masthead with the environment
 in the trust pill, a provenance banner that becomes a stripe once seen, a two-row workspace header,
 route-first workspace screens with the sidebar as the only sub-navigation, and a pinned Today entry
-with Control Tower attention counts. No shared contract changed.
+with Control Tower attention counts. Options screening is a Data sidebar entry, not a Market Data
+desk tab, and the sidebar highlights only the destination whose `view` the page shows. Short labels
+use light caps in the body face and monospace stays on figures and IDs. The shared inbox filters by
+owner (Everyone, Mine, Unassigned) and adds acknowledge and snooze keys beside assign, and Today's
+provider items open that provider's retained verification history. Trial balance compares closing balances against the prior close through the
+posted-period comparison's ClosingBalances measure.
+Close Cockpit lays the close plan's tasks out by due day after period end, with owners, blockers and
+dependencies; it uses the existing close-plan contract unchanged. The open-breaks and timing-drift
+headline KPIs show sparklines rebuilt server-side from retained break and reconciliation times. Journal-entry detail shows the order, fill
+and run a posting came from, and Trading order evidence lists the order's ledger postings.
 
 The host-served bundle carries the design-system consolidation. It includes one status
 component; one formatting module (year-bearing UTC timestamps; accounting negatives in

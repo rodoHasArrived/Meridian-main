@@ -243,6 +243,55 @@ Today, Operations continuity, Casework and Exceptions/Approvals.
 
 **Benefit:** less to scan, and one answer to "what do I work on next?"
 
+**Progress (2026-11-17).** The sidebar now lists seven daily-use Accounting destinations (Close
+cockpit, Close calendar, Ledger explorer, Adjustments, Casework, Exceptions, Approvals). The other
+ten sit behind a "More (10)" disclosure that opens by itself when the current page is one of them.
+`primary: true` in `lib/accounting-navigation.ts` marks the seven, and every destination stays in
+the command palette. Separately, Options screening is no longer also a Market data in-page tab. It
+keeps its Data sidebar entry, its `?view=options` deep link, and a page heading of its own. The
+merged Accounting work queue and the in-page secondary rail remain open.
+
+**Progress on V2 and V4 (2026-11-17).** The shared label rules (`type-label--caps`,
+`eyebrow-label`, dense-table headers, toolbar chips) moved from tracked monospace to light caps in
+the body face, and 75 inline `font-mono uppercase tracking-…` label classes now use
+`type-label--caps`. The P4 non-numeric monospace ratchet now exists as `monoCapsLabels` (18 left
+in five screens), with `rawSelects` at zero across `src/`. Ledger Explorer has the journal totals
+row with a debit, credit and balance check. Status badges are still uppercase monospace (V3), and
+the font decision is still open.
+
+**Progress on P2/V1 and P9 (2026-11-17).** Close Cockpit's `AccountingValue` tile no longer
+wraps dates onto three lines: the row wraps as a unit, and only figures keep monospace. The "Close
+task progress" and "Break aging" charts now render in view (after the queue and after the
+reconciliation workbench) rather than inside collapsed disclosures. Headline-KPI sparklines
+now have a first producer: `WorkstationMetricCard.History`, filled for open breaks by rebuilding each
+day's count from retained break times (2026-11-17). Other KPIs gain sparklines as their sources can
+support a rebuilt series; none uses stored snapshots.
+
+**Progress on F1/P3 (2026-11-17).** The shared inbox's "My items" checkbox is now an Owner
+switch (Everyone, Mine, Unassigned). Keyboard triage covers acknowledge (c) and snooze (s) as well
+as assign (a), through the same reviewed, reason-required dialogs, and the `?` sheet lists those
+keys. Bulk acknowledge and snooze now go through the same server bulk endpoint as bulk assign
+(`OperatorTriageBulkCommand` gained Acknowledge and Snooze, 2026-11-17).
+
+**Reconciled with Workstation UX Phases A–E (2026-11-18).** `main` landed a parallel overhaul
+(#3631) that covers several of the items above, and its implementation now stands where the two
+overlapped: the Accounting sidebar shows one row per group instead of the "More (10)" disclosure;
+Ledger Explorer's totals row and posting-line layout, the Close Cockpit value tile, the in-view
+charts and the label-face ratchet (`monospaceCapsLabels`) are #3631's; the legacy Runs headline
+(and with it the Runs population note) is gone; and the browser sends bulk acknowledge and snooze
+as one confirmed command per item. Still from this plan: `rawSelects`, the overflow fade, the
+Owner switch and c/s keys, view-aware sidebar highlighting, KPI sparklines, provider history
+links, the closing-balance comparison, the close board and the order-ledger lineage. The server's
+bulk endpoint keeps its Acknowledge and Snooze support as an API capability.
+
+**Progress on F2/F4/F7 (2026-11-17).** Provider verification history is deep-linkable by
+connection or provider family, and Today's degraded-provider items open it. Trial balance's
+"Compare prior period" is now "Closing balances vs prior close": the posted-period comparison gained a
+`ClosingBalances` measure that accumulates every posting through each period end (2026-11-17). Note
+that the Trial balance table itself reports the selected period's posted activity, not cumulative
+balances. The day-by-day close board needed no contract change: `CloseTaskDto` already carries due
+dates, owners and dependencies, and Close Cockpit now lays them out by day after period end.
+
 #### C4 🔴 Speak operator language, not system language (follows the 11-10 copy pass)
 
 **Problem.**

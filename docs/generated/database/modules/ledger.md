@@ -2,9 +2,9 @@
 
 # `ledger` schema
 
-- Relations: 59
-- Functions/procedures: 34
-- Triggers: 66
+- Relations: 60
+- Functions/procedures: 35
+- Triggers: 68
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -276,6 +276,16 @@ erDiagram
         date effective_to
         timestamp_with_time_zone recorded_at_utc
         jsonb payload
+    }
+    ledger_intercompany_accrual_schedules {
+        uuid schedule_id PK
+        bigint version PK
+        text tenant_id
+        text company_id
+        uuid ledger_book_id
+        text status
+        jsonb payload
+        timestamp_with_time_zone recorded_at
     }
     ledger_intercompany_balance_confirmations {
         uuid confirmation_id PK
@@ -870,12 +880,13 @@ erDiagram
 | `entity_controlled_close_authorization` | table | 7 | `authorization_id` | 1 | 2 | - |
 | `fund_profile_tenancy` | table | 4 | `fund_profile_id` | 0 | 2 | - |
 | `intercompany_account_binding_revisions` | table | 11 | `revision_id` | 1 | 3 | - |
+| `intercompany_accrual_schedules` | table | 8 | `schedule_id`, `version` | 0 | 3 | - |
 | `intercompany_balance_confirmations` | table | 8 | `confirmation_id`, `version` | 0 | 3 | - |
 | `intercompany_counterpart_reservations` | table | 5 | `tenant_id`, `target_book_id`, `target_journal_id` | 1 | 1 | - |
 | `intercompany_proposal_links` | table | 10 | `tenant_id`, `request_id` | 1 | 1 | - |
 | `intercompany_proposal_retries` | table | 6 | `tenant_id`, `request_id` | 1 | 1 | - |
 | `intercompany_proposals` | table | 15 | `proposal_id` | 2 | 4 | - |
-| `journal_entries` | table | 19 | `global_sequence` | 0 | 17 | - |
+| `journal_entries` | table | 19 | `global_sequence` | 0 | 20 | - |
 | `journal_entries_global_sequence_seq` | sequence | 0 | - | 0 | 0 | - |
 | `journal_entry_integrity_seals` | table | 3 | `journal_entry_id` | 1 | 1 | - |
 | `journal_entry_open_postings` | table | 2 | `journal_entry_id` | 1 | 1 | - |
