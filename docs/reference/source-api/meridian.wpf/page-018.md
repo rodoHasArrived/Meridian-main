@@ -145,6 +145,22 @@ Declared public members:
 | --- | --- | --- |
 | <code>public IntercompanyAgreementsControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/IntercompanyAgreementsControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/IntercompanyAgreementsControl.xaml.cs#L7) |  |
 
+## IntercompanyBalanceConfirmationControl
+
+Qualified name: <code>Meridian.Wpf.Views.IntercompanyBalanceConfirmationControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/IntercompanyBalanceConfirmationControl.xaml.cs:5](../../../../src/Meridian.Wpf/Views/IntercompanyBalanceConfirmationControl.xaml.cs#L5).
+
+```csharp
+public partial class IntercompanyBalanceConfirmationControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyBalanceConfirmationControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/IntercompanyBalanceConfirmationControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/IntercompanyBalanceConfirmationControl.xaml.cs#L7) |  |
+
 ## IntercompanyCounterpartProposalsControl
 
 Qualified name: <code>Meridian.Wpf.Views.IntercompanyCounterpartProposalsControl</code>. Kind: `class`.
@@ -176,6 +192,38 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public IntercompanyInterestAccrualControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/IntercompanyInterestAccrualControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/IntercompanyInterestAccrualControl.xaml.cs#L7) |  |
+
+## IntercompanyManagementFeeControl
+
+Qualified name: <code>Meridian.Wpf.Views.IntercompanyManagementFeeControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/IntercompanyManagementFeeControl.xaml.cs:5](../../../../src/Meridian.Wpf/Views/IntercompanyManagementFeeControl.xaml.cs#L5).
+
+```csharp
+public partial class IntercompanyManagementFeeControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyManagementFeeControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/IntercompanyManagementFeeControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/IntercompanyManagementFeeControl.xaml.cs#L7) |  |
+
+## IntercompanyRateFixingsControl
+
+Qualified name: <code>Meridian.Wpf.Views.IntercompanyRateFixingsControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/IntercompanyRateFixingsControl.xaml.cs:5](../../../../src/Meridian.Wpf/Views/IntercompanyRateFixingsControl.xaml.cs#L5).
+
+```csharp
+public partial class IntercompanyRateFixingsControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyRateFixingsControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/IntercompanyRateFixingsControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/IntercompanyRateFixingsControl.xaml.cs#L7) |  |
 
 ## IssueDisplayItem
 
@@ -1016,66 +1064,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public RunPortfolioPage();</code> | [src/Meridian.Wpf/Views/RunPortfolioPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/RunPortfolioPage.xaml.cs#L12) |  |
-
-## RunRiskPage
-
-Qualified name: <code>Meridian.Wpf.Views.RunRiskPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:73](../../../../src/Meridian.Wpf/Views/Pages.cs#L73).
-
-```csharp
-public partial class RunRiskPage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/RunRiskPage.xaml.cs:8](../../../../src/Meridian.Wpf/Views/RunRiskPage.xaml.cs#L8).
-
-Hosts risk details for the selected strategy run.
-
-```csharp
-public partial class RunRiskPage
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public RunRiskPage(RunRiskViewModel viewModel);</code> | [src/Meridian.Wpf/Views/RunRiskPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/RunRiskPage.xaml.cs#L12) |  |
-
-## SaveWatchlistDialog
-
-Qualified name: <code>Meridian.Wpf.Views.SaveWatchlistDialog</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs:11](../../../../src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs#L11).
-
-Dialog for saving or updating a watchlist. Replaces the former imperative SaveWatchlistDialog Window class that was embedded in SymbolsPage.xaml.cs.
-
-```csharp
-public partial class SaveWatchlistDialog : Window
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string WatchlistName =&gt; …;</code> | [src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs:14](../../../../src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs#L14) | Gets the watchlist name typed by the user. |
-| <code>public bool SaveAsNew =&gt; …;</code> | [src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs:17](../../../../src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs#L17) | Gets whether the user chose to create a new watchlist. |
-| <code>public string? SelectedWatchlistId =&gt; …;</code> | [src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs:20](../../../../src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs#L20) | Gets the selected existing watchlist name (null when SaveAsNew is true). |
-| <code>public SaveWatchlistDialog(IEnumerable&lt;string&gt; existingWatchlists);</code> | [src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs:22](../../../../src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs#L22) |  |
-
-## ScatterAnalysisPage
-
-Qualified name: <code>Meridian.Wpf.Views.ScatterAnalysisPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/ScatterAnalysisPage.xaml.cs:16](../../../../src/Meridian.Wpf/Views/ScatterAnalysisPage.xaml.cs#L16).
-
-Code-behind for the Scatter Analysis page. Keeps business logic in ScatterAnalysisViewModel; this file handles: • ScottPlot chart rendering (UI-specific, not MVVM-bindable) • Tab panel visibility switching • Time-range RadioButton selection → ViewModel propagation
-
-```csharp
-public partial class ScatterAnalysisPage
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ScatterAnalysisPage(ScatterAnalysisViewModel viewModel);</code> | [src/Meridian.Wpf/Views/ScatterAnalysisPage.xaml.cs:32](../../../../src/Meridian.Wpf/Views/ScatterAnalysisPage.xaml.cs#L32) |  |

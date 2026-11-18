@@ -101,6 +101,11 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     public IntercompanyCounterpartQueueWorkspace? CounterpartProposals { get; }
     /// <summary>Governed loan-interest accrual request over the same shared accrual API as the browser workstation.</summary>
     public IntercompanyInterestAccrualWorkspace? InterestAccrual { get; }
+    /// <summary>Governed fixed management-fee accrual over the shared intercompany API; null when no client is available.</summary>
+    public IntercompanyManagementFeeWorkspace? ManagementFee { get; }
+    /// <summary>Reviewed index fixings that floating-rate intercompany accruals read; null when no client is available.</summary>
+    public IntercompanyRateFixingWorkspace? RateFixings { get; }
+    public IntercompanyBalanceConfirmationWorkspace? BalanceConfirmation { get; }
     /// <summary>Opt-in, reviewed accrual schedules over the same shared schedule API as the browser workstation.</summary>
     public IntercompanyAccrualScheduleWorkspace? AccrualSchedules { get; }
 
@@ -134,6 +139,9 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         Agreements = intercompanyAgreementClient is null ? null : new IntercompanyAgreementWorkspace(intercompanyAgreementClient);
         CounterpartProposals = intercompanyAgreementClient is null ? null : new IntercompanyCounterpartQueueWorkspace(intercompanyAgreementClient);
         InterestAccrual = intercompanyAgreementClient is null ? null : new IntercompanyInterestAccrualWorkspace(intercompanyAgreementClient);
+        ManagementFee = intercompanyAgreementClient is null ? null : new IntercompanyManagementFeeWorkspace(intercompanyAgreementClient);
+        RateFixings = intercompanyAgreementClient is null ? null : new IntercompanyRateFixingWorkspace(intercompanyAgreementClient);
+        BalanceConfirmation = intercompanyAgreementClient is null ? null : new IntercompanyBalanceConfirmationWorkspace(intercompanyAgreementClient);
         AccrualSchedules = intercompanyAgreementClient is null ? null : new IntercompanyAccrualScheduleWorkspace(intercompanyAgreementClient);
         if (_authenticationSession is not null)
         {
@@ -1077,6 +1085,9 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         Agreements?.Dispose();
         CounterpartProposals?.Dispose();
         InterestAccrual?.Dispose();
+        ManagementFee?.Dispose();
+        RateFixings?.Dispose();
+        BalanceConfirmation?.Dispose();
         AccrualSchedules?.Dispose();
         _fundContextService.ActiveFundProfileChanged -= OnActiveFundProfileChanged;
         DisposeReconciliationWorkbench();
@@ -1096,6 +1107,9 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         Agreements?.ResetSession();
         CounterpartProposals?.ResetSession();
         InterestAccrual?.ResetSession();
+        ManagementFee?.ResetSession();
+        RateFixings?.ResetSession();
+        BalanceConfirmation?.ResetSession();
         AccrualSchedules?.ResetSession();
     }
 

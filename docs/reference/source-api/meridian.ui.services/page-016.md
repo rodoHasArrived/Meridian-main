@@ -6,6 +6,163 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TourDefinition
+
+Qualified name: <code>Meridian.Ui.Services.TourDefinition</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:472](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L472).
+
+A tour definition with steps.
+
+```csharp
+public sealed class TourDefinition
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Id { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:474](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L474) |  |
+| <code>public string Title { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:475](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L475) |  |
+| <code>public string Description { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:476](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L476) |  |
+| <code>public TourCategory Category { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:477](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L477) |  |
+| <code>public string? TriggerPage { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:478](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L478) |  |
+| <code>public List&lt;TourStep&gt; Steps { get; init; } = new ();</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:479](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L479) |  |
+
+## TourInfo
+
+Qualified name: <code>Meridian.Ui.Services.TourInfo</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:530](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L530).
+
+Tour information for listing.
+
+```csharp
+public sealed class TourInfo
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Id { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:532](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L532) |  |
+| <code>public string Title { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:533](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L533) |  |
+| <code>public string Description { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:534](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L534) |  |
+| <code>public int StepCount { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:535](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L535) |  |
+| <code>public bool IsCompleted { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:536](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L536) |  |
+| <code>public bool IsDismissed { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:537](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L537) |  |
+| <code>public TourCategory Category { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:538](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L538) |  |
+| <code>public int EstimatedDurationMinutes { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:539](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L539) |  |
+
+## TourSession
+
+Qualified name: <code>Meridian.Ui.Services.TourSession</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:519](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L519).
+
+Active tour session state.
+
+```csharp
+public sealed class TourSession
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string TourId { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:521](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L521) |  |
+| <code>public TourDefinition Tour { get; init; } = null !;</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:522](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L522) |  |
+| <code>public int CurrentStepIndex { get; set; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:523](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L523) |  |
+| <code>public DateTime StartedAt { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:524](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L524) |  |
+
+## TourStep
+
+Qualified name: <code>Meridian.Ui.Services.TourStep</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:485](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L485).
+
+A single step in a tour.
+
+```csharp
+public sealed class TourStep
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Title { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:487](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L487) |  |
+| <code>public string Content { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:488](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L488) |  |
+| <code>public string? TargetElement { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:489](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L489) |  |
+| <code>public TooltipPlacement Placement { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:490](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L490) |  |
+
+## TourStepEventArgs
+
+Qualified name: <code>Meridian.Ui.Services.TourStepEventArgs</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:545](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L545).
+
+Event args for tour step changes.
+
+```csharp
+public sealed class TourStepEventArgs : EventArgs
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string TourId { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:547](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L547) |  |
+| <code>public int StepIndex { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:548](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L548) |  |
+| <code>public int TotalSteps { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:549](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L549) |  |
+| <code>public TourStep Step { get; init; } = null !;</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:550](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L550) |  |
+| <code>public bool IsFirst { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:551](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L551) |  |
+| <code>public bool IsLast { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:552](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L552) |  |
+
+## TradeEvent
+
+Qualified name: <code>Meridian.Ui.Services.TradeEvent</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/LiveDataService.cs:188](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L188).
+
+Carries a live trade&#x27;s symbol, price, size, venue, sequence, and reported side.
+
+```csharp
+public sealed class TradeEvent
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:190](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L190) |  |
+| <code>public decimal Price { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:191](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L191) |  |
+| <code>public decimal Size { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:192](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L192) |  |
+| <code>public DateTime Timestamp { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:193](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L193) |  |
+| <code>public string Exchange { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:194](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L194) |  |
+| <code>public string Condition { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:195](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L195) |  |
+| <code>public long SequenceNumber { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:196](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L196) |  |
+| <code>public string Side { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:197](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L197) |  |
+
+## TradeEventArgs
+
+Qualified name: <code>Meridian.Ui.Services.TradeEventArgs</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:554](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L554).
+
+Event args for trade events.
+
+```csharp
+public sealed class TradeEventArgs : EventArgs
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:556](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L556) |  |
+| <code>public TradeRecord Trade { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:557](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L557) |  |
+
 ## TradeRecord
 
 Qualified name: <code>Meridian.Ui.Services.TradeRecord</code>. Kind: `class`.

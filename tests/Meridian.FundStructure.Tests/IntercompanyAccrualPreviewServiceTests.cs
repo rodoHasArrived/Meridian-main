@@ -105,6 +105,8 @@ public sealed class IntercompanyAccrualPreviewServiceTests
     // A window containing Feb 29 that is not a whole month.
     [InlineData(IntercompanyDayCountDto.Actual365, "2028-02-20", "2028-03-10", 19.0 / 365)]
     [InlineData(IntercompanyDayCountDto.ActualActualIsda, "2028-02-20", "2028-03-10", 19.0 / 366)]
+    // ICMA: a full monthly coupon period is 1/12 of a year, 29 days or not.
+    [InlineData(IntercompanyDayCountDto.ActualActualIcma, "2028-02-01", "2028-03-01", 1.0 / 12)]
     // Crossing into a leap year: ISDA splits the days by calendar year (17/365 + 14/366).
     [InlineData(IntercompanyDayCountDto.Actual365, "2027-12-15", "2028-01-15", 31.0 / 365)]
     [InlineData(IntercompanyDayCountDto.ActualActualIsda, "2027-12-15", "2028-01-15", 17.0 / 365 + 14.0 / 366)]
@@ -135,8 +137,9 @@ public sealed class IntercompanyAccrualPreviewServiceTests
     }
 
     [Theory]
-    [InlineData("floating", "fixing authority")]
-    [InlineData("compounding", "simple interest")]
+    [InlineData("floating", "without a fixing lag")]
+    [InlineData("compounding", "only at each schedule period start")]
+    [InlineData("floating-compounding", "simple interest only")]
     [InlineData("unstructured", "unstructured terms")]
     [InlineData("terminated", "unterminated loan")]
     [InlineData("fee", "unterminated loan")]
@@ -147,7 +150,8 @@ public sealed class IntercompanyAccrualPreviewServiceTests
         var draft = variant switch
         {
             "floating" => loan.Terms with { Terms = new() { StructuredTerms = structured with { RateBasis = IntercompanyRateBasisDto.Floating, FixedAnnualRate = null, FloatingIndexReference = "SOFR", SpreadBps = 150m } } },
-            "compounding" => loan.Terms with { Terms = new() { StructuredTerms = structured with { Compounding = IntercompanyCompoundingDto.Monthly } } },
+            "compounding" => loan.Terms with { Terms = new() { StructuredTerms = structured with { Compounding = IntercompanyCompoundingDto.Quarterly } } },
+            "floating-compounding" => loan.Terms with { Terms = new() { StructuredTerms = structured with { RateBasis = IntercompanyRateBasisDto.Floating, FixedAnnualRate = null, FloatingIndexReference = "SOFR", SpreadBps = 150m, FixingLagBusinessDays = 2, Compounding = IntercompanyCompoundingDto.Monthly } } },
             "unstructured" => loan.Terms with { Terms = new(RateDescription: "Five percent, monthly") },
             "fee" => loan.Terms with { AgreementType = IntercompanyAgreementTypeDto.ManagementFee },
             _ => loan.Terms
@@ -160,6 +164,23 @@ public sealed class IntercompanyAccrualPreviewServiceTests
         Assert.Equal(IntercompanyAccrualRules.StatusUnavailable, preview.Status);
         Assert.Null(preview.Amount);
         Assert.Contains(expected, Assert.Single(preview.Diagnostics));
+    }
+
+    [Fact]
+    public void WindowMixingCompoundingAndFloatingVersions_IsRefusedRatherThanLabelledWithOneRule()
+    {
+        var loan = Loan();
+        var structured = loan.Terms.Terms!.StructuredTerms!;
+        var compounding = loan with { Terms = loan.Terms with { Terms = new() { StructuredTerms = structured with { Compounding = IntercompanyCompoundingDto.Monthly } } } };
+        var floating = loan with { Terms = loan.Terms with { Terms = new() { StructuredTerms = structured with { RateBasis = IntercompanyRateBasisDto.Floating, FixedAnnualRate = null, FloatingIndexReference = "SOFR", SpreadBps = 150m, FixingLagBusinessDays = 2 } } } };
+
+        var preview = Preview(new(2026, 1, 1), new(2026, 2, 1),
+            [Authority(new(2026, 1, 1), new(2026, 1, 16), compounding), Authority(new(2026, 1, 16), new(2026, 2, 1), floating)],
+            [Principal(new(2026, 1, 1), new(2026, 2, 1), 1_000_000m)]);
+
+        Assert.Equal(IntercompanyAccrualRules.StatusUnavailable, preview.Status);
+        Assert.Null(preview.Amount);
+        Assert.Contains("mixes floating-rate and compounding", Assert.Single(preview.Diagnostics));
     }
 
     [Fact]

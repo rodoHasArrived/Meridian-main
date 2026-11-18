@@ -6,6 +6,114 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ICustomAssetProfileFieldProjectionStore
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.ICustomAssetProfileFieldProjectionStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/SecurityMaster/ICustomAssetProfileFieldProjectionStore.cs:8](../../../../src/Meridian.Storage/SecurityMaster/ICustomAssetProfileFieldProjectionStore.cs#L8).
+
+Queries the profile-keyed CustomAsset projection (custom_asset_profile_field_projection, migration 064): one row per governed profileFields key of a profile-backed CustomAsset. A CustomAsset without a complete profile envelope has no rows; its terms JSON remains the only copy.
+
+```csharp
+public interface ICustomAssetProfileFieldProjectionStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;CustomAssetProfileFieldProjectionRow&gt;&gt; GetProfileFieldsAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICustomAssetProfileFieldProjectionStore.cs:11](../../../../src/Meridian.Storage/SecurityMaster/ICustomAssetProfileFieldProjectionStore.cs#L11) | The security&#x27;s projected profile fields, ordered by field key; empty when it has none. |
+| <code>Task&lt;IReadOnlyList&lt;CustomAssetProfileFieldProjectionRow&gt;&gt; GetByProfileAsync(string customProfileId, int? profileVersion = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICustomAssetProfileFieldProjectionStore.cs:18](../../../../src/Meridian.Storage/SecurityMaster/ICustomAssetProfileFieldProjectionStore.cs#L18) | Every projected field of securities pinned to customProfileId, optionally one profileVersion, ordered by security then field key. The profile id matches exactly, as stored. |
+| <code>Task&lt;IReadOnlyList&lt;CustomAssetProfileFieldProjectionRow&gt;&gt; FindByTextValueAsync(string customProfileId, string fieldKey, string textValue, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICustomAssetProfileFieldProjectionStore.cs:27](../../../../src/Meridian.Storage/SecurityMaster/ICustomAssetProfileFieldProjectionStore.cs#L27) | The rows whose string-valued field fieldKey of customProfileId equals textValue exactly (case-sensitive, as stored). |
+
+## IDataVendorEntitlementStore
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.IDataVendorEntitlementStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IDataVendorEntitlementStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/IDataVendorEntitlementStore.cs#L9).
+
+Persists vendor entitlement records and queries their validity and expiration.
+
+```csharp
+public interface IDataVendorEntitlementStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;DataVendorEntitlementDto&gt;&gt; GetAllAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IDataVendorEntitlementStore.cs:11](../../../../src/Meridian.Storage/SecurityMaster/IDataVendorEntitlementStore.cs#L11) |  |
+| <code>Task&lt;IReadOnlyList&lt;DataVendorEntitlementDto&gt;&gt; GetExpiringAsync(DateTimeOffset cutoffUtc, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IDataVendorEntitlementStore.cs:17](../../../../src/Meridian.Storage/SecurityMaster/IDataVendorEntitlementStore.cs#L17) | Returns active (non-expired) entitlements whose effective-to date falls on or before cutoffUtc, filtered at the storage layer. |
+| <code>Task&lt;DataVendorEntitlementDto?&gt; GetByIdAsync(Guid entitlementId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IDataVendorEntitlementStore.cs:19](../../../../src/Meridian.Storage/SecurityMaster/IDataVendorEntitlementStore.cs#L19) |  |
+| <code>Task&lt;DataVendorEntitlementDto&gt; UpsertAsync(DataVendorEntitlementDto entitlement, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IDataVendorEntitlementStore.cs:20](../../../../src/Meridian.Storage/SecurityMaster/IDataVendorEntitlementStore.cs#L20) |  |
+| <code>Task DeactivateAsync(Guid entitlementId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IDataVendorEntitlementStore.cs:21](../../../../src/Meridian.Storage/SecurityMaster/IDataVendorEntitlementStore.cs#L21) |  |
+
+## IDepositReferenceProjectionStore
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.IDepositReferenceProjectionStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IDepositReferenceProjectionStore.cs:8](../../../../src/Meridian.Storage/SecurityMaster/IDepositReferenceProjectionStore.cs#L8).
+
+Queries deposit reference projections by security, institution, and maturity.
+
+```csharp
+public interface IDepositReferenceProjectionStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;DepositProjectionRow?&gt; GetDepositAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IDepositReferenceProjectionStore.cs:10](../../../../src/Meridian.Storage/SecurityMaster/IDepositReferenceProjectionStore.cs#L10) |  |
+| <code>Task&lt;IReadOnlyList&lt;DepositProjectionRow&gt;&gt; GetByInstitutionAsync(string institutionName, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IDepositReferenceProjectionStore.cs:11](../../../../src/Meridian.Storage/SecurityMaster/IDepositReferenceProjectionStore.cs#L11) |  |
+| <code>Task&lt;IReadOnlyList&lt;DepositProjectionRow&gt;&gt; GetMaturingBeforeAsync(DateOnly beforeDate, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IDepositReferenceProjectionStore.cs:12](../../../../src/Meridian.Storage/SecurityMaster/IDepositReferenceProjectionStore.cs#L12) |  |
+
+## IDirectLoanReferenceProjectionStore
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.IDirectLoanReferenceProjectionStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs#L9).
+
+Read access to the DirectLoan relational terms projection. The asset-specific-terms JSONB blob stays the source of truth; this store answers the portfolio-shaped questions the blob cannot — which loans a borrower carries, which mature in a window, and which principal instalments fall due — without parsing every security&#x27;s document.
+
+```csharp
+public interface IDirectLoanReferenceProjectionStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;DirectLoanProjectionRow?&gt; GetDirectLoanAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs:11](../../../../src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs#L11) |  |
+| <code>Task&lt;IReadOnlyList&lt;DirectLoanProjectionRow&gt;&gt; GetByBorrowerAsync(string borrower, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs:13](../../../../src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs#L13) |  |
+| <code>Task&lt;IReadOnlyList&lt;DirectLoanProjectionRow&gt;&gt; GetByReferenceIndexAsync(string referenceIndex, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs:15](../../../../src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs#L15) |  |
+| <code>Task&lt;IReadOnlyList&lt;DirectLoanProjectionRow&gt;&gt; GetMaturityLadderAsync(DateOnly from, DateOnly to, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs:17](../../../../src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs#L17) |  |
+| <code>Task&lt;IReadOnlyList&lt;DirectLoanCovenantRow&gt;&gt; GetCovenantsAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs:20](../../../../src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs#L20) | The loan&#x27;s covenants in the order the terms document declares them. |
+| <code>Task&lt;IReadOnlyList&lt;DirectLoanPrincipalPaymentRow&gt;&gt; GetPrincipalScheduleAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs:23](../../../../src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs#L23) | The loan&#x27;s contractual principal instalments in declared order. |
+| <code>Task&lt;IReadOnlyList&lt;DirectLoanPrincipalPaymentRow&gt;&gt; GetPrincipalPaymentsDueAsync(DateOnly from, DateOnly to, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs:29](../../../../src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs#L29) | Every projected principal instalment falling in from..to inclusive, across loans, ordered by payment date. |
+
+## IEdgarReferenceDataStore
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.IEdgarReferenceDataStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IEdgarReferenceDataStore.cs:8](../../../../src/Meridian.Storage/SecurityMaster/IEdgarReferenceDataStore.cs#L8).
+
+Retains EDGAR ticker associations, filer records, and reference data for subsequent lookup.
+
+```csharp
+public interface IEdgarReferenceDataStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task SaveTickerAssociationsAsync(IReadOnlyList&lt;EdgarTickerAssociation&gt; associations, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IEdgarReferenceDataStore.cs:10](../../../../src/Meridian.Storage/SecurityMaster/IEdgarReferenceDataStore.cs#L10) |  |
+| <code>Task&lt;IReadOnlyList&lt;EdgarTickerAssociation&gt;&gt; LoadTickerAssociationsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IEdgarReferenceDataStore.cs:12](../../../../src/Meridian.Storage/SecurityMaster/IEdgarReferenceDataStore.cs#L12) |  |
+| <code>Task&lt;EdgarFilerRecord?&gt; LoadFilerAsync(string cik, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IEdgarReferenceDataStore.cs:16](../../../../src/Meridian.Storage/SecurityMaster/IEdgarReferenceDataStore.cs#L16) |  |
+| <code>Task&lt;EdgarFactsRecord?&gt; LoadFactsAsync(string cik, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IEdgarReferenceDataStore.cs:20](../../../../src/Meridian.Storage/SecurityMaster/IEdgarReferenceDataStore.cs#L20) |  |
+| <code>Task&lt;EdgarSecurityDataRecord?&gt; LoadSecurityDataAsync(string cik, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IEdgarReferenceDataStore.cs:24](../../../../src/Meridian.Storage/SecurityMaster/IEdgarReferenceDataStore.cs#L24) |  |
+
 ## IEquityReferenceProjectionStore
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.IEquityReferenceProjectionStore</code>. Kind: `interface`.
@@ -949,113 +1057,3 @@ Declared public members:
 | <code>public Task&lt;IReadOnlyList&lt;CustomAssetProfileFieldProjectionRow&gt;&gt; GetProfileFieldsAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCustomAssetProfileFieldProjectionStore.cs:23](../../../../src/Meridian.Storage/SecurityMaster/PostgresCustomAssetProfileFieldProjectionStore.cs#L23) |  |
 | <code>public Task&lt;IReadOnlyList&lt;CustomAssetProfileFieldProjectionRow&gt;&gt; GetByProfileAsync(string customProfileId, int? profileVersion = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresCustomAssetProfileFieldProjectionStore.cs:30](../../../../src/Meridian.Storage/SecurityMaster/PostgresCustomAssetProfileFieldProjectionStore.cs#L30) |  |
 | <code>public Task&lt;IReadOnlyList&lt;CustomAssetProfileFieldProjectionRow&gt;&gt; FindByTextValueAsync(string customProfileId, string fieldKey, string textValue, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresCustomAssetProfileFieldProjectionStore.cs:49](../../../../src/Meridian.Storage/SecurityMaster/PostgresCustomAssetProfileFieldProjectionStore.cs#L49) |  |
-
-## PostgresDataVendorEntitlementStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresDataVendorEntitlementStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/PostgresDataVendorEntitlementStore.cs:10](../../../../src/Meridian.Storage/SecurityMaster/PostgresDataVendorEntitlementStore.cs#L10).
-
-Persists and queries data vendor entitlement records in PostgreSQL.
-
-```csharp
-public sealed class PostgresDataVendorEntitlementStore : IDataVendorEntitlementStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostgresDataVendorEntitlementStore(SecurityMasterOptions options);</code> | [src/Meridian.Storage/SecurityMaster/PostgresDataVendorEntitlementStore.cs:14](../../../../src/Meridian.Storage/SecurityMaster/PostgresDataVendorEntitlementStore.cs#L14) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;DataVendorEntitlementDto&gt;&gt; GetAllAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresDataVendorEntitlementStore.cs:19](../../../../src/Meridian.Storage/SecurityMaster/PostgresDataVendorEntitlementStore.cs#L19) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;DataVendorEntitlementDto&gt;&gt; GetExpiringAsync(DateTimeOffset cutoffUtc, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresDataVendorEntitlementStore.cs:42](../../../../src/Meridian.Storage/SecurityMaster/PostgresDataVendorEntitlementStore.cs#L42) |  |
-| <code>public async Task&lt;DataVendorEntitlementDto?&gt; GetByIdAsync(Guid entitlementId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresDataVendorEntitlementStore.cs:71](../../../../src/Meridian.Storage/SecurityMaster/PostgresDataVendorEntitlementStore.cs#L71) |  |
-| <code>public async Task&lt;DataVendorEntitlementDto&gt; UpsertAsync(DataVendorEntitlementDto entitlement, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresDataVendorEntitlementStore.cs:94](../../../../src/Meridian.Storage/SecurityMaster/PostgresDataVendorEntitlementStore.cs#L94) |  |
-| <code>public async Task DeactivateAsync(Guid entitlementId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresDataVendorEntitlementStore.cs:158](../../../../src/Meridian.Storage/SecurityMaster/PostgresDataVendorEntitlementStore.cs#L158) |  |
-
-## PostgresDepositReferenceProjectionStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresDepositReferenceProjectionStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/PostgresDepositReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/PostgresDepositReferenceProjectionStore.cs#L9).
-
-Reads deposit reference projections from PostgreSQL by security, institution, and maturity.
-
-```csharp
-public sealed class PostgresDepositReferenceProjectionStore : IDepositReferenceProjectionStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostgresDepositReferenceProjectionStore(SecurityMasterOptions options);</code> | [src/Meridian.Storage/SecurityMaster/PostgresDepositReferenceProjectionStore.cs:28](../../../../src/Meridian.Storage/SecurityMaster/PostgresDepositReferenceProjectionStore.cs#L28) |  |
-| <code>public Task&lt;DepositProjectionRow?&gt; GetDepositAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresDepositReferenceProjectionStore.cs:36](../../../../src/Meridian.Storage/SecurityMaster/PostgresDepositReferenceProjectionStore.cs#L36) |  |
-| <code>public Task&lt;IReadOnlyList&lt;DepositProjectionRow&gt;&gt; GetByInstitutionAsync(string institutionName, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresDepositReferenceProjectionStore.cs:39](../../../../src/Meridian.Storage/SecurityMaster/PostgresDepositReferenceProjectionStore.cs#L39) |  |
-| <code>public Task&lt;IReadOnlyList&lt;DepositProjectionRow&gt;&gt; GetMaturingBeforeAsync(DateOnly beforeDate, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresDepositReferenceProjectionStore.cs:42](../../../../src/Meridian.Storage/SecurityMaster/PostgresDepositReferenceProjectionStore.cs#L42) |  |
-
-## PostgresDirectLoanReferenceProjectionStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresDirectLoanReferenceProjectionStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/PostgresDirectLoanReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/PostgresDirectLoanReferenceProjectionStore.cs#L9).
-
-Reads direct loan reference projections from PostgreSQL by security and borrower.
-
-```csharp
-public sealed class PostgresDirectLoanReferenceProjectionStore : IDirectLoanReferenceProjectionStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostgresDirectLoanReferenceProjectionStore(SecurityMasterOptions options);</code> | [src/Meridian.Storage/SecurityMaster/PostgresDirectLoanReferenceProjectionStore.cs:50](../../../../src/Meridian.Storage/SecurityMaster/PostgresDirectLoanReferenceProjectionStore.cs#L50) |  |
-| <code>public Task&lt;DirectLoanProjectionRow?&gt; GetDirectLoanAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresDirectLoanReferenceProjectionStore.cs:66](../../../../src/Meridian.Storage/SecurityMaster/PostgresDirectLoanReferenceProjectionStore.cs#L66) |  |
-| <code>public Task&lt;IReadOnlyList&lt;DirectLoanProjectionRow&gt;&gt; GetByBorrowerAsync(string borrower, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresDirectLoanReferenceProjectionStore.cs:69](../../../../src/Meridian.Storage/SecurityMaster/PostgresDirectLoanReferenceProjectionStore.cs#L69) |  |
-| <code>public Task&lt;IReadOnlyList&lt;DirectLoanProjectionRow&gt;&gt; GetByReferenceIndexAsync(string referenceIndex, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresDirectLoanReferenceProjectionStore.cs:72](../../../../src/Meridian.Storage/SecurityMaster/PostgresDirectLoanReferenceProjectionStore.cs#L72) |  |
-| <code>public Task&lt;IReadOnlyList&lt;DirectLoanProjectionRow&gt;&gt; GetMaturityLadderAsync(DateOnly from, DateOnly to, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresDirectLoanReferenceProjectionStore.cs:75](../../../../src/Meridian.Storage/SecurityMaster/PostgresDirectLoanReferenceProjectionStore.cs#L75) |  |
-| <code>public Task&lt;IReadOnlyList&lt;DirectLoanCovenantRow&gt;&gt; GetCovenantsAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresDirectLoanReferenceProjectionStore.cs:78](../../../../src/Meridian.Storage/SecurityMaster/PostgresDirectLoanReferenceProjectionStore.cs#L78) |  |
-| <code>public Task&lt;IReadOnlyList&lt;DirectLoanPrincipalPaymentRow&gt;&gt; GetPrincipalScheduleAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresDirectLoanReferenceProjectionStore.cs:81](../../../../src/Meridian.Storage/SecurityMaster/PostgresDirectLoanReferenceProjectionStore.cs#L81) |  |
-| <code>public Task&lt;IReadOnlyList&lt;DirectLoanPrincipalPaymentRow&gt;&gt; GetPrincipalPaymentsDueAsync(DateOnly from, DateOnly to, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresDirectLoanReferenceProjectionStore.cs:84](../../../../src/Meridian.Storage/SecurityMaster/PostgresDirectLoanReferenceProjectionStore.cs#L84) |  |
-
-## PostgresEquityReferenceProjectionStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresEquityReferenceProjectionStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/PostgresEquityReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/PostgresEquityReferenceProjectionStore.cs#L9).
-
-Reads equity reference projections from PostgreSQL by security, exchange, and issuer.
-
-```csharp
-public sealed class PostgresEquityReferenceProjectionStore : IEquityReferenceProjectionStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostgresEquityReferenceProjectionStore(SecurityMasterOptions options);</code> | [src/Meridian.Storage/SecurityMaster/PostgresEquityReferenceProjectionStore.cs:27](../../../../src/Meridian.Storage/SecurityMaster/PostgresEquityReferenceProjectionStore.cs#L27) |  |
-| <code>public Task&lt;EquityProjectionRow?&gt; GetEquityAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresEquityReferenceProjectionStore.cs:35](../../../../src/Meridian.Storage/SecurityMaster/PostgresEquityReferenceProjectionStore.cs#L35) |  |
-| <code>public Task&lt;IReadOnlyList&lt;EquityProjectionRow&gt;&gt; GetByExchangeAsync(string exchangeCode, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresEquityReferenceProjectionStore.cs:38](../../../../src/Meridian.Storage/SecurityMaster/PostgresEquityReferenceProjectionStore.cs#L38) |  |
-| <code>public Task&lt;IReadOnlyList&lt;EquityProjectionRow&gt;&gt; GetByIssuerAsync(string issuerName, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresEquityReferenceProjectionStore.cs:41](../../../../src/Meridian.Storage/SecurityMaster/PostgresEquityReferenceProjectionStore.cs#L41) |  |
-
-## PostgresFutureReferenceProjectionStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresFutureReferenceProjectionStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/PostgresFutureReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/PostgresFutureReferenceProjectionStore.cs#L9).
-
-Reads futures reference projections from PostgreSQL by security and root symbol.
-
-```csharp
-public sealed class PostgresFutureReferenceProjectionStore : IFutureReferenceProjectionStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostgresFutureReferenceProjectionStore(SecurityMasterOptions options);</code> | [src/Meridian.Storage/SecurityMaster/PostgresFutureReferenceProjectionStore.cs:21](../../../../src/Meridian.Storage/SecurityMaster/PostgresFutureReferenceProjectionStore.cs#L21) |  |
-| <code>public Task&lt;FutureProjectionRow?&gt; GetFutureAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresFutureReferenceProjectionStore.cs:29](../../../../src/Meridian.Storage/SecurityMaster/PostgresFutureReferenceProjectionStore.cs#L29) |  |
-| <code>public Task&lt;IReadOnlyList&lt;FutureProjectionRow&gt;&gt; GetByRootSymbolAsync(string rootSymbol, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresFutureReferenceProjectionStore.cs:32](../../../../src/Meridian.Storage/SecurityMaster/PostgresFutureReferenceProjectionStore.cs#L32) |  |

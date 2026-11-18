@@ -6,6 +6,77 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationsContinuityCloseBlockerPresentation
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.OperationsContinuityCloseBlockerPresentation</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:122](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L122).
+
+```csharp
+public sealed record OperationsContinuityCloseBlockerPresentation(CloseReadinessBlockerDto Blocker)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string OwnerLabel =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:124](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L124) |  |
+| <code>public string RepairInstruction =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:126](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L126) |  |
+
+## OperationsContinuityClosePresentation
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.OperationsContinuityClosePresentation</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:6](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L6).
+
+Displays the selected shared close decision; legacy gate totals cannot establish close readiness.
+
+```csharp
+public sealed record OperationsContinuityClosePresentation(bool IsReady, string Label, string Detail)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;CloseReadinessBlockerDto&gt; Blockers { get; init; } = [];</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:8](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L8) |  |
+| <code>public IReadOnlyList&lt;OperationsContinuityCloseBlockerPresentation&gt; BlockerRows =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:9](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L9) |  |
+| <code>public static OperationsContinuityClosePresentation Build(OperationsContinuityWorkflowDto? workflow, FinancialOperationsCommandCenterDto? commandCenter, CloseReadinessScopeDto? selectedScope);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:12](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L12) |  |
+
+## OperationsContinuityMapper
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.OperationsContinuityMapper</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:51](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L51).
+
+Projects the server-owned operations continuity contracts into desktop rows using the same derivations as the browser continuity screen: workflow/gate/severity/checklist/break status tone maps, the gate-priority next-action pick, and the open-item operator queue (an item is open when its tone is not ready). All gate and severity truth stays server-side.
+
+```csharp
+public static class OperationsContinuityMapper
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static WorkstationReadinessTone ToTone(OperationsWorkflowStatusDto status) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:53](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L53) |  |
+| <code>public static WorkstationReadinessTone ToTone(OperationsGateStatusDto status) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:68](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L68) |  |
+| <code>public static WorkstationReadinessTone SeverityTone(string? severity) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:78](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L78) |  |
+| <code>public static WorkstationReadinessTone ChecklistTone(string? status) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:86](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L86) |  |
+| <code>public static WorkstationReadinessTone BreakTone(string? status) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:95](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L95) |  |
+| <code>public static WorkstationReadinessTone LaneTone(OperationsReconciliationLaneStatusDto status) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:104](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L104) |  |
+| <code>public static IReadOnlyList&lt;OperationsContinuityWorkflowRowModel&gt; BuildWorkflowRows(IReadOnlyList&lt;OperationsContinuityWorkflowSummaryDto&gt; workflows);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:114](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L114) |  |
+| <code>public static IReadOnlyList&lt;OperationsContinuityPanelRowModel&gt; BuildGateRows(OperationsContinuityWorkflowDto detail);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:142](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L142) |  |
+| <code>public static IReadOnlyList&lt;OperationsContinuityPanelRowModel&gt; BuildBlockerRows(OperationsContinuityWorkflowDto detail);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:162](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L162) |  |
+| <code>public static IReadOnlyList&lt;OperationsContinuityPanelRowModel&gt; BuildChecklistRows(OperationsContinuityWorkflowDto detail);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:182](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L182) |  |
+| <code>public static IReadOnlyList&lt;OperationsContinuityPanelRowModel&gt; BuildQueueRows(OperationsContinuityWorkflowDto? detail, IReadOnlyList&lt;OperationsContinuityPanelRowModel&gt; closeCalendarRows);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:212](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L212) | The unified operator queue: breaks, reconciliation lanes, blockers, checklist tasks, and close-calendar rows, keeping only open items (tone is not ready) like the browser queue. |
+| <code>public static OperationsContinuityQueueRollupModel BuildQueueRollup(bool isLoading, IReadOnlyList&lt;OperationsContinuityPanelRowModel&gt; queueRows);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:258](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L258) |  |
+| <code>public static OperationsContinuityNextActionModel ResolveNextAction(OperationsContinuityWorkflowDto? detail, bool isLoading, string? detailError, OperationsContinuityClosePresentation? closeReadiness = null);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:286](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L286) | Picks the server-recommended next action: all workflow and gate next actions ordered by the owning gate&#x27;s status priority (blocked outranks review outranks in-progress), first entry with a non-blank label — the browser console&#x27;s exact rule. |
+| <code>public static IReadOnlyList&lt;OperationsContinuityPanelRowModel&gt; BuildCloseCalendarRows(OperationsCloseCalendarDto? calendar);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:361](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L361) |  |
+| <code>public static bool IsChecklistTaskReady(OperationsCloseChecklistTaskDto task);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:390](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L390) |  |
+| <code>public static bool IsChecklistTaskBlocked(OperationsCloseChecklistTaskDto task);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:397](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L397) |  |
+| <code>public static string FormatTimestamp(DateTimeOffset value) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs:404](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityPresentationModels.cs#L404) |  |
+
 ## OperationsContinuityNextActionModel
 
 Qualified name: <code>Meridian.Wpf.Workstation.Models.OperationsContinuityNextActionModel</code>. Kind: `record`.
@@ -710,53 +781,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public DenseDataGridControl();</code> | [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:10](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L10) |  |
-
-## KeyValueFactGridControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Tables.KeyValueFactGridControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:37](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L37).
-
-Displays read-only key-value facts using virtualized rows and columns.
-
-```csharp
-public sealed class KeyValueFactGridControl : DataGrid
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public KeyValueFactGridControl();</code> | [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:39](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L39) |  |
-
-## SearchFilterBarControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Tables.SearchFilterBarControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:30](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L30).
-
-Provides a content surface for table search and filter controls.
-
-```csharp
-public sealed class SearchFilterBarControl : ContentControl
-```
-
-## AuditTimelineEntry
-
-Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.AuditTimelineEntry</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs:8](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs#L8).
-
-Carries an audit event&#x27;s timestamp, actor, and message.
-
-```csharp
-public sealed class AuditTimelineEntry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DateTimeOffset Timestamp { get; init; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs:10](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs#L10) |  |
-| <code>public string Actor { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs:11](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs#L11) |  |
-| <code>public string Message { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs:12](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs#L12) |  |

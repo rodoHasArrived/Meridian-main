@@ -2,9 +2,9 @@
 
 # `fund_structure` schema
 
-- Relations: 23
-- Functions/procedures: 5
-- Triggers: 18
+- Relations: 24
+- Functions/procedures: 6
+- Triggers: 20
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -159,6 +159,15 @@ erDiagram
         jsonb payload
         timestamp_with_time_zone retained_at_utc
     }
+    fund_structure_intercompany_rate_fixings {
+        text tenant_id PK
+        uuid fixing_id PK
+        bigint version PK
+        text index_key
+        date fixing_date
+        jsonb payload
+        timestamp_with_time_zone recorded_at
+    }
     fund_structure_investment_portfolio {
         uuid investment_portfolio_id PK
         uuid business_id
@@ -282,6 +291,7 @@ erDiagram
 | `intercompany_agreement_command_receipt` | table | 4 | `tenant_id`, `agreement_id`, `command_id` | 1 | 2 | - |
 | `intercompany_agreement_revision` | table | 4 | `tenant_id`, `agreement_id`, `agreement_version` | 1 | 1 | Approved agreement terms and termination decisions; no historical payload is rewritten. |
 | `intercompany_agreement_snapshot` | table | 5 | `tenant_id`, `agreement_id`, `aggregate_version` | 1 | 1 | Immutable command snapshots; the agreement head points to one exact aggregate version. |
+| `intercompany_rate_fixings` | table | 7 | `tenant_id`, `fixing_id`, `version` | 0 | 3 | - |
 | `investment_portfolio` | table | 17 | `investment_portfolio_id` | 0 | 2 | - |
 | `legal_entity` | table | 17 | `entity_id` | 0 | 2 | - |
 | `organization` | table | 11 | `organization_id` | 0 | 2 | - |

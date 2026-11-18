@@ -6,6 +6,128 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PostgresReportingDeliveryStore
+
+Qualified name: <code>Meridian.Storage.Reporting.PostgresReportingDeliveryStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs:13](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs#L13).
+
+PostgreSQL outbox for reporting delivery. Jobs are claimed with row locks and skip-locked leasing; state, retry metadata, and append-only receipts are committed atomically.
+
+```csharp
+public sealed class PostgresReportingDeliveryStore : IReportingDeliveryStore, IReportingDeliveryGrantDownloadCommitter
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PostgresReportingDeliveryStore(ReportingArtifactStoreOptions options);</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs:23](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs#L23) |  |
+| <code>public Task&lt;ReportingDeliveryJobRecord?&gt; GetAsync(string jobId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs:34](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs#L34) |  |
+| <code>public Task&lt;ReportingDeliveryJobRecord?&gt; GetByIdempotencyKeyAsync(string idempotencyKey, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs:45](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs#L45) |  |
+| <code>public Task&lt;ReportingDeliveryJobRecord?&gt; GetByAccessGrantIdAsync(string accessGrantId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs:53](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs#L53) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ReportingDeliveryJobRecord&gt;&gt; ListByPackageAsync(string tenantId, string packageId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs:64](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs#L64) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ReportingDeliveryJobRecord&gt;&gt; ListByRunAsync(string tenantId, string runId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs:86](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs#L86) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ReportingDeliveryGrantRevocationCandidate&gt;&gt; ListPendingAccessGrantRevocationsAsync(int take, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs:153](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs#L153) |  |
+| <code>public async Task&lt;bool&gt; TryCreateAsync(ReportingDeliveryJobRecord job, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs:216](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs#L216) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ReportingDeliveryJobRecord&gt;&gt; ClaimDueAsync(DateTimeOffset nowUtc, string leaseOwner, TimeSpan leaseDuration, int take, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs:287](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs#L287) |  |
+| <code>public async Task&lt;bool&gt; TryUpdateAsync(string jobId, long expectedVersion, ReportingDeliveryJobRecord updatedJob, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs:381](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs#L381) |  |
+| <code>public async Task&lt;ReportingDeliveryGrantDownloadCommitStatus&gt; TryCommitAsync(ReportingDeliveryGrantDownloadCommit commit, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs:424](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs#L424) |  |
+
+## PostgresReportingDeploymentProbe
+
+Qualified name: <code>Meridian.Storage.Reporting.PostgresReportingDeploymentProbe</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs:20](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs#L20).
+
+Read-only liveness and schema probe for the canonical PostgreSQL reporting authority. It exposes only stable component identifiers and never returns connection details.
+
+```csharp
+public sealed class PostgresReportingDeploymentProbe : IReportingDeploymentProbe
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string AccessGrantArtifactConsumptionCompatibilityMarker = &quot;reporting-access-grant-artifact-consumption:v1&quot;;</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs:22](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs#L22) |  |
+| <code>public const string AccessGrantArtifactConsumptionTriggerName = &quot;trg_reporting_access_grants_guard_v012&quot;;</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs:25](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs#L25) |  |
+| <code>public const string StatementReconciliationAuthorityCompatibilityMarker = &quot;reporting-statement-reconciliation-authority:v1&quot;;</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs:28](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs#L28) |  |
+| <code>public const string StatementDocumentGuardTriggerName = &quot;trg_reporting_statement_document_guard&quot;;</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs:31](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs#L31) |  |
+| <code>public const string StatementDocumentRevisionTriggerName = &quot;trg_reporting_statement_document_revision&quot;;</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs:34](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs#L34) |  |
+| <code>public const string StatementDocumentTruncateGuardTriggerName = &quot;trg_reporting_statement_document_truncate_guard&quot;;</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs:37](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs#L37) |  |
+| <code>public const string StatementRevisionAppendTriggerName = &quot;trg_reporting_statement_revision_append&quot;;</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs:40](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs#L40) |  |
+| <code>public const string StatementRevisionGuardTriggerName = &quot;trg_reporting_statement_revision_guard&quot;;</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs:43](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs#L43) |  |
+| <code>public const string StatementRevisionTruncateGuardTriggerName = &quot;trg_reporting_statement_revision_truncate_guard&quot;;</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs:46](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs#L46) |  |
+| <code>public const string SchemaIncompleteFailureCode = &quot;REPORTING_SCHEMA_INCOMPLETE&quot;;</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs:49](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs#L49) |  |
+| <code>public const string BinaryMigrationAssetUnavailableFailureCode = &quot;REPORTING_BINARY_MIGRATION_ASSET_UNAVAILABLE&quot;;</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs:52](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs#L52) |  |
+| <code>public PostgresReportingDeploymentProbe(ReportingArtifactStoreOptions options);</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs:693](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs#L693) |  |
+| <code>public ReportingDeploymentProbeResult Probe();</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs:711](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs#L711) |  |
+
+## PostgresReportingGovernanceRepository
+
+Qualified name: <code>Meridian.Storage.Reporting.PostgresReportingGovernanceRepository</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Reporting/PostgresReportingGovernanceRepository.cs:19](../../../../src/Meridian.Storage/Reporting/PostgresReportingGovernanceRepository.cs#L19).
+
+PostgreSQL implementation of the governed-reporting transaction boundary. Current aggregate state is versioned optimistically while audit events are appended to a separately protected hash chain in the same database transaction.
+
+```csharp
+public sealed partial class PostgresReportingGovernanceRepository : IReportingGovernanceRepository
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PostgresReportingGovernanceRepository(ReportingArtifactStoreOptions options);</code> | [src/Meridian.Storage/Reporting/PostgresReportingGovernanceRepository.cs:26](../../../../src/Meridian.Storage/Reporting/PostgresReportingGovernanceRepository.cs#L26) |  |
+| <code>public async ValueTask&lt;TResult&gt; ExecuteTransactionAsync&lt;TResult&gt;(Func&lt;IReportingGovernanceTransaction, CancellationToken, ValueTask&lt;TResult&gt;&gt; operation, CancellationToken cancellationToken = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingGovernanceRepository.cs:38](../../../../src/Meridian.Storage/Reporting/PostgresReportingGovernanceRepository.cs#L38) |  |
+
+Source: [src/Meridian.Storage/Reporting/PostgresReportingGovernanceRepository.RunBatches.cs:7](../../../../src/Meridian.Storage/Reporting/PostgresReportingGovernanceRepository.RunBatches.cs#L7).
+
+```csharp
+public sealed partial class PostgresReportingGovernanceRepository
+```
+
+## PostgresReportingReconciliationEvidenceStore
+
+Qualified name: <code>Meridian.Storage.Reporting.PostgresReportingReconciliationEvidenceStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Reporting/PostgresReportingReconciliationEvidenceStore.cs:15](../../../../src/Meridian.Storage/Reporting/PostgresReportingReconciliationEvidenceStore.cs#L15).
+
+Production append-only PostgreSQL receipt store. Every read verifies the database key, payload hash, canonical receipt hash, and exact source scope before returning evidence to certification.
+
+```csharp
+public sealed class PostgresReportingReconciliationEvidenceStore : IReportingReconciliationEvidenceRetentionStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PostgresReportingReconciliationEvidenceStore(ReportingArtifactStoreOptions options);</code> | [src/Meridian.Storage/Reporting/PostgresReportingReconciliationEvidenceStore.cs:22](../../../../src/Meridian.Storage/Reporting/PostgresReportingReconciliationEvidenceStore.cs#L22) |  |
+| <code>public async ValueTask&lt;ReportingReconciliationEvidenceReceipt?&gt; GetExactAsync(string tenantId, string organizationId, string? companyId, string fundId, string ledgerBookId, string accountingPeriodId, string accountingBasis, DateOnly asOfDate, string sourceCheckpointId, string sourceCheckpointHash, CancellationToken cancellationToken = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingReconciliationEvidenceStore.cs:31](../../../../src/Meridian.Storage/Reporting/PostgresReportingReconciliationEvidenceStore.cs#L31) |  |
+| <code>public async ValueTask&lt;bool&gt; RetainAsync(ReportingReconciliationEvidenceReceipt receipt, CancellationToken cancellationToken = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingReconciliationEvidenceStore.cs:103](../../../../src/Meridian.Storage/Reporting/PostgresReportingReconciliationEvidenceStore.cs#L103) |  |
+
+## PostgresReportingReleaseConsistencyGate
+
+Qualified name: <code>Meridian.Storage.Reporting.PostgresReportingReleaseConsistencyGate</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Reporting/PostgresReportingReleaseConsistencyGate.cs:15](../../../../src/Meridian.Storage/Reporting/PostgresReportingReleaseConsistencyGate.cs#L15).
+
+PostgreSQL transaction-scoped advisory lock shared by final reporting release and governed ledger-period reopen. The lock is independent of a reporting schema migration and remains effective across all hosts that use the same reporting authority database.
+
+```csharp
+public sealed class PostgresReportingReleaseConsistencyGate : IReportingReleaseConsistencyGate
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PostgresReportingReleaseConsistencyGate(ReportingArtifactStoreOptions options);</code> | [src/Meridian.Storage/Reporting/PostgresReportingReleaseConsistencyGate.cs:20](../../../../src/Meridian.Storage/Reporting/PostgresReportingReleaseConsistencyGate.cs#L20) |  |
+| <code>public async ValueTask&lt;IAsyncDisposable&gt; AcquireAsync(string accountingPeriodId, CancellationToken cancellationToken = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingReleaseConsistencyGate.cs:26](../../../../src/Meridian.Storage/Reporting/PostgresReportingReleaseConsistencyGate.cs#L26) |  |
+
 ## PostgresReportingRunStore
 
 Qualified name: <code>Meridian.Storage.Reporting.PostgresReportingRunStore</code>. Kind: `class`.
@@ -791,111 +913,3 @@ Declared public members:
 | <code>Task&lt;CryptoProjectionRow?&gt; GetCryptoAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICryptoReferenceProjectionStore.cs:10](../../../../src/Meridian.Storage/SecurityMaster/ICryptoReferenceProjectionStore.cs#L10) |  |
 | <code>Task&lt;IReadOnlyList&lt;CryptoProjectionRow&gt;&gt; GetByNetworkAsync(string network, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICryptoReferenceProjectionStore.cs:11](../../../../src/Meridian.Storage/SecurityMaster/ICryptoReferenceProjectionStore.cs#L11) |  |
 | <code>Task&lt;IReadOnlyList&lt;CryptoProjectionRow&gt;&gt; GetByBaseCurrencyAsync(string baseCurrency, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICryptoReferenceProjectionStore.cs:12](../../../../src/Meridian.Storage/SecurityMaster/ICryptoReferenceProjectionStore.cs#L12) |  |
-
-## ICustomAssetProfileFieldProjectionStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.ICustomAssetProfileFieldProjectionStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/SecurityMaster/ICustomAssetProfileFieldProjectionStore.cs:8](../../../../src/Meridian.Storage/SecurityMaster/ICustomAssetProfileFieldProjectionStore.cs#L8).
-
-Queries the profile-keyed CustomAsset projection (custom_asset_profile_field_projection, migration 064): one row per governed profileFields key of a profile-backed CustomAsset. A CustomAsset without a complete profile envelope has no rows; its terms JSON remains the only copy.
-
-```csharp
-public interface ICustomAssetProfileFieldProjectionStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;CustomAssetProfileFieldProjectionRow&gt;&gt; GetProfileFieldsAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICustomAssetProfileFieldProjectionStore.cs:11](../../../../src/Meridian.Storage/SecurityMaster/ICustomAssetProfileFieldProjectionStore.cs#L11) | The security&#x27;s projected profile fields, ordered by field key; empty when it has none. |
-| <code>Task&lt;IReadOnlyList&lt;CustomAssetProfileFieldProjectionRow&gt;&gt; GetByProfileAsync(string customProfileId, int? profileVersion = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICustomAssetProfileFieldProjectionStore.cs:18](../../../../src/Meridian.Storage/SecurityMaster/ICustomAssetProfileFieldProjectionStore.cs#L18) | Every projected field of securities pinned to customProfileId, optionally one profileVersion, ordered by security then field key. The profile id matches exactly, as stored. |
-| <code>Task&lt;IReadOnlyList&lt;CustomAssetProfileFieldProjectionRow&gt;&gt; FindByTextValueAsync(string customProfileId, string fieldKey, string textValue, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICustomAssetProfileFieldProjectionStore.cs:27](../../../../src/Meridian.Storage/SecurityMaster/ICustomAssetProfileFieldProjectionStore.cs#L27) | The rows whose string-valued field fieldKey of customProfileId equals textValue exactly (case-sensitive, as stored). |
-
-## IDataVendorEntitlementStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.IDataVendorEntitlementStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IDataVendorEntitlementStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/IDataVendorEntitlementStore.cs#L9).
-
-Persists vendor entitlement records and queries their validity and expiration.
-
-```csharp
-public interface IDataVendorEntitlementStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;DataVendorEntitlementDto&gt;&gt; GetAllAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IDataVendorEntitlementStore.cs:11](../../../../src/Meridian.Storage/SecurityMaster/IDataVendorEntitlementStore.cs#L11) |  |
-| <code>Task&lt;IReadOnlyList&lt;DataVendorEntitlementDto&gt;&gt; GetExpiringAsync(DateTimeOffset cutoffUtc, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IDataVendorEntitlementStore.cs:17](../../../../src/Meridian.Storage/SecurityMaster/IDataVendorEntitlementStore.cs#L17) | Returns active (non-expired) entitlements whose effective-to date falls on or before cutoffUtc, filtered at the storage layer. |
-| <code>Task&lt;DataVendorEntitlementDto?&gt; GetByIdAsync(Guid entitlementId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IDataVendorEntitlementStore.cs:19](../../../../src/Meridian.Storage/SecurityMaster/IDataVendorEntitlementStore.cs#L19) |  |
-| <code>Task&lt;DataVendorEntitlementDto&gt; UpsertAsync(DataVendorEntitlementDto entitlement, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IDataVendorEntitlementStore.cs:20](../../../../src/Meridian.Storage/SecurityMaster/IDataVendorEntitlementStore.cs#L20) |  |
-| <code>Task DeactivateAsync(Guid entitlementId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IDataVendorEntitlementStore.cs:21](../../../../src/Meridian.Storage/SecurityMaster/IDataVendorEntitlementStore.cs#L21) |  |
-
-## IDepositReferenceProjectionStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.IDepositReferenceProjectionStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IDepositReferenceProjectionStore.cs:8](../../../../src/Meridian.Storage/SecurityMaster/IDepositReferenceProjectionStore.cs#L8).
-
-Queries deposit reference projections by security, institution, and maturity.
-
-```csharp
-public interface IDepositReferenceProjectionStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;DepositProjectionRow?&gt; GetDepositAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IDepositReferenceProjectionStore.cs:10](../../../../src/Meridian.Storage/SecurityMaster/IDepositReferenceProjectionStore.cs#L10) |  |
-| <code>Task&lt;IReadOnlyList&lt;DepositProjectionRow&gt;&gt; GetByInstitutionAsync(string institutionName, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IDepositReferenceProjectionStore.cs:11](../../../../src/Meridian.Storage/SecurityMaster/IDepositReferenceProjectionStore.cs#L11) |  |
-| <code>Task&lt;IReadOnlyList&lt;DepositProjectionRow&gt;&gt; GetMaturingBeforeAsync(DateOnly beforeDate, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IDepositReferenceProjectionStore.cs:12](../../../../src/Meridian.Storage/SecurityMaster/IDepositReferenceProjectionStore.cs#L12) |  |
-
-## IDirectLoanReferenceProjectionStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.IDirectLoanReferenceProjectionStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs#L9).
-
-Read access to the DirectLoan relational terms projection. The asset-specific-terms JSONB blob stays the source of truth; this store answers the portfolio-shaped questions the blob cannot — which loans a borrower carries, which mature in a window, and which principal instalments fall due — without parsing every security&#x27;s document.
-
-```csharp
-public interface IDirectLoanReferenceProjectionStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;DirectLoanProjectionRow?&gt; GetDirectLoanAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs:11](../../../../src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs#L11) |  |
-| <code>Task&lt;IReadOnlyList&lt;DirectLoanProjectionRow&gt;&gt; GetByBorrowerAsync(string borrower, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs:13](../../../../src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs#L13) |  |
-| <code>Task&lt;IReadOnlyList&lt;DirectLoanProjectionRow&gt;&gt; GetByReferenceIndexAsync(string referenceIndex, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs:15](../../../../src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs#L15) |  |
-| <code>Task&lt;IReadOnlyList&lt;DirectLoanProjectionRow&gt;&gt; GetMaturityLadderAsync(DateOnly from, DateOnly to, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs:17](../../../../src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs#L17) |  |
-| <code>Task&lt;IReadOnlyList&lt;DirectLoanCovenantRow&gt;&gt; GetCovenantsAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs:20](../../../../src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs#L20) | The loan&#x27;s covenants in the order the terms document declares them. |
-| <code>Task&lt;IReadOnlyList&lt;DirectLoanPrincipalPaymentRow&gt;&gt; GetPrincipalScheduleAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs:23](../../../../src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs#L23) | The loan&#x27;s contractual principal instalments in declared order. |
-| <code>Task&lt;IReadOnlyList&lt;DirectLoanPrincipalPaymentRow&gt;&gt; GetPrincipalPaymentsDueAsync(DateOnly from, DateOnly to, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs:29](../../../../src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs#L29) | Every projected principal instalment falling in from..to inclusive, across loans, ordered by payment date. |
-
-## IEdgarReferenceDataStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.IEdgarReferenceDataStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IEdgarReferenceDataStore.cs:8](../../../../src/Meridian.Storage/SecurityMaster/IEdgarReferenceDataStore.cs#L8).
-
-Retains EDGAR ticker associations, filer records, and reference data for subsequent lookup.
-
-```csharp
-public interface IEdgarReferenceDataStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task SaveTickerAssociationsAsync(IReadOnlyList&lt;EdgarTickerAssociation&gt; associations, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IEdgarReferenceDataStore.cs:10](../../../../src/Meridian.Storage/SecurityMaster/IEdgarReferenceDataStore.cs#L10) |  |
-| <code>Task&lt;IReadOnlyList&lt;EdgarTickerAssociation&gt;&gt; LoadTickerAssociationsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IEdgarReferenceDataStore.cs:12](../../../../src/Meridian.Storage/SecurityMaster/IEdgarReferenceDataStore.cs#L12) |  |
-| <code>Task&lt;EdgarFilerRecord?&gt; LoadFilerAsync(string cik, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IEdgarReferenceDataStore.cs:16](../../../../src/Meridian.Storage/SecurityMaster/IEdgarReferenceDataStore.cs#L16) |  |
-| <code>Task&lt;EdgarFactsRecord?&gt; LoadFactsAsync(string cik, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IEdgarReferenceDataStore.cs:20](../../../../src/Meridian.Storage/SecurityMaster/IEdgarReferenceDataStore.cs#L20) |  |
-| <code>Task&lt;EdgarSecurityDataRecord?&gt; LoadSecurityDataAsync(string cik, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IEdgarReferenceDataStore.cs:24](../../../../src/Meridian.Storage/SecurityMaster/IEdgarReferenceDataStore.cs#L24) |  |

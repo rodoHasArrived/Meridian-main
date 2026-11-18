@@ -6,6 +6,107 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IFileDistributionTransport
+
+Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.IFileDistributionTransport</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:344](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L344).
+
+Transport seam that actually dispatches a distributed file to one recipient. A production transport retrieves the deliverable from FileDistributionRequest.ContentLocation, verifies it against FileDistributionRequest.ContentSha256, and dispatches it over the recipient&#x27;s channel. The middle-office service records Delivered only when the transport reports success, so a real (SFTP/email/portal) transport injected in production yields honest delivery evidence.
+
+```csharp
+public interface IFileDistributionTransport
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>FileDeliveryOutcome Deliver(DistributionRecipient recipient, FileDistributionRequest request);</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:346](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L346) |  |
+
+## LoopbackFileDistributionTransport
+
+Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.LoopbackFileDistributionTransport</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:354](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L354).
+
+Default in-process transport that assumes success without performing real I/O. Suitable for tests and local development; production hosts inject a transport that dispatches over the recipient&#x27;s channel and reports genuine success or failure.
+
+```csharp
+public sealed class LoopbackFileDistributionTransport : IFileDistributionTransport
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileDeliveryOutcome Deliver(DistributionRecipient recipient, FileDistributionRequest request) =&gt; …;</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:356](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L356) |  |
+
+## MiddleOfficeOperationsService
+
+Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.MiddleOfficeOperationsService</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeOperationsService.cs:24](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeOperationsService.cs#L24).
+
+In-memory middle-office managed-service workflow primitive. Turns the day&#x27;s managed-service pattern into internal operations: book trades on T+0, drive T+1 trade/cash/position reconciliation, escalate true breaks against SLA timers, and distribute normalized files to administrators, custodians, and counterparties with an archived, tamper-evident delivery log.
+
+```csharp
+public sealed class MiddleOfficeOperationsService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public MiddleOfficeOperationsService(IFundAdministrationEventSink eventSink, IFileDistributionTransport transport);</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeOperationsService.cs:33](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeOperationsService.cs#L33) |  |
+| <code>public TradeBooking BookTrade(TradeBookingRequest request);</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeOperationsService.cs:42](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeOperationsService.cs#L42) | Books a trade on trade date (T+0), deriving its settlement and T+1 reconciliation dates. |
+| <code>public IReadOnlyList&lt;TradeBooking&gt; Bookings { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeOperationsService.cs:102](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeOperationsService.cs#L102) | All bookings, ordered by trade date then booking id. |
+| <code>public IReadOnlyList&lt;TradeBooking&gt; BookingsDueForReconciliation(DateOnly asOf);</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeOperationsService.cs:117](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeOperationsService.cs#L117) | Bookings whose T+1 reconciliation is due on or before asOf. |
+| <code>public TrueBreakEscalation RaiseTrueBreak(TrueBreakEscalationRequest request);</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeOperationsService.cs:139](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeOperationsService.cs#L139) | Raises an escalation for a reconciliation break. Only genuine (BreakClassification.TrueBreak) or potential breaks may be escalated; matched rows are not exceptions and are rejected. An exact retry for a break that already has an active escalation is idempotent — the existing open case is returned rather than opening a duplicate case and a second SLA timer. A conflicting raise is rejected so its governance-relevant details are not silently discarded, while a break whose prior escalation was resolved may be raised afresh. |
+| <code>public IReadOnlyList&lt;TrueBreakEscalation&gt; EscalateOverdue(DateTimeOffset asOfUtc);</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeOperationsService.cs:240](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeOperationsService.cs#L240) | Advances every open escalation whose SLA timer has breached as of asOfUtc to the next escalation level, restarting its SLA for the receiving tier, and records an FundAdministrationEventKind.SlaBreached event. Returns the escalations advanced. |
+| <code>public TrueBreakEscalation ResolveBreak(string escalationId, string resolvedBy, string resolutionNote, DateTimeOffset resolvedAtUtc);</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeOperationsService.cs:296](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeOperationsService.cs#L296) | Resolves an open escalation, stopping its SLA timer. Resolution is a one-time terminal transition: re-resolving an already-resolved escalation is rejected so a duplicate or corrective call cannot silently overwrite the original resolver, note, or closure time. The resolution time must also not precede when the escalation was raised. |
+| <code>public IReadOnlyList&lt;TrueBreakEscalation&gt; OpenEscalations { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeOperationsService.cs:354](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeOperationsService.cs#L354) | All open escalations, most severe first. |
+| <code>public IReadOnlyList&lt;FileDeliveryRecord&gt; Distribute(FileDistributionRequest request);</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeOperationsService.cs:377](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeOperationsService.cs#L377) | Distributes one normalized file to each recipient, appending an immutable delivery-log entry and a FundAdministrationEventKind.FileDelivered event per recipient. Returns the delivery records produced for this distribution. |
+| <code>public IReadOnlyList&lt;FileDeliveryRecord&gt; DeliveryLog { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeOperationsService.cs:469](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeOperationsService.cs#L469) | The full archived delivery log, oldest first. |
+
+## ReconciliationDimension
+
+Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.ReconciliationDimension</code>. Kind: `enum`.
+
+Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:131](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L131).
+
+The reconciliation dimension a middle-office activity applies to.
+
+```csharp
+public enum ReconciliationDimension
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Trade</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:134](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L134) | Trade / transaction reconciliation. |
+| <code>Cash</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:137](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L137) | Cash balance reconciliation. |
+| <code>Position</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:140](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L140) | Security position reconciliation. |
+
+## TradeBooking
+
+Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.TradeBooking</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:161](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L161).
+
+A trade booked on trade date (T+0), carrying the settlement date derived from the instrument&#x27;s settlement cycle and the T+1 date its reconciliation is due.
+
+```csharp
+public sealed record TradeBooking(string BookingId, string AccountId, string Symbol, ReconciliationDimension Dimension, decimal Quantity, decimal Amount, string Currency, DateOnly TradeDate, DateOnly SettlementDate, int SettlementCycleDays, DateTimeOffset BookedAtUtc, string BookedBy)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DateOnly ReconciliationDueDate =&gt; …;</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:179](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L179) | The T+1 date on which this booking&#x27;s trade/cash/position reconciliation is due, counted in business days (a Friday trade reconciles the following Monday). |
+
 ## TradeBookingRequest
 
 Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.TradeBookingRequest</code>. Kind: `record`.
@@ -1056,100 +1157,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public OperationsCloseChecklistSnapshotDto? CloseChecklistSnapshot { get; init; }</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:93](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L93) |  |
-
-## OperationsWorkflowAuditHashing
-
-Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.OperationsWorkflowAuditHashing</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowAuditHashing.cs:12](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowAuditHashing.cs#L12).
-
-Creates audit hashes and validates operations workflow timelines and hash chains.
-
-```csharp
-public static class OperationsWorkflowAuditHashing
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static OperationsWorkflowAuditDto Create(OperationsWorkflowAuditDraft draft, string? previousHash, DateTimeOffset occurredAtUtc);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowAuditHashing.cs:14](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowAuditHashing.cs#L14) |  |
-| <code>public static bool TryValidateTimeline(IReadOnlyList&lt;OperationsTimelineEntryDto&gt; timeline, out string blockerCode, out string message) =&gt; …;</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowAuditHashing.cs:75](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowAuditHashing.cs#L75) |  |
-| <code>public static bool TryValidateChain(IReadOnlyList&lt;OperationsWorkflowAuditDto&gt; timeline, out string blockerCode, out string message);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowAuditHashing.cs:101](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowAuditHashing.cs#L101) |  |
-
-## OperationsWorkflowChecklistSnapshots
-
-Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.OperationsWorkflowChecklistSnapshots</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowChecklistSnapshots.cs:5](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowChecklistSnapshots.cs#L5).
-
-```csharp
-public static class OperationsWorkflowChecklistSnapshots
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static OperationsWorkflowAuditDraft ForCommit(OperationsWorkflowAuditDraft draft, OperationsContinuityWorkflow workflow);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowChecklistSnapshots.cs:8](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowChecklistSnapshots.cs#L8) | Called only at a boundary committing this exact workflow state and audit together. |
-| <code>public static void Validate(OperationsCloseChecklistSnapshotDto snapshot);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowChecklistSnapshots.cs:20](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowChecklistSnapshots.cs#L20) |  |
-
-## PostgresOperationsContinuityStore
-
-Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.PostgresOperationsContinuityStore</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs:17](../../../../src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs#L17).
-
-Persists operations workflows and audit evidence in PostgreSQL with transactional commit support.
-
-```csharp
-public sealed class PostgresOperationsContinuityStore : IOperationsContinuityRepository, IOperationsWorkflowAuditStore, IOperationsContinuityWorkflowStartCommitStore, IOperationsContinuityTransactionalCommitStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostgresOperationsContinuityStore(LedgerJournalStoreOptions options, ITransactionalLedgerJournalStore ledgerJournalStore, IOperationsStatusDerivationService statusDerivation, IFundScopeTenantAccessor? tenantAccessor = null, TenantScopeEnforcementOptions? tenantScope = null);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs:38](../../../../src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs#L38) |  |
-| <code>public async Task SaveAsync(OperationsContinuityWorkflow workflow, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs:65](../../../../src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs#L65) |  |
-| <code>public async Task&lt;OperationsContinuityWorkflow?&gt; GetAsync(Guid workflowId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs:78](../../../../src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs#L78) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;OperationsContinuityWorkflow&gt;&gt; ListAsync(Guid? fundAccountId = null, string? periodId = null, OperationsWorkflowStatusDto? status = null, CancellationToken ct = default, Guid? ledgerBookId = null);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs:106](../../../../src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs#L106) |  |
-| <code>public async Task&lt;OperationsWorkflowAuditDto&gt; AppendAsync(OperationsWorkflowAuditDraft draft, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs:173](../../../../src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs#L173) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;OperationsWorkflowAuditDto&gt;&gt; GetTimelineAsync(Guid workflowId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs:189](../../../../src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs#L189) |  |
-| <code>public async Task&lt;OperationsContinuityTransactionalCommitResult&gt; CommitWorkflowStartAsync(OperationsContinuityWorkflow workflow, OperationsWorkflowAuditDraft auditDraft, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs:227](../../../../src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs#L227) |  |
-| <code>public async Task&lt;OperationsContinuityTransactionalCommitResult&gt; CommitWorkflowTransitionAsync(OperationsContinuityWorkflow workflow, OperationsWorkflowAuditDraft auditDraft, bool persistWorkflowState, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs:251](../../../../src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs#L251) |  |
-| <code>public async Task&lt;OperationsContinuityTransactionalCommitResult&gt; CommitLedgerPostingAsync(OperationsContinuityWorkflow workflow, OperationsWorkflowAuditDraft auditDraft, LedgerJournalEntryWrite journalEntry, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs:281](../../../../src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs#L281) |  |
-
-## AutomatedJournalCapitalAccountReconciliationScope
-
-Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.AutomatedJournalCapitalAccountReconciliationScope</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs:18](../../../../src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs#L18).
-
-Exact server-owned scope used to resolve the capital-account tie-out that supports one fee-accrual execution. The evaluation timestamp is the actual execution/review time, not the schedule&#x27;s original due timestamp.
-
-```csharp
-public sealed record AutomatedJournalCapitalAccountReconciliationScope(string TenantId, string CompanyId, string FundProfileId, Guid LedgerBookId, string EntityId, string PeriodId, string Currency, DateTimeOffset EvaluatedAtUtc);
-```
-
-## CommitmentRollForwardCalculator
-
-Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.CommitmentRollForwardCalculator</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs:12](../../../../src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs#L12).
-
-Folds posted private-capital activity against an investor commitment into the uncalled-commitment roll-forward, enforcing the invariant net-called + uncalled + expired = total on every step. Pure and deterministic: the same events always produce the same steps.
-
-```csharp
-public static class CommitmentRollForwardCalculator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string InvariantBreachIssueCode = &quot;private-capital.commitment-invariant-breach&quot;;</code> | [src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs:14](../../../../src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs#L14) |  |
-| <code>public const string OverCallIssueCode = &quot;private-capital.commitment-over-call&quot;;</code> | [src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs:15](../../../../src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs#L15) |  |
-| <code>public const string OverExpiryIssueCode = &quot;private-capital.commitment-over-expiry&quot;;</code> | [src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs:16](../../../../src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs#L16) |  |
-| <code>public static CommitmentRollForward Build(InvestorCommitment commitment, IReadOnlyList&lt;CommitmentActivityEvent&gt; events, IReadOnlyList&lt;CommitmentExpiryEvent&gt;? expiryEvents = null);</code> | [src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs:21](../../../../src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs#L21) | Builds the roll-forward for one commitment from dated activity and governed expiry events. |
-| <code>public static CommitmentRollForward BuildFromFundEvents(InvestorCommitment commitment, IReadOnlyList&lt;PrivateCapitalFundEventDto&gt; fundEvents, Func&lt;PrivateCapitalFundEventDto, DistributionRecallability&gt;? recallabilityClassifier = null, IReadOnlyList&lt;CommitmentExpiryEvent&gt;? expiryEvents = null, bool includeUnposted = false);</code> | [src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs:159](../../../../src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs#L159) | Adapts the private-capital fund-event projection for one commitment. Events are matched by capital account (and investor when both sides declare one) in the commitment currency; recallability is read from the supplied classifier because the projection does not carry it structurally (it rides journal metadata tags). |

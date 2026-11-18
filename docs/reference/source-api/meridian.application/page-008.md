@@ -6,6 +6,65 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterTickerChangeService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.SecurityMasterTickerChangeService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterTickerChangeService.cs:26](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterTickerChangeService.cs#L26).
+
+Records ticker changes through the standard amend path: the old ticker identifier&#x27;s validity interval is closed at the change date and the new ticker&#x27;s interval opens there. Because this flows through the event store, historical as-of resolution answers lookups for the old ticker at pre-change dates, and the change is visible in the security&#x27;s event history like any other amendment.
+
+```csharp
+public sealed class SecurityMasterTickerChangeService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterTickerChangeService(ContractSecurityMasterQueryService queryService, ISecurityMasterService commandService, ILogger&lt;SecurityMasterTickerChangeService&gt; logger, ISecurityMasterAmender? systemAmender = null);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterTickerChangeService.cs:33](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterTickerChangeService.cs#L33) |  |
+| <code>public async Task&lt;SecurityDetailDto&gt; RecordAsync(RecordTickerChangeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterTickerChangeService.cs:47](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterTickerChangeService.cs#L47) |  |
+
+## CoverageInvalidationHandler
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CoverageInvalidationHandler</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/CoverageInvalidationHandler.cs:15](../../../../src/Meridian.Application/SecurityMaster/CoverageInvalidationHandler.cs#L15).
+
+Published-revision side effect (Order = 20, runs after the projection rebuild): evicts any cached multi-asset coverage / operational-readiness view affected by the edit, via IMultiAssetCoverageInvalidator, so the next coverage read recomputes against the freshly-rebuilt projection. Idempotent: invalidation is safe to repeat on a retried publish. The default invalidator is a no-op while the coverage read path is recomputed per request (uncached).
+
+```csharp
+public sealed class CoverageInvalidationHandler : ISecurityMasterRevisionPublishedHandler
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CoverageInvalidationHandler(IMultiAssetCoverageInvalidator invalidator, ILogger&lt;CoverageInvalidationHandler&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/CoverageInvalidationHandler.cs:20](../../../../src/Meridian.Application/SecurityMaster/CoverageInvalidationHandler.cs#L20) |  |
+| <code>public int Order =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/CoverageInvalidationHandler.cs:28](../../../../src/Meridian.Application/SecurityMaster/CoverageInvalidationHandler.cs#L28) |  |
+| <code>public async Task HandleAsync(SecurityMasterRevisionPublishedEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CoverageInvalidationHandler.cs:30](../../../../src/Meridian.Application/SecurityMaster/CoverageInvalidationHandler.cs#L30) |  |
+
+## StoredSecurityForwardCurveProvider
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Curves.StoredSecurityForwardCurveProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs:14](../../../../src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs#L14).
+
+Supplies forward curves to the cash-flow projection from stored curves: the one Forward definition whose index matches (trimmed, ignoring case), at its latest version dated on or before the as-of. No definition, no version by that date, or several definitions for the index (the same index in two currencies or tenors) all yield null, so the leg stays flat forward, as a host without curves does today; ambiguity is logged and never guessed.
+
+```csharp
+public sealed class StoredSecurityForwardCurveProvider : ISecurityForwardCurveProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StoredSecurityForwardCurveProvider(ISecurityCurveStore store, ILogger&lt;StoredSecurityForwardCurveProvider&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs:19](../../../../src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs#L19) |  |
+| <code>public Task&lt;SecurityForwardCurve?&gt; GetForwardCurveAsync(string indexName, DateOnly asOf, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs:25](../../../../src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs#L25) |  |
+| <code>public async Task&lt;SecurityForwardCurve?&gt; GetForwardCurveAsync(string indexName, BondCalculationContext context, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs:28](../../../../src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs#L28) |  |
+
 ## DataVendorEntitlementService
 
 Qualified name: <code>Meridian.Application.SecurityMaster.DataVendorEntitlementService</code>. Kind: `class`.
@@ -945,65 +1004,3 @@ Declared public members:
 | <code>public Task&lt;IReadOnlyList&lt;CorporateActionDto&gt;&gt; GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:84](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L84) |  |
 | <code>public Task&lt;PreferredEquityTermsDto?&gt; GetPreferredEquityTermsAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:89](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L89) |  |
 | <code>public Task&lt;ConvertibleEquityTermsDto?&gt; GetConvertibleEquityTermsAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:94](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L94) |  |
-
-## NullSecurityMasterService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.NullSecurityMasterService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:107](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L107).
-
-Rejects security mutations when the Security Master service is unavailable.
-
-```csharp
-public sealed class NullSecurityMasterService : Meridian.Contracts.SecurityMaster.ISecurityMasterService, Meridian.Contracts.SecurityMaster.ISecurityMasterAmender, IGovernedPublicationAmender
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;SecurityDetailDto&gt; CreateAsync(CreateSecurityRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:114](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L114) |  |
-| <code>public Task&lt;SecurityDetailDto&gt; AmendTermsAsync(AmendSecurityTermsRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:117](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L117) |  |
-| <code>public Task&lt;SecurityDetailDto&gt; AmendApprovedRevisionAsync(AmendSecurityTermsRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:120](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L120) |  |
-| <code>public Task&lt;SecurityDetailDto&gt; AmendPreferredEquityTermsAsync(Guid securityId, AmendPreferredEquityTermsRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:123](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L123) |  |
-| <code>public Task&lt;SecurityDetailDto&gt; AmendConvertibleEquityTermsAsync(Guid securityId, AmendConvertibleEquityTermsRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:126](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L126) |  |
-| <code>public Task&lt;SecurityDetailDto&gt; AmendTermBlockAsync(Guid securityId, string blockKey, AmendSecurityTermBlockRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:129](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L129) |  |
-| <code>public Task DeactivateAsync(DeactivateSecurityRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:132](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L132) |  |
-| <code>public Task&lt;SecurityAliasDto&gt; UpsertAliasAsync(UpsertSecurityAliasRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:137](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L137) |  |
-
-## NullSecurityMasterStructuredCreditReclassificationService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.NullSecurityMasterStructuredCreditReclassificationService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:128](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L128).
-
-Rejects structured-credit reclassification reports when Security Master is unavailable.
-
-```csharp
-public sealed class NullSecurityMasterStructuredCreditReclassificationService : ISecurityMasterStructuredCreditReclassificationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;StructuredCreditReclassificationReportDto&gt; BuildReportAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:130](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L130) |  |
-
-## NullTradingParametersBackfillService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.NullTradingParametersBackfillService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:306](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L306).
-
-No-op trading-parameter backfill service used when Security Master is not configured.
-
-```csharp
-public sealed class NullTradingParametersBackfillService : Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task BackfillAllAsync(string initiatedBy, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:308](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L308) |  |
-| <code>public Task BackfillTickerAsync(string ticker, Guid securityId, string initiatedBy, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:310](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L310) |  |

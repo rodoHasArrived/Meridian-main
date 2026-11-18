@@ -30,6 +30,23 @@ through trusted workbench intake. It never submits, approves or posts. The workb
 accrual evidence against client saves, blocks review when lines no longer match it, refuses a draft
 whose window a posted accrual already covers, and carries the evidence onto the posted journal.
 
+`IntercompanyFeeAccrualDraftService` backs `/api/ledger/intercompany/fees/preview` and `/drafts`; the journal
+workbench refuses an overlapping posted fee and rechecks fee authority before review or posting. See
+[governed fixed management fees](../../docs/domain/intercompany-agreements.md#governed-fixed-management-fees).
+
+`IntercompanyAccrualDraftService` resolves the approved fixings of each declared floating index before
+computing. `IntercompanyRateFixingEndpoints` serves `/api/ledger/intercompany/rate-fixings` (list,
+propose and `/{id}/decisions`) with exact-decimal strings; mutations need tenant scope and ledger
+management. See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
+
+`IntercompanyBalanceConfirmationEndpoints` serves `/api/ledger/intercompany/confirmations` (summary,
+record, propose and `/{id}/actions`) with exact-decimal strings; mutations need tenant and company
+scope plus ledger management. Confirmation findings join the close advisory as warnings only. See
+[reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
+
+`IntercompanyAccrualDraftService` resolves posted accrued interest for compounding loans; the journal workbench
+re-reads those facts before review or posting. See [periodic compounding](../../docs/domain/intercompany-agreements.md#periodic-compounding).
+
 `IntercompanyAccrualScheduleService` and `IntercompanyAccrualScheduleRunner` draft completed periods of active
 schedules through the ordinary preview-then-draft path, never posting or overwriting a draft;
 `/api/ledger/intercompany/accrual-schedules` serves proposal, review, due preview and run now. See
@@ -950,7 +967,9 @@ workstation queues from `IRecurringJournalQueueSource`. `RecurringJournalPeriodA
 the existing PostgreSQL ledger's book/period and fund ownership; `RecurringJournalSubjectAuthority`
 verifies active entity/account membership against retained PostgreSQL fund structure. Unavailable
 authority blocks generation. The recurring endpoints provide explicit initialization, versioned configuration and
-audited restoration of exact prior definitions. Workbench resaves cannot replace retained recurring
+audited restoration of exact prior definitions. Initialization provisions whichever
+`IRecurringJournalStore` the host composed; with a ledger database it is `PostgresRecurringJournalStore`,
+which imports any verified file-retained state once so retained claims and draft identities carry forward. Workbench resaves cannot replace retained recurring
 provenance, and its source evidence is required through approval and posting. Submission and lifecycle
 commands hold the recurring registry lease, reject unavailable state or definition drift, and validate
 the retained ancestry of governed correction drafts. See
