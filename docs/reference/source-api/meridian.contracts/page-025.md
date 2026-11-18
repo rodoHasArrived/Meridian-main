@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RetainBondObservedFixingRequest
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.RetainBondObservedFixingRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondObservedFixings.cs:15](../../../../src/Meridian.Contracts/FixedIncome/BondObservedFixings.cs#L15).
+
+```csharp
+public sealed record RetainBondObservedFixingRequest(long ExpectedSecurityVersion, DateOnly ResetDate, SecurityRateObservationDto Observation, string Justification);
+```
+
 ## AccountBalanceSnapshotDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.AccountBalanceSnapshotDto</code>. Kind: `record`.
@@ -696,14 +706,4 @@ Source: [src/Meridian.Contracts/FundStructure/FundStructureCommands.cs:34](../..
 
 ```csharp
 public sealed record CreateFundRequest(Guid FundId, string Code, string Name, string BaseCurrency, DateTimeOffset EffectiveFrom, string CreatedBy, string? Description = null, Guid? BusinessId = null);
-```
-
-## CreateIntercompanyAccountingArrangementRequest
-
-Qualified name: <code>Meridian.Contracts.FundStructure.CreateIntercompanyAccountingArrangementRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:75](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L75).
-
-```csharp
-public sealed record CreateIntercompanyAccountingArrangementRequest(Guid RequestId, Guid ArrangementId, Guid OrganizationId, string ArrangementReference, IntercompanyAccountingTemplateKindDto TemplateKind, Guid CanonicalAgreementId, int CanonicalAgreementVersion, string CanonicalPayloadHash, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, IReadOnlyList<IntercompanyPartyMappingDto> PartyMappings);
 ```

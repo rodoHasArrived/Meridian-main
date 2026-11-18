@@ -271,7 +271,7 @@ export function JournalEntryDetailScreen() {
               <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {operationalSummaryFields.map((field) => (
                   <div key={field.label}>
-                    <dt className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(field.label) && "type-label--caps")}>{field.label}</dt>
+                    <dt className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(field.label) && "uppercase tracking-[0.08em]")}>{field.label}</dt>
                     <dd className="mt-1 text-sm text-foreground">{field.label === "Accounting date" ? presentJournalDate(field.value) : field.label === "Posted at" ? formatDateTimeLabel(field.value) : field.value}</dd>
                   </div>
                 ))}

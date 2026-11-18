@@ -24,27 +24,34 @@ internal sealed class OrderExecutionAudit(
         ExecutionReport? report,
         string? message,
         CancellationToken ct,
-        IReadOnlyDictionary<string, string>? metadata = null)
+        IReadOnlyDictionary<string, string>? metadata = null,
+        OrderSubmissionAuthority? authority = null)
     {
         if (_auditTrail is null)
         {
             return;
         }
 
+        // Authority, when the command carried one, names who acted (a kill-switch sweep's
+        // operator or the automated trip) on the record itself rather than leaving it to a
+        // separate caller-side entry.
+        var lifecycleMetadata = metadata ?? BuildOrderLifecycleAuditMetadata(state, report);
         await _auditTrail.RecordAsync(new ExecutionAuditEntry(
             AuditId: Guid.NewGuid().ToString("N"),
             Category: "Order",
             Action: action,
             Outcome: outcome,
             OccurredAt: DateTimeOffset.UtcNow,
+            Actor: authority?.Actor,
             BrokerName: _gatewayId(),
             OrderId: orderId,
             RunId: null,
             Symbol: state?.Symbol ?? report?.Symbol,
+            CorrelationId: authority?.CorrelationId,
             Message: message,
             Reason: report?.RejectReason,
             Scope: state is null ? null : BuildOrderAuditScope(state),
-            Metadata: metadata ?? BuildOrderLifecycleAuditMetadata(state, report)), ct).ConfigureAwait(false);
+            Metadata: authority is null ? lifecycleMetadata : WithCommandAuthority(lifecycleMetadata, authority)), ct).ConfigureAwait(false);
     }
 
     internal async Task<bool> RetainUnresolvedFillAsync(

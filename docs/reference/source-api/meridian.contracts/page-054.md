@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityValidationSnapshotDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValidationSnapshotDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:56](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L56).
+
+```csharp
+public sealed record SecurityValidationSnapshotDto(Guid SnapshotId, Guid? SecurityId, string Scope, SecurityValidationWorkflowDto Workflow, string? WorkflowReference, string? Actor, string Reason, DateTimeOffset RecordedAtUtc, string ReportHashSha256, SecurityValidationReportDto Report, IReadOnlyList<SecurityEvidenceLinkDto> EvidenceLinks);
+```
+
 ## SecurityValidationSnapshotRequestDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValidationSnapshotRequestDto</code>. Kind: `record`.
@@ -783,22 +793,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;BacktestPreflightReportV2Dto&gt; RunAsync(BacktestPreflightRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IBacktestPreflightService.cs:13](../../../../src/Meridian.Contracts/Services/IBacktestPreflightService.cs#L13) | Executes backtest preflight checks and returns a structured report. |
-
-## IConnectivityProbeService
-
-Qualified name: <code>Meridian.Contracts.Services.IConnectivityProbeService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Services/IConnectivityProbeService.cs:8](../../../../src/Meridian.Contracts/Services/IConnectivityProbeService.cs#L8).
-
-Contract for probing internet connectivity and broadcasting state changes.
-
-```csharp
-public interface IConnectivityProbeService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>bool IsOnline { get; }</code> | [src/Meridian.Contracts/Services/IConnectivityProbeService.cs:13](../../../../src/Meridian.Contracts/Services/IConnectivityProbeService.cs#L13) | Gets whether the system is currently online. |
-| <code>event EventHandler&lt;bool&gt;? ConnectivityChanged;</code> | [src/Meridian.Contracts/Services/IConnectivityProbeService.cs:18](../../../../src/Meridian.Contracts/Services/IConnectivityProbeService.cs#L18) | Raised when connectivity state changes (true = online, false = offline). |

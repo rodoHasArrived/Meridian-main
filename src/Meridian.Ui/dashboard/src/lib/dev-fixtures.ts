@@ -167,10 +167,10 @@ const fixtureSystemOverview: SystemOverviewResponse = {
 
 const fixtureStrategyWorkspace: StrategyWorkspaceResponse = {
   metrics: [
-    { id: "runs", label: "Runs", value: "24", delta: "+8%", tone: "success" },
-    { id: "queued", label: "Queued", value: "3", delta: "0%", tone: "default" },
-    { id: "review", label: "Needs Review", value: "2", delta: "-1%", tone: "warning" },
-    { id: "promotions", label: "Promotions", value: "5", delta: "+2", tone: "default" }
+    { id: "active-runs", label: "Active Runs", value: "1", delta: "+1", tone: "success" },
+    { id: "queued-runs", label: "Queued Promotions", value: "0", delta: "0%", tone: "default" },
+    { id: "review-runs", label: "Needs Review", value: "0", delta: "0%", tone: "warning" },
+    { id: "winning-runs", label: "Positive P&L", value: "2", delta: "+2", tone: "default" }
   ],
   runs: [
     {

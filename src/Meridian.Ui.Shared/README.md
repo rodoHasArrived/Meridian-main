@@ -1249,6 +1249,35 @@ WPF. Each count is gated by the permission of the route that owns its source, an
 caller may not read it. `tests/fixtures/cross-screen-counts/cross-screen-counts.json` holds this
 class and the browser's `lib/cross-screen-counts.ts` to the same expected values.
 
+`Services/WorkstationKpiDefinitions.cs` is the one catalog of workstation headline figures: each
+registered figure's label, the population it counts and what a change in it is measured against.
+`GET /api/workstation/kpi-definitions` serves it for the WPF desktop; the browser's
+`lib/kpi-registry.ts` mirrors it, and `tests/fixtures/kpi-definitions/kpi-definitions.json` holds the
+two to the same values. The catalog describes figures, not data.
+
+Prior-period comparisons (UX Phase E) all return `PeriodComparisonDto`:
+- `GET /api/fund-structure/nav-comparison` (`FundOperationsWorkspaceReadService.NavComparison.cs`)
+  rebuilds ledger NAV as of now and as of a prior date (default the end of last month) through the
+  same NAV attribution the workspace uses, in total and by asset class.
+- `GET /api/workstation/runs/{runId}/attribution/period-comparison` (in `Meridian.Strategies`)
+  compares a run's per-symbol P&L for one month with the month before, from its daily snapshots.
+- `GET /api/portfolio/cash-ladder/comparison` (`PortfolioCashLadderReadService.Comparison.cs`)
+  rebuilds the ladder from the ledger's cash at the prior date (`PortfolioLedgerCashBalanceProvider`
+  implements `IPortfolioCashBalanceHistoryProvider`). When the asset-operations service reports
+  `SupportsTermsAsOf`, the prior ladder projects instruments from the terms recorded by the end of
+  the prior date (`GetOperationsAsOfAsync`); otherwise it uses current terms and says so.
+- `GET /api/fund-structure/nav-trend` (`FundOperationsWorkspaceReadService.NavTrend.cs`) returns
+  `FundNavTrendDto`: ledger NAV at up to 24 month-ends (default 12) plus today, from one ledger book.
+  Months before the first NAV component are left out, with a note. Each point also carries securities
+  exposure from the same attribution: long is the `Securities` balances, short the `Short Securities
+  Payable` balances, with gross and net, at the ledger's last posted mark.
+
+The report-pack portfolio cuts (`ReportPackRunReadService.ReportedPeriods.cs`) read only the latest
+published or restated version per fund, account, template and period. A fund's cut uses its latest
+period; its prior P&L is the previous published period's P&L lines. With no prior period, Prior is 0,
+the readiness text says so and the slice is tagged `no-prior`. The report writer's dataset sources use
+the same cuts.
+
 The providers the Data workspace lists are the providers in use: those with metrics, a saved
 connection, a routing connection or a trust snapshot. Each one's status comes from
 `ResolveProviderStatus`: the worse of its listed status (connection health, or the trust rationale)
@@ -1498,6 +1527,22 @@ without endpoint or workstation orchestration. The larger cross-domain workflows
 ### Account-scoped execution workflows
 
 The shared host composes equity session/coverage policies, authoritative previews, a durable operational journal, reconciliation/notification workers, an independent disabled-by-default webhook outbox, and retained strategy comparison. Browser Orders, Settings and Strategy reuse these authenticated services. Unavailable baseline, activity or cost evidence remains unassessed. See [execution workflows](../../docs/engineering/execution-workflows.md).
+
+Order authority: the order ticket and position actions submit under typed authority
+(`OperatorTicket`, `PositionAction`) with an account grant once the operator is verified for the
+named account; accountless operator orders stay untyped, which live routing refuses. Client
+metadata naming `runId`, `sessionId` or `orderOrigin` is refused with 403 on submit and preview, and
+removed from broker-reported position metadata. The order ticket's `correlationId` is minted by the
+server; a client's value is kept as `clientCorrelationId`. A risk-escalation release submits under
+the authority retained with the parked entry, plus the approver's grant for the account, which the
+approve endpoint verifies, so an approval given long after parking can still release the order. Live manual orders, position actions included, are
+refused until a reviewed manual-intent contract exists. The workstation registers
+`StrategyRunAuthoritySource` for the OMS. The trading workspace payload carries
+`ManualOrderEntry`, which mirrors the OMS's mode for the active gateway so the order ticket can
+disable live manual submission with the reason up front, and each working-order row carries its
+`Origin`. Both kill-switch entry points, `/orders/cancel-all` and opening the circuit breaker, sweep under
+`KillSwitch` authority naming the operator. Cancel-all correlates to its action id and records an
+unresolved identity as `unidentified-operator` rather than refusing the sweep.
 
 The `execution-webhook` client dials only public addresses: it resolves the host, refuses loopback, private, link-local and other internal addresses at connection time, pins the connection to the validated addresses, follows no redirects and uses no system proxy.
 

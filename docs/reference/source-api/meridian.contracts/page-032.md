@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountingCloseReadinessItemDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.AccountingCloseReadinessItemDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:889](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L889).
+
+```csharp
+public sealed record AccountingCloseReadinessItemDto(string ItemId, string Category, string Label, AccountingReadinessStateDto State, string Summary, string RequiredAction, int BlockingIssueCount, IReadOnlyList<string>? EvidenceLinks = null, IReadOnlyList<AccountingConfigurationValidationIssueDto>? BlockingIssues = null, Guid? LedgerBookId = null, LedgerDimensionSetDto? Dimensions = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:902](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L902) |  |
+| <code>public IReadOnlyList&lt;AccountingConfigurationValidationIssueDto&gt; BlockingIssues { get; init; } = BlockingIssues??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:905](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L905) |  |
+| <code>public LedgerDimensionSetDto Dimensions { get; init; } = Dimensions?? new LedgerDimensionSetDto(BookId : LedgerBookId?.ToString(&quot;D&quot;));</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:908](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L908) |  |
+
 ## AccountingConfigurationStatusDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.AccountingConfigurationStatusDto</code>. Kind: `enum`.
@@ -721,16 +739,4 @@ Caller-specific capability. Missing or unknown protocol remains read-only.
 
 ```csharp
 public sealed record AssetAccountingDraftCapabilitiesDto(int ProtocolVersion, Guid JournalEntryId, int DraftVersion, string FundProfileId, Guid LedgerBookId, Guid PeriodId, string CandidateFingerprint, bool CanApprove, bool CanPost, string? ApproveBlockedReason, string? PostBlockedReason, AssetAccountingApprovalReceiptDto? Approval, bool HasPendingPost, JournalEntryLifecycleActionRequestDto? PendingPostCommand, PostedLedgerJournalEntryResultDto? PostedJournal, string? AuthenticatedActor = null);
-```
-
-## AssetAccountingPostIntentDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.AssetAccountingPostIntentDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/FactorPaydownPreparationDtos.cs:60](../../../../src/Meridian.Contracts/Ledger/FactorPaydownPreparationDtos.cs#L60).
-
-An exact original posting command retained before any canonical financial side effect.
-
-```csharp
-public sealed record AssetAccountingPostIntentDto(string OriginalCommandHash, JournalEntryLifecycleActionRequestDto OriginalCommand, PostPostingRuleJournalCandidateRequestDto CanonicalRequest, string VaultId, string DocumentId);
 ```

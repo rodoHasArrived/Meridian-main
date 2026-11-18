@@ -1,26 +1,31 @@
+// Label/value cell shared by the Accounting screen and its extracted panel modules. It follows the
+// detail pane's value rules: figures and identifiers use the data face and never wrap, dates are
+// dates (no invented "00:00 UTC"), and prose reads as prose.
 import { cn } from "@/lib/utils";
+import { inferDetailFieldKind, usesDataFace } from "@/components/meridian/detail-pane.view-model";
+import { formatAccountingDate } from "@/screens/accounting-screen.formatting";
 
-/**
- * True for a figure: an amount, count, percentage, period or identifier-like token with no spaces
- * between words ("+$500.00", "4", "12.5%", "2026-05", "(1,250.00)"). Figures keep the data face and
- * tabular digits; prose values ("Unassigned", "Packet available for review") and dates read in the
- * body face.
- */
-export function isAccountingFigure(value: string): boolean {
-  const trimmed = value.trim();
-  return /\d/.test(trimmed) && /^[+\-−(]?[$€£¥]?[\d.,:%/\-−]+\)?$/.test(trimmed);
-}
-
-/**
- * A label/value pair in an accounting detail tile. The row wraps as a whole: a value too long to
- * sit beside its label moves below it at full width instead of breaking onto three narrow lines.
- */
 export function AccountingValue({ label, value, tone, ariaLabel }: { label: string; value: string; tone?: string; ariaLabel?: string }) {
-  const figure = isAccountingFigure(value);
+  const kind = inferDetailFieldKind(value);
+  const display = kind === "date" && /^\d{4}-\d{2}-\d{2}/.test(value.trim()) ? formatAccountingDate(value) : value;
+  const dataFace = usesDataFace(kind, display);
+  const figure = kind === "number" || kind === "date";
+  // In a narrow cell the value moves under its label instead of squeezing either one: a figure
+  // stays on one line, and text wraps at word boundaries.
   return (
-    <div aria-label={ariaLabel} className="data-grid-surface flex min-w-0 flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-3 py-2">
-      <span className="shrink-0 text-muted-foreground">{label}</span>
-      <span className={cn("ml-auto min-w-0 break-words text-right text-foreground", figure && "font-mono tabular-nums", tone)}>{value}</span>
+    <div aria-label={ariaLabel} className="data-grid-surface flex min-w-0 flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 px-3 py-2">
+      <span className="min-w-0 text-muted-foreground">{label}</span>
+      <span
+        data-detail-value={kind}
+        className={cn(
+          "ml-auto min-w-0 text-right text-foreground",
+          figure ? "whitespace-nowrap tabular-nums" : "break-words",
+          dataFace && "font-mono",
+          tone
+        )}
+      >
+        {display}
+      </span>
     </div>
   );
 }

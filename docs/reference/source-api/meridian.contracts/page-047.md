@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## InstrumentTypeDescriptor
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptor</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:541](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L541).
+
+```csharp
+public sealed record InstrumentTypeDescriptor(InstrumentType InstrumentType, string DisplayName, string SecurityMasterAssetClass, string? SecurityMasterAssetFamily, string? SecurityMasterSubType, string DefaultProviderSecurityType, bool IsTradeable, bool IsReferenceOnly, bool IsDerivative, bool RequiresUnderlying, bool ProducesCashFlows, bool RequiresLotTracking, string SettlementModel, IReadOnlyList<string> CompatibleSecurityMasterAssetClasses, IReadOnlyList<string> PreferredIdentifierKinds, IReadOnlyList<string> RequiredEconomicTerms, IReadOnlyList<string> ProviderCapabilities, IReadOnlyList<string> LifecycleEvents, IReadOnlyList<string> ValidationRules, IReadOnlyList<string> LedgerBehaviorHints, IReadOnlyList<string> RiskModelHints);
+```
+
 ## InstrumentTypeDescriptorCatalog
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorCatalog</code>. Kind: `class`.
@@ -922,25 +932,3 @@ A collateral transfer the credit support terms imply: who moves it and whether i
 ```csharp
 public sealed record OtcCollateralMovementDto(OtcMovementKind Kind, OtcMovementParty Mover, decimal Amount, string Currency);
 ```
-
-## OtcCollateralRules
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCollateralRules</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:186](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L186).
-
-The rules every collateral balance write satisfies, pure so they are testable without a database and identical in every store. Each returns the normalized request or throws ArgumentException naming the rule.
-
-```csharp
-public static class OtcCollateralRules
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static UpsertOtcCollateralBalanceRequest Normalize(UpsertOtcCollateralBalanceRequest request);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:188](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L188) |  |
-| <code>public static OtcEligibleCollateralDto ResolveEligible(OtcCollateralAgreementDto agreement, string description);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:229](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L229) | The collateral agreement&#x27;s eligible-collateral line a balance is posted as, matched by description regardless of case. |
-| <code>public static OtcEligibleCollateralDto? FindEligible(OtcCollateralAgreementDto agreement, string? description);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:238](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L238) | The agreement&#x27;s eligible-collateral line with this description regardless of case, or null when there is none. |
-| <code>public static decimal ValuedAmount(decimal quantity, decimal unitValue) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:248](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L248) | The valued amount of a balance: quantity times unit value, computed, never supplied. |
-| <code>public static string RequireActor(string? value) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:251](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L251) | Collateral and margin writes are operator actions, so the actor is required rather than defaulted. |

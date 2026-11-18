@@ -10,7 +10,7 @@
 .reconciliation-queue-scroll { max-height: min(65dvh, 44rem); overflow: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
 .reconciliation-queue-scroll table { min-width: 48rem; }
 .reconciliation-detail-toggle, .reconciliation-back-to-queue { display: none; }
-@media (max-width: 1199px) {
+@media (max-width: 1279px) {
   .reconciliation-workbench-shell .workspace-workbench-shell-layout--with-inspector { grid-template-columns: minmax(0, 1fr); }
   .reconciliation-workbench-shell .workspace-workbench-shell-inspector { display: none; }
   .reconciliation-detail-toggle, .reconciliation-back-to-queue { display: inline-flex; }
@@ -27,6 +27,6 @@
 .reconciliation-run-picker > span { flex: 0 0 auto; }
 .reconciliation-run-picker select { width: 100%; min-width: 0; height: 2.25rem; border: 1px solid var(--ws-border); background: var(--ws-surface); color: inherit; padding: .25rem .5rem; }
 .reconciliation-run-picker select:focus-visible { outline: 2px solid var(--interaction-focus); outline-offset: 2px; }
-@media (max-width: 1199px) { .reconciliation-run-context { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 1279px) { .reconciliation-run-context { grid-template-columns: minmax(0, 1fr); } }
 /* The queue owns both axes so one history offset restores the working position. */
 .reconciliation-queue-scroll .dense-data-table-wrap { max-height: none; overflow: visible; }

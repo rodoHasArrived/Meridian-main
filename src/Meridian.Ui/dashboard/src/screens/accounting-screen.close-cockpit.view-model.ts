@@ -1980,6 +1980,8 @@ function buildCloseCalendarMilestoneRow(milestone: CloseCalendarMilestone): Acco
     displayName: milestone.displayName,
     ownerLabel: milestone.owner || "Unassigned",
     dueDateLabel: formatDateOnly(milestone.dueDate),
+    dueDate: milestone.dueDate ?? null,
+    dueDone: milestone.isSatisfied,
     statusLabel: formatCloseTaskStatus(milestone.status),
     statusTone: milestone.isBlocked ? "danger" : milestone.isSatisfied ? "success" : statusTone,
     dependencyLabel: milestone.dependencyCount > 0

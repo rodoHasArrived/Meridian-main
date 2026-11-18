@@ -6,6 +6,56 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkspaceShellContext
+
+Qualified name: <code>Meridian.Wpf.Models.WorkspaceShellContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:26](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L26).
+
+Carries the workspace title, subtitle, and context badges displayed by the shell.
+
+```csharp
+public sealed class WorkspaceShellContext
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string WorkspaceTitle { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:28](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L28) |  |
+| <code>public string WorkspaceSubtitle { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:30](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L30) |  |
+| <code>public IReadOnlyList&lt;WorkspaceShellBadge&gt; Badges { get; init; } = Array.Empty&lt;WorkspaceShellBadge&gt;();</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:32](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L32) |  |
+
+## WorkspaceShellContextInput
+
+Qualified name: <code>Meridian.Wpf.Models.WorkspaceShellContextInput</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:96](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L96).
+
+Collects scope, freshness, review, and attention values used to build shell context badges.
+
+```csharp
+public sealed class WorkspaceShellContextInput
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string WorkspaceTitle { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:98](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L98) |  |
+| <code>public string WorkspaceSubtitle { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:100](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L100) |  |
+| <code>public string PrimaryScopeLabel { get; init; } = &quot;Context&quot;;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:102](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L102) |  |
+| <code>public string PrimaryScopeValue { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:104](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L104) |  |
+| <code>public string AsOfValue { get; init; } = &quot;—&quot;;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:106](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L106) |  |
+| <code>public string FreshnessValue { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:108](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L108) |  |
+| <code>public string ReviewStateLabel { get; init; } = &quot;Review&quot;;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:110](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L110) |  |
+| <code>public string ReviewStateValue { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:112](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L112) |  |
+| <code>public string ReviewStateTone { get; init; } = WorkspaceTone.Neutral;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:114](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L114) |  |
+| <code>public string CriticalLabel { get; init; } = &quot;Attention&quot;;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:116](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L116) |  |
+| <code>public string CriticalValue { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:118](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L118) |  |
+| <code>public string CriticalTone { get; init; } = WorkspaceTone.Info;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:120](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L120) |  |
+| <code>public IReadOnlyList&lt;WorkspaceShellBadge&gt; AdditionalBadges { get; init; } = Array.Empty&lt;WorkspaceShellBadge&gt;();</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:122](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L122) |  |
+
 ## WorkspaceShellContextStripContribution
 
 Qualified name: <code>Meridian.Wpf.Models.WorkspaceShellContextStripContribution</code>. Kind: `record`.
@@ -1094,59 +1144,3 @@ Declared public members:
 | <code>public string AutomationName =&gt; …;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1112](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1112) |  |
 | <code>public static IReadOnlyList&lt;DataHeroMetric&gt; LoadingMetrics() =&gt; …;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1114](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1114) |  |
 | <code>public static IReadOnlyList&lt;DataHeroMetric&gt; ErrorMetrics() =&gt; …;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1139](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1139) |  |
-
-## DataHeroState
-
-Qualified name: <code>Meridian.Wpf.Services.DataHeroState</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1069](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1069).
-
-Carries the data workspace overview text, status badge, handoff detail, and primary and secondary actions.
-
-```csharp
-public sealed class DataHeroState
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string FocusText { get; init; } = &quot;Operational posture&quot;;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1071](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1071) |  |
-| <code>public string SummaryText { get; init; } = &quot;Refreshing provider, backfill, storage, and export posture.&quot;;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1072](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1072) |  |
-| <code>public string BadgeText { get; init; } = &quot;Loading&quot;;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1073](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1073) |  |
-| <code>public string BadgeTone { get; init; } = WorkspaceTone.Info;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1074](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1074) |  |
-| <code>public string HandoffTitleText { get; init; } = &quot;Telemetry refresh in progress&quot;;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1075](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1075) |  |
-| <code>public string HandoffDetailText { get; init; } = &quot;The Data shell is collecting current readiness signals.&quot;;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1076](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1076) |  |
-| <code>public string PrimaryActionId { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1077](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1077) |  |
-| <code>public string PrimaryActionLabel { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1078](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1078) |  |
-| <code>public string SecondaryActionId { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1079](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1079) |  |
-| <code>public string SecondaryActionLabel { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1080](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1080) |  |
-| <code>public string TargetText { get; init; } = &quot;Target: Current shell&quot;;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1081](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1081) |  |
-| <code>public static DataHeroState Loading() =&gt; …;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1083](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1083) |  |
-| <code>public static DataHeroState Error() =&gt; …;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1086](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1086) |  |
-
-## DataIntegrationWorkflowStep
-
-Qualified name: <code>Meridian.Wpf.Services.DataIntegrationWorkflowStep</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1178](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1178).
-
-Describes an integration step, its status presentation, and its action target.
-
-```csharp
-public sealed class DataIntegrationWorkflowStep
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Id { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1180](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1180) |  |
-| <code>public string Label { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1181](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1181) |  |
-| <code>public string Description { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1182](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1182) |  |
-| <code>public string Status { get; init; } = WorkflowStepStatus.Pending;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1183](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1183) |  |
-| <code>public string StatusLabel { get; init; } = &quot;Pending&quot;;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1184](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1184) |  |
-| <code>public string Tone { get; init; } = WorkspaceTone.Neutral;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1185](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1185) |  |
-| <code>public string AutomationName =&gt; …;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1186](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1186) |  |
-| <code>public static IReadOnlyList&lt;DataIntegrationWorkflowStep&gt; LoadingSteps() =&gt; …;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1188](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1188) |  |
-| <code>public static IReadOnlyList&lt;DataIntegrationWorkflowStep&gt; ErrorSteps() =&gt; …;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1246](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1246) |  |

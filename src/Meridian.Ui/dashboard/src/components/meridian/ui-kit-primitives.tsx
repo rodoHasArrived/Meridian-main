@@ -131,6 +131,13 @@ export interface DenseDataTableProps<T> {
   tableId?: string;
   /** Retains a screen's minimum-width or layout contract inside the shared scroll area. */
   tableClassName?: string;
+  /**
+   * A totals row under the body, keyed by column id; columns without an entry render empty.
+   * Follows the visible columns, so hidden or dropped columns never misalign the totals.
+   */
+  footerCells?: Partial<Record<string, ReactNode>>;
+  /** Accessible name of the totals row, e.g. "Ledger totals". */
+  footerLabel?: string;
   caption?: string | null;
   sort?: DenseDataTableSortState | null;
   onToggleSort?: (columnId: string) => void;
@@ -152,12 +159,6 @@ export interface DenseDataTableProps<T> {
    * `virtualization` is active, which windows the full set instead.
    */
   maxVisibleRows?: number | null;
-  /**
-   * One totals row under the body, keyed by column id; a visible column without an entry gets an
-   * empty cell. It is not a data row: it is not selectable, sortable or counted, and it follows
-   * the column's alignment. Omit it when the table has no totals.
-   */
-  footerCells?: Readonly<Record<string, ReactNode>> | null;
   /**
    * Enable row windowing for large data sets. When set, only a window of rows is
    * mounted and the table exposes `aria-rowcount`/`aria-rowindex` so assistive
@@ -194,13 +195,14 @@ function DenseDataTableComponent<T>({
   ariaLabel,
   tableId,
   tableClassName,
+  footerCells,
+  footerLabel = "Totals",
   caption,
   sort: controlledSort = null,
   onToggleSort,
   defaultSort = null,
   density,
   maxVisibleRows = DEFAULT_DENSE_TABLE_ROW_CAP,
-  footerCells = null,
   virtualization = null,
   getRowTypeaheadText,
   onRowContextMenu,
@@ -251,6 +253,24 @@ function DenseDataTableComponent<T>({
   // The wrap is itself the scroll viewport (max-height + overflow), so windowing
   // reads and drives its scrollTop directly rather than nesting a second scroller.
   const wrapRef = useRef<HTMLDivElement | null>(null);
+  // A table wider than its card says so: the wrap marks the sides that hold more columns, and
+  // the stylesheet draws an edge shadow there (UX Phase C). Attributes, not state: scrolling
+  // never re-renders the rows.
+  useEffect(() => {
+    const wrap = wrapRef.current;
+    if (!wrap) return undefined;
+    const update = () => {
+      wrap.dataset.overflowLeft = String(wrap.scrollLeft > 1);
+      wrap.dataset.overflowRight = String(wrap.scrollLeft + wrap.clientWidth < wrap.scrollWidth - 1);
+    };
+    update();
+    wrap.addEventListener("scroll", update, { passive: true });
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(update);
+    observer?.observe(wrap);
+    const table = wrap.querySelector("table");
+    if (table) observer?.observe(table);
+    return () => { wrap.removeEventListener("scroll", update); observer?.disconnect(); };
+  }, [rows, columns]);
   const scrollRafRef = useRef<number | null>(null);
   const typeaheadRef = useRef<{ buffer: string; at: number }>({ buffer: "", at: 0 });
 
@@ -562,9 +582,9 @@ function DenseDataTableComponent<T>({
       </tbody>
       {footerCells && rows.length > 0 ? (
         <tfoot className="dense-data-table-footer">
-          <tr>
+          <tr aria-label={footerLabel}>
             {columns.map((column) => (
-              <td key={column.id} className={cn(columnCellClassName(column), column.className)}>
+              <td key={column.id} className={columnCellClassName(column)}>
                 {footerCells[column.id] ?? null}
               </td>
             ))}

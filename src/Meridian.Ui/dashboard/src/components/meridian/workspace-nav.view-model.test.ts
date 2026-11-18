@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { buildWorkspaceNavViewModel } from "@/components/meridian/workspace-nav.view-model";
-import { ACCOUNTING_PRIMARY_NAVIGATION_LIMIT } from "@/lib/accounting-navigation";
 import type { WorkspaceSummary } from "@/types";
 
 describe("workspace nav view model", () => {
@@ -109,7 +108,8 @@ describe("workspace nav view model", () => {
       "/portfolio/brokerage-sync",
       "/portfolio/cash-ladder",
       "/portfolio/family-office",
-      "/portfolio/loan-book"
+      "/portfolio/loan-book",
+      "/portfolio/nav"
     ]);
     // Family Office left UNWIRED_WORKSTATION_ROUTES once the screen started loading
     // /api/workstation/family-office/overview, so it belongs in primary navigation again.
@@ -164,23 +164,12 @@ describe("workspace nav view model", () => {
       group.label,
       group.items.map((item) => item.label)
     ])).toEqual([
-      ["Close", ["Close cockpit", "Close calendar"]],
-      ["Records", ["Ledger explorer", "Adjustments"]],
-      ["Reconciliation", ["Casework"]],
-      ["Review", ["Exceptions", "Approvals"]]
-    ]);
-    // The sidebar lists at most seven daily-use destinations; the rest sit behind "More".
-    expect(accounting?.subItemGroups.flatMap((group) => group.items).length).toBeLessThanOrEqual(ACCOUNTING_PRIMARY_NAVIGATION_LIMIT);
-    expect(accounting?.moreItemGroups.map((group) => [
-      group.label,
-      group.items.map((item) => item.label)
-    ])).toEqual([
-      ["Close", ["Operations continuity"]],
-      ["Records", ["Factor paydown", "Consolidation", "Capital accounts", "Capital calls", "Security Master"]],
-      ["Reconciliation", ["Import statement", "External GL"]],
+      ["Close", ["Close cockpit", "Operations continuity", "Close calendar"]],
+      ["Records", ["Ledger explorer", "Factor paydown", "Consolidation", "Adjustments", "Capital accounts", "Capital calls", "Security Master"]],
+      ["Reconciliation", ["Import statement", "Casework", "External GL"]],
+      ["Review", ["Exceptions", "Approvals"]],
       ["Administration", ["Entity setup", "Configure"]]
     ]);
-    expect(accounting?.moreActive).toBe(false);
     expect(accounting?.subItems[0]).toMatchObject({
       label: "Close cockpit",
       active: false,
@@ -199,16 +188,6 @@ describe("workspace nav view model", () => {
       ariaCurrent: "page",
       ariaLabel: "Ledger explorer, current page"
     });
-  });
-
-  it("opens More when the current Accounting page is behind it", () => {
-    const accounting = buildWorkspaceNavViewModel("/accounting/capital-calls").items.find((item) => item.key === "accounting");
-    expect(accounting?.moreActive).toBe(true);
-    expect(accounting?.moreItemGroups.flatMap((group) => group.items).find((item) => item.active)?.label).toBe("Capital calls");
-    // Other workspaces have no primary tier, so they keep every destination in the list.
-    const data = buildWorkspaceNavViewModel("/data").items.find((item) => item.key === "data");
-    expect(data?.moreItemGroups).toEqual([]);
-    expect(data?.moreActive).toBe(false);
   });
 
   it("highlights only the destination whose view the page shows", () => {

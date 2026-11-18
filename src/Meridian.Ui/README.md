@@ -109,14 +109,11 @@ detail. Reconciliation commands and approvals remain owned by the existing share
 The host-served bundle carries the shell hierarchy pass: a one-row masthead with the environment
 in the trust pill, a provenance banner that becomes a stripe once seen, a two-row workspace header,
 route-first workspace screens with the sidebar as the only sub-navigation, and a pinned Today entry
-with Control Tower attention counts. Accounting's sidebar keeps seven daily-use destinations and
-puts the rest behind "More"; Options screening is a Data sidebar entry, not a Market Data desk
-tab. Labels use light caps in the body face, monospace stays on figures and IDs, and Ledger
-Explorer closes with a debit and credit totals row. Close Cockpit detail tiles keep dates on one
-line and monospace on figures only, and its checklist-progress and break-aging charts render in
-view. The shared inbox filters by owner (Everyone, Mine, Unassigned) and adds acknowledge and
-snooze keys and bulk actions beside assign, and Today's provider items open that provider's retained
-verification history. Trial balance compares closing balances against the prior close through the
+with Control Tower attention counts. Options screening is a Data sidebar entry, not a Market Data
+desk tab, and the sidebar highlights only the destination whose `view` the page shows. Short labels
+use light caps in the body face and monospace stays on figures and IDs. The shared inbox filters by
+owner (Everyone, Mine, Unassigned) and adds acknowledge and snooze keys beside assign, and Today's
+provider items open that provider's retained verification history. Trial balance compares closing balances against the prior close through the
 posted-period comparison's ClosingBalances measure.
 Close Cockpit lays the close plan's tasks out by due day after period end, with owners, blockers and
 dependencies; it uses the existing close-plan contract unchanged. The open-breaks and timing-drift
@@ -127,6 +124,8 @@ The host-served bundle carries the design-system consolidation. It includes one 
 component; one formatting module (year-bearing UTC timestamps; accounting negatives in
 parentheses); and one table system with sorting, sticky headers, operator density and column
 visibility on positions, orders, the ledger, breaks, the execution blotter and report families.
+Working orders show their origin, and the order ticket states when manual live orders are
+unavailable and why an order-authority refusal happened (see the dashboard README).
 It also adds a three-tier type scale with sentence-case labels past two words and prose in the
 body face. Ratchets in `dashboard/scripts/design-system-ratchets.mjs`, and the sub-12px
 typography floor check in `dashboard/scripts/check-typography-floor.mjs` (run by `npm run lint`),
@@ -354,6 +353,49 @@ See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
 ```bash
 npm --prefix src/Meridian.Ui/dashboard run build
 ```
+
+The host-served bundle carries UX Phase A (figures and status): every registered headline figure
+states the population it counts; Data, Today and Settings show one shared provider-health count;
+Trading and Portfolio position tables name their source; and the status bar starts from the
+masthead pill's provenance and provider checks, so it never says "up to date" over a stale source.
+The new shared contract is `/api/workstation/kpi-definitions` (see `src/Meridian.Ui.Shared/README.md`).
+
+It also carries UX Phase B (main task first, quieter states). Journal Entry opens on the editor,
+with journal automation below it and one notice for a shared failure. The Today queue shows one line
+per item, grows with the page, and says why each item is ranked where it is. A value missing on
+every row is said once. Live quotes starts from the watchlist. No shared contract changed.
+
+It also carries UX Phase C (accounting grid and visual system):
+- Ledger Explorer groups postings under their journal with a totals row and plain amounts.
+- Accounting dates print without invented times.
+- Labels use the body face, and one status word has one colour.
+- Disclosures share one chevron.
+- The masthead stripe is reserved for LIVE sessions.
+- Inspectors no longer stretch rows, and media queries use four tiers.
+
+No shared contract changed.
+
+It also carries UX Phase D (navigation and overviews):
+- Accounting shows one sidebar row per group and a secondary menu of the group's pages.
+- The command palette offers pinned and recent pages.
+- Close Calendar opens on a month grid.
+- Charts have table alternatives.
+- The capability matrix shows provider freshness.
+- Strategy has a run leaderboard.
+
+No shared contract changed.
+
+It also carries UX Phase E (workflow features):
+- Due dates read as urgency ("Overdue 3 days"), and overdue work sorts first on Today.
+- "New since you last looked" markers on Today, Approvals and Reporting triage.
+- Bulk Acknowledge and Snooze on Today, confirmed per item.
+- Tables export visible columns as shown, as CSV or XLSX, with totals.
+- Strategy compares up to four runs with overlaid equity and drawdown.
+- Prior-period variance on the trial balance comparison, a new Portfolio NAV page, run attribution
+  and the cash ladder.
+
+The new shared contract is `PeriodComparisonDto` with three read endpoints (see
+`src/Meridian.Ui.Shared/README.md`).
 
 ## Change rules
 

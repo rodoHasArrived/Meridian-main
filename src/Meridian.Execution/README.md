@@ -233,8 +233,16 @@ passing the OMS instance as a general callback target.
 | `AccountingHandoffCoordinator` | Publisher scope checks, durable accounting acceptance, independent fallback retention, and retained-handoff replay. The lifecycle coordinator starts and drains replay. |
 | `ExecutionReportHub`, `ExecutionFailureState` | Authoritative subscriber delivery and recovery, the best-effort observer channel, and the first terminal consumer failure shared with operation admission. The lifecycle coordinator controls registration closure and shutdown ordering. |
 | `OrderAuditMetadata`, `OrderExecutionAudit` | Audit metadata construction and lifecycle/unresolved-fill evidence from explicit snapshots. Command decisions and their audit timing stay with their callers. |
+| `OrderAuthorityResolver`, `OrderAuthorityMetadata` | Typed order authority at preflight and at dispatch, and binding the authority's identity into order metadata. The facade decides when each check runs and settles reservations on refusal. |
+| `OrderManagementSystemFactory` | The single OMS composition from a service provider, for both hosts. |
 
 `OrderExecutionAudit` sanitizes order IDs in diagnostic logs while retaining the original IDs in durable audit records.
+
+`OrderManagementSystemFactory` is the only place that builds the OMS from a service provider. Both
+hosts use it: `AddBrokerageExecution` with `OrderManagementSystemComposition.BrokerageExecution`
+(risk validator, portfolio state, and options optional; no paper-session persistence) and the
+workstation `UiServer` with `HostedWorkstation` (all three required; paper-session persistence
+wired). New OMS dependencies are wired there once.
 
 The shared broker-report gate still serializes live callbacks, explicit recovery, amendment
 resolution, and retention. Amendment preparation keeps original/proposed snapshot identity and
@@ -251,6 +259,70 @@ These boundaries preserve public APIs, durable recovery formats, order and fill 
 comparison rules, and lock ordering. Command/risk/amendment coordination still spans the facade
 and its collaborators; the extraction does not move the whole order state machine into one new
 service.
+
+### Order authority
+
+Design: `docs/engineering/blueprints/governed-order-command-boundary-blueprint.md` (`W13-OMS-001`).
+
+`OrderManagementSystem.SubmitAsync(OrderSubmitCommand)` submits an order under a typed,
+server-built `OrderSubmissionAuthority`. The authority can only be built through validating
+factories in `Meridian.Execution.Sdk`. Before admission, `OrderAuthorityMetadata.Bind` strips any
+identity the caller put in metadata (`actor`, `runId`, `correlationId`, `sessionId`, `orderOrigin`,
+`riskSubmitter` and their aliases) and stamps the authority's identity instead.
+
+| Origin | Built by | Live behavior |
+| --- | --- | --- |
+| `OperatorTicket` | Order ticket endpoint, after verifying the operator's access to the named account | Refused (`MANUAL_LIVE_INTENT_CONTRACT_NOT_REVIEWED`) until a reviewed manual-intent contract exists |
+| `PositionAction` | Position close and upsize endpoints, same account check | Refused as a manual live order. Broker-reported position metadata never grants run authority |
+| `StrategyRun` | `LiveStrategyRunSession`, using the run's retained fund account | Routes only for an active, live-promoted run whose artifact matches, and then only if readiness approves |
+| `EscalationRelease` | Risk escalation release, from the authority retained with the parked entry (`RiskEscalationEntry.Authority`) plus the approver's grant resolved at release time | Judged by the parked authority. Grant age is taken from the approver's grant, so a late approval can still release |
+| `KillSwitch` | Kill-switch sweep (`CancelAllAsync(OrderCancelAllCommand)`): the operator's cancel-all, the circuit-breaker endpoint, and the automated trip handler | Cancel-only; any submit is refused (`KILL_SWITCH_SUBMIT_NOT_ALLOWED`). The authority is recorded on every cancellation the sweep makes and on one `KillSwitchSweep` audit record, and never refuses a cancellation |
+| `Unattributed` | Legacy `PlaceOrderAsync`, and operator orders that name no account | Paper routes unchanged. Live is refused before readiness (`ORDER_ORIGIN_UNATTRIBUTED_LIVE`) |
+
+`OrderAuthorityResolver` runs at two checkpoints:
+
+- **Preflight.** It runs where the live readiness gate used to run, so every other gate keeps its
+  refusal order. It checks the account grant (`ACCOUNT_GRANT_MISSING`, `_MISMATCH`, `_STALE`
+  against `OrderAuthorityOptions.MaxGrantAge`, 8 hours by default). Then, through
+  `IStrategyRunAuthoritySource`, it checks the run binding for live strategy orders
+  (`RUN_NOT_FOUND`, `RUN_NOT_ACTIVE`, `RUN_NOT_PROMOTED_TARGET`, `RUN_ARTIFACT_MISMATCH`), and
+  finally readiness (`LIVE_ORDER_READINESS_REJECTED`). If the source cannot answer, the result is
+  `AUTHORITY_SOURCE_UNAVAILABLE`. Security Master stays in `OrderAdmissionPolicy`, after operator
+  controls.
+- **Dispatch.** This runs after risk validation and before the dispatch lease, so authority lookups
+  never lengthen the window a kill-switch sweep waits on. For typed authority it rechecks grant age,
+  the run binding and readiness for live strategy orders (`READINESS_CHANGED_BEFORE_DISPATCH`), and
+  Security Master (`SECURITY_MASTER_REJECTED_AT_DISPATCH`). A refusal releases risk reservations and
+  consumed approvals, the same way an operator-control refusal does. Untyped orders have no dispatch
+  recheck.
+
+Retention and reporting:
+
+- A parked order keeps its typed authority in the escalation entry's own durable write. The OMS
+  stages it with the queue (`RiskEscalationQueueService.StageAuthority`, keyed by client order id)
+  while risk validation runs. `TryAttachAuthority` is only a fallback for validators that park
+  without staging.
+- The order ticket's `correlationId` is minted server-side. A client's value is kept as
+  `clientCorrelationId` metadata and never names the order in authority, journal or audit records.
+- Typed authority is retained on journal intents (`ExecutionJournalEntry.Authority`) and in
+  `OrderSubmitted` audit metadata (`orderOrigin`, `accountGrant`, `accountGrantSource`,
+  `releasedFromOrigin`). Untyped records are unchanged.
+- On a typed release, `actor` is the approver and `riskSubmitter` is the original submitter, as on
+  the untyped release path.
+- `OrderState.Origin` records who originated each order created by submission, including refused and
+  parked orders.
+- `OrderResult.AuthorityDecision` reports refusals by order authority, with their checkpoint
+  (`preflight` or `dispatch`) and reason code. It also reports admitted typed submissions.
+- The workstation trading payload exposes origin on working orders, plus `ManualOrderEntry`. The
+  browser ticket uses `ManualOrderEntry` to disable manual entry on a live path.
+
+Open owner decisions are in the blueprint's Open Questions:
+
+- the manual-intent contract;
+- live position closes;
+- whether a paused run keeps authority;
+- whether every operator order must name an account;
+- whether untyped *paper* orders should also be refused.
 
 ## Important workflows
 
@@ -458,6 +530,13 @@ present `FundAccountId` against the authenticated actor's account-scoped `Manage
 before the OMS can use that account in live-readiness evaluation. Missing run/account context,
 missing readiness registration, rejected readiness, or an approval without retained evidence
 produces an audited rejection instead of a broker submit.
+`runId`, `run_id`, `sessionId`, `session_id`, and `orderOrigin` are server-owned order metadata
+(`ExecutionOrderMetadataPolicy`): the shared HTTP submit and preview routes refuse them with 403, and
+position actions strip them from broker-reported position metadata. Only server-side callers such as
+`LiveStrategyRunSession` stamp a run id, so a manual ticket cannot borrow a promoted run's live
+authority, and no supported manual live-order path exists until a reviewed manual-intent authority
+contract does (see `docs/engineering/blueprints/governed-order-command-boundary-blueprint.md`). The
+OMS's own routing sanitization keeps these keys.
 Broker-backed readiness also includes open-order reconciliation: `BrokerageExecutionReconciliationService`
 compares broker-reported open orders with the OMS open-order ledger, treats missing client order IDs
 as untraceable breaks, and reports OMS/broker divergence before live operators rely on the gateway.
@@ -670,6 +749,8 @@ See `DIA-PAPER-SESSION-REPLAY` in `docs/source/data/diagram-index.yml`.
 dotnet test tests/Meridian.Execution.Tests/Meridian.Execution.Tests.csproj --filter "FullyQualifiedName~PaperTradingGatewayTests|FullyQualifiedName~PaperTradingPortfolioBasisParityTests|FullyQualifiedName~PaperTradingPortfolioAccountingEvidenceTests|FullyQualifiedName~OrderFillProcessorTests|FullyQualifiedName~TradeFillAccountingEvidencePersistenceTests" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Execution.Tests/Meridian.Execution.Tests.csproj --filter "FullyQualifiedName~ExecutionWorkflowTests|FullyQualifiedName~ExecutionJournalAttemptTests" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests|FullyQualifiedName~TradeFillLedgerPostingHostCompositionTests|FullyQualifiedName~EquityOrderSessionPolicyTests" --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Execution.Tests/Meridian.Execution.Tests.csproj --filter "FullyQualifiedName~OrderAuthority|FullyQualifiedName~OrderSubmissionAuthority|FullyQualifiedName~OrderManagementSystemTypedSubmit|FullyQualifiedName~OrderManagementSystemFactory|FullyQualifiedName~ExecutionOrderMetadataPolicy|FullyQualifiedName~RiskEscalationAuthorityRetention" --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~StrategyRunAuthoritySource|FullyQualifiedName~WorkstationManualOrderEntry|FullyQualifiedName~ExecutionGovernance|FullyQualifiedName~RiskEndpoints" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
 ```
 

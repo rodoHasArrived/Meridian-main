@@ -457,6 +457,11 @@ currency, observation/attempt/success timestamps, completeness and blocking reas
 account-scoped strategy runs. Existing execution-reconciliation DTOs remain the discrepancy source.
 Recovery requests carry only the local account ID; provider and external identity are server-resolved.
 
+`WorkstationTradingPayload.ManualOrderEntry` (`WorkstationManualOrderEntry`) tells the order ticket
+whether manual orders can route on the active path and, if not, why (live manual orders need a
+reviewed manual-intent authority contract). `WorkstationTradingOrderRow.Origin` names who originated
+each working order (the OMS `OrderCommandOrigin`, by name). Both are optional and default to absent.
+
 Canonical amortization adds an optional `Amortization` input to lot instructions and basis adjustments, omitted when absent to preserve retained fingerprints. `OpenLotAmortization` binds reviewed canonical lot and versioned Security Master evidence, delegates shared straight-line/constant-yield kernels, and retains annual decimal yield and acquisition FX. V1/v2 unsupported structures and missing terms fail closed, including any populated or malformed `callSchedule` or `putSchedule` (an empty list declares none) and any populated `scheduleConventions` value, a malformed string, number, boolean or populated array included (null, `{}`, `[]` and an object or array with no populated member declare nothing). These declared schedule terms are checked in every source the cash-flow resolver reads and under every casing, so an unset spelling in one source never hides a declared one in another. Optional reversal inputs retain the original batch, journal and pre-posting lot snapshot; absent reversal fields preserve earlier wire fingerprints. Contract validation binds complete approved correction lineage and rejects disposal prices before drafting.
 
 For a retained amortization reversal, current hash-bound reference evidence proves identity and
@@ -489,6 +494,22 @@ persistence port without referencing the Storage implementation.
 `Workstation/CrossScreenCountsDtos.cs` carries the counts more than one screen shows (open orders,
 provider health and open breaks) with the definition each was counted with. A count the caller may
 not read, or whose source is not registered, is null, so clients show "—" rather than a substitute.
+
+`Workstation/KpiDefinitionDtos.cs` carries the headline-figure catalog: each figure's id, label,
+population and comparison basis (null when the figure carries no change), so the browser and WPF
+state a figure with the same name over the same population.
+
+`Workstation/PeriodComparisonDtos.cs` carries prior-period comparisons for NAV, run attribution
+and the cash ladder (`PeriodComparisonDto`: status, the two windows, lines and notes on what the
+figures include) and `PeriodChange`, the one variance rule every comparison uses: change is current
+minus prior, percent divides by the absolute prior, and a zero prior has no percent. The posted
+ledger comparison uses it too. `AssetOperations/PortfolioCashLadderDtos.cs` adds the optional
+`IPortfolioCashBalanceHistoryProvider` for opening cash at an earlier date.
+`IAssetOperationsQueryService.GetOperationsAsOfAsync` projects operations at a
+`BondCalculationContext` cutoff; its default falls back to the current projection, and
+`SupportsTermsAsOf` says which one a service gives.
+`Workstation/FundNavTrendDtos.cs` carries ledger NAV at recent month-ends (`FundNavTrendDto`), with
+long, short, gross and net securities exposure on each point.
 
 `Workstation/OperatorScopePreferenceDtos.cs` carries the signed-in operator's default operating
 scope (symbol, fund account, run, provider and date dimensions, plus the optional legal entity and

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useSavedPages } from "@/lib/recent-pages";
 import { Link, useLocation } from "react-router-dom";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -71,6 +72,7 @@ export function CommandPalette({
   entitySearchServices
 }: CommandPaletteProps) {
   const { pathname, search, hash } = useLocation();
+  const savedPages = useSavedPages();
   const [query, setQuery] = useState("");
   const [armedActionId, setArmedActionId] = useState<string | null>(null);
   const armedActionIdRef = useRef<string | null>(null);
@@ -197,7 +199,9 @@ export function CommandPalette({
       actionItems,
       entityItems: entitySearch.items,
       entitySearchStatus: entitySearch.status,
-      entitySearchError: entitySearch.error
+      entitySearchError: entitySearch.error,
+      pinnedPages: savedPages.pinned,
+      recentPages: savedPages.recent
     },
     query,
     operatingContextSymbol ?? null,

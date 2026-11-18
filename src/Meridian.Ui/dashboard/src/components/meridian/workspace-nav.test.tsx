@@ -10,29 +10,6 @@ import { renderWithRouter } from "@/test/render";
 const WORKSPACE_ITEM = ".operator-nav-item:not(.operator-nav-today)";
 
 describe("WorkspaceNav", () => {
-  it("keeps less-used Accounting pages behind More until the operator opens it", async () => {
-    const user = userEvent.setup();
-    renderWithRouter(<WorkspaceNav />, { initialEntries: ["/accounting/ledger"] });
-
-    const pages = screen.getByRole("group", { name: "Accounting pages" });
-    expect(within(pages).getByRole("link", { name: /Ledger explorer/ })).toBeInTheDocument();
-    expect(within(pages).queryByRole("link", { name: /Capital calls/ })).not.toBeInTheDocument();
-
-    const more = within(pages).getByRole("button", { name: "More (10)" });
-    expect(more).toHaveAttribute("aria-expanded", "false");
-    await user.click(more);
-    expect(more).toHaveAttribute("aria-expanded", "true");
-    expect(within(pages).getByRole("link", { name: /Capital calls/ })).toBeInTheDocument();
-  });
-
-  it("opens More by itself when the current page is behind it", () => {
-    renderWithRouter(<WorkspaceNav />, { initialEntries: ["/accounting/capital-calls"] });
-
-    const pages = screen.getByRole("group", { name: "Accounting pages" });
-    expect(within(pages).getByRole("button", { name: "More (10)" })).toHaveAttribute("aria-expanded", "true");
-    expect(within(pages).getByRole("link", { name: /Capital calls, current page/ })).toHaveAttribute("aria-current", "page");
-  });
-
   it("renders decorative canonical workspace icons as masks that inherit navigation colors", () => {
     renderWithRouter(<WorkspaceNav />, { initialEntries: ["/trading"] });
 
@@ -95,7 +72,8 @@ describe("WorkspaceNav", () => {
     expect(screen.getByRole("navigation", { name: "Workspaces" })).toBeInTheDocument();
     expect(screen.queryByLabelText("Current workspace: Accounting, Available product maturity")).not.toBeInTheDocument();
     expect(screen.getByLabelText("Accounting workspace, active section, Available product maturity")).not.toHaveAttribute("aria-current");
-    expect(screen.getByLabelText("Casework, current page")).toHaveAttribute("aria-current", "page");
+    // The rail lists Accounting's groups; the page itself is marked in the page's section menu.
+    expect(screen.getByLabelText("Reconciliation, current section: 3 pages")).toHaveAttribute("href", "/accounting/statement-import");
     expect(screen.queryByText("Available · Current")).not.toBeInTheDocument();
     expect(screen.queryByText("Available product maturity")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Canonical route /accounting")).not.toBeInTheDocument();
@@ -200,17 +178,11 @@ describe("WorkspaceNav", () => {
     await user.click(screen.getByRole("button", { name: "Expand Accounting pages" }));
 
     expect(accountingSections).toHaveAttribute("aria-hidden", "false");
-    ["Close", "Records", "Reconciliation", "Review"].forEach((label) => {
-      expect(within(accountingSections!).getByRole("group", { name: label })).toBeInTheDocument();
-    });
-    expect(within(accountingSections!).getByLabelText("Open Ledger explorer")).toHaveAttribute("href", "/accounting/ledger");
-    expect(within(accountingSections!).getByLabelText("Open Close calendar")).toHaveAttribute("href", "/accounting/close-calendar");
-    // Capital accounts is behind More, one click away.
-    expect(within(accountingSections!).queryByLabelText("Open Capital accounts")).not.toBeInTheDocument();
-    await user.click(within(accountingSections!).getByRole("button", { name: "More (10)" }));
-    expect(within(accountingSections!).getByRole("group", { name: "Administration" })).toBeInTheDocument();
-    expect(within(accountingSections!).getByLabelText("Open Capital accounts")).toHaveAttribute("href", "/accounting/capital-accounts");
-    expect(within(accountingSections!).getByLabelText("Open Approvals")).toHaveAttribute("href", "/accounting/approvals");
+    // Five group rows, not 17 pages, so the other workspaces stay on screen (UX Phase D).
+    expect(within(accountingSections!).getAllByRole("link").map((link) => link.textContent)).toEqual(["Close", "Records", "Reconciliation", "Review", "Administration"]);
+    expect(within(accountingSections!).getByLabelText("Open Records: 7 pages, starting at Ledger explorer")).toHaveAttribute("href", "/accounting/ledger");
+    expect(within(accountingSections!).getByLabelText("Open Close: 3 pages, starting at Close cockpit")).toHaveAttribute("href", "/accounting");
+    expect(within(accountingSections!).getByLabelText("Open Review: 2 pages, starting at Exceptions")).toHaveAttribute("href", "/accounting/exceptions");
     expect(screen.getByRole("button", { name: "Collapse Accounting pages" })).toHaveAttribute("aria-expanded", "true");
   });
 
@@ -226,16 +198,15 @@ describe("WorkspaceNav", () => {
 
     await user.click(screen.getByRole("button", { name: "Expand Data pages" }));
     await user.click(screen.getByRole("button", { name: "Collapse Accounting pages" }));
-    expect(screen.queryByLabelText("Casework, current page, preserving Account: account-1")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/Reconciliation, current section/)).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Expand Accounting pages" })).toHaveAttribute("aria-expanded", "false");
 
     await user.click(screen.getByRole("button", { name: "Open approval destination" }));
 
     expect(screen.getByRole("button", { name: "Collapse Accounting pages" })).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("button", { name: "Collapse Data pages" })).toHaveAttribute("aria-expanded", "true");
-    const current = screen.getByRole("link", { name: /Approvals, current page/ });
-    expect(current).toHaveAttribute("aria-current", "page");
-    expect(current).toHaveAttribute("href", "/accounting/approvals?fundAccountId=account-1");
+    const current = screen.getByRole("link", { name: /Review, current section/ });
+    expect(current).toHaveAttribute("href", "/accounting/exceptions?fundAccountId=account-1");
 
     // A deliberate collapse remains closed until the destination changes again.
     await user.click(screen.getByRole("button", { name: "Collapse Accounting pages" }));

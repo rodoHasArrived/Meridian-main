@@ -25,10 +25,6 @@
 // `design-system-ratchets.test.ts` fails when a file exceeds its baseline, when a file not in
 // the baseline gains an occurrence, or when a file drops below its baseline (lock the progress
 // in by rerunning with --write). Usage:
-//   - monoCapsLabels: a class string that sets text in tracked uppercase monospace
-//     (`font-mono uppercase tracking-…`) outside a status chip. Labels use the shared
-//     `type-label--caps` / `eyebrow-label` light caps in the body face; monospace is for
-//     figures, IDs and code.
 //   - rawSelects: a hand-styled native `<select>` instead of `Select` from
 //     `@/components/ui/select`, which owns the border, chevron, focus ring and error state.
 //
@@ -95,14 +91,6 @@ export function isAdHocBadgeClass(value) {
     && /\bpx-/.test(value);
 }
 
-/** Tracked uppercase monospace text that is not a status chip (chips are adHocStatusBadges). */
-export function isMonoCapsLabelClass(value) {
-  return /\bfont-mono\b/.test(value)
-    && /\buppercase\b/.test(value)
-    && /\btracking-/.test(value)
-    && !isAdHocBadgeClass(value);
-}
-
 const RAW_SELECT = /<select\b/g;
 
 export const RATCHETS = {
@@ -151,12 +139,13 @@ export const RATCHETS = {
     description: "raw ISO timestamps rendered in screens/ (use formatTimestamp or <TimeText> from @/lib/format)",
     count: countIsoTimestampsInJsx
   },
-  monoCapsLabels: {
-    description: "tracked uppercase monospace labels in screens/ (use type-label--caps or eyebrow-label; monospace is for figures and IDs)",
+  monospaceCapsLabels: {
+    description: "class strings that set a label in uppercase monospace in screens/ (labels use the body face; font-mono is for figures, IDs and code)",
     count(source) {
       let total = 0;
       for (const match of source.matchAll(STRING_LITERAL)) {
-        if (isMonoCapsLabelClass(match[1] ?? match[2] ?? match[3] ?? "")) {
+        const value = match[1] ?? match[2] ?? match[3] ?? "";
+        if (/\bfont-mono\b/.test(value) && /\buppercase\b/.test(value)) {
           total += 1;
         }
       }

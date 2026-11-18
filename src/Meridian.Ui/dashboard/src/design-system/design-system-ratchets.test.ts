@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { compareWithBaseline, isAdHocBadgeClass, isMonoCapsLabelClass, RATCHETS, readBaseline, writeReducedBaseline, type RatchetCounts } from "../../scripts/design-system-ratchets.mjs";
+import { compareWithBaseline, isAdHocBadgeClass, RATCHETS, readBaseline, writeReducedBaseline, type RatchetCounts } from "../../scripts/design-system-ratchets.mjs";
 
 const temporaryDirectories: string[] = [];
 afterEach(() => {
@@ -23,11 +23,7 @@ function baselineFixture(value: unknown = counts()) {
 }
 
 describe("design-system ratchets", () => {
-  it("counts tracked monospace labels but leaves status chips to the badge ratchet", () => {
-    expect(isMonoCapsLabelClass("font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground")).toBe(true);
-    expect(isMonoCapsLabelClass("rounded-sm border px-2 py-1 font-mono text-xs uppercase tracking-[0.14em]")).toBe(false);
-    expect(isMonoCapsLabelClass("font-mono tabular-nums")).toBe(false);
-    expect(isMonoCapsLabelClass("type-label--caps")).toBe(false);
+  it("counts hand-styled native selects", () => {
     expect(RATCHETS.rawSelects.count("<Select id=\"a\"><option /></Select>")).toBe(0);
     expect(RATCHETS.rawSelects.count("<select\n  id=\"a\">")).toBe(1);
   });

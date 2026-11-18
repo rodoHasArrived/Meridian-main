@@ -273,6 +273,12 @@ entrypoint retains its public exports, React gate state and command transport. P
 rules and approval semantics are unchanged. Three fixed-number formatting allowances follow their
 unchanged checklist declarations; the original aggregate allowance of six remains unchanged.
 
+Order authority presentation lives in `trading-screen.order-authority.ts`: working-order Origin
+labels, ticket text for an `OrderResult.authorityDecision` refusal (checkpoint and reason code), and
+the manual-entry verdict. When `TradingWorkspaceResponse.manualOrderEntry.available` is false (a live
+routing path), the order ticket shows the server's reason up front and disables submission; the
+browser never decides live availability itself.
+
 Strategy overview composition lives in `strategy-overview-hub.tsx`; equity-path comparison state,
 load results and presentation live in `strategy-screen.equity-paths.view-model.ts` and
 `strategy-screen.equity-paths.tsx`. The existing Strategy
@@ -531,6 +537,71 @@ applied financial filter. Trading metrics remain owned by the Trading read model
 Portfolio defaults to Live holdings. The source selector reveals retained run records
 with their own market-value and record-count definitions; exposure and market value
 are distinct measures. Compare position sources is a collapsed disclosure.
+
+Every registered figure also has a fixed population and comparison basis (`KPI_DEFINITIONS`),
+mirrored by the shared catalog at `/api/workstation/kpi-definitions`. A strip states one shared
+population once ("Covers: …") and mixed populations under each figure, and publishes it as
+`data-kpi-population`. Provider health on Today, Data and Settings is the shared cross-screen count;
+Data counts its own cards only when the shared count is withheld ("Providers visible to you").
+Position tables name their source through `lib/position-source.ts` (`data-position-source`), and
+Compare position sources lists symbols that differ between live holdings and the Trading session.
+The status bar's Freshness starts from `resolveShellFreshness` (masthead provenance and provider
+items); a page can make it worse but never clear it.
+
+A value missing on every row is said once. A `TableWorkbenchColumn` with `hideWhenEmpty` is left
+out when no loaded row has a value, and its `emptyNote` is shown once in the toolbar. A single
+missing value is "—" with its reason on hover. Panels that read one backend report their load
+status (`lib/combined-load-state.ts`), so a shared failure shows one notice with one Retry. Journal
+Entry uses this for accrual schedules and recurring journals, below the editor.
+
+Accounting grids follow general-ledger conventions:
+- `DenseDataTable`/`TableWorkbench` accept `footerCells` for a sticky totals row keyed by column.
+- Accounting dates go through `formatAccountingDate`, so date-only or midnight-UTC values print
+  without a time.
+- `AccountingValue` keeps figures on one line in the data face.
+
+`StatusBadge` takes its colour from a status-word label (`badgeSeverity`).
+
+Labels use the body face, and the `monospaceCapsLabels` ratchet stops new uppercase-monospace
+labels.
+
+Media queries use the breakpoint tiers documented at the end of `styles/index.css` and checked by
+`styles/breakpoints.test.ts`.
+
+Navigation and overviews (UX Phase D):
+- Expanding Accounting in the sidebar adds one row per group (`railSubItems`). The group's pages
+  appear as a secondary menu under the page header (`components/meridian/workspace-section-nav.tsx`,
+  built by `buildAccountingSectionNav`), carrying the same fund, book, period and status query.
+- The command palette lists pinned and recent pages first (`lib/recent-pages.ts`). They are kept
+  in this browser's storage as a per-viewer convenience; every read and write is guarded.
+  "Pin {page}" and "Unpin {page}" are palette actions.
+- Close Calendar opens on a month grid (`components/meridian/month-calendar.tsx`); its list is the
+  "List view" alternative. Items due before today and not ready read as overdue.
+- Charts carry a table alternative marked `data-chart-table`. Close Cockpit's task progress and
+  Reconciliation's break aging are shown open. Provider evidence age picks one unit (hours, days or
+  months) and lists every provider in use, untimed ones as "No timestamp".
+- The provider capability matrix has a Freshness column (Current, Stale or No evidence, with the
+  age), joined by provider id from the provider rows (`buildCapabilityFreshnessIndex`).
+- The Strategy overview has a run leaderboard: top 5 runs by Sharpe, then unranked runs.
+
+Workflow features (UX Phase E):
+- `lib/due-urgency.ts` and `components/meridian/due-chip.tsx` turn a due date into urgency in UTC
+  calendar days. Today ranks overdue items first and says so in "Why ranked here".
+- `lib/since-last-visit.ts` serves "new since you last looked" for `today-queue`, `approvals` and
+  `reporting-triage` as well as the break queue; `SinceLastVisitBadge` is shared.
+- The triage inbox offers bulk Acknowledge and Snooze: one command per confirmed item, with per-item
+  results (`use-operator-triage-inbox.ts`).
+- `TableWorkbench` exports as shown (`exportDisplay`, `exportNumberFormat`, `footerExport`) through
+  `lib/table-export.ts`; XLSX uses `write-excel-file`, imported only on export.
+- Strategy comparison lives in `screens/strategy-screen.comparison*.ts(x)`: up to four runs, a
+  tray, and overlaid curves.
+- `lib/variance.ts` is the exact-decimal variance rule (matching `PeriodChange` on the server);
+  `components/meridian/variance-columns.tsx` adds Prior, Variance and Variance % with materiality
+  flags; `components/meridian/period-comparison-panel.tsx` renders any `PeriodComparisonDto`
+  (NAV at `/portfolio/nav`, run attribution, cash ladder) from `lib/api/period-comparison.api.ts`.
+- `components/meridian/nav-trend-chart.tsx` draws ledger NAV at the last 12 month-ends above the NAV
+  comparison, and securities exposure (long, short, gross) when the ledger holds any, each with a
+  data table. Reporting P&L slices tagged `no-prior` show "—" for Prior and Change.
 
 The holdings table, the headline figures and the holding detail panel read one model,
 `lib/holdings-model.ts`, so they cannot disagree. Values the source supplies are shown
@@ -1442,25 +1513,17 @@ items are explicitly unavailable, and changing financial scope clears the prior 
 The shared dense-row keyboard contract supports row selection, detail focus, and return focus.
 `DenseDataTable` marks its scroll viewport `data-overflow-end` while columns are clipped on the
 right and fades that edge, so wide tables show that more columns sit beyond the visible ones.
-Ledger Explorer nests posting lines under their journal (no date of their own, the journal's
-entity not repeated) and counts entries and posting lines separately.
-It closes with a `footerCells` totals row (the shown entries' journal-level debits and credits,
-compared in cents) that reads "Debits equal credits" or "Out of balance by …", and its amount
-headers name the book currency. Short labels (`type-label--caps`, `eyebrow-label`, dense-table
-headers and toolbar chips) use light caps in the body face; monospace stays on figures, IDs and
-code. Every dropdown uses `Select` from `@/components/ui/select`. The `monoCapsLabels` and
-`rawSelects` ratchets in `scripts/design-system-ratchets.mjs` keep both from growing back.
-Close Cockpit's `AccountingValue` tiles wrap a long value below its label rather than breaking
-it across lines, and only figures (`isAccountingFigure`) use the data face. The close checklist
-progress chart follows the case queue on the landing, and Reconciliation shows the break
-occurrence-age chart below its workbench; neither sits behind a collapsed disclosure.
+Short labels (`type-label--caps`, `eyebrow-label`) use light caps in the body face; monospace
+stays on figures, IDs and code. Every dropdown uses `Select` from `@/components/ui/select`, and the
+`rawSelects` ratchet in `scripts/design-system-ratchets.mjs` (alongside `monospaceCapsLabels`) keeps
+hand-styled native selects from growing back.
 The shared inbox (Today and `OperatorTriageQueue`) filters by owner (Everyone, My items,
 Unassigned; saved views that carry the older `mineOnly` filter still restore). Its queue keys
 come from `QUEUE_KEY_BINDINGS` in `src/lib/keymap.ts`, which the `?` sheet lists read-only below the
 editable global shortcuts (queue keys are not rebindable): j/k move,
 a assigns, c acknowledges and s snoozes; each opens the reviewed dialog that requires a reason,
-and checked rows can be assigned, acknowledged or snoozed together when every checked row allows it,
-and a blocker still cannot be snoozed. The reconciliation break queue keeps its own map in
+and a blocker still cannot be snoozed. On Today, workspace signals have no owner, so the "Assigned
+to me" choice hides them. The reconciliation break queue keeps its own map in
 `src/lib/queue-keyboard-map.ts`.
 Trial balance offers two posted-period comparisons through `AccountingPeriodComparison`: "Vs prior
 period" (movements, matching the per-period trial balance on that screen) and "Closing balances vs

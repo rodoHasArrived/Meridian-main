@@ -597,62 +597,25 @@ describe("finance standard pages", () => {
     expect(table).not.toHaveTextContent("$500");
     // Posting lines inherit their entry's status; instruction copy is not a status value.
     expect(table).not.toHaveTextContent("Select amount for proof");
-    // Missing display-name evidence must not promote an internal identifier to an entity name.
-    expect(table).toHaveTextContent("Entity name unavailable");
+    // A general-ledger grid: journal rows, indented posting lines, plain amounts and a totals row.
+    expect(table).not.toHaveTextContent("Posting amount");
+    expect(table).not.toHaveTextContent("00:00 UTC");
+    const totals = within(table).getByRole("row", { name: "Ledger totals" });
+    expect(totals).toHaveTextContent("Totals");
+    // This fixture's only posting is a one-sided debit, so the totals row reports the difference.
+    expect(totals).toHaveTextContent("€500.00€0.00Difference €500.00");
+    expect(totals).not.toHaveTextContent("Balanced");
+    expect(table.querySelector("tr.ledger-row--posting")).not.toBeNull();
+    expect(screen.getAllByRole("button", { name: /^Inspect (debit|credit) / }).length).toBeGreaterThan(0);
+    // Missing display-name evidence must not promote an internal identifier to an entity name, and
+    // when no row has a name the Entity column is said once rather than "unavailable" on every row.
+    expect(table).not.toHaveTextContent("Entity name unavailable");
+    expect(screen.getByText("Entity: no posting has an entity name; entity IDs are in each journal's detail and in exports")).toBeInTheDocument();
     expect(table).not.toHaveTextContent("entity-lux");
     expect(table).not.toHaveTextContent("All entities");
   });
 
-  it("nests posting lines under their journal and counts entries and lines separately", async () => {
-    mockPostedBook();
-    vi.mocked(ledgerReportsApi.getLedgerPeriodJournalEntries).mockResolvedValue([{
-      journalEntryId: "je-sweep", periodId: LEDGER_PERIOD_ID, ledgerBookId: LEDGER_BOOK_ID,
-      timestamp: "2026-07-31T00:00:00Z", description: "Cash sweep", totalDebits: 500, totalCredits: 500,
-      isBalanced: true,
-      lines: [
-        { entryId: "line-dr", journalEntryId: "je-sweep", timestamp: "2026-07-31T00:00:00Z", accountName: "Cash", accountType: "Asset",
-          symbol: null, financialAccountId: "1000", debit: 500, credit: 0, description: "Cash sweep receipt", dimensions: { entityId: "entity-lux" } },
-        { entryId: "line-cr", journalEntryId: "je-sweep", timestamp: "2026-07-31T00:00:00Z", accountName: "Public Investments", accountType: "Asset",
-          symbol: null, financialAccountId: "1200", debit: 0, credit: 500, description: "Cash sweep funding", dimensions: { entityId: "entity-lux" } }
-      ]
-    }] as never);
-
-    await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger");
-
-    const table = await screen.findByRole("table", { name: "Ledger Explorer results" });
-    expect(await screen.findByText(/^1 posted entry \(2 posting lines\)/)).toBeInTheDocument();
-    expect(screen.queryByText(/entry\(ies\)/)).not.toBeInTheDocument();
-    // A posting line has no date of its own; the instruction copy used to sit in the Date column.
-    expect(table).not.toHaveTextContent("Posting amount");
-    expect(within(table).getAllByText("Posting line of je-sweep")).toHaveLength(2);
-    // Lines that share the journal's entity do not repeat it; the journal row names it once.
-    expect(within(table).getAllByText("Same entity as journal")).toHaveLength(2);
-    expect(within(table).getAllByRole("link", { name: "Inspect Entity name unavailable" })).toHaveLength(1);
-    // One totals row: journal-level amounts summed once (not again for their posting lines).
-    const footer = table.querySelector("tfoot")!;
-    expect(footer).toHaveTextContent("Total · 1 entry shown");
-    expect(footer).toHaveTextContent("Debits equal credits");
-    expect(within(footer as HTMLElement).getAllByText("$500.00")).toHaveLength(2);
-    expect(within(table).getByRole("columnheader", { name: /Debit \(USD\)/ })).toBeInTheDocument();
-  });
-
-  it("flags a ledger whose shown debits and credits do not agree", async () => {
-    mockPostedBook();
-    vi.mocked(ledgerReportsApi.getLedgerPeriodJournalEntries).mockResolvedValue([
-      { journalEntryId: "je-a", periodId: LEDGER_PERIOD_ID, ledgerBookId: LEDGER_BOOK_ID, timestamp: "2026-07-30T00:00:00Z",
-        description: "Balanced", totalDebits: 0.1, totalCredits: 0.1, isBalanced: true, lines: [] },
-      { journalEntryId: "je-b", periodId: LEDGER_PERIOD_ID, ledgerBookId: LEDGER_BOOK_ID, timestamp: "2026-07-31T00:00:00Z",
-        description: "Short", totalDebits: 0.2, totalCredits: 0.15, isBalanced: false, lines: [] }
-    ] as never);
-
-    await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger");
-
-    const footer = (await screen.findByRole("table", { name: "Ledger Explorer results" })).querySelector("tfoot")!;
-    expect(footer).toHaveTextContent("Total · 2 entries shown");
-    expect(footer).toHaveTextContent("Out of balance by $0.05");
-  });
-
-  it("keeps entity workspace destinations in the exact source book, period and route scope", async () => {
+  it("keeps entity references in the source book when posted entries carry no entity names", async () => {
     mockPostedBook();
     const feederBookId = "00000000-0000-0000-0000-0000000000cc";
     const sourceBook = (await ledgerReportsApi.getLedgerBooks())[0]!;
@@ -676,18 +639,12 @@ describe("finance standard pages", () => {
     await renderPage(<LedgerExplorerScreen data={data} />,
       `/accounting/ledger?ledgerBookId=${feederBookId}&periodId=${LEDGER_PERIOD_ID}&symbol=EURUSD&asOf=2026-07-31`);
 
-    const links = screen.getAllByRole("link", { name: "Inspect Entity name unavailable" });
-    expect(links.length).toBeGreaterThan(0);
-    for (const link of links) {
-      const destination = new URL(link.getAttribute("href")!, "https://meridian.test");
-      expect(destination.pathname).toBe("/accounting/ledger");
-      expect(destination.searchParams.get("ledgerBookId")).toBe(feederBookId);
-      expect(destination.searchParams.get("periodId")).toBe(LEDGER_PERIOD_ID);
-      expect(destination.searchParams.get("symbol")).toBe("EURUSD");
-      expect(destination.searchParams.get("asOf")).toBe("2026-07-31");
-      expect(destination.searchParams.has("entityId")).toBe(false);
-      expect(destination.searchParams.has("accountId")).toBe(false);
-    }
+    // Posted entries carry entity IDs but no entity names, so the Entity column is said once and
+    // the entity reference stays in Journal references (and in exports), in the source book's scope.
+    const table = await screen.findByRole("table", { name: "Ledger Explorer results" });
+    expect(within(table).queryByRole("columnheader", { name: "Entity" })).not.toBeInTheDocument();
+    expect(screen.getByText("Entity: no posting has an entity name; entity IDs are in each journal's detail and in exports")).toBeInTheDocument();
+    expect(screen.getByText(/je-feeder · Entity reference: entity-feeder/)).toBeInTheDocument();
   });
 
   it("opens consolidation as a scoped workflow rather than a ledger tail", async () => {
@@ -1441,6 +1398,12 @@ describe("finance standard pages", () => {
     expect(await screen.findByText(/June 2026: Run trial balance · Ledger Posting Draft · owner Controller · due Jul 3, 2026/)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Open close workflow for June 2026" })).toHaveAttribute("href", "/accounting/operations-continuity");
     expect(screen.getByRole("link", { name: "Open Operations Continuity" })).toHaveAttribute("href", "/accounting/operations-continuity");
+    // The month grid shows the workflow on the day its next task is due, above the list view.
+    const calendar = screen.getByRole("region", { name: "Close calendar" });
+    expect(within(calendar).getByRole("grid", { name: "July 2026" })).toBeInTheDocument();
+    const dueDay = within(calendar).getByRole("gridcell", { name: /^3 July 2026/ });
+    expect(within(dueDay).getByRole("link", { name: /June 2026: Run trial balance/ })).toHaveAttribute("href", "/accounting/operations-continuity");
+    expect(screen.getByRole("heading", { name: "List view" })).toBeInTheDocument();
   });
 
   describe("close calendar fund narrowing", () => {

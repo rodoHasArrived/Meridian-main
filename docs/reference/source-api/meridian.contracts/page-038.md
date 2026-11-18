@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PaymentIntentReconciliationLinkDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.PaymentIntentReconciliationLinkDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:208](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L208).
+
+```csharp
+public sealed record PaymentIntentReconciliationLinkDto(string LinkId, string Status, string Summary, string? EvidenceRoute = null, string? ReconciliationCaseId = null, string? ReconciliationRunId = null);
+```
+
 ## PaymentIntentWorkflowDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.PaymentIntentWorkflowDto</code>. Kind: `record`.
@@ -726,21 +736,3 @@ Explicit authority scope shared by commitment, call, and receipt records.
 ```csharp
 public sealed record PrivateCapitalScopeDto(string TenantId, string CompanyId, string EntityId, string FundProfileId, Guid LedgerBookId, string Currency);
 ```
-
-## PrivateCapitalWorkbenchDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.PrivateCapitalWorkbenchDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/PrivateCapitalLifecycleDtos.cs:102](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalLifecycleDtos.cs#L102).
-
-One authority-backed view of commitment, call and posted cash progress.
-
-```csharp
-public sealed record PrivateCapitalWorkbenchDto(PrivateCapitalScopeDto Scope, IReadOnlyList<PrivateCapitalCommitmentDto> Commitments, IReadOnlyList<PrivateCapitalCallDto> Calls, IReadOnlyList<PrivateCapitalPostingReceiptDto> Receipts, DateTimeOffset GeneratedAtUtc)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;PrivateCapitalNoticeSummaryDto&gt; Notices { get; init; } = [];</code> | [src/Meridian.Contracts/Ledger/PrivateCapitalLifecycleDtos.cs:109](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalLifecycleDtos.cs#L109) |  |

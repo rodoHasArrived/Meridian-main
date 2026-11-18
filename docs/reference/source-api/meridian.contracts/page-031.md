@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderIntegrationRunDueSyncItemResultDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationRunDueSyncItemResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:661](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L661).
+
+```csharp
+public sealed record ProviderIntegrationRunDueSyncItemResultDto(ProviderCapabilityKindDto Capability, string? EndpointKey, bool Started, bool Skipped, string Reason, string? SyncRunId, ProviderIntegrationDryRunResultDto? DryRunResult, IReadOnlyList<ValidationIssueDto> Issues);
+```
+
 ## ProviderIntegrationRunDueSyncRequestDto
 
 Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationRunDueSyncRequestDto</code>. Kind: `record`.
@@ -723,21 +733,3 @@ Enum declarations:
 | <code>Certified = 2</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:109](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L109) |  |
 | <code>Rejected = 3</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:110](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L110) |  |
 | <code>Superseded = 4</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:111](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L111) |  |
-
-## AccountingCloseReadinessItemDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.AccountingCloseReadinessItemDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:889](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L889).
-
-```csharp
-public sealed record AccountingCloseReadinessItemDto(string ItemId, string Category, string Label, AccountingReadinessStateDto State, string Summary, string RequiredAction, int BlockingIssueCount, IReadOnlyList<string>? EvidenceLinks = null, IReadOnlyList<AccountingConfigurationValidationIssueDto>? BlockingIssues = null, Guid? LedgerBookId = null, LedgerDimensionSetDto? Dimensions = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:902](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L902) |  |
-| <code>public IReadOnlyList&lt;AccountingConfigurationValidationIssueDto&gt; BlockingIssues { get; init; } = BlockingIssues??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:905](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L905) |  |
-| <code>public LedgerDimensionSetDto Dimensions { get; init; } = Dimensions?? new LedgerDimensionSetDto(BookId : LedgerBookId?.ToString(&quot;D&quot;));</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:908](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L908) |  |

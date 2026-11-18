@@ -53,14 +53,10 @@ export interface WorkspaceNavItemViewModel {
   attentionCount: number;
   /** Names the badge's unit in the link tooltip (the badge itself takes no pointer events); null when there is no badge. */
   attentionTitle: string | null;
-  /** Every destination, primary and "More" alike, in browse order. */
   subItems: WorkspaceNavSubItemViewModel[];
-  /** Grouped destinations the sidebar always lists. */
   subItemGroups: WorkspaceNavSubItemGroupViewModel[];
-  /** Grouped destinations behind the sidebar's "More" disclosure; empty when there is none. */
-  moreItemGroups: WorkspaceNavSubItemGroupViewModel[];
-  /** True when the current page is behind "More", so the disclosure opens to show it. */
-  moreActive: boolean;
+  /** What the rail shows: the pages, or for Accounting one row per group (UX Phase D). */
+  railSubItems: WorkspaceNavSubItemViewModel[];
   attentionSeverity: "blocked" | "review" | "info" | null;
 }
 
@@ -174,28 +170,32 @@ export function buildWorkspaceNavViewModel(
       };
     };
     const rawSubRouteGroups = visibleWorkspaceSubrouteGroups(workspace.key);
-    const allItemGroups = rawSubRouteGroups.map((group) => ({
+    const subItemGroups = rawSubRouteGroups.map<WorkspaceNavSubItemGroupViewModel>((group) => ({
       id: group.id,
       label: group.label,
-      items: group.items.map((sub) => ({ sub, view: buildSubItem(sub) }))
+      items: group.items.map(buildSubItem)
     }));
-    const pickGroups = (primary: boolean) => allItemGroups
-      .map<WorkspaceNavSubItemGroupViewModel>((group) => ({
-        id: group.id,
-        label: group.label,
-        items: group.items.filter(({ sub }) => Boolean((sub as AccountingNavigationItemDefinition).primary) === primary).map(({ view }) => view)
-      }))
-      .filter((group) => group.items.length > 0);
-    // Only Accounting marks primary destinations; a workspace without them lists everything.
-    const hasPrimaryTier = allItemGroups.some((group) => group.items.some(({ sub }) => (sub as AccountingNavigationItemDefinition).primary));
-    const subItemGroups = hasPrimaryTier
-      ? pickGroups(true)
-      : allItemGroups.map((group) => ({ id: group.id, label: group.label, items: group.items.map(({ view }) => view) }));
-    const moreItemGroups = hasPrimaryTier ? pickGroups(false) : [];
-    const subItems = allItemGroups.length > 0
-      ? allItemGroups.flatMap((group) => group.items.map(({ view }) => view))
+    const subItems = subItemGroups.length > 0
+      ? subItemGroups.flatMap((group) => group.items)
       : visibleWorkspaceSubroutes(workspace.key).map(buildSubItem);
-    const moreActive = moreItemGroups.some((group) => group.items.some((sub) => sub.active));
+    // Accounting's 17 pages would push the other workspaces off the rail, so the rail lists its
+    // groups (one row each, opening the group's first page) and each page carries its group's own
+    // menu (`buildAccountingSectionNav`). Other workspaces list their pages in the rail directly.
+    const railSubItems = subItemGroups.length > 0
+      ? subItemGroups.map((group): WorkspaceNavSubItemViewModel => {
+        const groupActive = group.items.some((page) => page.active);
+        const first = group.items[0]!;
+        return {
+          label: group.label,
+          route: first.route,
+          active: groupActive,
+          ariaCurrent: undefined,
+          ariaLabel: groupActive
+            ? `${group.label}, current section: ${group.items.length} pages`
+            : `Open ${group.label}: ${group.items.length} pages, starting at ${first.label}`
+        };
+      })
+      : subItems;
 
     return {
       key: workspace.key,
@@ -218,8 +218,7 @@ export function buildWorkspaceNavViewModel(
         : null,
       subItems,
       subItemGroups,
-      moreItemGroups,
-      moreActive,
+      railSubItems,
       attentionSeverity
     };
   });
@@ -431,4 +430,41 @@ function formatPreservedScopeAriaSuffix(scopeSummary: string | null): string {
 
 function formatAttentionAriaSuffix(count: number): string {
   return count > 0 ? `, ${count} ${count === 1 ? "item needs" : "items need"} attention` : "";
+}
+
+
+export interface WorkspaceSectionNavViewModel {
+  groupId: string;
+  groupLabel: string;
+  items: WorkspaceNavSubItemViewModel[];
+}
+
+/**
+ * The menu an Accounting page shows for its own section: every page in the active group, with
+ * the current one marked and the operating scope and accounting context carried on each link.
+ * Null outside Accounting or when no group owns the route.
+ */
+export function buildAccountingSectionNav(
+  pathname: string,
+  search = "",
+  operatingContextScope: AppShellOperatingScopeInput | null = null
+): WorkspaceSectionNavViewModel | null {
+  if (!isWorkspacePathActive(pathname, "accounting")) return null;
+  const operatingScope = buildOperatingScopeFromSearch(search, operatingContextScope);
+  for (const group of visibleWorkspaceSubrouteGroups("accounting")) {
+    const items = group.items.map((page): WorkspaceNavSubItemViewModel => {
+      const active = isAccountingNavigationItemActive(pathname, page);
+      return {
+        label: page.label,
+        route: buildWorkspaceNavigationRoute("accounting", page.route, operatingScope, search),
+        active,
+        ariaCurrent: active ? "page" : undefined,
+        ariaLabel: active ? `${page.label}, current page` : `Open ${page.label}`
+      };
+    });
+    if (items.some((item) => item.active)) {
+      return { groupId: group.id, groupLabel: group.label, items };
+    }
+  }
+  return null;
 }

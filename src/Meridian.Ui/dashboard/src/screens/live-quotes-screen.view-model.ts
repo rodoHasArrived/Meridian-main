@@ -371,6 +371,11 @@ export interface LiveQuotesApi {
   getLiveOrderbook: (symbol: string, depth: number, options?: ApiRequestOptions) => Promise<OrderBookResponse>;
   getLiveQuotesSnapshot: (symbols?: readonly string[], options?: ApiRequestOptions) => Promise<QuotesSnapshotResponse>;
   submitOrder: (request: OrderSubmitRequest) => Promise<OrderResult>;
+  /**
+   * The operator's watchlist. When the route names no symbols and nothing is pinned, the quote
+   * list starts from it (before the starter set), and a later edit by the operator always wins.
+   */
+  getWatchlistSymbols?: (options?: ApiRequestOptions) => Promise<ReadonlyArray<{ symbol: string; status?: string }>>;
 }
 
 export interface LiveQuotesRouteBinding {
@@ -737,8 +742,8 @@ export function useLiveQuotesScreenViewModel(
     }
   }, [activeSymbol, resetMarketState, resetSelectedPanels, route, symbolSet]);
 
-  const loadStarterSet = useCallback(() => {
-    const nextSet = [...LIVE_QUOTES_DEFAULT_SYMBOL_SET];
+  const applySymbolSet = useCallback((symbols: readonly string[]) => {
+    const nextSet = [...symbols];
     const nextActiveSymbol = nextSet[0] ?? null;
     setSymbolSet(nextSet);
     setActiveSymbol(nextActiveSymbol);
@@ -752,6 +757,33 @@ export function useLiveQuotesScreenViewModel(
       route.setRouteSymbol(nextActiveSymbol ?? "");
     }
   }, [resetMarketState, resetSelectedPanels, route]);
+  const loadStarterSet = useCallback(() => applySymbolSet(LIVE_QUOTES_DEFAULT_SYMBOL_SET), [applySymbolSet]);
+
+  // Start from the watchlist when the route and the pinned set name nothing. Read once per
+  // screen; an operator who adds symbols first (or a failed read) leaves the list as it is.
+  const watchlistRequested = useRef(false);
+  const getWatchlistSymbols = api.getWatchlistSymbols;
+  const listIsEmpty = symbolSet.length === 0 && !activeSymbol;
+  useEffect(() => {
+    if (!getWatchlistSymbols || !listIsEmpty || watchlistRequested.current) return undefined;
+    watchlistRequested.current = true;
+    const controller = new AbortController();
+    let settled = false;
+    void getWatchlistSymbols({ signal: controller.signal })
+      .then((records) => {
+        settled = true;
+        if (controller.signal.aborted) return;
+        const symbols = normalizeLiveQuoteSymbols(records.filter((record) => record.status !== "Archived").map((record) => record.symbol).join(","));
+        if (symbols.length > 0) applySymbolSet(symbols);
+      })
+      .catch(() => { settled = true; });
+    return () => {
+      if (!settled) {
+        controller.abort();
+        watchlistRequested.current = false;
+      }
+    };
+  }, [getWatchlistSymbols, listIsEmpty, applySymbolSet]);
 
   const pinSymbolSet = useCallback(() => {
     persistLiveMarketDataPinnedSet(symbolSet);
@@ -1060,12 +1092,12 @@ export function buildLiveQuotesMarketViewModel({
         ? "Select a bid or ask level to inspect depth evidence."
         : `No depth levels are available for ${symbol}.`,
       tableLabel: `${symbol} order book depth ladder`,
-      caption: `Select a ${symbol} bid or ask level to seed the ticket and inspect venue, sequence, and depth evidence.`
+      caption: `Select a bid or ask level for ${symbol} to seed the ticket and inspect venue, sequence, and depth evidence.`
     },
     priceChart: buildPriceChartViewModel(symbol, intraday, refreshing, trades.error),
     sessionStats: buildLiveQuotesSessionStatsViewModel(symbol, quoteRow?.session ?? null),
     tradesTableLabel: `Recent ${symbol} trade prints`,
-    tradesTableCaption: `Select a ${symbol} trade print to inspect sequence, stream, and venue evidence.`,
+    tradesTableCaption: `Select a trade print for ${symbol} to inspect sequence, stream, and venue evidence.`,
     tradesDetailPanelId: tradeDetailPanelId,
     tradesDetailEmptyTitle: "No trade selected",
     tradesDetailEmptyText: tradeRows.length > 0
@@ -1153,7 +1185,7 @@ export function buildLiveMarketDataWorkspaceViewModel({
   const selectedDetail = buildLiveMarketDataDetail(selectedRow, selectedQuote, market);
 
   return {
-    title: "Live Market Data Workspace",
+    title: "Live quotes",
     description: "Monitor real-time quotes, trades, BBO, spreads, provider health, and latency from one symbol set.",
     symbolSet: [...symbolSet],
     symbolSetLabel: symbolSet.join(", "),
@@ -1363,17 +1395,18 @@ function buildLiveMarketStatusBadges(
     {
       id: "connection",
       label: "Connection",
-      value: diagnostics.connectionQualityLabel,
-      tone: diagnostics.statusTone,
-      ariaLabel: `Connection ${diagnostics.connectionQualityLabel}`
+      // With no symbols there is no feed to judge, so "Connected" would read as an all-clear.
+      value: rows.length === 0 && diagnostics.connectionQualityLabel === "Connected" ? "Connected · no symbols subscribed" : diagnostics.connectionQualityLabel,
+      tone: rows.length === 0 ? "default" : diagnostics.statusTone,
+      ariaLabel: `Connection ${rows.length === 0 && diagnostics.connectionQualityLabel === "Connected" ? "connected, no symbols subscribed" : diagnostics.connectionQualityLabel}`
     },
-    {
+    ...(rows.length === 0 ? [] : [{
       id: "coverage",
       label: "Coverage",
       value: `${rows.filter((row) => row.stateTone === "success").length}/${rows.length || 0} live`,
       tone: rows.length === 0 ? "default" : rows.every((row) => row.stateTone === "success") ? "success" : "warning",
       ariaLabel: `${rows.filter((row) => row.stateTone === "success").length} of ${rows.length || 0} symbols live`
-    },
+    } satisfies LiveMarketDataMarketStatusBadgeViewModel]),
     {
       id: "updates",
       label: "Updates",

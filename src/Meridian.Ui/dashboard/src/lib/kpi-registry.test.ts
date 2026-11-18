@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { KPI_REGISTRY, kpiAttributes, parseKpiMoney, resolveKpi, workspaceKpiIds, type KpiReadModels } from "@/lib/kpi-registry";
+import { KPI_DEFINITIONS, KPI_REGISTRY, kpiAttributes, parseKpiMoney, resolveKpi, workspaceKpiIds, type KpiReadModels } from "@/lib/kpi-registry";
 import type { FinancialRecordExplorerDto, PortfolioWorkspaceResponse, TradingPosition } from "@/types";
 
 function portfolio(positions: Partial<TradingPosition>[], metrics: PortfolioWorkspaceResponse["metrics"] = []): PortfolioWorkspaceResponse {
@@ -108,8 +108,8 @@ describe("KPI registry ownership and financial meaning", () => {
     expect(resolveKpi("portfolio.open-positions", models, { run: "run-42" }).status).toBe("unavailable");
   });
 
-  it("selects only registered IDs and keeps total runs separate from active runs", () => {
-    expect(workspaceKpiIds("strategy", [{ id: "runs" }, { id: "active-runs" }, { id: "queued" }, { id: "unknown" }])).toEqual(["strategy.runs", "strategy.active-runs", "strategy.queued"]);
+  it("selects only registered IDs and never shows a legacy total-runs card the server does not send", () => {
+    expect(workspaceKpiIds("strategy", [{ id: "runs" }, { id: "active-runs" }, { id: "queued" }, { id: "unknown" }])).toEqual(["strategy.active-runs", "strategy.queued"]);
     expect(workspaceKpiIds("data", [{ id: "providers" }, { id: "providers-healthy" }, { id: "kernel-critical-jumps" }])).toEqual(["data.providers-healthy", "data.kernel-critical-jumps"]);
   });
 
@@ -152,7 +152,12 @@ describe("KPI registry ownership and financial meaning", () => {
       accounting: { workspace: { openBreaks: 10 }, breakQueue: [], metrics: [{ id: "breaks", value: "10", label: "Open breaks", tone: "warning", delta: "2 new since your last visit" }] }
     } as unknown as KpiReadModels;
     expect(resolveKpi("system.providers-online", models).value).toBe("3 of 4 providers");
-    expect(resolveKpi("data.providers-healthy", models).value).toBe("1 of 1 provider");
+    // Data shows the same shared figure as Today and Settings, with the same population.
+    expect(resolveKpi("data.providers-healthy", models).value).toBe("3 of 4 providers");
+    expect(resolveKpi("data.providers-healthy", models).population).toBe(resolveKpi("system.providers-online", models).population);
+    // Without the shared count (no provider permission), the loaded rows are counted and say so.
+    const withheld = { ...models, crossScreenCounts: { ...models.crossScreenCounts, providers: null } } as unknown as KpiReadModels;
+    expect(resolveKpi("data.providers-healthy", withheld)).toMatchObject({ value: "1 of 1 provider", population: "Providers visible to you" });
     expect(resolveKpi("trading.open-orders", models).value).toBe("1");
     expect(resolveKpi("accounting.open-breaks", models)).toMatchObject({ value: "10", delta: "2 new since your last visit" });
   });
@@ -165,7 +170,10 @@ describe("KPI registry ownership and financial meaning", () => {
 
   it("publishes canonical observations from the exact rendered resolution", () => {
     const result = resolveKpi("portfolio.total-exposure", { portfolio: portfolio([{ exposure: "$37,699" }]) });
-    expect(kpiAttributes(result)).toEqual({ "data-kpi-id": result.id, "data-kpi-scope": result.scope, "data-kpi-value": result.canonicalValue, "data-kpi-display": "$37,699" });
+    expect(kpiAttributes(result)).toEqual({ "data-kpi-id": result.id, "data-kpi-scope": result.scope, "data-kpi-value": result.canonicalValue, "data-kpi-display": "$37,699", "data-kpi-population": "Live holdings · all accounts" });
     expect(Object.values(KPI_REGISTRY).every((definition) => definition.owner && definition.computation && definition.scopeDimensions.length && definition.currencyRule)).toBe(true);
+    // Every registered figure states what it counts; none is left to the page.
+    expect(Object.keys(KPI_DEFINITIONS).sort()).toEqual(Object.keys(KPI_REGISTRY).sort());
+    expect(Object.values(KPI_DEFINITIONS).every((definition) => definition.population.trim().length > 0)).toBe(true);
   });
 });

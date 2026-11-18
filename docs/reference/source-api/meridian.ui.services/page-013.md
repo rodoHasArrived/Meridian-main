@@ -6,6 +6,118 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DesktopOperatorPreferenceSync
+
+Qualified name: <code>Meridian.Ui.Services.Services.DesktopOperatorPreferenceSync</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:267](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L267).
+
+Keeps the desktop shell&#x27;s theme, density and keyboard shortcut overrides in step with the operator&#x27;s host preferences, the same set the browser workstation syncs (OperatorPreferencesDto). On start, the values the host holds are applied. Theme and density are not saved back: the desktop does not persist its theme, so its startup theme is a default, not an operator choice. Desktop shortcut overrides (OperatorPreferenceValuesDto.DesktopKeyBindings) held by the host replace this desktop&#x27;s, including an empty set (every default). When the host has none yet, this desktop&#x27;s own overrides are saved up, so the first desktop to sync seeds them. When the operator changes the theme or density here, the latest host set is re-read and saved with only the appearance and density replaced; a shortcut change likewise replaces only the desktop shortcut overrides. Browser-only values (time zone, page descriptions, browser shortcut overrides, a spacious density) are kept. Notification choices and quiet hours (OperatorPreferenceValuesDto.Notifications) held by the host replace this desktop&#x27;s at start; a desktop change saves only that set. When the host cannot be read at start (no session, an older host, offline), the desktop stays local for the run and saves nothing. A failed save keeps the local change. The display time zone is applied to Meridian.Ui.Services.DisplayTimeZone, which desktop timestamps are formatted in; it is read at start and again whenever the desktop saves.
+
+```csharp
+public sealed class DesktopOperatorPreferenceSync : IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DesktopOperatorPreferenceSync(IOperatorPreferencesApi api, IDesktopPreferenceSurface surface, Action&lt;TimeZoneInfo?&gt;? applyDisplayTimeZone = null);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:280](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L280) |  |
+| <code>public TimeZoneInfo? DisplayTimeZone { get; private set; }</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:291](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L291) | The operator&#x27;s display time zone from the host, when it resolves on this machine (else null, meaning UTC). |
+| <code>public bool IsSyncing =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:294](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L294) | True once the host was read and local changes are being saved. |
+| <code>public async Task StartAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:297](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L297) | Reads the host set, applies it, and starts saving operator changes. Safe to call once. |
+| <code>public Task SaveLocalChangeAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:410](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L410) | Saves the current desktop theme and density into the operator&#x27;s host set, keeping every other stored value. Exposed for tests; the sync calls it after each operator change. |
+| <code>public Task SaveShortcutOverridesAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:423](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L423) | Saves this desktop&#x27;s shortcut overrides into the operator&#x27;s host set, keeping every other stored value. Exposed for tests; the sync calls it after each shortcut change. |
+| <code>public Task SaveNotificationsAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:435](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L435) | Saves this desktop&#x27;s notification settings into the operator&#x27;s host set, keeping every other stored value. Exposed for tests; the sync calls it after each notification change. |
+| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:492](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L492) |  |
+
+## DesktopShellPreferences
+
+Qualified name: <code>Meridian.Ui.Services.Services.DesktopShellPreferences</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:29](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L29).
+
+Persisted desktop shell preferences consumed by the WPF workstation shell.
+
+```csharp
+public sealed record DesktopShellPreferences(ShellDensityMode ShellDensityMode)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static DesktopShellPreferences Default { get; } = new (ShellDensityMode.Standard);</code> | [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:35](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L35) |  |
+| <code>public IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; ShortcutOverrides { get; init; } = NoShortcutOverrides;</code> | [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:40](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L40) | The operator&#x27;s shortcut overrides; empty when every shortcut uses its default binding. |
+
+## DesktopShortcutOverride
+
+Qualified name: <code>Meridian.Ui.Services.Services.DesktopShortcutOverride</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:21](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L21).
+
+A persisted operator change to one default desktop keyboard shortcut, keyed by action id. Keys and modifiers are stored as their WPF enum names (for example F10 and Control, Shift) so this contract stays free of WPF types; a null member means &quot;keep the default&quot; for that part of the binding.
+
+```csharp
+public sealed record DesktopShortcutOverride(string? Key = null, string? Modifiers = null, bool? IsEnabled = null);
+```
+
+## ErrorDetailsModel
+
+Qualified name: <code>Meridian.Ui.Services.Services.ErrorDetailsModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:51](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L51).
+
+Contains detailed error information for user display. Shared across desktop platforms.
+
+```csharp
+public sealed class ErrorDetailsModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Title { get; set; } = &quot;Error&quot;;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:53](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L53) |  |
+| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:54](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L54) |  |
+| <code>public string? Context { get; set; }</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:55](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L55) |  |
+| <code>public string? Remedy { get; set; }</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:56](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L56) |  |
+| <code>public InfoBarSeverityLevel Severity { get; set; } = InfoBarSeverityLevel.Error;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:57](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L57) |  |
+| <code>public string GetFormattedMessage();</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:62](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L62) | Gets the full formatted message including context and remedy. |
+| <code>public static ErrorDetailsModel CreateFromException(Exception ex, string operation);</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:75](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L75) | Creates a user-friendly error message with context and remedies from an exception. |
+
+## ExportPresetServiceBase
+
+Qualified name: <code>Meridian.Ui.Services.Services.ExportPresetServiceBase</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:11](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L11).
+
+Export preset management service with file-based storage. File path is injected via constructor rather than requiring platform-specific overrides.
+
+```csharp
+public class ExportPresetServiceBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public event EventHandler? PresetsChanged;</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:22](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L22) | Event raised when presets are modified. |
+| <code>public event EventHandler&lt;Exception&gt;? SaveFailed;</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:28](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L28) | Event raised when a save operation fails. |
+| <code>public IReadOnlyList&lt;ExportPreset&gt; Presets =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:33](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L33) | Gets all available export presets. |
+| <code>public async Task InitializeAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:52](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L52) | Initializes the service and loads presets. |
+| <code>public async Task LoadPresetsAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:64](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L64) | Loads presets from storage. |
+| <code>public async Task&lt;bool&gt; SavePresetsAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:107](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L107) | Saves presets to storage. |
+| <code>public async Task&lt;ExportPreset&gt; CreatePresetAsync(string name, string? description = null, ExportPresetFormat format = ExportPresetFormat.Parquet, string? destination = null, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:133](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L133) | Creates a new export preset. |
+| <code>public async Task&lt;bool&gt; UpdatePresetAsync(ExportPreset preset, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:164](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L164) | Updates an existing preset. |
+| <code>public async Task&lt;bool&gt; DeletePresetAsync(string presetId, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:185](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L185) | Deletes a preset by ID. |
+| <code>public ExportPreset? GetPreset(string presetId) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:207](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L207) | Gets a preset by ID. |
+| <code>public ExportPreset? GetPresetByName(string name) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:213](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L213) | Gets a preset by name. |
+| <code>public async Task&lt;ExportPreset&gt; DuplicatePresetAsync(string presetId, string newName, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:219](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L219) | Duplicates an existing preset with a new name. |
+| <code>public async Task RecordPresetUsageAsync(string presetId, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:267](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L267) | Records that a preset was used for an export. |
+| <code>public async Task&lt;string&gt; ExportPresetsAsync(string[] presetIds, string destinationPath, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:281](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L281) | Exports presets to a JSON file for sharing. |
+| <code>public async Task&lt;int&gt; ImportPresetsAsync(string filePath, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:301](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L301) | Imports presets from a JSON file. |
+
 ## FeatureHelp
 
 Qualified name: <code>Meridian.Ui.Services.Services.FeatureHelp</code>. Kind: `class`.
@@ -1012,142 +1124,3 @@ Enum declarations:
 | --- | --- | --- |
 | <code>Standard = 0</code> | [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:11](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L11) |  |
 | <code>Compact = 1</code> | [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:12](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L12) |  |
-
-## SimpleStatus
-
-Qualified name: <code>Meridian.Ui.Services.Services.SimpleStatus</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:14](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L14).
-
-Simplified status for display in the desktop UI. Includes provenance and staleness tracking (P0: explicit staleness + source provenance).
-
-```csharp
-public sealed class SimpleStatus
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public long Published { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:16](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L16) |  |
-| <code>public long Dropped { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:17](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L17) |  |
-| <code>public long Integrity { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:18](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L18) |  |
-| <code>public long Historical { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:19](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L19) |  |
-| <code>public StatusProviderInfo? Provider { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:20](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L20) |  |
-| <code>public DateTime? RetrievedAtUtc { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:25](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L25) | UTC timestamp when this status snapshot was retrieved from the backend. |
-| <code>public string? SourceProvider { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:31](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L31) | Name of the data source provider that produced these metrics. Null if sourced from fixture/offline data. |
-| <code>public bool IsStale { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:36](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L36) | Whether this status data is considered stale (backend reported stale or too old). |
-| <code>public double AgeSeconds { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:41](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L41) | Age of the data in seconds since last backend update. |
-| <code>public string DataProvenance { get; set; } = &quot;unknown&quot;;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:47](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L47) | Data provenance: &quot;live&quot;, &quot;cached&quot;, &quot;fixture&quot;, or &quot;offline&quot;. Indicates the origin of the data being displayed. |
-
-## SourceRanking
-
-Qualified name: <code>Meridian.Ui.Services.Services.SourceRanking</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:133](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L133).
-
-Ranks a source using its quality score, latency, and completeness.
-
-```csharp
-public sealed class SourceRanking
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Source { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:135](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L135) |  |
-| <code>public string Provider { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:136](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L136) |  |
-| <code>public double QualityScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:137](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L137) |  |
-| <code>public double Latency { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:138](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L138) |  |
-| <code>public double Completeness { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:139](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L139) |  |
-| <code>public int Rank { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:140](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L140) |  |
-
-## StatusChangedEventArgs
-
-Qualified name: <code>Meridian.Ui.Services.Services.StatusChangedEventArgs</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:89](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L89).
-
-Event arguments for status change events.
-
-```csharp
-public sealed class StatusChangedEventArgs : EventArgs
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string PreviousStatus { get; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:91](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L91) |  |
-| <code>public string NewStatus { get; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:92](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L92) |  |
-| <code>public DateTime Timestamp { get; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:93](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L93) |  |
-| <code>public StatusChangedEventArgs(string previousStatus, string newStatus);</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:95](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L95) |  |
-
-## StatusProviderInfo
-
-Qualified name: <code>Meridian.Ui.Services.Services.StatusProviderInfo</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:53](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L53).
-
-Provider status information.
-
-```csharp
-public sealed class StatusProviderInfo
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? ActiveProvider { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:55](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L55) |  |
-| <code>public bool IsConnected { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:56](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L56) |  |
-| <code>public int ConnectionCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:57](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L57) |  |
-| <code>public DateTimeOffset? LastHeartbeat { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:58](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L58) |  |
-| <code>public string? LifecycleState { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:59](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L59) |  |
-| <code>public string? WebSocketState { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:60](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L60) |  |
-| <code>public bool? IsReconnecting { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:61](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L61) |  |
-| <code>public DateTimeOffset? LastHeartbeatReceivedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:62](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L62) |  |
-| <code>public DateTimeOffset? LastMessageReceivedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:63](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L63) |  |
-| <code>public DateTimeOffset? LastReconnectAttemptAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:64](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L64) |  |
-| <code>public int? ReconnectAttempts { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:65](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L65) |  |
-| <code>public string? LastFailureKind { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:66](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L66) |  |
-| <code>public IReadOnlyList&lt;string&gt; AvailableProviders { get; set; } = new List&lt;string&gt;();</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:67](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L67) |  |
-| <code>public string DisplayStatus =&gt; …;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:69](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L69) |  |
-
-## StatusServiceBase
-
-Qualified name: <code>Meridian.Ui.Services.Services.StatusServiceBase</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:158](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L158).
-
-Abstract base class for status management shared between platforms. Provides shared status tracking, live monitoring loop, and API polling logic. Platform-specific HTTP client and logging are delegated to derived classes. Part of Phase 2 service extraction.
-
-```csharp
-public abstract class StatusServiceBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string BaseUrl { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:172](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L172) |  |
-| <code>public string CurrentStatus { get; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:178](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L178) |  |
-| <code>public DateTime? LastSuccessfulUpdate =&gt; …;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:187](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L187) |  |
-| <code>public bool IsBackendReachable =&gt; …;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:188](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L188) |  |
-| <code>public double? SecondsSinceLastUpdate =&gt; …;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:190](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L190) |  |
-| <code>public bool IsDataStale =&gt; …;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:195](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L195) |  |
-| <code>public bool IsMonitoring =&gt; …;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:198](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L198) |  |
-| <code>public event EventHandler&lt;StatusChangedEventArgs&gt;? StatusChanged;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:200](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L200) |  |
-| <code>public event EventHandler&lt;LiveStatusEventArgs&gt;? LiveStatusReceived;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:201](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L201) |  |
-| <code>public event EventHandler&lt;bool&gt;? BackendReachabilityChanged;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:202](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L202) |  |
-| <code>public void StartLiveMonitoring(int intervalSeconds = 2);</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:214](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L214) |  |
-| <code>public void StopLiveMonitoring();</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:221](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L221) |  |
-| <code>public async Task&lt;SimpleStatus?&gt; GetStatusAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:334](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L334) |  |
-| <code>public async Task&lt;StatusProviderInfo?&gt; GetProviderStatusAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:386](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L386) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ProviderInfo&gt;&gt; GetAvailableProvidersAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:427](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L427) |  |
-| <code>public void UpdateStatus(string status);</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:447](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L447) |  |
-| <code>public void SetBusy(string operation) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:465](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L465) |  |
-| <code>public void SetReady() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:466](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L466) |  |
-| <code>public void SetError(string errorMessage) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:467](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L467) |  |
-| <code>public void SetConnectionStatus(bool isConnected, string? providerName = null);</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:469](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L469) |  |

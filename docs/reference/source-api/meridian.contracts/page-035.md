@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ExternalGlExportPackageDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.ExternalGlExportPackageDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:77](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L77).
+
+```csharp
+public sealed record ExternalGlExportPackageDto(string ExportPackageId, string ProviderId, string FundProfileId, Guid? LedgerBookId, DateOnly PeriodStart, DateOnly PeriodEnd, DateTimeOffset CreatedAtUtc, string CreatedBy, bool PostingEnabled, string PostingDisabledReason, IReadOnlyList<Guid> JournalEntryIds, IReadOnlyList<string> EvidenceLinks, ExternalGlExportCertificationDto? Certification = null, IReadOnlyList<AccountingConfigurationValidationIssueDto>? ValidationIssues = null, IReadOnlyList<ExternalGlExportLineDto>? GeneratedLines = null, string? MappingProfileId = null, string? ReconciliationId = null, bool RequireBalancedReconciliation = false, ExternalGlExportReconciliationSafeguardStateDto ReconciliationSafeguardState = ExternalGlExportReconciliationSafeguardStateDto.MissingEvidence, IReadOnlyList<string>? ReconciliationSafeguardIssueCodes = null, string? TenantId = null, string? CompanyId = null, string? ReconciliationSnapshotHash = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;AccountingConfigurationValidationIssueDto&gt; ValidationIssues { get; init; } = ValidationIssues??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:102](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L102) |  |
+| <code>public IReadOnlyList&lt;ExternalGlExportLineDto&gt; GeneratedLines { get; init; } = GeneratedLines??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:105](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L105) |  |
+| <code>public IReadOnlyList&lt;string&gt; ReconciliationSafeguardIssueCodes { get; init; } = ReconciliationSafeguardIssueCodes??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:108](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L108) |  |
+
 ## ExternalGlExportPackageManifestDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.ExternalGlExportPackageManifestDto</code>. Kind: `record`.
@@ -840,13 +858,3 @@ Declared public members:
 | <code>public bool IsMappingComplete =&gt; …;</code> | [src/Meridian.Contracts/Ledger/IntercompanyBalanceScheduleDtos.cs:25](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceScheduleDtos.cs#L25) |  |
 | <code>public bool IsBalanced =&gt; …;</code> | [src/Meridian.Contracts/Ledger/IntercompanyBalanceScheduleDtos.cs:26](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceScheduleDtos.cs#L26) |  |
 | <code>public bool IsReady =&gt; …;</code> | [src/Meridian.Contracts/Ledger/IntercompanyBalanceScheduleDtos.cs:27](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceScheduleDtos.cs#L27) |  |
-
-## IntercompanyBalanceScheduleIssueDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyBalanceScheduleIssueDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyBalanceScheduleDtos.cs:17](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceScheduleDtos.cs#L17).
-
-```csharp
-public sealed record IntercompanyBalanceScheduleIssueDto(string Code, string Message, bool BlocksMapping, Guid? LedgerBookId = null, Guid? JournalEntryId = null);
-```

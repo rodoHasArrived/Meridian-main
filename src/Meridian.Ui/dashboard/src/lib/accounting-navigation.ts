@@ -20,15 +20,7 @@ export interface AccountingNavigationItemDefinition {
   route: string;
   match?: AccountingNavigationMatchMode;
   activeRoutes?: readonly AccountingNavigationRouteMatch[];
-  /**
-   * Daily-use destinations the sidebar always lists. The rest sit behind the sidebar's "More"
-   * disclosure; every item stays in the command palette and local feature search.
-   */
-  primary?: boolean;
 }
-
-/** The most Accounting destinations the sidebar lists before "More". */
-export const ACCOUNTING_PRIMARY_NAVIGATION_LIMIT = 7;
 
 export interface AccountingNavigationGroupDefinition {
   id: AccountingNavigationLifecycle;
@@ -47,7 +39,6 @@ export const ACCOUNTING_NAVIGATION_GROUPS: readonly AccountingNavigationGroupDef
     items: [
       {
         id: "today",
-        primary: true,
         // Not "Today": that name belongs to the global front door (the Daily Control Tower).
         label: "Close cockpit",
         route: WORKSTATION_ROUTE_CATALOG.accounting,
@@ -60,7 +51,6 @@ export const ACCOUNTING_NAVIGATION_GROUPS: readonly AccountingNavigationGroupDef
       },
       {
         id: "close-calendar",
-        primary: true,
         label: "Close calendar",
         route: WORKSTATION_ROUTE_CATALOG.accountingCloseCalendar
       }
@@ -72,7 +62,6 @@ export const ACCOUNTING_NAVIGATION_GROUPS: readonly AccountingNavigationGroupDef
     items: [
       {
         id: "ledger",
-        primary: true,
         label: "Ledger explorer",
         route: WORKSTATION_ROUTE_CATALOG.accountingLedger,
         activeRoutes: [
@@ -92,7 +81,6 @@ export const ACCOUNTING_NAVIGATION_GROUPS: readonly AccountingNavigationGroupDef
       },
       {
         id: "adjustments",
-        primary: true,
         label: "Adjustments",
         route: WORKSTATION_ROUTE_CATALOG.accountingJournalEntries
       },
@@ -124,7 +112,6 @@ export const ACCOUNTING_NAVIGATION_GROUPS: readonly AccountingNavigationGroupDef
       },
       {
         id: "casework",
-        primary: true,
         label: "Casework",
         route: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
         match: "exact",
@@ -145,13 +132,11 @@ export const ACCOUNTING_NAVIGATION_GROUPS: readonly AccountingNavigationGroupDef
     items: [
       {
         id: "exceptions",
-        primary: true,
         label: "Exceptions",
         route: WORKSTATION_ROUTE_CATALOG.accountingExceptions
       },
       {
         id: "approvals",
-        primary: true,
         label: "Approvals",
         route: WORKSTATION_ROUTE_CATALOG.accountingApprovals
       }

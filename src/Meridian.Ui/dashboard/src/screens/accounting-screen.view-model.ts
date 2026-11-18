@@ -2014,6 +2014,10 @@ export interface AccountingClosePlanTaskRowViewModel {
   displayName: string;
   ownerLabel: string;
   dueDateLabel: string;
+  /** The raw due date, for the urgency chip (UX Phase E). */
+  dueDate?: string | null;
+  /** Done work is never shown overdue. */
+  dueDone?: boolean;
   statusLabel: string;
   statusTone: AccountingToolingTone;
   dependencyLabel: string;
@@ -2029,6 +2033,10 @@ export interface AccountingCloseCalendarMilestoneViewModel {
   displayName: string;
   ownerLabel: string;
   dueDateLabel: string;
+  /** The raw due date, for the urgency chip (UX Phase E). */
+  dueDate?: string | null;
+  /** Done work is never shown overdue. */
+  dueDone?: boolean;
   statusLabel: string;
   statusTone: AccountingToolingTone;
   dependencyLabel: string;
@@ -2147,6 +2155,10 @@ export interface AccountingCloseSetupTaskOptionViewModel {
   statusTone: AccountingToolingTone;
   ownerLabel: string;
   dueDateLabel: string;
+  /** The raw due date, for the urgency chip (UX Phase E). */
+  dueDate?: string | null;
+  /** Done work is never shown overdue. */
+  dueDone?: boolean;
   dependencyLabel: string;
   signOffLabel: string;
   selected: boolean;
@@ -2160,6 +2172,10 @@ export interface AccountingCloseSetupDependencyOptionViewModel {
   statusTone: AccountingToolingTone;
   ownerLabel: string;
   dueDateLabel: string;
+  /** The raw due date, for the urgency chip (UX Phase E). */
+  dueDate?: string | null;
+  /** Done work is never shown overdue. */
+  dueDone?: boolean;
   checked: boolean;
   toggleAriaLabel: string;
 }

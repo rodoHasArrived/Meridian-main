@@ -176,7 +176,7 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static AssetOperationsDetailDto FromBondReference(BondReferenceDto bond, AssetOperationSubjectDto subject, BondCalculationContext? context = null, BondExerciseNoticeWatchResult? declaredExercise = null);</code> | [src/Meridian.Instruments/AssetOperations/AssetOperationsProjectionBuilder.LegacyBond.cs:12](../../../../src/Meridian.Instruments/AssetOperations/AssetOperationsProjectionBuilder.LegacyBond.cs#L12) |  |
 
-Source: [src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs:211](../../../../src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs#L211).
+Source: [src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs:214](../../../../src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs#L214).
 
 Builds asset operations projection records from instrument and lifecycle inputs.
 
@@ -188,15 +188,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static AssetOperationsProjectionDto FromDirectLending(LoanContractDetailDto contract, IReadOnlyList&lt;ProjectionRunDto&gt; projectionRuns, IReadOnlyDictionary&lt;Guid, IReadOnlyList&lt;ProjectedCashFlowDto&gt;&gt; projectedCashFlowsByRun, IReadOnlyList&lt;CashTransactionDto&gt; actualActivity, IReadOnlyList&lt;ReconciliationRunDto&gt; reconciliationRuns, IReadOnlyDictionary&lt;Guid, IReadOnlyList&lt;ReconciliationResultDto&gt;&gt; reconciliationResultsByRun, DateTimeOffset? generatedAt = null);</code> | [src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs:215](../../../../src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs#L215) |  |
-| <code>public static AssetOperationsDetailDto WithTermsObligationsTimeline(AssetOperationsDetailDto detail, DateTimeOffset? now = null, BondExerciseNoticeWatchResult? declaredExercise = null);</code> | [src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs:368](../../../../src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs#L368) |  |
-| <code>public static AssetOperationsDetailDto WithFailClosedEvidenceReadiness(AssetOperationsDetailDto detail);</code> | [src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs:393](../../../../src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs#L393) |  |
+| <code>public static AssetOperationsProjectionDto FromDirectLending(LoanContractDetailDto contract, IReadOnlyList&lt;ProjectionRunDto&gt; projectionRuns, IReadOnlyDictionary&lt;Guid, IReadOnlyList&lt;ProjectedCashFlowDto&gt;&gt; projectedCashFlowsByRun, IReadOnlyList&lt;CashTransactionDto&gt; actualActivity, IReadOnlyList&lt;ReconciliationRunDto&gt; reconciliationRuns, IReadOnlyDictionary&lt;Guid, IReadOnlyList&lt;ReconciliationResultDto&gt;&gt; reconciliationResultsByRun, DateTimeOffset? generatedAt = null);</code> | [src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs:218](../../../../src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs#L218) |  |
+| <code>public static AssetOperationsDetailDto WithTermsObligationsTimeline(AssetOperationsDetailDto detail, DateTimeOffset? now = null, BondExerciseNoticeWatchResult? declaredExercise = null);</code> | [src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs:371](../../../../src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs#L371) |  |
+| <code>public static AssetOperationsDetailDto WithFailClosedEvidenceReadiness(AssetOperationsDetailDto detail);</code> | [src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs:396](../../../../src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs#L396) |  |
 
 ## AssetOperationsProjectionCommandService
 
 Qualified name: <code>Meridian.Instruments.AssetOperations.AssetOperationsProjectionCommandService</code>. Kind: `class`.
 
-Source: [src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs:188](../../../../src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs#L188).
+Source: [src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs:191](../../../../src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs#L191).
 
 Writes asset operations projections through the configured projection store.
 
@@ -208,8 +208,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public AssetOperationsProjectionCommandService(IAssetOperationsProjectionStore projectionStore);</code> | [src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs:192](../../../../src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs#L192) |  |
-| <code>public async Task&lt;AssetOperationsDetailDto&gt; UpsertProjectionAsync(AssetOperationsProjectionDto projection, AssetOperationsWriteApprovalDto approval, CancellationToken ct = default);</code> | [src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs:197](../../../../src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs#L197) |  |
+| <code>public AssetOperationsProjectionCommandService(IAssetOperationsProjectionStore projectionStore);</code> | [src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs:195](../../../../src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs#L195) |  |
+| <code>public async Task&lt;AssetOperationsDetailDto&gt; UpsertProjectionAsync(AssetOperationsProjectionDto projection, AssetOperationsWriteApprovalDto approval, CancellationToken ct = default);</code> | [src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs:200](../../../../src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs#L200) |  |
 
 ## AssetOperationsReadService
 
@@ -229,8 +229,9 @@ Declared public members:
 | --- | --- | --- |
 | <code>public AssetOperationsReadService(IAssetOperationsProjectionStore? projectionStore = null, ISecurityMasterQueryService? securityMasterQueryService = null, IBondReferenceService? bondReferenceService = null, AssetObligationProjectionService? obligationProjectionService = null, IInstrumentPositionProjectionStore? positionProjectionStore = null, ISecurityMasterCashFlowService? cashFlows = null, TimeProvider? clock = null, IBondCalculationPolicy? bondPolicy = null, IBusinessDayCalendarSource? calendars = null);</code> | [src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs:28](../../../../src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs#L28) |  |
 | <code>public Task&lt;AssetOperationsDetailDto?&gt; GetOperationsAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs:50](../../../../src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs#L50) |  |
-| <code>public async Task&lt;AssetOperationsDetailDto?&gt; GetOperationsAsOfAsync(Guid securityId, BondCalculationContext context, CancellationToken ct = default);</code> | [src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs:54](../../../../src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs#L54) | Projects the same retained economic inputs at an explicit cutoff, without clock-dependent flow identity. |
-| <code>public async Task&lt;AssetOperationsReadinessDto?&gt; GetReadinessAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs:129](../../../../src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs#L129) |  |
+| <code>public bool SupportsTermsAsOf =&gt; …;</code> | [src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs:54](../../../../src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs#L54) |  |
+| <code>public async Task&lt;AssetOperationsDetailDto?&gt; GetOperationsAsOfAsync(Guid securityId, BondCalculationContext context, CancellationToken ct = default);</code> | [src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs:57](../../../../src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs#L57) | Projects the same retained economic inputs at an explicit cutoff, without clock-dependent flow identity. |
+| <code>public async Task&lt;AssetOperationsReadinessDto?&gt; GetReadinessAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs:132](../../../../src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs#L132) |  |
 
 ## CorporateActionAccountingProjectionRequest
 

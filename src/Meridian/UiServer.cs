@@ -419,38 +419,11 @@ public sealed class UiServer : IAsyncDisposable
                 builder.Services.AddSingleton<IPortfolioState>(sp => sp.GetRequiredService<BrokeragePortfolioState>());
                 builder.Services.AddSingleton<IPositionTracker>(sp => sp.GetRequiredService<BrokeragePortfolioState>());
             }
+            // Order routing is fail-closed: the hosted composition requires the pre-trade risk gate and
+            // authoritative portfolio state (live compositions read broker observations; scoped
+            // risk/readiness controls refuse routing while that synchronization is unavailable).
             builder.Services.AddSingleton<IOrderManager>(sp =>
-            {
-                var gateway = sp.GetRequiredService<IExecutionGateway>();
-                var logger = sp.GetRequiredService<ILogger<OrderManagementSystem>>();
-                // Order routing is fail-closed: an OMS without the mandatory pre-trade risk gate is
-                // not a valid host composition in any supported production posture.
-                var risk = sp.GetRequiredService<IRiskValidator>();
-                // Live compositions read broker observations; scoped risk/readiness controls
-                // refuse routing while the corresponding synchronization is unavailable.
-                var portfolio = sp.GetRequiredService<IPortfolioState>();
-                return new OrderManagementSystem(
-                    gateway,
-                    logger,
-                    riskValidator: risk,
-                    securityMasterGate: sp.GetService<ISecurityMasterGate>(),
-                    operatorControls: sp.GetService<ExecutionOperatorControlService>(),
-                    auditTrail: sp.GetService<ExecutionAuditTrailService>(),
-                    portfolioState: portfolio,
-                    sessionPersistence: sp.GetService<PaperSessionPersistenceService>(),
-                    brokerageConfiguration: sp.GetRequiredService<BrokerageConfiguration>(),
-                    liveOrderReadinessGate: sp.GetService<ILiveOrderReadinessGate>(),
-                    options: sp.GetRequiredService<OrderManagementSystemOptions>(),
-                    tradeEventPublisher: sp.GetService<ITradeEventPublisher>(),
-                    tradeFillHandoffFailureStore: sp.GetService<ITradeFillHandoffFailureStore>(),
-                    escalationQueue: sp.GetService<RiskEscalationQueueService>(),
-                    recoveryStore: gateway is IBrokerageGateway
-                        ? sp.GetRequiredService<FileBrokerageOrderRecoveryStore>() : null,
-                    sessionPolicy: sp.GetService<IOrderSessionPolicy>(),
-                    journal: sp.GetService<ExecutionJournal>(),
-                    marketReferences: sp.GetService<IOrderMarketReferenceSource>(),
-                    instrumentCoverage: sp.GetService<IOrderInstrumentCoverageSource>());
-            });
+                OrderManagementSystemFactory.Create(sp, OrderManagementSystemComposition.HostedWorkstation));
             if (usesPaperGateway)
             {
                 builder.Services.AddSingleton<IExecutionGateway>(sp =>
