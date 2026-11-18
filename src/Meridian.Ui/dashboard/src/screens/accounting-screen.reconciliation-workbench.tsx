@@ -235,7 +235,7 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
   )) ?? [];
   function renderBreakActions(item: ReconciliationBreakRowViewModel) {
     return (
-      <div className="panel-action-zone">
+      <div className="panel-action-zone reconciliation-break-actions">
         <Button
           size="sm"
           variant="outline"
