@@ -992,33 +992,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public Task&lt;SecurityMasterProfilePromotionReportDto&gt; BuildReportAsync(string profileId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:150](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L150) |  |
-
-## NullSecurityMasterQueryService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.NullSecurityMasterQueryService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:25](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L25).
-
-Reports Security Master unavailability and returns empty query results.
-
-```csharp
-public sealed class NullSecurityMasterQueryService : ISecurityMasterQueryService, ISecurityMasterRuntimeStatus
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsAvailable =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:38](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L38) |  |
-| <code>public string AvailabilityDescription =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:40](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L40) |  |
-| <code>public Task&lt;SecurityDetailDto?&gt; GetByIdAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:43](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L43) |  |
-| <code>public Task&lt;SecurityDetailDto?&gt; GetByIdAsOfAsync(Guid securityId, DateTimeOffset asOfUtc, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:46](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L46) |  |
-| <code>public Task&lt;SecurityDetailDto?&gt; GetRecordedByIdAsOfAsync(Guid securityId, DateTimeOffset asOfUtc, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:49](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L49) |  |
-| <code>public Task&lt;SecurityDetailDto?&gt; GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, CancellationToken ct = default, DateTimeOffset? asOfUtc = null) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:55](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L55) |  |
-| <code>public Task&lt;IReadOnlyList&lt;SecuritySummaryDto&gt;&gt; SearchAsync(SecuritySearchRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:63](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L63) |  |
-| <code>public Task&lt;IReadOnlyList&lt;SecurityMasterEventEnvelope&gt;&gt; GetHistoryAsync(SecurityHistoryRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:68](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L68) |  |
-| <code>public Task&lt;SecurityEconomicDefinitionRecord?&gt; GetEconomicDefinitionByIdAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:73](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L73) |  |
-| <code>public Task&lt;TradingParametersDto?&gt; GetTradingParametersAsync(Guid securityId, DateTimeOffset asOf, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:78](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L78) |  |
-| <code>public Task&lt;IReadOnlyList&lt;CorporateActionDto&gt;&gt; GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:84](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L84) |  |
-| <code>public Task&lt;PreferredEquityTermsDto?&gt; GetPreferredEquityTermsAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:89](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L89) |  |
-| <code>public Task&lt;ConvertibleEquityTermsDto?&gt; GetConvertibleEquityTermsAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:94](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L94) |  |

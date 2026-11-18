@@ -2097,7 +2097,8 @@ Meridian-main
 │   │   │   │   ├── page-009.md
 │   │   │   │   ├── page-010.md
 │   │   │   │   ├── page-011.md
-│   │   │   │   └── page-012.md
+│   │   │   │   ├── page-012.md
+│   │   │   │   └── page-013.md
 │   │   │   ├── meridian.audit
 │   │   │   │   └── page-001.md
 │   │   │   ├── meridian.backtesting
@@ -2184,7 +2185,8 @@ Meridian-main
 │   │   │   │   ├── page-075.md
 │   │   │   │   ├── page-076.md
 │   │   │   │   ├── page-077.md
-│   │   │   │   └── page-078.md
+│   │   │   │   ├── page-078.md
+│   │   │   │   └── page-079.md
 │   │   │   ├── meridian.core
 │   │   │   │   ├── page-001.md
 │   │   │   │   ├── page-002.md
@@ -5503,6 +5505,7 @@ Meridian-main
 │   │   │   ├── SecurityAssetTermsFieldSnapshot.cs
 │   │   │   ├── SecurityCashFlowReceiptJsonContext.cs
 │   │   │   ├── SecurityCashFlowScheduleRowCodec.cs
+│   │   │   ├── SecurityClassificationTaxonomy.cs
 │   │   │   ├── SecurityDayCountWriteGuard.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.BondWorkflow.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.CapitalHomes.cs
@@ -5519,6 +5522,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterCashFlowService.DeclaredBondLeg.cs
 │   │   │   ├── SecurityMasterCashFlowService.DeclaredConventions.cs
 │   │   │   ├── SecurityMasterCashFlowService.FactorAccrual.cs
+│   │   │   ├── SecurityMasterClassificationDriftReportService.cs
 │   │   │   ├── SecurityMasterConcurrencyException.cs
 │   │   │   ├── SecurityMasterConflictAuthorityPolicy.cs
 │   │   │   ├── SecurityMasterConflictDetection.cs
@@ -5764,6 +5768,7 @@ Meridian-main
 │   │   │       ├── BondIncomeScheduledPrincipal.cs
 │   │   │       ├── BondIncomeTerminalCoupon.cs
 │   │   │       ├── BondIncomeZeroCouponMath.cs
+│   │   │       ├── LotQuantityBasisRules.cs
 │   │   │       ├── OpenLotAmortization.cs
 │   │   │       ├── OpenLotAmortizationContinuation.cs
 │   │   │       ├── OpenLotBackfillDtos.cs
@@ -6247,6 +6252,7 @@ Meridian-main
 │   │   │   ├── SecurityListingIdentity.cs
 │   │   │   ├── SecurityLotModel.cs
 │   │   │   ├── SecurityMasterCashFlow.cs
+│   │   │   ├── SecurityMasterClassificationDrift.cs
 │   │   │   ├── SecurityMasterClosePrices.cs
 │   │   │   ├── SecurityMasterClosePricesJsonContext.cs
 │   │   │   ├── SecurityMasterConflictFieldCategories.cs
@@ -11034,6 +11040,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterEndpoints.OtcCollateral.cs
 │   │   │   ├── SecurityMasterEndpoints.OtcContracts.cs
 │   │   │   ├── SecurityMasterEndpoints.Rates.cs
+│   │   │   ├── SecurityMasterEndpoints.Reclassification.cs
 │   │   │   ├── SecurityMasterEndpoints.RegistryProjections.cs
 │   │   │   ├── SecurityMasterEndpoints.WriteRefusals.cs
 │   │   │   ├── StatusEndpoints.cs
@@ -12828,6 +12835,8 @@ Meridian-main
 │   │   ├── Meridian.Storage.Tests.csproj
 │   │   └── StorageCoreTestSources.props
 │   ├── Meridian.Tests
+│   │   ├── Accounting
+│   │   │   └── LotQuantityBasisRulesTests.cs
 │   │   ├── Application
 │   │   │   ├── Accounting
 │   │   │   │   ├── DailyMarkToMarketServiceTests.cs
@@ -13451,6 +13460,7 @@ Meridian-main
 │   │   │   ├── PaperGatewayTickSizeBoundaryTests.cs
 │   │   │   ├── PaperLedgerIntegrityTests.cs
 │   │   │   ├── PaperLotConventionTests.cs
+│   │   │   ├── PaperLotUnitCatalogAgreementTests.cs
 │   │   │   ├── PaperObservationFreshnessTests.cs
 │   │   │   ├── PaperOrderMatchingPolicyTests.cs
 │   │   │   ├── PaperPositionUnitizedLotTests.cs
@@ -14284,6 +14294,7 @@ Meridian-main
 │   │   │   ├── SecurityAssetClassAliasMappingTests.cs
 │   │   │   ├── SecurityAssetClassBehaviorFactsTests.cs
 │   │   │   ├── SecurityAssetClassCatalogTests.cs
+│   │   │   ├── SecurityAssetClassFactParityTests.cs
 │   │   │   ├── SecurityAssetClassOperationalWiringTests.cs
 │   │   │   ├── SecurityAssetClassParityGuardTests.cs
 │   │   │   ├── SecurityAssetClassRegistryCoverageTests.cs
@@ -14347,6 +14358,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterAssetClassSupportTests.cs
 │   │   │   ├── SecurityMasterCanonicalSymbolSeedFallbackTests.cs
 │   │   │   ├── SecurityMasterCanonicalSymbolSeedReconciliationTests.cs
+│   │   │   ├── SecurityMasterClassificationDriftReportServiceTests.cs
 │   │   │   ├── SecurityMasterClassificationTextGuardTests.cs
 │   │   │   ├── SecurityMasterClosePriceServiceTests.cs
 │   │   │   ├── SecurityMasterConflictServiceTests.cs
@@ -15144,6 +15156,7 @@ Meridian-main
 │   │   │   ├── RiskRuleRuntimePriceCollarConfigTests.cs
 │   │   │   ├── SecureReportingDistributionEndpointTests.cs
 │   │   │   ├── SecurityMasterAliasEndpointsTests.cs
+│   │   │   ├── SecurityMasterClassificationDriftEndpointsTests.cs
 │   │   │   ├── SecurityMasterConvertibleEquityEndpointsTests.cs
 │   │   │   ├── SecurityMasterCurveEndpointsTests.cs
 │   │   │   ├── SecurityMasterExceptionCaseworkServiceTests.cs
