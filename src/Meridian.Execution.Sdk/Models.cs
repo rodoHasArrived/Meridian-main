@@ -213,6 +213,21 @@ public sealed record ExecutionReport
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public bool? BookedVariationMargin { get; init; }
 
+    /// <summary>
+    /// Accrued interest per 100 face at <see cref="SettlementDate"/>, for a face-value fill of a
+    /// coupon-bearing bond whose clean price is <see cref="FillPrice"/>. The buyer pays and the
+    /// seller receives it on top of the clean consideration, so settlement cash is the dirty
+    /// amount. Stated per 100 face (like the price) so a partial-fill increment scales it by its
+    /// own face. Absent when the gateway priced no accrual; those fills settle clean, as before.
+    /// Omitted from serialized payloads when null so existing durable records are unaffected.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? AccruedInterestPer100 { get; init; }
+
+    /// <summary>Contractual settlement date the accrued interest was measured to; absent when none was priced.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public DateOnly? SettlementDate { get; init; }
+
     /// <summary>Regulatory/exchange fees for this fill, when the gateway models them.</summary>
     public decimal? Fees { get; init; }
 

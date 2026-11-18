@@ -600,10 +600,14 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
             var canCertifyOwnership = !requiresAccountingReclassification
                 && CanCertifyAccountingOwner(account, previousPosition, ownerAccountId);
             var capture = new FillAccountingCapture();
+            var quantityBefore = previousPosition?.Quantity ?? 0m;
+            var purchasedAccruedBefore = previousPosition?.PurchasedAccruedInterest ?? 0m;
             ApplyFillToAccount(account, report.Symbol, signedQty, fillPrice,
                 explicitCosts, report.Timestamp, report.OrderId,
                 ownerAccountId, multiplier, faceValueSizing, lotUnit, economicMultiplier, variationMargin, capture,
                 _canonicalAccountingRequired ? PaperSessionFillRecord.ComputeCanonicalFillId(report) : null);
+            var (accruedInterest, accruedRelieved) = ApplyAccruedInterestSettlement(
+                account, report, faceValueSizing, signedQty, quantityBefore, purchasedAccruedBefore);
 
             if (account.Positions.TryGetValue(report.Symbol, out var remainingPosition))
             {
@@ -626,7 +630,11 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
                 ShortCollateralReleased: capture.ShortCollateralReleased,
                 SettlesVariationMargin: variationMargin,
                 VariationMarginPnl: capture.VariationMarginPnl,
-                FinancialAccountId: _scopeLedgerAccounts ? account.AccountId : NormalizeOptional(ownerAccountId));
+                FinancialAccountId: _scopeLedgerAccounts ? account.AccountId : NormalizeOptional(ownerAccountId))
+            {
+                AccruedInterest = accruedInterest,
+                AccruedInterestRelieved = accruedRelieved
+            };
             return new PaperFillAccountingResult(
                 canCertifyOwnership ? evidence : null,
                 evidence.RealizedPnl,
@@ -1599,6 +1607,13 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
     /// before being stored (see <c>PaperTradingPortfolio.UpdateMarketPrice</c>).
     /// </summary>
     public bool UsesFaceValuePricing { get; set; }
+
+    /// <summary>
+    /// Accrued interest paid on purchases of a face-value position and not yet relieved by a
+    /// sale: the balance carried in Accrued Interest Receivable for this symbol. Purchased
+    /// interest is a receivable, never part of <see cref="CostBasis"/>.
+    /// </summary>
+    public decimal PurchasedAccruedInterest { get; set; }
 
     /// <summary>
     /// Multiplier that turns quantity × quote into money in this book: the contract multiplier
