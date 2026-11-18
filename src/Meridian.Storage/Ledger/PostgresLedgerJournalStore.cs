@@ -307,6 +307,8 @@ public sealed partial class PostgresLedgerJournalStore :
             && !query.AggregateId.HasValue
             && !query.JournalEntryId.HasValue
             && !query.SourceEventId.HasValue
+            && !query.FillId.HasValue
+            && string.IsNullOrWhiteSpace(query.OrderId)
             && string.IsNullOrWhiteSpace(query.AccountName)
             && !query.OccurredFrom.HasValue
             && !query.OccurredTo.HasValue
@@ -404,6 +406,13 @@ public sealed partial class PostgresLedgerJournalStore :
         {
             command.CommandText += " and jl_filter.dimensions @> cast(@line_dimensions as jsonb)";
             command.Parameters.AddWithValue("line_dimensions", lineDimensionsJson);
+        }
+
+        var (executionSql, executionParameters) = BuildExecutionLineageFilter(query);
+        command.CommandText += executionSql;
+        foreach (var (name, value) in executionParameters)
+        {
+            command.Parameters.AddWithValue(name, value);
         }
 
         command.CommandText += ") order by je.occurred_at, je.global_sequence, jl.line_no;";

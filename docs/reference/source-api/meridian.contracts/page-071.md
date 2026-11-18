@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RunLotSummary
+
+Qualified name: <code>Meridian.Contracts.Workstation.RunLotSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1167](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1167).
+
+Lot history for a single strategy run, optionally filtered to one symbol.
+
+```csharp
+public sealed record RunLotSummary(string RunId, int TotalOpenLots, int TotalClosedLots, decimal TotalRealizedPnl, IReadOnlyList<OpenLotSummary> OpenLots, IReadOnlyList<ClosedLotSummary> ClosedLots);
+```
+
+## RunPortfolioDrillInSummary
+
+Qualified name: <code>Meridian.Contracts.Workstation.RunPortfolioDrillInSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1009](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1009).
+
+Composite portfolio drill-in payload that keeps attribution, drawdown, cash-flow, and trade slices aligned under one additive, versioned contract.
+
+```csharp
+public sealed record RunPortfolioDrillInSummary(string SchemaVersion, string RunId, DateTimeOffset AsOf, string Currency, StrategyRunMode Mode, RunAttributionSummary? Attribution, EquityCurveSummary? DrawdownProfile, RunCashFlowSummary? CashFlow, RunFillSummary? Trades);
+```
+
 ## RunReconciliation
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunReconciliation</code>. Kind: `record`.
@@ -594,24 +618,4 @@ Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:
 
 ```csharp
 public sealed record SecurityMasterScheduleProvenanceDto(string ProvenanceId, string Category, string Summary, DateOnly? EffectiveDate, string SourceSystem, string? SourceRecordId, DateTimeOffset? SourceAsOfUtc, string? SourceUpdatedBy, string? SourceReason, long? StreamVersion, string? EventType);
-```
-
-## SecurityMasterScheduleSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterScheduleSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:259](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L259).
-
-```csharp
-public sealed record SecurityMasterScheduleSummaryDto(bool SupportsCashflowSchedule, bool SupportsFactorHistory, bool HasEconomicScheduleTerms, decimal? CurrentFactor, DateOnly? CurrentFactorDate, DateOnly? NextLifecycleDate, string SourceSummary, string Summary, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] SecurityMasterDeclaredExerciseOutcomeDto? DeclaredExercise = null);
-```
-
-## SecurityMasterSchemaCompatibilityDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterSchemaCompatibilityDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:200](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L200).
-
-```csharp
-public sealed record SecurityMasterSchemaCompatibilityDto(string AssetClass, int LegacyAssetSpecificTermsSchemaVersion, int EconomicTermsSchemaVersion, bool HasLegacyAssetSpecificTerms, bool HasEconomicTerms, bool HasClassificationPayload, string Summary);
 ```

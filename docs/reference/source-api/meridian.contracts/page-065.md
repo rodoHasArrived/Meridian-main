@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationsReportPackReadinessDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsReportPackReadinessDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1335](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1335).
+
+```csharp
+public sealed record OperationsReportPackReadinessDto(bool IsReady, string? ReportPackId, string? BlockingReason, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks);
+```
+
+## OperationsResolveBreakCaseRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsResolveBreakCaseRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:653](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L653).
+
+```csharp
+public sealed record OperationsResolveBreakCaseRequestDto(long ExpectedVersion, string Actor, string ResolutionStatus, string Rationale, string? CorrelationId = null, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator, string? ApprovalActor = null, string? ApprovalReference = null, string? SupersedingBreakId = null);
+```
+
 ## OperationsReviewedAutomationArtifactDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsReviewedAutomationArtifactDto</code>. Kind: `record`.
@@ -263,7 +283,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorInboxTriageDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:35](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L35).
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:41](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L41).
 
 ```csharp
 public sealed record OperatorInboxTriageDto(DateTimeOffset AsOf, string ActorId, IReadOnlyList<OperatorTriageItemDto> Items, bool PersistenceAvailable, string? UnavailableReason);
@@ -401,7 +421,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageActivity</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:23](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L23).
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:29](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L29).
 
 ```csharp
 public sealed record OperatorTriageActivity(string CommandId, string ActorId, OperatorTriageAction Action, string Reason, DateTimeOffset OccurredAt, string? SubjectActorId = null, string? AssigneeId = null, DateTimeOffset? SnoozedUntil = null);
@@ -411,10 +431,12 @@ public sealed record OperatorTriageActivity(string CommandId, string ActorId, Op
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageBulkCommand</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L19).
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:24](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L24).
+
+One reviewed triage action applied to up to 100 items. Each item is authorized, version-checked and retained separately under {CommandId}:{index}. Assign needs AssigneeId; Snooze needs SnoozedUntil; Acknowledge needs neither. Unsnooze is single-item only.
 
 ```csharp
-public sealed record OperatorTriageBulkCommand(string CommandId, OperatorTriageAction Action, string Reason, string AssigneeId, IReadOnlyList<OperatorTriageBulkItem> Items, Guid? FundAccountId = null);
+public sealed record OperatorTriageBulkCommand(string CommandId, OperatorTriageAction Action, string Reason, string? AssigneeId, IReadOnlyList<OperatorTriageBulkItem> Items, Guid? FundAccountId = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] DateTimeOffset? SnoozedUntil = null);
 ```
 
 ## OperatorTriageBulkItem
@@ -431,7 +453,7 @@ public sealed record OperatorTriageBulkItem(string WorkItemId, long ExpectedVers
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageBulkResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:40](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L40).
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:46](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L46).
 
 ```csharp
 public sealed record OperatorTriageBulkResult(IReadOnlyList<OperatorTriageResult> Results);
@@ -441,7 +463,7 @@ public sealed record OperatorTriageBulkResult(IReadOnlyList<OperatorTriageResult
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageCapabilities</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:26](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L26).
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:32](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L32).
 
 ```csharp
 public sealed record OperatorTriageCapabilities(bool CanAssign, bool CanAcknowledge, bool CanSnooze, bool CanUnsnooze, string? DisabledReason);
@@ -461,7 +483,7 @@ public sealed record OperatorTriageCommand(string CommandId, OperatorTriageActio
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageItemDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:28](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L28).
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:34](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L34).
 
 ```csharp
 public sealed record OperatorTriageItemDto(string WorkItemId, string Label, string Detail, string? Workspace, string? TargetRoute, OperatorWorkItemToneDto Tone, DateTimeOffset CreatedAt, string? OwnerId, DateTimeOffset? DueAt, long Version, long? SourceVersion, DateTimeOffset? AcknowledgedAt, DateTimeOffset? SnoozedUntil, OperatorTriageCapabilities Capabilities, IReadOnlyList<OperatorTriageActivity> Activity, Guid? FundAccountId = null, string? RunId = null, string? Scope = null, OperatorWorkItemKindDto? Kind = null, string? TargetPageTag = null);
@@ -471,7 +493,7 @@ public sealed record OperatorTriageItemDto(string WorkItemId, string Label, stri
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriagePersonalState</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:51](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L51).
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:57](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L57).
 
 ```csharp
 public sealed record OperatorTriagePersonalState(string ActorId, DateTimeOffset? AcknowledgedAt, DateTimeOffset? SnoozedUntil, OperatorWorkItemToneDto? SnoozedTone);
@@ -481,7 +503,7 @@ public sealed record OperatorTriagePersonalState(string ActorId, DateTimeOffset?
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageReceipt</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:53](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L53).
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:59](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L59).
 
 ```csharp
 public sealed record OperatorTriageReceipt(string ActorId, string CommandId, string Fingerprint);
@@ -491,7 +513,7 @@ public sealed record OperatorTriageReceipt(string ActorId, string CommandId, str
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:38](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L38).
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:44](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L44).
 
 ```csharp
 public sealed record OperatorTriageResult(string Status, string WorkItemId, OperatorTriageItemDto? Item = null, string? Error = null, bool Replayed = false);
@@ -501,7 +523,7 @@ public sealed record OperatorTriageResult(string Status, string WorkItemId, Oper
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageScope</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:54](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L54).
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:60](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L60).
 
 ```csharp
 public sealed record OperatorTriageScope(string TenantId, string CompanyId);
@@ -511,7 +533,7 @@ public sealed record OperatorTriageScope(string TenantId, string CompanyId);
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageState</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:43](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L43).
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:49](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L49).
 
 Metadata only: never a copy of the source work item or financial workflow.
 
@@ -523,7 +545,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static OperatorTriageState Empty =&gt; …;</code> | [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:49](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L49) |  |
+| <code>public static OperatorTriageState Empty =&gt; …;</code> | [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:55](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L55) |  |
 
 ## OperatorWorkflowHomeSummary
 
@@ -688,35 +710,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static PeriodComparisonLineDto Create(string key, string label, decimal current, decimal prior, bool isTotal = false) =&gt; …;</code> | [src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs:56](../../../../src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs#L56) | Builds a line with change and percent from PeriodChange. |
-
-## PeriodComparisonStatus
-
-Qualified name: <code>Meridian.Contracts.Workstation.PeriodComparisonStatus</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs:18](../../../../src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs#L18).
-
-Outcome of a prior-period comparison request.
-
-```csharp
-public static class PeriodComparisonStatus
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Ready = &quot;Ready&quot;;</code> | [src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs:20](../../../../src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs#L20) |  |
-| <code>public const string Unavailable = &quot;Unavailable&quot;;</code> | [src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs:22](../../../../src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs#L22) | No baseline figures exist for the requested prior period. |
-| <code>public const string Incompatible = &quot;Incompatible&quot;;</code> | [src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs:24](../../../../src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs#L24) | The request cannot be compared, for example a baseline on or after the current date. |
-
-## PeriodComparisonWindowDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.PeriodComparisonWindowDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs:32](../../../../src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs#L32).
-
-One side of a comparison: the period it covers and whether it is complete.
-
-```csharp
-public sealed record PeriodComparisonWindowDto(string Label, DateOnly? Start, DateOnly End, bool IsPartial);
-```

@@ -6,6 +6,38 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PeriodComparisonStatus
+
+Qualified name: <code>Meridian.Contracts.Workstation.PeriodComparisonStatus</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs:18](../../../../src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs#L18).
+
+Outcome of a prior-period comparison request.
+
+```csharp
+public static class PeriodComparisonStatus
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Ready = &quot;Ready&quot;;</code> | [src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs:20](../../../../src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs#L20) |  |
+| <code>public const string Unavailable = &quot;Unavailable&quot;;</code> | [src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs:22](../../../../src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs#L22) | No baseline figures exist for the requested prior period. |
+| <code>public const string Incompatible = &quot;Incompatible&quot;;</code> | [src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs:24](../../../../src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs#L24) | The request cannot be compared, for example a baseline on or after the current date. |
+
+## PeriodComparisonWindowDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.PeriodComparisonWindowDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs:32](../../../../src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs#L32).
+
+One side of a comparison: the period it covers and whether it is complete.
+
+```csharp
+public sealed record PeriodComparisonWindowDto(string Label, DateOnly? Start, DateOnly End, bool IsPartial);
+```
+
 ## PilotAcceptanceEvidenceCategoryDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.PilotAcceptanceEvidenceCategoryDto</code>. Kind: `enum`.
@@ -674,32 +706,4 @@ Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:343](../../../.
 
 ```csharp
 public sealed record ProviderLedgerReconciliationCheckDto(string CheckId, string Label, ProviderLedgerReconciliationCheckStatusDto Status, ReconciliationBreakCategory Category, string ExpectedSource, string ActualSource, decimal? ExpectedAmount, decimal? ActualAmount, decimal? Variance, ReconciliationBreakSeverity Severity, string Reason);
-```
-
-## ProviderLedgerReconciliationCheckStatusDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ProviderLedgerReconciliationCheckStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:310](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L310).
-
-```csharp
-public enum ProviderLedgerReconciliationCheckStatusDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Matched = 0</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:312](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L312) |  |
-| <code>Break = 1</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:313](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L313) |  |
-| <code>Blocked = 2</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:314](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L314) |  |
-
-## ProviderLedgerReconciliationDetailDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ProviderLedgerReconciliationDetailDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:544](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L544).
-
-```csharp
-public sealed record ProviderLedgerReconciliationDetailDto(ProviderLedgerReconciliationSummaryDto Summary, IReadOnlyList<ProviderLedgerReconciliationCheckDto> Checks, IReadOnlyList<ProviderLedgerReconciliationBreakDto> Breaks, IReadOnlyList<string> Warnings, IReadOnlyList<string> EvidenceLinks, IReadOnlyList<ProviderSecurityMasterPassportDto>? SecurityMasterPassports = null, ProviderShadowBookComparisonDto? ShadowBookComparison = null, ProviderCorporateActionReadinessDto? CorporateActionReadiness = null, VerifiedOperationOutcome? Outcome = null);
 ```

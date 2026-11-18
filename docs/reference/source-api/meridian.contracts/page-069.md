@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingScheduleDeliveryTargetDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportingScheduleDeliveryTargetDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1034](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1034).
+
+```csharp
+public sealed record ReportingScheduleDeliveryTargetDto(string DistributionId, IReadOnlyList<GovernanceReportArtifactFormatDto>? Formats = null, ReportPackDeliveryModeDto? DeliveryMode = null, string? Note = null, string? RecipientPrincipalId = null, ReportAccessPrincipalKindDto? RecipientPrincipalKind = null);
+```
+
+## ReportingScheduledReleaseHandoffDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportingScheduledReleaseHandoffDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1054](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1054).
+
+Durable, token-free handoff from scheduled generation to the canonical post-release secure distribution queue. Package identities and bearer grants are intentionally derived only after governance release and are never retained here.
+
+```csharp
+public sealed record ReportingScheduledReleaseHandoffDto(string HandoffId, string TenantId, string CompanyId, string ScheduleId, string RunId, string TemplateId, string DistributionId, string TargetDistributionId, string TransportId, string? RecipientPrincipalId, string Destination, string Subject, string Body, IReadOnlyList<GovernanceReportArtifactFormatDto>? RequestedFormats, IReadOnlyList<string>? ArtifactIds, int? GrantLifetimeSeconds, int? GrantMaxUses, int MaxAttempts, DateTimeOffset CreatedAtUtc, ReportingScheduledReleaseHandoffStateDto State = ReportingScheduledReleaseHandoffStateDto.PendingRelease, string? EnqueuedDeliveryJobId = null, DateTimeOffset? EnqueuedAtUtc = null, string? RecipientPrincipalKind = null, string? DeliveryTargetsSnapshotHash = null);
+```
+
 ## ReportingScheduledReleaseHandoffStateDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportingScheduledReleaseHandoffStateDto</code>. Kind: `enum`.
@@ -596,23 +618,3 @@ Enum declarations:
 | <code>Warning = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1503](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1503) |  |
 | <code>Danger = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1504](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1504) |  |
 | <code>Info = 4</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1505](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1505) |  |
-
-## ReportWriterChartDefinitionDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterChartDefinitionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1525](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1525).
-
-```csharp
-public sealed record ReportWriterChartDefinitionDto(ReportWriterChartTypeDto Type, string CategoryField, IReadOnlyList<string> ValueColumns, string? Title = null);
-```
-
-## ReportWriterChartRenderDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterChartRenderDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1536](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1536).
-
-```csharp
-public sealed record ReportWriterChartRenderDto(ReportWriterChartTypeDto Type, string Title, string CategoryField, IReadOnlyList<string> Categories, IReadOnlyList<ReportWriterChartSeriesDto> Series, IReadOnlyList<string> Warnings);
-```

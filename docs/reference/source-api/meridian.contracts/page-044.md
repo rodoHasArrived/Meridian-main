@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionAccountingPostingResultDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionAccountingPostingResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs:186](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs#L186).
+
+```csharp
+public sealed record CorporateActionAccountingPostingResultDto(CorporateActionProcessingCaseDto Case, CorporateActionCaseAccountingPostingDto Posting, CorporateActionCaseTransitionDto Transition, bool Replayed);
+```
+
+## CorporateActionAccountingProjectionMutationResultDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionAccountingProjectionMutationResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs:175](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs#L175).
+
+```csharp
+public sealed record CorporateActionAccountingProjectionMutationResultDto(CorporateActionProcessingCaseDto Case, CorporateActionCaseAccountingProjectionDto Projection, bool Replayed);
+```
+
 ## CorporateActionAdjustmentBehavior
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionAdjustmentBehavior</code>. Kind: `enum`.
@@ -696,31 +716,3 @@ A single corporate action event envelope returned by the corporate actions query
 ```csharp
 public sealed record CorporateActionDto(Guid CorpActId, Guid SecurityId, string EventType, DateOnly ExDate, DateOnly? PayDate, decimal? DividendPerShare, string? Currency, decimal? SplitRatio, Guid? NewSecurityId, decimal? DistributionRatio, Guid? AcquirerSecurityId, decimal? ExchangeRatio, decimal? SubscriptionPricePerShare, decimal? RightsPerShare, DateOnly? RecordDate = null, string? LifecycleState = null, Guid? SupersedesCorpActId = null, decimal? RedemptionPricePercentOfPar = null, JsonElement? Payload = null, int PayloadSchemaVersion = CorporateActionPayloads.CurrentSchemaVersion);
 ```
-
-## CorporateActionDurableInboxDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDurableInboxDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:476](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L476).
-
-```csharp
-public sealed record CorporateActionDurableInboxDto(DateTimeOffset? LastIngestAt, int StagedCount, int AppliedLastRun, int DuplicatesSkippedLastRun, IReadOnlyList<CorporateActionDurableInboxEntryDto> Staged, IReadOnlyList<string> Errors, IReadOnlyList<CorporateActionProcessingCaseDto> Cases);
-```
-
-## CorporateActionDurableInboxEntryDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDurableInboxEntryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:452](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L452).
-
-Durable source-proposal projection shaped for the existing browser inbox. Acceptance identity, version, exact scope, and action availability are server-owned and never inferred by clients.
-
-```csharp
-public sealed record CorporateActionDurableInboxEntryDto(Guid SecurityId, string Ticker, string ActionType, DateOnly ExDate, DateOnly? RecordDate, DateOnly? PayableDate, decimal? Amount, string? Currency, decimal? SplitFromFactor, decimal? SplitToFactor, string WinningSource, IReadOnlyList<string> AgreeingSources, IReadOnlyList<string> DissentingSources, bool AutoApplied, Guid ProposalId, long Version, string ProposalState, CorporateActionCaseScopeDto AcceptanceScope, CorporateActionSourceProposalActionAvailabilityDto ActionAvailability)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CorporateActionElectionCalendarDto? ElectionCalendar { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:473](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L473) |  |

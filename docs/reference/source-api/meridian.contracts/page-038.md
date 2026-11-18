@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PaymentIntentReconciliationLinkDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.PaymentIntentReconciliationLinkDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:208](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L208).
+
+```csharp
+public sealed record PaymentIntentReconciliationLinkDto(string LinkId, string Status, string Summary, string? EvidenceRoute = null, string? ReconciliationCaseId = null, string? ReconciliationRunId = null);
+```
+
 ## PaymentIntentWorkflowDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.PaymentIntentWorkflowDto</code>. Kind: `record`.
@@ -47,6 +57,25 @@ Enum declarations:
 | <code>ExecutionDeferred = 5</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:186](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L186) |  |
 | <code>Blocked = 6</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:187](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L187) |  |
 
+## PostedComparisonMeasureDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.PostedComparisonMeasureDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Ledger/PostedPeriodComparisonDtos.cs:14](../../../../src/Meridian.Contracts/Ledger/PostedPeriodComparisonDtos.cs#L14).
+
+What a posted-period comparison measures.
+
+```csharp
+public enum PostedComparisonMeasureDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Movements</code> | [src/Meridian.Contracts/Ledger/PostedPeriodComparisonDtos.cs:17](../../../../src/Meridian.Contracts/Ledger/PostedPeriodComparisonDtos.cs#L17) | Postings within each period&#x27;s window: activity, not balances. |
+| <code>ClosingBalances</code> | [src/Meridian.Contracts/Ledger/PostedPeriodComparisonDtos.cs:22](../../../../src/Meridian.Contracts/Ledger/PostedPeriodComparisonDtos.cs#L22) | Cumulative balances at each period&#x27;s end: every posting in the book&#x27;s earlier periods plus the period itself (to the cutoff when the current period is open). |
+
 ## PostedLedgerJournalEntryResultDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.PostedLedgerJournalEntryResultDto</code>. Kind: `record`.
@@ -61,12 +90,12 @@ public sealed record PostedLedgerJournalEntryResultDto(Guid JournalEntryId, Guid
 
 Qualified name: <code>Meridian.Contracts.Ledger.PostedPeriodComparisonDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/PostedPeriodComparisonDtos.cs:14](../../../../src/Meridian.Contracts/Ledger/PostedPeriodComparisonDtos.cs#L14).
+Source: [src/Meridian.Contracts/Ledger/PostedPeriodComparisonDtos.cs:26](../../../../src/Meridian.Contracts/Ledger/PostedPeriodComparisonDtos.cs#L26).
 
 Recomputed posted-journal population, with explicit cutoffs; never a strategy-run simulation.
 
 ```csharp
-public sealed record PostedPeriodComparisonDto(string Status, string? Reason, DateTimeOffset GeneratedAt, DateTimeOffset AsOf, Guid LedgerBookId, string FundProfileId, string BookName, AccountingBasisKindDto AccountingBasis, string Currency, string AccountingPolicyId, string AccountingPolicyVersion, PostedPeriodComparisonRangeDto Current, PostedPeriodComparisonRangeDto? Baseline, IReadOnlyList<PostedPeriodComparisonLineDto> Lines, IReadOnlyList<Guid> CurrentJournalIds, IReadOnlyList<Guid> BaselineJournalIds, string? PopulationHash, LedgerDimensionSetDto? Dimensions);
+public sealed record PostedPeriodComparisonDto(string Status, string? Reason, DateTimeOffset GeneratedAt, DateTimeOffset AsOf, Guid LedgerBookId, string FundProfileId, string BookName, AccountingBasisKindDto AccountingBasis, string Currency, string AccountingPolicyId, string AccountingPolicyVersion, PostedPeriodComparisonRangeDto Current, PostedPeriodComparisonRangeDto? Baseline, IReadOnlyList<PostedPeriodComparisonLineDto> Lines, IReadOnlyList<Guid> CurrentJournalIds, IReadOnlyList<Guid> BaselineJournalIds, string? PopulationHash, LedgerDimensionSetDto? Dimensions, PostedComparisonMeasureDto Measure = PostedComparisonMeasureDto.Movements);
 ```
 
 ## PostedPeriodComparisonLineDto
@@ -706,34 +735,4 @@ Explicit authority scope shared by commitment, call, and receipt records.
 
 ```csharp
 public sealed record PrivateCapitalScopeDto(string TenantId, string CompanyId, string EntityId, string FundProfileId, Guid LedgerBookId, string Currency);
-```
-
-## PrivateCapitalWorkbenchDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.PrivateCapitalWorkbenchDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/PrivateCapitalLifecycleDtos.cs:102](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalLifecycleDtos.cs#L102).
-
-One authority-backed view of commitment, call and posted cash progress.
-
-```csharp
-public sealed record PrivateCapitalWorkbenchDto(PrivateCapitalScopeDto Scope, IReadOnlyList<PrivateCapitalCommitmentDto> Commitments, IReadOnlyList<PrivateCapitalCallDto> Calls, IReadOnlyList<PrivateCapitalPostingReceiptDto> Receipts, DateTimeOffset GeneratedAtUtc)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;PrivateCapitalNoticeSummaryDto&gt; Notices { get; init; } = [];</code> | [src/Meridian.Contracts/Ledger/PrivateCapitalLifecycleDtos.cs:109](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalLifecycleDtos.cs#L109) |  |
-
-## ProposeIntercompanyBalanceConfirmationRequest
-
-Qualified name: <code>Meridian.Contracts.Ledger.ProposeIntercompanyBalanceConfirmationRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:64](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L64).
-
-Pins both sides&#x27; current posted balances for the profile at the as-of date.
-
-```csharp
-public sealed record ProposeIntercompanyBalanceConfirmationRequest(Guid RequestId, Guid AccountingArrangementId, DateOnly AsOf);
 ```

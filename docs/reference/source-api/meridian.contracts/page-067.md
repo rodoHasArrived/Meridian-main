@@ -6,6 +6,34 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderLedgerReconciliationCheckStatusDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ProviderLedgerReconciliationCheckStatusDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:310](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L310).
+
+```csharp
+public enum ProviderLedgerReconciliationCheckStatusDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Matched = 0</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:312](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L312) |  |
+| <code>Break = 1</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:313](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L313) |  |
+| <code>Blocked = 2</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:314](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L314) |  |
+
+## ProviderLedgerReconciliationDetailDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ProviderLedgerReconciliationDetailDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:544](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L544).
+
+```csharp
+public sealed record ProviderLedgerReconciliationDetailDto(ProviderLedgerReconciliationSummaryDto Summary, IReadOnlyList<ProviderLedgerReconciliationCheckDto> Checks, IReadOnlyList<ProviderLedgerReconciliationBreakDto> Breaks, IReadOnlyList<string> Warnings, IReadOnlyList<string> EvidenceLinks, IReadOnlyList<ProviderSecurityMasterPassportDto>? SecurityMasterPassports = null, ProviderShadowBookComparisonDto? ShadowBookComparison = null, ProviderCorporateActionReadinessDto? CorporateActionReadiness = null, VerifiedOperationOutcome? Outcome = null);
+```
+
 ## ProviderLedgerReconciliationRequestDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ProviderLedgerReconciliationRequestDto</code>. Kind: `record`.
@@ -748,33 +776,3 @@ Cross-workflow correlation metadata stamped on every reconciliation payload.
 ```csharp
 public sealed record ReconciliationCorrelationContext(string TraceId, string SpanId, string? ParentSpanId, string WorkflowId, string? JobId = null);
 ```
-
-## ReconciliationJobControl
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationJobControl</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1079](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1079).
-
-Queue orchestration controls and replay metadata for resilient reconciliation jobs.
-
-```csharp
-public sealed record ReconciliationJobControl(string JobId, string IdempotencyKey, int Attempt, int MaxAttempts, bool DeadLettered, string? DeadLetterReason, DateTimeOffset EnqueuedAt, DateTimeOffset? LastAttemptAt, DateTimeOffset? NextAttemptAt, string BackpressureBucket);
-```
-
-## ReconciliationLogicalBreakIdentity
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationLogicalBreakIdentity</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:180](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L180).
-
-Builds a stable, case-normalized identity for one logical reconciliation check and its source scope. The hash keeps caller-provided identifiers from becoming ambiguous delimiter-separated keys while retaining a versioned contract prefix.
-
-```csharp
-public static class ReconciliationLogicalBreakIdentity
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static string Create(string checkId, Guid? bankEntityId = null, string? sourceScope = null, OperationsContinuityCorrelationKeysDto? correlationKeys = null);</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:182](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L182) |  |

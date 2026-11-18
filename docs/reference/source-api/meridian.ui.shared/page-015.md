@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PreparePeriodAdjustmentRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PreparePeriodAdjustmentRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/PeriodAdjustmentPreparationService.cs:9](../../../../src/Meridian.Ui.Shared/Services/PeriodAdjustmentPreparationService.cs#L9).
+
+```csharp
+public sealed record PreparePeriodAdjustmentRequest(Guid LedgerBookId, Guid SourceJournalEntryId, Guid TargetPeriodId, DateOnly AccountingDate, string IntentId, string Reason, bool ReversePeriodEndMark = false);
+```
+
 ## PrivateCapitalBankObservationService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.PrivateCapitalBankObservationService</code>. Kind: `class`.
@@ -828,14 +838,4 @@ Exact output returned by the server-side renderer/artifact producer. Artifact id
 
 ```csharp
 public sealed record ReportingAuthoritativeAsOfCertification(DateOnly AsOfDate, ReportingOperationalScope Scope, ReportingAccessScope Access, ReportingCertifiedSnapshotScope Snapshot, string SourceCheckpointId, string SourceCheckpointHash, bool IsAuthoritative, ImmutableArray<string> EvidenceIds);
-```
-
-## ReportingAuthoritativeSourceCapture
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingAuthoritativeSourceCapture</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:15](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L15).
-
-```csharp
-public sealed record ReportingAuthoritativeSourceCapture(ReportingAuthoritativeSourceCheckpoint Checkpoint, ImmutableArray<IReadOnlyDictionary<string, string>> DatasetRows, ReportingCertifiedLedgerPresentationInput? CertifiedLedgerPresentation = null);
 ```

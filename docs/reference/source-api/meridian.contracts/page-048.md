@@ -6,6 +6,40 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OtcCollateralRules
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCollateralRules</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:186](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L186).
+
+The rules every collateral balance write satisfies, pure so they are testable without a database and identical in every store. Each returns the normalized request or throws ArgumentException naming the rule.
+
+```csharp
+public static class OtcCollateralRules
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static UpsertOtcCollateralBalanceRequest Normalize(UpsertOtcCollateralBalanceRequest request);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:188](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L188) |  |
+| <code>public static OtcEligibleCollateralDto ResolveEligible(OtcCollateralAgreementDto agreement, string description);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:229](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L229) | The collateral agreement&#x27;s eligible-collateral line a balance is posted as, matched by description regardless of case. |
+| <code>public static OtcEligibleCollateralDto? FindEligible(OtcCollateralAgreementDto agreement, string? description);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:238](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L238) | The agreement&#x27;s eligible-collateral line with this description regardless of case, or null when there is none. |
+| <code>public static decimal ValuedAmount(decimal quantity, decimal unitValue) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:248](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L248) | The valued amount of a balance: quantity times unit value, computed, never supplied. |
+| <code>public static string RequireActor(string? value) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:251](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L251) | Collateral and margin writes are operator actions, so the actor is required rather than defaulted. |
+
+## OtcCompressionData
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCompressionData</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:32](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L32).
+
+One contract&#x27;s externally agreed compression result; zero remaining notional closes it. No other contract is modified.
+
+```csharp
+public sealed record OtcCompressionData([property : JsonRequired] string CompressionReference, [property : JsonRequired] decimal RemainingNotional) : OtcContractLifecycleData;
+```
+
 ## OtcContractDirection
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcContractDirection</code>. Kind: `enum`.
@@ -782,46 +816,3 @@ Declared public members:
 | <code>public static bool IsBookableFromReportAlone(string? code);</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:254](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L254) | Whether a fill stamped with this asset-class code can be booked from the report alone. The code is trimmed and lower-cased and must equal a code (not an alias) of any provider declared ProviderAssetClassCodeTraits.BookableFromReportAlone; an absent class is unknown, not equity. |
 | <code>public static IReadOnlyDictionary&lt;string, string&gt; InteractiveBrokersReportCodes =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:267](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L267) | IB secType → Meridian report code (&quot;STK&quot; → &quot;equity&quot;), matched ignoring case like the mapper&#x27;s other vocabularies. |
 | <code>public static IReadOnlyDictionary&lt;string, string&gt; BuildTranslation(string fromProvider, string toProvider);</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:273](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L273) | Translates every code of fromProvider to the toProvider position-report code for the same catalog class. |
-
-## ProviderAssetClassCodeProviders
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ProviderAssetClassCodeProviders</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:56](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L56).
-
-Provider keys used by ProviderAssetClassCodeCatalog.
-
-```csharp
-public static class ProviderAssetClassCodeProviders
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Alpaca = &quot;alpaca&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L58) |  |
-| <code>public const string Robinhood = &quot;robinhood&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:59](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L59) |  |
-| <code>public const string InteractiveBrokers = &quot;ib&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:60](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L60) |  |
-| <code>public const string Meridian = &quot;meridian&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:66](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L66) | Meridian&#x27;s own lowercase execution vocabulary (&quot;equity&quot;, &quot;option&quot;, ...): what the IB mapper reports and what execution metadata carries for brokers without a vendor spelling. |
-| <code>public static IReadOnlyList&lt;string&gt; All { get; } = [Alpaca, Robinhood, InteractiveBrokers, Meridian];</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:68](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L68) |  |
-
-## ProviderAssetClassCodeRoles
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ProviderAssetClassCodeRoles</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L7).
-
-Where a provider asset-class code appears on the wire.
-
-```csharp
-public enum ProviderAssetClassCodeRoles
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>None = 0</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L9) |  |
-| <code>OrderPayload = 1</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L12) | The code is sent to (or read back from) the provider on an order. |
-| <code>PositionReport = 2</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L15) | The code is stamped on positions, fills, or execution reports. |
-| <code>Search = 4</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L18) | The code is a symbol-search asset type. |

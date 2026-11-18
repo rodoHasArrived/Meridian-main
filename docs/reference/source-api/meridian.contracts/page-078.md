@@ -6,11 +6,54 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationSecurityCoverageReferencePayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationSecurityCoverageReferencePayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:52](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L52).
+
+```csharp
+public sealed record WorkstationSecurityCoverageReferencePayload(string Source, string Symbol, string? AccountName, string? SecurityId, string DisplayName, string? AssetClass, string? SubType, string? Currency, string? Status, string? PrimaryIdentifier, string CoverageStatus, string? CoverageReason, string? MatchedIdentifierKind, string? MatchedIdentifierValue, string? MatchedProvider);
+```
+
+## WorkstationSecurityCoverageStatus
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationSecurityCoverageStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:495](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L495).
+
+Security Master coverage state associated with a workstation security reference.
+
+```csharp
+public enum WorkstationSecurityCoverageStatus : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Resolved</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:497](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L497) |  |
+| <code>Partial</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:498](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L498) |  |
+| <code>Missing</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:499](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L499) |  |
+| <code>Unavailable</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:500](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L500) |  |
+
+## WorkstationSecurityReference
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationSecurityReference</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:512](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L512).
+
+Lightweight Security Master reference used by workstation portfolio and ledger surfaces. SubType is the most specific classification available at query time (e.g. &quot;CommonShare&quot;, &quot;Bond&quot;, &quot;OptionContract&quot;). It is derived from the security&#x27;s asset class and is null when the asset class does not map to a unique sub-type. RiskCountry is extracted from the CommonTerms JSON blob when available. IssuerType is only populated by full workbench queries; the lightweight symbol-lookup path leaves it null to avoid an extra round-trip.
+
+```csharp
+public sealed record WorkstationSecurityReference(Guid SecurityId, string DisplayName, string AssetClass, string Currency, SecurityStatusDto Status, string? PrimaryIdentifier, string? SubType = null, WorkstationSecurityCoverageStatus CoverageStatus = WorkstationSecurityCoverageStatus.Resolved, string? MatchedIdentifierKind = null, string? MatchedIdentifierValue = null, string? MatchedProvider = null, string? ResolutionReason = null, string? LookupPath = null, string? LookupSource = null, bool IsInferredMatch = false, string? RiskCountry = null, string? IssuerType = null);
+```
+
 ## WorkstationSessionPayload
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationSessionPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:165](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L165).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:174](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L174).
 
 Typed payload returned by GET /api/workstation/session. ActiveWorkspace uses the canonical browser shell roots: trading, portfolio, accounting, reporting, strategy, data, or settings.
 
@@ -22,7 +65,7 @@ public sealed record WorkstationSessionPayload(string DisplayName, string Role, 
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationSessionWorkspaceSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:153](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L153).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:162](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L162).
 
 Workspace-level summary embedded inside WorkstationSessionPayload.
 
@@ -34,7 +77,7 @@ public sealed record WorkstationSessionWorkspaceSummary(int TotalRuns, int Activ
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationStrategyPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:321](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L321).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:330](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L330).
 
 Typed payload returned by GET /api/workstation/strategy.
 
@@ -46,7 +89,7 @@ public sealed record WorkstationStrategyPayload(IReadOnlyList<WorkstationMetricC
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationStrategyRunCard</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:77](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L77).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:86](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L86).
 
 ```csharp
 public sealed record WorkstationStrategyRunCard(string Id, string StrategyName, string Engine, string Mode, string Status, string Dataset, string Window, string Pnl, string Sharpe, string LastUpdated, string Notes, string? PromotionState, string? LedgerReference, string? PortfolioId, decimal? NetPnl, decimal? TotalReturn, decimal? FinalEquity, WorkstationSecurityCoveragePayload SecurityCoverage, WorkstationRunDrillInLinks DrillIn, BiasDisclosureDto? BiasDisclosure = null, decimal? MaxDrawdown = null, IReadOnlyList<decimal>? TrendValues = null, IReadOnlyList<string>? TrendDates = null, string? SearchText = null);
@@ -56,7 +99,7 @@ public sealed record WorkstationStrategyRunCard(string Id, string StrategyName, 
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationStrategyWorkspaceSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:181](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L181).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:190](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L190).
 
 Workspace-level summary embedded inside WorkstationStrategyPayload.
 
@@ -124,7 +167,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationTimelineCard</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:136](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L136).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:145](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L145).
 
 Single entry in a run timeline strip. Fields match BuildTimelineCard in WorkstationEndpoints.
 
@@ -136,7 +179,7 @@ public sealed record WorkstationTimelineCard(string RunId, string StrategyName, 
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationTradingBrokerageState</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:427](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L427).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:436](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L436).
 
 Brokerage connection summary embedded inside the trading payload.
 
@@ -148,7 +191,7 @@ public sealed record WorkstationTradingBrokerageState(string Provider, string Ac
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationTradingFillRow</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:380](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L380).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:389](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L389).
 
 A single fill row shown in the trading workstation fills table.
 
@@ -160,7 +203,7 @@ public sealed record WorkstationTradingFillRow(string FillId, string OrderId, st
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationTradingOrderRow</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:355](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L355).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:364](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L364).
 
 A single open-order row shown in the trading workstation orders table.
 
@@ -172,7 +215,7 @@ public sealed record WorkstationTradingOrderRow(string OrderId, string Symbol, s
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationTradingPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:442](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L442).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:451](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L451).
 
 Typed payload returned by GET /api/workstation/trading. Readiness is TradingOperatorReadinessDto; typed at the endpoint layer to avoid a circular project reference.
 
@@ -184,7 +227,7 @@ public sealed record WorkstationTradingPayload(IReadOnlyList<WorkstationMetricCa
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationTradingPositionRow</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:336](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L336).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:345](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L345).
 
 A single position row shown in the trading workstation positions table.
 
@@ -196,7 +239,7 @@ public sealed record WorkstationTradingPositionRow(string PositionKey, string Sy
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationTradingRiskState</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:413](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L413).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:422](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L422).
 
 Risk state block embedded inside the trading payload. Guardrails carries the live rule-registry utilization bars; ActiveGuardrails keeps the flat string rendering of the same registry entries for text-only consumers.
 

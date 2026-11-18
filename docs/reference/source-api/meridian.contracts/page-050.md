@@ -6,6 +6,40 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityAssetClassDefinition
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetClassDefinition</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:142](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L142).
+
+The complete definition of one asset class: its behaviour descriptor, its term fields and the UI hints derived from them. Composed by SecurityAssetClassRegistry from the single descriptor table and the single term schema, so no surface keeps its own copy. The fields are the ones a node WRITES (SecurityAssetTermsSchema.WritableFields): a term this node only reads (ADR-024, readable before writable) is never offered to a create or edit form, a term block or a required-key check.
+
+```csharp
+public sealed record SecurityAssetClassDefinition(string AssetClass, SecurityAssetClassDescriptor Descriptor, IReadOnlyList<SecurityAssetTermField> Fields, IReadOnlyList<SecurityAssetTermUiHint> UiHints)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityLotUnitKind LotUnit =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:148](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L148) |  |
+| <code>public SecurityCashFlowBehavior CashFlowBehavior =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:150](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L150) |  |
+| <code>public SecurityTermsProjectionKind ProjectionKind =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:152](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L152) |  |
+| <code>public int TermsVersion =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:154](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L154) |  |
+| <code>public IReadOnlyList&lt;string&gt; RequiredTermKeys =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:157](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L157) | The required term keys a create must supply. |
+
+## SecurityAssetClassDefinitionDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetClassDefinitionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:177](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L177).
+
+Wire form of SecurityAssetClassDefinition.
+
+```csharp
+public sealed record SecurityAssetClassDefinitionDto(string AssetClass, int TermsVersion, SecurityLotUnitKind LotUnit, string? LotMultiplierTermKey, SecurityCashFlowBehavior CashFlowBehavior, SecurityTermsProjectionKind ProjectionKind, bool SupportsBasicCreateWorkflow, bool SupportsSchemaDrivenCreate, bool SupportsProfileBackedTerms, bool RequiresMaturity, IReadOnlyList<string> PreferredIdentifierKinds, IReadOnlyList<SecurityAssetTermFieldDefinitionDto> Fields);
+```
+
 ## SecurityAssetClassDescriptor
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetClassDescriptor</code>. Kind: `record`.
@@ -893,42 +927,3 @@ Per-security assignment of the authoritative cash flow source.
 ```csharp
 public sealed record SecurityCashFlowSourceDto(Guid SecurityId, StructuredCashFlowSourceKind SourceKind, DateTimeOffset? LastUpdatedUtc, bool IsClientOverride, string? ClientConfirmedBy, DateTimeOffset? ClientConfirmedAt);
 ```
-
-## SecurityCashFlowTermBinding
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCashFlowTermBinding</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L29).
-
-One of a class&#x27;s declared term keys and the cash-flow role it plays (SecurityAssetClassDescriptor.CashFlowTermRoles).
-
-```csharp
-public sealed record SecurityCashFlowTermBinding(SecurityCashFlowTermRole Role, string Key, bool ReadAfterSharedSpellings = false);
-```
-
-## SecurityCashFlowTermRole
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCashFlowTermRole</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:4](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L4).
-
-The economic role a term plays in a calculated cash-flow projection.
-
-```csharp
-public enum SecurityCashFlowTermRole
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Maturity</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L6) |  |
-| <code>Issue</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L7) |  |
-| <code>PrincipalFace</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L8) |  |
-| <code>CurrentFactor</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L9) |  |
-| <code>CouponRate</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L10) |  |
-| <code>PaymentFrequency</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L11) |  |
-| <code>DayCount</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L12) |  |
-| <code>InflationIndex</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L13) |  |
-| <code>InflationBaseIndexValue</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L14) |  |
-| <code>InflationIndexRatio</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowTermRoles.cs#L15) |  |
