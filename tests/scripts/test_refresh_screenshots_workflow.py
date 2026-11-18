@@ -78,7 +78,10 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
             pull_request.get("if"),
             "${{ success() && (inputs.create_pr || github.event_name == 'schedule') && steps.validate_web.outcome == 'success' }}",
         )
-        self.assertEqual(pull_request.get("with", {}).get("branch"), "automation/web-screenshot-capture")
+        self.assertEqual(
+            pull_request.get("with", {}).get("branch"),
+            "automation/web-screenshot-capture-${{ github.run_id }}-${{ github.run_attempt }}",
+        )
         self.assertEqual(pull_request.get("with", {}).get("base"), "${{ github.event.repository.default_branch }}")
         self.assertEqual(pull_request.get("with", {}).get("title"), "chore: refresh web workstation screenshot catalog")
         # The clean, lockfile-pinned install must not regress back to a mutable
@@ -1061,6 +1064,38 @@ class ScreenshotRefreshPublicationTests(unittest.TestCase):
                 create_pr = workflow["on"]["workflow_dispatch"]["inputs"]["create_pr"]
                 self.assertEqual((create_pr["type"], create_pr["default"]), ("boolean", "true"))
                 self.assertIn("github.event_name == 'schedule'", self.publish_step(workflow)["if"])
+
+    def test_refresh_prs_never_reuse_a_branch_that_would_need_a_force_push(self) -> None:
+        # Repository rules reject force-pushes (GH013), and create-pull-request
+        # rebuilds an existing branch from the base, so each run needs a fresh
+        # branch and closes the refresh PRs it supersedes.
+        for name, prefix in (
+            ("web-screenshot-capture.yml", "automation/web-screenshot-capture"),
+            ("desktop-screenshot-capture.yml", "automation/desktop-screenshot-capture"),
+        ):
+            with self.subTest(workflow=name):
+                workflow = self.load(name)
+                publish = self.publish_step(workflow)
+                self.assertEqual(
+                    publish["with"]["branch"], f"{prefix}-${{{{ github.run_id }}}}-${{{{ github.run_attempt }}}}"
+                )
+                steps = next(job["steps"] for job in workflow["jobs"].values() if publish in job["steps"])
+                close = steps[steps.index(publish) + 1]
+                self.assertEqual(close["uses"], "./.github/actions/close-superseded-refresh-prs")
+                self.assertEqual(close["if"], "${{ steps.refresh_pr.outputs.pull-request-number != '' }}")
+                self.assertEqual(publish["id"], "refresh_pr")
+                self.assertEqual(close["with"]["branch-prefix"], prefix)
+                self.assertEqual(
+                    close["with"]["keep-pr-number"], "${{ steps.refresh_pr.outputs.pull-request-number }}"
+                )
+                self.assertEqual(close["with"]["token"], publish["with"]["token"])
+
+        action = (REPO_ROOT / ".github" / "actions" / "close-superseded-refresh-prs" / "action.yml").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("select(.isCrossRepository | not)", action)
+        self.assertIn("select(.number != ($ENV.KEEP_PR | tonumber))", action)
+        self.assertNotIn("git push", action)
 
     def test_desktop_captures_are_validated_before_replacing_the_catalog(self) -> None:
         workflow = self.load("desktop-screenshot-capture.yml")
