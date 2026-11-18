@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-11-12
+**Reviewed:** 2026-11-18
 
 Use [Engineering](../engineering/README.md#buildtestrun) for current build and test commands.
 This folder owns scenario-specific acceptance procedures and retained evidence.
@@ -25,6 +25,12 @@ This folder owns scenario-specific acceptance procedures and retained evidence.
 A procedure describes what to verify; a retained packet records what was actually observed. Keep
 packet dates, commits, and unresolved findings intact. Readiness and release acceptance remain in
 the [readiness tracker](../product/implementation-todo-list.md) and [roadmap registry](../roadmap/README.md).
+
+New packets keep a summary `README.md` and small, reviewable inputs (manifests, selected JSON,
+screenshots). Raw logs, archives and payloads over 256 KB go to CI artifacts instead:
+`build/scripts/ci/check-evidence-footprint.py` (docs CI lane) fails on any new raw file and on growth
+of the 177 raw files recorded in `build/config/evidence-footprint-baseline.json`. Deleting retired
+raw files is always allowed; lock the reduction in with `--tighten-baseline`.
 
 ## Shared PostgreSQL fixtures
 
