@@ -13,6 +13,7 @@ import {
 import {
   comboFromKeyEvent,
   formatKeyCombo,
+  QUEUE_KEY_BINDINGS,
   type GlobalKeyBindingId,
   resetKeyBindingOverrides,
   setKeyBindingOverride,
@@ -170,6 +171,16 @@ export function KeyboardShortcutsSheet({ open, onOpenChange }: KeyboardShortcuts
               Reset all to defaults
             </Button>
           ) : null}
+          <h3 className="mt-4 text-sm font-semibold">In Today and the shared inbox</h3>
+          <p className="text-xs text-muted-foreground">While focus is in the queue. Each action opens its review dialog, which asks for a reason. The reconciliation break queue lists its own keys: press ? there.</p>
+          <ul className="divide-y divide-border/60" aria-label="Work queue shortcuts">
+            {Object.entries(QUEUE_KEY_BINDINGS).map(([id, binding]) => (
+              <li key={id} className="flex items-center justify-between gap-3 py-2.5 text-sm">
+                <span>{binding.label}</span>
+                <Kbd keys={[binding.keys]} />
+              </li>
+            ))}
+          </ul>
         </SheetBody>
       </SheetContent>
     </Sheet>

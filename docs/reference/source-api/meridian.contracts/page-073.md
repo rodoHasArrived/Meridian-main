@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementReconciliationBreakExplanationDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementReconciliationBreakExplanationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:251](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L251).
+
+```csharp
+public sealed record StatementReconciliationBreakExplanationDto(string? Summary, IReadOnlyList<string>? SourceSystems, string? ProbableCause, string? LedgerImpact, string? SuggestedNextAction, string? RequiredSignoffRole, IReadOnlyList<string>? EvidenceLinks);
+```
+
+## StatementReconciliationCaseAttachmentDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementReconciliationCaseAttachmentDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:242](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L242).
+
+```csharp
+public sealed record StatementReconciliationCaseAttachmentDto(string? AttachmentId, string? EvidenceKind, string? SourceSystem, string? SourceReference, string? ContentHash, string? Route, DateTimeOffset? AttachedAtUtc);
+```
+
 ## StatementReconciliationCaseAuditEventDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementReconciliationCaseAuditEventDto</code>. Kind: `record`.
@@ -616,28 +636,4 @@ Response returned after saving a strategy design draft.
 
 ```csharp
 public sealed record StrategyDesignDraftSaveResponse(StrategyDesignDocument Document, StrategyDesignDraftSummary Summary, StrategyDesignValidationResult Validation, IReadOnlyList<StrategyDesignRunTraceEntry> Trace);
-```
-
-## StrategyDesignDraftSummary
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignDraftSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:131](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L131).
-
-Summary row for a durable design draft.
-
-```csharp
-public sealed record StrategyDesignDraftSummary(string DocumentId, string Name, string Version, string DatasetReference, int CellCount, int TransitionCount, DateTimeOffset UpdatedAt, string ValidationSummary);
-```
-
-## StrategyDesignFieldCatalogItem
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignFieldCatalogItem</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:47](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L47).
-
-AMX-style field vocabulary item mapped to a Meridian canonical source.
-
-```csharp
-public sealed record StrategyDesignFieldCatalogItem(string FieldId, string Label, string Source, string DataSet, string TypeName, string Description, bool IsEnabled, string? DisabledReason, IReadOnlyList<string> Synonyms);
 ```

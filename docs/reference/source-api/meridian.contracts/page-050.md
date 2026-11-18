@@ -6,6 +6,35 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityAccountingInstrumentClasses
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAccountingInstrumentClasses</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1522](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1522).
+
+The closed vocabulary of accounting-slice instrument classes a Security Master record can post as. These are the values the Security Master accounting event slice gates on; keeping them here stops producers and that gate drifting on spelling.
+
+```csharp
+public static class SecurityAccountingInstrumentClasses
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Bond = &quot;Bond&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1525](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1525) | Coupon-bearing and discount fixed income booked against par. |
+| <code>public const string AssetBackedSecurity = &quot;AssetBackedSecurity&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1528](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1528) | Securitized credit tranches whose principal amortizes by pool factor (ADR-022). |
+
+## SecurityAliasDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAliasDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:100](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L100).
+
+```csharp
+public sealed record SecurityAliasDto(Guid AliasId, Guid SecurityId, string AliasKind, string AliasValue, string? Provider, SecurityAliasScope Scope, string? Reason, string CreatedBy, DateTimeOffset CreatedAt, DateTimeOffset ValidFrom, DateTimeOffset? ValidTo, bool IsEnabled);
+```
+
 ## SecurityAliasHistoryConflictException
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAliasHistoryConflictException</code>. Kind: `class`.
@@ -927,46 +956,3 @@ Declared public members:
 | <code>public static string NormalizeLabel(string? label) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCanonicalAssetHomes.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCanonicalAssetHomes.cs#L20) | Uses the same separator-insensitive spelling as catalog label resolution. |
 | <code>public static bool IsSecuritizedLabel(string? label) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCanonicalAssetHomes.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCanonicalAssetHomes.cs#L23) |  |
 | <code>public static bool IsBankLoanLabel(string? label) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCanonicalAssetHomes.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCanonicalAssetHomes.cs#L26) |  |
-
-## SecurityCashFlowBehavior
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCashFlowBehavior</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:35](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L35).
-
-How an asset class produces cash flows.
-
-```csharp
-public enum SecurityCashFlowBehavior
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>None</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:38](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L38) | The class produces no scheduled cash flows. |
-| <code>ContractualSchedule</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L41) | Coupon, interest and principal flows calculated from contractual terms. |
-| <code>FactorAmortizing</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L44) | Contractual flows whose principal amortizes by a dated pool factor. |
-| <code>SwapLegs</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:47](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L47) | Exchanges calculated per swap leg. |
-| <code>FinancingInterest</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L50) | Financing interest calculated from rate and term (repo). |
-| <code>Dividends</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:53](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L53) | Declared dividends, recorded as corporate actions rather than calculated. |
-| <code>FundDistributions</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:56](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L56) | Fund distributions, recorded from the administrator rather than calculated. |
-| <code>ProviderSupplied</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:59](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L59) | Flows supplied by a provider or administrator (capital calls, rents, draws). |
-
-## SecurityCashFlowBehaviorExtensions
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCashFlowBehaviorExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:77](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L77).
-
-Behaviour derived from SecurityCashFlowBehavior.
-
-```csharp
-public static class SecurityCashFlowBehaviorExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static bool IsCalculatedFromTerms(this SecurityCashFlowBehavior behavior) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:80](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L80) | Whether flows of this kind are calculated from the security&#x27;s terms. |

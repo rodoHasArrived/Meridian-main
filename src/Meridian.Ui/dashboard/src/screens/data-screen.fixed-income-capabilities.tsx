@@ -1,4 +1,5 @@
 import { useId, useState } from "react";
+import { Select } from "@/components/ui/select";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import type { ProviderFixedIncomeConnectionEvidence, ProviderFixedIncomeTaskCapability } from "@/types";
 import type { CapabilityMatrixRowModel } from "./data-screen.capability-matrix.view-model";
@@ -73,9 +74,9 @@ export function FixedIncomeCapabilityReadiness({ rows }: { rows: CapabilityMatri
         </div>
         <div className="grid gap-1">
           <label htmlFor={selectId} className="text-xs font-medium">Provider</label>
-          <select id={selectId} value={selected.providerId} onChange={(event) => setProviderId(event.target.value)} className="rounded-md border bg-background px-2 py-1 text-sm">
+          <Select id={selectId} value={selected.providerId} onChange={(event) => setProviderId(event.target.value)}>
             {providers.map((row) => <option key={row.providerId} value={row.providerId}>{row.providerId}</option>)}
-          </select>
+          </Select>
         </div>
       </div>
       <DenseDataTable

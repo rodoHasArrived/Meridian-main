@@ -406,10 +406,18 @@ public sealed record LedgerJournalEntryDto(
     Guid? SourceEventId = null,
     Guid? SourceJournalEntryId = null,
     LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating,
-    LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null)
+    LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] LedgerJournalExecutionLineageDto? Execution = null)
 {
     public IReadOnlyList<LedgerJournalEntryLineDto> Lines { get; init; } = Lines ?? [];
 }
+
+/// <summary>
+/// The execution a journal entry was posted from, exactly as its retained metadata recorded it:
+/// the order identifier the execution journal uses, the fill, and the strategy run. Absent when the
+/// entry was not posted from an execution; never inferred from symbol, amount or time.
+/// </summary>
+public sealed record LedgerJournalExecutionLineageDto(string? OrderId, Guid? FillId, string? StrategyRunId);
 
 public sealed record LedgerReportSignatureDto(
     string Algorithm,

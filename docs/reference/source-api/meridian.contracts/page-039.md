@@ -6,6 +6,37 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PrivateCapitalPaymentIntentEvidenceStatusDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.PrivateCapitalPaymentIntentEvidenceStatusDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:191](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L191).
+
+```csharp
+public enum PrivateCapitalPaymentIntentEvidenceStatusDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>MissingIntent = 0</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:193](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L193) |  |
+| <code>CashEvidenceMissing = 1</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:194](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L194) |  |
+| <code>IntentCaptured = 2</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:195](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L195) |  |
+| <code>SettlementMatched = 3</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:196](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L196) |  |
+
+## PrivateCapitalPostingAuthorityDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.PrivateCapitalPostingAuthorityDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/PrivateCapitalLifecycleDtos.cs:74](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalLifecycleDtos.cs#L74).
+
+Evidence bound into the approved journal and checked in its final storage transaction.
+
+```csharp
+public sealed record PrivateCapitalPostingAuthorityDto(PrivateCapitalScopeDto Scope, string CallId, string CommitmentId, int CommitmentRevision, string PlanHash, string Kind, decimal Amount, DateOnly EffectiveDate, string? FundingReceiptId = null, string? BankLineId = null, string? BankTransactionHash = null);
+```
+
 ## PrivateCapitalPostingReceiptDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.PrivateCapitalPostingReceiptDto</code>. Kind: `record`.
@@ -734,44 +765,3 @@ Declared public members:
 | <code>public required DateTimeOffset CompletedAtUtc { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:90](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L90) |  |
 | <code>public required bool ForcedTermination { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:91](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L91) |  |
 | <code>public IReadOnlyList&lt;LifecycleShutdownParticipantReceiptDto&gt; Participants { get; init; } = [];</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:92](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L92) |  |
-
-## LifecycleShutdownRequestDto
-
-Qualified name: <code>Meridian.Contracts.Lifecycle.LifecycleShutdownRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:34](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L34).
-
-```csharp
-public sealed record LifecycleShutdownRequestDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LifecycleShutdownReason Reason { get; init; } = LifecycleShutdownReason.Operator;</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:36](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L36) |  |
-| <code>public string? Detail { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:37](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L37) |  |
-| <code>public string? RequestedBy { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:38](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L38) |  |
-
-## LifecycleShutdownStage
-
-Qualified name: <code>Meridian.Contracts.Lifecycle.LifecycleShutdownStage</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:65](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L65).
-
-```csharp
-public enum LifecycleShutdownStage
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Requested</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:67](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L67) |  |
-| <code>StopAcceptingWork</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:68](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L68) |  |
-| <code>Draining</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:69](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L69) |  |
-| <code>Flushing</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:70](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L70) |  |
-| <code>PersistingReceipt</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:71](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L71) |  |
-| <code>ReleasingHost</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:72](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L72) |  |
-| <code>Completed</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:73](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L73) |  |
-| <code>Failed</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:74](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L74) |  |

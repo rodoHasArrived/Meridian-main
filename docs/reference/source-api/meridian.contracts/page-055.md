@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## UpsertOtcContractRequest
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.UpsertOtcContractRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:184](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L184).
+
+Creates (ContractId null) or amends a bilateral contract.
+
+```csharp
+public sealed record UpsertOtcContractRequest(Guid? ContractId, Guid SecurityId, Guid NettingSetId, string? ExternalTradeId, OtcContractDirection Direction, decimal Notional, string NotionalCurrency, DateOnly TradeDate, DateOnly EffectiveDate, DateOnly? TerminationDate, OtcContractStatus Status, string? ConfirmationReference = null, string? Notes = null, string? UpdatedBy = null);
+```
+
+## UpsertOtcMasterAgreementRequest
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.UpsertOtcMasterAgreementRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:145](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L145).
+
+Creates (AgreementId null) or amends a master agreement.
+
+```csharp
+public sealed record UpsertOtcMasterAgreementRequest(Guid? AgreementId, string Counterparty, string? CounterpartyLei, string OurEntity, Guid? OurEntityId, OtcMasterAgreementType AgreementType, DateOnly AgreementDate, string? GoverningLaw = null, string? Notes = null, string? UpdatedBy = null);
+```
+
 ## UpsertOtcNettingSetRequest
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.UpsertOtcNettingSetRequest</code>. Kind: `record`.
@@ -895,40 +919,3 @@ Enum declarations:
 | <code>Warning</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:110](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L110) |  |
 | <code>Error</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:111](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L111) |  |
 | <code>Blocker</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:112](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L112) |  |
-
-## AuthoritativeScopeAssignment
-
-Qualified name: <code>Meridian.Contracts.Tenancy.AuthoritativeScopeAssignment</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:16](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L16).
-
-One authoritative scope assignment: the exact tenant, company, and narrow accounting scope that a registered authority asserts is affected by a security-level fact. An assignment is a statement of record, not a caller-supplied hint. Every field beyond TenantId/CompanyId is populated only when the asserting authority can name it from durable assignment data; a field it cannot attribute stays null rather than being defaulted, so a consumer can tell &quot;not applicable&quot; from &quot;not resolved&quot;.
-
-```csharp
-public sealed record AuthoritativeScopeAssignment(string TenantId, string CompanyId, string AuthorityId, DateTimeOffset ResolvedAsOfUtc, string? StructureNodeId = null, string? FundProfileId = null, string? FinancialAccountId = null, string? PortfolioId = null, string? CustodyAccountId = null, string? LedgerBookId = null, string? PeriodId = null, string? AccountingBasis = null, string? FunctionalCurrency = null, string? Jurisdiction = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ScopeKey =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:37](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L37) | Identity of the scope this assignment names, ignoring which authority asserted it and when. Two authorities that resolve the same accounting scope must produce the same key so the fan-out set is a set of scopes rather than a set of assertions. |
-| <code>public bool IsOwnedBy(string? tenantId, string? companyId) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:53](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L53) | Whether this assignment is owned by the supplied tenant/company pair. |
-
-## FundProfileOwnership
-
-Qualified name: <code>Meridian.Contracts.Tenancy.FundProfileOwnership</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:61](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L61).
-
-Recorded ownership of a fund profile by a tenant (and, for audit, its company).
-
-```csharp
-public sealed record FundProfileOwnership(string FundProfileId, string TenantId, string? CompanyId)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsHeldBy(string? tenantId) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:68](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L68) | Whether this ownership is held by the supplied tenant. Tenant identity is the authoritative scope key (it falls back to company id when a distinct tenant id is not yet issued), matched case-insensitively after trimming. |

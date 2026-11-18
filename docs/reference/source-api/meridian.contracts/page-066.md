@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PaymentInstruction
+
+Qualified name: <code>Meridian.Contracts.Workstation.PaymentInstruction</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:18](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L18).
+
+```csharp
+public sealed record PaymentInstruction(Guid InstructionId, Guid AccountId, string Currency, decimal Amount, DateOnly TradeDate, DateOnly ValueDate, string Counterparty, string Reference);
+```
+
+## PerformanceReturnFigureDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.PerformanceReturnFigureDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/PerformanceReturnDtos.cs:28](../../../../src/Meridian.Contracts/Workstation/PerformanceReturnDtos.cs#L28).
+
+One labeled return figure produced by the shared return kernel (W10-PERF-001). A figure always names its convention, status, period, currency, and source; Value is null whenever no single number may be shown as the return.
+
+```csharp
+public sealed record PerformanceReturnFigureDto(string Convention, string Status, string Currency, DateOnly PeriodStart, DateOnly PeriodEnd, decimal? Value, decimal? AnnualizedValue, int SubPeriodCount, IReadOnlyList<decimal> CandidateRates, string Source, IReadOnlyList<string> Reasons);
+```
+
 ## PeriodChange
 
 Qualified name: <code>Meridian.Contracts.Workstation.PeriodChange</code>. Kind: `class`.
@@ -687,34 +709,4 @@ Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:471](../../../.
 
 ```csharp
 public sealed record ProviderCorporateActionLedgerEffectDto(string CandidateId, string CandidateType, string? Symbol, Guid? SecurityId, string? ProviderEventId, string LedgerEffectKind, DateOnly? EffectiveDate, decimal? Factor, decimal? CashAmount, decimal? PrincipalAmount, decimal? IncomeAmount, string? Currency, ProviderLedgerReconciliationCheckStatusDto Status, string Reason, IReadOnlyList<ExpectedJournalPreviewLineDto> JournalLines);
-```
-
-## ProviderCorporateActionReadinessDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ProviderCorporateActionReadinessDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:512](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L512).
-
-```csharp
-public sealed record ProviderCorporateActionReadinessDto(bool ProviderCorporateActionsRoutable, ProviderLedgerReconciliationCheckStatusDto Status, int PositionCount, int SecurityResolvedCount, int EquityPositionCount, int FixedIncomeOrStructuredPositionCount, int FactorScheduleCandidateCount, int IncomeCashTransactionCount, int DividendCashTransactionCount, int InterestCashTransactionCount, IReadOnlyList<string> RequiredFeeds, IReadOnlyList<string> MissingFeeds, IReadOnlyList<string> Warnings, IReadOnlyList<string> EvidenceLinks, IReadOnlyList<ProviderCorporateActionReadinessLineDto> Lines, int ProviderCorporateActionEventCount = 0, int FactorScheduleEventCount = 0, bool FactorScheduleRoutable = false, int LoanScheduleEventCount = 0)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;ProviderCorporateActionEvidenceCandidateDto&gt; EvidenceCandidates { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:533](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L533) |  |
-| <code>public IReadOnlyList&lt;ProviderCorporateActionLedgerEffectDto&gt; LedgerEffects { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:535](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L535) |  |
-| <code>public IReadOnlyList&lt;ProviderSecurityMasterScheduleFeedDto&gt; SecurityMasterScheduleFeeds { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:537](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L537) |  |
-| <code>public int PrincipalCashTransactionCount { get; init; }</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:539](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L539) |  |
-| <code>public int AmortizationScheduleEventCount { get; init; }</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:541](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L541) |  |
-
-## ProviderCorporateActionReadinessLineDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ProviderCorporateActionReadinessLineDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:444](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L444).
-
-```csharp
-public sealed record ProviderCorporateActionReadinessLineDto(string Dimension, string Label, ProviderLedgerReconciliationCheckStatusDto Status, string RequiredFeed, string EvidenceSource, int Count, string Reason);
 ```

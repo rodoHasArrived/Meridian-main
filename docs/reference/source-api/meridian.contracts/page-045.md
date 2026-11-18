@@ -6,6 +6,51 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionDeadlinePolicy
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDeadlinePolicy</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:99](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L99).
+
+One validator is shared by direct capture, CSV preview, import, and persistence.
+
+```csharp
+public static class CorporateActionDeadlinePolicy
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string EvidenceKind = &quot;ElectionDeadline&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:101](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L101) |  |
+| <code>public const string CsvHeader = &quot;seriesId,kind,sourceParty,date,at,timeZoneId,financialAccountId,custodyAccountId,evidenceReference,evidenceHash,rationale,supersedesEvidenceId,withdrawn,sourceText&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:102](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L102) |  |
+| <code>public static readonly JsonSerializerOptions JsonOptions = new (JsonSerializerDefaults.Web);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:103](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L103) |  |
+| <code>public static string? Validate(CorporateActionElectionDeadlineDto? value);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:105](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L105) |  |
+| <code>public static string? ValidateEvidence(string? reference, string? hash, string? rationale);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:146](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L146) |  |
+| <code>public static string? ValidateCapture(CorporateActionElectionDeadlineDto? value, string? reference, string? hash, string? rationale) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:157](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L157) |  |
+| <code>public static string? ValidateApplicability(CorporateActionCaseScopeDto scope, CorporateActionElectionDeadlineDto value);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:162](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L162) |  |
+| <code>public static string? ValidateAppend(CorporateActionElectionDeadlineDto value, Guid? currentEvidenceId, CorporateActionElectionDeadlineDto? current);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:171](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L171) |  |
+| <code>public static CorporateActionElectionDeadlineDto Read(JsonElement? metadata);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:182](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L182) |  |
+| <code>public static bool TryParseInstant(string value, out DateTimeOffset at);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:196](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L196) |  |
+
+## CorporateActionDissentEvidencePolicy
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDissentEvidencePolicy</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:347](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L347).
+
+Checks that dissenting source values retain the field-level evidence required to establish a conflict.
+
+```csharp
+public static class CorporateActionDissentEvidencePolicy
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool HasCompleteFieldCandidates(CorporateActionSourceDisplayMetadataDto? metadata, string providerId);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:354](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L354) | Provider-name disagreement alone is not an actionable conflict. Every disputed field must retain at least two actual values, identify each contributing source, and link each value to typed retained evidence. This predicate is shared by read availability and atomic accept. |
+
 ## CorporateActionDissentFieldDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDissentFieldDto</code>. Kind: `record`.
@@ -858,46 +903,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static bool HasSameSourcePayload(CorporateActionSourceProposalDto existing, CorporateActionSourceProposalDto candidate);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionSourceProposalReplayComparer.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionSourceProposalReplayComparer.cs#L19) |  |
-
-## CorporateActionSourceProposalStates
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionSourceProposalStates</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L18).
-
-Lifecycle of a provider observation; separate from issuer-event and processing-case state.
-
-```csharp
-public static class CorporateActionSourceProposalStates
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Observed = &quot;Observed&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L20) |  |
-| <code>public const string ReviewRequired = &quot;ReviewRequired&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L21) |  |
-| <code>public const string Accepted = &quot;Accepted&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L22) |  |
-| <code>public const string Rejected = &quot;Rejected&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L23) |  |
-| <code>public const string Superseded = &quot;Superseded&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L24) |  |
-| <code>public static bool IsKnown(string? state) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L26) |  |
-| <code>public static bool CanDecide(string? state) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L29) |  |
-
-## CorporateActionStateConflictException
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionStateConflictException</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:894](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L894).
-
-Signals that a corporate action command conflicts with the resource&#x27;s current state.
-
-```csharp
-public sealed class CorporateActionStateConflictException : CorporateActionOperationException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CorporateActionStateConflictException(Guid resourceId, string message) : base(CorporateActionProblemCodes.StateConflict, message);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:896](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L896) |  |
-| <code>public Guid ResourceId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:902](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L902) |  |

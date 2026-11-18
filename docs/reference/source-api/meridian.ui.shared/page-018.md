@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecureReportingDistributionCapabilityCatalog
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SecureReportingDistributionCapabilityCatalog</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:106](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L106).
+
+Caller-specific distribution action readiness plus configured transport truth.
+
+```csharp
+public sealed record SecureReportingDistributionCapabilityCatalog(bool CanQueueDelivery, bool CanIssueAccessGrant, bool CanRevokeAccessGrant, string? ActionDisabledReasonCode, IReadOnlyList<SecureReportingTransportCapability> Transports);
+```
+
 ## SecureReportingDistributionOptions
 
 Qualified name: <code>Meridian.Ui.Shared.Services.SecureReportingDistributionOptions</code>. Kind: `record`.
@@ -820,6 +832,27 @@ Enum declarations:
 | <code>EarlyWarning</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:10](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L10) |  |
 | <code>HardBreach</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:11](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L11) |  |
 
+## TimingDriftHistory
+
+Qualified name: <code>Meridian.Ui.Shared.Services.TimingDriftHistory</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/TimingDriftHistory.cs:18](../../../../src/Meridian.Ui.Shared/Services/TimingDriftHistory.cs#L18).
+
+Rebuilds the accounting workspace&#x27;s Timing Drift count for recent days from retained strategy runs and retained reconciliation history, with no stored snapshots.
+
+```csharp
+public static class TimingDriftHistory
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Basis = &quot;Runs with timing drift at each UTC day end, rebuilt from run start times and retained reconciliation history; today is the live count. Days the retained run list cannot establish are left blank.&quot;;</code> | [src/Meridian.Ui.Shared/Services/TimingDriftHistory.cs:20](../../../../src/Meridian.Ui.Shared/Services/TimingDriftHistory.cs#L20) |  |
+| <code>public static async Task&lt;IReadOnlyList&lt;WorkstationMetricHistoryPointDto&gt;&gt; BuildAsync(IReadOnlyList&lt;StrategyRunSummary&gt; runs, bool runListMayBeTruncated, int populationSize, int liveCount, Func&lt;string, CancellationToken, Task&lt;IReadOnlyList&lt;ReconciliationRunSummary&gt;&gt;&gt; readHistory, DateTimeOffset now, CancellationToken ct, int days = 14);</code> | [src/Meridian.Ui.Shared/Services/TimingDriftHistory.cs:31](../../../../src/Meridian.Ui.Shared/Services/TimingDriftHistory.cs#L31) | days points, oldest first. The last point is liveCount, so it always equals the headline figure; earlier points are each UTC day&#x27;s end. |
+| <code>public static StrategyRunSummary[]? PopulationAt(IReadOnlyList&lt;StrategyRunSummary&gt; runs, bool runListMayBeTruncated, int populationSize, DateTimeOffset moment);</code> | [src/Meridian.Ui.Shared/Services/TimingDriftHistory.cs:80](../../../../src/Meridian.Ui.Shared/Services/TimingDriftHistory.cs#L80) | The most recent runs that had started before moment, or null when the list may be missing some of them. |
+| <code>public static bool HadTimingDriftAt(IReadOnlyList&lt;ReconciliationRunSummary&gt; history, DateTimeOffset moment);</code> | [src/Meridian.Ui.Shared/Services/TimingDriftHistory.cs:93](../../../../src/Meridian.Ui.Shared/Services/TimingDriftHistory.cs#L93) | Whether the run&#x27;s latest reconciliation created before moment reported timing drift. |
+
 ## TradingOperatorLiveOrderReadinessGate
 
 Qualified name: <code>Meridian.Ui.Shared.Services.TradingOperatorLiveOrderReadinessGate</code>. Kind: `class`.
@@ -890,33 +923,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static void ValidateWholeDocumentJson(string existingJson, string proposedJson);</code> | [src/Meridian.Ui.Shared/Services/UiConfigurationSaveGuard.cs:27](../../../../src/Meridian.Ui.Shared/Services/UiConfigurationSaveGuard.cs#L27) | Validates a desktop whole-document save without recovering corrupt input or ignoring unmodeled host sections. Call while holding the configuration write lease. |
-
-## UiConfigurationValidationException
-
-Qualified name: <code>Meridian.Ui.Shared.Services.UiConfigurationValidationException</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/UiConfigurationSaveGuard.cs:8](../../../../src/Meridian.Ui.Shared/Services/UiConfigurationSaveGuard.cs#L8).
-
-Validation failures contain property names and safe messages, never submitted values.
-
-```csharp
-public sealed class UiConfigurationValidationException(IReadOnlyDictionary<string, string[]> errors) : InvalidOperationException("Configuration was not saved. Correct the validation errors and retry.")
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyDictionary&lt;string, string[]&gt; Errors { get; } = errors;</code> | [src/Meridian.Ui.Shared/Services/UiConfigurationSaveGuard.cs:11](../../../../src/Meridian.Ui.Shared/Services/UiConfigurationSaveGuard.cs#L11) |  |
-
-## UpsertProviderModuleRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Services.UpsertProviderModuleRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:40](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L40).
-
-Request body for creating or updating a provider module configuration. CredentialValues are stored server-side and never returned.
-
-```csharp
-public sealed record UpsertProviderModuleRequest(string ModuleId, bool Enabled = true, int Priority = 100, Dictionary<string, string?>? CredentialValues = null, Dictionary<string, string?>? Settings = null);
-```

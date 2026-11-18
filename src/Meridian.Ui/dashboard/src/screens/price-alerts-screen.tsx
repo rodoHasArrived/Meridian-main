@@ -554,7 +554,7 @@ function PriceAlertDetailPanel({
 function PriceAlertDetailFieldRow({ field }: { field: PriceAlertDetailField }) {
   return (
     <div className="rounded-md border border-border/70 bg-background/45 px-3 py-2">
-      <dt className={cn("text-xs text-muted-foreground", usesTrackedCaps(field.label) && "font-mono uppercase tracking-[0.14em]")}>{field.label}</dt>
+      <dt className={cn("text-xs text-muted-foreground", usesTrackedCaps(field.label) && "type-label--caps")}>{field.label}</dt>
       <dd className={`mt-1 break-words font-mono text-xs ${detailFieldToneClass[field.tone]}`}>{field.value}</dd>
     </div>
   );

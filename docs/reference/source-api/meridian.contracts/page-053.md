@@ -6,6 +6,48 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityPriceKind
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityPriceKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L10).
+
+Categories of price in the Security Master pricing taxonomy.
+
+```csharp
+public enum SecurityPriceKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Raw</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L12) |  |
+| <code>TradePrice</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L13) |  |
+| <code>ClientOverride</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L14) |  |
+| <code>MarketGoldenCopy</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L15) |  |
+| <code>Comparison</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L16) |  |
+| <code>CalculatedPar</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L17) |  |
+| <code>CalculatedStraightLine</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L18) |  |
+
+## SecurityPriceQuotationEvidence
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityPriceQuotationEvidence</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L42).
+
+Provider-declared quotation and settlement facts; absent legacy facts are never inferred.
+
+```csharp
+public sealed record SecurityPriceQuotationEvidence(SecurityPriceBasis Basis, SecurityQuotationConvention Convention, SecurityQuoteStatus Status, DateOnly SettlementDate, string SettlementBasis)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool EconomicallyComparable(SecurityPriceQuotationEvidence? left, SecurityPriceQuotationEvidence? right) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L49) |  |
+
 ## SecurityPriceUnit
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityPriceUnit</code>. Kind: `enum`.
@@ -878,36 +920,3 @@ Enum declarations:
 | --- | --- | --- |
 | <code>Declared</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L36) | Declared through the graph API by an operator or an ingest, with its own validity window. |
 | <code>Derived</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L39) | Derived from the instrument&#x27;s own terms on every projection write; replaced whenever the terms change. |
-
-## SecurityUnderlyingRole
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityUnderlyingRole</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L10).
-
-What an underlying link says the target is to the instrument.
-
-```csharp
-public enum SecurityUnderlyingRole
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Underlying</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L13) | The instrument&#x27;s underlying: an option&#x27;s or warrant&#x27;s stock, a CFD&#x27;s or note&#x27;s reference asset. |
-| <code>ReferenceEntity</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L16) | The entity whose credit the instrument references (a CDS reference entity). |
-| <code>ReferenceObligation</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L19) | The obligation delivered or valued on a credit event (a CDS reference obligation). |
-| <code>Index</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L22) | A rate, inflation or credit index the instrument&#x27;s payments read (a floating index, an inflation index, a CDS index). |
-| <code>BasketConstituent</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L25) | One member of a basket the instrument references, carrying its weight. |
-| <code>Collateral</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L28) | An asset pledged under the instrument (collateral). |
-
-## SecurityValidationGateResultDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValidationGateResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:69](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L69).
-
-```csharp
-public sealed record SecurityValidationGateResultDto(SecurityValidationWorkflowDto Workflow, string? Symbol, Guid? SecurityId, bool IsResolved, bool IsBlocked, SecurityValidationReportDto Report, SecurityValidationSnapshotDto? Snapshot);
-```

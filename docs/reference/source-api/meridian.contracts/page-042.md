@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PlaidTransactionsSyncResult
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidTransactionsSyncResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:193](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L193).
+
+```csharp
+public sealed record PlaidTransactionsSyncResult(string? NextCursor, bool HasMore, IReadOnlyList<PlaidTransactionDto> Added, IReadOnlyList<PlaidTransactionDto> Modified, IReadOnlyList<string> RemovedTransactionIds, string? RequestId);
+```
+
+## PlaidTransferRequest
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidTransferRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:262](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L262).
+
+```csharp
+public sealed record PlaidTransferRequest(string ItemId, string PlaidAccountId, Guid PendingPaymentId, Guid EntityId, decimal Amount, string Currency, string Direction, string SecCode, string RequestedBy);
+```
+
 ## PlaidTransferResult
 
 Qualified name: <code>Meridian.Contracts.Plaid.PlaidTransferResult</code>. Kind: `record`.
@@ -546,28 +566,4 @@ Identifies a kernel input subject and supporting context.
 
 ```csharp
 public sealed record DecisionInput(string SubjectId, string? SubjectType = null, string? Context = null, IReadOnlyDictionary<string, string?>? Attributes = null);
-```
-
-## DecisionReason
-
-Qualified name: <code>Meridian.Contracts.RuleEvaluation.DecisionReason</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:26](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L26).
-
-Explains a single weighted rule contribution to a kernel decision.
-
-```csharp
-public sealed record DecisionReason(string RuleId, double Weight, string ReasonCode, string HumanExplanation, DecisionSeverity Severity = DecisionSeverity.Info, IReadOnlyList<string>? EvidenceRefs = null);
-```
-
-## DecisionResult (generic arity 1)
-
-Qualified name: <code>Meridian.Contracts.RuleEvaluation.DecisionResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:47](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L47).
-
-Standardized output envelope for all rule-evaluation kernels.
-
-```csharp
-public sealed record DecisionResult<TScore>(TScore Score, IReadOnlyList<DecisionReason> Reasons, DecisionTrace Trace);
 ```

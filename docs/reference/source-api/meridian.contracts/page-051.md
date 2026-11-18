@@ -6,6 +6,49 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityCashFlowBehavior
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCashFlowBehavior</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:35](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L35).
+
+How an asset class produces cash flows.
+
+```csharp
+public enum SecurityCashFlowBehavior
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>None</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:38](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L38) | The class produces no scheduled cash flows. |
+| <code>ContractualSchedule</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L41) | Coupon, interest and principal flows calculated from contractual terms. |
+| <code>FactorAmortizing</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L44) | Contractual flows whose principal amortizes by a dated pool factor. |
+| <code>SwapLegs</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:47](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L47) | Exchanges calculated per swap leg. |
+| <code>FinancingInterest</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L50) | Financing interest calculated from rate and term (repo). |
+| <code>Dividends</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:53](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L53) | Declared dividends, recorded as corporate actions rather than calculated. |
+| <code>FundDistributions</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:56](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L56) | Fund distributions, recorded from the administrator rather than calculated. |
+| <code>ProviderSupplied</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:59](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L59) | Flows supplied by a provider or administrator (capital calls, rents, draws). |
+
+## SecurityCashFlowBehaviorExtensions
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCashFlowBehaviorExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:77](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L77).
+
+Behaviour derived from SecurityCashFlowBehavior.
+
+```csharp
+public static class SecurityCashFlowBehaviorExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool IsCalculatedFromTerms(this SecurityCashFlowBehavior behavior) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:80](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L80) | Whether flows of this kind are calculated from the security&#x27;s terms. |
+
 ## SecurityCashFlowBlockerDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCashFlowBlockerDto</code>. Kind: `record`.
@@ -803,24 +846,4 @@ A projected index fixing for a reset date. Rates above 1 are read as percentages
 
 ```csharp
 public sealed record SecurityForwardCurvePoint(DateOnly Date, decimal Rate);
-```
-
-## SecurityHistoryRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityHistoryRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs#L20).
-
-```csharp
-public sealed record SecurityHistoryRequest(Guid SecurityId, int Take = 100);
-```
-
-## SecurityIdentifierDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityIdentifierDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:90](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L90).
-
-```csharp
-public sealed record SecurityIdentifierDto(SecurityIdentifierKind Kind, string Value, bool IsPrimary, DateTimeOffset ValidFrom, DateTimeOffset? ValidTo = null, string? Provider = null, string? NormalizedValue = null, string? NormalizedProvider = null);
 ```

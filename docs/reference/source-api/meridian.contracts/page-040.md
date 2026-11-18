@@ -6,6 +6,47 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LifecycleShutdownRequestDto
+
+Qualified name: <code>Meridian.Contracts.Lifecycle.LifecycleShutdownRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:34](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L34).
+
+```csharp
+public sealed record LifecycleShutdownRequestDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public LifecycleShutdownReason Reason { get; init; } = LifecycleShutdownReason.Operator;</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:36](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L36) |  |
+| <code>public string? Detail { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:37](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L37) |  |
+| <code>public string? RequestedBy { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:38](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L38) |  |
+
+## LifecycleShutdownStage
+
+Qualified name: <code>Meridian.Contracts.Lifecycle.LifecycleShutdownStage</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:65](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L65).
+
+```csharp
+public enum LifecycleShutdownStage
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Requested</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:67](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L67) |  |
+| <code>StopAcceptingWork</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:68](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L68) |  |
+| <code>Draining</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:69](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L69) |  |
+| <code>Flushing</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:70](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L70) |  |
+| <code>PersistingReceipt</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:71](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L71) |  |
+| <code>ReleasingHost</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:72](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L72) |  |
+| <code>Completed</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:73](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L73) |  |
+| <code>Failed</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:74](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L74) |  |
+
 ## LifecycleShutdownStageDto
 
 Qualified name: <code>Meridian.Contracts.Lifecycle.LifecycleShutdownStageDto</code>. Kind: `record`.
@@ -1019,26 +1060,4 @@ Source: [src/Meridian.Contracts/Options/OptionVisualizationDtos.cs:67](../../../
 
 ```csharp
 public sealed record AcceptOptionAssessmentImportRequest(Guid IdempotencyKey, string PreviewFingerprint, OptionAssessmentImportRequest Import);
-```
-
-## BrokerOptionAssessment
-
-Qualified name: <code>Meridian.Contracts.Options.BrokerOptionAssessment</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Options/OptionVisualizationDtos.cs:45](../../../../src/Meridian.Contracts/Options/OptionVisualizationDtos.cs#L45).
-
-Broker-reported observations, retained as dated evidence rather than a current acceptance.
-
-```csharp
-public sealed record BrokerOptionAssessment(string SchemaVersion, Guid FundAccountId, string ProviderId, string ExternalAccountId, DateTimeOffset AssessedAt, string BrokerReference, string Outcome, string RawBrokerStatus, OptionAssessmentBasket Basket, string? InitialMarginBefore = null, string? InitialMarginChange = null, string? InitialMarginAfter = null, string? MaintenanceMarginBefore = null, string? MaintenanceMarginChange = null, string? MaintenanceMarginAfter = null, string? ExcessLiquidityAfter = null, string? CashImpact = null, string? PermissionEvidence = null, string? RestrictionEvidence = null, IReadOnlyList<string>? Warnings = null, string? MarginCurrency = null, string? CashImpactCurrency = null);
-```
-
-## OptionAssessmentBasket
-
-Qualified name: <code>Meridian.Contracts.Options.OptionAssessmentBasket</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Options/OptionVisualizationDtos.cs:40](../../../../src/Meridian.Contracts/Options/OptionVisualizationDtos.cs#L40).
-
-```csharp
-public sealed record OptionAssessmentBasket(string Quantity, string OrderType, string PriceEffect, string? LimitPrice, string Currency, IReadOnlyList<OptionAssessmentLeg> Legs);
 ```

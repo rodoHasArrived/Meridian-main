@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## InstrumentPassportOperationsWorkbenchDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.InstrumentPassportOperationsWorkbenchDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:484](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L484).
+
+```csharp
+public sealed record InstrumentPassportOperationsWorkbenchDto(string Status, string Summary, IReadOnlyList<InstrumentPassportOperationsWorkbenchPanelDto> Panels, IReadOnlyList<InstrumentPassportOperationsReadinessDto> Readiness, IReadOnlyList<InstrumentPassportOperationsHandoffDto> Handoffs);
+```
+
+## InstrumentPassportOperationsWorkbenchItemDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.InstrumentPassportOperationsWorkbenchItemDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:498](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L498).
+
+```csharp
+public sealed record InstrumentPassportOperationsWorkbenchItemDto(string ItemId, string Label, string Value, string Status, string Detail, int EvidenceCount, int BlockingIssueCount, string? Route = null);
+```
+
 ## InstrumentPassportOperationsWorkbenchPanelDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.InstrumentPassportOperationsWorkbenchPanelDto</code>. Kind: `record`.
@@ -177,7 +197,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Workstation.IOperatorTriageStore</code>. Kind: `interface`.
 
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:60](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L60).
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:66](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L66).
 
 Serializes one item&#x27;s metadata update. Implementations persist state, activity and replay receipt together. The callback may delegate a source-owned assignment using its idempotent command.
 
@@ -189,8 +209,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;OperatorTriageState&gt; GetAsync(OperatorTriageScope scope, string workItemId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:62](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L62) |  |
-| <code>Task&lt;OperatorTriageState&gt; UpdateAsync(OperatorTriageScope scope, string workItemId, Func&lt;OperatorTriageState, CancellationToken, Task&lt;OperatorTriageState&gt;&gt; update, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:63](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L63) |  |
+| <code>Task&lt;OperatorTriageState&gt; GetAsync(OperatorTriageScope scope, string workItemId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:68](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L68) |  |
+| <code>Task&lt;OperatorTriageState&gt; UpdateAsync(OperatorTriageScope scope, string workItemId, Func&lt;OperatorTriageState, CancellationToken, Task&lt;OperatorTriageState&gt;&gt; update, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:69](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L69) |  |
 
 ## IPrivateCapitalCloseCockpitService
 
@@ -600,7 +620,7 @@ public sealed record MetricsDiff(decimal NetPnlDelta, decimal TotalReturnDelta, 
 
 Qualified name: <code>Meridian.Contracts.Workstation.MultiAssetClassCoverageDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1032](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1032).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1041](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1041).
 
 Operational coverage row for one asset class across Security Master, provider evidence, ledger, reconciliation, and close readiness.
 
@@ -612,7 +632,7 @@ public sealed record MultiAssetClassCoverageDto(string AssetClass, string Displa
 
 Qualified name: <code>Meridian.Contracts.Workstation.MultiAssetCoverageSummaryDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1078](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1078).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1087](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1087).
 
 Shared multi-asset operational coverage payload returned by GET /api/workstation/portfolio/multi-asset-coverage.
 
@@ -624,28 +644,4 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;MultiAssetPackCoverageDto&gt; AssetPacks { get; init; } = AssetPacks??[];</code> | [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1087](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1087) |  |
-
-## MultiAssetDrillThroughTargetDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.MultiAssetDrillThroughTargetDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1019](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1019).
-
-Shared drill-through target for one asset-class coverage row.
-
-```csharp
-public sealed record MultiAssetDrillThroughTargetDto(string TargetId, string TargetType, string Label, string Route, string? EvidenceLink, string Status, string Source);
-```
-
-## MultiAssetEvidenceRequirementDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.MultiAssetEvidenceRequirementDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:998](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L998).
-
-Asset-class-specific evidence requirement rendered by Portfolio, Accounting, and desktop workstations.
-
-```csharp
-public sealed record MultiAssetEvidenceRequirementDto(string RequirementId, string Label, string Category, string Status, string EvidenceRoute, bool Required);
-```
+| <code>public IReadOnlyList&lt;MultiAssetPackCoverageDto&gt; AssetPacks { get; init; } = AssetPacks??[];</code> | [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1096](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1096) |  |

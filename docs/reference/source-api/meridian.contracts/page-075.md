@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategySweepObjectiveRanking
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategySweepObjectiveRanking</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:244](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L244).
+
+```csharp
+public sealed record StrategySweepObjectiveRanking(string RunId, string StrategyName, decimal? ObjectiveValue, decimal? NetPnl, decimal? TotalReturn, decimal? FinalEquity, DateTimeOffset LastUpdatedAt);
+```
+
+## StrategySweepResultGroup
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategySweepResultGroup</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:253](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L253).
+
+```csharp
+public sealed record StrategySweepResultGroup(string SweepId, string SweepDefinitionHash, string? Objective, DateTimeOffset StartedAt, int RunCount, IReadOnlyList<StrategyRunSummary> Runs, IReadOnlyList<StrategySweepObjectiveRanking> ObjectiveRankings, bool ComparisonContextVerified = false, bool HistoryMayBeTruncated = false, string CoverageDescription = "Expected grid was not retained; missing cells are inferred from observed parameter values.");
+```
+
 ## StrategyWhatChangedItem
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyWhatChangedItem</code>. Kind: `record`.
@@ -596,26 +616,4 @@ Operator-authored, effective-dated edit to a single passport field. A non-empty 
 
 ```csharp
 public sealed record UpdateSecurityFieldRequest(Guid SecurityId, long ExpectedVersion, string FieldPath, string? NewValue, DateTimeOffset EffectiveFrom, string Actor, string Justification, string? SourceRecordId = null, string? FundProfileId = null, string? CorrelationId = null);
-```
-
-## ValidateLedgerDraft
-
-Qualified name: <code>Meridian.Contracts.Workstation.ValidateLedgerDraft</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:24](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L24).
-
-```csharp
-public sealed record ValidateLedgerDraft(Guid WorkflowId, FundWorkflowCommandMetadata Metadata);
-```
-
-## ValuationFreshnessPreviewDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ValuationFreshnessPreviewDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/MarkFreshnessDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/MarkFreshnessDtos.cs#L16).
-
-Read-only impact preview; no draft, approval, schedule, or journal is retained.
-
-```csharp
-public sealed record ValuationFreshnessPreviewDto(string PolicyVersion, int AssessedPositionCount, int BlockedPositionCount, int AffectedValuationCount, IReadOnlyList<MarkFreshnessAssessmentDto> Positions, DateTimeOffset EvaluatedAtUtc);
 ```

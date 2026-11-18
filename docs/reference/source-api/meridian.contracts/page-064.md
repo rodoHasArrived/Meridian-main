@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationsApprovalPolicyMatrixDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsApprovalPolicyMatrixDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:748](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L748).
+
+```csharp
+public sealed record OperationsApprovalPolicyMatrixDto(string PolicyId, string Version, DateTimeOffset GeneratedAtUtc, IReadOnlyList<OperationsApprovalPolicyMatrixRowDto> Rows);
+```
+
+## OperationsApprovalPolicyMatrixRowDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsApprovalPolicyMatrixRowDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:754](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L754).
+
+```csharp
+public sealed record OperationsApprovalPolicyMatrixRowDto(string PolicyKey, string WorkflowArea, string Action, OperationsGateKeyDto Gate, string Trigger, string RequiredPermission, string SubmitterRole, string ReviewerRole, int RequiredDistinctApprovals, bool RequiresIndependentReviewer, bool RequiresReportPack, bool RequiresChecklistControlApprovals, string EvidenceRequirement, string AuditEventType, string Route, string Severity);
+```
+
 ## OperationsApprovalPolicyRuleAuditEventDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsApprovalPolicyRuleAuditEventDto</code>. Kind: `record`.
@@ -626,23 +646,3 @@ Enum declarations:
 | <code>Ready = 1</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:96](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L96) |  |
 | <code>ReviewRequired = 2</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:97](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L97) |  |
 | <code>Blocked = 3</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:98](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L98) |  |
-
-## OperationsReconciliationLaneSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsReconciliationLaneSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1142](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1142).
-
-```csharp
-public sealed record OperationsReconciliationLaneSummaryDto(string LaneId, string Label, OperationsReconciliationLaneStatusDto Status, bool IsReady, int BreakCount, string Summary, string? RouteHint, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, IReadOnlyList<string>? RequiredActions = null);
-```
-
-## OperationsReconciliationRunRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsReconciliationRunRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:635](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L635).
-
-```csharp
-public sealed record OperationsReconciliationRunRequestDto(long ExpectedVersion, string Actor, string? Rationale = null, string? CorrelationId = null, IReadOnlyList<OperationsBreakCaseDto>? BreakCases = null, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null, int? SecurityCoverageIssueCount = null, int? SecurityAccountingIssueCount = null, int? ExpectedAccountingEventCount = null, int? ExpectedJournalPreviewCount = null, string? SourceRunId = null, string? ReconciliationRunId = null, Guid? BankEntityId = null, decimal? AmountTolerance = null, int? MaxAsOfDriftMinutes = null, IReadOnlyList<OperationsReconciliationLaneSummaryDto>? ReconciliationLanes = null);
-```

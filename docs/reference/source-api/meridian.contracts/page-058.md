@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataUploadPreviewResultDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.DataUploadPreviewResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/DataUploadDtos.cs:53](../../../../src/Meridian.Contracts/Workstation/DataUploadDtos.cs#L53).
+
+Bounded upload preview result. The result retains evidence and validation output only.
+
+```csharp
+public sealed record DataUploadPreviewResultDto(string UploadId, string TemplateId, string TemplateLabel, string FileName, long FileSizeBytes, string ContentType, string UploadedBy, DateTimeOffset UploadedAtUtc, string RetainedPath, int ParsedRowCount, int PreviewRowCount, IReadOnlyList<string> Headers, IReadOnlyList<IReadOnlyDictionary<string, string>> PreviewRows, IReadOnlyList<DataUploadValidationIssueDto> Issues, string Status, string NextAction);
+```
+
+## DataUploadTemplateCatalogDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.DataUploadTemplateCatalogDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/DataUploadDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/DataUploadDtos.cs#L12).
+
+Upload-template catalog surfaced by the Data workspace before source files are accepted.
+
+```csharp
+public sealed record DataUploadTemplateCatalogDto(IReadOnlyList<DataUploadTemplateDto> Templates, IReadOnlyList<string> AcceptedFileExtensions, int MaxPreviewRows, long MaxFileBytes, string? WorkbookFileName = null, IReadOnlyList<string>? WorkbookAcceptedFileExtensions = null, long WorkbookMaxFileBytes = 0);
+```
+
 ## DataUploadTemplateDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.DataUploadTemplateDto</code>. Kind: `record`.
@@ -719,41 +743,3 @@ Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:185](../../.
 ```csharp
 public sealed record EvidenceRequestDto(string RequestId, string RequestKind, EvidenceValidationSeverityDto Severity, string Status, string Summary, string? TargetKind = null, string? TargetId = null, string? BlockedOutput = null);
 ```
-
-## EvidenceRequestListDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.EvidenceRequestListDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:465](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L465).
-
-```csharp
-public sealed record EvidenceRequestListDto(string RequestListId, string RequestListKind, string TargetKind, string TargetId, EvidenceValidationSeverityDto HighestSeverity, string Status, int RequestCount, IReadOnlyList<string> RequestIds, IReadOnlyList<string> EvidenceKinds, IReadOnlyList<string> BlockedOutputs, string Summary)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public EvidenceRequestListKindDto RequestListKindCode { get; init; } = EvidenceRequestListKindDto.Unknown;</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:478](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L478) |  |
-
-## EvidenceRequestListKindDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.EvidenceRequestListKindDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:454](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L454).
-
-```csharp
-public enum EvidenceRequestListKindDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unknown = 0</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:456](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L456) |  |
-| <code>Evidence = 1</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:457](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L457) |  |
-| <code>Close = 2</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:458](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L458) |  |
-| <code>Audit = 3</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:459](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L459) |  |
-| <code>Tax = 4</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:460](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L460) |  |
-| <code>ReportPackage = 5</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:461](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L461) |  |
-| <code>OperationalEvent = 6</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:462](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L462) |  |

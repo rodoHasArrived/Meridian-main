@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PreferredEquityTermsDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.PreferredEquityTermsDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:192](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L192).
+
+Preferred-equity-specific terms returned by the preferred-terms query.
+
+```csharp
+public sealed record PreferredEquityTermsDto(Guid SecurityId, string? Classification, decimal? DividendRate, string? DividendType, bool? IsCumulative, decimal? RedemptionPrice, DateOnly? RedemptionDate, DateOnly? CallableDate, bool? ParticipatesInCommonDividends, decimal? AdditionalDividendThreshold, string? LiquidationPreferenceKind, decimal? LiquidationPreferenceMultiple, long Version);
+```
+
+## PricingHierarchyEntryDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.PricingHierarchyEntryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L58).
+
+One entry in a per-security pricing source priority chain.
+
+```csharp
+public sealed record PricingHierarchyEntryDto(int Priority, string SourceId, string SourceDisplayName, int MaxDaysStale);
+```
+
 ## PrincipalPaydownCorporateActionTerms
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.PrincipalPaydownCorporateActionTerms</code>. Kind: `record`.
@@ -895,32 +919,3 @@ Enum declarations:
 | <code>Undeclared</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1501](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1501) | No disposition is declared: a missing mapping, not a decision. |
 | <code>InSlice</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1504](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1504) | The class posts as its declared SecurityAssetClassDescriptor.AccountingInstrumentClass. |
 | <code>OutsideSlice</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1507](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1507) | The class is intentionally outside the slice and must not reach any posting by fallback. |
-
-## SecurityAccountingInstrumentClasses
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAccountingInstrumentClasses</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1522](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1522).
-
-The closed vocabulary of accounting-slice instrument classes a Security Master record can post as. These are the values the Security Master accounting event slice gates on; keeping them here stops producers and that gate drifting on spelling.
-
-```csharp
-public static class SecurityAccountingInstrumentClasses
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Bond = &quot;Bond&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1525](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1525) | Coupon-bearing and discount fixed income booked against par. |
-| <code>public const string AssetBackedSecurity = &quot;AssetBackedSecurity&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1528](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1528) | Securitized credit tranches whose principal amortizes by pool factor (ADR-022). |
-
-## SecurityAliasDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAliasDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:100](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L100).
-
-```csharp
-public sealed record SecurityAliasDto(Guid AliasId, Guid SecurityId, string AliasKind, string AliasValue, string? Provider, SecurityAliasScope Scope, string? Reason, string CreatedBy, DateTimeOffset CreatedAt, DateTimeOffset ValidFrom, DateTimeOffset? ValidTo, bool IsEnabled);
-```

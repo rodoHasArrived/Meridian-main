@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PaymentIntentApprovalStepDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.PaymentIntentApprovalStepDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:185](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L185).
+
+```csharp
+public sealed record PaymentIntentApprovalStepDto(int Sequence, string Role, string Actor, string Status, DateTimeOffset? DecidedAtUtc = null, string? EvidenceRoute = null);
+```
+
 ## PaymentIntentAuditEventDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.PaymentIntentAuditEventDto</code>. Kind: `record`.
@@ -117,6 +127,25 @@ Enum declarations:
 | <code>ExecutionDeferred = 5</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:186](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L186) |  |
 | <code>Blocked = 6</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:187](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L187) |  |
 
+## PostedComparisonMeasureDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.PostedComparisonMeasureDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Ledger/PostedPeriodComparisonDtos.cs:14](../../../../src/Meridian.Contracts/Ledger/PostedPeriodComparisonDtos.cs#L14).
+
+What a posted-period comparison measures.
+
+```csharp
+public enum PostedComparisonMeasureDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Movements</code> | [src/Meridian.Contracts/Ledger/PostedPeriodComparisonDtos.cs:17](../../../../src/Meridian.Contracts/Ledger/PostedPeriodComparisonDtos.cs#L17) | Postings within each period&#x27;s window: activity, not balances. |
+| <code>ClosingBalances</code> | [src/Meridian.Contracts/Ledger/PostedPeriodComparisonDtos.cs:22](../../../../src/Meridian.Contracts/Ledger/PostedPeriodComparisonDtos.cs#L22) | Cumulative balances at each period&#x27;s end: every posting in the book&#x27;s earlier periods plus the period itself (to the cutoff when the current period is open). |
+
 ## PostedLedgerJournalEntryResultDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.PostedLedgerJournalEntryResultDto</code>. Kind: `record`.
@@ -131,12 +160,12 @@ public sealed record PostedLedgerJournalEntryResultDto(Guid JournalEntryId, Guid
 
 Qualified name: <code>Meridian.Contracts.Ledger.PostedPeriodComparisonDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/PostedPeriodComparisonDtos.cs:14](../../../../src/Meridian.Contracts/Ledger/PostedPeriodComparisonDtos.cs#L14).
+Source: [src/Meridian.Contracts/Ledger/PostedPeriodComparisonDtos.cs:26](../../../../src/Meridian.Contracts/Ledger/PostedPeriodComparisonDtos.cs#L26).
 
 Recomputed posted-journal population, with explicit cutoffs; never a strategy-run simulation.
 
 ```csharp
-public sealed record PostedPeriodComparisonDto(string Status, string? Reason, DateTimeOffset GeneratedAt, DateTimeOffset AsOf, Guid LedgerBookId, string FundProfileId, string BookName, AccountingBasisKindDto AccountingBasis, string Currency, string AccountingPolicyId, string AccountingPolicyVersion, PostedPeriodComparisonRangeDto Current, PostedPeriodComparisonRangeDto? Baseline, IReadOnlyList<PostedPeriodComparisonLineDto> Lines, IReadOnlyList<Guid> CurrentJournalIds, IReadOnlyList<Guid> BaselineJournalIds, string? PopulationHash, LedgerDimensionSetDto? Dimensions);
+public sealed record PostedPeriodComparisonDto(string Status, string? Reason, DateTimeOffset GeneratedAt, DateTimeOffset AsOf, Guid LedgerBookId, string FundProfileId, string BookName, AccountingBasisKindDto AccountingBasis, string Currency, string AccountingPolicyId, string AccountingPolicyVersion, PostedPeriodComparisonRangeDto Current, PostedPeriodComparisonRangeDto? Baseline, IReadOnlyList<PostedPeriodComparisonLineDto> Lines, IReadOnlyList<Guid> CurrentJournalIds, IReadOnlyList<Guid> BaselineJournalIds, string? PopulationHash, LedgerDimensionSetDto? Dimensions, PostedComparisonMeasureDto Measure = PostedComparisonMeasureDto.Movements);
 ```
 
 ## PostedPeriodComparisonLineDto
@@ -712,34 +741,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;string&gt; RequiredEvidence { get; init; } = RequiredEvidence??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:159](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L159) |  |
-
-## PrivateCapitalPaymentIntentEvidenceStatusDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.PrivateCapitalPaymentIntentEvidenceStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:191](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L191).
-
-```csharp
-public enum PrivateCapitalPaymentIntentEvidenceStatusDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>MissingIntent = 0</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:193](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L193) |  |
-| <code>CashEvidenceMissing = 1</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:194](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L194) |  |
-| <code>IntentCaptured = 2</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:195](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L195) |  |
-| <code>SettlementMatched = 3</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:196](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L196) |  |
-
-## PrivateCapitalPostingAuthorityDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.PrivateCapitalPostingAuthorityDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/PrivateCapitalLifecycleDtos.cs:74](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalLifecycleDtos.cs#L74).
-
-Evidence bound into the approved journal and checked in its final storage transaction.
-
-```csharp
-public sealed record PrivateCapitalPostingAuthorityDto(PrivateCapitalScopeDto Scope, string CallId, string CommitmentId, int CommitmentRevision, string PlanHash, string Kind, decimal Amount, DateOnly EffectiveDate, string? FundingReceiptId = null, string? BankLineId = null, string? BankTransactionHash = null);
-```

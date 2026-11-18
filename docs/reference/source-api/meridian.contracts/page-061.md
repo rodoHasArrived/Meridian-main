@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FundReportPackEvidenceBundleSourceLinkDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FundReportPackEvidenceBundleSourceLinkDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:812](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L812).
+
+```csharp
+public sealed record FundReportPackEvidenceBundleSourceLinkDto(string SourceType, string SourceId, string Label, string? Route, string SourceSystem, IReadOnlyList<string> RelatedEvidenceIds, DateTimeOffset? CapturedAtUtc = null);
+```
+
+## FundReportPackGenerateRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FundReportPackGenerateRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:535](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L535).
+
+Request to generate and persist an immutable governed report pack.
+
+```csharp
+public sealed record FundReportPackGenerateRequestDto(string FundProfileId, string AuditActor, GovernanceReportKindDto ReportKind = GovernanceReportKindDto.TrialBalance, DateTimeOffset? AsOf = null, string? Currency = null, string? CorrelationId = null, string? DecisionRationale = null, IReadOnlyList<GovernanceReportArtifactFormatDto>? Formats = null, int? ExpectedSchemaVersion = null, string? BrandingThemeId = null, ReportBrandingThemeDto? BrandingThemeOverride = null);
+```
+
 ## FundReportPackHistoryItemDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.FundReportPackHistoryItemDto</code>. Kind: `record`.
@@ -734,24 +756,4 @@ Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:
 
 ```csharp
 public sealed record InstrumentPassportOperationsReadinessDto(string ReadinessId, string Label, string Status, bool IsReady, string Summary, int EvidenceCount, int BlockingIssueCount, string NextAction, string? Route = null);
-```
-
-## InstrumentPassportOperationsWorkbenchDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.InstrumentPassportOperationsWorkbenchDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:484](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L484).
-
-```csharp
-public sealed record InstrumentPassportOperationsWorkbenchDto(string Status, string Summary, IReadOnlyList<InstrumentPassportOperationsWorkbenchPanelDto> Panels, IReadOnlyList<InstrumentPassportOperationsReadinessDto> Readiness, IReadOnlyList<InstrumentPassportOperationsHandoffDto> Handoffs);
-```
-
-## InstrumentPassportOperationsWorkbenchItemDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.InstrumentPassportOperationsWorkbenchItemDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:498](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L498).
-
-```csharp
-public sealed record InstrumentPassportOperationsWorkbenchItemDto(string ItemId, string Label, string Value, string Status, string Detail, int EvidenceCount, int BlockingIssueCount, string? Route = null);
 ```

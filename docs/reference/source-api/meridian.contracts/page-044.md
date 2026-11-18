@@ -6,6 +6,47 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CommitmentLot
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CommitmentLot</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L12).
+
+Canonical open lot for commitment-denominated holdings: private fund interests, unfunded commitments and guarantees, whose SecurityAssetClassDescriptor.LotUnit is SecurityLotUnitKind.Commitment. The lot&#x27;s size is the amount committed; how much of it has been called is a separate fact (FundedAmount), so funded and unfunded are never inferred from a cost basis. Distributions the manager may recall (RecallableDistributions) restore unfunded commitment without changing the commitment itself.
+
+```csharp
+public sealed record CommitmentLot : IUnitizedLot
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CommitmentLot(string lotId, Guid securityId, DateOnly committedDate, decimal totalCommitment, decimal fundedAmount = 0m, decimal recallableDistributions = 0m);</code> | [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L14) |  |
+| <code>public string LotId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:43](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L43) |  |
+| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:53](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L53) | Security Master identity the lot&#x27;s reference data (sponsor, vintage, fee terms) resolves from. |
+| <code>public DateOnly CommittedDate { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:56](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L56) | Date the commitment became binding. |
+| <code>public decimal TotalCommitment { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:59](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L59) | Total amount committed, in the commitment currency. |
+| <code>public decimal FundedAmount { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:62](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L62) | Cumulative capital contributed against the commitment. |
+| <code>public decimal RecallableDistributions { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:65](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L65) | Distributions returned to the holder that the manager may call again. |
+| <code>public decimal UnfundedCommitment =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:68](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L68) | Capital still callable: the commitment, less contributions, plus recallable distributions. |
+| <code>public decimal FundedFraction =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:71](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L71) | Contributions as a fraction of the commitment; exceeds one once recalled distributions are re-contributed. |
+| <code>public bool IsFullyFunded =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:73](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L73) |  |
+| <code>public CommitmentLot Draw(decimal amount);</code> | [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:76](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L76) | Records a capital call being met: amount moves from unfunded to funded. |
+| <code>public CommitmentLot RecordRecallableDistribution(decimal amount);</code> | [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:87](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L87) | Records a distribution the manager may recall, which restores unfunded commitment. |
+
+## ComputeOtcExposureSnapshotRequest
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ComputeOtcExposureSnapshotRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:243](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L243).
+
+Asks for a netting set&#x27;s exposure to be computed and recorded as of a date. A KnowledgeAsOf earlier than the computation replays what was known then; the snapshot is recorded as evidence and no call is issued from it.
+
+```csharp
+public sealed record ComputeOtcExposureSnapshotRequest(DateOnly AsOfDate, DateTimeOffset? KnowledgeAsOf = null);
+```
+
 ## ConvertibleEquityTermsDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.ConvertibleEquityTermsDto</code>. Kind: `record`.
@@ -664,48 +705,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public override DateTimeOffset? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:209](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L209) |  |
 | <code>public override void Write(Utf8JsonWriter writer, DateTimeOffset? value, JsonSerializerOptions options);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:218](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L218) |  |
-
-## CorporateActionDeadlinePolicy
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDeadlinePolicy</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:99](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L99).
-
-One validator is shared by direct capture, CSV preview, import, and persistence.
-
-```csharp
-public static class CorporateActionDeadlinePolicy
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string EvidenceKind = &quot;ElectionDeadline&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:101](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L101) |  |
-| <code>public const string CsvHeader = &quot;seriesId,kind,sourceParty,date,at,timeZoneId,financialAccountId,custodyAccountId,evidenceReference,evidenceHash,rationale,supersedesEvidenceId,withdrawn,sourceText&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:102](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L102) |  |
-| <code>public static readonly JsonSerializerOptions JsonOptions = new (JsonSerializerDefaults.Web);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:103](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L103) |  |
-| <code>public static string? Validate(CorporateActionElectionDeadlineDto? value);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:105](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L105) |  |
-| <code>public static string? ValidateEvidence(string? reference, string? hash, string? rationale);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:146](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L146) |  |
-| <code>public static string? ValidateCapture(CorporateActionElectionDeadlineDto? value, string? reference, string? hash, string? rationale) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:157](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L157) |  |
-| <code>public static string? ValidateApplicability(CorporateActionCaseScopeDto scope, CorporateActionElectionDeadlineDto value);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:162](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L162) |  |
-| <code>public static string? ValidateAppend(CorporateActionElectionDeadlineDto value, Guid? currentEvidenceId, CorporateActionElectionDeadlineDto? current);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:171](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L171) |  |
-| <code>public static CorporateActionElectionDeadlineDto Read(JsonElement? metadata);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:182](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L182) |  |
-| <code>public static bool TryParseInstant(string value, out DateTimeOffset at);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:196](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L196) |  |
-
-## CorporateActionDissentEvidencePolicy
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDissentEvidencePolicy</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:347](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L347).
-
-Checks that dissenting source values retain the field-level evidence required to establish a conflict.
-
-```csharp
-public static class CorporateActionDissentEvidencePolicy
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static bool HasCompleteFieldCandidates(CorporateActionSourceDisplayMetadataDto? metadata, string providerId);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:354](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L354) | Provider-name disagreement alone is not an actionable conflict. Every disputed field must retain at least two actual values, identify each contributing source, and link each value to typed retained evidence. This predicate is shared by read availability and atomic accept. |

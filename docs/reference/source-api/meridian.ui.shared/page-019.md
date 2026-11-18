@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## UiConfigurationValidationException
+
+Qualified name: <code>Meridian.Ui.Shared.Services.UiConfigurationValidationException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/UiConfigurationSaveGuard.cs:8](../../../../src/Meridian.Ui.Shared/Services/UiConfigurationSaveGuard.cs#L8).
+
+Validation failures contain property names and safe messages, never submitted values.
+
+```csharp
+public sealed class UiConfigurationValidationException(IReadOnlyDictionary<string, string[]> errors) : InvalidOperationException("Configuration was not saved. Correct the validation errors and retry.")
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyDictionary&lt;string, string[]&gt; Errors { get; } = errors;</code> | [src/Meridian.Ui.Shared/Services/UiConfigurationSaveGuard.cs:11](../../../../src/Meridian.Ui.Shared/Services/UiConfigurationSaveGuard.cs#L11) |  |
+
+## UpsertProviderModuleRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.UpsertProviderModuleRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:40](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L40).
+
+Request body for creating or updating a provider module configuration. CredentialValues are stored server-side and never returned.
+
+```csharp
+public sealed record UpsertProviderModuleRequest(string ModuleId, bool Enabled = true, int Priority = 100, Dictionary<string, string?>? CredentialValues = null, Dictionary<string, string?>? Settings = null);
+```
+
 ## WorkstationEntityLifecycleExternalReviewEvidenceAuthority
 
 Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationEntityLifecycleExternalReviewEvidenceAuthority</code>. Kind: `class`.

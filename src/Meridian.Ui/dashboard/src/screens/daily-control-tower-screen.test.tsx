@@ -203,8 +203,8 @@ describe("DailyControlTowerScreen", () => {
   it("offers Assigned to me on every source and says why workspace signals leave the list", async () => {
     await renderLoaded();
     const user = userEvent.setup();
-    const assigned = screen.getByRole("checkbox", { name: "Assigned to me" });
-    await user.click(assigned);
+    // "Assigned to me" is the Owner switch's own-items choice.
+    await user.selectOptions(screen.getByRole("combobox", { name: "Owner" }), "mine");
     const grid = screen.getByRole("treegrid", { name: "Today queue" });
     expect(grid.querySelectorAll('tbody tr[data-dense-row-id^="workspace:"]')).toHaveLength(0);
     expect(screen.getByText("Workspace signals have no owner, so Assigned to me hides them.")).toBeInTheDocument();

@@ -6,6 +6,43 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AuthoritativeScopeAssignment
+
+Qualified name: <code>Meridian.Contracts.Tenancy.AuthoritativeScopeAssignment</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:16](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L16).
+
+One authoritative scope assignment: the exact tenant, company, and narrow accounting scope that a registered authority asserts is affected by a security-level fact. An assignment is a statement of record, not a caller-supplied hint. Every field beyond TenantId/CompanyId is populated only when the asserting authority can name it from durable assignment data; a field it cannot attribute stays null rather than being defaulted, so a consumer can tell &quot;not applicable&quot; from &quot;not resolved&quot;.
+
+```csharp
+public sealed record AuthoritativeScopeAssignment(string TenantId, string CompanyId, string AuthorityId, DateTimeOffset ResolvedAsOfUtc, string? StructureNodeId = null, string? FundProfileId = null, string? FinancialAccountId = null, string? PortfolioId = null, string? CustodyAccountId = null, string? LedgerBookId = null, string? PeriodId = null, string? AccountingBasis = null, string? FunctionalCurrency = null, string? Jurisdiction = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string ScopeKey =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:37](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L37) | Identity of the scope this assignment names, ignoring which authority asserted it and when. Two authorities that resolve the same accounting scope must produce the same key so the fan-out set is a set of scopes rather than a set of assertions. |
+| <code>public bool IsOwnedBy(string? tenantId, string? companyId) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:53](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L53) | Whether this assignment is owned by the supplied tenant/company pair. |
+
+## FundProfileOwnership
+
+Qualified name: <code>Meridian.Contracts.Tenancy.FundProfileOwnership</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:61](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L61).
+
+Recorded ownership of a fund profile by a tenant (and, for audit, its company).
+
+```csharp
+public sealed record FundProfileOwnership(string FundProfileId, string TenantId, string? CompanyId)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsHeldBy(string? tenantId) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:68](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L68) | Whether this ownership is held by the supplied tenant. Tenant identity is the authoritative scope key (it falls back to company id when a distinct tenant id is not yet issued), matched case-insensitively after trimming. |
+
 ## FundScopedWriteTenantDecision
 
 Qualified name: <code>Meridian.Contracts.Tenancy.FundScopedWriteTenantDecision</code>. Kind: `enum`.
@@ -740,28 +777,4 @@ Result returned after a retained bank-statement source file is applied as accoun
 
 ```csharp
 public sealed record BankStatementImportResultDto(string UploadId, Guid BatchId, Guid AccountId, string AccountCode, string BankName, DateOnly StatementDate, string FileName, long FileSizeBytes, string ImportedBy, DateTimeOffset ImportedAtUtc, string RetainedPath, int LineCount, IReadOnlyList<DataUploadValidationIssueDto> Issues, string Status, string NextAction);
-```
-
-## BiasDisclosureDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BiasDisclosureDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:280](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L280).
-
-Honest summary of the simulation assumptions behind a backtest result — fill timing, limit/stop realism, universe provenance, corporate-action handling, and forced delisting liquidations. Rendered as a bias-disclosure panel wherever backtest numbers are shown.
-
-```csharp
-public sealed record BiasDisclosureDto(string FillTiming, string FillConservatism, string DelistingPolicy, string UniverseSource, bool CorporateActionsAdjusted, string MaxSeverity, IReadOnlyList<BiasDisclosureItemDto> Items);
-```
-
-## BiasDisclosureItemDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BiasDisclosureItemDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:269](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L269).
-
-One disclosed simulation assumption or detected data-quality issue for a backtest run. Severity is info, caution, or warning.
-
-```csharp
-public sealed record BiasDisclosureItemDto(string Code, string Severity, string Title, string Detail);
 ```

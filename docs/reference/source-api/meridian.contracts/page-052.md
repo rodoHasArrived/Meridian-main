@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityHistoryRequest
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityHistoryRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs#L20).
+
+```csharp
+public sealed record SecurityHistoryRequest(Guid SecurityId, int Take = 100);
+```
+
+## SecurityIdentifierDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityIdentifierDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:90](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L90).
+
+```csharp
+public sealed record SecurityIdentifierDto(SecurityIdentifierKind Kind, string Value, bool IsPrimary, DateTimeOffset ValidFrom, DateTimeOffset? ValidTo = null, string? Provider = null, string? NormalizedValue = null, string? NormalizedProvider = null);
+```
+
 ## SecurityIdentifierKind
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityIdentifierKind</code>. Kind: `enum`.
@@ -869,45 +889,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public SecurityPriceQuotationEvidence? Quotation { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:110](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L110) |  |
-
-## SecurityPriceKind
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityPriceKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L10).
-
-Categories of price in the Security Master pricing taxonomy.
-
-```csharp
-public enum SecurityPriceKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Raw</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L12) |  |
-| <code>TradePrice</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L13) |  |
-| <code>ClientOverride</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L14) |  |
-| <code>MarketGoldenCopy</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L15) |  |
-| <code>Comparison</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L16) |  |
-| <code>CalculatedPar</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L17) |  |
-| <code>CalculatedStraightLine</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L18) |  |
-
-## SecurityPriceQuotationEvidence
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityPriceQuotationEvidence</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L42).
-
-Provider-declared quotation and settlement facts; absent legacy facts are never inferred.
-
-```csharp
-public sealed record SecurityPriceQuotationEvidence(SecurityPriceBasis Basis, SecurityQuotationConvention Convention, SecurityQuoteStatus Status, DateOnly SettlementDate, string SettlementBasis)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static bool EconomicallyComparable(SecurityPriceQuotationEvidence? left, SecurityPriceQuotationEvidence? right) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L49) |  |

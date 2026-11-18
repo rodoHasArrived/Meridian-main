@@ -6,11 +6,35 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MultiAssetDrillThroughTargetDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.MultiAssetDrillThroughTargetDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1028](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1028).
+
+Shared drill-through target for one asset-class coverage row.
+
+```csharp
+public sealed record MultiAssetDrillThroughTargetDto(string TargetId, string TargetType, string Label, string Route, string? EvidenceLink, string Status, string Source);
+```
+
+## MultiAssetEvidenceRequirementDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.MultiAssetEvidenceRequirementDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1007](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1007).
+
+Asset-class-specific evidence requirement rendered by Portfolio, Accounting, and desktop workstations.
+
+```csharp
+public sealed record MultiAssetEvidenceRequirementDto(string RequirementId, string Label, string Category, string Status, string EvidenceRoute, bool Required);
+```
+
 ## MultiAssetPackCoverageDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.MultiAssetPackCoverageDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1047](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1047).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1056](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1056).
 
 Shared registry contract for an asset pack exposed by the multi-asset coverage endpoint.
 
@@ -22,14 +46,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;AssetPackRegistryValidationIssue&gt; RegistryValidationIssues { get; init; } = RegistryValidationIssues??[];</code> | [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1069](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1069) |  |
-| <code>public IReadOnlyList&lt;string&gt; PlannedAssetClasses { get; init; } = PlannedAssetClasses??[];</code> | [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1071](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1071) |  |
+| <code>public IReadOnlyList&lt;AssetPackRegistryValidationIssue&gt; RegistryValidationIssues { get; init; } = RegistryValidationIssues??[];</code> | [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1078](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1078) |  |
+| <code>public IReadOnlyList&lt;string&gt; PlannedAssetClasses { get; init; } = PlannedAssetClasses??[];</code> | [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1080](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1080) |  |
 
 ## MultiAssetReadinessBlockerDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.MultiAssetReadinessBlockerDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1009](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1009).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1018](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L1018).
 
 Readiness blocker for a single asset class.
 
@@ -586,24 +610,4 @@ Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1318](..
 
 ```csharp
 public sealed record OperationsApprovalDto(string ApprovalId, OperationsApprovalStateDto Status, string? Operator, string? Reviewer, string? Rationale, DateTimeOffset? SubmittedAtUtc, DateTimeOffset? DecidedAtUtc, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks);
-```
-
-## OperationsApprovalPolicyMatrixDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsApprovalPolicyMatrixDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:748](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L748).
-
-```csharp
-public sealed record OperationsApprovalPolicyMatrixDto(string PolicyId, string Version, DateTimeOffset GeneratedAtUtc, IReadOnlyList<OperationsApprovalPolicyMatrixRowDto> Rows);
-```
-
-## OperationsApprovalPolicyMatrixRowDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsApprovalPolicyMatrixRowDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:754](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L754).
-
-```csharp
-public sealed record OperationsApprovalPolicyMatrixRowDto(string PolicyKey, string WorkflowArea, string Action, OperationsGateKeyDto Gate, string Trigger, string RequiredPermission, string SubmitterRole, string ReviewerRole, int RequiredDistinctApprovals, bool RequiresIndependentReviewer, bool RequiresReportPack, bool RequiresChecklistControlApprovals, string EvidenceRequirement, string AuditEventType, string Route, string Severity);
 ```

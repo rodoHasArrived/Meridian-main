@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingSchedulePeriodMatch
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingSchedulePeriodMatch</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs:7](../../../../src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs#L7).
+
+A durable accounting period: its canonical selector (the period id) and its boundaries.
+
+```csharp
+public sealed record ReportingSchedulePeriodMatch(string Selector, DateOnly StartDate, DateOnly EndDate);
+```
+
 ## ReportingScheduleService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingScheduleService</code>. Kind: `class`.
@@ -907,16 +919,4 @@ Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationS
 
 ```csharp
 public sealed record SecureReportingDeliveryReceiptCommand(string ProviderEventId, ReportingDeliveryReceiptKind Kind, DateTimeOffset? OccurredAtUtc = null, string? ProviderReference = null, string? EvidenceReference = null, string? Detail = null);
-```
-
-## SecureReportingDistributionCapabilityCatalog
-
-Qualified name: <code>Meridian.Ui.Shared.Services.SecureReportingDistributionCapabilityCatalog</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:106](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L106).
-
-Caller-specific distribution action readiness plus configured transport truth.
-
-```csharp
-public sealed record SecureReportingDistributionCapabilityCatalog(bool CanQueueDelivery, bool CanIssueAccessGrant, bool CanRevokeAccessGrant, string? ActionDisabledReasonCode, IReadOnlyList<SecureReportingTransportCapability> Transports);
 ```

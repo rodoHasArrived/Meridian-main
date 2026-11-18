@@ -21,7 +21,7 @@ export function ExecutionControlsHeader({
 
   return (
     <div className="mb-2 flex items-center justify-between gap-3">
-      <p className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(panel?.title ?? "Execution controls snapshot") && "uppercase tracking-[0.14em]")}>
+      <p className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(panel?.title ?? "Execution controls snapshot") && "type-label--caps")}>
         {panel?.title ?? "Execution controls snapshot"}
       </p>
       <div className="panel-action-zone">

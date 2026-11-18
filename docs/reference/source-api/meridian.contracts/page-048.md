@@ -6,6 +6,37 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OtcCollateralDirection
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCollateralDirection</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L9).
+
+Which way collateral moved: posted by the fund to the counterparty, or received by the fund from it.
+
+```csharp
+public enum OtcCollateralDirection
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Posted</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L12) | Posted by the fund; the counterparty holds it. |
+| <code>Received</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L15) | Received from the counterparty; the fund holds it. |
+
+## OtcCollateralHeldLineDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCollateralHeldLineDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:140](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L140).
+
+One collateral balance as the snapshot saw it, with the haircut applied: the haircut of the agreement&#x27;s eligible-collateral line at computation time, not the one copied onto the balance.
+
+```csharp
+public sealed record OtcCollateralHeldLineDto(Guid BalanceId, OtcCollateralDirection Direction, OtcCollateralKind Kind, string Description, decimal ValuedAmount, decimal HaircutPercent, decimal HaircutAdjusted, DateOnly ValuedAsOf);
+```
+
 ## OtcCollateralJsonContext
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCollateralJsonContext</code>. Kind: `class`.
@@ -775,28 +806,4 @@ Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingCont
 
 ```csharp
 public sealed record PostCorporateActionCaseAccountingRequestDto(Guid CaseId, long ExpectedVersion, string IdempotencyKey, string TenantId, string CompanyId, Guid ProjectionId, Guid ApprovalId, string Reason, string Actor, CorporateActionCaseScopeDto? ScopeAssertion = null, string? CorrelationId = null, CorporateActionAccountingDecisionAuthorityDto? Authority = null);
-```
-
-## PreferredEquityTermsDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.PreferredEquityTermsDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:192](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L192).
-
-Preferred-equity-specific terms returned by the preferred-terms query.
-
-```csharp
-public sealed record PreferredEquityTermsDto(Guid SecurityId, string? Classification, decimal? DividendRate, string? DividendType, bool? IsCumulative, decimal? RedemptionPrice, DateOnly? RedemptionDate, DateOnly? CallableDate, bool? ParticipatesInCommonDividends, decimal? AdditionalDividendThreshold, string? LiquidationPreferenceKind, decimal? LiquidationPreferenceMultiple, long Version);
-```
-
-## PricingHierarchyEntryDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.PricingHierarchyEntryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L58).
-
-One entry in a per-security pricing source priority chain.
-
-```csharp
-public sealed record PricingHierarchyEntryDto(int Priority, string SourceId, string SourceDisplayName, int MaxDaysStale);
 ```

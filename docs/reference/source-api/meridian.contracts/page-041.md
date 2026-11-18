@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BrokerOptionAssessment
+
+Qualified name: <code>Meridian.Contracts.Options.BrokerOptionAssessment</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Options/OptionVisualizationDtos.cs:45](../../../../src/Meridian.Contracts/Options/OptionVisualizationDtos.cs#L45).
+
+Broker-reported observations, retained as dated evidence rather than a current acceptance.
+
+```csharp
+public sealed record BrokerOptionAssessment(string SchemaVersion, Guid FundAccountId, string ProviderId, string ExternalAccountId, DateTimeOffset AssessedAt, string BrokerReference, string Outcome, string RawBrokerStatus, OptionAssessmentBasket Basket, string? InitialMarginBefore = null, string? InitialMarginChange = null, string? InitialMarginAfter = null, string? MaintenanceMarginBefore = null, string? MaintenanceMarginChange = null, string? MaintenanceMarginAfter = null, string? ExcessLiquidityAfter = null, string? CashImpact = null, string? PermissionEvidence = null, string? RestrictionEvidence = null, IReadOnlyList<string>? Warnings = null, string? MarginCurrency = null, string? CashImpactCurrency = null);
+```
+
+## OptionAssessmentBasket
+
+Qualified name: <code>Meridian.Contracts.Options.OptionAssessmentBasket</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Options/OptionVisualizationDtos.cs:40](../../../../src/Meridian.Contracts/Options/OptionVisualizationDtos.cs#L40).
+
+```csharp
+public sealed record OptionAssessmentBasket(string Quantity, string OrderType, string PriceEffect, string? LimitPrice, string Currency, IReadOnlyList<OptionAssessmentLeg> Legs);
+```
+
 ## OptionAssessmentImportPreview
 
 Qualified name: <code>Meridian.Contracts.Options.OptionAssessmentImportPreview</code>. Kind: `record`.
@@ -731,24 +753,4 @@ Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:179](../../../../src/Meridi
 
 ```csharp
 public sealed record PlaidTransactionDto(string TransactionId, string PlaidAccountId, DateOnly Date, DateOnly? AuthorizedDate, decimal Amount, string Currency, string Name, string? MerchantName, string? Category, string? PaymentChannel, bool Pending, string? TransactionType);
-```
-
-## PlaidTransactionsSyncResult
-
-Qualified name: <code>Meridian.Contracts.Plaid.PlaidTransactionsSyncResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:193](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L193).
-
-```csharp
-public sealed record PlaidTransactionsSyncResult(string? NextCursor, bool HasMore, IReadOnlyList<PlaidTransactionDto> Added, IReadOnlyList<PlaidTransactionDto> Modified, IReadOnlyList<string> RemovedTransactionIds, string? RequestId);
-```
-
-## PlaidTransferRequest
-
-Qualified name: <code>Meridian.Contracts.Plaid.PlaidTransferRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:262](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L262).
-
-```csharp
-public sealed record PlaidTransferRequest(string ItemId, string PlaidAccountId, Guid PendingPaymentId, Guid EntityId, decimal Amount, string Currency, string Direction, string SecCode, string RequestedBy);
 ```

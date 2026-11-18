@@ -64,9 +64,33 @@ describe("authorized operator triage", () => {
 
   it("My items uses the authenticated actor rather than the workspace label", async () => {
     const user = userEvent.setup(); await mount();
-    await user.click(screen.getByRole("checkbox", { name: "My items" }));
+    await user.selectOptions(screen.getByRole("combobox", { name: "Owner" }), "mine");
     expect(screen.getByRole("row", { name: "Report review" })).toBeInTheDocument();
     expect(screen.queryByRole("row", { name: "Cash variance" })).not.toBeInTheDocument();
+  });
+
+  it("shows only items nobody owns yet under Unassigned", async () => {
+    const user = userEvent.setup(); await mount();
+    await user.selectOptions(screen.getByRole("combobox", { name: "Owner" }), "unassigned");
+    expect(screen.getByRole("row", { name: "Cash variance" })).toBeInTheDocument();
+    expect(screen.queryByRole("row", { name: "Report review" })).not.toBeInTheDocument();
+    await user.selectOptions(screen.getByRole("combobox", { name: "Owner" }), "all");
+    expect(screen.getByRole("row", { name: "Report review" })).toBeInTheDocument();
+  });
+
+  it("opens the reviewed acknowledge and snooze dialogs from the queue keys", async () => {
+    const user = userEvent.setup(); await mount();
+    // The first row (the blocker) is selected; it can be acknowledged but never snoozed.
+    const grid = screen.getByRole("treegrid", { name: "Authorized ranked operator queue" });
+    grid.querySelector<HTMLElement>("tr[aria-selected=\"true\"]")?.focus();
+    await user.keyboard("s");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    await user.keyboard("c");
+    const dialog = await screen.findByRole("dialog");
+    expect(dialog).toHaveTextContent("Acknowledge item");
+    // Same reviewed dialog as the button: no reason, no command.
+    expect(within(dialog).getByRole("button", { name: "Apply triage action" })).toBeDisabled();
+    expect(commandOperatorTriage).not.toHaveBeenCalled();
   });
 
   it("requires a reason and sends authoritative versions for assignment, then refreshes", async () => {

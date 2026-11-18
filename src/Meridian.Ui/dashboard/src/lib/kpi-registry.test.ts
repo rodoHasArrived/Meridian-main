@@ -126,6 +126,25 @@ describe("KPI registry ownership and financial meaning", () => {
     expect(resolveKpi("portfolio.total-exposure", models).status).toBe("unavailable");
   });
 
+  it("carries the producer's open-break history only when it ends on the count shown", () => {
+    const history = [{ date: "2026-11-16", value: 3 }, { date: "2026-11-17", value: 2 }];
+    const models = (openBreaks: number) => ({
+      accounting: { workspace: { openBreaks }, breakQueue: [], metrics: [{ id: "open-breaks", value: String(openBreaks), label: "Open breaks", tone: "warning", delta: "", history, historyBasis: "Rebuilt from break times." }] }
+    }) as unknown as KpiReadModels;
+    expect(resolveKpi("accounting.open-breaks", models(2))).toMatchObject({ value: "2", history, historyBasis: "Rebuilt from break times." });
+    // A count from a source the series does not end on gets no sparkline rather than a contradicting one.
+    expect(resolveKpi("accounting.open-breaks", models(5)).history).toBeUndefined();
+  });
+
+  it("carries the timing-drift history with the producer's own figure", () => {
+    const history = [{ date: "2026-11-15", value: null }, { date: "2026-11-16", value: 0 }, { date: "2026-11-17", value: 1 }];
+    const models = {
+      accounting: { metrics: [{ id: "timing-drift", value: "1", label: "Timing Drift", tone: "warning", delta: "0%", history, historyBasis: "Rebuilt from reconciliation history." }] }
+    } as unknown as KpiReadModels;
+    // The figure is the producer's metric itself, and the producer ends the series on that figure.
+    expect(resolveKpi("accounting.timing-drift", models)).toMatchObject({ value: "1", history, historyBasis: "Rebuilt from reconciliation history." });
+  });
+
   it("uses shared cross-screen definitions for providers, open orders and open breaks", () => {
     const models = {
       crossScreenCounts: { asOf: "2026-11-14T12:00:00Z", providers: { healthy: 3, total: 4, definition: "Healthy status" }, openOrders: { count: 7, definition: "Open order manager rows" }, openBreaks: { count: 2, definition: "Unresolved breaks" } },

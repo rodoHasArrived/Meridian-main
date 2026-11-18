@@ -142,7 +142,7 @@ export function ReportingBrandingAccessPanel({
                 ["backgroundColor", "Background", draft.backgroundColor]
               ] as const).map(([field, label, value]) => (
                 <label key={field} className="space-y-1">
-                  <span className={cn("text-xs text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.14em]")}>{label}</span>
+                  <span className={cn("text-xs text-muted-foreground", usesTrackedCaps(label) && "type-label--caps")}>{label}</span>
                   <span className="flex items-center gap-2">
                     <span
                       aria-hidden="true"

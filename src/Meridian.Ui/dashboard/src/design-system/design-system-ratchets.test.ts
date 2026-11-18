@@ -23,6 +23,27 @@ function baselineFixture(value: unknown = counts()) {
 }
 
 describe("design-system ratchets", () => {
+  it("counts hand-styled native selects", () => {
+    expect(RATCHETS.rawSelects.count("<Select id=\"a\"><option /></Select>")).toBe(0);
+    expect(RATCHETS.rawSelects.count("<select\n  id=\"a\">")).toBe(1);
+  });
+
+  it("keeps hand-styled native selects out of every component, not only screens", () => {
+    const srcRoot = path.resolve(__dirname, "..");
+    const offenders: string[] = [];
+    const walk = (dir: string) => {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) walk(full);
+        else if (/\.tsx$/.test(entry.name) && !/\.test\.tsx$/.test(entry.name)
+          && path.relative(srcRoot, full).split(path.sep).join("/") !== "components/ui/select.tsx"
+          && /<select\b/.test(fs.readFileSync(full, "utf8"))) offenders.push(path.relative(srcRoot, full));
+      }
+    };
+    walk(srcRoot);
+    expect(offenders).toEqual([]);
+  });
+
   // Phase 2 turned these rules on with a baseline of existing offenders: no file may gain an
   // occurrence, no new file may introduce one, and progress must be locked in by lowering the
   // baseline (`npm run ratchets:update`).

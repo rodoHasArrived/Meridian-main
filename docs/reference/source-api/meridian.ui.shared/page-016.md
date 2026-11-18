@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingArtifactVaultAccessDeniedException
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingArtifactVaultAccessDeniedException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:64](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L64).
+
+Indicates that access to a reporting artifact in the vault was denied.
+
+```csharp
+public sealed class ReportingArtifactVaultAccessDeniedException : UnauthorizedAccessException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportingArtifactVaultAccessDeniedException(string message) : base(message);</code> | [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:66](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L66) |  |
+
 ## ReportingArtifactVaultService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingArtifactVaultService</code>. Kind: `class`.
@@ -808,15 +826,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public ReportingScheduleHostedService(ReportingScheduleService scheduleService, TimeProvider timeProvider, ILogger&lt;ReportingScheduleHostedService&gt; logger, ReportingScheduleWorkerOptions? options = null) : this(scheduleService, timeProvider, logger, options, readiness : null);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleHostedService.cs:39](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleHostedService.cs#L39) |  |
 | <code>public ReportingScheduleHostedService(ReportingScheduleService scheduleService, TimeProvider timeProvider, ILogger&lt;ReportingScheduleHostedService&gt; logger, ReportingScheduleWorkerOptions? options, ReportingScheduleWorkerReadinessState? readiness);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleHostedService.cs:48](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleHostedService.cs#L48) |  |
-
-## ReportingSchedulePeriodMatch
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingSchedulePeriodMatch</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs:7](../../../../src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs#L7).
-
-A durable accounting period: its canonical selector (the period id) and its boundaries.
-
-```csharp
-public sealed record ReportingSchedulePeriodMatch(string Selector, DateOnly StartDate, DateOnly EndDate);
-```
