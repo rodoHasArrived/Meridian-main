@@ -138,8 +138,10 @@ public sealed record CrossProviderTolerancePolicy(
             return true;
 
         var classes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var key in AssetClassOverrides?.Keys ?? []) classes.Add(key);
-        foreach (var key in previous.AssetClassOverrides?.Keys ?? []) classes.Add(key);
+        foreach (var key in AssetClassOverrides?.Keys ?? [])
+            classes.Add(key);
+        foreach (var key in previous.AssetClassOverrides?.Keys ?? [])
+            classes.Add(key);
         return classes.Any(assetClass => Looser(Resolve(assetClass), previous.Resolve(assetClass)));
     }
 

@@ -1,5 +1,6 @@
 using Meridian.Contracts.Domain.Models;
 using Meridian.Core.Config;
+using Meridian.Execution.Logging;
 using Serilog;
 
 namespace Meridian.Infrastructure.Adapters.Core;
@@ -83,7 +84,7 @@ internal sealed class CrossProviderValidator
                 if (discrepancies > 0)
                 {
                     _log.Warning("Found {Count} price discrepancies between {Provider1} and {Provider2} for {Symbol} above {TolerancePercent}%",
-                        discrepancies, sourceProvider, validationProvider.Name, symbol, policy.BackfillCloseTolerancePercent);
+                        discrepancies, sourceProvider, validationProvider.Name, LogSanitizer.Sanitize(symbol), policy.BackfillCloseTolerancePercent);
                 }
             }
 
@@ -95,7 +96,7 @@ internal sealed class CrossProviderValidator
         }
         catch (Exception ex)
         {
-            _log.Debug(ex, "Cross-validation failed for {Symbol}", symbol);
+            _log.Debug(ex, "Cross-validation failed for {Symbol}", LogSanitizer.Sanitize(symbol));
             return 0;
         }
     }

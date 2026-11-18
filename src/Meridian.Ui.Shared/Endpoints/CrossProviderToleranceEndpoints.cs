@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.Application.Backfill;
 using Meridian.Contracts.Api;
 using Meridian.Core.Config;
+using Meridian.Execution.Logging;
 using Meridian.Identity.Auth;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Ui.Shared.Services;
@@ -69,7 +70,7 @@ public static class CrossProviderToleranceEndpoints
                 var audit = await store.UpdateAsync(config => ApplyPolicy(config, request, actor), ct).ConfigureAwait(false);
                 loggerFactory.CreateLogger(nameof(CrossProviderToleranceEndpoints)).LogInformation(
                     "Cross-provider tolerances changed {AuditId} {Actor} {Loosened} {Reason} {PricePercent} {QuotePercent} {VolumePercent} {VolumeMode} {BackfillBars} {BackfillClosePercent} {OverrideCount}",
-                    audit.Id, audit.Actor, audit.Loosened, audit.Reason, audit.After.PriceTolerancePercent,
+                    audit.Id, LogSanitizer.Sanitize(audit.Actor), audit.Loosened, LogSanitizer.Sanitize(audit.Reason), audit.After.PriceTolerancePercent,
                     audit.After.QuoteTolerancePercent, audit.After.VolumeTolerancePercent, audit.After.VolumeMode,
                     audit.After.BackfillBarsToCompare, audit.After.BackfillCloseTolerancePercent,
                     audit.After.AssetClassOverrides?.Count ?? 0);
@@ -142,7 +143,7 @@ public static class CrossProviderToleranceEndpoints
             catch (Exception exception) when (exception is ArgumentException or InvalidOperationException)
             {
                 loggerFactory.CreateLogger(nameof(CrossProviderToleranceEndpoints)).LogWarning(
-                    exception, "Cross-provider tolerance preview for {Symbol} could not run", symbol);
+                    exception, "Cross-provider tolerance preview for {Symbol} could not run", LogSanitizer.Sanitize(symbol));
                 return ApiProblemDetails.Validation(context, "preview", "The preview could not run for this symbol and provider pair.");
             }
         }).WithName("PreviewCrossProviderTolerancePolicy")
