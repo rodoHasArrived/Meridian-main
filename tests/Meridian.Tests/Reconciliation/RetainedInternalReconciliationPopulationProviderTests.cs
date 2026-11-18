@@ -194,6 +194,26 @@ public sealed class RetainedInternalReconciliationPopulationProviderTests
         position.MarketValue.Should().BeNull("market value is left unspecified so the engine matches on quantity");
 
         result.LedgerTransactions.Should().BeEmpty("no ledger-transaction source is composed for this provider");
+        position.AccruedInterest.Should().BeNull("an equity snapshot states no accrued interest");
+    }
+
+    [Fact]
+    public async Task GetPopulationsAsync_CarriesSnapshotAccruedInterestOntoBondHolding()
+    {
+        var accounts = Substitute.For<IAccountQueryService>();
+        accounts.GetAccountAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(Account("FUND-1", "run-1"));
+        accounts.GetBalanceTimelineAsync(Arg.Any<Guid>(), Arg.Any<DateOnly?>(), Arg.Any<DateOnly?>(), Arg.Any<CancellationToken>())
+            .Returns(new List<AccountBalanceSnapshotDto>());
+        var positions = Substitute.For<IPositionSnapshotStore>();
+        positions.GetSnapshotHistoryAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+            .Returns(_ => AsyncStream(Snapshot(
+                new DateTimeOffset(2026, 5, 28, 0, 0, 0, TimeSpan.Zero),
+                new PositionRecord("ACME4.5-2030", 100_000m, 0.9925m, 0m, 0m) { AccruedInterest = 937.50m })));
+
+        var result = await new RetainedInternalReconciliationPopulationProvider(accounts, positions)
+            .GetPopulationsAsync(Context(AccountId.ToString("D")));
+
+        result.Positions.Should().ContainSingle().Which.AccruedInterest.Should().Be(937.50m);
     }
 
     [Fact]
