@@ -1,0 +1,64 @@
+name: Install Playwright Chromium (bounded)
+description: >
+  Install the Playwright Chromium headless shell for the dashboard's pinned
+  Playwright version, with a per-attempt timeout and a bounded retry. Shared by
+  every screenshot job so the install logic cannot drift between them.
+
+inputs:
+  attempts:
+    description: Number of install attempts.
+    required: false
+    default: "2"
+  timeout-seconds:
+    description: Timeout for each install attempt, in seconds.
+    required: false
+    default: "720"
+
+runs:
+  using: composite
+  steps:
+    - name: Install Playwright browser
+      shell: bash
+      env:
+        INSTALL_ATTEMPTS: ${{ inputs.attempts }}
+        INSTALL_TIMEOUT_SECONDS: ${{ inputs.timeout-seconds }}
+      run: |
+        set -euo pipefail
+        install_attempts="${INSTALL_ATTEMPTS:-2}"
+        install_timeout_seconds="${INSTALL_TIMEOUT_SECONDS:-720}"
+
+        run_playwright_install() {
+          set +e
+          timeout "$install_timeout_seconds" npx --prefix src/Meridian.Ui/dashboard playwright install chromium --only-shell
+          install_exit_code=$?
+          set -e
+          return "$install_exit_code"
+        }
+
+        attempt=1
+        while [ "$attempt" -le "$install_attempts" ]; do
+          echo "[INFO] Installing Playwright Chromium browser (attempt ${attempt}/${install_attempts}; timeout ${install_timeout_seconds}s)."
+          if run_playwright_install; then
+            echo "[INFO] Playwright Chromium browser install completed."
+            exit 0
+          else
+            install_exit_code=$?
+          fi
+
+          if [ "$attempt" -eq "$install_attempts" ]; then
+            if [ "$install_exit_code" -eq 124 ]; then
+              echo "::error::Playwright Chromium browser install timed out after ${install_timeout_seconds}s on attempt ${attempt}."
+            else
+              echo "::error::Playwright Chromium browser install failed with exit code ${install_exit_code} on attempt ${attempt}."
+            fi
+            exit "$install_exit_code"
+          fi
+
+          if [ "$install_exit_code" -eq 124 ]; then
+            echo "::warning::Playwright Chromium browser install timed out after ${install_timeout_seconds}s on attempt ${attempt}; retrying."
+          else
+            echo "::warning::Playwright Chromium browser install failed with exit code ${install_exit_code} on attempt ${attempt}; retrying."
+          fi
+
+          attempt=$((attempt + 1))
+        done
