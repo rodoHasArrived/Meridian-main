@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountCashForecastScopeDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.AccountCashForecastScopeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:6](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L6).
+
+Exact operational scope; fund scope is deliberately not required.
+
+```csharp
+public sealed record AccountCashForecastScopeDto(string TenantId, string CompanyId, string AccountId, string BookId, string BaseCurrency);
+```
+
 ## AccountCashForecastSnapshotDto
 
 Qualified name: <code>Meridian.Contracts.AssetOperations.AccountCashForecastSnapshotDto</code>. Kind: `record`.
@@ -827,15 +839,3 @@ Declared public members:
 | <code>public IReadOnlyList&lt;CorporateActionProjectionBlockerDto&gt; Blockers { get; init; } = Blockers??[];</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:1020](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L1020) |  |
 | <code>public IReadOnlyList&lt;CorporateActionProjectionEvidenceDependencyDto&gt; EvidenceManifest { get; init; } = EvidenceManifest??[];</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:1022](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L1022) |  |
 | <code>public bool CanPreparePostingCandidate =&gt; …;</code> | [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:1025](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L1025) |  |
-
-## CorporateActionAccountingProjectionScopeDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.CorporateActionAccountingProjectionScopeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs:883](../../../../src/Meridian.Contracts/AssetOperations/CorporateActionAccountingDtos.cs#L883).
-
-Exact book boundary whose facts participate in a corporate-action projection hash.
-
-```csharp
-public sealed record CorporateActionAccountingProjectionScopeDto(string TenantId, string CompanyId, string FundProfileId, Guid LedgerBookId, Guid PeriodId, long ExpectedPeriodVersion, string Jurisdiction);
-```

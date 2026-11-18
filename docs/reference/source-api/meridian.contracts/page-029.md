@@ -6,6 +6,29 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerMappingSourceDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.LedgerMappingSourceDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:424](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L424).
+
+```csharp
+public enum LedgerMappingSourceDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>AccountAssignment</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:426](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L426) |  |
+| <code>InvestmentPortfolioAssignment</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:427](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L427) |  |
+| <code>SleeveAssignment</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:428](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L428) |  |
+| <code>VehicleAssignment</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:429](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L429) |  |
+| <code>FundAssignment</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:430](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L430) |  |
+| <code>EntityAssignment</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:431](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L431) |  |
+| <code>AccountLedgerReference</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:432](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L432) |  |
+| <code>Unassigned</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:433](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L433) |  |
+
 ## LedgerMappingWorkbenchDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.LedgerMappingWorkbenchDto</code>. Kind: `record`.
@@ -679,14 +702,4 @@ Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:204
 
 ```csharp
 public sealed record FieldMappingDto(ProviderCapabilityKindDto Capability, string SourcePath, string TargetField, TransformRuleDto? Transform, bool Required, ProviderMappingConfidenceDto Confidence, string? DefaultValue, string? ConstantValue);
-```
-
-## IntegrationStagingRecordDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.IntegrationStagingRecordDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:411](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L411).
-
-```csharp
-public sealed record IntegrationStagingRecordDto(string StagingRecordId, string SyncRunId, string ConnectionId, ProviderCapabilityKindDto Capability, string RawPayloadId, string? SourceRecordId, string DedupeKey, JsonElement MappedRecord, IReadOnlyList<ValidationIssueDto> ValidationWarnings, ProviderIntegrationProcessingStatusDto Status, DateTimeOffset CreatedAt);
 ```

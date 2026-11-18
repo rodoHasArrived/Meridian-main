@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IBondWorkflowTypedObservationSource
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.IBondWorkflowTypedObservationSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:119](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L119).
+
+Typed retained sources bind the requested economic role independently of a series name. Existing custom observation sources retain the legacy interface and its explicit source contract.
+
+```csharp
+public interface IBondWorkflowTypedObservationSource : IBondWorkflowObservationSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;BondWorkflowRateObservation&gt;&gt; GetAsync(string indexName, BondMarketObservationKind kind, DateOnly from, DateOnly to, DateTimeOffset knownAt, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:121](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L121) |  |
+
 ## RetainBondObservedFixingRequest
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.RetainBondObservedFixingRequest</code>. Kind: `record`.
@@ -696,14 +714,4 @@ Source: [src/Meridian.Contracts/FundStructure/FundStructureCommands.cs:23](../..
 
 ```csharp
 public sealed record CreateClientRequest(Guid ClientId, Guid BusinessId, string Code, string Name, string BaseCurrency, DateTimeOffset EffectiveFrom, string CreatedBy, string? Description = null, ClientSegmentKind ClientSegmentKind = ClientSegmentKind.Unspecified);
-```
-
-## CreateFundRequest
-
-Qualified name: <code>Meridian.Contracts.FundStructure.CreateFundRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureCommands.cs:34](../../../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs#L34).
-
-```csharp
-public sealed record CreateFundRequest(Guid FundId, string Code, string Name, string BaseCurrency, DateTimeOffset EffectiveFrom, string CreatedBy, string? Description = null, Guid? BusinessId = null);
 ```

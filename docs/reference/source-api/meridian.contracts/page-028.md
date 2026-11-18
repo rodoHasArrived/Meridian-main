@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyAgreementDraftDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementDraftDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:27](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L27).
+
+```csharp
+public sealed record IntercompanyAgreementDraftDto(string Code, string Name, Guid PartyOneId, string PartyOneRole, Guid PartyTwoId, string PartyTwoRole, IntercompanyAgreementTypeDto AgreementType, string Currency, DateOnly EffectiveFrom, DateOnly? EffectiveTo = null, IntercompanyAgreementTermsDto? Terms = null, IReadOnlyList<IntercompanyAgreementEvidenceDto>? Evidence = null, IntercompanyAgreementActionDto Action = IntercompanyAgreementActionDto.Activate, DateOnly? TerminationEffectiveDate = null, string? Purpose = null);
+```
+
 ## IntercompanyAgreementEvidenceDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementEvidenceDto</code>. Kind: `record`.
@@ -657,26 +667,3 @@ Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:436](../../..
 ```csharp
 public sealed record LedgerMappingResolutionDto(LedgerGroupId LedgerGroupId, LedgerMappingSourceDto Source, Guid? SourceNodeId, FundStructureNodeKindDto? SourceNodeKind, string? SourceReference, bool RequiresUserMapping, IReadOnlyList<string> IssueCodes);
 ```
-
-## LedgerMappingSourceDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.LedgerMappingSourceDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:424](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L424).
-
-```csharp
-public enum LedgerMappingSourceDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>AccountAssignment</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:426](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L426) |  |
-| <code>InvestmentPortfolioAssignment</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:427](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L427) |  |
-| <code>SleeveAssignment</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:428](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L428) |  |
-| <code>VehicleAssignment</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:429](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L429) |  |
-| <code>FundAssignment</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:430](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L430) |  |
-| <code>EntityAssignment</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:431](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L431) |  |
-| <code>AccountLedgerReference</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:432](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L432) |  |
-| <code>Unassigned</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:433](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L433) |  |

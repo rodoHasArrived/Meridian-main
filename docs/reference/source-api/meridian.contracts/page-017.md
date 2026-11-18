@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LoanPortfolioCurrencyTotalsDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.LoanPortfolioCurrencyTotalsDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:415](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L415).
+
+Unconverted totals in the retained loan or collateral currency. Portfolio scalar totals are null when more than one currency occurs; no reporting currency or FX rate is implied. Collateral is grouped by its own appraisal currency, independently of facility currency. Other or unsupported currencies retain an unavailable bucket with null amounts, since their common denomination cannot be proved.
+
+```csharp
+public sealed record LoanPortfolioCurrencyTotalsDto(CurrencyCode Currency, decimal? TotalCommitment, decimal? TotalPrincipalOutstanding, decimal? TotalInterestAccruedUnpaid, decimal? TotalPenaltyAccruedUnpaid, decimal? TotalAvailableToDraw, decimal? TotalCollateralValue);
+```
+
 ## LoanPortfolioSummaryDto
 
 Qualified name: <code>Meridian.Contracts.DirectLending.LoanPortfolioSummaryDto</code>. Kind: `record`.
@@ -674,21 +686,3 @@ Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:382](
 ```csharp
 public sealed record ServicerStatementImportResultDto(Guid BatchId, string Status, string EvidenceRoute, ServicerStatementPreviewDto Preview);
 ```
-
-## ServicerStatementKind
-
-Qualified name: <code>Meridian.Contracts.DirectLending.ServicerStatementKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:279](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L279).
-
-```csharp
-public enum ServicerStatementKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Position = 0</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:281](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L281) |  |
-| <code>Remittance = 1</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:282](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L282) |  |
-| <code>Mixed = 2</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:283](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L283) |  |

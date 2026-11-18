@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## QuoteDataResponse
+
+Qualified name: <code>Meridian.Contracts.Api.QuoteDataResponse</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/LiveDataModels.cs:51](../../../../src/Meridian.Contracts/Api/LiveDataModels.cs#L51).
+
+Response DTO for a single quote snapshot.
+
+```csharp
+public sealed record QuoteDataResponse(string Symbol, DateTimeOffset Timestamp, decimal BidPrice, long BidSize, decimal AskPrice, long AskSize, decimal? MidPrice, decimal? Spread, long SequenceNumber, string? StreamId, string? Venue, SessionStatsDto? Session = null);
+```
+
 ## QuotesResponse
 
 Qualified name: <code>Meridian.Contracts.Api.QuotesResponse</code>. Kind: `record`.
@@ -2008,15 +2020,3 @@ Declared public members:
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;AccountSettledCashObservationDto&gt;? NativeClosingBalances { get; init; }</code> | [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:78](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L78) |  |
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;AccountCashPaymentAllocationDto&gt;? PaymentAllocations { get; init; }</code> | [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:80](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L80) |  |
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;AccountCashReceiptRevisionDto&gt;? ReceiptRevisions { get; init; }</code> | [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:82](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L82) |  |
-
-## AccountCashForecastScopeDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.AccountCashForecastScopeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:6](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L6).
-
-Exact operational scope; fund scope is deliberately not required.
-
-```csharp
-public sealed record AccountCashForecastScopeDto(string TenantId, string CompanyId, string AccountId, string BookId, string BaseCurrency);
-```

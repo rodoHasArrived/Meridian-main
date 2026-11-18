@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ServicerStatementKind
+
+Qualified name: <code>Meridian.Contracts.DirectLending.ServicerStatementKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:279](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L279).
+
+```csharp
+public enum ServicerStatementKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Position = 0</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:281](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L281) |  |
+| <code>Remittance = 1</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:282](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L282) |  |
+| <code>Mixed = 2</code> | [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:283](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L283) |  |
+
 ## ServicerStatementPreviewDto
 
 Qualified name: <code>Meridian.Contracts.DirectLending.ServicerStatementPreviewDto</code>. Kind: `record`.
@@ -1014,39 +1032,3 @@ Declared public members:
 | <code>public long? PrimaryCloseVolume =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs:88](../../../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs#L88) | Gets the primary closing auction volume. |
 | <code>public long TotalOpeningVolume =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs:93](../../../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs#L93) | Total volume from all opening auctions. |
 | <code>public long TotalClosingVolume =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs:98](../../../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs#L98) | Total volume from all closing auctions. |
-
-## HistoricalBar
-
-Qualified name: <code>Meridian.Contracts.Domain.Models.HistoricalBar</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:8](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L8).
-
-Daily historical bar (OHLCV) used for backfilling from free data sources.
-
-```csharp
-public sealed record HistoricalBar : MarketEventPayload
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Symbol { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:13](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L13) | Gets the ticker symbol for the security. |
-| <code>public DateOnly SessionDate { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:18](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L18) | Gets the trading session date for this bar. |
-| <code>public decimal Open { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:23](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L23) | Gets the opening price for the session. |
-| <code>public decimal High { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:28](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L28) | Gets the highest price during the session. |
-| <code>public decimal Low { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:33](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L33) | Gets the lowest price during the session. |
-| <code>public decimal Close { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:38](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L38) | Gets the closing price for the session. |
-| <code>public long Volume { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:43](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L43) | Gets the total trading volume for the session. |
-| <code>public string Source { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:48](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L48) | Gets the data source identifier (e.g., &quot;stooq&quot;, &quot;alpaca&quot;). |
-| <code>public long SequenceNumber { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:53](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L53) | Gets the sequence number for ordering events. |
-| <code>public bool? IsAdjusted { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:61](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L61) | Gets the price-adjustment regime of this bar: true when OHLCV values are split/dividend adjusted, false when they are raw exchange prices, and null when the regime is unknown (the honest default for sources that do not declare it). |
-| <code>public HistoricalBar(string Symbol, DateOnly SessionDate, decimal Open, decimal High, decimal Low, decimal Close, long Volume, string Source = &quot;stooq&quot;, long SequenceNumber = 0, bool? IsAdjusted = null);</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:76](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L76) | Initializes a new instance of the HistoricalBar record. |
-| <code>public DateTimeOffset ToTimestampUtc() =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:121](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L121) | Converts the session date to a UTC timestamp. |
-| <code>public decimal Range =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:127](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L127) | Gets the trading range (High minus Low) for this bar. |
-| <code>public decimal BodySize =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:133](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L133) | Gets the body size (absolute difference between Open and Close). This represents the size of the candlestick body. |
-| <code>public bool IsBullish =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:139](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L139) | Returns true if the bar is bullish (Close greater than Open). Also known as a &quot;green candle&quot; in candlestick charting. |
-| <code>public bool IsBearish =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:145](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L145) | Returns true if the bar is bearish (Close less than Open). Also known as a &quot;red candle&quot; in candlestick charting. |
-| <code>public decimal ChangePercent =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:151](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L151) | Gets the percentage change from Open to Close. Positive values indicate price increase, negative values indicate decrease. |
-| <code>public decimal TypicalPrice =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:157](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L157) | Gets the typical price, calculated as (High + Low + Close) / 3. This is a common technical analysis value used in many indicators. |
-| <code>public decimal Notional =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalBar.cs:163](../../../../src/Meridian.Contracts/Domain/Models/HistoricalBar.cs#L163) | Gets the approximate dollar volume (Close price multiplied by Volume). Useful for liquidity analysis and position sizing. |

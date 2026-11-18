@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StructuredReportingExportColumnDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StructuredReportingExportColumnDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:387](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L387).
+
+```csharp
+public sealed record StructuredReportingExportColumnDto(string Name, string DataType, string? Description = null);
+```
+
 ## StructuredReportingExportDataDictionaryFieldDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StructuredReportingExportDataDictionaryFieldDto</code>. Kind: `record`.
@@ -606,14 +616,4 @@ Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1428]
 
 ```csharp
 public sealed record VersionedReportTemplateIdDto(string Name, int Version);
-```
-
-## WithdrawShadowBookRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.WithdrawShadowBookRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:44](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L44).
-
-```csharp
-public sealed record WithdrawShadowBookRequestDto(int ExpectedVersion, string Reason);
 ```

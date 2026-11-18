@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BondAnalyticsRequest
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondAnalyticsRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:18](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L18).
+
+Exactly one of clean price per 100 face or annual yield must be supplied.
+
+```csharp
+public sealed record BondAnalyticsRequest(Guid SecurityId, BondCalculationContext Context, decimal? CleanPrice = null, decimal? Yield = null, BondYieldConvention? YieldConvention = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? CalculationVersion { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:26](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L26) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public Guid? SelectionReceiptId { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:29](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L29) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? PriceAccountId { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:32](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L32) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? RetainedSecurityTermsSha256 { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:41](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L41) | The SecurityTerms content hash a retained receipt recorded, supplied when replaying it. It is reported only when it equals the pre-invariant raw-text hash of exactly the terms resolved now (BondSecurityTermsDigest.Resolve); otherwise the canonical hash is reported, so it can never make changed terms verify. |
+
 ## BondAnalyticsResult
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondAnalyticsResult</code>. Kind: `record`.
@@ -718,13 +739,3 @@ Declared public members:
 | <code>public BondCalculationContext? CalculationContext { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs:45](../../../../src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs#L45) |  |
 | <code>public IReadOnlyList&lt;BondExerciseNoticeWatchResult&gt; ExerciseWindows { get; init; } = [];</code> | [src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs:46](../../../../src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs#L46) |  |
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public BondMonitoringMarketWatchDto? MarketWatch { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs:48](../../../../src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs#L48) |  |
-
-## BondMonitoringJsonContext
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondMonitoringJsonContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs:82](../../../../src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs#L82).
-
-```csharp
-public partial class BondMonitoringJsonContext : JsonSerializerContext;
-```

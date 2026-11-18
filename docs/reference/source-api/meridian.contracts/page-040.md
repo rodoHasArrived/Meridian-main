@@ -6,6 +6,32 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LifecycleSupervisorStatusDto
+
+Qualified name: <code>Meridian.Contracts.Lifecycle.LifecycleSupervisorStatusDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:36](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L36).
+
+```csharp
+public sealed record LifecycleSupervisorStatusDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public required bool Running { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:38](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L38) |  |
+| <code>public required string PipeName { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:39](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L39) |  |
+| <code>public required string ManifestPath { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:40](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L40) |  |
+| <code>public string? SessionId { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:41](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L41) |  |
+| <code>public DateTimeOffset? StartedAtUtc { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:42](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L42) |  |
+| <code>public int? HttpPort { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:43](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L43) |  |
+| <code>public LifecycleOwnedProcessDto? Host { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:44](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L44) |  |
+| <code>public LifecycleDatabaseIdentityDto? Database { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:45](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L45) |  |
+| <code>public RuntimeLifecycleSnapshotDto? HostLifecycle { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:46](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L46) |  |
+| <code>public LifecycleSessionReceiptDto? LatestSessionReceipt { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:47](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L47) |  |
+| <code>public string? Message { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:48](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L48) |  |
+
 ## RuntimeLifecycleCheckDto
 
 Qualified name: <code>Meridian.Contracts.Lifecycle.RuntimeLifecycleCheckDto</code>. Kind: `record`.
@@ -984,13 +1010,3 @@ Declared public members:
 | <code>public static string Digest(byte[] bytes);</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:113](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L113) |  |
 | <code>public static byte[] CanonicalBytes&lt;T&gt;(T value) =&gt; …;</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:118](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L118) |  |
 | <code>public static IReadOnlyList&lt;OptionAssessmentLeg&gt; ParseLegsCsv(string csv);</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:175](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L175) |  |
-
-## OptionChainSnapshotDto
-
-Qualified name: <code>Meridian.Contracts.Options.OptionChainSnapshotDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Options/OptionReferenceDtos.cs:33](../../../../src/Meridian.Contracts/Options/OptionReferenceDtos.cs#L33).
-
-```csharp
-public sealed record OptionChainSnapshotDto(string OptionChainId, string UnderlyingSymbol, DateOnly ExpiryDate, DateTimeOffset LastUpdatedUtc, int ContractCount, IReadOnlyList<OptionSeriesDto> Series);
-```

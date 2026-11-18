@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityPricingHierarchyDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityPricingHierarchyDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:67](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L67).
+
+Full pricing source hierarchy for a security, optionally scoped to an account.
+
+```csharp
+public sealed record SecurityPricingHierarchyDto(Guid SecurityId, string? AccountId, IReadOnlyList<PricingHierarchyEntryDto> Entries, DateTimeOffset AsOf, string UpdatedBy);
+```
+
 ## SecurityProjectionRecord
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityProjectionRecord</code>. Kind: `record`.
@@ -888,14 +900,4 @@ Source: [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:20](../
 
 ```csharp
 public sealed record SecurityValidationIssueDto(SecurityValidationSeverityDto Severity, string Code, string Title, string Message, IReadOnlyList<string> AffectedFields, string SuggestedAction, IReadOnlyList<SecurityEvidenceLinkDto> EvidenceLinks);
-```
-
-## SecurityValidationReportDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValidationReportDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L29).
-
-```csharp
-public sealed record SecurityValidationReportDto(Guid? SecurityId, string Scope, DateTimeOffset EvaluatedAtUtc, bool HasBlockingIssues, int CriticalIssueCount, int ErrorIssueCount, IReadOnlyList<SecurityValidationIssueDto> Issues);
 ```

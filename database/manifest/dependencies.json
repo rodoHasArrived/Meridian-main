@@ -334,6 +334,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.LotQuantityBasisRules"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto"
     },
     {
@@ -68691,7 +68697,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "6cb91f5acb223ed3c2c7e8e5cd762ad0e26d81e39c8179250c7f2f2066fb271a",
+  "fingerprint": "14fb4ceeccc53c88e83a60d6cbfeb8f1007e0846187dae04aac46ca3c3176f68",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -69073,6 +69079,12 @@
       "id": "contract:Meridian.Contracts.Accounting.Lots.LotQuantityBasis",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Accounting.Lots.LotQuantityBasis"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.LotQuantityBasisRules",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.LotQuantityBasisRules"
     },
     {
       "classification": "dto",
@@ -100932,10 +100944,10 @@
   ],
   "summary": {
     "contract_references": 4232,
-    "contract_set_memberships": 5521,
-    "edges": 11411,
+    "contract_set_memberships": 5522,
+    "edges": 11412,
     "foreign_keys": 208,
     "logical_references": 6,
-    "nodes": 5606
+    "nodes": 5607
   }
 }

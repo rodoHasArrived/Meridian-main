@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntegrationStagingRecordDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.IntegrationStagingRecordDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:411](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L411).
+
+```csharp
+public sealed record IntegrationStagingRecordDto(string StagingRecordId, string SyncRunId, string ConnectionId, ProviderCapabilityKindDto Capability, string RawPayloadId, string? SourceRecordId, string DedupeKey, JsonElement MappedRecord, IReadOnlyList<ValidationIssueDto> ValidationWarnings, ProviderIntegrationProcessingStatusDto Status, DateTimeOffset CreatedAt);
+```
+
 ## IntegrationTypeDto
 
 Qualified name: <code>Meridian.Contracts.Integrations.IntegrationTypeDto</code>. Kind: `enum`.
@@ -742,13 +752,3 @@ Enum declarations:
 | --- | --- | --- |
 | <code>Original</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationManifestIdentity.cs:17](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationManifestIdentity.cs#L17) |  |
 | <code>Remediation</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationManifestIdentity.cs:18](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationManifestIdentity.cs#L18) |  |
-
-## ProviderIntegrationRestDryRunRequestDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationRestDryRunRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:688](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L688).
-
-```csharp
-public sealed record ProviderIntegrationRestDryRunRequestDto(string SyncRunId, string ManifestId, string ConnectionId, ProviderCapabilityKindDto Capability, string EndpointKey, IReadOnlyDictionary<string, string> PathParameters, IReadOnlyDictionary<string, string> QueryParameters, string RequestedBy, DateTimeOffset RequestedAt, int MaxPages);
-```

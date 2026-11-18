@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CreateFundRequest
+
+Qualified name: <code>Meridian.Contracts.FundStructure.CreateFundRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureCommands.cs:34](../../../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs#L34).
+
+```csharp
+public sealed record CreateFundRequest(Guid FundId, string Code, string Name, string BaseCurrency, DateTimeOffset EffectiveFrom, string CreatedBy, string? Description = null, Guid? BusinessId = null);
+```
+
 ## CreateIntercompanyAccountingArrangementRequest
 
 Qualified name: <code>Meridian.Contracts.FundStructure.CreateIntercompanyAccountingArrangementRequest</code>. Kind: `record`.
@@ -596,14 +606,4 @@ Source: [src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs:
 
 ```csharp
 public sealed record FundStructureSetupValidationIssueDto(string Code, string Message, string FieldPath, bool IsBlocking);
-```
-
-## FundStructureSetupValidationSummaryDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureSetupValidationSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs:108](../../../../src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs#L108).
-
-```csharp
-public sealed record FundStructureSetupValidationSummaryDto(bool IsValid, IReadOnlyList<FundStructureSetupValidationIssueDto> Issues);
 ```

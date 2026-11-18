@@ -6,6 +6,29 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BondSettlementConsiderationDto
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondSettlementConsiderationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs:28](../../../../src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs#L28).
+
+Reviewed acquisition settlement economics. Quotes and accrued interest are per 100 face; clean cost, purchased interest, fees and observed cash are absolute transaction-currency amounts. The enclosing lot instruction fingerprint binds this receipt to the retained draft and approval.
+
+```csharp
+public sealed record BondSettlementConsiderationDto(Guid SecurityId, string Currency, string ModelVersion, BondCalculationContext Context, BondYieldConvention YieldConvention, decimal OriginalFace, decimal BookedFactor, decimal CleanPricePer100, decimal AccruedInterestPer100, decimal CleanConsideration, decimal PurchasedAccruedInterest, decimal Fees, decimal DirtyConsideration, decimal ObservedDirtyCash, string SourceEvidenceId, string CashAccountId, string AccruedInterestAccountId, string? FeesAccountId, IReadOnlyList<BondCalculationInput> Inputs, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? FunctionalCurrency = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] decimal? SettlementFxRateToFunctional = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public Guid? SelectionReceiptId { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs:54](../../../../src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs#L54) | The exact provider-quote selector used by analytics, retained for mode-preserving replay. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? PriceAccountId { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs:58](../../../../src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs#L58) | Pricing account scope; null denotes the retained global hierarchy. |
+| <code>[JsonIgnore] public bool IsForeignCurrency =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs:62](../../../../src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs#L62) | True when the book&#x27;s functional currency differs from the bond&#x27;s currency. |
+| <code>[JsonIgnore] public string EffectiveFunctionalCurrency =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs:66](../../../../src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs#L66) | The functional currency every journal line&#x27;s debit and credit are stated in. |
+| <code>[JsonIgnore] public decimal EffectiveFxRateToFunctional =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs:70](../../../../src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs#L70) | The FX multiplier each line carries: the retained settlement rate, or one for a same-currency settlement. |
+| <code>public decimal ToFunctional(decimal transactionAmount) =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs:73](../../../../src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs#L73) | A transaction-currency amount translated once to the functional currency at the settlement rate, rounded to its minor units. |
+
 ## BondSettlementConsiderationRequest
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondSettlementConsiderationRequest</code>. Kind: `record`.
@@ -796,21 +819,3 @@ Declared public members:
 | <code>Task&lt;BondWorkflowResult?&gt; CalculateAsync(BondWorkflowRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:93](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L93) |  |
 | <code>Task&lt;BondWorkflowResult?&gt; CalculateIncomeScheduleAsync(BondWorkflowRequest request, DateOnly freezeIndexAt, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:94](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L94) |  |
 | <code>Task&lt;BondWorkflowResult?&gt; ReplayAsync(BondWorkflowResult retained, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:96](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L96) |  |
-
-## IBondWorkflowTypedObservationSource
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.IBondWorkflowTypedObservationSource</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:119](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L119).
-
-Typed retained sources bind the requested economic role independently of a series name. Existing custom observation sources retain the legacy interface and its explicit source contract.
-
-```csharp
-public interface IBondWorkflowTypedObservationSource : IBondWorkflowObservationSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;BondWorkflowRateObservation&gt;&gt; GetAsync(string indexName, BondMarketObservationKind kind, DateOnly from, DateOnly to, DateTimeOffset knownAt, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:121](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L121) |  |

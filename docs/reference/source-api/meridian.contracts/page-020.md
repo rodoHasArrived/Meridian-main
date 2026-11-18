@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EnvironmentPublishPreviewDto
+
+Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPreviewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:153](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L153).
+
+```csharp
+public sealed record EnvironmentPublishPreviewDto(Guid DraftId, EnvironmentValidationResultDto Validation, IReadOnlyList<EnvironmentPublishChangeDto> Changes, bool HasDestructiveChanges);
+```
+
 ## EnvironmentRelationshipDefinitionDto
 
 Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentRelationshipDefinitionDto</code>. Kind: `record`.
@@ -948,16 +958,4 @@ Browser and desktop request contract for the shared analysis export endpoint.
 
 ```csharp
 public sealed record ExportAnalysisApiRequest(string? ProfileId, string[]? Symbols, string? Format, DateTime? StartDate, DateTime? EndDate);
-```
-
-## ExportAnalysisApiResponse
-
-Qualified name: <code>Meridian.Contracts.Export.ExportAnalysisApiResponse</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:246](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L246).
-
-Shared response contract for the analysis export endpoint.
-
-```csharp
-public sealed record ExportAnalysisApiResponse(string? JobId, bool Success, string Status, string ProfileId, string[]? Symbols, int FilesGenerated, long TotalRecords, long TotalBytes, string? OutputDirectory, double DurationSeconds, string? Error, string[] Warnings, IReadOnlyList<ExportAnalysisApiFile> Files, DateTimeOffset Timestamp);
 ```

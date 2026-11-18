@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProposeIntercompanyBalanceConfirmationRequest
+
+Qualified name: <code>Meridian.Contracts.Ledger.ProposeIntercompanyBalanceConfirmationRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:64](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L64).
+
+Pins both sides&#x27; current posted balances for the profile at the as-of date.
+
+```csharp
+public sealed record ProposeIntercompanyBalanceConfirmationRequest(Guid RequestId, Guid AccountingArrangementId, DateOnly AsOf);
+```
+
 ## RealizedGainLossReportDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.RealizedGainLossReportDto</code>. Kind: `record`.
@@ -801,29 +813,3 @@ Declared public members:
 | <code>public LifecycleShutdownAcceptedDto? ShutdownAccepted { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:60](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L60) |  |
 | <code>public bool Success { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:61](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L61) |  |
 | <code>public string? Message { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:62](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L62) |  |
-
-## LifecycleSupervisorStatusDto
-
-Qualified name: <code>Meridian.Contracts.Lifecycle.LifecycleSupervisorStatusDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:36](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L36).
-
-```csharp
-public sealed record LifecycleSupervisorStatusDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public required bool Running { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:38](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L38) |  |
-| <code>public required string PipeName { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:39](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L39) |  |
-| <code>public required string ManifestPath { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:40](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L40) |  |
-| <code>public string? SessionId { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:41](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L41) |  |
-| <code>public DateTimeOffset? StartedAtUtc { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:42](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L42) |  |
-| <code>public int? HttpPort { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:43](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L43) |  |
-| <code>public LifecycleOwnedProcessDto? Host { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:44](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L44) |  |
-| <code>public LifecycleDatabaseIdentityDto? Database { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:45](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L45) |  |
-| <code>public RuntimeLifecycleSnapshotDto? HostLifecycle { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:46](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L46) |  |
-| <code>public LifecycleSessionReceiptDto? LatestSessionReceipt { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:47](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L47) |  |
-| <code>public string? Message { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:48](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L48) |  |

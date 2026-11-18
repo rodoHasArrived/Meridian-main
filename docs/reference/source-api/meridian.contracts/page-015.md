@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderPresetConfigDto
+
+Qualified name: <code>Meridian.Contracts.Configuration.ProviderPresetConfigDto</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:143](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L143).
+
+Groups named provider policies and highlights into a selectable configuration preset.
+
+```csharp
+public sealed class ProviderPresetConfigDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;presetId&quot;)] public string PresetId { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:146](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L146) |  |
+| <code>[JsonPropertyName(&quot;name&quot;)] public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:149](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L149) |  |
+| <code>[JsonPropertyName(&quot;description&quot;)] public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:152](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L152) |  |
+| <code>[JsonPropertyName(&quot;policies&quot;)] public ProviderPolicyConfigDto[]? Policies { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:155](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L155) |  |
+| <code>[JsonPropertyName(&quot;highlights&quot;)] public string[]? Highlights { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:158](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L158) |  |
+| <code>[JsonPropertyName(&quot;isBuiltIn&quot;)] public bool IsBuiltIn { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:161](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L161) |  |
+| <code>[JsonPropertyName(&quot;isEnabled&quot;)] public bool IsEnabled { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:164](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L164) |  |
+
 ## ProviderScopeDto
 
 Qualified name: <code>Meridian.Contracts.Configuration.ProviderScopeDto</code>. Kind: `class`.
@@ -884,14 +908,4 @@ Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:76](.
 
 ```csharp
 public sealed record AssessFeeRequest(string FeeType, decimal Amount, DateOnly EffectiveDate, string? Note);
-```
-
-## BookDrawdownRequest
-
-Qualified name: <code>Meridian.Contracts.DirectLending.BookDrawdownRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:330](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L330).
-
-```csharp
-public sealed record BookDrawdownRequest(decimal Amount, DateOnly TradeDate, DateOnly SettleDate, string? ExternalRef);
 ```

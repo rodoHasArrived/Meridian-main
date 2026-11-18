@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderIntegrationRestDryRunRequestDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationRestDryRunRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:688](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L688).
+
+```csharp
+public sealed record ProviderIntegrationRestDryRunRequestDto(string SyncRunId, string ManifestId, string ConnectionId, ProviderCapabilityKindDto Capability, string EndpointKey, IReadOnlyDictionary<string, string> PathParameters, IReadOnlyDictionary<string, string> QueryParameters, string RequestedBy, DateTimeOffset RequestedAt, int MaxPages);
+```
+
 ## ProviderIntegrationRunDueSyncItemResultDto
 
 Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationRunDueSyncItemResultDto</code>. Kind: `record`.
@@ -713,23 +723,3 @@ Source: [src/Meridian.Contracts/Ledger/AccountingBookContextDtos.cs:5](../../../
 ```csharp
 public sealed record AccountingBookContextDto(Guid LedgerBookId, string FundProfileId, Guid FundStructureNodeId, FundStructureNodeKindDto FundStructureNodeKind, string DisplayName, string BaseCurrency, AccountingBasisKindDto AccountingBasis, string AccountingPolicyId, string AccountingPolicyVersion, Guid? PeriodId = null, LedgerDimensionSetDto? Dimensions = null);
 ```
-
-## AccountingCertificationStateDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.AccountingCertificationStateDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:105](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L105).
-
-```csharp
-public enum AccountingCertificationStateDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Draft = 0</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:107](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L107) |  |
-| <code>ReadyForReview = 1</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:108](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L108) |  |
-| <code>Certified = 2</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:109](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L109) |  |
-| <code>Rejected = 3</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:110](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L110) |  |
-| <code>Superseded = 4</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:111](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L111) |  |

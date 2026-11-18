@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BookDrawdownRequest
+
+Qualified name: <code>Meridian.Contracts.DirectLending.BookDrawdownRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:330](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L330).
+
+```csharp
+public sealed record BookDrawdownRequest(decimal Amount, DateOnly TradeDate, DateOnly SettleDate, string? ExternalRef);
+```
+
 ## BorrowerInfoDto
 
 Qualified name: <code>Meridian.Contracts.DirectLending.BorrowerInfoDto</code>. Kind: `record`.
@@ -655,16 +665,4 @@ Amounts are exact invariant decimal text; an unknown denomination has no amount.
 
 ```csharp
 public sealed record LoanMaturityBucketDto(CurrencyCode Currency, int? Year, int? Quarter, string? PrincipalOutstanding, IReadOnlyList<Guid> LoanIds);
-```
-
-## LoanPortfolioCurrencyTotalsDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.LoanPortfolioCurrencyTotalsDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:415](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L415).
-
-Unconverted totals in the retained loan or collateral currency. Portfolio scalar totals are null when more than one currency occurs; no reporting currency or FX rate is implied. Collateral is grouped by its own appraisal currency, independently of facility currency. Other or unsupported currencies retain an unavailable bucket with null amounts, since their common denomination cannot be proved.
-
-```csharp
-public sealed record LoanPortfolioCurrencyTotalsDto(CurrencyCode Currency, decimal? TotalCommitment, decimal? TotalPrincipalOutstanding, decimal? TotalInterestAccruedUnpaid, decimal? TotalPenaltyAccruedUnpaid, decimal? TotalAvailableToDraw, decimal? TotalCollateralValue);
 ```
