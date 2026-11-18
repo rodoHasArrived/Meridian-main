@@ -6,6 +6,70 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ThemeServiceBase
+
+Qualified name: <code>Meridian.Ui.Services.Services.ThemeServiceBase</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/ThemeServiceBase.cs:11](../../../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs#L11).
+
+Abstract base class for theme management shared across desktop applications. Provides shared theme state management, toggle logic, and delegates platform-specific theme application and event raising to derived classes. Part of Phase 6C.2 service deduplication (ROADMAP item 6C.2).
+
+```csharp
+public abstract class ThemeServiceBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public AppTheme CurrentTheme =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ThemeServiceBase.cs:16](../../../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs#L16) | Gets the current application theme. |
+| <code>public void SetTheme(AppTheme theme);</code> | [src/Meridian.Ui.Services/Services/ThemeServiceBase.cs:30](../../../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs#L30) | Sets the application theme to the specified value. No-ops if the theme is already set to the requested value. |
+| <code>public void ToggleTheme();</code> | [src/Meridian.Ui.Services/Services/ThemeServiceBase.cs:46](../../../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs#L46) | Toggles between light and dark themes. |
+| <code>public virtual AppTheme GetSystemTheme() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ThemeServiceBase.cs:57](../../../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs#L57) | Gets the system theme preference. |
+
+## TooltipContent
+
+Qualified name: <code>Meridian.Ui.Services.Services.TooltipContent</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/TooltipContent.cs:33](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L33).
+
+Provides shared feature help content and onboarding tips data. This is the single source of truth for all tooltip content used across desktop platforms.
+
+```csharp
+public static class TooltipContent
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static FeatureHelp GetFeatureHelp(string featureKey);</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:38](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L38) | Gets contextual help for a feature by key. |
+| <code>public static IReadOnlyList&lt;OnboardingTip&gt; GetOnboardingTips(string pageKey);</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:51](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L51) | Gets onboarding tips for a page by key. |
+| <code>public static string GetTooltipText(string featureKey);</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:59](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L59) | Gets formatted tooltip text for a feature (description + tips). |
+| <code>public static readonly Dictionary&lt;string, FeatureHelp&gt; FeatureHelpContent = new () {[&quot;dashboard&quot;]= new FeatureHelp { Title = &quot;Dashboard&quot;, Description = &quot;The Dashboard provides a real-time overview of your market data collection. Monitor connection status, event throughput, data quality, and active symbol subscriptions at a glance.&quot;, Tips = new[] { &quot;Use keyboard shortcut Ctrl+D to quickly navigate here&quot;, &quot;The sparklines show trends over the last 30 seconds&quot;, &quot;Click on any metric card to see detailed analysis&quot; }, KeyboardShortcuts = new Dictionary&lt;string, string&gt;{[&quot;Ctrl+S&quot;]= &quot;Start collector&quot;, [&quot;Ctrl+Shift+S&quot;]= &quot;Stop collector&quot;, [&quot;F5&quot;]= &quot;Refresh data&quot; } }, [&quot;backfill&quot;]= new FeatureHelp { Title = &quot;Historical Backfill&quot;, Description = &quot;Download historical market data from various providers. Use this to fill gaps in your data or bootstrap a new symbol with historical bars.&quot;, Tips = new[] { &quot;Use &#x27;composite&#x27; provider to automatically try multiple sources&quot;, &quot;Drag and drop symbols to prioritize download order&quot;, &quot;Schedule recurring backfills for automatic gap filling&quot; }, KeyboardShortcuts = new Dictionary&lt;string, string&gt;{[&quot;Ctrl+B&quot;]= &quot;Navigate to Backfill&quot;, [&quot;Ctrl+Enter&quot;]= &quot;Start backfill&quot;, [&quot;Escape&quot;]= &quot;Cancel backfill&quot; } }, [&quot;symbols&quot;]= new FeatureHelp { Title = &quot;Symbol Management&quot;, Description = &quot;Manage your symbol subscriptions. Add new symbols, configure subscription types (trades, depth, quotes), and set exchange mappings.&quot;, Tips = new[] { &quot;Enter multiple symbols separated by commas&quot;, &quot;Use the Index Subscription page to add market indices&quot;, &quot;Import from CSV files using Portfolio Import&quot; } }, [&quot;provider&quot;]= new FeatureHelp { Title = &quot;Data Provider Configuration&quot;, Description = &quot;Configure your active data provider and connection settings. Each provider has different capabilities and rate limits.&quot;, Tips = new[] { &quot;Store API keys in environment variables for security&quot;, &quot;Use Multi-Source for automatic failover between providers&quot;, &quot;Check provider health status before starting collection&quot; } }, [&quot;storage&quot;]= new FeatureHelp { Title = &quot;Storage Management&quot;, Description = &quot;Monitor storage usage, configure retention policies, and manage data archival. Keep your data organized and disk space optimized.&quot;, Tips = new[] { &quot;Use Archive Health to verify data integrity&quot;, &quot;Configure automatic cleanup with retention policies&quot;, &quot;Export data to Parquet for efficient analysis&quot; } }, [&quot;dataquality&quot;]= new FeatureHelp { Title = &quot;Data Quality Monitoring&quot;, Description = &quot;Monitor the quality of your collected data. Track gaps, anomalies, and integrity issues to ensure reliable data for analysis.&quot;, Tips = new[] { &quot;Quality scores below 95% may indicate issues&quot;, &quot;Set up alerts for automatic gap detection&quot;, &quot;Use the integrity check to verify file consistency&quot; } }, [&quot;leanintegration&quot;]= new FeatureHelp { Title = &quot;QuantConnect Lean Integration&quot;, Description = &quot;Run backtests using QuantConnect&#x27;s Lean Engine with your collected data. Test trading strategies against historical market data.&quot;, Tips = new[] { &quot;Ensure your data covers the backtest date range&quot;, &quot;Configure Lean paths in the integration settings&quot;, &quot;Results are exported to the configured output folder&quot; } } };</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:69](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L69) |  |
+| <code>public static readonly Dictionary&lt;string, OnboardingTip[]&gt; OnboardingTipsContent = new () {[&quot;Dashboard&quot;]= new[] { new OnboardingTip { Id = &quot;dashboard_welcome&quot;, Title = &quot;Welcome to Meridian&quot;, Content = &quot;This dashboard shows your real-time data collection status. Start by configuring a data provider.&quot;, TargetElement = &quot;CollectorStatusBadge&quot;, Order = 1 }, new OnboardingTip { Id = &quot;dashboard_metrics&quot;, Title = &quot;Monitoring Metrics&quot;, Content = &quot;These cards show key metrics: events published, dropped, integrity issues, and historical bars.&quot;, TargetElement = &quot;MetricsGrid&quot;, Order = 2 }, new OnboardingTip { Id = &quot;dashboard_quickadd&quot;, Title = &quot;Quick Add Symbol&quot;, Content = &quot;Quickly add a symbol to your subscription list. Type a symbol like AAPL or SPY and press Enter.&quot;, TargetElement = &quot;QuickAddSymbolBox&quot;, Order = 3 } }, [&quot;Backfill&quot;]= new[] { new OnboardingTip { Id = &quot;backfill_provider&quot;, Title = &quot;Choose a Provider&quot;, Content = &quot;Select a historical data provider. &#x27;composite&#x27; will try multiple providers automatically.&quot;, TargetElement = &quot;ProviderCombo&quot;, Order = 1 }, new OnboardingTip { Id = &quot;backfill_daterange&quot;, Title = &quot;Select Date Range&quot;, Content = &quot;Use the preset buttons (30d, 90d, YTD) or pick custom dates. Longer ranges take more time.&quot;, TargetElement = &quot;DatePresetPanel&quot;, Order = 2 } }, [&quot;Provider&quot;]= new[] { new OnboardingTip { Id = &quot;provider_apikey&quot;, Title = &quot;API Keys&quot;, Content = &quot;Enter your API credentials. For security, consider using environment variables instead of storing keys directly.&quot;, TargetElement = &quot;ApiKeyInput&quot;, Order = 1 } } };</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:164](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L164) |  |
+
+## TrendDataPoint
+
+Qualified name: <code>Meridian.Ui.Services.Services.TrendDataPoint</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:158](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L158).
+
+Records a timestamped quality score with event and alert counts.
+
+```csharp
+public sealed class TrendDataPoint
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DateTime Timestamp { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:160](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L160) |  |
+| <code>public double Score { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:161](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L161) |  |
+| <code>public int EventCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:162](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L162) |  |
+| <code>public int AlertCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:163](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L163) |  |
+
 ## ValidationExtensions
 
 Qualified name: <code>Meridian.Ui.Services.Services.ValidationExtensions</code>. Kind: `class`.
@@ -1111,78 +1175,3 @@ Declared public members:
 | <code>public string Symbol { get; set; } = &quot;&quot;;</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:178](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L178) |  |
 | <code>public int TotalGaps { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:179](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L179) |  |
 | <code>public double DataAvailabilityPercent { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:181](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L181) | 0–100 percentage of trading time with data present. |
-
-## SymbolGapSummary
-
-Qualified name: <code>Meridian.Ui.Services.SymbolGapSummary</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:66](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L66).
-
-Summarizes a symbol&#x27;s gap count, missing duration, and coverage percentage.
-
-```csharp
-public sealed class SymbolGapSummary
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:68](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L68) |  |
-| <code>public int GapCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:69](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L69) |  |
-| <code>public TimeSpan TotalGapDuration { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:70](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L70) |  |
-| <code>public double CoveragePercent { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:71](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L71) |  |
-
-## SymbolGroupEventArgs
-
-Qualified name: <code>Meridian.Ui.Services.SymbolGroupEventArgs</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:314](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L314).
-
-Symbol group event args.
-
-```csharp
-public sealed class SymbolGroupEventArgs : EventArgs
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SymbolGroup? Group { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:316](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L316) |  |
-
-## SymbolGroupService
-
-Qualified name: <code>Meridian.Ui.Services.SymbolGroupService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:11](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L11).
-
-Service for managing symbol groups and portfolios.
-
-```csharp
-public sealed class SymbolGroupService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static SymbolGroupService Instance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:31](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L31) |  |
-| <code>public async Task&lt;SymbolGroupsConfig&gt; LoadGroupsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:41](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L41) | Loads symbol groups configuration. |
-| <code>public async Task&lt;SymbolGroup[]&gt; GetGroupsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:57](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L57) | Gets all symbol groups. |
-| <code>public async Task&lt;SymbolGroup?&gt; GetGroupByIdAsync(string id, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:69](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L69) | Gets a symbol group by ID. |
-| <code>public async Task&lt;SymbolGroup&gt; CreateGroupAsync(string name, string? description = null, string? color = null, string? icon = null, string[]? symbols = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:78](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L78) | Creates a new symbol group. |
-| <code>public async Task&lt;SymbolGroup?&gt; CreateGroupFromTemplateAsync(string templateId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:111](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L111) | Creates a group from a predefined template. |
-| <code>public async Task&lt;bool&gt; UpdateGroupAsync(SymbolGroup group, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:129](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L129) | Updates an existing symbol group. |
-| <code>public async Task&lt;bool&gt; DeleteGroupAsync(string id, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:150](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L150) | Deletes a symbol group. |
-| <code>public async Task&lt;bool&gt; AddSymbolToGroupAsync(string groupId, string symbol, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:169](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L169) | Adds a symbol to a group. |
-| <code>public async Task&lt;bool&gt; RemoveSymbolFromGroupAsync(string groupId, string symbol, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:188](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L188) | Removes a symbol from a group. |
-| <code>public async Task&lt;bool&gt; MoveSymbolAsync(string symbol, string? fromGroupId, string toGroupId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:204](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L204) | Moves a symbol between groups. |
-| <code>public async Task&lt;SymbolGroup[]&gt; GetGroupsForSymbolAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:217](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L217) | Gets all groups that contain a symbol. |
-| <code>public async Task&lt;string[]&gt; GetUngroupedSymbolsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:228](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L228) | Gets symbols that are not in any group. |
-| <code>public async Task ReorderGroupsAsync(int oldIndex, int newIndex, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:248](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L248) | Reorders groups. |
-| <code>public IEnumerable&lt;(string Id, string Name, string[] Symbols, string Color)&gt; GetTemplates();</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:274](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L274) | Gets available templates. |
-| <code>public event EventHandler&lt;SymbolGroupEventArgs&gt;? GroupCreated;</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:293](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L293) | Event raised when a group is created. |
-| <code>public event EventHandler&lt;SymbolGroupEventArgs&gt;? GroupUpdated;</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:298](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L298) | Event raised when a group is updated. |
-| <code>public event EventHandler&lt;SymbolGroupEventArgs&gt;? GroupDeleted;</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:303](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L303) | Event raised when a group is deleted. |
-| <code>public event EventHandler? GroupsReordered;</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:308](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L308) | Event raised when groups are reordered. |

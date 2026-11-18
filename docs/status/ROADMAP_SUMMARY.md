@@ -85,6 +85,7 @@ Snapshot date: 2026-11-12
 | W12-ICFLOAT-001 | Floating-rate intercompany loan interest from reviewed fixings | in_progress | yellow | high | Accounting and Ledger |
 | W12-ICINCOME-001 | Policy-governed intercompany revenue and expense elimination | accepted | green | medium | Accounting and Ledger |
 | W12-ICPAIR-001 | Durable reviewed counterpart proposals and aged intercompany breaks | accepted | green | high | Accounting and Ledger |
+| W12-ICSCHEDULE-001 | Opt-in, reviewed intercompany accrual schedules | in_progress | yellow | medium | Accounting and Ledger |
 | W12-YEND-001 | Fiscal year-end close and opening-balance roll-forward | planned | green | medium | Accounting and Ledger |
 | W13-OMS-001 | Governed order management and broker execution workbench | planned | green | medium | Execution and Fund Accounts |
 | W13-STRAT-001 | Governed strategy formulation and execution lifecycle | planned | green | medium | Strategy Analytics |

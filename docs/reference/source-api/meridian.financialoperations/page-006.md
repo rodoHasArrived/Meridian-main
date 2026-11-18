@@ -6,6 +6,29 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IbFlexStatementConnector
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.IbFlex.IbFlexStatementConnector</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexStatementConnector.cs:19](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexStatementConnector.cs#L19).
+
+Interactive Brokers Flex Query (XML) statement connector. Reads the Trades, CashTransactions, and OpenPositions sections of a FlexQueryResponse — every section is optional because operators configure which sections their Flex query emits. Cash transaction types are classified through the data-driven activity-code map in the ib-flex-v1 profile, so a new IB cash type is an operator profile edit, not a code change.
+
+```csharp
+public sealed class IbFlexStatementConnector : IFetchingStatementConnector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ConnectorId = &quot;ib-flex&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexStatementConnector.cs:21](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexStatementConnector.cs#L21) |  |
+| <code>public IbFlexStatementConnector(StatementMappingProfileCatalog catalog, [FromKeyedServices(ProviderCredentialStoreServiceKeys.LegacyRuntime)] IProviderCredentialStore? credentialStore = null, IIbFlexWebServiceClient? webServiceClient = null, StatementIngressLimits? limits = null);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexStatementConnector.cs:39](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexStatementConnector.cs#L39) |  |
+| <code>public StatementConnectorDescriptor Descriptor { get; }</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexStatementConnector.cs:60](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexStatementConnector.cs#L60) |  |
+| <code>public async Task&lt;StatementSourceDocument&gt; FetchAsync(StatementFetchRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexStatementConnector.cs:62](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexStatementConnector.cs#L62) |  |
+| <code>public bool CanHandle(StatementSourceDocument document);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexStatementConnector.cs:87](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexStatementConnector.cs#L87) |  |
+| <code>public async Task&lt;StatementParseResult&gt; ParseAsync(StatementSourceDocument document, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexStatementConnector.cs:98](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexStatementConnector.cs#L98) |  |
+
 ## IbFlexWebServiceClient
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.IbFlex.IbFlexWebServiceClient</code>. Kind: `class`.
@@ -848,14 +871,4 @@ Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextCo
 
 ```csharp
 public sealed record DataIntegrationIngestionRequest(string SourceKind, string SourcePath, string? MappingProfileId);
-```
-
-## DataIntegrationIngestionResult
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.DataIntegrationIngestionResult</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs:26](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs#L26).
-
-```csharp
-public sealed record DataIntegrationIngestionResult(string ImportId, string SourceKind, string SourcePath, int ImportedRowCount);
 ```

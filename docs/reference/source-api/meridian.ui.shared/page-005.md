@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PackagingEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.PackagingEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/PackagingEndpoints.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/PackagingEndpoints.cs#L13).
+
+HTTP API endpoints for the Portable Data Packager.
+
+```csharp
+public static class PackagingEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapPackagingEndpoints(this IEndpointRouteBuilder app, string dataRoot);</code> | [src/Meridian.Ui.Shared/Endpoints/PackagingEndpoints.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/PackagingEndpoints.cs#L24) | Maps all packaging-related endpoints. |
+
 ## PlaidEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.PlaidEndpoints</code>. Kind: `class`.
@@ -721,88 +739,4 @@ Source: [src/Meridian.Ui.Shared/Endpoints/SecureReportingDistributionEndpoints.c
 
 ```csharp
 public sealed record SecureReportingGrantRevocationResponse(string GrantId, bool Revoked);
-```
-
-## SecurityMasterEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.SecurityMasterEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CashDividendAttestation.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CashDividendAttestation.cs#L13).
-
-```csharp
-public static partial class SecurityMasterEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CashFlowPreview.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CashFlowPreview.cs#L14).
-
-```csharp
-public static partial class SecurityMasterEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionCalendar.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionCalendar.cs#L13).
-
-```csharp
-public static partial class SecurityMasterEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs#L14).
-
-```csharp
-public static partial class SecurityMasterEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs#L22).
-
-Endpoints for Security Master command/query workflows.
-
-```csharp
-public static partial class SecurityMasterEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapSecurityMasterEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs#L24) |  |
-
-Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs#L13).
-
-```csharp
-public static partial class SecurityMasterEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.ObservedFixings.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.ObservedFixings.cs#L17).
-
-```csharp
-public static partial class SecurityMasterEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcCollateral.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcCollateral.cs#L13).
-
-```csharp
-public static partial class SecurityMasterEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcContracts.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcContracts.cs#L12).
-
-```csharp
-public static partial class SecurityMasterEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Rates.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Rates.cs#L13).
-
-```csharp
-public static partial class SecurityMasterEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.RegistryProjections.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.RegistryProjections.cs#L14).
-
-```csharp
-public static partial class SecurityMasterEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.WriteRefusals.cs:7](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.WriteRefusals.cs#L7).
-
-```csharp
-public static partial class SecurityMasterEndpoints
 ```

@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountingBasisProjectionService
+
+Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingBasisProjectionService</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:365](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L365).
+
+Builds accounting-basis projections using the resolved accounting policy.
+
+```csharp
+public sealed class AccountingBasisProjectionService(IAccountingPolicyService accountingPolicyService) : IAccountingBasisProjectionService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;AccountingBasisProjectionResult&gt; ProjectAsync(AccountingBasisProjectionRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:370](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L370) |  |
+
 ## AccountingBasisProjectionSetService
 
 Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingBasisProjectionSetService</code>. Kind: `class`.
@@ -941,15 +959,3 @@ Enum declarations:
 | --- | --- | --- |
 | <code>Delivered</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:314](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L314) |  |
 | <code>Failed</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:315](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L315) |  |
-
-## FileDistributionRequest
-
-Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.FileDistributionRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:300](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L300).
-
-Request to distribute one normalized file to a set of recipients. ContentLocation is the durable, retrievable location of the deliverable — a storage handle or URI into the platform&#x27;s secure-distribution artifact store. A production transport fetches the bytes from there and verifies them against ContentSha256 before dispatch, so the archived delivery evidence reflects a real transfer of an identified artifact rather than metadata alone.
-
-```csharp
-public sealed record FileDistributionRequest(string FileName, string ContentType, string ContentSha256, long ContentLength, string ContentLocation, IReadOnlyList<DistributionRecipient> Recipients, string DistributedBy, string? SubjectId = null, DateTimeOffset? DistributedAtUtc = null);
-```

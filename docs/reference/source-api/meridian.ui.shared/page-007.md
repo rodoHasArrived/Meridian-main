@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ExportEvidenceContributor
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.ExportEvidenceContributor</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1026](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1026).
+
+Adds analysis-export evidence for portfolio reporting review.
+
+```csharp
+public sealed class ExportEvidenceContributor : IEvidenceContributor
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1028](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1028) |  |
+| <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1030](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1030) |  |
+| <code>public Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1034](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1034) |  |
+
 ## FileEvidenceArtifactStore
 
 Qualified name: <code>Meridian.Ui.Shared.Evidence.FileEvidenceArtifactStore</code>. Kind: `class`.
@@ -1109,32 +1129,3 @@ Declared public members:
 | <code>public long TotalBytesExported =&gt; …;</code> | [src/Meridian.Ui.Shared/LeanAutoExportService.cs:87](../../../../src/Meridian.Ui.Shared/LeanAutoExportService.cs#L87) | Gets the total bytes written since service start. |
 | <code>public LeanAutoExportService(StorageOptions storageOptions, ILogger&lt;LeanAutoExportService&gt; logger, CompositionConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/LeanAutoExportService.cs:89](../../../../src/Meridian.Ui.Shared/LeanAutoExportService.cs#L89) |  |
 | <code>public void Configure(string? leanDataPath = null, bool? enabled = null, int intervalSeconds = 0, IEnumerable&lt;string&gt;? symbols = null);</code> | [src/Meridian.Ui.Shared/LeanAutoExportService.cs:113](../../../../src/Meridian.Ui.Shared/LeanAutoExportService.cs#L113) | Reconfigures the auto-export service at runtime. |
-
-## LeanSymbolMapper
-
-Qualified name: <code>Meridian.Ui.Shared.LeanSymbolMapper</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/LeanSymbolMapper.cs:15](../../../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs#L15).
-
-Maps between Meridian symbol format and QuantConnect Lean&#x27;s SecurityIdentifier format. Meridian symbols are plain tickers like &quot;SPY&quot; or &quot;AAPL&quot;; Lean uses qualified identifiers that encode market, security type, and an exchange-specific sid component.
-
-```csharp
-public static class LeanSymbolMapper
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string UsaMarket = &quot;usa&quot;;</code> | [src/Meridian.Ui.Shared/LeanSymbolMapper.cs:18](../../../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs#L18) | Lean market code for US equities. |
-| <code>public const string EquitySecurityType = &quot;equity&quot;;</code> | [src/Meridian.Ui.Shared/LeanSymbolMapper.cs:21](../../../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs#L21) | Lean security type folder for equities. |
-| <code>public const string CryptoSecurityType = &quot;crypto&quot;;</code> | [src/Meridian.Ui.Shared/LeanSymbolMapper.cs:24](../../../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs#L24) | Lean security type folder for crypto. |
-| <code>public const string ForexSecurityType = &quot;forex&quot;;</code> | [src/Meridian.Ui.Shared/LeanSymbolMapper.cs:27](../../../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs#L27) | Lean security type folder for forex. |
-| <code>public static string ToLeanTicker(string mdcSymbol) =&gt; …;</code> | [src/Meridian.Ui.Shared/LeanSymbolMapper.cs:40](../../../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs#L40) | Converts an Meridian ticker symbol to a lowercase Lean ticker (used in data paths). Lean expects lower-case tickers in file/directory names. |
-| <code>public static string FromLeanTicker(string leanTicker) =&gt; …;</code> | [src/Meridian.Ui.Shared/LeanSymbolMapper.cs:48](../../../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs#L48) | Converts a Lean lower-case ticker back to an Meridian upper-case symbol. |
-| <code>public static string DetectSecurityType(string mdcSymbol);</code> | [src/Meridian.Ui.Shared/LeanSymbolMapper.cs:54](../../../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs#L54) | Detects the Lean security type folder name for the given Meridian symbol. |
-| <code>public static string DetectMarket(string mdcSymbol);</code> | [src/Meridian.Ui.Shared/LeanSymbolMapper.cs:70](../../../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs#L70) | Detects the Lean market for the given symbol. |
-| <code>public static string BuildLeanDataDirectory(string baseDir, string mdcSymbol, string resolution = &quot;tick&quot;, string? securityType = null, string? market = null);</code> | [src/Meridian.Ui.Shared/LeanSymbolMapper.cs:87](../../../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs#L87) | Builds the Lean data directory path for a symbol, resolution, and data type. Path pattern: {baseDir}/{securityType}/{market}/{resolution}/{ticker} |
-| <code>public static string BuildLeanFileName(DateTime date, string mdcEventType) =&gt; …;</code> | [src/Meridian.Ui.Shared/LeanSymbolMapper.cs:108](../../../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs#L108) | Builds the Lean zip file name for a given date and event type. Lean names trade files &quot;{yyyyMMdd}_trade.zip&quot; and quote files &quot;{yyyyMMdd}_quote.zip&quot;. |
-| <code>public static string MapEventTypeToLean(string mdcEventType);</code> | [src/Meridian.Ui.Shared/LeanSymbolMapper.cs:114](../../../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs#L114) | Maps an Meridian event type name to the Lean data type name used in file names. |
-| <code>public static string MapResolutionToMdc(string leanResolution) =&gt; …;</code> | [src/Meridian.Ui.Shared/LeanSymbolMapper.cs:130](../../../../src/Meridian.Ui.Shared/LeanSymbolMapper.cs#L130) | Maps a Lean resolution string to an Meridian-friendly description. |

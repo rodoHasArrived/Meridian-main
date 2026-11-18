@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FileAccountingAuditChainAnchor
+
+Qualified name: <code>Meridian.Ui.Shared.Services.FileAccountingAuditChainAnchor</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs:60](../../../../src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs#L60).
+
+The monotonic head of a file-backed accounting audit chain, retained outside the snapshot it protects.
+
+```csharp
+public sealed class FileAccountingAuditChainAnchor
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int CurrentSchemaVersion = 2;</code> | [src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs:70](../../../../src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs#L70) | Anchor journal format version. |
+| <code>public FileAccountingAuditChainAnchor(string anchorPath);</code> | [src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs:83](../../../../src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs#L83) |  |
+| <code>public string AnchorPath { get; }</code> | [src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs:90](../../../../src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs#L90) | Full path of the head journal. |
+| <code>public static string AnchorPathFor(string snapshotPath);</code> | [src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs:93](../../../../src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs#L93) | The conventional journal path for a snapshot file. |
+| <code>public async Task&lt;AccountingAuditChainAnchorRecord?&gt; ReadHeadAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs:103](../../../../src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs#L103) | Reads the current head, verifying the journal&#x27;s own hash chain first so a forged or edited line is rejected rather than trusted. Returns null when no append has ever been anchored. |
+| <code>public Task&lt;AccountingAuditChainAnchorRecord&gt; DeclareAsync(long sequence, string entryHash, long genesisSequence, int preChainEventCount, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs:113](../../../../src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs#L113) | Records the intent to append sequence. Refuses a sequence that does not advance the journal, so a replayed or rewound append cannot quietly reuse a position. |
+| <code>public Task&lt;AccountingAuditChainAnchorRecord&gt; CommitAsync(long sequence, string entryHash, long genesisSequence, int preChainEventCount, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs:124](../../../../src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs#L124) | Confirms that the snapshot carrying sequence was written. |
+
 ## FileAccountingAuditPendingMarkerStore
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FileAccountingAuditPendingMarkerStore</code>. Kind: `class`.
@@ -1099,21 +1123,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public GovernedReportingRestatementCertificationInputProvider(GovernedReportingTemplateCatalog templateCatalog, ReportingRunReadinessService readiness);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:223](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L223) |  |
 | <code>public async ValueTask&lt;ReportingRestatementCertificationInput&gt; ResolveAsync(ReportingRestatementRequest request, GovernedReportingRun releasedPredecessor, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:231](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L231) |  |
-
-## GovernedReportingRestatementChangedLineResolver
-
-Qualified name: <code>Meridian.Ui.Shared.Services.GovernedReportingRestatementChangedLineResolver</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:277](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L277).
-
-Server-owned placeholder disclosure at request time. Approval replaces it with an exact diff of the predecessor and recertified immutable source rows before the request is marked Approved.
-
-```csharp
-public sealed class GovernedReportingRestatementChangedLineResolver : IReportingRestatementChangedLineResolver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ValueTask&lt;ImmutableArray&lt;ReportingRestatementChangedLine&gt;&gt; ResolveAsync(GovernedReportingRun releasedPredecessor, string reason, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:280](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L280) |  |

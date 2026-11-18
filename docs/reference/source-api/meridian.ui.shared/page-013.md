@@ -6,6 +6,90 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyAccrualScheduleService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IntercompanyAccrualScheduleService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleService.cs:16](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleService.cs#L16).
+
+Opt-in, reviewed accrual schedules. A run drafts each completed schedule period that ends after the schedule was approved and has no draft yet, through exactly the preview-then-draft path an operator uses. It never posts, never recomputes a draft that already exists, and reports every refusal instead of estimating.
+
+```csharp
+public sealed class IntercompanyAccrualScheduleService(IIntercompanyAccrualScheduleStore store, IIntercompanyInterestAccrualDrafter drafter, IntercompanyAccountingArrangementService arrangements, IBusinessDayCalendarSource calendars, ILedgerJournalStore journals, IManualJournalEntryDraftStore drafts, TimeProvider? clock = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int MaximumWindowsPerRun = 24;</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleService.cs:21](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleService.cs#L21) | One run drafts at most this many periods, oldest first; the next run continues. |
+| <code>public Task&lt;IReadOnlyList&lt;IntercompanyAccrualScheduleDto&gt;&gt; ListAsync(string tenantId, Guid ledgerBookId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleService.cs:24](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleService.cs#L24) |  |
+| <code>public async Task&lt;IntercompanyAccrualScheduleDto&gt; ProposeAsync(string tenantId, string? companyId, string actor, ProposeIntercompanyAccrualScheduleRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleService.cs:27](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleService.cs#L27) |  |
+| <code>public async Task&lt;IntercompanyAccrualScheduleDto&gt; DecideAsync(string tenantId, string? companyId, string actor, Guid scheduleId, DecideIntercompanyAccrualScheduleRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleService.cs:46](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleService.cs#L46) |  |
+| <code>public async Task&lt;IntercompanyAccrualScheduleRunDto&gt; DueAsync(string tenantId, string? companyId, Guid scheduleId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleService.cs:58](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleService.cs#L58) | What a run would do as of asOf, without drafting anything. |
+| <code>public async Task&lt;IntercompanyAccrualScheduleRunDto&gt; RunAsync(string tenantId, string? companyId, Guid scheduleId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleService.cs:66](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleService.cs#L66) | Runs an active schedule now on an operator&#x27;s request; the drafts record the schedule as their preparer. |
+| <code>public Task&lt;IntercompanyAccrualScheduleRunDto&gt; RunScheduledAsync(IntercompanyAccrualScheduleDto schedule, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleService.cs:74](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleService.cs#L74) | The background runner&#x27;s entry point: only an active schedule drafts. |
+| <code>public static string PreparerFor(IntercompanyAccrualScheduleDto schedule) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleService.cs:83](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleService.cs#L83) | The preparer recorded on drafts a schedule creates. |
+
+## IntercompanyAgreementJournalProjection
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IntercompanyAgreementJournalProjection</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/IntercompanyAgreementJournalProjection.cs:11](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAgreementJournalProjection.cs#L11).
+
+Projects posted line provenance without calculating agreement matches or changing consolidation.
+
+```csharp
+public static class IntercompanyAgreementJournalProjection
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IntercompanyAgreementJournalLinesDto Project(IntercompanyAgreementDetailDto agreement, LedgerBookRecord book, IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, DateOnly asOf, string? cursor = null, int pageSize = 100);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAgreementJournalProjection.cs:13](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAgreementJournalProjection.cs#L13) |  |
+
+## IntercompanyFeeAccrualDraftService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IntercompanyFeeAccrualDraftService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/IntercompanyFeeAccrualDraftService.cs:15](../../../../src/Meridian.Ui.Shared/Services/IntercompanyFeeAccrualDraftService.cs#L15).
+
+Resolves approved management-fee terms and profile revisions into a source-side fee draft (rule intercompany-fee-v1). It never approves or posts: the draft enters the source book&#x27;s ordinary review, and the counterpart is produced by the existing proposal pipeline only after the source journal commits.
+
+```csharp
+public sealed class IntercompanyFeeAccrualDraftService(IntercompanyAccountingArrangementService arrangements, ILedgerJournalStore journals, IIntercompanyAccountBindingStore bindings, IAccountingConfigurationService configuration, IManualJournalEntryDraftStore drafts, ManualJournalEntryWorkbenchService workbench, IIntercompanyFeeAccrualPreviewService calculator, IConsolidationFxAuthority? fx = null, TimeProvider? time = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IntercompanyFeeAccrualProposalDto&gt; PreviewAsync(string tenantId, string? companyId, string actor, IntercompanyFeeAccrualRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyFeeAccrualDraftService.cs:23](../../../../src/Meridian.Ui.Shared/Services/IntercompanyFeeAccrualDraftService.cs#L23) | Read-only: computes the fee, its evidence and the draft that would be retained. |
+| <code>public async Task&lt;ManualJournalEntryDraftDto&gt; CreateDraftAsync(string tenantId, string? companyId, string actor, CreateIntercompanyFeeAccrualDraftRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyFeeAccrualDraftService.cs:107](../../../../src/Meridian.Ui.Shared/Services/IntercompanyFeeAccrualDraftService.cs#L107) | Retains the previewed fee as a draft in the source book&#x27;s review queue. A changed input since the preview is refused; an unreviewed draft of the same window is recomputed in place; one already submitted is never overwritten. |
+
+## IntercompanyProposalDeliveryService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IntercompanyProposalDeliveryService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs:16](../../../../src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs#L16).
+
+Delivers retained sources into the destination&#x27;s existing review queue.
+
+```csharp
+public sealed class IntercompanyProposalDeliveryService(IIntercompanyProposalStore store, IntercompanyAccountingArrangementService agreements, ILedgerJournalStore journals, IIntercompanyAccountBindingStore bindings, IAccountingConfigurationService configuration, IManualJournalEntryDraftStore drafts, ManualJournalEntryWorkbenchService workbench, IFundProfileTenancyRegistry owners, IConsolidationFxAuthority fx, TimeProvider? time = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;int&gt; RunOnceAsync(string workerId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs:24](../../../../src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs#L24) |  |
+| <code>public async Task&lt;IntercompanyRefreshPreviewDto&gt; RefreshPreviewAsync(string tenant, string? company, Guid proposalId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs:162](../../../../src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs#L162) |  |
+| <code>public async Task&lt;ManualJournalEntryDraftDto&gt; RefreshAsync(string tenant, string? company, Guid proposalId, RefreshIntercompanyProposalRequest request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs:217](../../../../src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs#L217) |  |
+| <code>public async Task LinkAsync(string tenant, Guid proposalId, LinkIntercompanyCounterpartRequest request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs:259](../../../../src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs#L259) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;IntercompanyBreakDto&gt;&gt; BreaksAsync(string tenant, string? company, Guid sourceBookId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs:451](../../../../src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs#L451) |  |
+
 ## IntercompanyProposalHostedService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IntercompanyProposalHostedService</code>. Kind: `class`.
@@ -335,7 +419,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IReportingMigrationStartup</code>. Kind: `interface`.
 
-Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1635](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1635).
+Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1644](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1644).
 
 Completes the existing checksummed reporting migration workflow before services that query the reporting authority are constructed.
 
@@ -347,7 +431,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task EnsureReadyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1637](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1637) |  |
+| <code>Task EnsureReadyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1646](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1646) |  |
 
 ## IReportingPrimaryDocumentRenderer
 
@@ -843,66 +927,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IReadOnlyList&lt;LedgerBookDto&gt; Sort(IEnumerable&lt;LedgerBookDto&gt;? books) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LedgerBookOrdering.cs:27](../../../../src/Meridian.Ui.Shared/Services/LedgerBookOrdering.cs#L27) |  |
-
-## LedgerClientReportDocumentPackage
-
-Qualified name: <code>Meridian.Ui.Shared.Services.LedgerClientReportDocumentPackage</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs:10](../../../../src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs#L10).
-
-The complete binary primary-document pair rendered from one immutable ledger report pack. Construction is all-or-nothing: callers do not receive a package unless both documents were rendered successfully and contain bytes.
-
-```csharp
-public sealed record LedgerClientReportDocumentPackage(byte[] Pdf, byte[] Workbook);
-```
-
-## LedgerClientReportExportService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.LedgerClientReportExportService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs:23](../../../../src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs#L23).
-
-Shared, DI-resolved seam that turns a governed ledger report pack into client-grade delivery artifacts (branded PDF + multi-sheet XLSX) plus the retained hash/provenance manifest. It uses the composition root&#x27;s registered ILedgerReportBinaryRenderer — the QuestPDF/ClosedXML renderer once AddFinancialReportDocumentRenderer is wired — so both the browser workstation and the WPF desktop consume one export path rather than each re-rendering deliverables. The renderer is optional so lightweight hosts that never registered it still degrade to the dependency-free plain-text fallback instead of failing to construct.
-
-```csharp
-public sealed class LedgerClientReportExportService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LedgerClientReportExportService(ILedgerReportBinaryRenderer? renderer = null);</code> | [src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs:27](../../../../src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs#L27) |  |
-| <code>public bool HasClientGradeRenderer =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs:33](../../../../src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs#L33) | True when a client-grade binary renderer is wired (not the plain-text fallback). |
-| <code>public LedgerClientReportDocumentPackage BuildClientDocumentPackage(LedgerFinancialReportPack reportPack);</code> | [src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs:40](../../../../src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs#L40) | Renders the atomic PDF/XLSX primary-document pair for a governed client package from the exact supplied report pack. Both documents flow through the same composition-root renderer; if either render fails or returns no bytes, no package is returned. |
-| <code>public IReadOnlyList&lt;LedgerReportPackArtifact&gt; BuildClientDeliverables(LedgerFinancialReportPack reportPack, LedgerReportScheduledExport scheduledExport);</code> | [src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs:60](../../../../src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs#L60) | Builds the scheduled-export delivery artifacts (manifest + one artifact per declared format) for reportPack, rendering PDF/XLSX through the wired renderer. |
-
-## LedgerExportEvidenceUnavailableException
-
-Qualified name: <code>Meridian.Ui.Shared.Services.LedgerExportEvidenceUnavailableException</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/BacktestLedgerExportMapper.cs:9](../../../../src/Meridian.Ui.Shared/Services/BacktestLedgerExportMapper.cs#L9).
-
-The journal remains exportable but the requested lot evidence was not retained.
-
-```csharp
-public sealed class LedgerExportEvidenceUnavailableException(string message) : InvalidOperationException(message);
-```
-
-## LedgerMarkToMarketCarryingValueSource
-
-Qualified name: <code>Meridian.Ui.Shared.Services.LedgerMarkToMarketCarryingValueSource</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/LedgerMarkToMarketCarryingValueSource.cs:13](../../../../src/Meridian.Ui.Shared/Services/LedgerMarkToMarketCarryingValueSource.cs#L13).
-
-Reads the requested ledger book&#x27;s as-of trial balance once and returns the durable securities-account carrying value for every requested security/account key within the requested entity. Missing accounts are explicit null results; present zero-balance accounts remain zero.
-
-```csharp
-public sealed class LedgerMarkToMarketCarryingValueSource(ILedgerJournalStore store) : IMarkToMarketCarryingValueSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyDictionary&lt;MarkToMarketCarryingValueKey, MarkToMarketCarryingValue&gt;&gt; GetCarryingValuesAsync(MarkToMarketCarryingValueRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerMarkToMarketCarryingValueSource.cs:16](../../../../src/Meridian.Ui.Shared/Services/LedgerMarkToMarketCarryingValueSource.cs#L16) |  |
