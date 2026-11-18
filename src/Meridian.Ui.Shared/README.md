@@ -67,7 +67,16 @@ unavailable or rejected transitions. Config reads with `configurationOnly=true` 
 while streaming is stopped and report unknown active providers explicitly. Rule quality, latency,
 failure and recovery threshold relaxations require an operator reason; the rule and immutable audit
 entry persist together. Saves return the shared setting-change impact; failover timing diagnostics
-report retained `DataSourcesConfig` values rather than placeholder thresholds.
+report retained `DataSourcesConfig` values rather than placeholder thresholds. Rules that name a
+provider ID with no `DataSources.Sources` entry are refused (rule POST and UI saves, changed rules
+only). The process-wide `StreamingFailoverRegistry.Process` lets the UI server see the collector's
+live coordinator in desktop mode.
+
+`CrossProviderToleranceEndpoints` serve `GET`/`PUT /api/quality/cross-provider/policy` (bounds,
+defaults, audit; `ModifyConfig`, rate-limited, reason required when loosening, atomic audit, live
+apply reported through the change status) and `POST /api/quality/cross-provider/preview` (one
+symbol, two non-simulated historical providers, at most 30 days, about two provider calls).
+Whole-document saves cannot change `DataQuality.CrossProvider` or its audit.
 Rule deletion requires a JSON body with an operator-supplied `reason` and retains the removed
 provider chain and thresholds atomically. Recreating the rule cannot erase that deletion evidence.
 

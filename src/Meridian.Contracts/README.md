@@ -40,6 +40,9 @@ endpoint; canonical balance-schedule serialization and evidence hashes remain un
 
 Backfill provider metadata includes vendor-tier presets and the selected tier ID without credentials.
 Shared settings responses expose saved-change impacts independently of active runtime confirmation.
+`ConfigurationChangeStatus.LastApply` (additive) carries per-path `ConfigurationApplyEntry` outcomes
+(`AppliedLive`, `ProviderReconfigured`, `NoRuntimeEffect`, `Deferred`) reported by the host; details
+name settings or provider IDs only, never values.
 Nested backfill, provider, source and symbol-mapping DTO extension data retains host-owned validation
 profiles, audit histories, failover rules/timing and other unmodeled fields during settings roundtrips.
 

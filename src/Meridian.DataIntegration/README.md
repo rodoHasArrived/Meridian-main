@@ -360,7 +360,10 @@ For request-only providers that have no streaming connection health signal, degr
 rebalances across the available latency and error-rate evidence so severe historical-provider
 failures are still routable instead of being capped below the global degradation threshold.
 `CrossProviderComparisonService` emits trade price/volume and quote bid/ask discrepancy signals
-for provider-trust consumers. Application pipeline, backfill remediation, Prometheus, health,
+for provider-trust consumers. Thresholds come from the user-editable `CrossProviderTolerancePolicy`,
+resolved per symbol through an optional asset-class lookup and replaceable at runtime with
+`UpdatePolicy`; informational volume discrepancies are recorded with `IsInformational` and excluded
+from alert statistics. Application pipeline, backfill remediation, Prometheus, health,
 daily-summary, and UI Shared endpoint adapters consume `Meridian.DataIntegration.Monitoring` and
 `Meridian.DataIntegration.Monitoring.DataQuality` instead of keeping provider trust primitives in
 the application layer.

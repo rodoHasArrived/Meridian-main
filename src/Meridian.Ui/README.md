@@ -18,7 +18,8 @@ before project evaluation; commit authored inputs and reviewed documentation, no
 mechanical trackers. See [generated output delivery](../../docs/engineering/generated-output-delivery.md).
 
 The Providers workstation includes guarded failover, historical provider limits and routing previews,
-symbol rollout, validation profiles and quota history. Data and Settings share pending activation
+symbol rollout, validation profiles and quota history, plus the cross-provider tolerance editor in
+data-quality watch. Data and Settings share pending activation
 status from the host; rebuild the dashboard to refresh these served controls. See the dashboard and
 shared-service READMEs for validation and runtime boundaries.
 
