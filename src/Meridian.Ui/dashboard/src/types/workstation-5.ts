@@ -108,6 +108,25 @@ export interface ReconciliationBreakQueueItem {
   blockedOutputs?: string[] | null;
   accountingPeriodId?: string | null;
   asOfDate?: string | null;
+  /** Case lifecycle the server checks before waive, sign-off and reopen. Older payloads omit it. */
+  lifecycleState?: ReconciliationCaseLifecycleState | null;
+}
+
+/** One append-only entry from `GET .../break-queue/{breakId}/audit`, in sequence order. */
+export interface ReconciliationBreakQueueAuditEvent {
+  eventId: string;
+  breakId: string;
+  eventType: string;
+  previousStatus?: ReconciliationBreakQueueStatus | null;
+  newStatus?: ReconciliationBreakQueueStatus | null;
+  previousLifecycleState?: ReconciliationCaseLifecycleState | null;
+  newLifecycleState?: ReconciliationCaseLifecycleState | null;
+  occurredAt: string;
+  actor?: string | null;
+  reason?: string | null;
+  note?: string | null;
+  commandId?: string | null;
+  sequence?: number;
 }
 
 export interface ReconciliationCaseComment {

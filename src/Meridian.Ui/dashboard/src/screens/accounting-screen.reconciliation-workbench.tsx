@@ -30,6 +30,8 @@ import {
   type SurfaceVisitServices
 } from "@/lib/since-last-visit";
 import { ReconciliationCaseDiscussion } from "./accounting-screen.case-discussion";
+import { BreakLifecyclePanel, type BreakLifecycleServices } from "./accounting-screen.reconciliation-lifecycle";
+import { BreakAuditTimeline, type BreakAuditLoader } from "./accounting-screen.reconciliation-audit-timeline";
 import { cn } from "@/lib/utils";
 import { ReconciliationBulkTriageBar, useReconciliationBulkTriage, type BulkTriageServices } from "./reconciliation-bulk-triage-bar";
 import { sourceObservationLabel, sourceObservationAge } from "./reconciliation-source-observation";
@@ -122,7 +124,7 @@ export function ThreeWayReconciliationWorkbench({ children }: { children: ReactN
   return <>{children}<ThreeWayAccountingPanel /></>;
 }
 
-export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSelector, controls, selectionNotice, bulkServices, visitServices }: {
+export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSelector, controls, selectionNotice, bulkServices, visitServices, lifecycleServices, auditLoader }: {
   reconciliation: Reconciliation;
   resolveDialog: ResolveDialog;
   runSelector?: ReactNode;
@@ -132,6 +134,10 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
   bulkServices?: BulkTriageServices;
   /** Reads and records the operator's visit for "since your last visit" markers; tests inject fakes. */
   visitServices?: Partial<SurfaceVisitServices>;
+  /** Lifecycle commands (root cause, resolution, waive, sign-off, reopen); tests inject fakes. */
+  lifecycleServices?: BreakLifecycleServices;
+  /** Audit history reader for the Activity section; tests inject fakes. */
+  auditLoader?: BreakAuditLoader;
 }) {
   const location = useLocation();
   const queueRef = useRef<HTMLDivElement>(null);
@@ -139,6 +145,7 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
   const pendingQueueScroll = useRef<number | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const selectedRow = reconciliation.rows.find((row) => row.breakId === reconciliation.selectedBreakId) ?? null;
+  const selectedSource = selectedRow ? reconciliation.sourceRows?.find((item) => item.breakId === selectedRow.breakId) ?? null : null;
   const activeResolveBreak = resolveDialog.active
     ? reconciliation.rows.find((row) => row.breakId === resolveDialog.active?.breakId) ?? null : null;
   const visibleRows = filterReconciliationRows(reconciliation.rows, controls);
@@ -228,7 +235,7 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
   )) ?? [];
   function renderBreakActions(item: ReconciliationBreakRowViewModel) {
     return (
-      <div className="panel-action-zone">
+      <div className="panel-action-zone reconciliation-break-actions">
         <Button
           size="sm"
           variant="outline"
@@ -411,6 +418,7 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
               Back to break queue
             </Button>
             {reconciliation.selectedDetail ? <p className="mt-3 text-sm text-muted-foreground">{reconciliation.selectedDetail.description}</p> : <p role="status" aria-label={reconciliation.detailEmptyAriaLabel} className="text-sm text-muted-foreground">{reconciliation.detailEmptyText}</p>}
+            {selectedSource ? <BreakLifecyclePanel key={`lifecycle:${selectedSource.breakId}`} item={selectedSource} onUpdated={reconciliation.applyCaseworkUpdate} services={lifecycleServices} /> : null}
             {selectedRow ? <ReconciliationCaseDiscussion key={selectedRow.breakId} breakId={selectedRow.breakId} onUpdated={reconciliation.applyCaseworkUpdate} /> : null}
             {reconciliation.selectedDetail && selectedBreakTechnicalFields.length > 0 ? (
               <TechnicalDetails
@@ -503,6 +511,7 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
                 </div>
               </form>
             ) : null}
+            {selectedRow ? <BreakAuditTimeline key={`audit:${selectedRow.breakId}`} breakId={selectedRow.breakId} refreshKey={selectedSource?.version ?? null} load={auditLoader} /> : null}
           </DetailRail>
         )}
       >

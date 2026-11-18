@@ -8877,6 +8877,9 @@ Meridian-main
 │   │   │   │   ├── run-vitest-stable.mjs
 │   │   │   │   ├── smoke-design-system-adoption.mjs
 │   │   │   │   ├── smoke-design-system.mjs
+│   │   │   │   ├── smoke-workstation-a11y.mjs
+│   │   │   │   ├── smoke-workstation-a11y.test.mjs
+│   │   │   │   ├── smoke-workstation-axe-baseline.json
 │   │   │   │   ├── smoke-workstation.mjs
 │   │   │   │   ├── sync-design-system-assets.d.mts
 │   │   │   │   ├── sync-design-system-assets.mjs
@@ -10076,7 +10079,10 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.prepare-next-period.test-fixtures.ts
 │   │   │   │   │   ├── accounting-screen.prepare-next-period.test.tsx
 │   │   │   │   │   ├── accounting-screen.prepare-next-period.tsx
+│   │   │   │   │   ├── accounting-screen.reconciliation-audit-timeline.tsx
 │   │   │   │   │   ├── accounting-screen.reconciliation-continuity.test.ts
+│   │   │   │   │   ├── accounting-screen.reconciliation-lifecycle.test.tsx
+│   │   │   │   │   ├── accounting-screen.reconciliation-lifecycle.tsx
 │   │   │   │   │   ├── accounting-screen.reconciliation-queue-utils.ts
 │   │   │   │   │   ├── accounting-screen.reconciliation-readiness.test.tsx
 │   │   │   │   │   ├── accounting-screen.reconciliation-readiness.tsx
@@ -10326,9 +10332,11 @@ Meridian-main
 │   │   │   │   │   ├── quant-lab-screen.tsx
 │   │   │   │   │   ├── quant-lab-screen.view-model.test.ts
 │   │   │   │   │   ├── quant-lab-screen.view-model.ts
+│   │   │   │   │   ├── reconciliation-break-lifecycle.ts
 │   │   │   │   │   ├── reconciliation-bulk-triage-bar.tsx
 │   │   │   │   │   ├── reconciliation-bulk-triage.test.ts
 │   │   │   │   │   ├── reconciliation-bulk-triage.ts
+│   │   │   │   │   ├── reconciliation-casework-command.ts
 │   │   │   │   │   ├── reconciliation-casework-outcome.ts
 │   │   │   │   │   ├── reconciliation-run-picker.test.tsx
 │   │   │   │   │   ├── reconciliation-source-observation.test.ts

@@ -112,3 +112,18 @@ axe scans reported zero violations; nine scans retain incomplete/manual checks. 
 runtime, asset or expanded request errors occurred, and all 163 published files remained
 byte-identical. Seventeen known fixture gaps remain explicit. This is synthetic Linux Chromium
 evidence, not live-provider or native Windows certification.
+
+## Browser UX Phase 1 — trustworthy queue (2026-11-18)
+
+Source changes that alter catalogued captures; the catalog is refreshed by the
+web-screenshot-capture workflow, not regenerated in this change.
+
+- **Accounting — Exceptions (W03E):** the Case queue card and the Workflow next steps card are
+  gone. The page header says how many exceptions are in the reconciliation break queue below
+  and links to it; the evidence packet and audit timeline links moved into the header. Each
+  break now appears once, in the break queue.
+- **Accounting — Reconciliation and Exceptions:** the inspector gains a Lifecycle section
+  (root cause, resolution, waive, sign-off, reopen) and a collapsed Activity section, scrolls at
+  viewport height at 1280px and wider, and keeps the break action row pinned at its top.
+- **Portfolio — NAV:** the fund profile is chosen from a list built from the ledger books.
+
