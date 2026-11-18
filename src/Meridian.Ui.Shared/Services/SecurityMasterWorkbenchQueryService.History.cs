@@ -215,6 +215,9 @@ public sealed partial class SecurityMasterWorkbenchQueryService
         }
     }
 
+    /// <summary>Changed-field label for a classification change caused by a taxonomy revision.</summary>
+    private const string TaxonomyRevisionField = "Taxonomy revision";
+
     private static IReadOnlyList<string> BuildChangedFields(
         SecurityEconomicDefinitionRecord? previousRecord,
         SecurityEconomicDefinitionRecord? currentRecord,
@@ -254,11 +257,15 @@ public sealed partial class SecurityMasterWorkbenchQueryService
 
         // A retained event may carry the legacy F# label rendering while its successor carries the
         // canonical name; compare decoded labels so a label-format change alone is not reported.
+        // A change that only brings an older version's labels in line with the current asset-class
+        // taxonomy is a taxonomy revision, not an operator classification edit.
         if (!ClassificationLabelsEqual(previousRecord.AssetClass, currentRecord.AssetClass)
             || !ClassificationLabelsEqual(previousRecord.AssetFamily, currentRecord.AssetFamily)
             || !ClassificationLabelsEqual(previousRecord.SubType, currentRecord.SubType))
         {
-            fields.Add("Classification");
+            var isTaxonomyRevision = ClassificationLabelsEqual(previousRecord.SubType, currentRecord.SubType)
+                && SecurityClassificationTaxonomy.IsTaxonomyRevision(previousRecord, currentRecord);
+            fields.Add(isTaxonomyRevision ? TaxonomyRevisionField : "Classification");
         }
 
         if (!JsonElementsEquivalent(previousRecord.CommonTerms, currentRecord.CommonTerms))

@@ -36,6 +36,15 @@ public sealed record SecurityLotUnitDescriptor(
 /// what its quantity means and which typed lot carries it. Consumers that need to know how a
 /// holding is sized read <see cref="For(SecurityLotUnitKind)"/> or
 /// <see cref="ForAssetClass(string?)"/> instead of switching on asset-class strings.
+/// <para>
+/// Shares, listed contracts and currency amounts deliberately have no typed lot: the generic
+/// execution, backtesting and ledger lots carry them, with the catalog's unit and multiplier
+/// (<see cref="LotQuantity.UnitFor"/>). Ledger relief-history lots are normalized to units with a
+/// multiplier of one and a monetary unit cost, so quantity times unit cost is the basis; they do not
+/// restate the instrument's unit. Two guards keep the boundaries aligned with the catalog:
+/// <c>LotQuantityBasisRules</c> refuses a face-booked acquisition of a class that is not
+/// face-denominated, and <c>PaperLotUnitCatalogAgreementTests</c> holds paper fills to the catalog unit.
+/// </para>
 /// </summary>
 public static class SecurityLotModel
 {

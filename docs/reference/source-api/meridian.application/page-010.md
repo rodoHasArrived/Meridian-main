@@ -6,6 +6,50 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterIngestStatusSnapshot
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterIngestStatusSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs:6](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs#L6).
+
+Snapshot of Security Master ingest activity for UI/API status surfaces.
+
+```csharp
+public sealed record SecurityMasterIngestStatusSnapshot(SecurityMasterActiveImportStatus? ActiveImport, SecurityMasterCompletedImportStatus? LastCompleted);
+```
+
+## UnboundCompatibilityRead
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterMapping.UnboundCompatibilityRead</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterMapping.SchemaBound.cs:16](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterMapping.SchemaBound.cs#L16).
+
+One decode read the schema cannot bind: Path (a root key, or a dotted path into a nested block) is not declared for AssetClass with the type the codec reads it as (ReadAs).
+
+```csharp
+public sealed record UnboundCompatibilityRead(string AssetClass, string Path, SecurityAssetTermFieldType ReadAs, string Reason);
+```
+
+## SecurityMasterOperationalEvidenceItem
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterOperationalEvidenceItem</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs:22](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs#L22).
+
+```csharp
+public sealed record SecurityMasterOperationalEvidenceItem(string EvidenceId, string Category, string EvidenceKind, string Status, string Source, string? AssetClass = null, string? Label = null, string? EvidenceRoute = null, string? EvidenceLink = null, string? Reason = null);
+```
+
+## SecurityMasterOperationalEvidenceSnapshot
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterOperationalEvidenceSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs:15](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs#L15).
+
+```csharp
+public sealed record SecurityMasterOperationalEvidenceSnapshot(string? ProviderId, string? ExternalAccountId, string? ReconciliationStatus, string? ReconciliationDetailPath, IReadOnlyList<SecurityMasterOperationalEvidenceItem> EvidenceItems);
+```
+
 ## SecurityMasterOperationalReadinessRequest
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterOperationalReadinessRequest</code>. Kind: `record`.
@@ -1024,68 +1068,3 @@ Result of auto-configuration analysis.
 ```csharp
 public sealed record AutoConfigResult(bool Success, AppConfig Config, IReadOnlyList<DetectedProvider> DetectedProviders, IReadOnlyList<string> AppliedFixes, IReadOnlyList<string> Recommendations, IReadOnlyList<string> Warnings);
 ```
-
-## DetectedProvider
-
-Qualified name: <code>Meridian.Application.Services.AutoConfigurationService.DetectedProvider</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:22](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L22).
-
-Result of provider detection.
-
-```csharp
-public sealed record DetectedProvider(string Name, string DisplayName, bool HasCredentials, string[] MissingCredentials, bool IsRecommended, int SuggestedPriority, string[] Capabilities);
-```
-
-## ConfigPreset
-
-Qualified name: <code>Meridian.Application.Services.ConfigPreset</code>. Kind: `enum`.
-
-Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:930](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L930).
-
-Available configuration presets for different user roles.
-
-```csharp
-public enum ConfigPreset : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Researcher</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:933](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L933) | Historical analysis, daily bars, Parquet export. |
-| <code>DayTrader</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:935](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L935) | Real-time streaming, L2 depth, low-latency storage. |
-| <code>OptionsTrader</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:937](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L937) | Options chain + Greeks, IB streaming, derivatives enabled. |
-| <code>Crypto</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:939](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L939) | 24/7 crypto collection, Alpaca crypto feed, extended retention. |
-
-## ConfigPresetInfo
-
-Qualified name: <code>Meridian.Application.Services.ConfigPresetInfo</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:945](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L945).
-
-Descriptive information about a configuration preset.
-
-```csharp
-public sealed record ConfigPresetInfo(ConfigPreset Preset, string Name, string Description, string[] KeySettings);
-```
-
-## ConfigurationPresets
-
-Qualified name: <code>Meridian.Application.Services.ConfigurationPresets</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:992](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L992).
-
-Role-based configuration presets that configure ~15 settings at once. Reduces time-to-value from 30+ minutes of manual config to a single --preset flag.
-
-```csharp
-public static class ConfigurationPresets
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;string&gt; AvailablePresets =&gt; …;</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:997](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L997) | Available preset names. |
-| <code>public static IReadOnlyDictionary&lt;string, string&gt; PresetDescriptions =&gt; …;</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:1005](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L1005) | Gets the preset description for display. |
-| <code>public static AppConfig ApplyPreset(string presetName, AppConfig config);</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:1016](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L1016) | Applies a named preset to the given config, returning a new config with preset values. |

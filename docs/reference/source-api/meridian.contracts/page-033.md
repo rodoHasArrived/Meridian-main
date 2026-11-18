@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ActivateAutomatedPostingGrantRequest
+
+Qualified name: <code>Meridian.Contracts.Ledger.ActivateAutomatedPostingGrantRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AutomatedPostingGrantDtos.cs:19](../../../../src/Meridian.Contracts/Ledger/AutomatedPostingGrantDtos.cs#L19).
+
+```csharp
+public sealed record ActivateAutomatedPostingGrantRequest(Guid GrantId, string FinancialAccountId, Guid LedgerBookId, Guid PeriodId, string PolicyId, string PolicyVersion, string MappingRevision, string SourceMode = "Synthetic", string? CompanyId = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
+```
+
 ## ActivateLedgerBookControlsRequestDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.ActivateLedgerBookControlsRequestDto</code>. Kind: `record`.
@@ -695,27 +705,3 @@ Declared public members:
 | <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:619](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L619) |  |
 | <code>public IReadOnlyList&lt;Guid&gt; ClosingBatchJournalEntryIds { get; init; } = ClosingBatchJournalEntryIds??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:620](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L620) |  |
 | <code>public IReadOnlyList&lt;Guid&gt; ReversalDraftJournalEntryIds { get; init; } = ReversalDraftJournalEntryIds??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:621](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L621) |  |
-
-## ClosePostingGateStateDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.ClosePostingGateStateDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:573](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L573).
-
-```csharp
-public enum ClosePostingGateStateDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unavailable = 0</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:575](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L575) |  |
-| <code>NotRequired = 1</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:576](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L576) |  |
-| <code>Required = 2</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:577](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L577) |  |
-| <code>DraftQueued = 3</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:578](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L578) |  |
-| <code>Submitted = 4</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:579](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L579) |  |
-| <code>Approved = 5</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:580](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L580) |  |
-| <code>Posted = 6</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:581](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L581) |  |
-| <code>ReversalQueued = 7</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:582](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L582) |  |
-| <code>Blocked = 8</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:583](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L583) |  |

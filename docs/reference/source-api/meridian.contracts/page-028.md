@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyAgreementCommandDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementCommandDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:36](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L36).
+
+Actor and tenant are deliberately absent: authenticated service context supplies both.
+
+```csharp
+public sealed record IntercompanyAgreementCommandDto(Guid CommandId, Guid AgreementId, long ExpectedAggregateVersion, Guid ProposalId, IntercompanyAgreementDraftDto? Draft = null, string? Rationale = null, string? SubmittedHash = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IntercompanyExternalReviewDto? ExternalReview { get; init; }</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:41](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L41) |  |
+
 ## IntercompanyAgreementCommandReceiptDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementCommandReceiptDto</code>. Kind: `record`.
@@ -667,14 +685,4 @@ Source: [src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs
 
 ```csharp
 public sealed record IntercompanyStructuredTermsPreviewDto(string Status, string TermsFormat, string SubjectHash, string KernelVersion, string? CalendarId, string? CalendarHash, IReadOnlyList<IntercompanyDatePeriodDto> Periods, IReadOnlyList<string> Diagnostics);
-```
-
-## IntercompanyStructuredTermsPreviewRequestDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyStructuredTermsPreviewRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs:49](../../../../src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs#L49).
-
-```csharp
-public sealed record IntercompanyStructuredTermsPreviewRequestDto(Guid AgreementId, int? AgreementVersion = null, Guid? ProposalId = null);
 ```

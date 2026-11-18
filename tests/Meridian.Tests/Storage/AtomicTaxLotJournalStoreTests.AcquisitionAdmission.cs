@@ -25,6 +25,16 @@ public sealed partial class AtomicTaxLotJournalStoreTests
 
     [LedgerDatabaseFact]
     [Trait("Category", "Integration")]
+    public Task FaceAcquisition_OfAUnitDenominatedSecurity_IsRefusedBeforeAnyDurableWrite()
+        => AssertNewAcquisitionAdmissionAsync(face: true, securityAssetClass: "Equity", expectBasisRefusal: true);
+
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
+    public Task UnitAcquisition_OfAFaceValueSecurity_IsStillAdmitted()
+        => AssertNewAcquisitionAdmissionAsync(face: false, securityAssetClass: "Deposit");
+
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public Task LegacyUnitAcquisition_ExactReplaySurvivesAdmissionCutoverAndRestart()
         => AssertLegacyAcquisitionReplayAsync(face: false);
 
@@ -33,7 +43,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
     public Task LegacyFaceAcquisition_ExactReplaySurvivesAdmissionCutoverAndRestart()
         => AssertLegacyAcquisitionReplayAsync(face: true);
 
-    private static async Task AssertNewAcquisitionAdmissionAsync(bool face)
+    private static async Task AssertNewAcquisitionAdmissionAsync(
+        bool face, string? securityAssetClass = null, bool expectBasisRefusal = false)
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
         var command = await PrepareFactFreeAcquisitionAsync(database, face);
@@ -64,8 +75,21 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                     face ? new(100m, 1m, BondAmortizationMethod.NoAmortization, null) : null, [evidence])
             }
         }).WithComputedFingerprint();
-        var authority = await database.SeedLotReferenceAuthorityAsync(lot.LedgerBookId, lot.SecurityId, lot.BookPositionId);
+        var authority = await database.SeedLotReferenceAuthorityAsync(lot.LedgerBookId, lot.SecurityId, lot.BookPositionId,
+            assetClass: securityAssetClass ?? (face ? "Bond" : "Equity"));
         complete = (complete with { ReferenceVersions = authority.Versions }).WithComputedFingerprint();
+        if (expectBasisRefusal)
+        {
+            // The security's catalog lot unit decides whether a lot may be booked by face: an
+            // equity has no par basis, so a Face lot of it is refused with nothing written.
+            var refused = () => database.JournalStore.AppendAssetPostingAsync(complete);
+            await refused.Should().ThrowAsync<LedgerValidationException>()
+                .WithMessage("*quantity basis Face is not valid*'Equity'*");
+            (await database.JournalStore.GetAtomicTaxLotPostingAsync(complete.MutationBatchId)).Should().BeNull();
+            (await database.JournalStore.VerifyLedgerEventAuditAsync()).ChainedEvents.Should().Be(auditBefore);
+            return;
+        }
+
         var posted = await database.JournalStore.AppendAssetPostingAsync(complete);
         posted.IsExactReplay.Should().BeFalse("refusal must not reserve the posting identity");
         posted.MutatedLots.Should().ContainSingle().Which.ToOpenLot().OpenFunctionalCostBasis.Should().Be(10_000m);

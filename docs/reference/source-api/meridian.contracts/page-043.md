@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementReconciliationRunAuthorization
+
+Qualified name: <code>Meridian.Contracts.Reconciliation.StatementReconciliationRunAuthorization</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:9](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L9).
+
+```csharp
+public sealed record StatementReconciliationRunAuthorization(string RunId, Guid FundAccountId, string FundProfileId, Guid LedgerBookId, Guid AccountingPeriodId, DateOnly AsOfDate, DateOnly PeriodStart, DateOnly PeriodEnd);
+```
+
 ## StatementRunEvidenceLinkDto
 
 Qualified name: <code>Meridian.Contracts.Reconciliation.StatementRunEvidenceLinkDto</code>. Kind: `record`.
@@ -616,7 +626,7 @@ public sealed record AssetClassDepthTargetSpec(string KeySuffix, string TargetTy
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.AssetOperationsCapabilitySet</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1534](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1534).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1564](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1564).
 
 Groups the operational capabilities supported by different asset profiles.
 
@@ -628,10 +638,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static readonly IReadOnlyList&lt;string&gt; IdentityOnly = [&quot;Identity&quot;, &quot;TermsHistory&quot;, &quot;Evidence&quot;, &quot;Readiness&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1536](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1536) |  |
-| <code>public static readonly IReadOnlyList&lt;string&gt; FixedIncome = [&quot;Identity&quot;, &quot;TermsHistory&quot;, &quot;LifecycleState&quot;, &quot;ProjectedCashFlows&quot;, &quot;ActualActivity&quot;, &quot;Reconciliation&quot;, &quot;LedgerProjection&quot;, &quot;Evidence&quot;, &quot;WorkflowAudit&quot;, &quot;Readiness&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1544](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1544) |  |
-| <code>public static readonly IReadOnlyList&lt;string&gt; DirectLending = [&quot;Identity&quot;, &quot;TermsHistory&quot;, &quot;LifecycleState&quot;, &quot;ProjectedCashFlows&quot;, &quot;ActualActivity&quot;, &quot;Reconciliation&quot;, &quot;LedgerProjection&quot;, &quot;Evidence&quot;, &quot;WorkflowAudit&quot;, &quot;Readiness&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1558](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1558) |  |
-| <code>public static readonly IReadOnlyList&lt;string&gt; AlternativeAssetOperations = [&quot;Identity&quot;, &quot;TermsHistory&quot;, &quot;LifecycleState&quot;, &quot;ProjectedCashFlows&quot;, &quot;ActualActivity&quot;, &quot;Reconciliation&quot;, &quot;LedgerProjection&quot;, &quot;Evidence&quot;, &quot;WorkflowAudit&quot;, &quot;Readiness&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1572](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1572) |  |
+| <code>public static readonly IReadOnlyList&lt;string&gt; IdentityOnly = [&quot;Identity&quot;, &quot;TermsHistory&quot;, &quot;Evidence&quot;, &quot;Readiness&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1566](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1566) |  |
+| <code>public static readonly IReadOnlyList&lt;string&gt; FixedIncome = [&quot;Identity&quot;, &quot;TermsHistory&quot;, &quot;LifecycleState&quot;, &quot;ProjectedCashFlows&quot;, &quot;ActualActivity&quot;, &quot;Reconciliation&quot;, &quot;LedgerProjection&quot;, &quot;Evidence&quot;, &quot;WorkflowAudit&quot;, &quot;Readiness&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1574](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1574) |  |
+| <code>public static readonly IReadOnlyList&lt;string&gt; DirectLending = [&quot;Identity&quot;, &quot;TermsHistory&quot;, &quot;LifecycleState&quot;, &quot;ProjectedCashFlows&quot;, &quot;ActualActivity&quot;, &quot;Reconciliation&quot;, &quot;LedgerProjection&quot;, &quot;Evidence&quot;, &quot;WorkflowAudit&quot;, &quot;Readiness&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1588](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1588) |  |
+| <code>public static readonly IReadOnlyList&lt;string&gt; AlternativeAssetOperations = [&quot;Identity&quot;, &quot;TermsHistory&quot;, &quot;LifecycleState&quot;, &quot;ProjectedCashFlows&quot;, &quot;ActualActivity&quot;, &quot;Reconciliation&quot;, &quot;LedgerProjection&quot;, &quot;Evidence&quot;, &quot;WorkflowAudit&quot;, &quot;Readiness&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1602](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1602) |  |
 
 ## AssetPackAccountingRules
 
@@ -652,20 +662,3 @@ Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs:855]
 ```csharp
 public sealed record AssetPackAdmissionPolicy(bool AllowsWideCapture, bool RequiresJournalTemplateBeforeAutomatedPosting, string AccountingPostingPolicy, string EvidencePolicy, string CoreLedgerMutationPolicy, IReadOnlyList<string> AutomationEscalationTriggers);
 ```
-
-## AssetPackAutomationDepth
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.AssetPackAutomationDepth</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs:823](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs#L823).
-
-```csharp
-public enum AssetPackAutomationDepth
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>WideCapture = 0</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs:825](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs#L825) |  |
-| <code>DeepAccountingAutomation = 1</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs:826](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs#L826) |  |

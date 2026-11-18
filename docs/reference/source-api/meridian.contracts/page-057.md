@@ -6,6 +6,52 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MmfRebuildCheckpointDto
+
+Qualified name: <code>Meridian.Contracts.Treasury.MmfRebuildCheckpointDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:87](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L87).
+
+Tracks the last successful projection rebuild for a money market fund. Used by governance and operations to verify rebuild freshness.
+
+```csharp
+public sealed record MmfRebuildCheckpointDto(Guid SecurityId, long AggregateVersion, DateTimeOffset CheckpointedAt, string RebuildSource);
+```
+
+## MmfSearchQuery
+
+Qualified name: <code>Meridian.Contracts.Treasury.MmfSearchQuery</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:73](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L73).
+
+Filter criteria for MMF search queries. All nullable criteria are treated as &quot;any&quot; when not specified.
+
+```csharp
+public sealed record MmfSearchQuery(string? FundFamily = null, bool? IsSweepEligible = null, bool? HasLiquidityFee = null, MmfLiquidityState? LiquidityState = null, int? MaxWamDays = null, bool ActiveOnly = true, int Skip = 0, int Take = 50);
+```
+
+## MmfSweepProfileDto
+
+Qualified name: <code>Meridian.Contracts.Treasury.MmfSweepProfileDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:51](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L51).
+
+Sweep-eligibility and fee profile for a money market fund. Used by cash-management and treasury consumers to determine routing eligibility.
+
+```csharp
+public sealed record MmfSweepProfileDto(Guid SecurityId, bool IsSweepEligible, bool HasLiquidityFee, string? FundFamily, DateTimeOffset AsOf);
+```
+
+## AccountBalanceHistoryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AccountBalanceHistoryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/AccountBalanceHistoryDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/AccountBalanceHistoryDtos.cs#L8).
+
+```csharp
+public sealed record AccountBalanceHistoryDto(Guid AccountId, DateTimeOffset AsOfUtc, IReadOnlyList<AccountBalanceHistoryPointDto> Points, bool IsTruncated);
+```
+
 ## AccountBalanceHistoryPointDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.AccountBalanceHistoryPointDto</code>. Kind: `record`.
@@ -592,48 +638,4 @@ Shared cash and financing rollup for Accounting and Trading capital-control surf
 
 ```csharp
 public sealed record CashFinancingSummary(string Currency, decimal TotalCash, decimal PendingSettlement, decimal FinancingCost, decimal MarginBalance, decimal RealizedPnl, decimal UnrealizedPnl, decimal LongMarketValue, decimal ShortMarketValue, decimal GrossExposure, decimal NetExposure, decimal TotalEquity, IReadOnlyList<string> Highlights, int CashFlowEntryCount = 0, decimal ProjectedInflows = 0m, decimal ProjectedOutflows = 0m, decimal NetProjectedCashFlow = 0m, int ProjectionBucketDays = 0, IReadOnlyList<CashLadderBucketDto>? CashFlowBuckets = null, IReadOnlyList<CashFlowEntryDto>? CashFlowEntries = null);
-```
-
-## CashFlowEntryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.CashFlowEntryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:960](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L960).
-
-A single historical cash-flow entry from a strategy run.
-
-```csharp
-public sealed record CashFlowEntryDto(DateTimeOffset Timestamp, decimal Amount, string EventKind, string? Symbol, string Currency, string? AccountId, string? Description);
-```
-
-## CashFlowProjectionPoint
-
-Qualified name: <code>Meridian.Contracts.Workstation.CashFlowProjectionPoint</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:35](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L35).
-
-```csharp
-public sealed record CashFlowProjectionPoint(Guid AccountId, string Currency, DateOnly Date, decimal ExpectedInflow, decimal ExpectedOutflow, decimal NetFlow, decimal RunningBalance, bool LiquidityWarning, string WarningDetail);
-```
-
-## CashForecastResult
-
-Qualified name: <code>Meridian.Contracts.Workstation.CashForecastResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:36](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L36).
-
-```csharp
-public sealed record CashForecastResult(DateOnly AsOfDate, IReadOnlyList<CashFlowProjectionPoint> Timeline, IReadOnlyList<string> Warnings);
-```
-
-## CashLadderBucketDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.CashLadderBucketDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:970](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L970).
-
-A single time-bucket within a projected cash ladder.
-
-```csharp
-public sealed record CashLadderBucketDto(DateTimeOffset BucketStart, DateTimeOffset BucketEnd, decimal ProjectedInflows, decimal ProjectedOutflows, decimal NetFlow, string Currency, int EventCount);
 ```

@@ -6,6 +6,31 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DateRangeType
+
+Qualified name: <code>Meridian.Contracts.Export.DateRangeType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Export/ExportPreset.cs:210](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L210).
+
+Date range types for export presets.
+
+```csharp
+public enum DateRangeType : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Today</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:213](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L213) | Export today&#x27;s data. |
+| <code>Yesterday</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:215](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L215) | Export yesterday&#x27;s data. |
+| <code>LastWeek</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:217](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L217) | Export last 7 days. |
+| <code>LastMonth</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:219](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L219) | Export last 30 days. |
+| <code>LastQuarter</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:221](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L221) | Export last quarter (90 days). |
+| <code>LastYear</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:223](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L223) | Export last year. |
+| <code>All</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:225](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L225) | Export all available data. |
+| <code>Custom</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:227](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L227) | Use custom date range. |
+
 ## ExportAnalysisApiFile
 
 Qualified name: <code>Meridian.Contracts.Export.ExportAnalysisApiFile</code>. Kind: `record`.
@@ -877,13 +902,3 @@ Enum declarations:
 | <code>NoAmortization</code> | [src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs:27](../../../../src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs#L27) |  |
 | <code>AuctionRate</code> | [src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs:29](../../../../src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs#L29) |  |
 | <code>PurchasedCreditImpaired</code> | [src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs:31](../../../../src/Meridian.Contracts/FixedIncome/BondReferenceDtos.cs#L31) |  |
-
-## BondAnalyticsBlocker
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondAnalyticsBlocker</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:44](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L44).
-
-```csharp
-public sealed record BondAnalyticsBlocker(string Code, string Reason);
-```
