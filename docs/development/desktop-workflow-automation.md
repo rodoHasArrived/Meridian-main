@@ -229,7 +229,7 @@ Supported step fields:
 
 - `title`: human-readable step name used in logs and manuals
 - `pageTag`: WPF navigation tag forwarded as `--page=<PageTag>`; normal top-level workflow landings should use canonical shell tags such as `StrategyShell`, `TradingShell`, `DataShell`, or `AccountingShell`; compatibility aliases remain accepted for existing workflows
-- `blueprintChecklistIds`: optional stable IDs from `docs/plans/desktop-workstation-screen-blueprint.checklist.json`; use this when a capture step proves a desktop workstation blueprint screen or support lane
+- `blueprintChecklistIds`: optional stable IDs from `docs/engineering/plans/desktop-workstation-screen-blueprint.checklist.json`; use this when a capture step proves a desktop workstation blueprint screen or support lane
 - `launchArgs`: optional raw argument array for non-page actions
 - `keys`: optional `System.Windows.Forms.SendKeys` sequence after navigation
 - `capture`: set to `false` when a step should act without saving a screenshot

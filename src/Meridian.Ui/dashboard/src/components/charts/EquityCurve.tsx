@@ -1,9 +1,11 @@
 // Meridian equity curve — line (with area fill) + benchmark overlay, value-axis labels,
 // gridlines, legend, crosshair readout, and an optional drawdown subpane. Mirrors the
-// performance charts in analytics / backtest reporting. Flex-fills its container.
+// performance charts in analytics / backtest reporting. Flex-fills its container and draws at its
+// measured pixel size, so axis text is never stretched (UX Phase F); the value axis sits on the left.
+import { AXIS_LABEL_STYLE, fitValueTicks, formatTimeTickLabel, selectTimeTickIndices, timeLabelSpanDays } from "./axis-ticks";
 import { ChartSvg, type ChartA11yProps } from "./chart-a11y";
 import { ChartInteractionOverlay, isChartInteractive } from "./chart-interaction";
-import { niceTicks } from "./ticks";
+import { useChartSize } from "./use-chart-size";
 
 export interface EquitySeries {
   label: string;
@@ -67,16 +69,17 @@ export function EquityCurve({
   ariaDescription,
   accessibleData
 }: EquityCurveProps) {
-  const W = 960;
-  const H = 460;
-  const padL = 48;
+  const [plotRef, size] = useChartSize({ width: 960, height: 460 });
+  const W = size.width;
+  const H = size.height;
+  const axisL = 64;
   const padT = 14;
-  const axisR = 62;
+  const padR = 12;
   const axisB = 28;
   const ddH = drawdown ? 88 : 0;
   const ddGap = drawdown ? 12 : 0;
-  const plotL = padL;
-  const plotR = W - axisR;
+  const plotL = axisL;
+  const plotR = W - padR;
   const eqT = padT;
   const eqB = H - axisB - ddH - ddGap;
   const ddT = eqB + ddGap;
@@ -97,10 +100,11 @@ export function EquityCurve({
   const line = (pts: number[]) => pts.length === 0 ? "" : pts.map((v, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
   const area = (pts: number[]) => pts.length === 0 ? "" : `${line(pts)} L${x(n - 1).toFixed(1)},${eqB} L${x(0).toFixed(1)},${eqB} Z`;
 
-  const vTicks = niceTicks(min, max, valueTicks);
-  const tStep = Math.max(1, Math.round((n || 1) / timeTicks));
-  const axFont = { fontFamily: "var(--font-data, monospace)", fontSize: 12, fontWeight: 500 };
-  const labelFont = { fontFamily: "var(--font-data, monospace)", fontSize: 11 };
+  const vTicks = fitValueTicks(min, max, valueTicks, eqB - eqT);
+  const timeTickIndices = new Set(selectTimeTickIndices(Math.min(n, labels.length), plotR - plotL, timeTicks));
+  const spanDays = timeLabelSpanDays(labels.slice(0, n));
+  const axFont = { ...AXIS_LABEL_STYLE, fontSize: 12, fontWeight: 500 };
+  const labelFont = AXIS_LABEL_STYLE;
 
   // drawdown subpane scale (drawdown values are <= 0)
   const ddMin = drawdown ? Math.min(...drawdown, 0) : 0;
@@ -113,7 +117,7 @@ export function EquityCurve({
         .join(" ")} L${x(n - 1).toFixed(1)},${yD(0).toFixed(1)} Z`
     : "";
 
-  const legendText = { fontFamily: "var(--font-data, monospace)", fontSize: 11, color: "var(--text-secondary, #535C65)" };
+  const legendText = { fontFamily: AXIS_LABEL_STYLE.fontFamily, fontSize: 12, color: "var(--text-secondary, #535C65)" };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
@@ -133,9 +137,10 @@ export function EquityCurve({
           )}
         </div>
       )}
+      <div ref={plotRef} style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
       <ChartSvg
         viewBox={`0 0 ${W} ${H}`}
-        style={{ width: "100%", flex: 1, display: "block" }}
+        style={{ width: "100%", flex: 1, minHeight: 0, display: "block" }}
         ariaLabel={ariaLabel}
         ariaDescription={ariaDescription}
         accessibleData={accessibleData}
@@ -160,25 +165,24 @@ export function EquityCurve({
         {vTicks.map((v, k) => (
           <g key={k}>
             <line x1={plotL} x2={plotR} y1={y(v)} y2={y(v)} stroke={GRID} strokeWidth="0.8" opacity="0.65" />
-            <text x={plotR + 8} y={y(v) + 5} fill={AXIS} textAnchor="start" style={labelFont}>
+            <text x={plotL - 8} y={y(v) + 4} fill={AXIS} textAnchor="end" style={labelFont}>
               {valueFmt(v)}
             </text>
           </g>
         ))}
         {/* time labels */}
         {labels.map((lab, i) =>
-          i % tStep === 0 || i === n - 1 ? (
+          timeTickIndices.has(i) ? (
             <g key={"t" + i}>
               <line x1={x(i)} x2={x(i)} y1={eqT} y2={eqB} stroke={GRID} strokeWidth="0.8" opacity="0.55" />
-              <text x={x(i)} y={H - 8} fill={AXIS} textAnchor="middle" style={labelFont}>
-                {lab}
+              <text x={x(i)} y={H - 8} fill={AXIS} textAnchor={i === 0 ? "start" : i === n - 1 ? "end" : "middle"} style={labelFont}>
+                {formatTimeTickLabel(lab, spanDays)}
               </text>
             </g>
           ) : null
         )}
-        <line x1={plotR} x2={plotR} y1={eqT} y2={ddB} stroke={BORDER} strokeWidth="1.2" />
-        <line x1={plotL - 1} x2={plotR} y1={eqB} y2={eqB} stroke={BORDER} strokeWidth="1.2" />
-        <line x1={plotL - 1} x2={plotL - 1} y1={eqT} y2={eqB} stroke={BORDER} strokeWidth="1" opacity="0.4" />
+        <line x1={plotL} x2={plotL} y1={eqT} y2={ddB} stroke={BORDER} strokeWidth="1.2" />
+        <line x1={plotL} x2={plotR} y1={eqB} y2={eqB} stroke={BORDER} strokeWidth="1.2" />
 
         {/* area fill for the primary series */}
         {fill && primary && primary.area !== false && <path d={area(primary.points)} fill={primary.color} opacity="0.10" />}
@@ -207,10 +211,10 @@ export function EquityCurve({
               strokeWidth="1.4"
             />
             <line x1={plotL - 1} x2={plotR} y1={yD(0)} y2={yD(0)} stroke={BORDER} strokeWidth="1" opacity="0.6" />
-            <text x={plotR + 8} y={yD(0) + 5} fill={AXIS} textAnchor="start" style={labelFont}>
+            <text x={plotL - 8} y={yD(0) + 4} fill={AXIS} textAnchor="end" style={labelFont}>
               0%
             </text>
-            <text x={plotR + 8} y={ddB} fill={AXIS} textAnchor="start" style={labelFont}>
+            <text x={plotL - 8} y={ddB} fill={AXIS} textAnchor="end" style={labelFont}>
               {ddMin.toFixed(0)}%
             </text>
           </g>
@@ -232,9 +236,9 @@ export function EquityCurve({
             {series.map((s, k) => (
               <circle key={k} cx={x(crosshairIndex)} cy={y(s.points[crosshairIndex])} r="4" fill={s.color} opacity="0.9" />
             ))}
-            <rect x={plotR + 2} y={y(primary.points[crosshairIndex]) - 10} width={axisR - 4} height="20" fill={CROSSHAIR} rx="2" opacity="0.95" />
+            <rect x={2} y={y(primary.points[crosshairIndex]) - 10} width={axisL - 6} height="20" fill={CROSSHAIR} rx="2" opacity="0.95" />
             <text
-              x={plotR + axisR / 2}
+              x={(axisL - 2) / 2}
               y={y(primary.points[crosshairIndex]) + 5}
               fill="#fff"
               textAnchor="middle"
@@ -245,6 +249,7 @@ export function EquityCurve({
           </g>
         )}
       </ChartSvg>
+      </div>
     </div>
   );
 }

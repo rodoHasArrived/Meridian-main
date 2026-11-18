@@ -15,12 +15,13 @@ import { EntityAccountBindings } from "./accounting-screen.entity-account-bindin
 import { EntityObligationMonitor } from "./accounting-screen.entity-obligations";
 import { EntityBalanceConfirmations } from "./accounting-screen.entity-confirmations";
 import { EntityPerimeterTransition } from "./accounting-screen.entity-perimeter-transition";
+import { EntityAccrualSchedules } from "./accounting-screen.entity-accrual-schedules";
 import { OperationError, useEntityData } from "./accounting-screen.entity-operations.shared";
 
 const tabs = [
   { id: "profiles", label: "Accounting profiles" }, { id: "obligations", label: "Obligation monitor" }, { id: "confirmations", label: "Balance confirmation" }, { id: "timeline", label: "Entity timeline" },
   { id: "controls", label: "Book controls" }, { id: "accounts", label: "Account roles" },
-  { id: "proposals", label: "Counterpart proposals" }, { id: "fx", label: "FX authority" }, { id: "fixings", label: "Rate fixings" }, { id: "perimeter", label: "Perimeter cutover" }
+  { id: "proposals", label: "Counterpart proposals" }, { id: "accrual-schedules", label: "Accrual schedules" }, { id: "fx", label: "FX authority" }, { id: "fixings", label: "Rate fixings" }, { id: "perimeter", label: "Perimeter cutover" }
 ];
 
 /** Entity operations remain within Accounting and reuse its explicit selected-book scope. */
@@ -46,6 +47,7 @@ export function EntityOperationsPanel({ book }: { book: LedgerBook }) {
       <TabPanel>{active === "controls" ? <EntityBookControls scope={scope} /> : null}</TabPanel>
       <TabPanel>{active === "accounts" ? <EntityAccountBindings scope={scope} /> : null}</TabPanel>
       <TabPanel>{active === "proposals" ? <EntityCounterpartProposals scope={scope} /> : null}</TabPanel>
+      <TabPanel>{active === "accrual-schedules" ? <EntityAccrualSchedules scope={scope} /> : null}</TabPanel>
       <TabPanel>{active === "fx" ? <EntityFxAuthority scope={scope} /> : null}</TabPanel>
       <TabPanel>{active === "fixings" ? <EntityRateFixings scope={scope} /> : null}</TabPanel>
       <TabPanel>{active === "perimeter" ? <EntityPerimeterTransition scope={scope} /> : null}</TabPanel>

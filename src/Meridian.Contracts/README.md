@@ -23,10 +23,22 @@ attestations retain reviewer and operator identities, while obligation-monitor D
 source/freshness evidence outside blocking close contributors. See
 [the native legal contract](../../docs/domain/intercompany-agreements.md).
 
+Fixed management-fee terms add a null-omitted `FixedFeeBasis` (per period or per annum).
+`IntercompanyFeeAccrualDtos` and `IntercompanyFeeAccrualEvidenceDtos` define rule `intercompany-fee-v1`, its
+retained evidence and `IntercompanyFeeAccrualEvidenceGuard`, which the accrual guard dispatches to for fee
+evidence. See [governed fixed management fees](../../docs/domain/intercompany-agreements.md#governed-fixed-management-fees).
+
 Floating loan terms add a null-omitted `FixingLagBusinessDays`. `IntercompanyRateFixingDtos` define
 the reviewed fixing record, its propose and decide requests and `IIntercompanyRateFixingStore`; accrual
 slices gain a null-omitted `Fixing` pin, and `IntercompanyAccrualRules` adds `intercompany-accrual-v2`.
 See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
+
+`IntercompanyAccrualRules` adds rule `intercompany-accrual-v3` for periodic compounding: slices carry a
+null-omitted `CompoundedInterest`, and accrual evidence retains `IntercompanyAccrualCompoundingEvidenceDto`.
+See [periodic compounding](../../docs/domain/intercompany-agreements.md#periodic-compounding).
+
+`IntercompanyAccrualScheduleDtos` define opt-in, reviewed accrual schedules, their run results and
+`IIntercompanyAccrualScheduleStore`. See [opt-in accrual schedules](../../docs/domain/intercompany-agreements.md#opt-in-accrual-schedules).
 
 Governed loan-interest accrual contracts (ADR-028) carry the computation input, slices and preview
 under rule `intercompany-accrual-v1`, plus the retained `IntercompanyAccrualEvidenceDto` and its
@@ -40,6 +52,9 @@ endpoint; canonical balance-schedule serialization and evidence hashes remain un
 
 Backfill provider metadata includes vendor-tier presets and the selected tier ID without credentials.
 Shared settings responses expose saved-change impacts independently of active runtime confirmation.
+`ConfigurationChangeStatus.LastApply` (additive) carries per-path `ConfigurationApplyEntry` outcomes
+(`AppliedLive`, `ProviderReconfigured`, `NoRuntimeEffect`, `Deferred`) reported by the host; details
+name settings or provider IDs only, never values.
 Nested backfill, provider, source and symbol-mapping DTO extension data retains host-owned validation
 profiles, audit histories, failover rules/timing and other unmodeled fields during settings roundtrips.
 

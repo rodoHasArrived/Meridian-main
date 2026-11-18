@@ -62,7 +62,7 @@ export function NavTrendChart({ fundProfileId, months = 12, service = getNavTren
           <EquityCurve labels={points.map((point) => point.asOf)} valueFmt={(value) => formatCurrency(value, { currency: active!.trend!.currency, notation: "compact", maximumFractionDigits: 2 })}
             series={[
               { label: "Long", color: "var(--chart-up, #2E7655)", points: points.map((point) => Number(point.longExposure ?? 0)) },
-              { label: "Short", color: "var(--chart-dn, #A23B2A)", points: points.map((point) => Number(point.shortExposure ?? 0)) },
+              { label: "Short", color: "var(--chart-dn, #B54B42)", points: points.map((point) => Number(point.shortExposure ?? 0)) },
               { label: "Gross", color: "var(--chart-series-1, #29323A)", points: points.map((point) => Number(point.grossExposure ?? 0)) }
             ]}
             ariaLabel={`Securities exposure from ${points[0]!.asOf} to ${points.at(-1)!.asOf}`} accessibleData={exposureData} />

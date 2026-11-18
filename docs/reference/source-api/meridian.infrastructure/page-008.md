@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SubscriptionManager
+
+Qualified name: <code>Meridian.Infrastructure.Shared.SubscriptionManager</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:70](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L70).
+
+Thread-safe subscription manager that provides centralized subscription tracking for market data providers. Eliminates duplicate subscription management code across streaming provider implementations.
+
+```csharp
+public sealed class SubscriptionManager : IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SubscriptionManager(int startingId = 100_000);</code> | [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:82](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L82) | Creates a new subscription manager with the specified starting ID. |
+| <code>public int Count { get; }</code> | [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:90](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L90) | Gets the total number of active subscriptions. |
+| <code>public int ActiveSubscriptionCount =&gt; …;</code> | [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:105](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L105) | Gets the total number of active subscriptions. Alias for Count for monitoring clarity. |
+| <code>public int Subscribe(string symbol, string kind, string? sourceOfRequest = null);</code> | [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:113](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L113) | Creates a new subscription for a symbol with the specified kind. |
+| <code>public int SubscribeOrGetExisting(string symbol, string kind, string? sourceOfRequest = null);</code> | [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:130](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L130) | Creates a subscription only when the normalized symbol/kind is not already active. Useful during reconnect and failover recovery where duplicate upstream provider subscriptions are unsafe. |
+| <code>public SubscriptionRequestValidation ValidateSubscriptionRequest(string symbol, string kind);</code> | [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:146](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L146) |  |
+| <code>public Subscription? Unsubscribe(int subscriptionId);</code> | [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:174](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L174) | Removes a subscription by ID. |
+| <code>public string[] GetSymbolsByKind(string kind);</code> | [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:212](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L212) | Gets all unique symbols for a specific subscription kind. |
+| <code>public IReadOnlyList&lt;Subscription&gt; GetAllSubscriptions();</code> | [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:228](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L228) | Gets all active subscriptions. |
+| <code>public Subscription? GetSubscription(int subscriptionId);</code> | [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:236](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L236) |  |
+| <code>public bool HasSubscription(string symbol, string kind);</code> | [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:252](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L252) | Checks if a symbol has any active subscriptions of the given kind. |
+| <code>public IReadOnlyList&lt;string&gt; GetActiveKinds();</code> | [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:267](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L267) | Gets all subscription kinds that have active subscriptions. |
+| <code>public bool RecordMessageReceived(int subscriptionId, DateTimeOffset? receivedAt = null);</code> | [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:278](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L278) |  |
+| <code>public bool RecordSubscriptionError(int subscriptionId, string error);</code> | [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:295](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L295) |  |
+| <code>public bool RecordRecoveryAttempt(int subscriptionId, string? lastError = null);</code> | [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:311](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L311) |  |
+| <code>public IReadOnlyList&lt;Subscription&gt; GetStaleSubscriptions(TimeSpan staleThreshold, DateTimeOffset? now = null);</code> | [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:328](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L328) |  |
+| <code>public IReadOnlyList&lt;Subscription&gt; Clear();</code> | [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:349](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L349) | Clears all subscriptions. Useful for reconnection scenarios. |
+| <code>public SubscriptionSnapshot GetSnapshot();</code> | [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:364](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L364) | Gets a snapshot of the current subscription state for serialization or logging. |
+| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:380](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L380) |  |
+
 ## SubscriptionRequestValidation
 
 Qualified name: <code>Meridian.Infrastructure.Shared.SubscriptionRequestValidation</code>. Kind: `record`.

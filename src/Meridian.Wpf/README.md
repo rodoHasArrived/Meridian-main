@@ -157,9 +157,16 @@ responses preserve local edits. The desktop surface does not maintain its own ag
 posting authority. Native WPF interaction validation requires Windows; Linux checks do not establish
 native acceptance. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
 
+Fund Operations adds a Management fee tab (`Views/IntercompanyManagementFeeControl.xaml`) over the shared
+`IntercompanyManagementFeeWorkspace`; the agreement editor declares the fixed-fee basis. See
+[governed fixed management fees](../../docs/domain/intercompany-agreements.md#governed-fixed-management-fees).
+
 Fund Operations adds a Rate fixings tab (`Views/IntercompanyRateFixingsControl.xaml`) over the shared
 `IntercompanyRateFixingWorkspace`; the agreement editor declares the fixing lag and the Interest
 accrual tab shows each slice's fixing. See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
+
+The Interest accrual tab shows a Compounded interest column for compounding loans. See
+[periodic compounding](../../docs/domain/intercompany-agreements.md#periodic-compounding).
 
 A Counterpart proposals tab (`Views/IntercompanyCounterpartProposalsControl.xaml`) binds the shared
 `IntercompanyCounterpartQueueWorkspace`: delivery records and aged booking breaks for a source
@@ -180,6 +187,13 @@ and evidence, then create the source-book draft for ordinary journal review. The
 profiles are chosen from lists. The desktop enters no rate, principal or amount and never posts;
 the same Windows-only validation boundary applies. The entity timeline on the consolidation page
 names a lifecycle state's successor entity, as the browser timeline does.
+
+An Accrual schedules tab (`Views/IntercompanyAccrualSchedulesControl.xaml`) binds the shared
+`IntercompanyAccrualScheduleWorkspace`: list a book's opt-in accrual schedules with their history,
+propose one for a LoanInterest profile and its same-agreement Loan principal profile, approve,
+reject or disable the exact version shown, preview due periods and run an active schedule now. A
+schedule only drafts for ordinary journal review; the desktop never posts, the proposer cannot
+approve, and the same Windows-only validation boundary applies.
 
 Security Master's Schedule Book evidence includes the shared typed declared call/put outcome,
 evaluation date, retained security version, window count, coded blockers and notice diagnostics.

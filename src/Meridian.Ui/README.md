@@ -18,7 +18,8 @@ before project evaluation; commit authored inputs and reviewed documentation, no
 mechanical trackers. See [generated output delivery](../../docs/engineering/generated-output-delivery.md).
 
 The Providers workstation includes guarded failover, historical provider limits and routing previews,
-symbol rollout, validation profiles and quota history. Data and Settings share pending activation
+symbol rollout, validation profiles and quota history, plus the cross-provider tolerance editor in
+data-quality watch. Data and Settings share pending activation
 status from the host; rebuild the dashboard to refresh these served controls. See the dashboard and
 shared-service READMEs for validation and runtime boundaries.
 
@@ -31,6 +32,9 @@ revision/evidence inspection and governed proposal review over shared tenant-sco
 journal-line reference editing follows the server's rollout capability; the browser retains exact
 rate text and source amounts. Rebuild with the canonical dashboard command after changes. See
 [intercompany agreements](../../docs/domain/intercompany-agreements.md) for authority and configuration.
+
+The served accounting bundle adds "Accrue fee" on approved management-fee profiles over
+`/api/ledger/intercompany/fees/*`. See [governed fixed management fees](../../docs/domain/intercompany-agreements.md#governed-fixed-management-fees).
 
 The served Entity operations bundle adds a Rate fixings tab over
 `/api/ledger/intercompany/rate-fixings`. See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).

@@ -42,3 +42,30 @@ describe("operating-scope persistence", () => {
     expect(hasOperatingScopeValues({ fundId: "fund-1" })).toBe(true);
   });
 });
+
+describe("operating-scope persistence per tab (Phase 1)", () => {
+  const key = "meridian.workstation.operatingContext.v1";
+
+  it("reads this tab's scope before the last scope used in any tab", async () => {
+    const { readStoredOperatingScope } = await import("@/lib/operating-scope/persistence");
+    window.localStorage.clear(); window.sessionStorage.clear();
+    window.localStorage.setItem(key, JSON.stringify({ fundId: "fund-last-used" }));
+    expect(readStoredOperatingScope()).toEqual({ fundId: "fund-last-used" });
+    window.sessionStorage.setItem(key, JSON.stringify({ fundId: "fund-this-tab" }));
+    expect(readStoredOperatingScope()).toEqual({ fundId: "fund-this-tab" });
+  });
+
+  it("writes both stores, and a cleared tab stays cleared after another tab writes", async () => {
+    const { readStoredOperatingScope, writeStoredOperatingScope } = await import("@/lib/operating-scope/persistence");
+    window.localStorage.clear(); window.sessionStorage.clear();
+    writeStoredOperatingScope({ fundId: "fund-a" });
+    expect(JSON.parse(window.sessionStorage.getItem(key)!)).toEqual({ fundId: "fund-a" });
+    expect(JSON.parse(window.localStorage.getItem(key)!)).toEqual({ fundId: "fund-a" });
+
+    writeStoredOperatingScope({});
+    expect(window.localStorage.getItem(key)).toBeNull();
+    // Another tab writes its own scope as the last used.
+    window.localStorage.setItem(key, JSON.stringify({ fundId: "fund-b" }));
+    expect(readStoredOperatingScope()).toEqual({});
+  });
+});

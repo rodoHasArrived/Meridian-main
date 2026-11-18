@@ -261,6 +261,22 @@ Declared public members:
 | <code>public static readonly DependencyProperty ShellPostureProperty = DependencyProperty.Register(nameof(ShellPosture), typeof(ShellPosture), typeof(InstitutionalShellFrameControl), new PropertyMetadata(ShellPosture.Workbench));</code> | [src/Meridian.Wpf/Views/InstitutionalShellFrameControl.cs:12](../../../../src/Meridian.Wpf/Views/InstitutionalShellFrameControl.cs#L12) |  |
 | <code>public ShellPosture ShellPosture { get; set; }</code> | [src/Meridian.Wpf/Views/InstitutionalShellFrameControl.cs:19](../../../../src/Meridian.Wpf/Views/InstitutionalShellFrameControl.cs#L19) |  |
 
+## IntercompanyAccrualSchedulesControl
+
+Qualified name: <code>Meridian.Wpf.Views.IntercompanyAccrualSchedulesControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/IntercompanyAccrualSchedulesControl.xaml.cs:5](../../../../src/Meridian.Wpf/Views/IntercompanyAccrualSchedulesControl.xaml.cs#L5).
+
+```csharp
+public partial class IntercompanyAccrualSchedulesControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyAccrualSchedulesControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/IntercompanyAccrualSchedulesControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/IntercompanyAccrualSchedulesControl.xaml.cs#L7) |  |
+
 ## IntercompanyAgreementsControl
 
 Qualified name: <code>Meridian.Wpf.Views.IntercompanyAgreementsControl</code>. Kind: `class`.
@@ -324,6 +340,22 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public IntercompanyInterestAccrualControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/IntercompanyInterestAccrualControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/IntercompanyInterestAccrualControl.xaml.cs#L7) |  |
+
+## IntercompanyManagementFeeControl
+
+Qualified name: <code>Meridian.Wpf.Views.IntercompanyManagementFeeControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/IntercompanyManagementFeeControl.xaml.cs:5](../../../../src/Meridian.Wpf/Views/IntercompanyManagementFeeControl.xaml.cs#L5).
+
+```csharp
+public partial class IntercompanyManagementFeeControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyManagementFeeControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/IntercompanyManagementFeeControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/IntercompanyManagementFeeControl.xaml.cs#L7) |  |
 
 ## IntercompanyRateFixingsControl
 
@@ -991,49 +1023,3 @@ Binds derived pages to the reporting workspace shell definition.
 ```csharp
 public class ReportingWorkspaceShellPageBase : WorkspaceShellPageBase<ReportingWorkspaceShellStateProvider, ReportingWorkspaceShellViewModel>
 ```
-
-## RetentionAssurancePage
-
-Qualified name: <code>Meridian.Wpf.Views.RetentionAssurancePage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:57](../../../../src/Meridian.Wpf/Views/Pages.cs#L57).
-
-```csharp
-public partial class RetentionAssurancePage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L17).
-
-Retention assurance page for managing retention policies, guardrails, legal holds, and cleanup operations with full audit trail.
-
-```csharp
-public partial class RetentionAssurancePage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public RetentionAssurancePage();</code> | [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:25](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L25) |  |
-
-## AuditReportItem
-
-Qualified name: <code>Meridian.Wpf.Views.RetentionAssurancePage.AuditReportItem</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:191](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L191).
-
-Presents a retention audit report&#x27;s outcome, summary, retained size, and timestamp.
-
-```csharp
-public sealed class AuditReportItem
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string StatusText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:193](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L193) |  |
-| <code>public Brush StatusColor { get; set; } = Brushes.Gray;</code> | [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:194](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L194) |  |
-| <code>public string Summary { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:195](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L195) |  |
-| <code>public string SizeText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:196](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L196) |  |
-| <code>public string TimeText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:197](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L197) |  |

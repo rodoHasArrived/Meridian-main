@@ -695,8 +695,8 @@ describe("accounting-screen reconciliation view model", () => {
       routingActionAriaLabel: "Open routing target for reconciliation break run-57:fees"
     });
     expect(state.selectedDetail?.fields).toEqual(expect.arrayContaining([
-      { label: "Detected", value: "Jan 2, 2026, 00:00 UTC" },
-      { label: "Updated", value: "Jan 2, 2026, 00:00 UTC" },
+      { label: "Detected", value: "Jan 2, 2026" },
+      { label: "Updated", value: "Jan 2, 2026" },
       { label: "Exception route", value: "fund-ops-review" },
       { label: "Tolerance profile", value: "fee-variance-ops" },
       { label: "Tolerance band", value: "$100" },

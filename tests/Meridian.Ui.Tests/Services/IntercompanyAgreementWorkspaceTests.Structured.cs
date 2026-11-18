@@ -126,6 +126,29 @@ public sealed partial class IntercompanyAgreementWorkspaceTests
     }
 
     [Fact]
+    public async Task AFixedManagementFeeSendsItsDeclaredBasis_AndOnlyAPerAnnumFeeCarriesADayCount()
+    {
+        var client = new Client();
+        var view = await DraftAsync(client);
+        view.AgreementType = IntercompanyAgreementTypeDto.ManagementFee;
+        view.UseStructuredTerms = true;
+        view.ScheduleStart = "2026-01-01";
+        view.ScheduleEnd = "2027-01-01";
+        view.CalendarId = "WEEKENDS";
+        view.FixedFeeAmount = "30000";
+        view.FixedFeeBasis = "PerPeriod";
+        view.DayCount = IntercompanyDayCountDto.Actual360;
+        await view.SaveCommand.ExecuteAsync(null);
+        var perPeriod = client.Commands[^1].Draft!.Terms!.StructuredTerms!;
+        Assert.Equal((IntercompanyFixedFeeBasisDto.PerPeriod, (IntercompanyDayCountDto?)null), (perPeriod.FixedFeeBasis!.Value, perPeriod.DayCount));
+
+        view.FixedFeeBasis = "PerAnnum";
+        await view.SaveCommand.ExecuteAsync(null);
+        var perAnnum = client.Commands[^1].Draft!.Terms!.StructuredTerms!;
+        Assert.Equal((IntercompanyFixedFeeBasisDto.PerAnnum, IntercompanyDayCountDto.Actual360), (perAnnum.FixedFeeBasis!.Value, perAnnum.DayCount!.Value));
+    }
+
+    [Fact]
     public async Task SessionChangeClearsExternalReviewAndTypedFinancialInputs()
     {
         var view = await DraftAsync(new Client());

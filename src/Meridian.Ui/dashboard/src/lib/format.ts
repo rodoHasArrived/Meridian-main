@@ -627,10 +627,14 @@ export function compactTimestampLabel(label: string): string {
 }
 
 /**
- * Compact relative time from `now`, e.g. "30s ago", "5m ago", "3d ago", or "in 2h" for a future
- * instant. Units round to the nearest whole second, minute, hour and day. Pair it with the absolute
+ * Compact relative time from `now`, e.g. "30s ago", "5m ago", "36h ago", "3d ago", or "in 2h" for a
+ * future instant. Hours run up to 48h and whole days up to 60d; an older past instant reads
+ * "since May 8, 2026" so very old ages ("4643h ago", "195d ago") never appear. Pair it with the absolute
  * `formatTimestamp` (`<TimeText>` puts that in the hover title). An invalid date renders "Invalid Date".
  */
+const RELATIVE_HOURS_LIMIT = 48;
+const RELATIVE_DAYS_LIMIT = 60;
+
 export function formatRelativeTime(value: TimestampInput, now: TimestampInput = Date.now()): string {
   const timestamp = toDate(value).getTime();
   const reference = toDate(now).getTime();
@@ -641,7 +645,11 @@ export function formatRelativeTime(value: TimestampInput, now: TimestampInput = 
   const seconds = Math.round(Math.abs(diff) / 1000);
   const minutes = Math.round(seconds / 60);
   const hours = Math.round(minutes / 60);
-  const amount = seconds < 60 ? `${seconds}s` : minutes < 60 ? `${minutes}m` : hours < 24 ? `${hours}h` : `${Math.round(hours / 24)}d`;
+  const days = Math.floor(hours / 24);
+  if (diff > 0 && hours >= RELATIVE_HOURS_LIMIT && days >= RELATIVE_DAYS_LIMIT) {
+    return `since ${formatUtcDate(new Date(timestamp))}`;
+  }
+  const amount = seconds < 60 ? `${seconds}s` : minutes < 60 ? `${minutes}m` : hours < RELATIVE_HOURS_LIMIT ? `${hours}h` : `${days}d`;
   return diff < 0 && seconds > 0 ? `in ${amount}` : `${amount} ago`;
 }
 
