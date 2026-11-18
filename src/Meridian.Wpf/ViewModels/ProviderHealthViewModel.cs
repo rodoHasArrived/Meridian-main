@@ -782,13 +782,13 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
                     CredentialSourceText = $"Source: {StateText(row.CredentialSource)}",
                     VerificationStateText = StateText(row.VerificationState),
                     LastSuccessfulConnectionText = row.LastSuccessfulAt.HasValue
-                        ? $"Last good: {row.LastSuccessfulAt.Value:yyyy-MM-dd HH:mm} UTC"
+                        ? $"Last good: {Meridian.Ui.Services.FormatHelpers.FormatDisplayTimestamp(row.LastSuccessfulAt.Value)}"
                         : row.IsConnected ? "Connected" : "Never",
                     LastVerifiedText = row.LastVerifiedAt.HasValue
-                        ? $"Last verified: {row.LastVerifiedAt.Value:yyyy-MM-dd HH:mm} UTC"
+                        ? $"Last verified: {Meridian.Ui.Services.FormatHelpers.FormatDisplayTimestamp(row.LastVerifiedAt.Value)}"
                         : "Last verified: Never",
                     LastFailureText = row.LastFailureAt.HasValue
-                        ? $"Last failure: {row.LastFailureAt.Value:yyyy-MM-dd HH:mm} UTC"
+                        ? $"Last failure: {Meridian.Ui.Services.FormatHelpers.FormatDisplayTimestamp(row.LastFailureAt.Value)}"
                         : "Last failure: None reported",
                     LastErrorText = string.IsNullOrWhiteSpace(row.LastError) ? "None reported" : row.LastError,
                     AffectedWorkflowsText = row.AffectedWorkflows.Count == 0 ? "Data readiness" : string.Join(", ", row.AffectedWorkflows),
@@ -1155,7 +1155,7 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
                 CredentialSourceText = CredentialSourceForProvider(providerId, credentialState),
                 VerificationStateText = verificationState,
                 LastSuccessfulConnectionText = lastSuccessful,
-                LastVerifiedText = lastRefreshUtc.HasValue ? $"Last verified: {lastRefreshUtc.Value:yyyy-MM-dd HH:mm} UTC" : "Last verified: Never",
+                LastVerifiedText = lastRefreshUtc.HasValue ? $"Last verified: {Meridian.Ui.Services.FormatHelpers.FormatDisplayTimestamp(lastRefreshUtc.Value)}" : "Last verified: Never",
                 LastFailureText = health is "Healthy" ? "Last failure: None reported" : "Last failure: Not reported",
                 LastErrorText = health is "Blocked" ? "Provider is not configured for dependent workflows." : "None reported",
                 AffectedWorkflowsText = string.Join(", ", workflows),

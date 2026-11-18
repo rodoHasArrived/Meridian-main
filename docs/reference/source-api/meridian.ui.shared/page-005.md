@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PlaidEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.PlaidEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs#L16).
+
+Maps Plaid linking, account discovery, and synchronization operations to HTTP endpoints.
+
+```csharp
+public static class PlaidEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapPlaidEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs#L18) |  |
+
 ## PortfolioCashLadderEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.PortfolioCashLadderEndpoints</code>. Kind: `class`.
@@ -788,21 +806,3 @@ Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.WriteRefusals.
 ```csharp
 public static partial class SecurityMasterEndpoints
 ```
-
-## StatusEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.StatusEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs#L21).
-
-Extension methods for registering status and health API endpoints. Shared between web dashboard and desktop application hosts. Uses StatusEndpointHandlers for the actual response generation.
-
-```csharp
-public static class StatusEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapStatusEndpoints(this WebApplication app, StatusEndpointHandlers handlers, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:26](../../../../src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs#L26) | Maps all status and health API endpoints. |

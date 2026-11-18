@@ -6,6 +6,225 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolCompleteness
+
+Qualified name: <code>Meridian.Ui.Services.SymbolCompleteness</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:458](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L458).
+
+Describes a symbol&#x27;s expected and covered days, missing dates, and daily event counts.
+
+```csharp
+public sealed class SymbolCompleteness
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:460](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L460) |  |
+| <code>public double CompletenessPercent { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:461](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L461) |  |
+| <code>public int DaysCovered { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:462](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L462) |  |
+| <code>public int DaysExpected { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:463](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L463) |  |
+| <code>public List&lt;DateOnly&gt; MissingDays { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:464](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L464) |  |
+| <code>public double Score { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:467](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L467) |  |
+| <code>public int DaysWithData { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:473](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L473) |  |
+| <code>public int ExpectedDays { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:479](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L479) |  |
+| <code>public long RecordCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:486](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L486) |  |
+| <code>public long TotalEvents { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:487](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L487) |  |
+| <code>public List&lt;DayEventCount&gt; DayDetails { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:493](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L493) | Per-day event breakdown showing trade, quote, depth, and bar event counts for each date. See DayEventCount class in DataCompletenessService for structure. |
+
+## SymbolCoverageData
+
+Qualified name: <code>Meridian.Ui.Services.SymbolCoverageData</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/DataCalendarService.cs:464](../../../../src/Meridian.Ui.Services/Services/DataCalendarService.cs#L464).
+
+Symbol coverage data.
+
+```csharp
+public sealed class SymbolCoverageData
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataCalendarService.cs:466](../../../../src/Meridian.Ui.Services/Services/DataCalendarService.cs#L466) |  |
+| <code>public List&lt;DayCoverageInfo&gt; DayCoverage { get; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataCalendarService.cs:467](../../../../src/Meridian.Ui.Services/Services/DataCalendarService.cs#L467) |  |
+| <code>public double OverallCompleteness { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataCalendarService.cs:468](../../../../src/Meridian.Ui.Services/Services/DataCalendarService.cs#L468) |  |
+| <code>public int DaysWithData { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataCalendarService.cs:469](../../../../src/Meridian.Ui.Services/Services/DataCalendarService.cs#L469) |  |
+| <code>public int TotalDays { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataCalendarService.cs:470](../../../../src/Meridian.Ui.Services/Services/DataCalendarService.cs#L470) |  |
+
+## SymbolDayData
+
+Qualified name: <code>Meridian.Ui.Services.SymbolDayData</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/DataCalendarService.cs:427](../../../../src/Meridian.Ui.Services/Services/DataCalendarService.cs#L427).
+
+Symbol data for a single day.
+
+```csharp
+public sealed class SymbolDayData
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataCalendarService.cs:429](../../../../src/Meridian.Ui.Services/Services/DataCalendarService.cs#L429) |  |
+| <code>public bool HasData { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataCalendarService.cs:430](../../../../src/Meridian.Ui.Services/Services/DataCalendarService.cs#L430) |  |
+| <code>public double Completeness { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataCalendarService.cs:431](../../../../src/Meridian.Ui.Services/Services/DataCalendarService.cs#L431) |  |
+| <code>public long EventCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataCalendarService.cs:432](../../../../src/Meridian.Ui.Services/Services/DataCalendarService.cs#L432) |  |
+| <code>public bool HasGaps { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataCalendarService.cs:433](../../../../src/Meridian.Ui.Services/Services/DataCalendarService.cs#L433) |  |
+
+## SymbolDeletionSummary
+
+Qualified name: <code>Meridian.Ui.Services.SymbolDeletionSummary</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:151](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L151).
+
+Summary of deletions by symbol.
+
+```csharp
+public sealed class SymbolDeletionSummary
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:153](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L153) |  |
+| <code>public int FileCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:154](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L154) |  |
+| <code>public long TotalBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:155](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L155) |  |
+| <code>public List&lt;string&gt; DataTypes { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:156](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L156) |  |
+
+## SymbolDetailedStatus
+
+Qualified name: <code>Meridian.Ui.Services.SymbolDetailedStatus</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:521](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L521).
+
+Combines a symbol&#x27;s subscriptions, runtime activity, archive coverage, quality, and provider mapping.
+
+```csharp
+public sealed class SymbolDetailedStatus
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:523](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L523) |  |
+| <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:524](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L524) |  |
+| <code>public bool IsConfigured { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:527](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L527) |  |
+| <code>public bool IsMonitored { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:528](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L528) |  |
+| <code>public bool TradesSubscribed { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:529](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L529) |  |
+| <code>public bool DepthSubscribed { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:530](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L530) |  |
+| <code>public int DepthLevels { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:531](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L531) |  |
+| <code>public DateTime? FirstSeenTime { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:534](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L534) |  |
+| <code>public DateTime? LastTradeTime { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:535](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L535) |  |
+| <code>public DateTime? LastQuoteTime { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:536](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L536) |  |
+| <code>public long TotalTradesReceived { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:537](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L537) |  |
+| <code>public long TotalQuotesReceived { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:538](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L538) |  |
+| <code>public long TotalDepthUpdates { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:539](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L539) |  |
+| <code>public double TradesPerSecond { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:540](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L540) |  |
+| <code>public double QuotesPerSecond { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:541](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L541) |  |
+| <code>public bool HasArchivedData { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:544](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L544) |  |
+| <code>public DateOnly? FirstArchiveDate { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:545](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L545) |  |
+| <code>public DateOnly? LastArchiveDate { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:546](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L546) |  |
+| <code>public long ArchivedTradeCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:547](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L547) |  |
+| <code>public long ArchivedQuoteCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:548](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L548) |  |
+| <code>public long ArchiveSizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:549](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L549) |  |
+| <code>public int ArchiveDayCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:550](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L550) |  |
+| <code>public double DataQualityScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:553](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L553) |  |
+| <code>public int SequenceGaps { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:554](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L554) |  |
+| <code>public int IntegrityIssues { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:555](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L555) |  |
+| <code>public string? ActiveProvider { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:558](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L558) |  |
+| <code>public string? MappedProviderSymbol { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:559](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L559) |  |
+
+## SymbolFileDto
+
+Qualified name: <code>Meridian.Ui.Services.SymbolFileDto</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/StorageModels.cs:68](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L68).
+
+Describes a stored symbol file&#x27;s type, size, modification time, records, and compression.
+
+```csharp
+public sealed class SymbolFileDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string FileName { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:70](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L70) |  |
+| <code>public string DataType { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:71](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L71) |  |
+| <code>public long SizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:72](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L72) |  |
+| <code>public DateTime ModifiedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:73](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L73) |  |
+| <code>public long RecordCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:74](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L74) |  |
+| <code>public string? CompressionType { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:75](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L75) |  |
+
+## SymbolGapAnalysisDto
+
+Qualified name: <code>Meridian.Ui.Services.SymbolGapAnalysisDto</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/BackfillApiService.cs:176](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L176).
+
+Minimal DTO for deserializing the /api/quality/gaps/{symbol} response. Only the fields used by the gap analysis UI are mapped here.
+
+```csharp
+public sealed class SymbolGapAnalysisDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Symbol { get; set; } = &quot;&quot;;</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:178](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L178) |  |
+| <code>public int TotalGaps { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:179](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L179) |  |
+| <code>public double DataAvailabilityPercent { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:181](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L181) | 0–100 percentage of trading time with data present. |
+
+## SymbolGapSummary
+
+Qualified name: <code>Meridian.Ui.Services.SymbolGapSummary</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:66](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L66).
+
+Summarizes a symbol&#x27;s gap count, missing duration, and coverage percentage.
+
+```csharp
+public sealed class SymbolGapSummary
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:68](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L68) |  |
+| <code>public int GapCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:69](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L69) |  |
+| <code>public TimeSpan TotalGapDuration { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:70](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L70) |  |
+| <code>public double CoveragePercent { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:71](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L71) |  |
+
+## SymbolGroupEventArgs
+
+Qualified name: <code>Meridian.Ui.Services.SymbolGroupEventArgs</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:314](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L314).
+
+Symbol group event args.
+
+```csharp
+public sealed class SymbolGroupEventArgs : EventArgs
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SymbolGroup? Group { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolGroupService.cs:316](../../../../src/Meridian.Ui.Services/Services/SymbolGroupService.cs#L316) |  |
+
 ## SymbolGroupService
 
 Qualified name: <code>Meridian.Ui.Services.SymbolGroupService</code>. Kind: `class`.
@@ -981,205 +1200,3 @@ Declared public members:
 | <code>public List&lt;TierUsage&gt;? TierUsage { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:224](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L224) |  |
 | <code>public long TotalSizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:225](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L225) |  |
 | <code>public long TotalFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:226](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L226) |  |
-
-## TierUsageResult
-
-Qualified name: <code>Meridian.Ui.Services.TierUsageResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:210](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L210).
-
-Result of getting tier usage statistics.
-
-```csharp
-public sealed class TierUsageResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:212](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L212) |  |
-| <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:213](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L213) |  |
-| <code>public List&lt;TierUsage&gt; TierUsage { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:214](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L214) |  |
-| <code>public long TotalSizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:215](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L215) |  |
-| <code>public long TotalFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:216](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L216) |  |
-
-## TimeAndSalesData
-
-Qualified name: <code>Meridian.Ui.Services.TimeAndSalesData</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:497](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L497).
-
-Time and sales data.
-
-```csharp
-public sealed class TimeAndSalesData
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:499](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L499) |  |
-| <code>public List&lt;TradeRecord&gt; RecentTrades { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:500](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L500) |  |
-| <code>public decimal TotalVolume { get; set; }</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:501](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L501) |  |
-| <code>public decimal BuyVolume { get; set; }</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:502](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L502) |  |
-| <code>public decimal SellVolume { get; set; }</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:503](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L503) |  |
-| <code>public decimal VolumeImbalance { get; set; }</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:504](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L504) |  |
-
-## TimeSeriesAlignmentService
-
-Qualified name: <code>Meridian.Ui.Services.TimeSeriesAlignmentService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:12](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L12).
-
-Service for aligning time series data to regular intervals and generating OHLCV bars. Supports multiple aggregation methods and gap handling strategies.
-
-```csharp
-public sealed class TimeSeriesAlignmentService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static TimeSeriesAlignmentService Instance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:17](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L17) |  |
-| <code>public event EventHandler&lt;AlignmentProgressEventArgs&gt;? ProgressChanged;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:28](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L28) |  |
-| <code>public async Task&lt;AlignmentResult&gt; AlignDataAsync(AlignmentOptions options, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:34](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L34) | Aligns time series data with specified options. |
-| <code>public Task&lt;List&lt;AlignmentInterval&gt;&gt; GetAlignmentIntervalsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:83](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L83) | Gets available alignment intervals. |
-| <code>public Task&lt;List&lt;AggregationMethod&gt;&gt; GetAggregationMethodsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:104](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L104) | Gets available aggregation methods. |
-| <code>public Task&lt;List&lt;GapHandlingStrategy&gt;&gt; GetGapStrategiesAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:170](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L170) | Gets available gap handling strategies. |
-| <code>public Task&lt;List&lt;AlignmentPreset&gt;&gt; GetAlignmentPresetsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:222](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L222) | Gets alignment presets for common use cases. |
-| <code>public async Task&lt;AlignmentPreview&gt; PreviewAlignmentAsync(AlignmentOptions options, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:299](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L299) | Previews alignment results without creating output. |
-| <code>public AlignmentValidationResult ValidateOptions(AlignmentOptions options);</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:338](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L338) | Validates alignment options. |
-
-## TimeSeriesInterval
-
-Qualified name: <code>Meridian.Ui.Services.TimeSeriesInterval</code>. Kind: `enum`.
-
-Source: [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:399](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L399).
-
-```csharp
-public enum TimeSeriesInterval : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Second1</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:401](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L401) |  |
-| <code>Second5</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:402](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L402) |  |
-| <code>Second10</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:403](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L403) |  |
-| <code>Second30</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:404](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L404) |  |
-| <code>Minute1</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:405](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L405) |  |
-| <code>Minute5</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:406](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L406) |  |
-| <code>Minute15</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:407](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L407) |  |
-| <code>Minute30</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:408](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L408) |  |
-| <code>Hour1</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:409](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L409) |  |
-| <code>Hour4</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:410](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L410) |  |
-| <code>Daily</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:411](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L411) |  |
-
-## TokenExpirationWarningEventArgs
-
-Qualified name: <code>Meridian.Ui.Services.TokenExpirationWarningEventArgs</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:465](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L465).
-
-Event args for token expiration warning.
-
-```csharp
-public sealed class TokenExpirationWarningEventArgs : EventArgs
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ProviderId { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:467](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L467) |  |
-| <code>public DateTime ExpiresAt { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:468](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L468) |  |
-| <code>public bool CanAutoRefresh { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:469](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L469) |  |
-| <code>public TimeSpan TimeRemaining =&gt; …;</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:470](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L470) |  |
-| <code>public TokenExpirationWarningEventArgs(string providerId, DateTime expiresAt, bool canAutoRefresh);</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:472](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L472) |  |
-
-## TokenRefreshEventArgs
-
-Qualified name: <code>Meridian.Ui.Services.TokenRefreshEventArgs</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:435](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L435).
-
-Event args for successful token refresh.
-
-```csharp
-public sealed class TokenRefreshEventArgs : EventArgs
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ProviderId { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:437](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L437) |  |
-| <code>public DateTime RefreshedAt { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:438](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L438) |  |
-| <code>public TokenRefreshEventArgs(string providerId, DateTime refreshedAt);</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:440](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L440) |  |
-
-## TokenRefreshFailedEventArgs
-
-Qualified name: <code>Meridian.Ui.Services.TokenRefreshFailedEventArgs</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:450](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L450).
-
-Event args for failed token refresh.
-
-```csharp
-public sealed class TokenRefreshFailedEventArgs : EventArgs
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ProviderId { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:452](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L452) |  |
-| <code>public string ErrorMessage { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:453](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L453) |  |
-| <code>public TokenRefreshFailedEventArgs(string providerId, string errorMessage);</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:455](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L455) |  |
-
-## TooltipPlacement
-
-Qualified name: <code>Meridian.Ui.Services.TooltipPlacement</code>. Kind: `enum`.
-
-Source: [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:507](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L507).
-
-Tooltip placement relative to the target element.
-
-```csharp
-public enum TooltipPlacement : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Top</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:509](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L509) |  |
-| <code>Bottom</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:510](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L510) |  |
-| <code>Left</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:511](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L511) |  |
-| <code>Right</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:512](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L512) |  |
-| <code>Center</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:513](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L513) |  |
-
-## TourCategory
-
-Qualified name: <code>Meridian.Ui.Services.TourCategory</code>. Kind: `enum`.
-
-Source: [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:496](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L496).
-
-Tour category for organization.
-
-```csharp
-public enum TourCategory : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>GettingStarted</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:498](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L498) |  |
-| <code>DataManagement</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:499](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L499) |  |
-| <code>Monitoring</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:500](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L500) |  |
-| <code>Advanced</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:501](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L501) |  |

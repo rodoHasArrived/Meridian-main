@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountingSubarea
+
+Qualified name: <code>Meridian.Wpf.Models.AccountingSubarea</code>. Kind: `enum`.
+
+Source: [src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs:49](../../../../src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs#L49).
+
+Explicit accounting and operational-control subareas surfaced inside the Accounting workspace.
+
+```csharp
+public enum AccountingSubarea : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Operations</code> | [src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs:51](../../../../src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs#L51) |  |
+| <code>Accounting</code> | [src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs:52](../../../../src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs#L52) |  |
+| <code>Reconciliation</code> | [src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs:53](../../../../src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs#L53) |  |
+| <code>Reporting</code> | [src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs:54](../../../../src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs#L54) |  |
+| <code>Audit</code> | [src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs:55](../../../../src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs#L55) |  |
+
 ## ActionEntry
 
 Qualified name: <code>Meridian.Wpf.Models.ActionEntry</code>. Kind: `record`.
@@ -907,20 +929,3 @@ Source: [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:173](../..
 ```csharp
 public sealed record FundReconciliationDetailModel(FundReconciliationSourceType SourceType, string DetailKey, string Title, string Subtitle, string StatusLabel, string CoverageSummary, string LastUpdatedText, Guid? AccountId, Guid ReconciliationRunId, string? RunId, string? FocusBreakId, bool SupportsBreakActions, int TotalChecks, int TotalMatched, int TotalBreaks, decimal BreakAmountTotal, int SecurityIssueCount, string EmptyExceptionsText, string EmptySecurityCoverageText, IReadOnlyList<FundReconciliationCheckDetailRow> ExceptionRows, IReadOnlyList<FundReconciliationCheckDetailRow> AllCheckRows, IReadOnlyList<FundReconciliationSecurityCoverageRow> SecurityCoverageRows, IReadOnlyList<FundReconciliationAuditTrailRow> AuditRows);
 ```
-
-## FundReconciliationQueueView
-
-Qualified name: <code>Meridian.Wpf.Models.FundReconciliationQueueView</code>. Kind: `enum`.
-
-Source: [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:5](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L5).
-
-```csharp
-public enum FundReconciliationQueueView : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>BreakQueue = 0</code> | [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:7](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L7) |  |
-| <code>Runs = 1</code> | [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:8](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L8) |  |

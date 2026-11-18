@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataHeroState
+
+Qualified name: <code>Meridian.Wpf.Services.DataHeroState</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1069](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1069).
+
+Carries the data workspace overview text, status badge, handoff detail, and primary and secondary actions.
+
+```csharp
+public sealed class DataHeroState
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string FocusText { get; init; } = &quot;Operational posture&quot;;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1071](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1071) |  |
+| <code>public string SummaryText { get; init; } = &quot;Refreshing provider, backfill, storage, and export posture.&quot;;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1072](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1072) |  |
+| <code>public string BadgeText { get; init; } = &quot;Loading&quot;;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1073](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1073) |  |
+| <code>public string BadgeTone { get; init; } = WorkspaceTone.Info;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1074](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1074) |  |
+| <code>public string HandoffTitleText { get; init; } = &quot;Telemetry refresh in progress&quot;;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1075](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1075) |  |
+| <code>public string HandoffDetailText { get; init; } = &quot;The Data shell is collecting current readiness signals.&quot;;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1076](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1076) |  |
+| <code>public string PrimaryActionId { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1077](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1077) |  |
+| <code>public string PrimaryActionLabel { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1078](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1078) |  |
+| <code>public string SecondaryActionId { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1079](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1079) |  |
+| <code>public string SecondaryActionLabel { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1080](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1080) |  |
+| <code>public string TargetText { get; init; } = &quot;Target: Current shell&quot;;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1081](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1081) |  |
+| <code>public static DataHeroState Loading() =&gt; …;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1083](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1083) |  |
+| <code>public static DataHeroState Error() =&gt; …;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1086](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1086) |  |
+
 ## DataIntegrationWorkflowStep
 
 Qualified name: <code>Meridian.Wpf.Services.DataIntegrationWorkflowStep</code>. Kind: `class`.
@@ -1108,25 +1138,3 @@ Declared public members:
 | <code>Task&lt;RuntimeLifecycleSnapshotDto?&gt; GetSnapshotAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Wpf/Services/LifecycleControlClient.cs:22](../../../../src/Meridian.Wpf/Services/LifecycleControlClient.cs#L22) |  |
 | <code>Task&lt;LifecycleShutdownReceiptDto?&gt; GetLatestReceiptAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Wpf/Services/LifecycleControlClient.cs:24](../../../../src/Meridian.Wpf/Services/LifecycleControlClient.cs#L24) |  |
 | <code>Task&lt;LifecycleShutdownAcceptedDto?&gt; RequestShutdownAsync(LifecycleShutdownRequestDto request, CancellationToken cancellationToken = default);</code> | [src/Meridian.Wpf/Services/LifecycleControlClient.cs:26](../../../../src/Meridian.Wpf/Services/LifecycleControlClient.cs#L26) |  |
-
-## InfoBarNotificationEventArgs
-
-Qualified name: <code>Meridian.Wpf.Services.InfoBarNotificationEventArgs</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/InfoBarService.cs:150](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L150).
-
-Carries notification severity, title, message, display duration, and open state.
-
-```csharp
-public sealed class InfoBarNotificationEventArgs : EventArgs
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public InfoBarSeverity Severity { get; init; }</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:152](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L152) |  |
-| <code>public string Title { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:153](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L153) |  |
-| <code>public string Message { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:154](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L154) |  |
-| <code>public int DurationMs { get; init; }</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:155](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L155) |  |
-| <code>public bool IsOpen { get; init; }</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:156](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L156) |  |

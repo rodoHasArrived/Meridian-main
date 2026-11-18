@@ -6,6 +6,68 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkspaceToolbarControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Primitives.WorkspaceToolbarControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:75](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L75).
+
+Provides an items-control surface for workspace toolbar actions.
+
+```csharp
+public sealed class WorkspaceToolbarControl : ItemsControl
+```
+
+## WorkstationShellControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Primitives.WorkstationShellControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:9](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L9).
+
+Hosts workstation content with separate navigation, header, and status content slots.
+
+```csharp
+public sealed class WorkstationShellControl : ContentControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly DependencyProperty NavigationContentProperty = DependencyProperty.Register(nameof(NavigationContent), typeof(object), typeof(WorkstationShellControl));</code> | [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:11](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L11) |  |
+| <code>public static readonly DependencyProperty HeaderContentProperty = DependencyProperty.Register(nameof(HeaderContent), typeof(object), typeof(WorkstationShellControl));</code> | [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:14](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L14) |  |
+| <code>public static readonly DependencyProperty StatusContentProperty = DependencyProperty.Register(nameof(StatusContent), typeof(object), typeof(WorkstationShellControl));</code> | [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:17](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L17) |  |
+| <code>public object? NavigationContent { get; set; }</code> | [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:20](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L20) |  |
+| <code>public object? HeaderContent { get; set; }</code> | [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:26](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L26) |  |
+| <code>public object? StatusContent { get; set; }</code> | [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:32](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L32) |  |
+
+## WorkstationRegionState
+
+Qualified name: <code>Meridian.Wpf.Workstation.State.WorkstationRegionState</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:17](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L17).
+
+Provides observable region status, explanatory text, and optional recovery action identity.
+
+```csharp
+public sealed class WorkstationRegionState : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WorkstationRegionStatus Status { get; set; }</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:25](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L25) |  |
+| <code>public string Title { get; set; }</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:31](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L31) |  |
+| <code>public string Detail { get; set; }</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:37](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L37) |  |
+| <code>public string ActionId { get; set; }</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:43](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L43) |  |
+| <code>public string ActionLabel { get; set; }</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:49](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L49) |  |
+| <code>public static WorkstationRegionState Loading(string title, string detail) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:55](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L55) |  |
+| <code>public static WorkstationRegionState Empty(string title, string detail) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:63](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L63) |  |
+| <code>public static WorkstationRegionState Error(string title, string detail, string actionId = &quot;&quot;, string actionLabel = &quot;&quot;);</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:71](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L71) |  |
+| <code>public static WorkstationRegionState Success(string title, string detail) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:90](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L90) |  |
+| <code>public static WorkstationRegionState Warning(string title, string detail) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:98](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L98) |  |
+
 ## WorkstationRegionStatus
 
 Qualified name: <code>Meridian.Wpf.Workstation.State.WorkstationRegionStatus</code>. Kind: `enum`.

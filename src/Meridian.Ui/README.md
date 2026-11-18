@@ -32,6 +32,9 @@ journal-line reference editing follows the server's rollout capability; the brow
 rate text and source amounts. Rebuild with the canonical dashboard command after changes. See
 [intercompany agreements](../../docs/domain/intercompany-agreements.md) for authority and configuration.
 
+The served Entity operations bundle adds a Rate fixings tab over
+`/api/ledger/intercompany/rate-fixings`. See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
+
 The served Entity operations bundle adds a Balance confirmation tab over
 `/api/ledger/intercompany/confirmations`. See [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
 
@@ -39,6 +42,12 @@ The rebuilt bundle also includes explicit retained quote and observed-fixing sel
 rates ingestion, provider identity-review evidence and shared chart accessibility. Dashboard reads
 preserve exact decimal text from fixed-income responses; calculation and review authority remains
 in the shared services. See the dashboard README for these workflows and rebuild validation.
+
+The served keyboard help sheet lets an operator rebind the workstation-global shortcuts (command
+palette, keyboard help) for that browser, with conflict, reserved-key and bare-letter checks. The
+overrides, with appearance, density, display time zone and the page-descriptions setting, are kept
+per operator on the host (`/api/workstation/operator/preferences`) and cached in browser storage, so
+they follow the operator to another browser. Rebuild the dashboard to serve it.
 
 The host-served bundle includes the Security Master bond analytics model selector and floating v3
 metrics, projected payments, fixing provenance and typed refusal states. Rebuild it from `dashboard/`
@@ -106,6 +115,8 @@ The host-served bundle carries the design-system consolidation. It includes one 
 component; one formatting module (year-bearing UTC timestamps; accounting negatives in
 parentheses); and one table system with sorting, sticky headers, operator density and column
 visibility on positions, orders, the ledger, breaks, the execution blotter and report families.
+Working orders show their origin, and the order ticket states when manual live orders are
+unavailable and why an order-authority refusal happened (see the dashboard README).
 It also adds a three-tier type scale with sentence-case labels past two words and prose in the
 body face. Ratchets in `dashboard/scripts/design-system-ratchets.mjs`, and the sub-12px
 typography floor check in `dashboard/scripts/check-typography-floor.mjs` (run by `npm run lint`),

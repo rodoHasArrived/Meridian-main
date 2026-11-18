@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterChecklistItem
+
+Qualified name: <code>Meridian.Wpf.Models.SecurityMasterChecklistItem</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Models/SecurityMasterPresentationModels.cs:12](../../../../src/Meridian.Wpf/Models/SecurityMasterPresentationModels.cs#L12).
+
+```csharp
+public sealed record SecurityMasterChecklistItem(string Label, string Owner, string Status);
+```
+
 ## SecurityMasterEvidenceItem
 
 Qualified name: <code>Meridian.Wpf.Models.SecurityMasterEvidenceItem</code>. Kind: `record`.
@@ -983,23 +993,3 @@ Declared public members:
 | <code>public string Value { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:86](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L86) |  |
 | <code>public string Glyph { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:88](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L88) |  |
 | <code>public string Tone { get; init; } = WorkspaceTone.Neutral;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:90](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L90) |  |
-
-## WorkspaceShellContext
-
-Qualified name: <code>Meridian.Wpf.Models.WorkspaceShellContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:26](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L26).
-
-Carries the workspace title, subtitle, and context badges displayed by the shell.
-
-```csharp
-public sealed class WorkspaceShellContext
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string WorkspaceTitle { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:28](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L28) |  |
-| <code>public string WorkspaceSubtitle { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:30](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L30) |  |
-| <code>public IReadOnlyList&lt;WorkspaceShellBadge&gt; Badges { get; init; } = Array.Empty&lt;WorkspaceShellBadge&gt;();</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:32](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L32) |  |

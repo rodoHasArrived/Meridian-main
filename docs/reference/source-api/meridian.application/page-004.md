@@ -1035,9 +1035,9 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.FundStructure.IntercompanyAccrualPreviewService</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs:21](../../../../src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs#L21).
+Source: [src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs:22](../../../../src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs#L22).
 
-Turns declared fixed-rate loan terms into an interest amount for a half-open accrual window. Pure: it never reads a ledger, fetches a fixing, creates a draft or authorizes a journal.
+Turns declared fixed- or floating-rate loan terms into an interest amount for a half-open accrual window. Pure: it never reads a ledger, fetches a fixing, creates a draft or authorizes a journal. Floating slices use only the approved fixings the server placed on the input (rule IntercompanyAccrualRules.FloatingRuleVersion).
 
 ```csharp
 public sealed class IntercompanyAccrualPreviewService(IBusinessDayCalendarSource calendars) : IIntercompanyAccrualPreviewService
@@ -1047,7 +1047,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IntercompanyAccrualPreviewDto Preview(IntercompanyAccrualComputationInput input);</code> | [src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs:24](../../../../src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs#L24) |  |
+| <code>public IntercompanyAccrualPreviewDto Preview(IntercompanyAccrualComputationInput input);</code> | [src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs:25](../../../../src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs#L25) |  |
 
 ## IntercompanyAgreementRules
 
@@ -1078,6 +1078,12 @@ Source: [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.Struc
 ```csharp
 public static partial class IntercompanyAgreementRules
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int MaximumFixingLagBusinessDays = 10;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.StructuredTerms.cs:125](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.StructuredTerms.cs#L125) | Upper bound on a declared in-advance fixing lag. |
 
 ## IntercompanyAgreementService
 
@@ -1144,6 +1150,54 @@ Source: [src/Meridian.Application/FundStructure/IntercompanyAgreementTimeline.cs
 ```csharp
 public sealed record IntercompanyAgreementTimelineResult(IntercompanyAgreementRevisionDto? Revision, IntercompanyAgreementStatusDto Status, DateOnly? TerminationCutoff);
 ```
+
+## IntercompanyRateFixingRules
+
+Qualified name: <code>Meridian.Application.FundStructure.IntercompanyRateFixingRules</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs:11](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs#L11).
+
+Pure transitions of one index fixing. A value sets accrual rates only once a second person approves it, and a correction never replaces the approved value until it is itself approved. Nothing here reads a market feed.
+
+```csharp
+public static class IntercompanyRateFixingRules
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int MaximumTextLength = 500;</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs:13](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs#L13) |  |
+| <code>public static string IndexKey(string? indexReference);</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs:16](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs#L16) | Index references match ignoring case and surrounding space, as agreement terms are typed. |
+| <code>public static Guid FixingId(string tenantId, string indexReference, DateOnly fixingDate) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs:25](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs#L25) | One record per tenant, index and observation date. |
+| <code>public static string ValueDigest(string indexKey, DateOnly fixingDate, decimal rate, string source, string justification) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs:29](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs#L29) |  |
+| <code>public static IntercompanyRateFixingDto Propose(IntercompanyRateFixingDto? current, string tenantId, string actor, ProposeIntercompanyRateFixingRequest request, DateTimeOffset at);</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs:33](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs#L33) |  |
+| <code>public static IntercompanyRateFixingDto Decide(IntercompanyRateFixingDto current, string actor, DecideIntercompanyRateFixingRequest request, DateTimeOffset at);</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs:59](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs#L59) |  |
+| <code>public static bool IsReplay(IntercompanyRateFixingDto? current, Guid requestId, IntercompanyRateFixingActionDto action);</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs:83](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs#L83) | True when this request already produced the current record; a reused identity for a different step conflicts. |
+| <code>public static IntercompanyApprovedRateFixingDto? Approved(IntercompanyRateFixingDto fixing) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs:92](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs#L92) |  |
+
+## IntercompanyRateFixingService
+
+Qualified name: <code>Meridian.Application.FundStructure.IntercompanyRateFixingService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs:9](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs#L9).
+
+Tenant-scoped authority for reviewed index fixings. It records what an operator observed and a second person approved; it never fetches, interpolates or carries a rate forward.
+
+```csharp
+public sealed class IntercompanyRateFixingService(IIntercompanyRateFixingStore store, TimeProvider? clock = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int MaximumRangeDays = 3_700;</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs:12](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs#L12) | A fixing range read never spans more than this many days. |
+| <code>public Task&lt;IntercompanyRateFixingDto?&gt; GetAsync(string tenantId, Guid fixingId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs:15](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs#L15) |  |
+| <code>public Task&lt;IReadOnlyList&lt;IntercompanyRateFixingDto&gt;&gt; ListAsync(string tenantId, string indexReference, DateOnly from, DateOnly to, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs:18](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs#L18) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;IntercompanyApprovedRateFixingDto&gt;&gt; ApprovedAsync(string tenantId, string indexReference, DateOnly from, DateOnly to, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs:27](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs#L27) | Approved values only, as the accrual calculator receives them. |
+| <code>public async Task&lt;IntercompanyRateFixingDto&gt; ProposeAsync(string tenantId, string actor, ProposeIntercompanyRateFixingRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs:33](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs#L33) |  |
+| <code>public async Task&lt;IntercompanyRateFixingDto&gt; DecideAsync(string tenantId, string actor, Guid fixingId, DecideIntercompanyRateFixingRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs:46](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs#L46) |  |
 
 ## IntercompanyStructuredTermsPreviewService
 
@@ -1303,44 +1357,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;ProviderIntegrationHttpResponse&gt; SendAsync(ProviderIntegrationHttpRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationRestDryRunService.cs:19](../../../../src/Meridian.Application/Integrations/ProviderIntegrationRestDryRunService.cs#L19) |  |
-
-## ProviderIntegrationActivationReadinessService
-
-Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationActivationReadinessService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs:10](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs#L10).
-
-Evaluates whether a configured provider integration satisfies activation requirements.
-
-```csharp
-public sealed class ProviderIntegrationActivationReadinessService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderIntegrationActivationReadinessService(IProviderIntegrationManifestStore store, ILogger&lt;ProviderIntegrationActivationReadinessService&gt;? logger = null);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs:22](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs#L22) |  |
-| <code>public async Task&lt;ProviderIntegrationActivationReadinessDto&gt; EvaluateAsync(string manifestId, string? connectionId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs:30](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs#L30) |  |
-| <code>public async Task&lt;ProviderIntegrationActivationReadinessDto&gt; EvaluateAsync(string? tenantId, string manifestId, string? connectionId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs:36](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs#L36) |  |
-| <code>public static ProviderIntegrationActivationReadinessDto Evaluate(ProviderIntegrationManifestDto manifest, ProviderConnectionDto? connection = null);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs:160](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs#L160) |  |
-
-## ProviderIntegrationActivationService
-
-Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationActivationService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs:10](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs#L10).
-
-Activates configured provider integrations after validating their retained setup evidence.
-
-```csharp
-public sealed class ProviderIntegrationActivationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderIntegrationActivationService(IProviderIntegrationManifestStore store, ILogger&lt;ProviderIntegrationActivationService&gt;? logger = null);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs:15](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs#L15) |  |
-| <code>public async Task&lt;ProviderIntegrationActivationResultDto&gt; ActivateAsync(ProviderIntegrationActivationRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs:23](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs#L23) |  |
-| <code>public async Task&lt;ProviderIntegrationActivationResultDto&gt; ActivateAsync(string? tenantId, ProviderIntegrationActivationRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs:28](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs#L28) |  |

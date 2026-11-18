@@ -6,6 +6,39 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## QuickCheckDisplayItem
+
+Qualified name: <code>Meridian.Wpf.ViewModels.QuickCheckDisplayItem</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs:1162](../../../../src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs#L1162).
+
+Presents a maintenance quick-check name, detail, and visual status.
+
+```csharp
+public sealed class QuickCheckDisplayItem
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs:1164](../../../../src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs#L1164) |  |
+| <code>public string Details { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs:1165](../../../../src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs#L1165) |  |
+| <code>public string StatusIcon { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs:1166](../../../../src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs#L1166) |  |
+| <code>public SolidColorBrush? StatusColor { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs:1167](../../../../src/Meridian.Wpf/ViewModels/AdminMaintenanceViewModel.cs#L1167) |  |
+
+## QuickstartTemplate
+
+Qualified name: <code>Meridian.Wpf.ViewModels.QuickstartTemplate</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/ViewModels/ScatterAnalysisViewModel.cs:22](../../../../src/Meridian.Wpf/ViewModels/ScatterAnalysisViewModel.cs#L22).
+
+A pre-built scatter template shown in the Quickstart sidebar. Clicking a template populates both symbol inputs and fires PlotAsync.
+
+```csharp
+public sealed record QuickstartTemplate(string Name, string Category, string XSymbol, string YSymbol, string XExpression, string YExpression, string TimeRange = "1Y");
+```
+
 ## QuoteFloatViewModel
 
 Qualified name: <code>Meridian.Wpf.ViewModels.QuoteFloatViewModel</code>. Kind: `class`.
@@ -1561,7 +1594,7 @@ Declared public members:
 | <code>public int AccentColorIndex { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:295](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L295) | Selected index of the accent-color ComboBox. |
 | <code>public ShellDensityMode SelectedShellDensityMode { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:301](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L301) |  |
 | <code>public string ShellDensityDescriptionText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:323](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L323) |  |
-| <code>public bool IsNotificationsEnabled { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:332](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L332) | Whether Windows notifications are enabled. The XAML NotificationSettingsPanel binds its Opacity to NotificationsPanelOpacity which is derived from this flag. |
+| <code>public bool IsNotificationsEnabled { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:333](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L333) | Whether pop-up notifications are shown. Applied to the live notification settings at once and saved with the operator&#x27;s preferences, not with the host configuration file. The XAML NotificationSettingsPanel binds its Opacity to NotificationsPanelOpacity which is derived from this flag. |
 | <code>public double NotificationsPanelOpacity =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:346](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L346) | 1.0 when notifications are enabled, 0.5 when disabled. |
 | <code>public string MaxConcurrentDownloads { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:348](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L348) |  |
 | <code>public string WriteBufferSize { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:354](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L354) |  |
@@ -1597,14 +1630,39 @@ Declared public members:
 | <code>public IAsyncRelayCommand CreateProfileBackedSecurityCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:411](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L411) |  |
 | <code>public IAsyncRelayCommand RefreshOperationsControlCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:412](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L412) |  |
 | <code>public void Initialize();</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:416](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L416) |  |
-| <code>public async Task RefreshCredentialVaultAsync();</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:477](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L477) |  |
-| <code>public System.Collections.Generic.List&lt;CredentialVaultItem&gt; CredentialVaultItems { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:505](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L505) |  |
-| <code>public void RefreshStoragePreview(string naming, string compression);</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:513](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L513) |  |
-| <code>public System.Collections.Generic.List&lt;ConfigProfile&gt; Profiles { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:524](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L524) |  |
-| <code>public void RefreshProfiles();</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:530](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L530) |  |
-| <code>public bool IsConfigValid { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:686](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L686) |  |
-| <code>public bool HasUnsavedChanges { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:692](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L692) |  |
-| <code>public string ConfigValidationErrors { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:698](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L698) |  |
+| <code>public async Task RefreshCredentialVaultAsync();</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:478](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L478) |  |
+| <code>public System.Collections.Generic.List&lt;CredentialVaultItem&gt; CredentialVaultItems { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:506](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L506) |  |
+| <code>public void RefreshStoragePreview(string naming, string compression);</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:514](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L514) |  |
+| <code>public System.Collections.Generic.List&lt;ConfigProfile&gt; Profiles { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:525](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L525) |  |
+| <code>public void RefreshProfiles();</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:531](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L531) |  |
+| <code>public bool IsConfigValid { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:687](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L687) |  |
+| <code>public bool HasUnsavedChanges { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:693](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L693) |  |
+| <code>public string ConfigValidationErrors { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:699](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L699) |  |
+
+Source: [src/Meridian.Wpf/ViewModels/SettingsViewModel.Notifications.cs:13](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.Notifications.cs#L13).
+
+The Settings page Notifications card. Each control edits the live desktop notification settings (NotificationServiceBase.UpdateSettings), which take effect at once and, through the host preference sync, are saved with the operator&#x27;s preferences so the browser card shows the same choices. Quiet hours are read in the operator&#x27;s display time zone.
+
+```csharp
+public sealed partial class SettingsViewModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool NotifyConnectionStatus { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.Notifications.cs:27](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.Notifications.cs#L27) |  |
+| <code>public bool NotifyErrors { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.Notifications.cs:33](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.Notifications.cs#L33) |  |
+| <code>public bool NotifyBackfillComplete { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.Notifications.cs:39](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.Notifications.cs#L39) |  |
+| <code>public bool NotifyDataGaps { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.Notifications.cs:45](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.Notifications.cs#L45) |  |
+| <code>public bool NotifyStorageWarnings { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.Notifications.cs:51](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.Notifications.cs#L51) |  |
+| <code>public bool IsQuietHoursEnabled { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.Notifications.cs:57](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.Notifications.cs#L57) |  |
+| <code>public string QuietHoursStart { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.Notifications.cs:64](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.Notifications.cs#L64) | Start of quiet hours, HH:mm in the display time zone. Applied once it reads as a valid time. |
+| <code>public string QuietHoursEnd { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.Notifications.cs:77](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.Notifications.cs#L77) | End of quiet hours (exclusive), HH:mm in the display time zone. |
+| <code>public string QuietHoursError { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.Notifications.cs:90](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.Notifications.cs#L90) | Why the typed quiet-hours window was not applied, or empty. |
+| <code>public string QuietHoursZoneText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.Notifications.cs:97](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.Notifications.cs#L97) | Names the zone quiet hours are read in, for example &quot;Times are in Europe/London.&quot; |
+| <code>public string TestNotificationStatus { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.Notifications.cs:100](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.Notifications.cs#L100) | What the last test notification did, for example that quiet hours held it. |
+| <code>public void LoadNotificationPreferences();</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.Notifications.cs:107](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.Notifications.cs#L107) | Reads the live notification settings into the card. Called when the page loads. |
 
 Source: [src/Meridian.Wpf/ViewModels/SettingsViewModel.OperationsControl.cs:7](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.OperationsControl.cs#L7).
 
@@ -1704,45 +1762,3 @@ Declared public members:
 | <code>public string ActionId { get; }</code> | [src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs:346](../../../../src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs#L346) |  |
 | <code>public bool HasValidationMessage =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs:370](../../../../src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs#L370) | True when an inline rejection reason is showing. |
 | <code>public string ChordDisplayText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs:373](../../../../src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs#L373) | The chord badge text, or the capture prompt while waiting for a chord. |
-
-## ShortcutCategoryGroupViewModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.ShortcutCategoryGroupViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs:303](../../../../src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs#L303).
-
-One shortcut category card on the Keyboard Shortcuts page.
-
-```csharp
-public sealed class ShortcutCategoryGroupViewModel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ShortcutCategoryGroupViewModel(ShortcutCategory category, string label, string icon, string description, IEnumerable&lt;ShortcutBindingRowViewModel&gt; rows);</code> | [src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs:305](../../../../src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs#L305) |  |
-| <code>public ShortcutCategory Category { get; }</code> | [src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs:319](../../../../src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs#L319) |  |
-| <code>public string Label { get; }</code> | [src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs:321](../../../../src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs#L321) |  |
-| <code>public string Icon { get; }</code> | [src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs:323](../../../../src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs#L323) |  |
-| <code>public string Description { get; }</code> | [src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs:325](../../../../src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs#L325) |  |
-| <code>public bool HasDescription =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs:327](../../../../src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs#L327) |  |
-| <code>public ObservableCollection&lt;ShortcutBindingRowViewModel&gt; Rows { get; }</code> | [src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs:329](../../../../src/Meridian.Wpf/ViewModels/KeyboardShortcutsViewModel.cs#L329) |  |
-
-## SplitPaneViewModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.SplitPaneViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/SplitPaneViewModel.cs:9](../../../../src/Meridian.Wpf/ViewModels/SplitPaneViewModel.cs#L9).
-
-Provides the pane-host view-model specialization used by the split-pane workspace.
-
-```csharp
-public sealed class SplitPaneViewModel : PaneHostViewModel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SplitPaneViewModel(IShellRouteRegistry? routeRegistry = null) : base(routeRegistry);</code> | [src/Meridian.Wpf/ViewModels/SplitPaneViewModel.cs:11](../../../../src/Meridian.Wpf/ViewModels/SplitPaneViewModel.cs#L11) |  |

@@ -6,6 +6,29 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FileAccountingAuditPendingMarkerStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.FileAccountingAuditPendingMarkerStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs:20](../../../../src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs#L20).
+
+File-backed IAccountingAuditPendingMarkerStore: a small sidecar written atomically beside the accounting configuration snapshot.
+
+```csharp
+public sealed class FileAccountingAuditPendingMarkerStore : IAccountingAuditPendingMarkerStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileAccountingAuditPendingMarkerStore(string markerPath);</code> | [src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs:29](../../../../src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs#L29) |  |
+| <code>public string MarkerPath { get; }</code> | [src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs:36](../../../../src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs#L36) | Full path of the marker file. |
+| <code>public static string MarkerPathFor(string snapshotPath);</code> | [src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs:39](../../../../src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs#L39) | The conventional marker path for an accounting configuration snapshot. |
+| <code>public async Task&lt;AccountingAuditPendingMarker?&gt; ReadAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs:45](../../../../src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs#L45) |  |
+| <code>public async Task WriteAsync(AccountingAuditPendingMarker marker, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs:58](../../../../src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs#L58) |  |
+| <code>public async Task ClearAsync(Guid auditEventId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs:75](../../../../src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs#L75) |  |
+
 ## FileAccountingConfigurationStore
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FileAccountingConfigurationStore</code>. Kind: `class`.
@@ -1119,31 +1142,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public ValueTask&lt;ImmutableArray&lt;ReportingRestatementChangedLine&gt;&gt; ResolveAsync(GovernedReportingRun releasedPredecessor, string reason, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:280](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L280) |  |
-
-## GovernedReportingTemplateCatalog
-
-Qualified name: <code>Meridian.Ui.Shared.Services.GovernedReportingTemplateCatalog</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:10](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L10).
-
-Resolves reporting templates through the governed registry and evaluates caller access.
-
-```csharp
-public sealed class GovernedReportingTemplateCatalog : IReportingTemplateCatalog
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public GovernedReportingTemplateCatalog(IReportingTemplateCatalog fallbackCatalog, ReportTemplateRegistryService templateRegistry);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:15](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L15) |  |
-| <code>public ReportingTemplateMetadata Get(string templateId);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:23](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L23) |  |
-| <code>public ReportingTemplateMetadata Get(string templateId, ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:32](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L32) |  |
-| <code>public ReportingTemplateMetadata Get(string templateId, ReportingOperationalScope? operationalScope) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:43](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L43) |  |
-| <code>public ReportingTemplateMetadata Get(VersionedReportTemplateIdDto templateId);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:48](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L48) |  |
-| <code>public ReportingTemplateMetadata Get(VersionedReportTemplateIdDto templateId, ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:63](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L63) |  |
-| <code>public ReportingTemplateMetadata Get(VersionedReportTemplateIdDto templateId, ReportingOperationalScope? operationalScope) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:80](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L80) |  |
-| <code>public IReadOnlyList&lt;ReportingTemplateMetadata&gt; ListTemplates();</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:85](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L85) |  |
-| <code>public IReadOnlyList&lt;ReportingTemplateMetadata&gt; ListTemplates(ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:104](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L104) |  |
-| <code>public ReportAccessEvaluationDto EvaluateAccess(string templateId, ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:124](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L124) |  |
-| <code>public ReportAccessEvaluationDto EvaluateAccess(VersionedReportTemplateIdDto templateId, ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:153](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L153) |  |

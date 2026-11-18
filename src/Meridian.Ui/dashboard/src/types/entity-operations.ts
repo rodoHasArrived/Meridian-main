@@ -141,6 +141,13 @@ export interface IntercompanyAccrualSlice {
   sequence: number; from: string; to: string; accountingArrangementRevisionId: string; agreementVersion: number;
   agreementPayloadHash: string; schedulePeriodSequence: number; principal: string; annualRate: string; dayCount: string;
   yearFraction: string; unroundedAmount: string; principalEvidenceReference: string;
+  /** Present only on floating slices: annualRate equals indexRate + spreadBps / 10000. */
+  fixing?: IntercompanyAccrualSliceFixing | null;
+}
+/** The approved index fixing that set a floating slice's rate, held for the whole schedule period. */
+export interface IntercompanyAccrualSliceFixing {
+  fixingId: string; indexReference: string; fixingDate: string; indexRate: string; spreadBps: string;
+  fixingLagBusinessDays: number; valueDigest: string;
 }
 export interface IntercompanyAccrualComputation {
   status: "Ready" | "Unavailable" | string; ruleVersion: string; agreementId?: string | null; currency?: string | null;

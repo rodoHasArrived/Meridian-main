@@ -86,6 +86,7 @@ import { KpiProvider } from "@/lib/kpi-context";
 import { useWorkstationData } from "@/hooks/use-workstation-data";
 import { markWorkflowPresetUsed, pinWorkflowPreset } from "@/lib/api";
 import { getOperatorScopePreference, saveOperatorScopePreference } from "@/lib/api/operator-workstation.api";
+import { startOperatorPreferenceSync } from "@/lib/operator-preferences-sync";
 import {
   useCommandPaletteActions,
   type CommandPaletteActionItem
@@ -490,6 +491,14 @@ function AppShell({
       fundAccountId: operatingScopeInput.fundAccountId
     }
   });
+  // Presentation preferences follow the operator: once the session is known, load them from the
+  // host (host values win; values it lacks are taken from this browser and saved back), then save
+  // each later change. Fixture sessions have no host to read from, so they stay browser-only.
+  const preferenceOperatorKey = session ? `${session.environment}:${session.displayName}:${session.role}` : null;
+  useEffect(() => {
+    if (!preferenceOperatorKey || usingDevelopmentFixtures) return undefined;
+    return startOperatorPreferenceSync({ operatorKey: preferenceOperatorKey });
+  }, [preferenceOperatorKey, usingDevelopmentFixtures]);
   const dataProvenance = resolveWorkstationDataProvenance({
     usingDevelopmentFixtures,
     demoMode,
@@ -945,7 +954,7 @@ function AppShell({
   };
 
   return (
-    <SectionDescriptionPreferences operatorKey={session ? `${session.environment}:${session.displayName}:${session.role}` : null}>
+    <SectionDescriptionPreferences operatorKey={preferenceOperatorKey}>
     <GlobalRefreshProvider sequence={globalRefreshSequence}>
     <MetricPassportSessionProvider scopeKey={JSON.stringify([operatingScopeInput, refreshStatus.inFlight])} sessionIdentity={session}>
     <EntityInspectorProvider scopeKey={JSON.stringify(operatingScopeInput)} sessionIdentity={session} refreshSequence={refreshStatus.inFlight ? 1 : 0}>

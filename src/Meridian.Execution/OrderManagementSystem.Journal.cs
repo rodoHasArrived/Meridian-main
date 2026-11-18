@@ -18,7 +18,12 @@ public sealed partial class OrderManagementSystem
     private static string JournalEventId(string eventId, Guid? attemptId) =>
         attemptId is { } attempt ? $"{eventId}:{attempt:N}" : eventId;
 
-    private async Task RecordJournalIntentAsync(OrderRequest request, string kind, Guid? attemptId, CancellationToken ct)
+    private async Task RecordJournalIntentAsync(
+        OrderRequest request,
+        string kind,
+        Guid? attemptId,
+        CancellationToken ct,
+        OrderSubmissionAuthorityRecord? authority = null)
     {
         if (_journal is null)
             return;
@@ -29,7 +34,7 @@ public sealed partial class OrderManagementSystem
         await _journal.AppendAsync(new ExecutionJournalEntry(1, JournalEventId($"{kind}:{id}:{hash}", attemptId), JournalScope,
             request.FundAccountId, id, kind, DateTimeOffset.UtcNow, Request: request,
             Reference: kind == "Dispatch" ? _marketReferences?.GetReference(request.Symbol, request.Side) : null,
-            ReportingAssetClass: reportingAssetClass, AttemptId: attemptId), ct).ConfigureAwait(false);
+            ReportingAssetClass: reportingAssetClass, AttemptId: attemptId, Authority: authority), ct).ConfigureAwait(false);
     }
 
     // A false result identifies an exact replay already retained for an earlier local attempt.
@@ -93,7 +98,8 @@ public sealed partial class OrderManagementSystem
     }
 
     private Task RecordJournalOperationAsync(OrderState state, string kind, CancellationToken ct,
-        OrderModification? modification = null, string? detail = null) => _journal is null ? Task.CompletedTask
+        OrderModification? modification = null, string? detail = null, OrderSubmissionAuthority? authority = null) => _journal is null ? Task.CompletedTask
         : _journal.AppendAsync(new(1, $"operation:{Guid.NewGuid():N}", JournalScope, state.FundAccountId,
-            state.OrderId, kind, DateTimeOffset.UtcNow, Detail: detail, Modification: modification, AttemptId: state.JournalAttemptId), ct);
+            state.OrderId, kind, DateTimeOffset.UtcNow, Detail: detail, Modification: modification, AttemptId: state.JournalAttemptId,
+            Authority: authority?.ToRecord()), ct);
 }

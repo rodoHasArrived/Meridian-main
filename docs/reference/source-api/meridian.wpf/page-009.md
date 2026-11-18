@@ -6,6 +6,40 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PendingOperationsQueueService
+
+Qualified name: <code>Meridian.Wpf.Services.PendingOperationsQueueService</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:100](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L100).
+
+Service for managing a durable queue of pending operations: mutations that failed while the backend was unreachable are enqueued here, persisted to local storage via AtomicFileWriter so they survive shutdown and crashes, and replayed through their registered handlers on startup and on reconnect. Implements singleton pattern for application-wide operation queue management.
+
+```csharp
+public sealed class PendingOperationsQueueService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static PendingOperationsQueueService Instance =&gt; …;</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:130](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L130) | Gets the singleton instance of the PendingOperationsQueueService. |
+| <code>public bool IsInitialized =&gt; …;</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:135](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L135) | Gets whether the service has been initialized. |
+| <code>public int PendingCount =&gt; …;</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:140](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L140) | Gets the number of pending operations in the queue. |
+| <code>public int QuarantinedCount =&gt; …;</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:146](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L146) | Gets the number of payload-free quarantine records retained for operations that cannot be replayed safely. |
+| <code>public static string GetDefaultFilePath();</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:156](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L156) | Resolves the durable queue file below the shared Meridian local-application-data root. |
+| <code>public async Task InitializeAsync();</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:177](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L177) | Initializes the pending operations queue service, restoring any operations that were persisted by a previous session (clean shutdown or crash). |
+| <code>public async Task ShutdownAsync();</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:202](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L202) | Shuts down the pending operations queue service, persisting any still-pending operations to disk so they can be replayed by the next session before releasing the in-memory queue. Later persistence attempts (for example an enqueue-scheduled snapshot that loses the race with shutdown) are suppressed so they cannot overwrite the final snapshot with the cleared queue. |
+| <code>public void RegisterHandler(string operationType, Func&lt;object?, Task&gt; handler);</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:225](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L225) | Registers a handler for a specific operation type. |
+| <code>public void UnregisterHandler(string operationType);</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:236](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L236) | Removes a handler for a specific operation type. |
+| <code>public void Enqueue(PendingOperation operation);</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:246](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L246) | Enqueues an operation for processing and schedules a snapshot of the queue to durable storage, so an enqueued operation survives a crash before the next clean shutdown. |
+| <code>public void Enqueue(string operationType, object? payload = null);</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:258](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L258) | Enqueues an operation for processing. |
+| <code>public PendingOperation? Dequeue();</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:271](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L271) | Dequeues the next operation for processing. |
+| <code>public PendingOperation? Peek();</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:280](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L280) | Peeks at the next operation without removing it. |
+| <code>public IReadOnlyList&lt;PendingOperation&gt; GetAll();</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:293](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L293) | Gets a snapshot of all pending operations. |
+| <code>public IReadOnlyList&lt;PendingOperationQuarantineRecord&gt; GetQuarantinedOperations();</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:302](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L302) | Gets a stable audit snapshot of operations moved out of the replay queue. Quarantine records contain metadata only and never expose the original operation payload. |
+| <code>public async Task ProcessAllAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:320](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L320) | Processes all pending operations by dequeuing and executing their registered handlers. Operations that fail and have retries remaining are re-enqueued. Operations with no registered handler are kept in the queue so a handler registered later (or by the next session) can still process them. Explicitly retired authentication-sensitive operation types are moved to payload-free quarantine before handler lookup. The surviving queue and quarantine audit are persisted afterwards. |
+| <code>public async Task PersistAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:370](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L370) | Writes the current queue contents to durable storage using an atomic replace, so a crash mid-write can never corrupt the previously persisted queue. |
+
 ## PortfolioWorkspaceShellStateProvider
 
 Qualified name: <code>Meridian.Wpf.Services.PortfolioWorkspaceShellStateProvider</code>. Kind: `class`.
@@ -1021,25 +1055,3 @@ Declared public members:
 | <code>public static void Open();</code> | [src/Meridian.Wpf/Services/TickerStripService.cs:26](../../../../src/Meridian.Wpf/Services/TickerStripService.cs#L26) | Opens and shows the ticker strip (no-op if already visible). |
 | <code>public static void Close();</code> | [src/Meridian.Wpf/Services/TickerStripService.cs:41](../../../../src/Meridian.Wpf/Services/TickerStripService.cs#L41) | Closes the ticker strip (no-op if already closed). |
 | <code>public static bool IsOpen =&gt; …;</code> | [src/Meridian.Wpf/Services/TickerStripService.cs:48](../../../../src/Meridian.Wpf/Services/TickerStripService.cs#L48) | Returns true while the strip window is open. |
-
-## TickerUpdateMessage
-
-Qualified name: <code>Meridian.Wpf.Services.TickerUpdateMessage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/MessagingService.cs:294](../../../../src/Meridian.Wpf/Services/MessagingService.cs#L294).
-
-Message payload for a live price tick, published by any component that receives quote/trade data. Subscribers (e.g. TickerStripViewModel) can consume this instead of polling the HTTP API.
-
-```csharp
-public sealed class TickerUpdateMessage
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Services/MessagingService.cs:296](../../../../src/Meridian.Wpf/Services/MessagingService.cs#L296) |  |
-| <code>public decimal Bid { get; set; }</code> | [src/Meridian.Wpf/Services/MessagingService.cs:297](../../../../src/Meridian.Wpf/Services/MessagingService.cs#L297) |  |
-| <code>public decimal Ask { get; set; }</code> | [src/Meridian.Wpf/Services/MessagingService.cs:298](../../../../src/Meridian.Wpf/Services/MessagingService.cs#L298) |  |
-| <code>public decimal Last { get; set; }</code> | [src/Meridian.Wpf/Services/MessagingService.cs:299](../../../../src/Meridian.Wpf/Services/MessagingService.cs#L299) |  |
-| <code>public bool Uptick { get; set; }</code> | [src/Meridian.Wpf/Services/MessagingService.cs:300](../../../../src/Meridian.Wpf/Services/MessagingService.cs#L300) |  |

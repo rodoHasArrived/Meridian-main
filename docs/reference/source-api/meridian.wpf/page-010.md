@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TickerUpdateMessage
+
+Qualified name: <code>Meridian.Wpf.Services.TickerUpdateMessage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/MessagingService.cs:294](../../../../src/Meridian.Wpf/Services/MessagingService.cs#L294).
+
+Message payload for a live price tick, published by any component that receives quote/trade data. Subscribers (e.g. TickerStripViewModel) can consume this instead of polling the HTTP API.
+
+```csharp
+public sealed class TickerUpdateMessage
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Services/MessagingService.cs:296](../../../../src/Meridian.Wpf/Services/MessagingService.cs#L296) |  |
+| <code>public decimal Bid { get; set; }</code> | [src/Meridian.Wpf/Services/MessagingService.cs:297](../../../../src/Meridian.Wpf/Services/MessagingService.cs#L297) |  |
+| <code>public decimal Ask { get; set; }</code> | [src/Meridian.Wpf/Services/MessagingService.cs:298](../../../../src/Meridian.Wpf/Services/MessagingService.cs#L298) |  |
+| <code>public decimal Last { get; set; }</code> | [src/Meridian.Wpf/Services/MessagingService.cs:299](../../../../src/Meridian.Wpf/Services/MessagingService.cs#L299) |  |
+| <code>public bool Uptick { get; set; }</code> | [src/Meridian.Wpf/Services/MessagingService.cs:300](../../../../src/Meridian.Wpf/Services/MessagingService.cs#L300) |  |
+
 ## ToastNotificationService
 
 Qualified name: <code>Meridian.Wpf.Services.ToastNotificationService</code>. Kind: `class`.
@@ -870,6 +892,36 @@ Declared public members:
 | <code>public WorkstationStrategyBriefingApiClient(ApiClientService apiClient);</code> | [src/Meridian.Wpf/Services/WorkstationStrategyBriefingService.cs:24](../../../../src/Meridian.Wpf/Services/WorkstationStrategyBriefingService.cs#L24) |  |
 | <code>public async Task&lt;StrategyBriefingDto?&gt; GetBriefingAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkstationStrategyBriefingService.cs:29](../../../../src/Meridian.Wpf/Services/WorkstationStrategyBriefingService.cs#L29) |  |
 
+## WpfDesktopPreferenceSurface
+
+Qualified name: <code>Meridian.Wpf.Services.WpfDesktopPreferenceSurface</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:15](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L15).
+
+The desktop shell&#x27;s theme, density, keyboard shortcut overrides and notification settings as DesktopOperatorPreferenceSync reads and writes them. Theme and shortcut changes touch UI state, so values applied from the host are marshalled onto the UI thread; the sync may call in from a background continuation. Host shortcut overrides are also written to the local desktop preferences, which stay the cache used when the host cannot be reached.
+
+```csharp
+public sealed class WpfDesktopPreferenceSurface : IDesktopPreferenceSurface, IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WpfDesktopPreferenceSurface(ThemeService themeService, SettingsConfigurationService settings, KeyboardShortcutService shortcuts, NotificationServiceBase notifications);</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:24](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L24) |  |
+| <code>public AppTheme Theme =&gt; …;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:41](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L41) |  |
+| <code>public ShellDensityMode Density =&gt; …;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:43](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L43) |  |
+| <code>public event EventHandler? PreferenceChanged;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:45](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L45) |  |
+| <code>public IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; ShortcutOverrides =&gt; …;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:47](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L47) |  |
+| <code>public event EventHandler? ShortcutOverridesChanged;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:49](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L49) |  |
+| <code>public NotificationSettings Notifications =&gt; …;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:51](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L51) |  |
+| <code>public event EventHandler? NotificationsChanged;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:53](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L53) |  |
+| <code>public void ApplyNotifications(NotificationSettings settings);</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:57](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L57) |  |
+| <code>public void ApplyTheme(AppTheme theme) =&gt; …;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:65](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L65) |  |
+| <code>public void ApplyDensity(ShellDensityMode density) =&gt; …;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:67](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L67) |  |
+| <code>public void ApplyShortcutOverrides(IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; overrides);</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:71](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L71) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:114](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L114) |  |
+
 ## WpfRemoteWorkstationClient
 
 Qualified name: <code>Meridian.Wpf.Services.WpfRemoteWorkstationClient</code>. Kind: `class`.
@@ -1107,46 +1159,3 @@ Declared public members:
 | <code>IReadOnlyList&lt;ShellPageDescriptor&gt; Pages { get; }</code> | [src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs:10](../../../../src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs#L10) |  |
 | <code>IReadOnlyList&lt;WorkspaceCapabilityDescriptor&gt; WorkspaceCapabilities { get; }</code> | [src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs:12](../../../../src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs#L12) |  |
 | <code>IReadOnlyList&lt;WorkspaceShellDefinition&gt; WorkspaceShells { get; }</code> | [src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs:14](../../../../src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs#L14) |  |
-
-## IShellRouteRegistry
-
-Qualified name: <code>Meridian.Wpf.Shell.Services.IShellRouteRegistry</code>. Kind: `interface`.
-
-Source: [src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs:8](../../../../src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs#L8).
-
-Resolves canonical page tags, page types, aliases, and workspace membership for desktop routes.
-
-```csharp
-public interface IShellRouteRegistry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>IReadOnlyList&lt;ShellRoute&gt; Routes { get; }</code> | [src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs:10](../../../../src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs#L10) |  |
-| <code>ShellRoute? GetRoute(string? pageTag);</code> | [src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs:12](../../../../src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs#L12) |  |
-| <code>bool IsRegistered(string? pageTag);</code> | [src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs:14](../../../../src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs#L14) |  |
-| <code>Type? GetPageType(string? pageTag);</code> | [src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs:16](../../../../src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs#L16) |  |
-| <code>string GetCanonicalPageTag(string? pageTag);</code> | [src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs:18](../../../../src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs#L18) |  |
-| <code>string? InferWorkspaceIdForPageTag(string? pageTag);</code> | [src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs:20](../../../../src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs#L20) |  |
-| <code>IReadOnlyList&lt;ShellRoute&gt; GetRoutesForWorkspace(string workspaceId);</code> | [src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs:22](../../../../src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs#L22) |  |
-
-## PageContentFactory
-
-Qualified name: <code>Meridian.Wpf.Shell.Services.PageContentFactory</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Shell/Services/PageContentFactory.cs:10](../../../../src/Meridian.Wpf/Shell/Services/PageContentFactory.cs#L10).
-
-Resolves desktop page types, creates their content, and applies navigation parameters and presentation mode.
-
-```csharp
-public sealed class PageContentFactory : IPageContentFactory
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PageContentFactory(NavigationService navigationService);</code> | [src/Meridian.Wpf/Shell/Services/PageContentFactory.cs:14](../../../../src/Meridian.Wpf/Shell/Services/PageContentFactory.cs#L14) |  |
-| <code>public FrameworkElement CreateContent(string pageTag, object? parameter = null, WorkspaceChromePresentationMode presentationMode = WorkspaceChromePresentationMode.Docked) =&gt; …;</code> | [src/Meridian.Wpf/Shell/Services/PageContentFactory.cs:19](../../../../src/Meridian.Wpf/Shell/Services/PageContentFactory.cs#L19) |  |

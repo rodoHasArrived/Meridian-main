@@ -43,7 +43,8 @@ public sealed partial class LiveTradingEngineTests
             ExecutionSdk.OrderRequest dispatched;
             await using (var audit = new ExecutionAuditTrailService(auditOptions, NullLogger<ExecutionAuditTrailService>.Instance))
             await using (var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance,
-                brokerageConfiguration: brokerage, liveOrderReadinessGate: gate, auditTrail: audit))
+                brokerageConfiguration: brokerage, liveOrderReadinessGate: gate, auditTrail: audit,
+                strategyRunAuthority: await LivePromotionAuthorityAsync(repository, run.RunId)))
             {
                 await oms.StartAsync();
                 await using var engine = CreateEngine(repository, feed, cache, oms,

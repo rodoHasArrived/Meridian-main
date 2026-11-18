@@ -6,6 +6,34 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CoveredCallBacktestService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.CoveredCall.CoveredCallBacktestService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:28](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L28).
+
+Default implementation of ICoveredCallBacktestService. Runs covered-call backtests in-process behind a bounded channel, persists completed runs through IStrategyRepository, and caches full results for quick re-hydration.
+
+```csharp
+public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IHostedService, IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string StrategyId = &quot;covered-call-overwrite&quot;;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:31](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L31) | Strategy identifier used when persisting StrategyRunEntry. |
+| <code>public CoveredCallBacktestService(Func&lt;BacktestRequest, BacktestEngine&gt; engineFactory, ICoveredCallChainProviderFactory chainFactory, IStrategyRepository runRepository, IOptionsMonitor&lt;CoveredCallBacktestOptions&gt; options, IMemoryCache resultCache, ILoggerFactory loggerFactory, TimeProvider? timeProvider = null, IEvidenceArtifactStore? evidenceArtifactStore = null);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:88](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L88) |  |
+| <code>public Task StartAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:116](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L116) |  |
+| <code>public async Task StopAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:127](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L127) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:159](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L159) |  |
+| <code>public async ValueTask&lt;CoveredCallRunHandle&gt; StartAsync(CoveredCallBacktestRequest request, CoveredCallRunScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:171](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L171) |  |
+| <code>public ValueTask&lt;CoveredCallRunStatusDto?&gt; GetStatusAsync(string runId, CoveredCallRunScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:223](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L223) |  |
+| <code>public async ValueTask&lt;CoveredCallRunResult?&gt; GetResultAsync(string runId, CoveredCallRunScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:244](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L244) |  |
+| <code>public async ValueTask&lt;IReadOnlyList&lt;CoveredCallRunSummary&gt;&gt; ListRunsAsync(CoveredCallRunScope scope, int limit = 50, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:408](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L408) |  |
+| <code>public ValueTask CancelAsync(string runId, CoveredCallRunScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:490](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L490) |  |
+| <code>public async ValueTask&lt;CoveredCallChainPreview&gt; PreviewChainAsync(CoveredCallChainPreviewRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:514](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L514) |  |
+
 ## Start
 
 Qualified name: <code>Meridian.Ui.Shared.Services.CoveredCall.CoveredCallBacktestService.CoveredCallCommand.Start</code>. Kind: `record`.
@@ -909,26 +937,3 @@ Declared public members:
 | <code>public async Task&lt;AccountingAuditChainAnchorRecord?&gt; ReadHeadAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs:103](../../../../src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs#L103) | Reads the current head, verifying the journal&#x27;s own hash chain first so a forged or edited line is rejected rather than trusted. Returns null when no append has ever been anchored. |
 | <code>public Task&lt;AccountingAuditChainAnchorRecord&gt; DeclareAsync(long sequence, string entryHash, long genesisSequence, int preChainEventCount, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs:113](../../../../src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs#L113) | Records the intent to append sequence. Refuses a sequence that does not advance the journal, so a replayed or rewound append cannot quietly reuse a position. |
 | <code>public Task&lt;AccountingAuditChainAnchorRecord&gt; CommitAsync(long sequence, string entryHash, long genesisSequence, int preChainEventCount, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs:124](../../../../src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs#L124) | Confirms that the snapshot carrying sequence was written. |
-
-## FileAccountingAuditPendingMarkerStore
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FileAccountingAuditPendingMarkerStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs:20](../../../../src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs#L20).
-
-File-backed IAccountingAuditPendingMarkerStore: a small sidecar written atomically beside the accounting configuration snapshot.
-
-```csharp
-public sealed class FileAccountingAuditPendingMarkerStore : IAccountingAuditPendingMarkerStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FileAccountingAuditPendingMarkerStore(string markerPath);</code> | [src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs:29](../../../../src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs#L29) |  |
-| <code>public string MarkerPath { get; }</code> | [src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs:36](../../../../src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs#L36) | Full path of the marker file. |
-| <code>public static string MarkerPathFor(string snapshotPath);</code> | [src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs:39](../../../../src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs#L39) | The conventional marker path for an accounting configuration snapshot. |
-| <code>public async Task&lt;AccountingAuditPendingMarker?&gt; ReadAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs:45](../../../../src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs#L45) |  |
-| <code>public async Task WriteAsync(AccountingAuditPendingMarker marker, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs:58](../../../../src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs#L58) |  |
-| <code>public async Task ClearAsync(Guid auditEventId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs:75](../../../../src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs#L75) |  |

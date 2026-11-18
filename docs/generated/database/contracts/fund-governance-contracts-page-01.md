@@ -2,7 +2,7 @@
 
 # `fund-governance-contracts` data objects - page 1 of 3
 
-Objects 1-80 of 229. References crossing pages remain available in the dependency manifest.
+Objects 1-80 of 239. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -540,6 +540,13 @@ classDiagram
         +string LoadedBy
         +string SourceFormat
     }
+    class Meridian_Contracts_FundStructure_DecideIntercompanyRateFixingRequest["DecideIntercompanyRateFixingRequest"] {
+        +IntercompanyRateFixingActionDto Action
+        +string ExpectedValueDigest
+        +long ExpectedVersion
+        +string? Reason
+        +Guid RequestId
+    }
     class Meridian_Contracts_FundStructure_EntityLifecycleEligibilityDto["EntityLifecycleEligibilityDto"] {
         +bool Allowed
         +string Message
@@ -655,8 +662,6 @@ classDiagram
         +string? AssignmentReference
         +string? AssignmentType
         +Guid? NodeId
-    }
-    class Meridian_Contracts_FundStructure_FundStructureContractsJsonContext["FundStructureContractsJsonContext"] {
     }
     Meridian_Contracts_FundStructure_AccountReadinessIssueDto --> Meridian_Contracts_FundStructure_AccountReadinessSeverityDto
     Meridian_Contracts_FundStructure_AccountReadinessSnapshotDto --> Meridian_Contracts_FundStructure_AccountProviderLinkStatusDto

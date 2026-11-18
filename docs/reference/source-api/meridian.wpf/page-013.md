@@ -6,6 +6,47 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DiscrepancyDisplayItem
+
+Qualified name: <code>Meridian.Wpf.ViewModels.DiscrepancyDisplayItem</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:801](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L801).
+
+Presents a discrepancy&#x27;s timestamp, type, compared values, and difference.
+
+```csharp
+public sealed class DiscrepancyDisplayItem
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string TimestampText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:803](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L803) |  |
+| <code>public string DiscrepancyType { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:804](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L804) |  |
+| <code>public string Values { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:805](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L805) |  |
+| <code>public string DifferenceText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:806](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L806) |  |
+
+## DryRunResultViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.DryRunResultViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:119](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L119).
+
+View model for dry-run backfill plan result items.
+
+```csharp
+public sealed class DryRunResultViewModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:121](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L121) |  |
+| <code>public string SelectedProvider { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:122](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L122) |  |
+| <code>public string FallbackSequence { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:123](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L123) |  |
+
 ## EquityCurvePoint
 
 Qualified name: <code>Meridian.Wpf.ViewModels.EquityCurvePoint</code>. Kind: `record`.
@@ -341,7 +382,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.ViewModels.FeatureCapabilityToggleViewModel</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:923](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L923).
+Source: [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:918](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L918).
 
 Binds a feature capability descriptor to its current enabled state and toggle availability.
 
@@ -353,17 +394,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public FeatureCapabilityToggleViewModel(FeatureCapabilityDescriptor descriptor, IFeatureCapabilityGate gate);</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:928](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L928) |  |
-| <code>public FeatureCapabilityDescriptor Descriptor { get; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:937](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L937) |  |
-| <code>public string CapabilityKey =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:939](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L939) |  |
-| <code>public string DisplayName =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:941](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L941) |  |
-| <code>public string Description =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:943](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L943) |  |
-| <code>public bool IsPermanent =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:945](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L945) |  |
-| <code>public bool CanToggle =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:947](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L947) |  |
-| <code>public string StateText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:949](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L949) |  |
-| <code>public bool IsEnabled { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:955](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L955) |  |
-| <code>public void Refresh() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:980](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L980) |  |
-| <code>public void Refresh(bool isEnabled);</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:983](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L983) |  |
+| <code>public FeatureCapabilityToggleViewModel(FeatureCapabilityDescriptor descriptor, IFeatureCapabilityGate gate);</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:923](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L923) |  |
+| <code>public FeatureCapabilityDescriptor Descriptor { get; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:932](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L932) |  |
+| <code>public string CapabilityKey =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:934](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L934) |  |
+| <code>public string DisplayName =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:936](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L936) |  |
+| <code>public string Description =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:938](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L938) |  |
+| <code>public bool IsPermanent =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:940](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L940) |  |
+| <code>public bool CanToggle =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:942](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L942) |  |
+| <code>public string StateText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:944](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L944) |  |
+| <code>public bool IsEnabled { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:950](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L950) |  |
+| <code>public void Refresh() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:975](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L975) |  |
+| <code>public void Refresh(bool isEnabled);</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:978](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L978) |  |
 
 ## FillEventVm
 
@@ -759,144 +800,145 @@ Declared public members:
 | <code>public IntercompanyAgreementWorkspace? Agreements { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:99](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L99) |  |
 | <code>public IntercompanyCounterpartQueueWorkspace? CounterpartProposals { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:101](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L101) | Counterpart delivery queue over the same shared proposal API as the browser workstation. |
 | <code>public IntercompanyInterestAccrualWorkspace? InterestAccrual { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:103](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L103) | Governed loan-interest accrual request over the same shared accrual API as the browser workstation. |
-| <code>public IntercompanyBalanceConfirmationWorkspace? BalanceConfirmation { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:104](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L104) |  |
-| <code>public FundLedgerViewModel(FundLedgerReadService fundLedgerReadService, FundContextService fundContextService, NavigationService navigationService, FundAccountReadService fundAccountReadService, CashFinancingReadService cashFinancingReadService, IFundReconciliationWorkbenchService fundReconciliationWorkbenchService, FundOperationsWorkspaceReadService fundOperationsWorkspaceReadService, StrategyRunWorkspaceService runWorkspaceService, IStatementReconciliationWorkbenchService? statementReconciliationWorkbenchService = null, IPrivateCapitalCloseCockpitService? privateCapitalCloseCockpitService = null, IFinancialOperationsCommandCenterReadService? financialOperationsCommandCenterReadService = null, DesktopAuthenticationSession? authenticationSession = null, IWorkstationIntercompanyAgreementApiClient? intercompanyAgreementClient = null);</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:106](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L106) |  |
-| <code>public object? Parameter { get; set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:246](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L246) |  |
-| <code>public ObservableCollection&lt;FundTrialBalanceLine&gt; TrialBalance =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:261](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L261) |  |
-| <code>public ObservableCollection&lt;FundJournalLine&gt; Journal =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:263](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L263) |  |
-| <code>public ObservableCollection&lt;FundAccountSummary&gt; Accounts =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:265](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L265) |  |
-| <code>public WorkstationTableModel&lt;FundAccountSummary&gt; AccountQueueTable { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:267](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L267) |  |
-| <code>public WorkstationTableModel&lt;FundTrialBalanceLine&gt; TrialBalanceTable { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:269](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L269) |  |
-| <code>public WorkstationTableModel&lt;FundJournalLine&gt; JournalTable { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:271](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L271) |  |
-| <code>public ObservableCollection&lt;BankAccountSnapshot&gt; BankSnapshots =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:273](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L273) |  |
-| <code>public ObservableCollection&lt;FundPortfolioPosition&gt; PortfolioPositions =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:275](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L275) |  |
-| <code>public ObservableCollection&lt;CashFlowEntryDto&gt; CashFlowEntries =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:277](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L277) |  |
-| <code>public ObservableCollection&lt;CashLadderBucketDto&gt; CashFlowBuckets =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:279](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L279) |  |
-| <code>public ObservableCollection&lt;FundTrialBalanceLine&gt; VisibleTrialBalance =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:281](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L281) |  |
-| <code>public ObservableCollection&lt;FundJournalLine&gt; VisibleJournal =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:283](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L283) |  |
-| <code>public ObservableCollection&lt;FundLedgerDimensionView&gt; LedgerDimensions =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:285](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L285) |  |
-| <code>public ObservableCollection&lt;FundReconciliationItem&gt; ReconciliationRuns =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:287](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L287) |  |
-| <code>public ObservableCollection&lt;string&gt; CashFinancingHighlights =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:289](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L289) |  |
-| <code>public ObservableCollection&lt;FundAuditEntry&gt; AuditTrail =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:291](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L291) |  |
-| <code>public ObservableCollection&lt;FundReportAssetClassSectionDto&gt; ReportPackAssetSections =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:293](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L293) |  |
-| <code>public ObservableCollection&lt;FundFinancialOperationsQueueRow&gt; FinancialOperationsQueueItems =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:295](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L295) |  |
-| <code>public ObservableCollection&lt;FundAccountingRecordEvidenceCategoryRow&gt; AccountingRecordEvidenceCategories =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:297](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L297) |  |
-| <code>public ObservableCollection&lt;FundOperationsEvidencePackageRow&gt; OperationsEvidencePackages =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:299](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L299) |  |
-| <code>public ObservableCollection&lt;FundOperationsReconciliationLaneRow&gt; OperationsReconciliationLanes =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:301](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L301) |  |
-| <code>public ObservableCollection&lt;FundPrivateCapitalCloseLaneRow&gt; PrivateCapitalCloseLanes =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:303](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L303) |  |
-| <code>public ObservableCollection&lt;FundPrivateCapitalEvidencePackageRow&gt; PrivateCapitalEvidencePackages =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:305](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L305) |  |
-| <code>public ObservableCollection&lt;FundPrivateCapitalNavSupportPackageRow&gt; PrivateCapitalNavSupportPackages =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:307](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L307) |  |
-| <code>public ObservableCollection&lt;FundPrivateCapitalCloseApprovalRow&gt; PrivateCapitalCloseApprovals =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:309](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L309) |  |
-| <code>public InspectorPanelModel SelectedAccountInspector { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:319](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L319) |  |
-| <code>public InspectorPanelModel SelectedTrialBalanceInspector { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:325](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L325) |  |
-| <code>public InspectorPanelModel SelectedJournalInspector { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:331](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L331) |  |
-| <code>public string AccountQueueStatusText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:337](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L337) |  |
-| <code>public string SelectedAccountPortfolioTooltip =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:340](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L340) |  |
-| <code>public IAsyncRelayCommand RefreshCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:361](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L361) |  |
-| <code>public IRelayCommand OpenAccountingCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:363](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L363) |  |
-| <code>public IRelayCommand OpenGovernanceCommand =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:365](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L365) |  |
-| <code>public IRelayCommand OpenRunLedgerCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:367](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L367) |  |
-| <code>public IRelayCommand SwitchFundCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:369](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L369) |  |
-| <code>public IRelayCommand OpenAccountsCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:371](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L371) |  |
-| <code>public IRelayCommand OpenBankingCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:373](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L373) |  |
-| <code>public IRelayCommand OpenPortfolioCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:375](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L375) |  |
-| <code>public IRelayCommand OpenCashFinancingCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:377](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L377) |  |
-| <code>public IRelayCommand OpenTrialBalanceCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:379](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L379) |  |
-| <code>public IRelayCommand OpenReconciliationCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:381](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L381) |  |
-| <code>public IRelayCommand OpenAuditTrailCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:383](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L383) |  |
-| <code>public IRelayCommand OpenReportPackCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:385](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L385) |  |
-| <code>public IAsyncRelayCommand RefreshReportPackCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:387](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L387) |  |
-| <code>public IRelayCommand OpenSelectedAccountPortfolioCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:389](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L389) |  |
-| <code>public IRelayCommand OpenSelectedPortfolioSecurityCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:391](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L391) |  |
-| <code>public IRelayCommand OpenSelectedCashFlowSecurityCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:393](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L393) |  |
-| <code>public string Title { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:395](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L395) |  |
-| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:401](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L401) |  |
-| <code>public string OverviewStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:407](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L407) |  |
-| <code>public string PortfolioStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:413](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L413) |  |
-| <code>public string BankingStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:419](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L419) |  |
-| <code>public string ReconciliationStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:425](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L425) |  |
-| <code>public string SecurityCoverageText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:431](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L431) |  |
-| <code>public string AsOfText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:437](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L437) |  |
-| <code>public string JournalEntriesText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:443](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L443) |  |
-| <code>public string LedgerEntriesText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:449](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L449) |  |
-| <code>public string AssetBalanceText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:455](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L455) |  |
-| <code>public string EquityBalanceText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:461](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L461) |  |
-| <code>public string RevenueBalanceText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:467](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L467) |  |
-| <code>public string ExpenseBalanceText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:473](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L473) |  |
-| <code>public string EntityCountText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:479](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L479) |  |
-| <code>public string SleeveCountText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:485](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L485) |  |
-| <code>public string VehicleCountText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:491](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L491) |  |
-| <code>public string WorkspaceAsOfText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:497](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L497) |  |
-| <code>public string TotalAccountsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:503](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L503) |  |
-| <code>public string BankAccountsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:509](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L509) |  |
-| <code>public string BrokerageAccountsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:515](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L515) |  |
-| <code>public string CustodyAccountsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:521](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L521) |  |
-| <code>public string TotalCashText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:527](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L527) |  |
-| <code>public string GrossExposureText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:533](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L533) |  |
-| <code>public string NetExposureText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:539](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L539) |  |
-| <code>public string TotalEquityText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:545](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L545) |  |
-| <code>public string FinancingCostText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:551](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L551) |  |
-| <code>public string PendingSettlementText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:557](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L557) |  |
-| <code>public string CashProjectionStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:563](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L563) |  |
-| <code>public string CashFlowEntryCountText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:569](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L569) |  |
-| <code>public string ProjectedInflowsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:575](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L575) |  |
-| <code>public string ProjectedOutflowsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:581](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L581) |  |
-| <code>public string NetProjectedCashFlowText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:587](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L587) |  |
-| <code>public string ProjectionBucketSummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:593](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L593) |  |
-| <code>public string OpenBreaksText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:599](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L599) |  |
-| <code>public string ReconciliationRunsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:605](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L605) |  |
-| <code>public string ReportPackStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:611](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L611) |  |
-| <code>public string ReportPackKindText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:617](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L617) |  |
-| <code>public string ReportPackAsOfText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:623](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L623) |  |
-| <code>public string ReportPackNetAssetsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:629](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L629) |  |
-| <code>public string ReportPackTrialBalanceLinesText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:635](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L635) |  |
-| <code>public string ReportPackAssetSectionsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:641](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L641) |  |
-| <code>public string ReportPackGeneratedAtText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:647](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L647) |  |
-| <code>public string CurrentWorkbenchModeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:659](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L659) |  |
-| <code>public string CurrentWorkbenchTitleText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:665](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L665) |  |
-| <code>public string CurrentWorkbenchSubtitleText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:671](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L671) |  |
-| <code>public string RouteBannerTitleText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:677](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L677) |  |
-| <code>public string RouteBannerDetailText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:683](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L683) |  |
-| <code>public bool HasRouteBanner { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:689](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L689) |  |
-| <code>public string ReconciliationOwnershipText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:695](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L695) |  |
-| <code>public string ReconciliationSnapshotWarningText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:701](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L701) |  |
-| <code>public string ReportPackOwnershipText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:707](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L707) |  |
-| <code>public string ReportPackSnapshotWarningText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:713](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L713) |  |
-| <code>public string FinancialOperationsQueueStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:719](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L719) |  |
-| <code>public string FinancialOperationsQueueSummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:725](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L725) |  |
-| <code>public string AccountingRecordStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:731](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L731) |  |
-| <code>public string AccountingRecordSummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:737](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L737) |  |
-| <code>public string AccountingRecordEvidenceText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:743](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L743) |  |
-| <code>public string PrivateCapitalCloseStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:749](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L749) |  |
-| <code>public string PrivateCapitalCloseSummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:755](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L755) |  |
-| <code>public string PrivateCapitalCloseEvidenceText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:761](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L761) |  |
-| <code>public string PrivateCapitalCloseBlockerText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:767](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L767) |  |
-| <code>public WorkstationStateModel ReviewedAutomationState { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:773](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L773) |  |
-| <code>public WorkstationStateModel ReportPackReadinessState { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:779](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L779) |  |
-| <code>public WorkstationStateModel AccountingRecordReadinessState { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:785](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L785) |  |
-| <code>public WorkstationStateModel PrivateCapitalCloseReadinessState { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:791](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L791) |  |
-| <code>public bool IsReportPackLoading { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:797](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L797) |  |
-| <code>public int SelectedReportKindIndex { get; set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:803](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L803) |  |
-| <code>public int SelectedTabIndex { get; set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:819](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L819) |  |
-| <code>public FundAccountSummary? SelectedAccount { get; set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:832](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L832) |  |
-| <code>public FundPortfolioPosition? SelectedPortfolioPosition { get; set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:846](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L846) |  |
-| <code>public MarkFreshnessPresentation SelectedPortfolioMark =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:859](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L859) |  |
-| <code>public CashFlowEntryDto? SelectedCashFlowEntry { get; set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:861](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L861) |  |
-| <code>public FundLedgerDimensionView? SelectedLedgerDimension { get; set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:873](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L873) |  |
-| <code>public FundTrialBalanceLine? SelectedTrialBalanceLine { get; set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:885](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L885) |  |
-| <code>public FundJournalLine? SelectedJournalEntry { get; set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:897](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L897) |  |
-| <code>public string SelectedLedgerDimensionDisplayText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:908](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L908) |  |
-| <code>public string SelectedLedgerDimensionCoverageText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:914](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L914) |  |
-| <code>public string SelectedLedgerDimensionStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:920](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L920) |  |
-| <code>public string SelectedLedgerLinkedAccountsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:926](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L926) |  |
-| <code>public string SelectedLedgerTrialBalanceLinesText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:932](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L932) |  |
-| <code>public string SelectedLedgerJournalEntriesText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:938](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L938) |  |
-| <code>public string SelectedLedgerAssetBalanceText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:944](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L944) |  |
-| <code>public string SelectedLedgerEquityBalanceText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:950](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L950) |  |
-| <code>public async Task LoadAsync();</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:956](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L956) |  |
-| <code>public async Task LoadAsync(FundOperationsNavigationContext? context, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:961](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L961) |  |
-| <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:1070](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L1070) |  |
-| <code>public async Task RefreshReportPackPreviewAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:2096](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L2096) |  |
+| <code>public IntercompanyRateFixingWorkspace? RateFixings { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:105](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L105) | Reviewed index fixings that floating-rate intercompany accruals read; null when no client is available. |
+| <code>public IntercompanyBalanceConfirmationWorkspace? BalanceConfirmation { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:106](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L106) |  |
+| <code>public FundLedgerViewModel(FundLedgerReadService fundLedgerReadService, FundContextService fundContextService, NavigationService navigationService, FundAccountReadService fundAccountReadService, CashFinancingReadService cashFinancingReadService, IFundReconciliationWorkbenchService fundReconciliationWorkbenchService, FundOperationsWorkspaceReadService fundOperationsWorkspaceReadService, StrategyRunWorkspaceService runWorkspaceService, IStatementReconciliationWorkbenchService? statementReconciliationWorkbenchService = null, IPrivateCapitalCloseCockpitService? privateCapitalCloseCockpitService = null, IFinancialOperationsCommandCenterReadService? financialOperationsCommandCenterReadService = null, DesktopAuthenticationSession? authenticationSession = null, IWorkstationIntercompanyAgreementApiClient? intercompanyAgreementClient = null);</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:108](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L108) |  |
+| <code>public object? Parameter { get; set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:249](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L249) |  |
+| <code>public ObservableCollection&lt;FundTrialBalanceLine&gt; TrialBalance =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:264](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L264) |  |
+| <code>public ObservableCollection&lt;FundJournalLine&gt; Journal =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:266](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L266) |  |
+| <code>public ObservableCollection&lt;FundAccountSummary&gt; Accounts =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:268](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L268) |  |
+| <code>public WorkstationTableModel&lt;FundAccountSummary&gt; AccountQueueTable { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:270](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L270) |  |
+| <code>public WorkstationTableModel&lt;FundTrialBalanceLine&gt; TrialBalanceTable { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:272](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L272) |  |
+| <code>public WorkstationTableModel&lt;FundJournalLine&gt; JournalTable { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:274](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L274) |  |
+| <code>public ObservableCollection&lt;BankAccountSnapshot&gt; BankSnapshots =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:276](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L276) |  |
+| <code>public ObservableCollection&lt;FundPortfolioPosition&gt; PortfolioPositions =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:278](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L278) |  |
+| <code>public ObservableCollection&lt;CashFlowEntryDto&gt; CashFlowEntries =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:280](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L280) |  |
+| <code>public ObservableCollection&lt;CashLadderBucketDto&gt; CashFlowBuckets =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:282](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L282) |  |
+| <code>public ObservableCollection&lt;FundTrialBalanceLine&gt; VisibleTrialBalance =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:284](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L284) |  |
+| <code>public ObservableCollection&lt;FundJournalLine&gt; VisibleJournal =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:286](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L286) |  |
+| <code>public ObservableCollection&lt;FundLedgerDimensionView&gt; LedgerDimensions =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:288](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L288) |  |
+| <code>public ObservableCollection&lt;FundReconciliationItem&gt; ReconciliationRuns =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:290](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L290) |  |
+| <code>public ObservableCollection&lt;string&gt; CashFinancingHighlights =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:292](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L292) |  |
+| <code>public ObservableCollection&lt;FundAuditEntry&gt; AuditTrail =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:294](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L294) |  |
+| <code>public ObservableCollection&lt;FundReportAssetClassSectionDto&gt; ReportPackAssetSections =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:296](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L296) |  |
+| <code>public ObservableCollection&lt;FundFinancialOperationsQueueRow&gt; FinancialOperationsQueueItems =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:298](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L298) |  |
+| <code>public ObservableCollection&lt;FundAccountingRecordEvidenceCategoryRow&gt; AccountingRecordEvidenceCategories =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:300](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L300) |  |
+| <code>public ObservableCollection&lt;FundOperationsEvidencePackageRow&gt; OperationsEvidencePackages =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:302](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L302) |  |
+| <code>public ObservableCollection&lt;FundOperationsReconciliationLaneRow&gt; OperationsReconciliationLanes =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:304](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L304) |  |
+| <code>public ObservableCollection&lt;FundPrivateCapitalCloseLaneRow&gt; PrivateCapitalCloseLanes =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:306](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L306) |  |
+| <code>public ObservableCollection&lt;FundPrivateCapitalEvidencePackageRow&gt; PrivateCapitalEvidencePackages =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:308](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L308) |  |
+| <code>public ObservableCollection&lt;FundPrivateCapitalNavSupportPackageRow&gt; PrivateCapitalNavSupportPackages =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:310](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L310) |  |
+| <code>public ObservableCollection&lt;FundPrivateCapitalCloseApprovalRow&gt; PrivateCapitalCloseApprovals =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:312](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L312) |  |
+| <code>public InspectorPanelModel SelectedAccountInspector { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:322](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L322) |  |
+| <code>public InspectorPanelModel SelectedTrialBalanceInspector { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:328](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L328) |  |
+| <code>public InspectorPanelModel SelectedJournalInspector { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:334](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L334) |  |
+| <code>public string AccountQueueStatusText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:340](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L340) |  |
+| <code>public string SelectedAccountPortfolioTooltip =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:343](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L343) |  |
+| <code>public IAsyncRelayCommand RefreshCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:364](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L364) |  |
+| <code>public IRelayCommand OpenAccountingCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:366](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L366) |  |
+| <code>public IRelayCommand OpenGovernanceCommand =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:368](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L368) |  |
+| <code>public IRelayCommand OpenRunLedgerCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:370](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L370) |  |
+| <code>public IRelayCommand SwitchFundCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:372](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L372) |  |
+| <code>public IRelayCommand OpenAccountsCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:374](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L374) |  |
+| <code>public IRelayCommand OpenBankingCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:376](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L376) |  |
+| <code>public IRelayCommand OpenPortfolioCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:378](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L378) |  |
+| <code>public IRelayCommand OpenCashFinancingCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:380](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L380) |  |
+| <code>public IRelayCommand OpenTrialBalanceCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:382](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L382) |  |
+| <code>public IRelayCommand OpenReconciliationCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:384](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L384) |  |
+| <code>public IRelayCommand OpenAuditTrailCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:386](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L386) |  |
+| <code>public IRelayCommand OpenReportPackCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:388](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L388) |  |
+| <code>public IAsyncRelayCommand RefreshReportPackCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:390](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L390) |  |
+| <code>public IRelayCommand OpenSelectedAccountPortfolioCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:392](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L392) |  |
+| <code>public IRelayCommand OpenSelectedPortfolioSecurityCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:394](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L394) |  |
+| <code>public IRelayCommand OpenSelectedCashFlowSecurityCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:396](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L396) |  |
+| <code>public string Title { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:398](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L398) |  |
+| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:404](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L404) |  |
+| <code>public string OverviewStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:410](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L410) |  |
+| <code>public string PortfolioStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:416](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L416) |  |
+| <code>public string BankingStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:422](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L422) |  |
+| <code>public string ReconciliationStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:428](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L428) |  |
+| <code>public string SecurityCoverageText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:434](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L434) |  |
+| <code>public string AsOfText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:440](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L440) |  |
+| <code>public string JournalEntriesText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:446](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L446) |  |
+| <code>public string LedgerEntriesText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:452](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L452) |  |
+| <code>public string AssetBalanceText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:458](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L458) |  |
+| <code>public string EquityBalanceText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:464](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L464) |  |
+| <code>public string RevenueBalanceText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:470](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L470) |  |
+| <code>public string ExpenseBalanceText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:476](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L476) |  |
+| <code>public string EntityCountText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:482](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L482) |  |
+| <code>public string SleeveCountText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:488](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L488) |  |
+| <code>public string VehicleCountText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:494](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L494) |  |
+| <code>public string WorkspaceAsOfText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:500](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L500) |  |
+| <code>public string TotalAccountsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:506](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L506) |  |
+| <code>public string BankAccountsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:512](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L512) |  |
+| <code>public string BrokerageAccountsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:518](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L518) |  |
+| <code>public string CustodyAccountsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:524](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L524) |  |
+| <code>public string TotalCashText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:530](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L530) |  |
+| <code>public string GrossExposureText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:536](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L536) |  |
+| <code>public string NetExposureText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:542](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L542) |  |
+| <code>public string TotalEquityText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:548](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L548) |  |
+| <code>public string FinancingCostText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:554](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L554) |  |
+| <code>public string PendingSettlementText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:560](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L560) |  |
+| <code>public string CashProjectionStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:566](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L566) |  |
+| <code>public string CashFlowEntryCountText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:572](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L572) |  |
+| <code>public string ProjectedInflowsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:578](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L578) |  |
+| <code>public string ProjectedOutflowsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:584](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L584) |  |
+| <code>public string NetProjectedCashFlowText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:590](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L590) |  |
+| <code>public string ProjectionBucketSummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:596](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L596) |  |
+| <code>public string OpenBreaksText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:602](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L602) |  |
+| <code>public string ReconciliationRunsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:608](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L608) |  |
+| <code>public string ReportPackStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:614](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L614) |  |
+| <code>public string ReportPackKindText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:620](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L620) |  |
+| <code>public string ReportPackAsOfText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:626](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L626) |  |
+| <code>public string ReportPackNetAssetsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:632](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L632) |  |
+| <code>public string ReportPackTrialBalanceLinesText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:638](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L638) |  |
+| <code>public string ReportPackAssetSectionsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:644](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L644) |  |
+| <code>public string ReportPackGeneratedAtText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:650](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L650) |  |
+| <code>public string CurrentWorkbenchModeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:662](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L662) |  |
+| <code>public string CurrentWorkbenchTitleText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:668](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L668) |  |
+| <code>public string CurrentWorkbenchSubtitleText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:674](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L674) |  |
+| <code>public string RouteBannerTitleText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:680](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L680) |  |
+| <code>public string RouteBannerDetailText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:686](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L686) |  |
+| <code>public bool HasRouteBanner { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:692](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L692) |  |
+| <code>public string ReconciliationOwnershipText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:698](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L698) |  |
+| <code>public string ReconciliationSnapshotWarningText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:704](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L704) |  |
+| <code>public string ReportPackOwnershipText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:710](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L710) |  |
+| <code>public string ReportPackSnapshotWarningText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:716](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L716) |  |
+| <code>public string FinancialOperationsQueueStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:722](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L722) |  |
+| <code>public string FinancialOperationsQueueSummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:728](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L728) |  |
+| <code>public string AccountingRecordStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:734](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L734) |  |
+| <code>public string AccountingRecordSummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:740](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L740) |  |
+| <code>public string AccountingRecordEvidenceText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:746](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L746) |  |
+| <code>public string PrivateCapitalCloseStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:752](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L752) |  |
+| <code>public string PrivateCapitalCloseSummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:758](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L758) |  |
+| <code>public string PrivateCapitalCloseEvidenceText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:764](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L764) |  |
+| <code>public string PrivateCapitalCloseBlockerText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:770](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L770) |  |
+| <code>public WorkstationStateModel ReviewedAutomationState { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:776](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L776) |  |
+| <code>public WorkstationStateModel ReportPackReadinessState { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:782](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L782) |  |
+| <code>public WorkstationStateModel AccountingRecordReadinessState { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:788](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L788) |  |
+| <code>public WorkstationStateModel PrivateCapitalCloseReadinessState { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:794](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L794) |  |
+| <code>public bool IsReportPackLoading { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:800](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L800) |  |
+| <code>public int SelectedReportKindIndex { get; set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:806](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L806) |  |
+| <code>public int SelectedTabIndex { get; set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:822](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L822) |  |
+| <code>public FundAccountSummary? SelectedAccount { get; set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:835](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L835) |  |
+| <code>public FundPortfolioPosition? SelectedPortfolioPosition { get; set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:849](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L849) |  |
+| <code>public MarkFreshnessPresentation SelectedPortfolioMark =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:862](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L862) |  |
+| <code>public CashFlowEntryDto? SelectedCashFlowEntry { get; set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:864](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L864) |  |
+| <code>public FundLedgerDimensionView? SelectedLedgerDimension { get; set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:876](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L876) |  |
+| <code>public FundTrialBalanceLine? SelectedTrialBalanceLine { get; set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:888](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L888) |  |
+| <code>public FundJournalLine? SelectedJournalEntry { get; set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:900](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L900) |  |
+| <code>public string SelectedLedgerDimensionDisplayText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:911](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L911) |  |
+| <code>public string SelectedLedgerDimensionCoverageText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:917](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L917) |  |
+| <code>public string SelectedLedgerDimensionStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:923](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L923) |  |
+| <code>public string SelectedLedgerLinkedAccountsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:929](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L929) |  |
+| <code>public string SelectedLedgerTrialBalanceLinesText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:935](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L935) |  |
+| <code>public string SelectedLedgerJournalEntriesText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:941](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L941) |  |
+| <code>public string SelectedLedgerAssetBalanceText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:947](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L947) |  |
+| <code>public string SelectedLedgerEquityBalanceText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:953](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L953) |  |
+| <code>public async Task LoadAsync();</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:959](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L959) |  |
+| <code>public async Task LoadAsync(FundOperationsNavigationContext? context, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:964](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L964) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:1073](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L1073) |  |
+| <code>public async Task RefreshReportPackPreviewAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs:2101](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.cs#L2101) |  |
 
 Source: [src/Meridian.Wpf/ViewModels/FundLedgerViewModel.NavComparison.cs:10](../../../../src/Meridian.Wpf/ViewModels/FundLedgerViewModel.NavComparison.cs#L10).
 
@@ -1691,53 +1733,3 @@ Declared public members:
 | <code>public void ShowBlocked(string reason);</code> | [src/Meridian.Wpf/ViewModels/LedgerAmountProofDrawerViewModel.cs:73](../../../../src/Meridian.Wpf/ViewModels/LedgerAmountProofDrawerViewModel.cs#L73) |  |
 | <code>public Task OpenAsync(PostedLedgerAmountSelection selection, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/LedgerAmountProofDrawerViewModel.cs:82](../../../../src/Meridian.Wpf/ViewModels/LedgerAmountProofDrawerViewModel.cs#L82) |  |
 | <code>public Task OpenReportAsync(ReportLedgerAmountSelection selection, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/LedgerAmountProofDrawerViewModel.cs:86](../../../../src/Meridian.Wpf/ViewModels/LedgerAmountProofDrawerViewModel.cs#L86) |  |
-
-## LifecycleCheckRowViewModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.LifecycleCheckRowViewModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs:378](../../../../src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs#L378).
-
-```csharp
-public sealed record LifecycleCheckRowViewModel(string DisplayName, string Status, string Requirement, string Message);
-```
-
-## LifecycleControlViewModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.LifecycleControlViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs:10](../../../../src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs#L10).
-
-Presents lifecycle readiness and coordinates explicit restart and shutdown confirmation.
-
-```csharp
-public sealed class LifecycleControlViewModel : BindableBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LifecycleControlViewModel(ILifecycleControlClient client);</code> | [src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs:36](../../../../src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs#L36) |  |
-| <code>public IAsyncRelayCommand RefreshCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs:50](../../../../src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs#L50) |  |
-| <code>public IRelayCommand BeginRestartCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs:52](../../../../src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs#L52) |  |
-| <code>public IRelayCommand BeginShutdownCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs:54](../../../../src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs#L54) |  |
-| <code>public IAsyncRelayCommand ConfirmActionCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs:56](../../../../src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs#L56) |  |
-| <code>public IRelayCommand CancelActionCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs:58](../../../../src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs#L58) |  |
-| <code>public ObservableCollection&lt;LifecycleCheckRowViewModel&gt; Checks { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs:60](../../../../src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs#L60) |  |
-| <code>public string ReadinessText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs:62](../../../../src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs#L62) |  |
-| <code>public string StateText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs:68](../../../../src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs#L68) |  |
-| <code>public string PhaseText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs:74](../../../../src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs#L74) |  |
-| <code>public string UptimeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs:80](../../../../src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs#L80) |  |
-| <code>public string SessionText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs:86](../../../../src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs#L86) |  |
-| <code>public string AcceptingWorkText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs:92](../../../../src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs#L92) |  |
-| <code>public string LatestReceiptText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs:98](../../../../src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs#L98) |  |
-| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs:104](../../../../src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs#L104) |  |
-| <code>public Brush StatusBrush { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs:110](../../../../src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs#L110) |  |
-| <code>public Visibility StatusVisibility { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs:116](../../../../src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs#L116) |  |
-| <code>public Visibility ConfirmationVisibility { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs:122](../../../../src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs#L122) |  |
-| <code>public string ConfirmationTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs:128](../../../../src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs#L128) |  |
-| <code>public string ConfirmationDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs:134](../../../../src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs#L134) |  |
-| <code>public string ConfirmActionLabel { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs:140](../../../../src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs#L140) |  |
-| <code>public bool IsBusy { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs:146](../../../../src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs#L146) |  |
-| <code>public async Task RefreshAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs:162](../../../../src/Meridian.Wpf/ViewModels/LifecycleControlViewModel.cs#L162) |  |

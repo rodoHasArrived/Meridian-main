@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## JsonlPromotionRecordStore
+
+Qualified name: <code>Meridian.Strategies.Storage.JsonlPromotionRecordStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Strategies/Storage/JsonlPromotionRecordStore.cs:29](../../../../src/Meridian.Strategies/Storage/JsonlPromotionRecordStore.cs#L29).
+
+Append-only JSONL promotion-history store.
+
+```csharp
+public sealed class JsonlPromotionRecordStore : IPromotionRecordStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public JsonlPromotionRecordStore(PromotionRecordStoreOptions? options, ILogger&lt;JsonlPromotionRecordStore&gt; logger);</code> | [src/Meridian.Strategies/Storage/JsonlPromotionRecordStore.cs:37](../../../../src/Meridian.Strategies/Storage/JsonlPromotionRecordStore.cs#L37) |  |
+| <code>public JsonlPromotionRecordStore(string baseDirectory, ILogger&lt;JsonlPromotionRecordStore&gt; logger) : this(new PromotionRecordStoreOptions(baseDirectory), logger);</code> | [src/Meridian.Strategies/Storage/JsonlPromotionRecordStore.cs:45](../../../../src/Meridian.Strategies/Storage/JsonlPromotionRecordStore.cs#L45) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;StrategyPromotionRecord&gt;&gt; LoadAllAsync(CancellationToken ct = default);</code> | [src/Meridian.Strategies/Storage/JsonlPromotionRecordStore.cs:53](../../../../src/Meridian.Strategies/Storage/JsonlPromotionRecordStore.cs#L53) |  |
+| <code>public async Task&lt;PromotionDecisionReservation&gt; ReserveFirstDecisionAsync(StrategyPromotionRecord record, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Storage/JsonlPromotionRecordStore.cs:60](../../../../src/Meridian.Strategies/Storage/JsonlPromotionRecordStore.cs#L60) |  |
+| <code>public async Task AppendAsync(StrategyPromotionRecord record, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Storage/JsonlPromotionRecordStore.cs:143](../../../../src/Meridian.Strategies/Storage/JsonlPromotionRecordStore.cs#L143) |  |
+
 ## JsonlStrategyDesignRepository
 
 Qualified name: <code>Meridian.Strategies.Storage.JsonlStrategyDesignRepository</code>. Kind: `class`.

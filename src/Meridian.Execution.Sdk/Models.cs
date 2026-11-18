@@ -329,11 +329,23 @@ public sealed record OrderResult
     /// <see cref="RiskWarnings"/> is already on the wire and rendered by shipped clients.
     /// </remarks>
     public RiskDecisionSummary? RiskDecision { get; init; }
+
+    /// <summary>
+    /// The order-authority outcome for this submission: set when order authority refused it, and
+    /// when a typed submission was admitted. Null for untyped submissions refused or admitted by
+    /// other gates.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public AuthorityDecisionSummary? AuthorityDecision { get; init; }
 }
 
 /// <summary>Current state of an order tracked by the OMS.</summary>
 public sealed record OrderState
 {
+    /// <summary>Who or what originated the order; null for states created outside order submission.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public OrderCommandOrigin? Origin { get; init; }
+
     /// <summary>The journal submission attempt associated with this tracked order incarnation.</summary>
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public Guid? JournalAttemptId { get; init; }

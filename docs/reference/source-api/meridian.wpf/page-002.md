@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## Scope
+
+Qualified name: <code>Meridian.Wpf.Copy.WorkspaceCopyCatalog.Scope</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:27](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L27).
+
+Provides the two shared phrases the desktop shell uses when no scope is selected.
+
+```csharp
+public static class Scope
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string AllAuthorized = &quot;All authorized scopes&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:30](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L30) | Shown where the page still lists everything the operator may see. |
+| <code>public const string NoneSelected = &quot;No scope selected&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:33](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L33) | Shown where the page stays empty or locked until a scope is chosen. |
+
 ## Settings
 
 Qualified name: <code>Meridian.Wpf.Copy.WorkspaceCopyCatalog.Settings</code>. Kind: `class`.
@@ -1136,25 +1155,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public MainWindow(MainWindowViewModel viewModel, WpfServices.NavigationService navigationService, WpfServices.KeyboardShortcutService keyboardShortcutService, WpfServices.NotificationService notificationService, WpfServices.FundContextService fundContextService, WpfServices.WorkstationOperatingContextService operatingContextService, DesktopShellCoordinator shellCoordinator, DesktopShellSessionService sessionService, DesktopLaunchRouter launchRouter, FileDropRouter fileDropRouter, IWindowStateStore windowStateStore);</code> | [src/Meridian.Wpf/MainWindow.xaml.cs:59](../../../../src/Meridian.Wpf/MainWindow.xaml.cs#L59) |  |
 | <code>public void ForceStartupWindowRecovery();</code> | [src/Meridian.Wpf/MainWindow.xaml.cs:996](../../../../src/Meridian.Wpf/MainWindow.xaml.cs#L996) |  |
-
-## AccountingSubarea
-
-Qualified name: <code>Meridian.Wpf.Models.AccountingSubarea</code>. Kind: `enum`.
-
-Source: [src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs:49](../../../../src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs#L49).
-
-Explicit accounting and operational-control subareas surfaced inside the Accounting workspace.
-
-```csharp
-public enum AccountingSubarea : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Operations</code> | [src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs:51](../../../../src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs#L51) |  |
-| <code>Accounting</code> | [src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs:52](../../../../src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs#L52) |  |
-| <code>Reconciliation</code> | [src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs:53](../../../../src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs#L53) |  |
-| <code>Reporting</code> | [src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs:54](../../../../src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs#L54) |  |
-| <code>Audit</code> | [src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs:55](../../../../src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs#L55) |  |

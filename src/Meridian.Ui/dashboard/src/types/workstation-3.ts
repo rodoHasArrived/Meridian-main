@@ -931,6 +931,28 @@ export interface OrderResult {
   requiresApproval?: boolean;
   escalationId?: string | null;
   riskWarnings?: string[] | null;
+  /** Set when order authority refused the order, and when a typed submission was admitted. */
+  authorityDecision?: AuthorityDecisionSummary | null;
+}
+
+/** Who or what originated an order (OMS `OrderCommandOrigin`, serialized by name). */
+export type OrderCommandOrigin =
+  | "Unattributed"
+  | "OperatorTicket"
+  | "PositionAction"
+  | "EscalationRelease"
+  | "StrategyRun"
+  | "KillSwitch";
+
+/** Which order authority admitted or refused a submission, and where (`preflight` or `dispatch`). */
+export interface AuthorityDecisionSummary {
+  origin: OrderCommandOrigin;
+  isAuthorized: boolean;
+  reasonCode: string | null;
+  reason: string | null;
+  checkpoint: string;
+  readinessSnapshotVersion: string | null;
+  promotionAuditReference: string | null;
 }
 
 export interface StrategyWorkspaceResponse {
@@ -1276,6 +1298,8 @@ export interface TradingOrder {
   limitPrice: string;
   status: "Working" | "Partially Filled" | "Pending Routing";
   submittedAt: string;
+  /** OMS order origin by name; absent for orders created outside order submission. */
+  origin?: OrderCommandOrigin | null;
 }
 
 export interface TradingFill {
@@ -1336,6 +1360,14 @@ export interface TradingWorkspaceResponse {
   risk: TradingRiskState;
   brokerage: BrokerageWiringStatus;
   readiness?: TradingOperatorReadiness | null;
+  /** Whether manual orders may be submitted on the active routing path; absent when no OMS is active. */
+  manualOrderEntry?: TradingManualOrderEntry | null;
+}
+
+export interface TradingManualOrderEntry {
+  available: boolean;
+  reasonCode: string | null;
+  reason: string | null;
 }
 
 export interface PortfolioRunRow {

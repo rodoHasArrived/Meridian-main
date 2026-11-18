@@ -416,7 +416,7 @@ public sealed partial class CashFlowViewModel : BindableBase
     {
         _runId = summary.RunId;
         Title = $"Cash Flow ({summary.RunId[..Math.Min(8, summary.RunId.Length)]})";
-        AsOfText = UtcFormat.FormatUtcTimestamp(summary.AsOf);
+        AsOfText = UtcFormat.FormatDisplayTimestamp(summary.AsOf);
         TotalEntriesText = summary.TotalEntries.ToString("N0");
         TotalInflowsText = summary.TotalInflows.ToString("C2");
         TotalOutflowsText = summary.TotalOutflows.ToString("C2");
@@ -645,7 +645,7 @@ public sealed partial class CashFlowViewModel : BindableBase
                 selected.Amount >= 0 ? WorkspaceTone.Success : WorkspaceTone.Warning),
             Facts =
             [
-                new("Timestamp", UtcFormat.FormatUtcTimestamp(selected.Timestamp)),
+                new("Timestamp", UtcFormat.FormatDisplayTimestamp(selected.Timestamp)),
                 new("Type", selected.EventKind),
                 new("Symbol", hasSymbol ? selected.Symbol! : "-"),
                 new("Amount", selected.Amount.ToString("C2")),
@@ -677,8 +677,8 @@ public sealed partial class CashFlowViewModel : BindableBase
                 selected.NetFlow >= 0 ? WorkspaceTone.Success : WorkspaceTone.Warning),
             Facts =
             [
-                new("Start", UtcFormat.FormatUtcTimestamp(selected.BucketStart)),
-                new("End", UtcFormat.FormatUtcTimestamp(selected.BucketEnd)),
+                new("Start", UtcFormat.FormatDisplayTimestamp(selected.BucketStart)),
+                new("End", UtcFormat.FormatDisplayTimestamp(selected.BucketEnd)),
                 new("Inflows", selected.ProjectedInflows.ToString("C2")),
                 new("Outflows", selected.ProjectedOutflows.ToString("C2")),
                 new("Currency", selected.Currency),

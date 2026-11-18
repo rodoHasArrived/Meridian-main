@@ -23,6 +23,11 @@ attestations retain reviewer and operator identities, while obligation-monitor D
 source/freshness evidence outside blocking close contributors. See
 [the native legal contract](../../docs/domain/intercompany-agreements.md).
 
+Floating loan terms add a null-omitted `FixingLagBusinessDays`. `IntercompanyRateFixingDtos` define
+the reviewed fixing record, its propose and decide requests and `IIntercompanyRateFixingStore`; accrual
+slices gain a null-omitted `Fixing` pin, and `IntercompanyAccrualRules` adds `intercompany-accrual-v2`.
+See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
+
 Governed loan-interest accrual contracts (ADR-028) carry the computation input, slices and preview
 under rule `intercompany-accrual-v1`, plus the retained `IntercompanyAccrualEvidenceDto` and its
 guard. `ManualJournalEntryDraftDto` gains null-omitted `IntercompanyAccrualEvidenceJson` and digest
@@ -444,6 +449,11 @@ currency, observation/attempt/success timestamps, completeness and blocking reas
 account-scoped strategy runs. Existing execution-reconciliation DTOs remain the discrepancy source.
 Recovery requests carry only the local account ID; provider and external identity are server-resolved.
 
+`WorkstationTradingPayload.ManualOrderEntry` (`WorkstationManualOrderEntry`) tells the order ticket
+whether manual orders can route on the active path and, if not, why (live manual orders need a
+reviewed manual-intent authority contract). `WorkstationTradingOrderRow.Origin` names who originated
+each working order (the OMS `OrderCommandOrigin`, by name). Both are optional and default to absent.
+
 Canonical amortization adds an optional `Amortization` input to lot instructions and basis adjustments, omitted when absent to preserve retained fingerprints. `OpenLotAmortization` binds reviewed canonical lot and versioned Security Master evidence, delegates shared straight-line/constant-yield kernels, and retains annual decimal yield and acquisition FX. V1/v2 unsupported structures and missing terms fail closed, including any populated or malformed `callSchedule` or `putSchedule` (an empty list declares none) and any populated `scheduleConventions` value, a malformed string, number, boolean or populated array included (null, `{}`, `[]` and an object or array with no populated member declare nothing). These declared schedule terms are checked in every source the cash-flow resolver reads and under every casing, so an unset spelling in one source never hides a declared one in another. Optional reversal inputs retain the original batch, journal and pre-posting lot snapshot; absent reversal fields preserve earlier wire fingerprints. Contract validation binds complete approved correction lineage and rejects disposal prices before drafting.
 
 For a retained amortization reversal, current hash-bound reference evidence proves identity and
@@ -497,6 +507,19 @@ long, short, gross and net securities exposure on each point.
 scope (symbol, fund account, run, provider and date dimensions, plus the optional legal entity and
 fund dimensions `EntityId`/`FundId`, appended last), which browser and WPF apply when a session opens
 with no scope in its link or local storage.
+
+`Workstation/OperatorPreferencesDtos.cs` carries the signed-in operator's presentation preferences
+(`/api/workstation/operator/preferences`): appearance, density, display time zone, the
+page-descriptions setting, browser shortcut overrides keyed by binding id, and WPF desktop shortcut
+overrides (`DesktopKeyBindings`, `OperatorDesktopShortcutDto` with WPF key and modifier names) keyed
+by desktop action id. Every value is optional; null means nothing is stored and the client keeps its
+own value. The desktop owns `DesktopKeyBindings`: a save that leaves it null keeps the stored set,
+and an empty set means every desktop shortcut is on its default. `Notifications`
+(`OperatorNotificationPreferencesDto`) holds the pop-up switch, five notification types and quiet
+hours as `HH:mm` times in the display time zone; unset values keep the client default. The values
+are display-only. `OperatorPreferenceVocabulary` holds the shared appearance (`system`, `light`, `dark`)
+and density (`compact`, `default`, `spacious`) values that the host store validates against and both
+clients map to their own types.
 
 `Workstation/WorkstationScopeOptionsDtos.cs` carries the entities, funds and fund accounts the
 calling operator may scope to (`GET /api/workstation/scope-options`), with each fund's visible

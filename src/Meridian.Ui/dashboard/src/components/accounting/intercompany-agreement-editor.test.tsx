@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { IntercompanyAgreementEditor, newAgreementDraft } from "./intercompany-agreement-editor";
+import { StructuredTermsSummary } from "./intercompany-structured-terms-summary";
 
 describe("IntercompanyAgreementEditor exact terms", () => {
   it("retains exact rate text and additional evidence when saving a draft", () => {
@@ -52,6 +53,32 @@ it("keeps a floating declaration free of the former fixed rate", () => {
   fireEvent.change(screen.getByLabelText("Declared spread (basis points)"), { target: { value: "123.4567890123456789012345678" } });
   fireEvent.submit(screen.getByRole("form", { name: "Create agreement draft" }));
   expect(save.mock.calls[0][0].terms.structuredTerms).toMatchObject({ rateBasis: "Floating", fixedAnnualRate: null, floatingIndexReference: "SOFR-declared", spreadBps: "123.4567890123456789012345678" });
+});
+
+it("declares a floating fixing lag as a whole number and clears it when the basis returns to Fixed", () => {
+  const save = vi.fn(); const initial = { ...newAgreementDraft("entity-a", "2026-11-13"), code: "loan", name: "Loan", partyTwoId: "entity-b", currency: "USD" };
+  render(<IntercompanyAgreementEditor initial={initial} fixedIdentity={false} busy={false} onSave={save} onCancel={vi.fn()} />);
+  fireEvent.change(screen.getByLabelText("Legal terms format"), { target: { value: "StructuredV1" } });
+  expect(screen.queryByLabelText("Fixing lag (business days before each period start)")).not.toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText("Declared rate basis"), { target: { value: "Floating" } });
+  const lag = screen.getByLabelText("Fixing lag (business days before each period start)");
+  expect(lag).toHaveValue(null);
+  fireEvent.change(lag, { target: { value: "2" } });
+  fireEvent.submit(screen.getByRole("form", { name: "Create agreement draft" }));
+  expect(save.mock.calls[0][0].terms.structuredTerms).toMatchObject({ rateBasis: "Floating", fixingLagBusinessDays: 2 });
+  fireEvent.change(screen.getByLabelText("Fixing lag (business days before each period start)"), { target: { value: "" } });
+  fireEvent.submit(screen.getByRole("form", { name: "Create agreement draft" }));
+  expect(save.mock.calls[1][0].terms.structuredTerms.fixingLagBusinessDays).toBeNull();
+  fireEvent.change(screen.getByLabelText("Fixing lag (business days before each period start)"), { target: { value: "3" } });
+  fireEvent.change(screen.getByLabelText("Declared rate basis"), { target: { value: "Fixed" } });
+  expect(screen.queryByLabelText("Fixing lag (business days before each period start)")).not.toBeInTheDocument();
+  fireEvent.submit(screen.getByRole("form", { name: "Create agreement draft" }));
+  expect(save.mock.calls[2][0].terms.structuredTerms).toMatchObject({ rateBasis: "Fixed", fixingLagBusinessDays: null });
+});
+
+it("summarises a declared fixing lag, including zero", () => {
+  render(<StructuredTermsSummary terms={{ schemaVersion: 1, rateBasis: "Floating", floatingIndexReference: "SOFR", spreadBps: "125", fixingLagBusinessDays: 0 }} />);
+  expect(screen.getByText("Fixing lag (business days before each period start)").nextElementSibling).toHaveTextContent("0");
 });
 
 it("records guarantee beneficiary and an unknown limit without forcing a payment schedule", () => {

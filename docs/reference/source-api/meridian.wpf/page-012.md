@@ -6,6 +6,124 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BackfillWorkbenchSectionViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.BackfillWorkbenchSectionViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:16](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L16).
+
+Groups backfill progress, scheduled and resumable jobs, gaps, and remediation queues for desktop binding.
+
+```csharp
+public sealed class BackfillWorkbenchSectionViewModel : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ObservableCollection&lt;SymbolProgressInfo&gt; SymbolProgress { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:35](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L35) |  |
+| <code>public ObservableCollection&lt;ScheduledJobInfo&gt; ScheduledJobs { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:36](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L36) |  |
+| <code>public ObservableCollection&lt;ResumableJobInfo&gt; ResumableJobs { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:37](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L37) |  |
+| <code>public ObservableCollection&lt;GapAnalysisItem&gt; GapItems { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:38](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L38) |  |
+| <code>public ObservableCollection&lt;BackfillRemediationQueuePresentation&gt; RemediationQueue { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:39](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L39) |  |
+| <code>public WorkstationTableModel&lt;SymbolProgressInfo&gt; SymbolProgressTable { get; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:40](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L40) |  |
+| <code>public WorkstationTableModel&lt;GapAnalysisItem&gt; GapItemsTable { get; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:41](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L41) |  |
+| <code>public BackfillWorkbenchSectionViewModel();</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:43](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L43) |  |
+| <code>public string BackfillStatusText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:76](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L76) |  |
+| <code>public string OverallProgressText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:77](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L77) |  |
+| <code>public double OverallProgressPercent { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:78](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L78) |  |
+| <code>public string PauseButtonContent { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:79](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L79) |  |
+| <code>public bool IsProgressVisible { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:80](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L80) |  |
+| <code>public bool HasProviderProgress { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:81](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L81) |  |
+| <code>public bool HasRemediationQueue { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:82](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L82) |  |
+| <code>public string ProviderProgressObservedText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:83](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L83) |  |
+| <code>public string RemediationDefaultProviderText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:84](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L84) |  |
+| <code>public bool HasNoScheduledJobs { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:85](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L85) |  |
+| <code>public bool HasNoResumableJobs { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:86](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L86) |  |
+| <code>public string GapAnalysisSummaryText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:87](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L87) |  |
+| <code>public string GapActionHintText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:88](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L88) |  |
+| <code>public bool IsGapAnalysisCardVisible { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:89](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L89) |  |
+| <code>public bool IsGapListVisible { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:90](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L90) |  |
+| <code>public bool IsGapActionPanelVisible { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:91](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L91) |  |
+
+## BacktestViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.BacktestViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:18](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L18).
+
+ViewModel for the BacktestPage. Drives the three-panel layout: left panel (configuration), centre panel (equity curve), right panel (results tabs).
+
+```csharp
+public sealed class BacktestViewModel : BindableBase, IPageActivationLifetime, IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string SymbolsText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:34](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L34) |  |
+| <code>public DateTime FromDate { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:37](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L37) |  |
+| <code>public DateTime ToDate { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:40](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L40) |  |
+| <code>public decimal InitialCash { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:43](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L43) |  |
+| <code>public double AnnualMarginRate { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:46](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L46) |  |
+| <code>public string DataRoot { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:49](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L49) |  |
+| <code>public bool IsRunning { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:54](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L54) |  |
+| <code>public double ProgressFraction { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:57](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L57) |  |
+| <code>public string StatusText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:60](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L60) |  |
+| <code>public bool CanRun =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:62](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L62) |  |
+| <code>public bool IsLiveMetricsActive { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:67](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L67) |  |
+| <code>public string LiveSharpe { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:70](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L70) |  |
+| <code>public string LiveDrawdown { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:73](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L73) |  |
+| <code>public string LiveTradeCount { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:76](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L76) |  |
+| <code>public ObservableCollection&lt;CoverageRowVm&gt; CoverageRows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:80](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L80) |  |
+| <code>public bool HasCoverageGaps { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:83](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L83) |  |
+| <code>public bool IsCoverageLoading { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:86](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L86) |  |
+| <code>public IAsyncRelayCommand FixGapsCommand { get; private set; } = null !;</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:88](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L88) |  |
+| <code>public ObservableCollection&lt;EquityCurvePoint&gt; EquityCurvePoints { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:92](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L92) |  |
+| <code>public string TotalReturn { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:97](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L97) |  |
+| <code>public string AnnualisedReturn { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:100](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L100) |  |
+| <code>public string SharpeRatio { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:103](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L103) |  |
+| <code>public string SortinoRatio { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:106](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L106) |  |
+| <code>public string CalmarRatio { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:109](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L109) |  |
+| <code>public string MaxDrawdown { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:112](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L112) |  |
+| <code>public string SharpeText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:115](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L115) |  |
+| <code>public string WinRate { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:118](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L118) |  |
+| <code>public string TotalTrades { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:121](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L121) |  |
+| <code>public string NetPnl { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:124](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L124) |  |
+| <code>public string TotalCommissions { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:127](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L127) |  |
+| <code>public string TotalMarginInterest { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:130](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L130) |  |
+| <code>public string Xirr { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:133](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L133) |  |
+| <code>public string EventsProcessed { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:136](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L136) |  |
+| <code>public string ElapsedTime { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:139](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L139) |  |
+| <code>public string Universe { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:142](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L142) |  |
+| <code>public string AttributionCountText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:147](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L147) |  |
+| <code>public string FillsCountText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:150](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L150) |  |
+| <code>public string CashFlowsCountText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:153](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L153) |  |
+| <code>public string? LatestRecordedRunId { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:156](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L156) |  |
+| <code>public bool HasLatestRecordedRun =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:172](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L172) |  |
+| <code>public ObservableCollection&lt;FillEventVm&gt; Fills { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:176](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L176) |  |
+| <code>public ObservableCollection&lt;CashFlowVm&gt; CashFlows { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:177](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L177) |  |
+| <code>public ObservableCollection&lt;SymbolAttributionVm&gt; Attribution { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:178](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L178) |  |
+| <code>public ObservableCollection&lt;BiasDisclosureItemVm&gt; BiasDisclosures { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:182](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L182) |  |
+| <code>public bool HasBiasDisclosures { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:185](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L185) |  |
+| <code>public string BiasDisclosureSummary { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:188](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L188) |  |
+| <code>public IAsyncRelayCommand RunBacktestCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:192](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L192) |  |
+| <code>public IRelayCommand CancelBacktestCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:193](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L193) |  |
+| <code>public IRelayCommand OpenRunBrowserCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:194](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L194) |  |
+| <code>public IRelayCommand OpenRunDetailCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:195](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L195) |  |
+| <code>public IRelayCommand OpenRunPortfolioCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:196](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L196) |  |
+| <code>public IRelayCommand OpenRunLedgerCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:197](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L197) |  |
+| <code>public IRelayCommand OpenRunRiskCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:198](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L198) |  |
+| <code>public BacktestViewModel(BacktestService backtestService, NavigationService navigationService, StrategyRunWorkspaceService strategyRunWorkspaceService, BacktestDataAvailabilityService availabilityService);</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:200](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L200) |  |
+| <code>public bool IsActive =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:226](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L226) |  |
+| <code>public CancellationToken ActivationToken =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:228](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L228) |  |
+| <code>public Task ActivateAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:230](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L230) |  |
+| <code>public void Deactivate();</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:250](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L250) |  |
+| <code>public void CancelActivation() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:264](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L264) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/BacktestViewModel.cs:530](../../../../src/Meridian.Wpf/ViewModels/BacktestViewModel.cs#L530) |  |
+
 ## BatchBacktestViewModel
 
 Qualified name: <code>Meridian.Wpf.ViewModels.BatchBacktestViewModel</code>. Kind: `class`.
@@ -1770,44 +1888,3 @@ Declared public members:
 | <code>public static string BuildUnappliedCashResultText(bool isRefund, decimal requested, LoanServicingStateDto? before, bool success, LoanServicingStateDto? after, string? errorMessage, CurrencyCode? currency = null);</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:850](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L850) |  |
 | <code>public static bool CanRefreshPortfolioForState(bool isRefreshing) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:976](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L976) |  |
 | <code>public static bool CanPostAccrualForState(LoanSummaryDto? selectedLoan, bool isDetailLoading, bool isPostingAccrual) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:978](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L978) |  |
-
-## DiscrepancyDisplayItem
-
-Qualified name: <code>Meridian.Wpf.ViewModels.DiscrepancyDisplayItem</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:801](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L801).
-
-Presents a discrepancy&#x27;s timestamp, type, compared values, and difference.
-
-```csharp
-public sealed class DiscrepancyDisplayItem
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string TimestampText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:803](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L803) |  |
-| <code>public string DiscrepancyType { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:804](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L804) |  |
-| <code>public string Values { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:805](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L805) |  |
-| <code>public string DifferenceText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs:806](../../../../src/Meridian.Wpf/ViewModels/AdvancedAnalyticsViewModel.cs#L806) |  |
-
-## DryRunResultViewModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.DryRunResultViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:119](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L119).
-
-View model for dry-run backfill plan result items.
-
-```csharp
-public sealed class DryRunResultViewModel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:121](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L121) |  |
-| <code>public string SelectedProvider { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:122](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L122) |  |
-| <code>public string FallbackSequence { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:123](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L123) |  |

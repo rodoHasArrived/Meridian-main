@@ -6,6 +6,72 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkflowLibraryWorkflowItem
+
+Qualified name: <code>Meridian.Wpf.ViewModels.WorkflowLibraryWorkflowItem</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:221](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L221).
+
+Presents a workflow definition with its workspace, entry page, and available actions.
+
+```csharp
+public sealed class WorkflowLibraryWorkflowItem
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WorkflowLibraryWorkflowItem(WorkflowDefinitionDto definition);</code> | [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:223](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L223) |  |
+| <code>public WorkflowDefinitionDto Definition { get; }</code> | [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:235](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L235) |  |
+| <code>public IReadOnlyList&lt;WorkflowLibraryActionItem&gt; Actions { get; }</code> | [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:237](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L237) |  |
+| <code>public string WorkflowId =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:239](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L239) |  |
+| <code>public string Title =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:241](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L241) |  |
+| <code>public string Summary =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:243](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L243) |  |
+| <code>public string WorkspaceTitle =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:245](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L245) |  |
+| <code>public string EntryPageTag =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:247](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L247) |  |
+| <code>public string Tone =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:249](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L249) |  |
+| <code>public string ActionCountText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:251](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L251) |  |
+| <code>public string EvidenceText { get; }</code> | [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:253](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L253) |  |
+| <code>public string MarketPatternText { get; }</code> | [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:255](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L255) |  |
+| <code>public bool Matches(string query) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs:257](../../../../src/Meridian.Wpf/ViewModels/WorkflowLibraryViewModel.cs#L257) |  |
+
+## WorkspaceAttentionRibbonViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.WorkspaceAttentionRibbonViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:66](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L66).
+
+Presents workspace attention severity, summary, timestamp, and available follow-up action.
+
+```csharp
+public sealed class WorkspaceAttentionRibbonViewModel : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string WorkspaceId { get; }</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:90](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L90) |  |
+| <code>public string Severity { get; }</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:92](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L92) |  |
+| <code>public string SeverityLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:94](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L94) |  |
+| <code>public string Tone =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:102](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L102) |  |
+| <code>public string IconGlyph =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:110](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L110) |  |
+| <code>public string SummaryText { get; }</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:118](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L118) |  |
+| <code>public DateTimeOffset Timestamp { get; }</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:120](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L120) |  |
+| <code>public string TimestampText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:122](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L122) |  |
+| <code>public string SummaryWithTimestamp =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:124](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L124) |  |
+| <code>public string PrimaryActionLabel { get; }</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:126](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L126) |  |
+| <code>public string PrimaryActionTarget { get; }</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:128](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L128) |  |
+| <code>public ICommand PrimaryActionCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:130](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L130) |  |
+| <code>public string PanelAutomationId =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:132](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L132) |  |
+| <code>public string IconContainerAutomationId =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:134](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L134) |  |
+| <code>public string IconAutomationId =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:136](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L136) |  |
+| <code>public string SeverityAutomationId =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:138](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L138) |  |
+| <code>public string SummaryAutomationId =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:140](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L140) |  |
+| <code>public string PrimaryActionAutomationId =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:142](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L142) |  |
+| <code>public static WorkspaceAttentionRibbonViewModel ForWorkspace(string workspaceId, Action&lt;string&gt; executePrimaryAction);</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:144](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L144) |  |
+
 ## WorkspaceAttentionSeverity
 
 Qualified name: <code>Meridian.Wpf.ViewModels.WorkspaceAttentionSeverity</code>. Kind: `class`.
@@ -1111,43 +1177,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public EvidenceWorkbenchPage() : this(new EvidenceWorkbenchViewModel(new WpfServices.EvidenceWorkbenchApiClient(ApiClientService.Instance)));</code> | [src/Meridian.Wpf/Views/EvidenceWorkbenchPage.xaml.cs:16](../../../../src/Meridian.Wpf/Views/EvidenceWorkbenchPage.xaml.cs#L16) |  |
 | <code>public EvidenceWorkbenchPage(EvidenceWorkbenchViewModel viewModel);</code> | [src/Meridian.Wpf/Views/EvidenceWorkbenchPage.xaml.cs:21](../../../../src/Meridian.Wpf/Views/EvidenceWorkbenchPage.xaml.cs#L21) |  |
-
-## ExportPresetsPage
-
-Qualified name: <code>Meridian.Wpf.Views.ExportPresetsPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/ExportPresetsPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/ExportPresetsPage.xaml.cs#L10).
-
-Provides the desktop page to configure reusable export settings.
-
-```csharp
-public partial class ExportPresetsPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ExportPresetsPage();</code> | [src/Meridian.Wpf/Views/ExportPresetsPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/ExportPresetsPage.xaml.cs#L14) |  |
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:40](../../../../src/Meridian.Wpf/Views/Pages.cs#L40).
-
-```csharp
-public partial class ExportPresetsPage : Page
-```
-
-## FactorPaydownControl
-
-Qualified name: <code>Meridian.Wpf.Views.FactorPaydownControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/FactorPaydownControl.xaml.cs:5](../../../../src/Meridian.Wpf/Views/FactorPaydownControl.xaml.cs#L5).
-
-```csharp
-public partial class FactorPaydownControl : UserControl
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FactorPaydownControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/FactorPaydownControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/FactorPaydownControl.xaml.cs#L7) |  |

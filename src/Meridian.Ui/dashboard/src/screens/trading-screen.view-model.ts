@@ -1,4 +1,5 @@
 import { presentMarkFreshness, type MarkFreshnessPresentation } from "@/lib/mark-freshness";
+import { formatAuthorityRefusal, manualOrderEntryDisabledReason, orderOriginLabel } from "@/screens/trading-screen.order-authority";
 import { buildFillDetail, buildOrderDetail, buildPositionDetail } from "@/screens/trading-screen.blotter-details";
 import {
   buildOrderSubmitRequest,
@@ -70,6 +71,7 @@ import type {
   TradingOperatorReadiness,
   TradingOrder,
   TradingPosition,
+  TradingManualOrderEntry,
   TradingRiskState,
   TradingWorkspaceResponse
 } from "@/types";
@@ -443,6 +445,8 @@ export interface TradingOrderRow {
   limitPrice: string;
   status: string;
   submittedAt: string;
+  /** Who or what originated the order (Ticket, Position, Release, Strategy, Untyped). */
+  origin: string;
   statusTone: TradingDataTone;
   isSelected: boolean;
   detailPanelId: string;
@@ -1132,6 +1136,7 @@ function buildOrderRow(
     limitPrice: order.limitPrice,
     status: order.status,
     submittedAt: order.submittedAt,
+    origin: orderOriginLabel(order.origin),
     statusTone: orderStatusTone(order.status),
     isSelected: id === selectedId,
     detailPanelId: tradingOrderDetailId,
@@ -3149,13 +3154,16 @@ export function useOrderTicketViewModel({
   onOrderAccepted,
   fundAccountId,
   positions = [],
-  risk = null
+  risk = null,
+  manualOrderEntry = null
 }: {
   services?: OrderTicketServices;
   onOrderAccepted?: () => Promise<void> | void;
   fundAccountId?: string | null;
   positions?: TradingPosition[];
   risk?: TradingRiskState | null;
+  /** The server's verdict on manual orders for the active routing path (refused live). */
+  manualOrderEntry?: TradingManualOrderEntry | null;
 } = {}) {
   const [form, setForm] = useState<OrderSubmitRequest>(emptyOrderTicketForm);
   const [open, setOpen] = useState(false);
@@ -3191,6 +3199,7 @@ export function useOrderTicketViewModel({
   const serverPreviewExpired = serverPreview !== null && Date.parse(serverPreview.expiresAt) <= previewNow;
   const serverPreviewBlocked = unconfirmedSubmission !== null
     || (Boolean(services.previewOrder) && (serverPreviewLoading || !serverPreview?.canSubmit || serverPreviewExpired));
+  const manualEntryDisabledReason = manualOrderEntryDisabledReason(manualOrderEntry);
   useEffect(() => {
     setServerPreview(null); setServerPreviewError(null);
     if (services.previewOrder) setAcknowledged(false);
@@ -3388,7 +3397,7 @@ export function useOrderTicketViewModel({
         return;
       }
 
-      refusal = result.errorMessage ?? result.reason ?? "Order failed.";
+      refusal = formatAuthorityRefusal(result.authorityDecision) ?? result.errorMessage ?? result.reason ?? "Order failed.";
     } catch (err) {
       const confirmedRefusal = workstationApi.readOrderSubmissionRefusal(err);
       if (submission && confirmedRefusal === null) {
@@ -3440,8 +3449,12 @@ export function useOrderTicketViewModel({
         void refreshAfterSettledOutcome();
       }).catch(() => { /* Absence is not proof that nothing reached the broker. */ });
     },
-    canSubmit: state.canSubmit && !serverPreviewBlocked,
-    submitDisabledReason: serverPreviewBlocked ? "Current authoritative order checks are required." : state.submitDisabledReason,
+    canSubmit: state.canSubmit && !serverPreviewBlocked && manualEntryDisabledReason === null,
+    // The manual-entry verdict comes first: on a live routing path no check the operator can run
+    // makes a manual order routable.
+    submitDisabledReason: manualEntryDisabledReason
+      ?? (serverPreviewBlocked ? "Current authoritative order checks are required." : state.submitDisabledReason),
+    manualEntryDisabledReason,
     openTicket,
     closeTicket,
     toggleTicket,
