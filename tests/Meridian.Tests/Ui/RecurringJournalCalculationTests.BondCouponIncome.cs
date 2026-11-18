@@ -117,6 +117,38 @@ public sealed partial class RecurringJournalCalculationTests
             .Should().BeEquivalentTo("accountId", "taxLotRecordId");
     }
 
+    [Fact]
+    public async Task BondCouponIncome_BlocksWhileSameBookSchedulesFixedIncomeAccrual()
+    {
+        await SeedAsync(BondCouponIncomeCalculation.CalculationKind, new(), CouponInputs(), endsOn: JanuaryEnd);
+        var store = new FileRecurringJournalStore(Path.Combine(_root, "recurring"));
+        await using (var session = await store.OpenSessionAsync())
+        {
+            await session.RegisterTemplateAsync(new JournalTemplate("bridge-accrual", "Bridge accrual", "Fixed-income accrual", [],
+                calculation: new JournalTemplateCalculation(FixedIncomeAccrualCalculation.CalculationKind, new Dictionary<string, string>
+                {
+                    ["securityId"] = Guid.NewGuid().ToString("D"),
+                    ["ticker"] = "ACME",
+                    ["bookPositionId"] = Guid.NewGuid().ToString("D")
+                })), "controller", 0, Registered);
+            await session.RegisterScheduleAsync(new RecurringJournalSchedule("bridge-accrual-schedule", "bridge-accrual",
+                    new LedgerBookKey(Fund, "Fund"), RecurringJournalCadence.Monthly, FebruaryEnd, "controller", Registered,
+                    new Dictionary<string, decimal>(), endsOn: FebruaryEnd),
+                Scope, [Source()], "controller", 0, Registered);
+        }
+        var harness = new CouponHarness(_root);
+        harness.PreviewReturns(hasChanges: true, earned: 4_166.67m);
+        var fixture = await CreateFixtureAsync(extraCalculations: [harness.Calculation]);
+
+        var result = (await fixture.Runner.RunDueAsync(Due(JanuaryEnd)))
+            .Single(item => item.ScheduleId == ScheduleId);
+
+        result.State.Should().Be(AutomatedJournalScheduleStateDto.Blocked);
+        result.Blockers.Should().ContainSingle().Which.Should().Contain("bridge-accrual-schedule")
+            .And.Contain("not recognized twice");
+        harness.Coupons.VerifyNoOtherCalls();
+    }
+
     private static Dictionary<string, string> CouponInputs() => new()
     {
         ["accountId"] = CouponAccount.ToString("D"),
