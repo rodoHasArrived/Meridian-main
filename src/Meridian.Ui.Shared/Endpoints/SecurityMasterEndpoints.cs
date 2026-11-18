@@ -1901,50 +1901,6 @@ public static partial class SecurityMasterEndpoints
         .Produces(StatusCodes.Status404NotFound);
     }
 
-    // ── Structured-credit reclassification report (ADR-022) ─────────────────
-
-    private static void MapStructuredCreditReclassificationEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
-    {
-        // Report only: the scan proposes StructuredCredit terms for legacy securitised Bond and
-        // CustomAsset rows and never writes. Applying a proposal is a governed amendment.
-        group.MapPost(UiApiRoutes.SecurityMasterStructuredCreditReclassificationReport, async (
-            HttpContext context,
-            [FromServices] ISecurityMasterStructuredCreditReclassificationService reclassificationService,
-            CancellationToken ct) =>
-        {
-            if (!EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance))
-                return EndpointHelpers.Forbidden();
-
-            var report = await reclassificationService.BuildReportAsync(ct).ConfigureAwait(false);
-            return Results.Json(report, jsonOptions);
-        })
-        .WithName("BuildSecurityMasterStructuredCreditReclassificationReport")
-        .Produces<StructuredCreditReclassificationReportDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status403Forbidden);
-    }
-
-    // ── Classification drift report (taxonomy revisions) ────────────────────
-
-    private static void MapClassificationDriftEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
-    {
-        // Report only: lists active securities whose retained classification differs from the
-        // current taxonomy. Classification is derived on read, and retained events are append-only.
-        group.MapPost(UiApiRoutes.SecurityMasterClassificationDriftReport, async (
-            HttpContext context,
-            [FromServices] ISecurityMasterClassificationDriftReportService driftReportService,
-            CancellationToken ct) =>
-        {
-            if (!EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance))
-                return EndpointHelpers.Forbidden();
-
-            var report = await driftReportService.BuildReportAsync(ct).ConfigureAwait(false);
-            return Results.Json(report, jsonOptions);
-        })
-        .WithName("BuildSecurityMasterClassificationDriftReport")
-        .Produces<SecurityClassificationDriftReportDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status403Forbidden);
-    }
-
     // ── CustomAsset profile promotion report (ADR-022) ──────────────────────
 
     private static void MapProfilePromotionEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
