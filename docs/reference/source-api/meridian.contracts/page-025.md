@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IBondWorkflowObservationSource
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.IBondWorkflowObservationSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:111](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L111).
+
+Only retained, dated observations eligible at the explicit knowledge cutoff.
+
+```csharp
+public interface IBondWorkflowObservationSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;BondWorkflowRateObservation&gt;&gt; GetAsync(string indexName, DateOnly from, DateOnly to, DateTimeOffset knownAt, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:113](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L113) |  |
+
 ## IBondWorkflowQuoteSource
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.IBondWorkflowQuoteSource</code>. Kind: `interface`.
@@ -718,16 +736,4 @@ Account-level collateral or pledged asset position.
 
 ```csharp
 public sealed record CollateralPositionDto(Guid CollateralPositionId, Guid AccountId, string? SecurityId, string? Symbol, decimal Quantity, decimal MarketValue, string Currency, bool IsPledged, string? RestrictionType, decimal? Haircut, decimal? CollateralValue, CollateralEligibilityDto Eligibility, DateTimeOffset ValuationTimestamp, string? LienReference = null, string? SecuredObligationReference = null, string? AgreementEvidencePath = null);
-```
-
-## CreateAccountRequest
-
-Qualified name: <code>Meridian.Contracts.FundStructure.CreateAccountRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:516](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L516).
-
-Request to create a new fund account.
-
-```csharp
-public sealed record CreateAccountRequest(Guid AccountId, AccountTypeDto AccountType, string AccountCode, string DisplayName, string BaseCurrency, DateTimeOffset EffectiveFrom, string CreatedBy, Guid? FundId = null, Guid? EntityId = null, Guid? SleeveId = null, Guid? VehicleId = null, string? Institution = null, string? PortfolioId = null, string? LedgerReference = null, string? StrategyId = null, string? RunId = null, AccountOperationalStatusDto OperationalStatus = AccountOperationalStatusDto.Active, CustodianAccountDetailsDto? CustodianDetails = null, BankAccountDetailsDto? BankDetails = null);
 ```

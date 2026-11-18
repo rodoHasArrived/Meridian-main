@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountingAuditPendingMarkerPhase
+
+Qualified name: <code>Meridian.Contracts.Ledger.AccountingAuditPendingMarkerPhase</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs:57](../../../../src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs#L57).
+
+How far an interrupted mutation-and-audit cycle had progressed.
+
+```csharp
+public enum AccountingAuditPendingMarkerPhase
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Declared</code> | [src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs:63](../../../../src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs#L63) | The intent was recorded and the mutation had not been observed to complete. A crash here may have preceded the save entirely. |
+| <code>Saved</code> | [src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs:70](../../../../src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs#L70) | The store reported the mutation saved; only the audit append is unconfirmed. Retained state existing is therefore expected, and its absence is a loss rather than a mutation that never happened. |
+
 ## AccountingAuditRecoveryException
 
 Qualified name: <code>Meridian.Contracts.Ledger.AccountingAuditRecoveryException</code>. Kind: `class`.
@@ -760,14 +779,4 @@ Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos
 
 ```csharp
 public sealed record ActivateAccountingConfigurationRequest(string FundProfileId, string Actor, Guid? LedgerBookId = null, string? CorrelationId = null, IReadOnlyList<string>? EvidenceLinks = null, string? CompanyId = null, IReadOnlyList<string>? ReportGroupPrincipalIds = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator, string? TenantId = null);
-```
-
-## ActivateAutomatedPostingGrantRequest
-
-Qualified name: <code>Meridian.Contracts.Ledger.ActivateAutomatedPostingGrantRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AutomatedPostingGrantDtos.cs:19](../../../../src/Meridian.Contracts/Ledger/AutomatedPostingGrantDtos.cs#L19).
-
-```csharp
-public sealed record ActivateAutomatedPostingGrantRequest(Guid GrantId, string FinancialAccountId, Guid LedgerBookId, Guid PeriodId, string PolicyId, string PolicyVersion, string MappingRevision, string SourceMode = "Synthetic", string? CompanyId = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 ```

@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BondScreeningRow
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondScreeningRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondScreeningDtos.cs:11](../../../../src/Meridian.Contracts/FixedIncome/BondScreeningDtos.cs#L11).
+
+```csharp
+public sealed record BondScreeningRow(BondReferenceDto Reference, IReadOnlyList<BondMarketObservationDto> Ratings, IReadOnlyList<string> Gaps);
+```
+
 ## BondSecurityTermsDigest
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondSecurityTermsDigest</code>. Kind: `class`.
@@ -805,21 +815,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;BondSettlementPreparationResult&gt; PrepareAsync(BondSettlementConsiderationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs:86](../../../../src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs#L86) |  |
 | <code>Task&lt;IReadOnlyList&lt;BondAnalyticsBlocker&gt;&gt; VerifyAsync(BondSettlementConsiderationDto settlement, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs:90](../../../../src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs#L90) | Recomputes a retained receipt against its actual pinned/versioned analytics inputs. |
-
-## IBondWorkflowObservationSource
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.IBondWorkflowObservationSource</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:111](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L111).
-
-Only retained, dated observations eligible at the explicit knowledge cutoff.
-
-```csharp
-public interface IBondWorkflowObservationSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;BondWorkflowRateObservation&gt;&gt; GetAsync(string indexName, DateOnly from, DateOnly to, DateTimeOffset knownAt, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:113](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L113) |  |

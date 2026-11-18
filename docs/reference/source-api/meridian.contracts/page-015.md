@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderCredentialVerificationResultDto
+
+Qualified name: <code>Meridian.Contracts.Configuration.ProviderCredentialVerificationResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:114](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L114).
+
+```csharp
+public sealed record ProviderCredentialVerificationResultDto(string ProviderId, bool Success, ProviderVerificationStateDto VerificationState, ProviderContinuityHealthDto Health, DateTimeOffset? LastVerifiedAt, string? LastError, string? ExternalAccountId, IReadOnlyList<string> Warnings);
+```
+
 ## ProviderEnvironmentOptionDto
 
 Qualified name: <code>Meridian.Contracts.Configuration.ProviderEnvironmentOptionDto</code>. Kind: `record`.
@@ -911,16 +921,4 @@ Applies the reset scheduled for ResetDate from the fixing store.
 
 ```csharp
 public sealed record ApplyScheduledRateResetRequest(DateOnly ResetDate);
-```
-
-## ApplyUnappliedCashRequest
-
-Qualified name: <code>Meridian.Contracts.DirectLending.ApplyUnappliedCashRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:64](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L64).
-
-PRD-115: applies part of the loan&#x27;s unapplied cash to amounts owed, by the automatic waterfall or a manual Breakdown capped at what is owed. Whatever cannot be allocated stays unapplied; no new cash is received.
-
-```csharp
-public sealed record ApplyUnappliedCashRequest(decimal Amount, DateOnly EffectiveDate, PaymentBreakdownDto? Breakdown, string? ExternalRef);
 ```

@@ -6,6 +6,86 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReviewConfigurationStep
+
+Qualified name: <code>Meridian.Application.Wizard.Steps.ReviewConfigurationStep</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Wizard/Steps/ReviewConfigurationStep.cs:15](../../../../src/Meridian.Application/Wizard/Steps/ReviewConfigurationStep.cs#L15).
+
+Step 9: Assembles the final AppConfig from wizard context and shows it to the user for review. Writes WizardContext.FinalConfig; sets WizardContext.IsCancelled if the user declines.
+
+```csharp
+public sealed class ReviewConfigurationStep : IWizardStep
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/ReviewConfigurationStep.cs:21](../../../../src/Meridian.Application/Wizard/Steps/ReviewConfigurationStep.cs#L21) |  |
+| <code>public ReviewConfigurationStep(TextWriter output, TextReader input, ProviderCredentialOwnershipPolicy? ownershipPolicy = null);</code> | [src/Meridian.Application/Wizard/Steps/ReviewConfigurationStep.cs:23](../../../../src/Meridian.Application/Wizard/Steps/ReviewConfigurationStep.cs#L23) |  |
+| <code>public async Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/ReviewConfigurationStep.cs:31](../../../../src/Meridian.Application/Wizard/Steps/ReviewConfigurationStep.cs#L31) |  |
+
+## SaveConfigurationStep
+
+Qualified name: <code>Meridian.Application.Wizard.Steps.SaveConfigurationStep</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Wizard/Steps/SaveConfigurationStep.cs:12](../../../../src/Meridian.Application/Wizard/Steps/SaveConfigurationStep.cs#L12).
+
+Step 10: Persists the assembled configuration to disk. Writes WizardContext.SavedConfigPath.
+
+```csharp
+public sealed class SaveConfigurationStep : IWizardStep
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/SaveConfigurationStep.cs:18](../../../../src/Meridian.Application/Wizard/Steps/SaveConfigurationStep.cs#L18) |  |
+| <code>public SaveConfigurationStep(TextWriter output, TextReader input, ProviderCredentialOwnershipPolicy? ownershipPolicy = null) : this(output, input, path =&gt; new ConfigStore(path, ownershipPolicy));</code> | [src/Meridian.Application/Wizard/Steps/SaveConfigurationStep.cs:20](../../../../src/Meridian.Application/Wizard/Steps/SaveConfigurationStep.cs#L20) |  |
+| <code>public async Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/SaveConfigurationStep.cs:36](../../../../src/Meridian.Application/Wizard/Steps/SaveConfigurationStep.cs#L36) |  |
+
+## SelectUseCaseStep
+
+Qualified name: <code>Meridian.Application.Wizard.Steps.SelectUseCaseStep</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Wizard/Steps/SelectUseCaseStep.cs:10](../../../../src/Meridian.Application/Wizard/Steps/SelectUseCaseStep.cs#L10).
+
+Step 3: Asks the user to select a use case and writes it to WizardContext.SelectedUseCase.
+
+```csharp
+public sealed class SelectUseCaseStep : IWizardStep
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/SelectUseCaseStep.cs:15](../../../../src/Meridian.Application/Wizard/Steps/SelectUseCaseStep.cs#L15) |  |
+| <code>public SelectUseCaseStep(TextWriter output, TextReader input);</code> | [src/Meridian.Application/Wizard/Steps/SelectUseCaseStep.cs:17](../../../../src/Meridian.Application/Wizard/Steps/SelectUseCaseStep.cs#L17) |  |
+| <code>public async Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/SelectUseCaseStep.cs:23](../../../../src/Meridian.Application/Wizard/Steps/SelectUseCaseStep.cs#L23) |  |
+
+## ValidateCredentialsStep
+
+Qualified name: <code>Meridian.Application.Wizard.Steps.ValidateCredentialsStep</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Wizard/Steps/ValidateCredentialsStep.cs:13](../../../../src/Meridian.Application/Wizard/Steps/ValidateCredentialsStep.cs#L13).
+
+Step 5: Validates credentials for the selected data source. Does not modify context state; purely informational.
+
+```csharp
+public sealed class ValidateCredentialsStep : IWizardStep
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/ValidateCredentialsStep.cs:20](../../../../src/Meridian.Application/Wizard/Steps/ValidateCredentialsStep.cs#L20) |  |
+| <code>public ValidateCredentialsStep(TextWriter output, TextReader input, ProviderCredentialOwnershipPolicy? ownershipPolicy = null) : this(output, input, ownershipPolicy, ValidateAsync);</code> | [src/Meridian.Application/Wizard/Steps/ValidateCredentialsStep.cs:22](../../../../src/Meridian.Application/Wizard/Steps/ValidateCredentialsStep.cs#L22) |  |
+| <code>public async Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/ValidateCredentialsStep.cs:38](../../../../src/Meridian.Application/Wizard/Steps/ValidateCredentialsStep.cs#L38) |  |
+
 ## WizardWorkflowFactory
 
 Qualified name: <code>Meridian.Application.Wizard.WizardWorkflowFactory</code>. Kind: `class`.

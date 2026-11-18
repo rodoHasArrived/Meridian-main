@@ -1432,6 +1432,10 @@ public static partial class SecurityMasterEndpoints
             is not (null or AppSecurityMaster.NullSecurityMasterStructuredCreditReclassificationService))
             MapStructuredCreditReclassificationEndpoints(group, jsonOptions);
 
+        if (app.Services.GetService<ISecurityMasterClassificationDriftReportService>()
+            is not (null or AppSecurityMaster.NullSecurityMasterClassificationDriftReportService))
+            MapClassificationDriftEndpoints(group, jsonOptions);
+
         if (app.Services.GetService<ISecurityMasterProfilePromotionService>()
             is not (null or AppSecurityMaster.NullSecurityMasterProfilePromotionService))
             MapProfilePromotionEndpoints(group, jsonOptions);
@@ -1895,28 +1899,6 @@ public static partial class SecurityMasterEndpoints
         .WithName("GetSecurityMasterQualityReportLatest")
         .Produces<SecurityMasterQualityReportDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
-    }
-
-    // ── Structured-credit reclassification report (ADR-022) ─────────────────
-
-    private static void MapStructuredCreditReclassificationEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
-    {
-        // Report only: the scan proposes StructuredCredit terms for legacy securitised Bond and
-        // CustomAsset rows and never writes. Applying a proposal is a governed amendment.
-        group.MapPost(UiApiRoutes.SecurityMasterStructuredCreditReclassificationReport, async (
-            HttpContext context,
-            [FromServices] ISecurityMasterStructuredCreditReclassificationService reclassificationService,
-            CancellationToken ct) =>
-        {
-            if (!EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance))
-                return EndpointHelpers.Forbidden();
-
-            var report = await reclassificationService.BuildReportAsync(ct).ConfigureAwait(false);
-            return Results.Json(report, jsonOptions);
-        })
-        .WithName("BuildSecurityMasterStructuredCreditReclassificationReport")
-        .Produces<StructuredCreditReclassificationReportDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status403Forbidden);
     }
 
     // ── CustomAsset profile promotion report (ADR-022) ──────────────────────

@@ -6,6 +6,23 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## InstrumentRoleDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.InstrumentRoleDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:50](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L50).
+
+```csharp
+public sealed record InstrumentRoleDto(Guid RoleId, Guid SecurityId, string OwnerScopeId, string OwnerScopeKind, string RoleKind, string AccountingSide, string EconomicSide, DateOnly EffectiveFrom, DateOnly? EffectiveTo = null, string? CounterpartyId = null, string? DefaultAccountId = null, long Version = 1, EconomicEventReferenceDto? OriginEvent = null, IReadOnlyList<string>? EvidenceLinks = null, JsonElement? ExtensionPayload = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:67](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L67) |  |
+| <code>public IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; RetainedEvidence { get; init; } = [];</code> | [src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs:69](../../../../src/Meridian.Contracts/AssetOperations/InstrumentPositionDtos.cs#L69) |  |
+
 ## InstrumentRoleKinds
 
 Qualified name: <code>Meridian.Contracts.AssetOperations.InstrumentRoleKinds</code>. Kind: `class`.
@@ -785,15 +802,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;IReadOnlyList&lt;BankTransactionDto&gt;&gt; GetBankTransactionsAsync(Guid? entityId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Banking/BankingModels.cs:160](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L160) | Return bank transactions. When entityId is provided the result is scoped to that entity; otherwise all transactions are returned. |
-
-## InitiatePaymentRequest
-
-Qualified name: <code>Meridian.Contracts.Banking.InitiatePaymentRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Banking/BankingModels.cs:19](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L19).
-
-Request body to submit a payment for approval before it is applied.
-
-```csharp
-public sealed record InitiatePaymentRequest(decimal Amount, DateOnly EffectiveDate, string? ExternalRef, string? Notes, string? Currency = null);
-```

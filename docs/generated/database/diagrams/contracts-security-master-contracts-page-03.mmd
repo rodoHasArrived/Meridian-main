@@ -258,6 +258,8 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_ISecurityMasterCashFlowService["ISecurityMasterCashFlowService"] {
     }
+    class Meridian_Contracts_SecurityMaster_ISecurityMasterClassificationDriftReportService["ISecurityMasterClassificationDriftReportService"] {
+    }
     class Meridian_Contracts_SecurityMaster_ISecurityMasterCorporateActionCommandService["ISecurityMasterCorporateActionCommandService"] {
     }
     class Meridian_Contracts_SecurityMaster_ISecurityMasterDataQualityService["ISecurityMasterDataQualityService"] {
@@ -422,20 +424,6 @@ classDiagram
         +DateOnly? TerminationDate
         +decimal ThresholdOurs
         +decimal ThresholdTheirs
-    }
-    class Meridian_Contracts_SecurityMaster_OtcCollateralBalanceDto["OtcCollateralBalanceDto"] {
-        +Guid BalanceId
-        +Guid CollateralAgreementId
-        +string Currency
-        +OtcCollateralDirection Direction
-        +string EligibleCollateralDescription
-        +decimal HaircutPercent
-        +OtcCollateralKind Kind
-        +string? Notes
-        +decimal Quantity
-        +string? Reference
-        +Guid? SecurityId
-        +decimal UnitValue
     }
     Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusal --> Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusalCode
     Meridian_Contracts_SecurityMaster_DeclaredScheduleResolution --> Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusal

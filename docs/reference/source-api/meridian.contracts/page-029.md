@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyStructuredTermsPreviewRequestDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyStructuredTermsPreviewRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs:49](../../../../src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs#L49).
+
+```csharp
+public sealed record IntercompanyStructuredTermsPreviewRequestDto(Guid AgreementId, int? AgreementVersion = null, Guid? ProposalId = null);
+```
+
 ## InvestmentPortfolioSummaryDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto</code>. Kind: `record`.
@@ -701,14 +711,4 @@ Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:391](../../..
 
 ```csharp
 public sealed record VehicleOperatingViewDto(VehicleSummaryDto Vehicle, LegalEntitySummaryDto? LegalEntity, IReadOnlyList<InvestmentPortfolioSummaryDto> InvestmentPortfolios, IReadOnlyList<AccountSummaryDto> Accounts);
-```
-
-## VehicleSummaryDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.VehicleSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:204](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L204).
-
-```csharp
-public sealed record VehicleSummaryDto(Guid VehicleId, Guid FundId, Guid LegalEntityId, string Code, string Name, string BaseCurrency, bool IsActive, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, IReadOnlyList<Guid> InvestmentPortfolioIds, IReadOnlyList<Guid> AccountIds, string? Description = null);
 ```
