@@ -6,6 +6,51 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TickerUpdateMessage
+
+Qualified name: <code>Meridian.Wpf.Services.TickerUpdateMessage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/MessagingService.cs:294](../../../../src/Meridian.Wpf/Services/MessagingService.cs#L294).
+
+Message payload for a live price tick, published by any component that receives quote/trade data. Subscribers (e.g. TickerStripViewModel) can consume this instead of polling the HTTP API.
+
+```csharp
+public sealed class TickerUpdateMessage
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Services/MessagingService.cs:296](../../../../src/Meridian.Wpf/Services/MessagingService.cs#L296) |  |
+| <code>public decimal Bid { get; set; }</code> | [src/Meridian.Wpf/Services/MessagingService.cs:297](../../../../src/Meridian.Wpf/Services/MessagingService.cs#L297) |  |
+| <code>public decimal Ask { get; set; }</code> | [src/Meridian.Wpf/Services/MessagingService.cs:298](../../../../src/Meridian.Wpf/Services/MessagingService.cs#L298) |  |
+| <code>public decimal Last { get; set; }</code> | [src/Meridian.Wpf/Services/MessagingService.cs:299](../../../../src/Meridian.Wpf/Services/MessagingService.cs#L299) |  |
+| <code>public bool Uptick { get; set; }</code> | [src/Meridian.Wpf/Services/MessagingService.cs:300](../../../../src/Meridian.Wpf/Services/MessagingService.cs#L300) |  |
+
+## ToastNotificationService
+
+Qualified name: <code>Meridian.Wpf.Services.ToastNotificationService</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/ToastNotificationService.cs:21](../../../../src/Meridian.Wpf/Services/ToastNotificationService.cs#L21).
+
+Delivers Windows balloon-tip notifications via NotifyIcon. The project targets net9.0-windows (no explicit Windows version suffix), so the WinRT Windows.UI.Notifications API is unavailable without adding Microsoft.Windows.SDK.Contracts or bumping the TFM to net9.0-windows10.0.17763.0. This service provides a functionally equivalent experience through the system-tray balloon-tip channel. Limitation: Balloon tips do NOT persist in the Windows Action Center; they appear for ≈5 s and are then silently dismissed. For true Action Center persistence, change TargetFramework to net9.0-windows10.0.17763.0 and use Windows.UI.Notifications.ToastNotificationManager.
+
+```csharp
+public sealed class ToastNotificationService : IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ToastNotificationService Instance =&gt; …;</code> | [src/Meridian.Wpf/Services/ToastNotificationService.cs:39](../../../../src/Meridian.Wpf/Services/ToastNotificationService.cs#L39) | Gets the singleton instance. |
+| <code>public static void SetAppUserModelId() =&gt; …;</code> | [src/Meridian.Wpf/Services/ToastNotificationService.cs:58](../../../../src/Meridian.Wpf/Services/ToastNotificationService.cs#L58) | Registers the AppUserModelID with Windows so that toast activations, JumpList entries, and taskbar pins all share the same identity. Must be called before any window is shown. |
+| <code>public void ShowBackfillComplete(int symbolCount, long barsWritten, TimeSpan duration);</code> | [src/Meridian.Wpf/Services/ToastNotificationService.cs:67](../../../../src/Meridian.Wpf/Services/ToastNotificationService.cs#L67) | Shows a &quot;Backfill Complete&quot; balloon notification. |
+| <code>public void ShowProviderDisconnected(string providerName);</code> | [src/Meridian.Wpf/Services/ToastNotificationService.cs:81](../../../../src/Meridian.Wpf/Services/ToastNotificationService.cs#L81) | Shows a &quot;Provider Disconnected&quot; balloon notification. |
+| <code>public void ShowDataQualityAlert(string symbol, double score);</code> | [src/Meridian.Wpf/Services/ToastNotificationService.cs:96](../../../../src/Meridian.Wpf/Services/ToastNotificationService.cs#L96) | Shows a &quot;Data Quality Alert&quot; balloon notification when a quality score drops below the warning threshold. |
+| <code>public void Dispose();</code> | [src/Meridian.Wpf/Services/ToastNotificationService.cs:153](../../../../src/Meridian.Wpf/Services/ToastNotificationService.cs#L153) |  |
+
 ## TooltipService
 
 Qualified name: <code>Meridian.Wpf.Services.TooltipService</code>. Kind: `class`.
@@ -1114,46 +1159,3 @@ Declared public members:
 | <code>IReadOnlyList&lt;ShellPageDescriptor&gt; Pages { get; }</code> | [src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs:10](../../../../src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs#L10) |  |
 | <code>IReadOnlyList&lt;WorkspaceCapabilityDescriptor&gt; WorkspaceCapabilities { get; }</code> | [src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs:12](../../../../src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs#L12) |  |
 | <code>IReadOnlyList&lt;WorkspaceShellDefinition&gt; WorkspaceShells { get; }</code> | [src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs:14](../../../../src/Meridian.Wpf/Shell/Services/IShellPageRegistry.cs#L14) |  |
-
-## IShellRouteRegistry
-
-Qualified name: <code>Meridian.Wpf.Shell.Services.IShellRouteRegistry</code>. Kind: `interface`.
-
-Source: [src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs:8](../../../../src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs#L8).
-
-Resolves canonical page tags, page types, aliases, and workspace membership for desktop routes.
-
-```csharp
-public interface IShellRouteRegistry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>IReadOnlyList&lt;ShellRoute&gt; Routes { get; }</code> | [src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs:10](../../../../src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs#L10) |  |
-| <code>ShellRoute? GetRoute(string? pageTag);</code> | [src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs:12](../../../../src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs#L12) |  |
-| <code>bool IsRegistered(string? pageTag);</code> | [src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs:14](../../../../src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs#L14) |  |
-| <code>Type? GetPageType(string? pageTag);</code> | [src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs:16](../../../../src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs#L16) |  |
-| <code>string GetCanonicalPageTag(string? pageTag);</code> | [src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs:18](../../../../src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs#L18) |  |
-| <code>string? InferWorkspaceIdForPageTag(string? pageTag);</code> | [src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs:20](../../../../src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs#L20) |  |
-| <code>IReadOnlyList&lt;ShellRoute&gt; GetRoutesForWorkspace(string workspaceId);</code> | [src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs:22](../../../../src/Meridian.Wpf/Shell/Services/IShellRouteRegistry.cs#L22) |  |
-
-## PageContentFactory
-
-Qualified name: <code>Meridian.Wpf.Shell.Services.PageContentFactory</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Shell/Services/PageContentFactory.cs:10](../../../../src/Meridian.Wpf/Shell/Services/PageContentFactory.cs#L10).
-
-Resolves desktop page types, creates their content, and applies navigation parameters and presentation mode.
-
-```csharp
-public sealed class PageContentFactory : IPageContentFactory
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PageContentFactory(NavigationService navigationService);</code> | [src/Meridian.Wpf/Shell/Services/PageContentFactory.cs:14](../../../../src/Meridian.Wpf/Shell/Services/PageContentFactory.cs#L14) |  |
-| <code>public FrameworkElement CreateContent(string pageTag, object? parameter = null, WorkspaceChromePresentationMode presentationMode = WorkspaceChromePresentationMode.Docked) =&gt; …;</code> | [src/Meridian.Wpf/Shell/Services/PageContentFactory.cs:19](../../../../src/Meridian.Wpf/Shell/Services/PageContentFactory.cs#L19) |  |

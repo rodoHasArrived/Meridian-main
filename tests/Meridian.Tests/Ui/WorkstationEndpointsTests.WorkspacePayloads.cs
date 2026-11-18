@@ -468,7 +468,7 @@ public sealed partial class WorkstationEndpointsTests
     public async Task MapWorkstationEndpoints_ReportingStructuredExport_ShouldReturnJsonAndCsvFromRetainedReportingPayload()
     {
         var workflow = new ReportPackWorkflowService();
-        workflow.Create(
+        var created = workflow.Create(
             "fund-alpha",
             "acct-main",
             "2026-05",
@@ -491,6 +491,25 @@ public sealed partial class WorkstationEndpointsTests
                 CompanyId: "tenant-test",
                 TenantId: "tenant-test",
                 RequireBoundScope: true));
+        // Report cuts read only published or restated versions, so publish the pack.
+        workflow.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
+        workflow.Transition(created.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
+        workflow.Publish(created.ReportId, "publisher", "publisher", "controller", "sha256:2026-05", "manifest-2026-05", "vault/2026-05.json",
+            created.LineProvenance
+                .Select(static line => new ReportPackEvidenceLinkDto(line.EvidenceId, "Line evidence", $"/evidence/{line.EvidenceId}", "reporting"))
+                .Concat(
+                [
+                    new ReportPackEvidenceLinkDto("ledger-entry-1", "Ledger entry", "/evidence/ledger-entry-1", "ledger"),
+                    new ReportPackEvidenceLinkDto("provider-event-1", "Provider event", "/evidence/provider-event-1", "provider"),
+                    new ReportPackEvidenceLinkDto("security-1", "Security Master identity", "/evidence/security-1", "security-master"),
+                    new ReportPackEvidenceLinkDto("definition-1", "Security definition", "/evidence/definition-1", "security-master"),
+                    new ReportPackEvidenceLinkDto("case-1", "Reconciliation case", "/evidence/case-1", "reconciliation"),
+                    new ReportPackEvidenceLinkDto("recon-run-1", "Reconciliation run", "/evidence/recon-run-1", "reconciliation"),
+                    new ReportPackEvidenceLinkDto("approval-1", "Approval", "/evidence/approval-1", "approval"),
+                    new ReportPackEvidenceLinkDto("run-1", "Strategy run", "/evidence/run-1", "strategy"),
+                    new ReportPackEvidenceLinkDto("provider-session-1", "Provider source session", "/evidence/provider-session-1", "provider")
+                ])
+                .ToArray());
 
         await using var app = await CreateAppAsync(services =>
         {
@@ -679,7 +698,16 @@ public sealed partial class WorkstationEndpointsTests
                 "run-1",
                 evidenceId,
                 RunId: "run-1",
-                ReportValue: reportValue);
+                LedgerEntryId: "ledger-entry-1",
+                ReconciliationCaseId: "case-1",
+                ReportValue: reportValue,
+                SourceSessionId: "provider-session-1",
+                ReconciliationRunId: "recon-run-1",
+                ProviderEventId: "provider-event-1",
+                SecurityMasterId: "security-1",
+                SecurityDefinitionId: "definition-1",
+                ReconciliationOutcome: "matched",
+                ApprovalId: "approval-1");
     }
 
     [Fact]

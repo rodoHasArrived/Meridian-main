@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RealizedGainLossReportDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.RealizedGainLossReportDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:825](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L825).
+
+```csharp
+public sealed record RealizedGainLossReportDto(string ReportId, string FundProfileId, Guid? LedgerBookId, string PeriodId, LedgerDimensionSetDto Dimensions, decimal RealizedGainLoss, string Currency, AccountingCertificationStateDto CertificationState, IReadOnlyList<string> EvidenceLinks);
+```
+
 ## RefreshIntercompanyProposalRequest
 
 Qualified name: <code>Meridian.Contracts.Ledger.RefreshIntercompanyProposalRequest</code>. Kind: `record`.
@@ -817,25 +827,3 @@ Declared public members:
 | <code>public RuntimeLifecycleSnapshotDto? HostLifecycle { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:46](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L46) |  |
 | <code>public LifecycleSessionReceiptDto? LatestSessionReceipt { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:47](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L47) |  |
 | <code>public string? Message { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:48](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L48) |  |
-
-## RuntimeLifecycleCheckDto
-
-Qualified name: <code>Meridian.Contracts.Lifecycle.RuntimeLifecycleCheckDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:3](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L3).
-
-```csharp
-public sealed record RuntimeLifecycleCheckDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public required string Id { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:5](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L5) |  |
-| <code>public required string DisplayName { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:6](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L6) |  |
-| <code>public required LifecycleCheckRequirement Requirement { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:7](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L7) |  |
-| <code>public required LifecycleCheckStatus Status { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:8](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L8) |  |
-| <code>public required string Message { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:9](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L9) |  |
-| <code>public DateTimeOffset CheckedAtUtc { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:10](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L10) |  |
-| <code>public double DurationMilliseconds { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:11](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L11) |  |

@@ -6,6 +6,22 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OptionContractReferenceDto
+
+Qualified name: <code>Meridian.Contracts.Options.OptionContractReferenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Options/OptionReferenceDtos.cs:5](../../../../src/Meridian.Contracts/Options/OptionReferenceDtos.cs#L5).
+
+```csharp
+public sealed record OptionContractReferenceDto(string ContractSymbol, Guid? SecurityId, string OptionChainId, string UnderlyingSymbol, Guid? UnderlyingSecurityId, string PutCall, decimal Strike, DateOnly ExpiryDate, decimal Multiplier, bool IsAdjusted, DateOnly? LastTradingDate, long Version)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityOptionRight? Right =&gt; …;</code> | [src/Meridian.Contracts/Options/OptionReferenceDtos.cs:23](../../../../src/Meridian.Contracts/Options/OptionReferenceDtos.cs#L23) | PutCall as a typed right, or null when the stored text names neither. The raw text stays on PutCall. |
+
 ## OptionScreenCandidate
 
 Qualified name: <code>Meridian.Contracts.Options.OptionScreenCandidate</code>. Kind: `record`.
@@ -728,14 +744,4 @@ Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:16](.
 
 ```csharp
 public sealed record CreatePrivateCapitalCommitment(Guid CommandId, Guid HolderEntityId, Guid VehicleSecurityId, string Currency, string SourceReference, PrivateCapitalEvidence Evidence);
-```
-
-## PreviewPrivateCapitalImport
-
-Qualified name: <code>Meridian.Contracts.PrivateCapital.PreviewPrivateCapitalImport</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:34](../../../../src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs#L34).
-
-```csharp
-public sealed record PreviewPrivateCapitalImport(IReadOnlyList<PrivateCapitalSnapshotInput>? Rows, string? Csv, PrivateCapitalEvidence Evidence, string Rationale);
 ```

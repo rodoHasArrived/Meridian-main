@@ -29,8 +29,25 @@ const SEVERITY_ALIASES: Record<string, DesignSystemSeverity> = {
   // Aliases the operations SeverityBadge recognised before it became StatusBadge, so every
   // status that badge already knew keeps its tone.
   livelinked: "ready", reviewerassigned: "review", sourcebacked: "review",
-  exceptionsopen: "action", reviewrequiredsoon: "action", danger: "blocked", default: "info"
+  exceptionsopen: "action", reviewrequiredsoon: "action", danger: "blocked", default: "info",
+  // Labels the cross-route severity check found rendering in more than one colour (UX Phase C).
+  open: "action", restated: "review", notloaded: "info", periodconfirmationrequired: "action", overdue: "blocked"
 };
+
+/**
+ * The severity a badge shows. When its visible label is itself a status word ("Blocked",
+ * "Review", "Running", "3 open"), the label decides, so one word has one colour on every screen;
+ * a custom label ("3 breaks", "Ready to post 4") keeps the caller's status.
+ */
+export function badgeSeverity(status: string | null | undefined, label: ReactNode): DesignSystemSeverity {
+  if (typeof label === "string" || typeof label === "number") {
+    const key = String(label).toLowerCase().replace(/[^a-z]/g, "");
+    if (key && Object.hasOwn(SEVERITY_ALIASES, key)) {
+      return SEVERITY_ALIASES[key]!;
+    }
+  }
+  return normalizeDesignSystemSeverity(status);
+}
 
 /** Collapse any Meridian status / severity string onto one of the five canonical severities. */
 export function normalizeDesignSystemSeverity(status: string | null | undefined): DesignSystemSeverity {
@@ -127,8 +144,9 @@ export interface StatusBadgeProps extends Omit<HTMLAttributes<HTMLSpanElement>, 
  * <StatusBadge status="Blocked" label="3 breaks" /> // custom label, blocked tone
  */
 export function StatusBadge({ status = "info", label, children, dot = true, className, ...props }: StatusBadgeProps) {
-  const severity = normalizeDesignSystemSeverity(status);
-  const content = label ?? children ?? SEVERITY_DEFAULT_LABEL[severity];
+  const supplied = label ?? children;
+  const severity = badgeSeverity(status, supplied);
+  const content = supplied ?? SEVERITY_DEFAULT_LABEL[severity];
   const classes = [
     "mds-sev",
     `mds-sev--${severity}`,

@@ -6,6 +6,98 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StructuredReportingExportPurposeDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StructuredReportingExportPurposeDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:350](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L350).
+
+```csharp
+public enum StructuredReportingExportPurposeDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Regulatory = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:352](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L352) |  |
+| <code>DataWarehouse = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:353](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L353) |  |
+| <code>InvestmentDecision = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:354](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L354) |  |
+
+## StructuredReportingExportRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StructuredReportingExportRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:422](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L422).
+
+```csharp
+public sealed record StructuredReportingExportRequestDto(string FundProfileId, string ExportId, DateTimeOffset? AsOf = null, string? Currency = null);
+```
+
+## StructuredReportingExportRowLineageDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StructuredReportingExportRowLineageDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:404](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L404).
+
+```csharp
+public sealed record StructuredReportingExportRowLineageDto(int RowNumber, string RowKey, string RowHashSha256);
+```
+
+## StructuredReportingExportValidationCheckDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StructuredReportingExportValidationCheckDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:399](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L399).
+
+```csharp
+public sealed record StructuredReportingExportValidationCheckDto(string CheckId, string Status, string Detail);
+```
+
+## SubmitForApproval
+
+Qualified name: <code>Meridian.Contracts.Workstation.SubmitForApproval</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:28](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L28).
+
+```csharp
+public sealed record SubmitForApproval(Guid WorkflowId, FundWorkflowCommandMetadata Metadata);
+```
+
+## SubmitSecurityMasterRevisionRequest
+
+Qualified name: <code>Meridian.Contracts.Workstation.SubmitSecurityMasterRevisionRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:73](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L73).
+
+Transitions a draft revision into the governed approval gate. When WorkflowId is supplied, submission is routed through the operations-continuity approval workflow using the workflow&#x27;s ExpectedWorkflowVersion, Reviewer, and ReportPackId.
+
+```csharp
+public sealed record SubmitSecurityMasterRevisionRequest(Guid SecurityId, Guid RevisionId, string Actor, string? Note, string? FundProfileId = null, Guid? WorkflowId = null, long ExpectedWorkflowVersion = 0, string? Reviewer = null, string? ReportPackId = null);
+```
+
+## SymbolAttributionEntry
+
+Qualified name: <code>Meridian.Contracts.Workstation.SymbolAttributionEntry</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:937](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L937).
+
+Per-symbol P&amp;L attribution for one run.
+
+```csharp
+public sealed record SymbolAttributionEntry(string Symbol, decimal RealizedPnl, decimal UnrealizedPnl, decimal TotalPnl, int TradeCount, decimal Commissions, decimal MarginInterestAllocated);
+```
+
+## SyncCompletenessResult
+
+Qualified name: <code>Meridian.Contracts.Workstation.SyncCompletenessResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:14](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L14).
+
+```csharp
+public sealed record SyncCompletenessResult(Guid AccountId, string Counterparty, int ExpectedRecords, int ReceivedRecords, bool IsComplete, string Detail);
+```
+
 ## SyncValidationResult
 
 Qualified name: <code>Meridian.Contracts.Workstation.SyncValidationResult</code>. Kind: `record`.
@@ -528,98 +620,4 @@ User-facing workflow definition that groups actions, evidence, and target worksp
 
 ```csharp
 public sealed record WorkflowDefinitionDto(string WorkflowId, string Title, string Summary, string WorkspaceId, string WorkspaceTitle, string EntryPageTag, string Tone, IReadOnlyList<WorkflowActionDto> Actions, IReadOnlyList<string> EvidenceTags, IReadOnlyList<string> MarketPatternTags);
-```
-
-## WorkflowEvidenceBadge
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkflowEvidenceBadge</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs:52](../../../../src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs#L52).
-
-Lightweight evidence chip supporting a workflow recommendation.
-
-```csharp
-public sealed record WorkflowEvidenceBadge(string Label, string Value, string Tone);
-```
-
-## WorkflowLibraryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkflowLibraryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs#L6).
-
-Shared catalog projection for reusable workstation workflows.
-
-```csharp
-public sealed record WorkflowLibraryDto(DateTimeOffset GeneratedAt, IReadOnlyList<WorkflowDefinitionDto> Workflows, IReadOnlyList<WorkflowActionDto> Actions);
-```
-
-## WorkflowNextAction
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkflowNextAction</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs:33](../../../../src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs#L33).
-
-Primary operator action recommended for a workspace.
-
-```csharp
-public sealed record WorkflowNextAction(string Label, string Detail, string TargetPageTag, string Tone);
-```
-
-## WorkflowPresetDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkflowPresetDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:43](../../../../src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs#L43).
-
-Durable operator-saved workflow preset that can be launched from web or desktop shells.
-
-```csharp
-public sealed record WorkflowPresetDto(string PresetId, string Name, string? Description, string WorkflowId, string WorkflowTitle, string? ActionId, string ActionLabel, string WorkspaceId, string WorkspaceTitle, string TargetPageTag, IReadOnlyList<string> Tags, bool IsPinned, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, DateTimeOffset? LastUsedAt, string? ViewStateEnvelope = null);
-```
-
-## WorkflowPresetLibraryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkflowPresetLibraryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:64](../../../../src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs#L64).
-
-Shared preset catalog projection for the workstation workflow library.
-
-```csharp
-public sealed record WorkflowPresetLibraryDto(DateTimeOffset GeneratedAt, IReadOnlyList<WorkflowPresetDto> Presets);
-```
-
-## WorkflowPresetPinRequest
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkflowPresetPinRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:84](../../../../src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs#L84).
-
-Request to update a workflow preset&#x27;s pinned state.
-
-```csharp
-public sealed record WorkflowPresetPinRequest(bool IsPinned);
-```
-
-## WorkflowPresetSaveRequest
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkflowPresetSaveRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:71](../../../../src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs#L71).
-
-Request to create or update an operator-saved workflow preset.
-
-```csharp
-public sealed record WorkflowPresetSaveRequest(string? PresetId, string Name, string? Description, string WorkflowId, string? ActionId, IReadOnlyList<string>? Tags, bool IsPinned, string? ViewStateEnvelope = null);
-```
-
-## WorkspaceModeDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkspaceModeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:62](../../../../src/Meridian.Contracts/Workstation/FirstRunDtos.cs#L62).
-
-```csharp
-public sealed record WorkspaceModeDto(string Id, string Name, bool IsSample, string Badge, string SafetyMessage, string SamplePackVersion);
 ```

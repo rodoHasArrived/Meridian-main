@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RuntimeLifecycleCheckDto
+
+Qualified name: <code>Meridian.Contracts.Lifecycle.RuntimeLifecycleCheckDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:3](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L3).
+
+```csharp
+public sealed record RuntimeLifecycleCheckDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public required string Id { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:5](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L5) |  |
+| <code>public required string DisplayName { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:6](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L6) |  |
+| <code>public required LifecycleCheckRequirement Requirement { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:7](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L7) |  |
+| <code>public required LifecycleCheckStatus Status { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:8](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L8) |  |
+| <code>public required string Message { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:9](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L9) |  |
+| <code>public DateTimeOffset CheckedAtUtc { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:10](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L10) |  |
+| <code>public double DurationMilliseconds { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:11](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L11) |  |
+
 ## RuntimeLifecycleSnapshotDto
 
 Qualified name: <code>Meridian.Contracts.Lifecycle.RuntimeLifecycleSnapshotDto</code>. Kind: `record`.
@@ -972,19 +994,3 @@ Source: [src/Meridian.Contracts/Options/OptionReferenceDtos.cs:33](../../../../s
 ```csharp
 public sealed record OptionChainSnapshotDto(string OptionChainId, string UnderlyingSymbol, DateOnly ExpiryDate, DateTimeOffset LastUpdatedUtc, int ContractCount, IReadOnlyList<OptionSeriesDto> Series);
 ```
-
-## OptionContractReferenceDto
-
-Qualified name: <code>Meridian.Contracts.Options.OptionContractReferenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Options/OptionReferenceDtos.cs:5](../../../../src/Meridian.Contracts/Options/OptionReferenceDtos.cs#L5).
-
-```csharp
-public sealed record OptionContractReferenceDto(string ContractSymbol, Guid? SecurityId, string OptionChainId, string UnderlyingSymbol, Guid? UnderlyingSecurityId, string PutCall, decimal Strike, DateOnly ExpiryDate, decimal Multiplier, bool IsAdjusted, DateOnly? LastTradingDate, long Version)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityOptionRight? Right =&gt; …;</code> | [src/Meridian.Contracts/Options/OptionReferenceDtos.cs:23](../../../../src/Meridian.Contracts/Options/OptionReferenceDtos.cs#L23) | PutCall as a typed right, or null when the stored text names neither. The raw text stays on PutCall. |

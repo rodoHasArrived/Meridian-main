@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolRegistryStatistics
+
+Qualified name: <code>Meridian.Contracts.Catalog.SymbolRegistryStatistics</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:447](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L447).
+
+Statistics about the symbol registry.
+
+```csharp
+public sealed class SymbolRegistryStatistics
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;totalSymbols&quot;)] public int TotalSymbols { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:453](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L453) | Total number of symbols. |
+| <code>[JsonPropertyName(&quot;activeSymbols&quot;)] public int ActiveSymbols { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:459](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L459) | Number of active symbols. |
+| <code>[JsonPropertyName(&quot;delistedSymbols&quot;)] public int DelistedSymbols { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:465](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L465) | Number of delisted symbols. |
+| <code>[JsonPropertyName(&quot;totalAliases&quot;)] public int TotalAliases { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:471](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L471) | Total number of aliases. |
+| <code>[JsonPropertyName(&quot;providerCount&quot;)] public int ProviderCount { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:477](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L477) | Number of providers with mappings. |
+| <code>[JsonPropertyName(&quot;byAssetClass&quot;)] public Dictionary&lt;string, int&gt; ByAssetClass { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:483](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L483) | Breakdown by asset class. |
+| <code>[JsonPropertyName(&quot;byExchange&quot;)] public Dictionary&lt;string, int&gt; ByExchange { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:489](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L489) | Breakdown by exchange. |
+
 ## SymbolResolutionMismatch
 
 Qualified name: <code>Meridian.Contracts.Catalog.SymbolResolutionMismatch</code>. Kind: `record`.
@@ -1033,26 +1057,3 @@ Declared public members:
 | <code>[JsonPropertyName(&quot;highlights&quot;)] public string[]? Highlights { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:158](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L158) |  |
 | <code>[JsonPropertyName(&quot;isBuiltIn&quot;)] public bool IsBuiltIn { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:161](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L161) |  |
 | <code>[JsonPropertyName(&quot;isEnabled&quot;)] public bool IsEnabled { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:164](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L164) |  |
-
-## ProviderScopeDto
-
-Qualified name: <code>Meridian.Contracts.Configuration.ProviderScopeDto</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:197](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L197).
-
-Identifies the workspace and financial entity or account scope targeted by a provider binding.
-
-```csharp
-public sealed class ProviderScopeDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;workspace&quot;)] public string? Workspace { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:200](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L200) |  |
-| <code>[JsonPropertyName(&quot;fundProfileId&quot;)] public string? FundProfileId { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:203](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L203) |  |
-| <code>[JsonPropertyName(&quot;entityId&quot;)] public Guid? EntityId { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:206](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L206) |  |
-| <code>[JsonPropertyName(&quot;sleeveId&quot;)] public Guid? SleeveId { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:209](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L209) |  |
-| <code>[JsonPropertyName(&quot;vehicleId&quot;)] public Guid? VehicleId { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:212](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L212) |  |
-| <code>[JsonPropertyName(&quot;accountId&quot;)] public Guid? AccountId { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:215](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L215) |  |

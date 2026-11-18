@@ -192,6 +192,11 @@ accessibility/lint tooling. Its lockfile records the resolved graph; use `npm ci
 for a lockfile-based install. The root Node package separately owns asset/diagram tooling and
 pass-through dashboard scripts. Do not update one package's lockfile to represent changes in the other.
 
+The dashboard's one spreadsheet dependency is `write-excel-file` (MIT, pinned exactly; it depends on
+`fflate`, also MIT). It writes the "Export as shown · XLSX" file from `TableWorkbench`
+(`src/lib/table-export.ts`) and is imported only when an operator exports, so it ships as its own
+lazy chunk and is not part of the initial workstation bundle.
+
 Python documentation tools use their checked-in requirements files, including PyYAML for standard
 YAML parsing. See [Engineering](engineering/README.md#buildtestrun) and
 [documentation contribution](development/documentation-contribution-guide.md) for the validation

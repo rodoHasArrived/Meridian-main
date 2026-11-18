@@ -312,10 +312,18 @@ Declared public members:
 | <code>public StructuredReportingExportPayloadDto GetStructuredReportingExport(string exportId, ReportAccessQueryContext? accessContext = null, int recentRunLimit = DefaultRecentRunLimit);</code> | [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs:324](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs#L324) |  |
 | <code>public IReadOnlyList&lt;IReadOnlyDictionary&lt;string, string&gt;&gt; BuildReportWriterDatasetRows(ReportAccessQueryContext? accessContext = null, int recentRunLimit = DefaultRecentRunLimit) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs:356](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs#L356) |  |
 | <code>public static ReportPackDistributionPolicy ResolveDistributionPolicy(string distributionId);</code> | [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs:370](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs#L370) |  |
-| <code>public static WorkstationReportPackDistributionPayload[] BuildDistributionRecords(IReadOnlyList&lt;ReportPackWorkflowRecordDto&gt; workflowRecords, IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt;? deliveryAttempts = null);</code> | [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs:1666](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs#L1666) |  |
-| <code>public static ReportingScheduleDeliveryPlanDto[] BuildScheduleDeliveryPlans(IReadOnlyList&lt;ReportingScheduleRecordDto&gt; schedules, IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt;? deliveryAttempts = null);</code> | [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs:1707](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs#L1707) |  |
+| <code>public static WorkstationReportPackDistributionPayload[] BuildDistributionRecords(IReadOnlyList&lt;ReportPackWorkflowRecordDto&gt; workflowRecords, IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt;? deliveryAttempts = null);</code> | [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs:1675](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs#L1675) |  |
+| <code>public static ReportingScheduleDeliveryPlanDto[] BuildScheduleDeliveryPlans(IReadOnlyList&lt;ReportingScheduleRecordDto&gt; schedules, IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt;? deliveryAttempts = null);</code> | [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs:1716](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs#L1716) |  |
 
 Source: [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.Models.cs:5](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.Models.cs#L5).
+
+```csharp
+public sealed partial class ReportPackRunReadService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.ReportedPeriods.cs:9](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.ReportedPeriods.cs#L9).
+
+Which retained report versions count as reported figures, and the previous reported period the portfolio P&amp;L slices compare with.
 
 ```csharp
 public sealed partial class ReportPackRunReadService

@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyAgreementEvidenceDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementEvidenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:25](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L25).
+
+Submitted references are resolved by the evidence authority; supplied hashes are never trusted.
+
+```csharp
+public sealed record IntercompanyAgreementEvidenceDto(string Reference, string? ArtifactId = null, string? ContentHash = null);
+```
+
 ## IntercompanyAgreementForbiddenException
 
 Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementForbiddenException</code>. Kind: `class`.
@@ -668,13 +680,3 @@ Enum declarations:
 | <code>EntityAssignment</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:431](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L431) |  |
 | <code>AccountLedgerReference</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:432](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L432) |  |
 | <code>Unassigned</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:433](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L433) |  |
-
-## LedgerMappingWorkbenchDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.LedgerMappingWorkbenchDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:462](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L462).
-
-```csharp
-public sealed record LedgerMappingWorkbenchDto(DateTimeOffset AsOf, OrganizationSummaryDto? Organization, BusinessSummaryDto? Business, int AccountCount, int MappedAccountCount, int UnmappedAccountCount, IReadOnlyList<LedgerGroupSummaryDto> LedgerGroups, IReadOnlyList<LedgerMappingAccountDto> Accounts, FundStructureSharedDataAccessDto? SharedDataAccess = null);
-```

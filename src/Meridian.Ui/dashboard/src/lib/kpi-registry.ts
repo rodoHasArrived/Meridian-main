@@ -9,7 +9,7 @@ import type {
   TradingWorkspaceResponse
 } from "@/types";
 import type { WorkstationCrossScreenCounts } from "@/types/cross-screen-counts";
-import { countOpenOrders, countOpenBreaks, countProviderHealth, formatProviderHealth, selectSharedProviderHealth } from "@/lib/cross-screen-counts";
+import { countOpenOrders, countOpenBreaks, formatProviderHealth, selectSharedProviderHealth } from "@/lib/cross-screen-counts";
 
 /** Read models are inputs, never competing fallbacks for the same figure. */
 export interface KpiReadModels {
@@ -192,12 +192,7 @@ const providerDefinition: KpiDefinition = {
 
 const dataProviderDefinition: KpiDefinition = {
   ...providerDefinition,
-  computation: "Healthy providers out of every listed Data provider, counted from the loaded Data list using the shared definition; fall back to the shared count only when that list is absent.",
-  compute: (models) => {
-    const providers = countProviderHealth(models.data?.providers)
-      ?? selectSharedProviderHealth(models.crossScreenCounts, undefined);
-    return providers ? scalar(formatProviderHealth(providers), providers.total > 0 && providers.healthy === providers.total ? "success" : "warning") : unavailable("Provider health count unavailable");
-  }
+  computation: "The same figure as Today and Settings: healthy providers out of every provider in use, from the shared cross-screen count. The loaded Data list is counted only when the shared count is withheld (no provider permission), and then covers only the providers visible to the viewer."
 };
 
 function crossScreenOpenOrders(models: KpiReadModels): ComputedKpi {
@@ -247,7 +242,6 @@ export const KPI_REGISTRY = {
     ...sourceMetric("strategy", "Active recent runs", ["active-runs"]),
     computation: "Read active-runs from the Strategy workspace's recent retained run population (currently up to six records), not the system-wide active-run count."
   },
-  "strategy.runs": sourceMetric("strategy", "Runs", ["runs"]),
   "strategy.queued-runs": sourceMetric("strategy", "Queued promotions", ["queued-runs"]),
   "strategy.queued": sourceMetric("strategy", "Queued", ["queued"]),
   "strategy.review-runs": sourceMetric("strategy", "Needs review", ["review-runs", "review"]),
@@ -283,10 +277,65 @@ export const KPI_REGISTRY = {
 export type KpiId = keyof typeof KPI_REGISTRY;
 export interface ResolvedKpi extends MetricSnapshot {
   id: KpiId;
+  /** What the figure counts, stated identically wherever it appears. */
+  population: string;
+  /** What a change in the figure is measured against, or null when the figure carries no change. */
+  comparisonBasis: string | null;
   scope: string;
   canonicalValue: string;
   status: KpiStatus;
   currency: string | null;
+}
+
+/**
+ * The fixed population and comparison basis of every registered figure. The shared read model
+ * serves the same catalog (`GET /api/workstation/kpi-definitions`, WorkstationKpiDefinitions.cs) so
+ * the desktop workstation states figures identically; `kpi-definitions.snapshot.json` pins the two.
+ */
+export const KPI_DEFINITIONS: Readonly<Record<KpiId, { population: string; comparisonBasis: string | null }>> = {
+  "portfolio.total-exposure": { population: "Live holdings · all accounts", comparisonBasis: null },
+  "portfolio.unrealized-pnl": { population: "Live holdings · all accounts", comparisonBasis: null },
+  "portfolio.open-positions": { population: "Live holdings · all accounts", comparisonBasis: null },
+  "portfolio.cash": { population: "Live holdings · all accounts", comparisonBasis: null },
+  "portfolio.retained-market-value": { population: "Retained run records", comparisonBasis: null },
+  "portfolio.retained-records": { population: "Retained run records", comparisonBasis: null },
+  "trading.net-pnl": { population: "Brokerage session · selected account", comparisonBasis: "Session open" },
+  "trading.open-orders": { population: "Open orders · selected account", comparisonBasis: null },
+  "trading.cash": { population: "Brokerage session · selected account", comparisonBasis: null },
+  "trading.portfolio-value": { population: "Brokerage session · selected account", comparisonBasis: null },
+  "trading.fills": { population: "Brokerage session · selected account", comparisonBasis: null },
+  "trading.risk": { population: "Brokerage session · selected account", comparisonBasis: null },
+  "strategy.active-runs": { population: "Recent strategy runs", comparisonBasis: null },
+  "strategy.queued-runs": { population: "Recent strategy runs", comparisonBasis: null },
+  "strategy.queued": { population: "Recent strategy runs", comparisonBasis: null },
+  "strategy.review-runs": { population: "Recent strategy runs", comparisonBasis: null },
+  "strategy.winning-runs": { population: "Recent strategy runs", comparisonBasis: null },
+  "strategy.promotions": { population: "Recent strategy runs", comparisonBasis: null },
+  "data.providers-healthy": { population: "Providers in use", comparisonBasis: null },
+  "data.backfills-running": { population: "Data operations", comparisonBasis: null },
+  "data.exports-ready": { population: "Data operations", comparisonBasis: null },
+  "data.ops-review": { population: "Data operations", comparisonBasis: null },
+  "data.kernel-critical-jumps": { population: "Data operations", comparisonBasis: null },
+  "data.replacement-cost": { population: "Data operations", comparisonBasis: null },
+  "accounting.open-breaks": { population: "Unresolved reconciliation breaks", comparisonBasis: "Your last visit" },
+  "accounting.timing-drift": { population: "Accounting workspace", comparisonBasis: null },
+  "accounting.security-gaps": { population: "Accounting workspace", comparisonBasis: null },
+  "accounting.audit-ready": { population: "Accounting workspace", comparisonBasis: null },
+  "accounting.kernel-critical-jumps": { population: "Accounting workspace", comparisonBasis: null },
+  "system.providers-online": { population: "Providers in use", comparisonBasis: null },
+  "system.active-runs": { population: "All strategy runs · system", comparisonBasis: null },
+  "system.storage-health": { population: "Storage · system", comparisonBasis: null }
+};
+
+/** The population a provider-health figure covers once the shared count is withheld. */
+const PROVIDERS_VISIBLE_POPULATION = "Providers visible to you";
+
+function kpiPopulation(id: KpiId, models: KpiReadModels): string {
+  const population = KPI_DEFINITIONS[id].population;
+  if ((id === "system.providers-online" || id === "data.providers-healthy") && !models.crossScreenCounts?.providers && models.data?.providers) {
+    return PROVIDERS_VISIBLE_POPULATION;
+  }
+  return population;
 }
 
 export const WORKSPACE_KPI_IDS = {
@@ -308,7 +357,7 @@ const workspaceSourceIds = {
     fills: "trading.fills", risk: "trading.risk"
   },
   strategy: {
-    "active-runs": "strategy.active-runs", runs: "strategy.runs",
+    "active-runs": "strategy.active-runs",
     "queued-runs": "strategy.queued-runs", queued: "strategy.queued",
     "review-runs": "strategy.review-runs", review: "strategy.review-runs",
     "winning-runs": "strategy.winning-runs", promotions: "strategy.promotions"
@@ -350,7 +399,7 @@ export function kpiReadOwner(id: KpiId, models: KpiReadModels): Owner {
   const owner = KPI_REGISTRY[id].owner;
   if (owner !== "crossScreenCounts") return owner;
   if (id === "system.providers-online") return models.crossScreenCounts?.providers ? "crossScreenCounts" : "data";
-  if (id === "data.providers-healthy") return models.data?.providers ? "data" : "crossScreenCounts";
+  if (id === "data.providers-healthy") return models.crossScreenCounts?.providers ? "crossScreenCounts" : "data";
   if (id === "trading.open-orders") return models.trading?.openOrders ? "trading" : "crossScreenCounts";
   return models.accounting?.workspace?.openBreaks != null || models.accounting?.breakQueue ? "accounting" : "crossScreenCounts";
 }
@@ -373,6 +422,7 @@ export function resolveKpi(id: KpiId, models: KpiReadModels, requestedScope?: Kp
   return applyKpiScope({
     ...result.evidence,
     id, label: definition.label, value: result.value, delta: result.delta, tone: result.tone, status: result.status, currency: result.currency, scope,
+    population: kpiPopulation(id, models), comparisonBasis: KPI_DEFINITIONS[id].comparisonBasis,
     canonicalValue: JSON.stringify({ status: result.status, value: result.raw, currency: result.currency })
   }, requestedScope);
 }
@@ -404,6 +454,7 @@ export function kpiAttributes(metric: ResolvedKpi) {
     "data-kpi-id": metric.id,
     "data-kpi-scope": metric.scope,
     "data-kpi-value": metric.canonicalValue,
-    "data-kpi-display": metric.value
+    "data-kpi-display": metric.value,
+    "data-kpi-population": metric.population
   };
 }

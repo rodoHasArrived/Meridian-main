@@ -99,4 +99,29 @@ describe("WorkstationStatusBar", () => {
     expect(freshness.value.length).toBeLessThanOrEqual(56);
     expect(freshness.value.endsWith("…")).toBe(true);
   });
+
+  it("starts from the shell's freshness, which a page can add to but never clear", () => {
+    const build = (
+      shellFreshness: Parameters<typeof buildWorkstationStatusItems>[0]["shellFreshness"],
+      pageFreshness: Parameters<typeof buildWorkstationStatusItems>[0]["pageFreshness"] = null
+    ) => buildWorkstationStatusItems({ workspaceLabel: "Today", refreshing: false, hasError: false, shellFreshness, pageFreshness });
+
+    // Stale provider evidence in the masthead pill: no route says "up to date", even with no page row.
+    expect(build({ tone: "review", value: "Providers 1 of 4 healthy" })).toEqual([
+      { key: "sync", status: "ok", label: "Sync", value: "connected" },
+      { key: "freshness", status: "warn", label: "Freshness", value: "Providers 1 of 4 healthy" }
+    ]);
+    // A fresh page does not clear a stale shell.
+    expect(build({ tone: "review", value: "Providers 1 of 4 healthy" }, { tone: "ready", value: "2s ago" })[1].value).toBe("Providers 1 of 4 healthy");
+    // A blocked page outranks a review shell.
+    expect(build({ tone: "review", value: "Providers" }, { tone: "blocked", value: "Unavailable" })[1]).toMatchObject({ status: "err", value: "Unavailable" });
+    // Every source current: up to date, and freshness is still stated.
+    expect(build({ tone: "ready", value: null })).toEqual([
+      { key: "sync", status: "ok", label: "Sync", value: "up to date" },
+      { key: "freshness", status: "ok", label: "Freshness", value: "current" }
+    ]);
+    // Not yet verified is not "up to date".
+    expect(build({ tone: "unknown", value: null })[0].value).toBe("connected");
+    expect(build({ tone: "unknown", value: null })[1]).toMatchObject({ status: "warn", value: "not yet verified" });
+  });
 });

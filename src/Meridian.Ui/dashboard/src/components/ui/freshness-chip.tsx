@@ -14,11 +14,13 @@ import {
  */
 export interface FreshnessChipProps extends Omit<FreshnessChipInput, "now"> {
   className?: string;
+  /** Print the subject before the state ("Quote matrix: No data") where several chips sit together. */
+  showLabel?: boolean;
 }
 
 const MAX_TICK_MS = 30_000;
 
-export function FreshnessChip({ className, ...input }: FreshnessChipProps) {
+export function FreshnessChip({ className, showLabel = false, ...input }: FreshnessChipProps) {
   const now = useNowTick(Math.max(1000, Math.min(input.staleBudgetMs, MAX_TICK_MS)), input.timestamp);
   const vm = buildFreshnessChipViewModel({ ...input, now });
 
@@ -31,7 +33,7 @@ export function FreshnessChip({ className, ...input }: FreshnessChipProps) {
       title={vm.title ?? undefined}
       variant={vm.badgeVariant}
     >
-      {vm.text}
+      {showLabel && input.label?.trim() ? `${input.label.trim()}: ${vm.text}` : vm.text}
     </Badge>
   );
 }

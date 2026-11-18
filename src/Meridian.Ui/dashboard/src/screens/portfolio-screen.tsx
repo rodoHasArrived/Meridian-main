@@ -1,4 +1,5 @@
 import { InfoNote } from "@/components/ui/info-note";
+import { RunAttributionPeriodComparison } from "@/screens/portfolio-screen.attribution-comparison";
 import { PageHeading } from "@/components/ui/page-heading";
 import { DetailFields, DetailPane } from "@/components/meridian/detail-pane";
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
@@ -86,7 +87,8 @@ import { eyebrowClassName } from "@/design-system/label-case";
 import { metricFreshnessFromTrustTone, withMetricContext } from "@/lib/metric-trust";
 import { resolveFigureEvidence, resolveFigureScope, useWorkspaceFigureContext } from "@/lib/workspace-figure-context";
 import { FigureDifferenceNote } from "@/components/meridian/figure-difference-note";
-import { buildPortfolioFigureDifferenceNote } from "@/screens/portfolio-screen.figure-differences";
+import { buildPositionSourceDifferences, buildPortfolioFigureDifferenceNote } from "@/screens/portfolio-screen.figure-differences";
+import { describeBrokerageHouseholdSource, describeBrokerageSessionSource, describeLiveHoldingsSource, describeRetainedRunSource, positionSourceAttributes } from "@/lib/position-source";
 import { withPortfolioMarkEvidence } from "@/screens/portfolio-screen.headline-evidence";
 import { toSeverity } from "@/design-system/status-styles";
 
@@ -636,6 +638,12 @@ function PortfolioScreenContent({
     "portfolio.retained-market-value": retainedKpiContext,
     "portfolio.retained-records": retainedKpiContext
   };
+  const sessionSource = describeBrokerageSessionSource(trading?.brokerage);
+  const positionSourceDescriptor = retainedSource ? describeRetainedRunSource(retainedRunId, retainedAsOf) : describeLiveHoldingsSource();
+  const positionSourceDifferences = showBrokerageSync || retainedSource
+    ? []
+    : buildPositionSourceDifferences({ holdings: portfolio?.positions, session: trading?.positions, sessionLabel: sessionSource.label });
+  const compareSourcesRequested = location.hash === "#compare-sources";
   const figureDifferenceNote = showBrokerageSync
     ? null
     : buildPortfolioFigureDifferenceNote({
@@ -758,7 +766,7 @@ function PortfolioScreenContent({
             value={positionSource}
             onChange={(event) => setPositionSource(event.target.value as "live" | "retained")}
           >
-            <option value="live">Live holdings</option>
+            <option value="live">Live holdings · all accounts</option>
             <option value="retained">{retainedSourceLabel}</option>
           </select>
         </div>
@@ -772,8 +780,14 @@ function PortfolioScreenContent({
         compact={showOverview}
       />
       {showOverview || showAttribution ? (
-        <TechnicalDetails label="Compare position sources">
-          <p className="text-xs leading-5 text-muted-foreground">Live holdings are the current portfolio view. Retained records belong to {retainedRunLabel === "Retained run" ? "the run supplied by the record source" : retainedRunLabel}. Market value and exposure have different financial meanings; neither substitutes for the other.</p>
+        <TechnicalDetails id="compare-sources" label="Compare position sources" open={compareSourcesRequested || undefined}>
+          <p className="text-xs leading-5 text-muted-foreground">Live holdings cover every account. Trading shows the {sessionSource.label.charAt(0).toLowerCase()}{sessionSource.label.slice(1)} for the selected account, so the same symbol can read differently there.</p>
+          {positionSourceDifferences.length ? (
+            <ul className="mt-2 space-y-1 text-xs leading-5 text-foreground" aria-label="Why these differ" data-testid="position-source-differences">
+              {positionSourceDifferences.map((difference) => <li key={difference}>{difference}</li>)}
+            </ul>
+          ) : null}
+          <p className="mt-2 text-xs leading-5 text-muted-foreground">Live holdings are the current portfolio view. Retained records belong to {retainedRunLabel === "Retained run" ? "the run supplied by the record source" : retainedRunLabel}. Market value and exposure have different financial meanings; neither substitutes for the other.</p>
           {figureDifferenceNote ? <FigureDifferenceNote note={figureDifferenceNote} /> : null}
           {retainedRunId ? (
             <TechnicalDetails label="Retained source identity" className="mt-3">
@@ -1099,7 +1113,7 @@ function PortfolioScreenContent({
                 selectedRowId={brokerageInspector === "account" && vm.selectedBrokerageAccount.id !== "all" ? vm.selectedBrokerageAccount.id : null}
                 emptyText={vm.brokerageAccountEmptyText} ariaLabel={vm.brokerageAccountsTableLabel}
                 caption="Select an account to filter positions and update the shared brokerage inspector." />
-              {vm.hasBrokeragePositions ? <TableWorkbench workbenchId="portfolio-brokerage-positions"
+              {vm.hasBrokeragePositions ? <div {...positionSourceAttributes(describeBrokerageHouseholdSource(vm.brokerageProviderLabel))}><TableWorkbench workbenchId="portfolio-brokerage-positions"
                 sourceKey={`${location.search}:${vm.selectedBrokerageAccountKey}`}
                 columns={brokeragePositionColumns.map(column => ({ ...column, exportValue: (row: PortfolioBrokeragePositionRow) => ({
                   "mark-readiness": `${row.markFreshness.label}; ${row.markFreshness.observedOn}; ${row.markFreshness.age}`,
@@ -1119,7 +1133,7 @@ function PortfolioScreenContent({
                 onRowSelect={row => { setBrokerageInspector("position"); vm.selectBrokeragePosition(row.id); }}
                 selectedRowId={brokerageInspector === "position" ? vm.selectedBrokeragePositionId : null}
                 emptyText={vm.brokerageEmptyText} ariaLabel={vm.brokeragePositionsTableLabel}
-                caption="Select a position to update the shared brokerage inspector." /> :
+                caption="Select a position to update the shared brokerage inspector." /></div> :
                 <div role="status" className="text-sm text-muted-foreground">{vm.brokerageEmptyText}
                   {vm.brokerageSetupAction ? <><Button asChild variant="outline" size="sm"><Link to={vm.brokerageSetupAction.href} aria-label={vm.brokerageSetupAction.ariaLabel}>{vm.brokerageSetupAction.label}</Link></Button><p className="mt-2 text-xs">{vm.brokerageSetupAction.detail}</p></> : null}
                 </div>}
@@ -1246,7 +1260,7 @@ function PortfolioScreenContent({
                 shareError={positionsTable.shareError}
               />
               {vm.hasPositions ? (
-                <div data-holdings-table data-holdings-loaded-count={vm.positionRows.length}
+                <div data-holdings-table data-holdings-loaded-count={vm.positionRows.length} {...positionSourceAttributes(positionSourceDescriptor)}
                   data-holdings-total={vm.holdingsTotal.exposureAmount ?? ""} data-holdings-total-currency={vm.holdingsTotal.currency ?? ""}>
                 <TableWorkbench
                   workbenchId="portfolio-positions"
@@ -1436,6 +1450,7 @@ function PortfolioScreenContent({
                       ))}
                     </div>
                   ) : null}
+                  <RunAttributionPeriodComparison runId={vm.selectedRun?.id} />
                   {vm.runDrillInSummary.tradeEvidenceRows.length > 0 ? (
                     <div className="mt-3 overflow-hidden rounded-md border border-border/60 bg-background/45">
                       <div className="border-b border-border/60 px-3 py-2">

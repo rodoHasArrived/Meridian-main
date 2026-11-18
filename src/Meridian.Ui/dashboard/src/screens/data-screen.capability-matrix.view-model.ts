@@ -128,3 +128,46 @@ export function useCapabilityMatrixPanel(
 
   return { loading, error, model, refresh };
 }
+
+/** How current a provider's evidence is, for the capability matrix's Freshness column (UX Phase D). */
+export interface CapabilityFreshnessModel {
+  state: "current" | "stale" | "no-evidence";
+  /** Chip text: "Current", "Stale" or "No evidence". */
+  label: string;
+  /** Age of the newest evidence, e.g. "3h ago", "12d ago"; null when none carries a time. */
+  ageText: string | null;
+}
+
+export interface CapabilityFreshnessSource {
+  providerId: string;
+  latestEvidenceAt: string | null;
+  evidenceStale: boolean;
+}
+
+export function formatEvidenceAge(ageMs: number): string {
+  const hours = ageMs / 3_600_000;
+  if (hours < 1) return "under 1h ago";
+  if (hours < 48) return `${Math.floor(hours)}h ago`;
+  const days = hours / 24;
+  if (days < 60) return `${Math.floor(days)}d ago`;
+  return `${Math.floor(days / 30)}mo ago`;
+}
+
+/**
+ * Joins provider evidence onto the capability matrix by provider id (case-insensitive), so the
+ * matrix says how fresh each provider's evidence is as well as what it declares. A provider the
+ * Data workspace has no connection row for reads "No evidence", the same as one with no timestamp.
+ */
+export function buildCapabilityFreshnessIndex(
+  sources: readonly CapabilityFreshnessSource[],
+  nowMs: number = Date.now()
+): (providerId: string) => CapabilityFreshnessModel {
+  const byId = new Map(sources.map((source) => [source.providerId.trim().toLowerCase(), source]));
+  return (providerId) => {
+    const source = byId.get(providerId.trim().toLowerCase());
+    const time = Date.parse(source?.latestEvidenceAt ?? "");
+    if (!source || !Number.isFinite(time)) return { state: "no-evidence", label: "No evidence", ageText: null };
+    const ageText = formatEvidenceAge(Math.max(0, nowMs - time));
+    return source.evidenceStale ? { state: "stale", label: "Stale", ageText } : { state: "current", label: "Current", ageText };
+  };
+}

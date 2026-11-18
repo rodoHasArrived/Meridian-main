@@ -1048,6 +1048,99 @@ Represents an ARGB color value.
 public readonly record struct ArgbColor(byte A, byte R, byte G, byte B);
 ```
 
+## IPeriodComparisonApiClient
+
+Qualified name: <code>Meridian.Ui.Services.Services.Comparisons.IPeriodComparisonApiClient</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs:9](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs#L9).
+
+Reads the shared prior-period comparisons that the desktop does not compose in process.
+
+```csharp
+public interface IPeriodComparisonApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ApiResponse&lt;PeriodComparisonDto&gt;&gt; GetCashLadderComparisonAsync(DateOnly? baselineAsOf = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs:12](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs#L12) | The portfolio cash ladder today against the ladder rebuilt as of baselineAsOf (default: the end of last month). |
+
+## PeriodComparisonApiClient
+
+Qualified name: <code>Meridian.Ui.Services.Services.Comparisons.PeriodComparisonApiClient</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs:20](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs#L20).
+
+HTTP client for UiApiRoutes.PortfolioCashLadderComparison. The cash ladder service needs host-composed holdings and cash providers, so the desktop reads it over the API; a host without them answers 501, which PeriodComparisonProjection.DescribeFailure{T} explains.
+
+```csharp
+public sealed class PeriodComparisonApiClient : IPeriodComparisonApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PeriodComparisonApiClient(ApiClientService apiClient);</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs:24](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs#L24) |  |
+| <code>public Task&lt;ApiResponse&lt;PeriodComparisonDto&gt;&gt; GetCashLadderComparisonAsync(DateOnly? baselineAsOf = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs:30](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs#L30) |  |
+| <code>public static string BuildCashLadderComparisonRoute(DateOnly? baselineAsOf) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs:34](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs#L34) | The comparison route, with the prior date when one is given. |
+
+## PeriodComparisonProjection
+
+Qualified name: <code>Meridian.Ui.Services.Services.Comparisons.PeriodComparisonProjection</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:58](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L58).
+
+Presentation projection for PeriodComparisonDto, shared by the desktop NAV, run attribution and cash ladder comparisons (UX Phase E parity). Lives here rather than in the desktop assembly so it runs in tests on any platform. It mirrors the browser&#x27;s period-comparison-panel.tsx: amounts to two places with negatives in parentheses, counts as whole numbers, the server&#x27;s percent (never recomputed) to two places, &quot;Not comparable · prior zero&quot; for a zero prior, and the Portfolio materiality threshold from lib/reporting-materiality.ts on amount lines.
+
+```csharp
+public static class PeriodComparisonProjection
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const decimal PortfolioMaterialAbsoluteVariance = 250_000m;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:61](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L61) | The Portfolio policy&#x27;s absolute-variance threshold in lib/reporting-materiality.ts. |
+| <code>public const string NotComparablePriorZero = &quot;Not comparable · prior zero&quot;;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:64](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L64) | Shown in place of a percent when the prior is zero. |
+| <code>public static readonly IReadOnlyCollection&lt;string&gt; CashLadderCountKeys = [&quot;breaches&quot;];</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:67](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L67) | Lines of the cash ladder comparison that are counts, not amounts. |
+| <code>public static PeriodComparisonView Project(PeriodComparisonDto? comparison, decimal? materialThreshold = PortfolioMaterialAbsoluteVariance, IReadOnlyCollection&lt;string&gt;? countKeys = null);</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:70](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L70) | Formats a comparison. A null comparison reads as still loading. |
+| <code>public static string FormatAmount(decimal value);</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:113](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L113) | Two places, thousands separated, negatives in parentheses. |
+| <code>public static string FormatCount(decimal value) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:120](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L120) | A whole number, negative with a minus sign. |
+| <code>public static string FormatPercent(decimal? percent) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:124](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L124) | The server&#x27;s percent to two places, or the not-comparable text when there is none. |
+| <code>public static string DescribeFailure&lt;T&gt;(ApiResponse&lt;T&gt; response) where T : class;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:130](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L130) | What to tell the operator when a comparison request fails. |
+
+## PeriodComparisonRow
+
+Qualified name: <code>Meridian.Ui.Services.Services.Comparisons.PeriodComparisonRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:17](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L17).
+
+One line of a prior-period comparison, formatted for display.
+
+```csharp
+public sealed record PeriodComparisonRow(string Key, string Label, string Current, string Prior, string Change, string ChangePercent, bool IsTotal, bool IsMaterial, bool IsPriorZero)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string MaterialLabel =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:29](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L29) | &quot;Material&quot; when the change is past the threshold, otherwise empty. |
+
+## PeriodComparisonView
+
+Qualified name: <code>Meridian.Ui.Services.Services.Comparisons.PeriodComparisonView</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:39](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L39).
+
+A prior-period comparison ready to show: a heading, why it is empty if it is, rows and notes.
+
+```csharp
+public sealed record PeriodComparisonView(bool IsReady, string Heading, string Windows, string? Message, IReadOnlyList<PeriodComparisonRow> Rows, IReadOnlyList<string> Notes);
+```
+
 ## ConfigProfile
 
 Qualified name: <code>Meridian.Ui.Services.Services.ConfigProfile</code>. Kind: `record`.
@@ -1324,115 +1417,3 @@ Declared public members:
 | <code>public static NotificationSettings ToNotificationSettings(OperatorNotificationPreferencesDto host, NotificationSettings current);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:109](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L109) | The desktop notification settings for a host notification set: each value the host holds, otherwise the default (pop-ups on, every type on, quiet hours off from 22:00 to 07:00). A quiet-hours time that does not read as HH:mm keeps its default. The sound choice is desktop-only and kept. |
 | <code>public static OperatorNotificationPreferencesDto ToHostNotifications(NotificationSettings settings);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:129](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L129) | The host form of the desktop notification settings, with every value written out. |
 | <code>public static bool TryResolveTimeZone(string? ianaZone, out TimeZoneInfo zone);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:148](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L148) | Resolves an IANA display time zone with this machine&#x27;s time zone data. False for a missing or unknown zone, in which case the desktop keeps showing times as it does today. |
-
-## DesktopOperatorPreferenceSync
-
-Qualified name: <code>Meridian.Ui.Services.Services.DesktopOperatorPreferenceSync</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:267](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L267).
-
-Keeps the desktop shell&#x27;s theme, density and keyboard shortcut overrides in step with the operator&#x27;s host preferences, the same set the browser workstation syncs (OperatorPreferencesDto). On start, the values the host holds are applied. Theme and density are not saved back: the desktop does not persist its theme, so its startup theme is a default, not an operator choice. Desktop shortcut overrides (OperatorPreferenceValuesDto.DesktopKeyBindings) held by the host replace this desktop&#x27;s, including an empty set (every default). When the host has none yet, this desktop&#x27;s own overrides are saved up, so the first desktop to sync seeds them. When the operator changes the theme or density here, the latest host set is re-read and saved with only the appearance and density replaced; a shortcut change likewise replaces only the desktop shortcut overrides. Browser-only values (time zone, page descriptions, browser shortcut overrides, a spacious density) are kept. Notification choices and quiet hours (OperatorPreferenceValuesDto.Notifications) held by the host replace this desktop&#x27;s at start; a desktop change saves only that set. When the host cannot be read at start (no session, an older host, offline), the desktop stays local for the run and saves nothing. A failed save keeps the local change. The display time zone is applied to Meridian.Ui.Services.DisplayTimeZone, which desktop timestamps are formatted in; it is read at start and again whenever the desktop saves.
-
-```csharp
-public sealed class DesktopOperatorPreferenceSync : IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DesktopOperatorPreferenceSync(IOperatorPreferencesApi api, IDesktopPreferenceSurface surface, Action&lt;TimeZoneInfo?&gt;? applyDisplayTimeZone = null);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:280](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L280) |  |
-| <code>public TimeZoneInfo? DisplayTimeZone { get; private set; }</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:291](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L291) | The operator&#x27;s display time zone from the host, when it resolves on this machine (else null, meaning UTC). |
-| <code>public bool IsSyncing =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:294](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L294) | True once the host was read and local changes are being saved. |
-| <code>public async Task StartAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:297](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L297) | Reads the host set, applies it, and starts saving operator changes. Safe to call once. |
-| <code>public Task SaveLocalChangeAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:410](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L410) | Saves the current desktop theme and density into the operator&#x27;s host set, keeping every other stored value. Exposed for tests; the sync calls it after each operator change. |
-| <code>public Task SaveShortcutOverridesAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:423](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L423) | Saves this desktop&#x27;s shortcut overrides into the operator&#x27;s host set, keeping every other stored value. Exposed for tests; the sync calls it after each shortcut change. |
-| <code>public Task SaveNotificationsAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:435](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L435) | Saves this desktop&#x27;s notification settings into the operator&#x27;s host set, keeping every other stored value. Exposed for tests; the sync calls it after each notification change. |
-| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:492](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L492) |  |
-
-## DesktopShellPreferences
-
-Qualified name: <code>Meridian.Ui.Services.Services.DesktopShellPreferences</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:29](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L29).
-
-Persisted desktop shell preferences consumed by the WPF workstation shell.
-
-```csharp
-public sealed record DesktopShellPreferences(ShellDensityMode ShellDensityMode)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static DesktopShellPreferences Default { get; } = new (ShellDensityMode.Standard);</code> | [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:35](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L35) |  |
-| <code>public IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; ShortcutOverrides { get; init; } = NoShortcutOverrides;</code> | [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:40](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L40) | The operator&#x27;s shortcut overrides; empty when every shortcut uses its default binding. |
-
-## DesktopShortcutOverride
-
-Qualified name: <code>Meridian.Ui.Services.Services.DesktopShortcutOverride</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:21](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L21).
-
-A persisted operator change to one default desktop keyboard shortcut, keyed by action id. Keys and modifiers are stored as their WPF enum names (for example F10 and Control, Shift) so this contract stays free of WPF types; a null member means &quot;keep the default&quot; for that part of the binding.
-
-```csharp
-public sealed record DesktopShortcutOverride(string? Key = null, string? Modifiers = null, bool? IsEnabled = null);
-```
-
-## ErrorDetailsModel
-
-Qualified name: <code>Meridian.Ui.Services.Services.ErrorDetailsModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:51](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L51).
-
-Contains detailed error information for user display. Shared across desktop platforms.
-
-```csharp
-public sealed class ErrorDetailsModel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Title { get; set; } = &quot;Error&quot;;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:53](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L53) |  |
-| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:54](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L54) |  |
-| <code>public string? Context { get; set; }</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:55](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L55) |  |
-| <code>public string? Remedy { get; set; }</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:56](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L56) |  |
-| <code>public InfoBarSeverityLevel Severity { get; set; } = InfoBarSeverityLevel.Error;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:57](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L57) |  |
-| <code>public string GetFormattedMessage();</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:62](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L62) | Gets the full formatted message including context and remedy. |
-| <code>public static ErrorDetailsModel CreateFromException(Exception ex, string operation);</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:75](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L75) | Creates a user-friendly error message with context and remedies from an exception. |
-
-## ExportPresetServiceBase
-
-Qualified name: <code>Meridian.Ui.Services.Services.ExportPresetServiceBase</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:11](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L11).
-
-Export preset management service with file-based storage. File path is injected via constructor rather than requiring platform-specific overrides.
-
-```csharp
-public class ExportPresetServiceBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public event EventHandler? PresetsChanged;</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:22](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L22) | Event raised when presets are modified. |
-| <code>public event EventHandler&lt;Exception&gt;? SaveFailed;</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:28](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L28) | Event raised when a save operation fails. |
-| <code>public IReadOnlyList&lt;ExportPreset&gt; Presets =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:33](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L33) | Gets all available export presets. |
-| <code>public async Task InitializeAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:52](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L52) | Initializes the service and loads presets. |
-| <code>public async Task LoadPresetsAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:64](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L64) | Loads presets from storage. |
-| <code>public async Task&lt;bool&gt; SavePresetsAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:107](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L107) | Saves presets to storage. |
-| <code>public async Task&lt;ExportPreset&gt; CreatePresetAsync(string name, string? description = null, ExportPresetFormat format = ExportPresetFormat.Parquet, string? destination = null, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:133](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L133) | Creates a new export preset. |
-| <code>public async Task&lt;bool&gt; UpdatePresetAsync(ExportPreset preset, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:164](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L164) | Updates an existing preset. |
-| <code>public async Task&lt;bool&gt; DeletePresetAsync(string presetId, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:185](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L185) | Deletes a preset by ID. |
-| <code>public ExportPreset? GetPreset(string presetId) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:207](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L207) | Gets a preset by ID. |
-| <code>public ExportPreset? GetPresetByName(string name) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:213](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L213) | Gets a preset by name. |
-| <code>public async Task&lt;ExportPreset&gt; DuplicatePresetAsync(string presetId, string newName, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:219](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L219) | Duplicates an existing preset with a new name. |
-| <code>public async Task RecordPresetUsageAsync(string presetId, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:267](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L267) | Records that a preset was used for an export. |
-| <code>public async Task&lt;string&gt; ExportPresetsAsync(string[] presetIds, string destinationPath, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:281](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L281) | Exports presets to a JSON file for sharing. |
-| <code>public async Task&lt;int&gt; ImportPresetsAsync(string filePath, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:301](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L301) | Imports presets from a JSON file. |

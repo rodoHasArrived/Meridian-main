@@ -1221,6 +1221,35 @@ WPF. Each count is gated by the permission of the route that owns its source, an
 caller may not read it. `tests/fixtures/cross-screen-counts/cross-screen-counts.json` holds this
 class and the browser's `lib/cross-screen-counts.ts` to the same expected values.
 
+`Services/WorkstationKpiDefinitions.cs` is the one catalog of workstation headline figures: each
+registered figure's label, the population it counts and what a change in it is measured against.
+`GET /api/workstation/kpi-definitions` serves it for the WPF desktop; the browser's
+`lib/kpi-registry.ts` mirrors it, and `tests/fixtures/kpi-definitions/kpi-definitions.json` holds the
+two to the same values. The catalog describes figures, not data.
+
+Prior-period comparisons (UX Phase E) all return `PeriodComparisonDto`:
+- `GET /api/fund-structure/nav-comparison` (`FundOperationsWorkspaceReadService.NavComparison.cs`)
+  rebuilds ledger NAV as of now and as of a prior date (default the end of last month) through the
+  same NAV attribution the workspace uses, in total and by asset class.
+- `GET /api/workstation/runs/{runId}/attribution/period-comparison` (in `Meridian.Strategies`)
+  compares a run's per-symbol P&L for one month with the month before, from its daily snapshots.
+- `GET /api/portfolio/cash-ladder/comparison` (`PortfolioCashLadderReadService.Comparison.cs`)
+  rebuilds the ladder from the ledger's cash at the prior date (`PortfolioLedgerCashBalanceProvider`
+  implements `IPortfolioCashBalanceHistoryProvider`). When the asset-operations service reports
+  `SupportsTermsAsOf`, the prior ladder projects instruments from the terms recorded by the end of
+  the prior date (`GetOperationsAsOfAsync`); otherwise it uses current terms and says so.
+- `GET /api/fund-structure/nav-trend` (`FundOperationsWorkspaceReadService.NavTrend.cs`) returns
+  `FundNavTrendDto`: ledger NAV at up to 24 month-ends (default 12) plus today, from one ledger book.
+  Months before the first NAV component are left out, with a note. Each point also carries securities
+  exposure from the same attribution: long is the `Securities` balances, short the `Short Securities
+  Payable` balances, with gross and net, at the ledger's last posted mark.
+
+The report-pack portfolio cuts (`ReportPackRunReadService.ReportedPeriods.cs`) read only the latest
+published or restated version per fund, account, template and period. A fund's cut uses its latest
+period; its prior P&L is the previous published period's P&L lines. With no prior period, Prior is 0,
+the readiness text says so and the slice is tagged `no-prior`. The report writer's dataset sources use
+the same cuts.
+
 The providers the Data workspace lists are the providers in use: those with metrics, a saved
 connection, a routing connection or a trust snapshot. Each one's status comes from
 `ResolveProviderStatus`: the worse of its listed status (connection health, or the trust rationale)

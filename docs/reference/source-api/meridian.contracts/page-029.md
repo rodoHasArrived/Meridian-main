@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerMappingWorkbenchDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.LedgerMappingWorkbenchDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:462](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L462).
+
+```csharp
+public sealed record LedgerMappingWorkbenchDto(DateTimeOffset AsOf, OrganizationSummaryDto? Organization, BusinessSummaryDto? Business, int AccountCount, int MappedAccountCount, int UnmappedAccountCount, IReadOnlyList<LedgerGroupSummaryDto> LedgerGroups, IReadOnlyList<LedgerMappingAccountDto> Accounts, FundStructureSharedDataAccessDto? SharedDataAccess = null);
+```
+
 ## LegalEntityFormDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.LegalEntityFormDto</code>. Kind: `enum`.
@@ -680,27 +690,3 @@ Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:411
 ```csharp
 public sealed record IntegrationStagingRecordDto(string StagingRecordId, string SyncRunId, string ConnectionId, ProviderCapabilityKindDto Capability, string RawPayloadId, string? SourceRecordId, string DedupeKey, JsonElement MappedRecord, IReadOnlyList<ValidationIssueDto> ValidationWarnings, ProviderIntegrationProcessingStatusDto Status, DateTimeOffset CreatedAt);
 ```
-
-## IntegrationTypeDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.IntegrationTypeDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:7](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L7).
-
-```csharp
-public enum IntegrationTypeDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Rest = 0</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:9](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L9) |  |
-| <code>OpenApiRest = 1</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:10](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L10) |  |
-| <code>GraphQl = 2</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:11](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L11) |  |
-| <code>Webhook = 3</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:12](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L12) |  |
-| <code>SftpFile = 4</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:13](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L13) |  |
-| <code>ManualUpload = 5</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:14](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L14) |  |
-| <code>Hybrid = 6</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:15](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L15) |  |
-| <code>StreamingTemplate = 7</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:16](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L16) |  |
-| <code>CertifiedTradingAdapter = 8</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:17](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L17) |  |

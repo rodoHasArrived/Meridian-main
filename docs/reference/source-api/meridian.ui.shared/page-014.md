@@ -871,12 +871,24 @@ public sealed record PolicyDecision(bool Allowed, string Reason, bool RequiresDu
 
 Qualified name: <code>Meridian.Ui.Shared.Services.PortfolioCashLadderReadService</code>. Kind: `class`.
 
+Source: [src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.Comparison.cs:7](../../../../src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.Comparison.cs#L7).
+
+```csharp
+public sealed partial class PortfolioCashLadderReadService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;PeriodComparisonDto&gt; GetCashLadderComparisonAsync(PortfolioCashLadderQuery query, DateOnly? baselineAsOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.Comparison.cs:19](../../../../src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.Comparison.cs#L19) | Today&#x27;s ladder against the ladder rebuilt as of baselineAsOf (default: the last day of the previous calendar month): opening cash, flows, the lowest cumulative cash, the number of buckets below the minimum, and each bucket&#x27;s net flow by position. The prior ladder opens from the ledger&#x27;s cash as of that day; instruments are projected from the terms recorded by the end of that day when the asset-operations service can, and from current terms otherwise. |
+
 Source: [src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.cs:14](../../../../src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.cs#L14).
 
 Read model for the portfolio-wide cash ladder: resolves the securities the portfolio actually holds (and their quantities) from an optional holdings source, runs each held instrument through the asset-operations projection surface, joins opening cash and capital-schedule rows from optional providers, and hands the assembled inputs to PortfolioCashLadderEngine.
 
 ```csharp
-public sealed class PortfolioCashLadderReadService : IPortfolioCashLadderQueryService
+public sealed partial class PortfolioCashLadderReadService : IPortfolioCashLadderQueryService
 ```
 
 Declared public members:
@@ -884,7 +896,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public PortfolioCashLadderReadService(ISecurityMasterQueryService? securityMasterQueryService = null, IAssetOperationsQueryService? assetOperationsQueryService = null, IPortfolioHoldingsSource? holdingsSource = null, IPortfolioCashBalanceProvider? cashBalanceProvider = null, IPortfolioCapitalScheduleProvider? capitalScheduleProvider = null, Meridian.Contracts.Calendars.IBusinessDayCalendarSource? calendars = null, TimeProvider? clock = null);</code> | [src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.cs:28](../../../../src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.cs#L28) |  |
-| <code>public async Task&lt;PortfolioCashLadderDto&gt; GetCashLadderAsync(PortfolioCashLadderQuery query, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.cs:46](../../../../src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.cs#L46) |  |
+| <code>public Task&lt;PortfolioCashLadderDto&gt; GetCashLadderAsync(PortfolioCashLadderQuery query, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.cs:46](../../../../src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.cs#L46) |  |
 
 ## PortfolioLedgerCashBalanceProvider
 
@@ -895,7 +907,7 @@ Source: [src/Meridian.Ui.Shared/Services/PortfolioLedgerCashBalanceProvider.cs:2
 Supplies the portfolio cash ladder&#x27;s opening cash by reading the actuals view of the double-entry ledger. Cash is taken from the asset-side cash accounts (LedgerAccounts.Cash and the per-currency LedgerAccounts.CashInCurrency accounts) consolidated across the project&#x27;s ledger books.
 
 ```csharp
-public sealed class PortfolioLedgerCashBalanceProvider : IPortfolioCashBalanceProvider
+public sealed class PortfolioLedgerCashBalanceProvider : IPortfolioCashBalanceProvider, IPortfolioCashBalanceHistoryProvider
 ```
 
 Declared public members:
@@ -904,6 +916,7 @@ Declared public members:
 | --- | --- | --- |
 | <code>public PortfolioLedgerCashBalanceProvider(ProjectLedgerBook? ledgerBook = null);</code> | [src/Meridian.Ui.Shared/Services/PortfolioLedgerCashBalanceProvider.cs:46](../../../../src/Meridian.Ui.Shared/Services/PortfolioLedgerCashBalanceProvider.cs#L46) | The ProjectLedgerBook is optional so that registering this provider can never fail read-model resolution in a host that has not composed the ledger feature: when it is absent the ladder simply opens from zero cash, exactly as it does today, and the engine emits its &quot;no cash balances were provided&quot; warning. |
 | <code>public Task&lt;IReadOnlyList&lt;PortfolioCashBalanceDto&gt;&gt; GetCashBalancesAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PortfolioLedgerCashBalanceProvider.cs:51](../../../../src/Meridian.Ui.Shared/Services/PortfolioLedgerCashBalanceProvider.cs#L51) |  |
+| <code>public Task&lt;IReadOnlyList&lt;PortfolioCashBalanceDto&gt;&gt; GetCashBalancesAsOfAsync(DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PortfolioLedgerCashBalanceProvider.cs:99](../../../../src/Meridian.Ui.Shared/Services/PortfolioLedgerCashBalanceProvider.cs#L99) | Cash at the end of asOf (UTC), from the same actuals-view cash accounts, read from the ledger&#x27;s dated snapshot rather than its current summaries. |
 
 ## PortfolioLedgerWorkflowStatusService
 

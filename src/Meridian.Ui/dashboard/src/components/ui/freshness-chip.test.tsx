@@ -34,3 +34,12 @@ describe("FreshnessChip", () => {
     expect(screen.getByLabelText(/Quotes is stale/).getAttribute("data-freshness-state")).toBe("aging");
   });
 });
+
+describe("FreshnessChip label", () => {
+  it("prints its subject only when asked, so chips sitting together are told apart", () => {
+    const { rerender } = render(<FreshnessChip label="Quote matrix" timestamp={null} staleBudgetMs={4000} />);
+    expect(screen.queryByText(/^Quote matrix:/)).not.toBeInTheDocument();
+    rerender(<FreshnessChip label="Quote matrix" timestamp={null} staleBudgetMs={4000} showLabel />);
+    expect(screen.getByText(/^Quote matrix: /)).toBeInTheDocument();
+  });
+});

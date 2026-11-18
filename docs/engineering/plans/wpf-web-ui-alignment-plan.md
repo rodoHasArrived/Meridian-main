@@ -33,6 +33,29 @@ These entries describe implementation scope, not operator acceptance or live cer
 
 WPF changes in this delta were compile-checked with the full WPF build; WPF tests run on Windows CI.
 
+## Browser UX Phase A delta — figures and status — 2026-11-16
+
+| Browser change | WPF state |
+| --- | --- |
+| One definition (label, population, comparison basis) per headline figure | Shared seam ready, not consumed: `GET /api/workstation/kpi-definitions` serves `WorkstationKpiDefinitions` (`src/Meridian.Ui.Shared/Services/WorkstationKpiDefinitions.cs`). WPF headline strips should read their labels and populations from it before composing presentation. |
+| One provider-health count on every screen | Shared seam exists (`/api/workstation/cross-screen-counts`); WPF Data and Settings parity pages should show that count, not a page-local one. |
+| Position surfaces name their source | Not ported. The WPF position blotter should state paper session vs live holdings vs retained run. |
+| Status bar freshness never says "up to date" over a stale source | Not ported. |
+
+## Browser UX Phase E delta — workflow features — 2026-11-17
+
+| Browser change | WPF state |
+| --- | --- |
+| Prior-period comparisons for NAV, run attribution and the cash ladder | Ported (2026-11-17). All three read `PeriodComparisonDto` and render through `PeriodComparisonProjection` (`src/Meridian.Ui.Services/Services/Comparisons/`), which mirrors the browser panel and is tested in `tests/Meridian.Ui.Tests`. NAV: Fund Operations → Portfolio tab, in process through `FundOperationsWorkspaceReadService`, with a prior-date picker. Run attribution: Run Risk page, through `StrategyRunReadService`. Cash ladder: Run Cash Flow page, "Vs end of last month", over `GET /api/portfolio/cash-ladder/comparison` (`PeriodComparisonApiClient`), because the portfolio ladder's providers are host-composed; a 501 says "not available in this host". The shared section is `PeriodComparisonSectionViewModel` with `Controls/PeriodComparisonPanel.xaml`. |
+| NAV trend and exposure trend (last 12 month-ends) on `/portfolio/nav` | Ported (2026-11-17): Fund Operations → Portfolio tab, `NavTrendSectionViewModel` with `Controls/NavTrendPanel.xaml` (ScottPlot NAV line, long/short/gross exposure, and a table), from `GetNavTrendAsync`. |
+| Report P&L slices with a prior published period, "—" when there is none | Shared in the Reporting payload (`PriorTotalPnl`, `PnlChange`, tag `no-prior`); WPF Reporting should show the dash for `no-prior`. |
+| One variance rule (`PeriodChange`: change ÷ \|prior\| × 100, none for a zero prior) | Shared in `Meridian.Contracts`; the posted-ledger comparison already uses it. WPF variance columns should show the server's percent. |
+| Export of visible columns as shown (CSV and XLSX) with totals | Not ported. |
+| Due-date urgency chips, overdue first | Not ported. |
+| "New since you last looked" on Today, Approvals and Reporting triage | Shared seam exists (`/api/workstation/operator/visits/{surface}`, surfaces `today-queue`, `approvals`, `reporting-triage`). Not consumed by WPF. |
+| Bulk Acknowledge and Snooze with a confirmation per item | Not ported; WPF can loop the same per-item triage command. |
+| Strategy comparison of up to four runs with overlaid curves | Not ported. |
+
 This plan operationalizes the v0.25 design-charter decision to reactivate the WPF desktop
 workstation as an active, co-equal operator UI lane and bring it up to parity with the browser
 workstation. It is the working companion to roadmap item `W8-WPF-PARITY-001`.
@@ -80,7 +103,7 @@ are under `src/Meridian.Wpf/`. Assessment date: 2026-07-06; bond, cash-flow and 
 | operating-scope picker entity/fund/account options (browser `scope-picker.tsx` over `GET /api/workstation/scope-options`, 404 fallback to the organization graph) | `Views/FundProfileSelectionPage.xaml` Scope Options card (`ViewModels/WorkstationScopeOptionsViewModel`) over `WorkstationScopeOptionsApiClient` | Partial (2026-11-14) — both lanes read the same grant-filtered `WorkstationScopeOptionsDto` and narrow by the same rule (entity → holding funds and booked/held accounts; fund → its accounts; unplaced accounts left out and counted); a 403 or other failure is reported, never retried against the graph. Remaining: the desktop 404 fallback reads the in-process (desktop-local, ungated) fund-structure graph rather than the host's `/api/fund-structure/graph`; picks select an existing desktop operating context instead of setting a persistent `entity › fund › account › period` scope bar; no period picker, URL-carried scope, saved default (`OperatingScopeValuesDto`), household-account merge, or screen-level fund narrowing on the desktop yet |
 | asset-detail-screen | `Views/SecurityPassportEditorView.xaml` (drill-in from `SecurityMasterPage`) | Partial — less unified than the web tabbed detail |
 | family-office-screen | `Views/AggregatePortfolioPage.xaml` | Partial — aggregation exists, less family-office framing |
-| cash-ladder-screen | `Views/RunCashFlowPage.xaml` | Partial — WPF ladder is per-strategy-run; web is portfolio-wide liquidity ladder |
+| cash-ladder-screen | `Views/RunCashFlowPage.xaml` | Partial — WPF ladder is per-strategy-run; web is portfolio-wide liquidity ladder. The portfolio-wide comparison with the end of last month is available on the page (Phase E). |
 | trial-balance (tab of finance-standard-pages ledger explorer at `/accounting/ledger?view=trial-balance`; consolidated per `W8-UX-CONSOL-001`) | `Views/PostedLedgerPage.xaml` | Aligned — both lanes now read the posted journal by ledger period over `/api/ledger/periods/*`; the shared projection lives in `Meridian.Ui.Services` (`PostedLedgerProjection`) so neither lane can drift on default-period choice, missing-summary handling, or balance integrity |
 | accounting-screen posted-ledger panel (`/accounting/ledger`) | `Views/PostedLedgerPage.xaml` | Aligned — desktop reads the governed book over the shared API seam; no desktop-local ledger state |
 | accounting-screen audit chain integrity panel (Configuration; `GET /api/ledger/audit-integrity`) | `Views/AccountingConfigurePage.xaml` Audit Chain Integrity card (`AuditChainIntegrityViewModel`) | Aligned — both lanes call the same `AdminMaintenance`-gated endpoint on demand and present each chain's server verdict without recomputing it; 403/409/429 read as distinct refusals, not failures, and leaving the page cancels a running check |

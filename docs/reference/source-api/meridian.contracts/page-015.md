@@ -6,6 +6,29 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderScopeDto
+
+Qualified name: <code>Meridian.Contracts.Configuration.ProviderScopeDto</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:197](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L197).
+
+Identifies the workspace and financial entity or account scope targeted by a provider binding.
+
+```csharp
+public sealed class ProviderScopeDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;workspace&quot;)] public string? Workspace { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:200](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L200) |  |
+| <code>[JsonPropertyName(&quot;fundProfileId&quot;)] public string? FundProfileId { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:203](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L203) |  |
+| <code>[JsonPropertyName(&quot;entityId&quot;)] public Guid? EntityId { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:206](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L206) |  |
+| <code>[JsonPropertyName(&quot;sleeveId&quot;)] public Guid? SleeveId { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:209](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L209) |  |
+| <code>[JsonPropertyName(&quot;vehicleId&quot;)] public Guid? VehicleId { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:212](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L212) |  |
+| <code>[JsonPropertyName(&quot;accountId&quot;)] public Guid? AccountId { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:215](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L215) |  |
+
 ## ProviderVerificationHistoryDto
 
 Qualified name: <code>Meridian.Contracts.Configuration.ProviderVerificationHistoryDto</code>. Kind: `record`.
@@ -871,14 +894,4 @@ Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:330](../../..
 
 ```csharp
 public sealed record BookDrawdownRequest(decimal Amount, DateOnly TradeDate, DateOnly SettleDate, string? ExternalRef);
-```
-
-## BorrowerInfoDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.BorrowerInfoDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:102](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L102).
-
-```csharp
-public sealed record BorrowerInfoDto(Guid BorrowerId, string BorrowerName, Guid? LegalEntityId);
 ```

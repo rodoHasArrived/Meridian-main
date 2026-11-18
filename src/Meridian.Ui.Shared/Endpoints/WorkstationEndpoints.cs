@@ -434,6 +434,12 @@ public static partial class WorkstationEndpoints
         .Produces<WorkstationCrossScreenCountsDto>(200)
         .RequireWorkstationTenantCompanyScope();
 
+        // UX Phase A: one definition per headline figure, read by the browser and WPF workstations.
+        // The catalog describes figures, not data, so any workstation reader may load it.
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationKpiDefinitions), () => Results.Json(WorkstationKpiDefinitions.Catalog, jsonOptions))
+        .WithName("GetWorkstationKpiDefinitions").RequireAnyPermission(UserPermission.ViewTrades, UserPermission.ViewStrategies, UserPermission.ManageStrategies, UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage, UserPermission.ViewDirectLending, UserPermission.ManageDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance)
+        .Produces<WorkstationKpiDefinitionsDto>(200);
+
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationDataOperations), async (HttpContext context) =>
         {
             var payload = await BuildDataPayloadAsync(context).ConfigureAwait(false);
@@ -723,6 +729,43 @@ public static partial class WorkstationEndpoints
         })
         .WithName("GetRunAttribution").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
         .Produces<RunAttributionSummary>(200)
+        .Produces(404)
+        .Produces(501)
+        .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
+
+        group.MapGet(WorkstationSubroute(UiApiRoutes.RunsAttributionPeriodComparison), async (string runId, HttpContext context) =>
+        {
+            var readService = context.RequestServices.GetService<StrategyRunReadService>();
+            if (readService is null)
+            {
+                return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var rawPeriodEnd = context.Request.Query["periodEnd"].FirstOrDefault();
+            DateOnly? periodEnd = null;
+            if (!string.IsNullOrWhiteSpace(rawPeriodEnd))
+            {
+                if (!DateOnly.TryParseExact(rawPeriodEnd, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var parsed))
+                {
+                    return Results.Problem("periodEnd must be a date in yyyy-MM-dd form.", statusCode: StatusCodes.Status400BadRequest);
+                }
+
+                periodEnd = parsed;
+            }
+
+            var comparison = await readService.GetAttributionPeriodComparisonAsync(
+                    runId,
+                    periodEnd,
+                    ResolveStrategyRunReadScope(context),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
+            return comparison is null
+                ? Results.NotFound()
+                : Results.Json(comparison, jsonOptions);
+        })
+        .WithName("GetRunAttributionPeriodComparison").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
+        .Produces<PeriodComparisonDto>(200)
+        .Produces(400)
         .Produces(404)
         .Produces(501)
         .AddEndpointFilter(RequireStrategyRunReadAccessAsync);

@@ -33,7 +33,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.AssetOperations.IPortfolioCapitalScheduleProvider</code>. Kind: `interface`.
 
-Source: [src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs:161](../../../../src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs#L161).
+Source: [src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs:171](../../../../src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs#L171).
 
 Supplies dated capital activity (investor schedule, expense accruals) for the ladder.
 
@@ -45,7 +45,25 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;PortfolioCapitalActivityDto&gt;&gt; GetCapitalActivityAsync(DateOnly fromDate, DateOnly toDate, CancellationToken ct = default);</code> | [src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs:163](../../../../src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs#L163) |  |
+| <code>Task&lt;IReadOnlyList&lt;PortfolioCapitalActivityDto&gt;&gt; GetCapitalActivityAsync(DateOnly fromDate, DateOnly toDate, CancellationToken ct = default);</code> | [src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs:173](../../../../src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs#L173) |  |
+
+## IPortfolioCashBalanceHistoryProvider
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.IPortfolioCashBalanceHistoryProvider</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs:165](../../../../src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs#L165).
+
+Supplies opening cash balances as they stood at the end of an earlier day, so the ladder can be rebuilt as of a prior period end for comparison. Optional: a provider that cannot read history does not implement it, and the comparison says so rather than reusing today&#x27;s cash.
+
+```csharp
+public interface IPortfolioCashBalanceHistoryProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;PortfolioCashBalanceDto&gt;&gt; GetCashBalancesAsOfAsync(DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs:167](../../../../src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs#L167) |  |
 
 ## IPortfolioCashBalanceProvider
 
@@ -69,7 +87,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.AssetOperations.IPortfolioCashLadderQueryService</code>. Kind: `interface`.
 
-Source: [src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs:170](../../../../src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs#L170).
+Source: [src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs:180](../../../../src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs#L180).
 
 Read surface for the portfolio-wide cash ladder.
 
@@ -81,7 +99,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;PortfolioCashLadderDto&gt; GetCashLadderAsync(PortfolioCashLadderQuery query, CancellationToken ct = default);</code> | [src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs:172](../../../../src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs#L172) |  |
+| <code>Task&lt;PortfolioCashLadderDto&gt; GetCashLadderAsync(PortfolioCashLadderQuery query, CancellationToken ct = default);</code> | [src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs:182](../../../../src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs#L182) |  |
 
 ## IPortfolioHoldingsSource
 
@@ -779,24 +797,3 @@ Request body to submit a payment for approval before it is applied.
 ```csharp
 public sealed record InitiatePaymentRequest(decimal Amount, DateOnly EffectiveDate, string? ExternalRef, string? Notes, string? Currency = null);
 ```
-
-## PaymentApprovalStatus
-
-Qualified name: <code>Meridian.Contracts.Banking.PaymentApprovalStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Banking/BankingModels.cs:10](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L10).
-
-Lifecycle status of a payment that is routed through the approval workflow.
-
-```csharp
-public enum PaymentApprovalStatus : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Pending = 0</code> | [src/Meridian.Contracts/Banking/BankingModels.cs:12](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L12) |  |
-| <code>Approved = 1</code> | [src/Meridian.Contracts/Banking/BankingModels.cs:13](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L13) |  |
-| <code>Rejected = 2</code> | [src/Meridian.Contracts/Banking/BankingModels.cs:14](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L14) |  |
-| <code>Cancelled = 3</code> | [src/Meridian.Contracts/Banking/BankingModels.cs:15](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L15) |  |
