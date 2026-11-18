@@ -21,6 +21,7 @@ import {
   OperatorTriageInboxFilters, OperatorTriageNotices, restoreTriageFilters, TriageAge, TriageAssignCheckbox,
   triageSelection, TriageSeverityStatus, triageStateExportValue, triageStateLabel
 } from "@/components/meridian/operator-triage-queue";
+import { useScreenPaletteActions } from "@/components/meridian/command-palette.actions";
 import { useOperatorTriageInbox, type OperatorTriageInboxState } from "@/components/meridian/use-operator-triage-inbox";
 import { ATTENTION_COUNT_RULE, countAttention, needsAttention } from "@/lib/attention-items";
 import { useQueueKeyboard } from "@/lib/use-queue-keyboard";
@@ -92,6 +93,29 @@ function DailyControlTowerQueue({
   // shows its evidence; an inbox item shows its triage actions. Falls back to the leading
   // decision's row (or the first visible row) until one is chosen or when it leaves the grid.
   const [selection, setSelection] = useState<QueueSelection>(null);
+  const paletteUnavailable = !triage.actionsAvailable ? "Durable triage is unavailable." : null;
+  const paletteAcknowledgeable = triage.bulkEligibility("BulkAcknowledge").filter((entry) => entry.eligible).length;
+  const paletteSnoozable = triage.bulkEligibility("BulkSnooze").filter((entry) => entry.eligible).length;
+  useScreenPaletteActions("today", [
+    {
+      id: "today.bulk-acknowledge",
+      verbLabel: "Acknowledge selected inbox items",
+      description: "Opens the acknowledge confirmation for the checked Today items.",
+      keywords: ["today", "triage", "acknowledge"],
+      disabled: paletteUnavailable !== null || paletteAcknowledgeable === 0,
+      disabledReason: paletteUnavailable ?? (paletteAcknowledgeable === 0 ? "No selected item can be acknowledged." : null),
+      run: () => triage.openAction("BulkAcknowledge")
+    },
+    {
+      id: "today.bulk-snooze",
+      verbLabel: "Snooze selected inbox items",
+      description: "Opens the snooze confirmation for the checked Today items.",
+      keywords: ["today", "triage", "snooze"],
+      disabled: paletteUnavailable !== null || paletteSnoozable === 0,
+      disabledReason: paletteUnavailable ?? (paletteSnoozable === 0 ? "No selected item can be snoozed." : null),
+      run: () => triage.openAction("BulkSnooze")
+    }
+  ]);
 
   const search = triage.search.trim().toLowerCase();
   // Workspace signals have no owner, so "Assigned to me" leaves them out (and says so).
