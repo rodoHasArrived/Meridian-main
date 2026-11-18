@@ -3030,6 +3030,52 @@ W12-ICPAIR-001: accepted; health green; evidence complete. Accepted by the repos
 - `SRC-UI-SHARED`
 - `SRC-UI-DASHBOARD`
 
+## W12-ICSCHEDULE-001 - Opt-in, reviewed intercompany accrual schedules
+| Field | Value |
+| --- | --- |
+| Wave | W12 |
+| Status | in_progress |
+| Health | yellow |
+| Priority | medium |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-11-17 |
+
+### Current Summary
+
+W12-ICSCHEDULE-001: in_progress; health yellow; evidence in_progress. Maker-checker schedules per book and loan-interest profile; a background runner drafts each completed period after approval through the ordinary path and never posts or overwrites a draft. Fee schedules follow fee drafting on main.
+
+### Status References
+
+- Decisions: DEC-IC-SCHEDULE-001
+- PR references (not inferred acceptance): none recorded
+- Evidence: [src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleService.cs](../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleService.cs)
+- Evidence: [src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleRunner.cs](../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleRunner.cs)
+- Evidence: [src/Meridian.Storage/Ledger/Migrations/V_ledger_076__intercompany_accrual_schedules.sql](../../../src/Meridian.Storage/Ledger/Migrations/V_ledger_076__intercompany_accrual_schedules.sql)
+- Evidence: [tests/Meridian.Tests/Storage/IntercompanyAccrualScheduleStoreTests.cs](../../../tests/Meridian.Tests/Storage/IntercompanyAccrualScheduleStoreTests.cs)
+- Evidence: [tests/Meridian.Tests/Ui/IntercompanyAccrualScheduleServiceTests.cs](../../../tests/Meridian.Tests/Ui/IntercompanyAccrualScheduleServiceTests.cs)
+- Evidence: [tests/Meridian.Tests/Ui/IntercompanyAccrualScheduleEndpointTests.cs](../../../tests/Meridian.Tests/Ui/IntercompanyAccrualScheduleEndpointTests.cs)
+
+
+### Exit Criteria
+
+- A schedule names one book, one approved loan-interest profile and its principal profile, and becomes active only when someone other than its proposer approves it; it can be rejected or disabled with a reason.
+- Schedule versions are retained append-only and tenant-scoped on durable storage; at most one proposed or active schedule exists per book and profile.
+- A run drafts each completed period ending on or after approval through the operator's preview-then-draft path, records the schedule as preparer, and never posts.
+- A period with an existing draft is skipped, never recomputed; a refused period is reported with its reason and retried on the next run.
+- Browser and WPF surfaces propose, review, preview due periods and run active schedules over the same routes.
+
+### Source Modules
+
+- `SRC-CONTRACTS`
+- `SRC-APP`
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-STORAGE`
+- `SRC-UI-SHARED`
+- `SRC-UI-SERVICES`
+- `SRC-WPF`
+- `SRC-UI-DASHBOARD`
+
 ## W12-YEND-001 - Fiscal year-end close and opening-balance roll-forward
 | Field | Value |
 | --- | --- |

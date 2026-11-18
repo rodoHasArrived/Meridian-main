@@ -39,6 +39,7 @@ record at its stated date.
 | [028: Governed Intercompany Loan-Interest Accrual from Structured Terms](028-governed-intercompany-interest-accrual.md) | Proposed; first increment implemented (pure fixed-rate calculator under rule `intercompany-accrual-v1`, the `LoanInterest` profile template, the evidence-pinned source draft and its API); operator screens, fees, floating rates and service-backed evidence planned |
 | [029: Governed Intercompany Fixed Management Fees from Structured Terms](029-governed-intercompany-fixed-management-fees.md) | Proposed; first increment implemented (declared fixed-fee basis, pure calculator under rule `intercompany-fee-v1`, the evidence-pinned source draft, its API and both workstations); percentage fees and loan fees planned |
 | [030: Periodic Compounding of Governed Intercompany Interest](030-intercompany-interest-compounding.md) | Proposed; first increment implemented (rule `intercompany-accrual-v3` compounding on posted accrued interest at each schedule period start, with coverage and staleness controls) |
+| [031: Opt-in, Reviewed Intercompany Accrual Schedules](031-intercompany-accrual-schedules.md) | Proposed; first increment implemented (maker-checker schedules per book and loan-interest profile, a background runner that drafts completed periods only, due-period preview and run-now) |
 
 Use the [ADR template](_template.md) to author a new decision, retain its approval status, and
 separate existing implementation evidence from planned work.

@@ -150,6 +150,16 @@ approved; a rejection needs a reason and leaves the approved value in force. Eve
 append-only. Each floating slice of an accrual pins the fixing it used, and a draft whose pinned
 fixing has since been corrected cannot be submitted, approved or posted until it is recomputed.
 
+### Opt-in accrual schedules
+
+A book can opt in to scheduled drafting ([ADR-031](../adr/031-intercompany-accrual-schedules.md)). A schedule names
+the book, an approved loan-interest profile and its principal profile; one person proposes it with a reason and
+someone else approves it, and it can later be disabled. From the approval date, a background run drafts each
+completed schedule period through the same preview and draft path an operator uses, with the schedule recorded as
+preparer. It never posts, never recomputes a draft that already exists, and reports any refused period with its
+reason so the next run can retry it. Operators can preview the periods a schedule would draft and run an active
+schedule on demand from the Accrual schedules tab in either workstation.
+
 ## External-review attestation
 
 An explicit external-review decision binds the exact submitted hash and expected aggregate

@@ -6,6 +6,87 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TradingOperatorReadinessService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.TradingOperatorReadinessService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.BrokerageRecovery.cs:8](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.BrokerageRecovery.cs#L8).
+
+```csharp
+public sealed partial class TradingOperatorReadinessService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:19](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L19).
+
+Builds the shared operator-readiness model consumed by the Trading cockpit.
+
+```csharp
+public sealed partial class TradingOperatorReadinessService : ITradingOperatorReadinessProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TradingOperatorReadinessDto? Observe(Guid accountId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:22](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L22) |  |
+| <code>public TradingOperatorReadinessService(IServiceProvider services, ILogger&lt;TradingOperatorReadinessService&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:51](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L51) |  |
+| <code>public Task&lt;TradingOperatorReadinessDto&gt; GetAsync(Guid? fundAccountId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:59](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L59) |  |
+| <code>public Task&lt;TradingOperatorReadinessDto&gt; GetAsync(Guid? fundAccountId, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:64](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L64) |  |
+
+Source: [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.Strategy.cs:8](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.Strategy.cs#L8).
+
+```csharp
+public sealed partial class TradingOperatorReadinessService
+```
+
+## UiConfigurationSaveGuard
+
+Qualified name: <code>Meridian.Ui.Shared.Services.UiConfigurationSaveGuard</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/UiConfigurationSaveGuard.cs:15](../../../../src/Meridian.Ui.Shared/Services/UiConfigurationSaveGuard.cs#L15).
+
+Guards ordinary UI settings writes. Credential lifecycle and host deployment use their own authority.
+
+```csharp
+public static class UiConfigurationSaveGuard
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void ValidateWholeDocumentJson(string existingJson, string proposedJson);</code> | [src/Meridian.Ui.Shared/Services/UiConfigurationSaveGuard.cs:27](../../../../src/Meridian.Ui.Shared/Services/UiConfigurationSaveGuard.cs#L27) | Validates a desktop whole-document save without recovering corrupt input or ignoring unmodeled host sections. Call while holding the configuration write lease. |
+
+## UiConfigurationValidationException
+
+Qualified name: <code>Meridian.Ui.Shared.Services.UiConfigurationValidationException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/UiConfigurationSaveGuard.cs:8](../../../../src/Meridian.Ui.Shared/Services/UiConfigurationSaveGuard.cs#L8).
+
+Validation failures contain property names and safe messages, never submitted values.
+
+```csharp
+public sealed class UiConfigurationValidationException(IReadOnlyDictionary<string, string[]> errors) : InvalidOperationException("Configuration was not saved. Correct the validation errors and retry.")
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyDictionary&lt;string, string[]&gt; Errors { get; } = errors;</code> | [src/Meridian.Ui.Shared/Services/UiConfigurationSaveGuard.cs:11](../../../../src/Meridian.Ui.Shared/Services/UiConfigurationSaveGuard.cs#L11) |  |
+
+## UpsertProviderModuleRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.UpsertProviderModuleRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:40](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L40).
+
+Request body for creating or updating a provider module configuration. CredentialValues are stored server-side and never returned.
+
+```csharp
+public sealed record UpsertProviderModuleRequest(string ModuleId, bool Enabled = true, int Priority = 100, Dictionary<string, string?>? CredentialValues = null, Dictionary<string, string?>? Settings = null);
+```
+
 ## WorkstationEntityLifecycleExternalReviewEvidenceAuthority
 
 Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationEntityLifecycleExternalReviewEvidenceAuthority</code>. Kind: `class`.
@@ -88,7 +169,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:90](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L90) |  |
-| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1582](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1582) |  |
+| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1591](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1591) |  |
 
 ## WorkstationWorkflowReadScope
 

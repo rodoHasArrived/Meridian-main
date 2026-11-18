@@ -247,6 +247,16 @@ book's side; focused coverage is `accounting-screen.entity-confirmations.test.ts
 The interest accrual preview shows a Compounded interest column for rule `intercompany-accrual-v3`; see
 [periodic compounding](../../../docs/domain/intercompany-agreements.md#periodic-compounding).
 
+The entity view's Accrual schedules tab lists the selected book's opt-in loan-interest accrual
+schedules from `/api/ledger/intercompany/accrual-schedules` (status, version, active-from date,
+profiles and event history). Ledger managers propose a schedule from an approved LoanInterest
+profile and its same-agreement loan principal profile, approve or reject a proposal, disable an
+active schedule (reasons required except to approve) and run an active schedule on demand; the
+proposer cannot approve it. A schedule only drafts completed periods ending on or after its approval:
+every draft still needs its own journal review, nothing posts, and refused periods are retried on
+the next run. Read-only operators see schedules, history and the due-period preview only. Focused
+coverage: `accounting-screen.entity-accrual-schedules.test.tsx`.
+
 Settings provider runtime evidence and integration setup components are owned by
 `settings-provider-integration.tsx`; the Settings screen composes them without changing routes
 or mutation authority. Presentational Settings sections live beside the screen:

@@ -261,6 +261,22 @@ Declared public members:
 | <code>public static readonly DependencyProperty ShellPostureProperty = DependencyProperty.Register(nameof(ShellPosture), typeof(ShellPosture), typeof(InstitutionalShellFrameControl), new PropertyMetadata(ShellPosture.Workbench));</code> | [src/Meridian.Wpf/Views/InstitutionalShellFrameControl.cs:12](../../../../src/Meridian.Wpf/Views/InstitutionalShellFrameControl.cs#L12) |  |
 | <code>public ShellPosture ShellPosture { get; set; }</code> | [src/Meridian.Wpf/Views/InstitutionalShellFrameControl.cs:19](../../../../src/Meridian.Wpf/Views/InstitutionalShellFrameControl.cs#L19) |  |
 
+## IntercompanyAccrualSchedulesControl
+
+Qualified name: <code>Meridian.Wpf.Views.IntercompanyAccrualSchedulesControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/IntercompanyAccrualSchedulesControl.xaml.cs:5](../../../../src/Meridian.Wpf/Views/IntercompanyAccrualSchedulesControl.xaml.cs#L5).
+
+```csharp
+public partial class IntercompanyAccrualSchedulesControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyAccrualSchedulesControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/IntercompanyAccrualSchedulesControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/IntercompanyAccrualSchedulesControl.xaml.cs#L7) |  |
+
 ## IntercompanyAgreementsControl
 
 Qualified name: <code>Meridian.Wpf.Views.IntercompanyAgreementsControl</code>. Kind: `class`.
@@ -1007,27 +1023,3 @@ Binds derived pages to the reporting workspace shell definition.
 ```csharp
 public class ReportingWorkspaceShellPageBase : WorkspaceShellPageBase<ReportingWorkspaceShellStateProvider, ReportingWorkspaceShellViewModel>
 ```
-
-## RetentionAssurancePage
-
-Qualified name: <code>Meridian.Wpf.Views.RetentionAssurancePage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:57](../../../../src/Meridian.Wpf/Views/Pages.cs#L57).
-
-```csharp
-public partial class RetentionAssurancePage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L17).
-
-Retention assurance page for managing retention policies, guardrails, legal holds, and cleanup operations with full audit trail.
-
-```csharp
-public partial class RetentionAssurancePage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public RetentionAssurancePage();</code> | [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:25](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L25) |  |

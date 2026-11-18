@@ -2103,6 +2103,9 @@
                 <TabItem Header="Balance confirmation">
                     <agreementViews:IntercompanyBalanceConfirmationControl DataContext="{Binding BalanceConfirmation}" />
                 </TabItem>
+                <TabItem Header="Accrual schedules">
+                    <agreementViews:IntercompanyAccrualSchedulesControl DataContext="{Binding AccrualSchedules}" />
+                </TabItem>
             </TabControl>
         </StackPanel>
     </ScrollViewer>

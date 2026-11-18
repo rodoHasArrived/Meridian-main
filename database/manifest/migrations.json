@@ -1369,6 +1369,15 @@
       "sha256": "7b4104398f58c0eb2f5488f2794b7b3d4c79b610b598483e826f24715a119875"
     },
     {
+      "filename": "V_ledger_076__intercompany_accrual_schedules.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_076__intercompany_accrual_schedules.sql",
+      "schema": "ledger",
+      "sha256": "7b6218194f4da89e0e8cf250e4550a06a682345a9dc364f3e5f52349610c0617"
+    },
+    {
       "filename": "001_fund_structure.sql",
       "immutable": true,
       "migration_set_id": "fund-structure",
@@ -1712,7 +1721,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "0b724c7ca969ea75abe34a049bc74fa3de97dfbdb69027c1cf3ffe3783249e07",
+  "fingerprint": "60b9f0c1a1f6896774d996f9fdc584be3e759a68cd37bc8837166fc3a40464ea",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1974,9 +1983,9 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 190,
+    "files": 191,
     "migration_sets": 11,
-    "waivers": 51,
+    "waivers": 53,
     "warnings": 0
   },
   "waivers": [
@@ -2222,6 +2231,20 @@
       "category": "destructive_changes",
       "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_074__recurring_journal_state.sql",
       "reason": "Authorized by the repository owner on 2026-11-17. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects truncation of the retained recurring journal state (W10-JRNL-001); this migration executes no data truncation. Without it, a truncated table would read as unprovisioned and explicit re-initialization would start from empty state, reissuing occurrence claims and draft identities. PostgreSQL regression coverage attempts delete and truncate, requires the guard SQLSTATE 55000, and verifies the retained document is unchanged.",
+      "review_after": "2027-05-17",
+      "rule_id": "migration-truncate"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_076__intercompany_accrual_schedules.sql",
+      "reason": "Each DROP TRIGGER IF EXISTS is immediately followed by recreation of the same named protection trigger on the same table, making the new intercompany accrual-schedule version-history rejection triggers reapply-idempotent. The migration runner executes the DDL and migration-ledger change in its transaction under the advisory migration lock, so failed recreation restores the prior protections. No table, column, row, retained receipt or history is removed. This exact path/rule exception follows V_ledger_030/V_ledger_031's drop-and-recreate idiom and does not authorize omission of any replacement trigger.",
+      "review_after": "2027-05-17",
+      "rule_id": "migration-drop-object"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_076__intercompany_accrual_schedules.sql",
+      "reason": "The lexical TRUNCATE matches declare only BEFORE TRUNCATE rejection triggers protecting the new intercompany accrual-schedule version history. They execute no TRUNCATE command and remove no table, column, row or retained fact. Preserve these rejection triggers and the UPDATE/DELETE protections. This exact path/rule exception follows V_ledger_030 and V_ledger_031 and covers only these truncation-rejection declarations; it does not authorize data truncation or a history-removing downgrade.",
       "review_after": "2027-05-17",
       "rule_id": "migration-truncate"
     },

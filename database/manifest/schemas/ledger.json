@@ -3103,6 +3103,30 @@
       "target_schema": "ledger"
     },
     {
+      "fingerprint": "8f9d53b72586a6a40d342c159c5a5919ff69af7494225e931ddd3fffcfbaec0c",
+      "kind": "normal",
+      "source": "ledger.intercompany_accrual_schedules_tenant_id_check on ledger.intercompany_accrual_schedules",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.intercompany_accrual_schedules.tenant_id",
+      "target_kind": "table column",
+      "target_name": "intercompany_accrual_schedules",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "b39fb53dccd58543826af407016936362b58f3ad0b6bf0fecc9d22c9d433f59d",
+      "kind": "normal",
+      "source": "ledger.intercompany_accrual_schedules_version_check on ledger.intercompany_accrual_schedules",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.intercompany_accrual_schedules.version",
+      "target_kind": "table column",
+      "target_name": "intercompany_accrual_schedules",
+      "target_schema": "ledger"
+    },
+    {
       "fingerprint": "e6c29f9c8fc5fc92d76827a7652657e2f6fe18f62e488c6c2cf5b1d19ae3f587",
       "kind": "normal",
       "source": "ledger.intercompany_balance_confirmations_tenant_id_check on ledger.intercompany_balance_confirmations",
@@ -4979,7 +5003,7 @@
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "4422177753edda047d396c0169cee96f888f8db96eee94770eb58319a53702d2",
+  "fingerprint": "9c9f7e61355927687032e13149f95577309e5fa7f6b5fd729618a0847dbb6caf",
   "foreign_tables": [],
   "functions": [
     {
@@ -5537,6 +5561,37 @@
       "security_definer": false,
       "security_labels": [],
       "signature": "refuse_intercompany_account_binding_rewrite()",
+      "strict": false,
+      "volatility": "volatile"
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "PUBLIC",
+          "grantor": "meridian",
+          "privilege": "execute"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "execute"
+        }
+      ],
+      "comment": null,
+      "definition_hash": "3b9597d3c23969dc170b39b68a9a9713e090d6ecdcb424f672a1b1913cd99f86",
+      "fingerprint": "addb69136d7fe5046451681d9cce35cd69284a5aaeef7a1862be03820ae3b4f8",
+      "kind": "function",
+      "language": "plpgsql",
+      "name": "refuse_intercompany_accrual_schedule_rewrite",
+      "owner": "meridian",
+      "parallel_safety": "unsafe",
+      "result_type": "trigger",
+      "schema": "ledger",
+      "security_definer": false,
+      "security_labels": [],
+      "signature": "refuse_intercompany_accrual_schedule_rewrite()",
       "strict": false,
       "volatility": "volatile"
     },
@@ -14900,6 +14955,373 @@
           "level": "statement",
           "name": "tr_intercompany_account_binding_no_truncate",
           "relation": "intercompany_account_binding_revisions",
+          "schema": "ledger",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "c1de57592961ab73e17e102eb95f034c8942475d4e5c9f982fb98bca080043f3",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "schedule_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": null,
+          "fingerprint": "80d93d5d46995c55b204733af221fcfa619955aaaca0cb34d576a8c01c36fe1b",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "version",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "06149a255b2b0f090670b3758a4e42ae6300569f0112b450fdd40c37923c1146",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "364452d73e50dda478dd920de54b462d53af73db3a445eae080f45b68e29beb4",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "company_id",
+          "nullable": true,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "941dac865bb67b9323c2d345cf266966718425b9943af40e3d3645bad9bbcda1",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "ledger_book_id",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "eaa47b53c8288a3d83ac7fa39aa392a71e89628ba5d028793327ad13ca42e7d5",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "status",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "1c1787b5d97cda2158c4f74af4e3dda466f532ad1ef4f7bfa08016e6ad02993e",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "1225abadcfc987d043c90661f0f75e72cf1e63e0dccdda8719e200200dff658a",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "recorded_at",
+          "nullable": false,
+          "ordinal_position": 8,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (length(btrim(tenant_id)) > 0 AND lower(btrim(tenant_id)) <> 'all'::text)",
+          "delete_action": null,
+          "fingerprint": "be2138f0f29b9829e1a3565e3a51aaec085cf2256f762a168d6b4d52750ee433",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "intercompany_accrual_schedules_tenant_id_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "version"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (version > 0)",
+          "delete_action": null,
+          "fingerprint": "3c23a4a9f15d028709e725520ff43b2de581e804ada316775ef51803d6dfec37",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "intercompany_accrual_schedules_version_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "schedule_id",
+            "version"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (schedule_id, version)",
+          "delete_action": null,
+          "fingerprint": "fc00f52f2f3507cfc80c8139923ff4faef7dbbc923ad9e31b74cc80f8fddb19f",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "intercompany_accrual_schedules_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "a57f2ac09855dd4a65ac16c1b0be6977ca90d98b02bacd444d2bfd4543d79212",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX intercompany_accrual_schedules_pkey ON ledger.intercompany_accrual_schedules USING btree (schedule_id, version)",
+          "expression": null,
+          "fingerprint": "a60dc684e1f06b826cb028d0b66aeb292d2e892bea0e1d1272f90ad85efa70ec",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "schedule_id",
+            "version"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "intercompany_accrual_schedules_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_intercompany_accrual_schedule_book ON ledger.intercompany_accrual_schedules USING btree (tenant_id, ledger_book_id, schedule_id, version)",
+          "expression": null,
+          "fingerprint": "dc77e2ec1f4f9172a19b97835d8b804c2b48c3d8028805825abee828bdb21c93",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "tenant_id",
+            "ledger_book_id",
+            "schedule_id",
+            "version"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_intercompany_accrual_schedule_book",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX ux_intercompany_accrual_schedule_identity ON ledger.intercompany_accrual_schedules USING btree (schedule_id) WHERE (version = 1)",
+          "expression": null,
+          "fingerprint": "611b3a42644a9e85ac9ab1c57ac7a23ff4f873dfa97356d5990f5d0637bad0ec",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "schedule_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ux_intercompany_accrual_schedule_identity",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "version = 1",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "intercompany_accrual_schedules",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "ledger",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER tr_intercompany_accrual_schedule_immutable BEFORE DELETE OR UPDATE ON ledger.intercompany_accrual_schedules FOR EACH ROW EXECUTE FUNCTION ledger.refuse_intercompany_accrual_schedule_rewrite()",
+          "definition_hash": "d1ad379df84b9ec7a763e266c54871d4245df3fd90f8b10cbc2eb31ad7a3ad02",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "5bed5f13f5c4dfec94386d4ad5ae2e3b071a83955dd98e984aaf56d0c4474037",
+          "function_schema": "ledger",
+          "function_signature": "refuse_intercompany_accrual_schedule_rewrite()",
+          "level": "row",
+          "name": "tr_intercompany_accrual_schedule_immutable",
+          "relation": "intercompany_accrual_schedules",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER tr_intercompany_accrual_schedule_no_truncate BEFORE TRUNCATE ON ledger.intercompany_accrual_schedules FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_intercompany_accrual_schedule_rewrite()",
+          "definition_hash": "d636f564a803c961840ce1928e33d2a4b5ab006b7ae2144aa943742d8ff79beb",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "acdc1f0d9ef07f275afd782d2d0f7910c0f3371c06cc45176526691697e470fa",
+          "function_schema": "ledger",
+          "function_signature": "refuse_intercompany_accrual_schedule_rewrite()",
+          "level": "statement",
+          "name": "tr_intercompany_accrual_schedule_no_truncate",
+          "relation": "intercompany_accrual_schedules",
           "schema": "ledger",
           "timing": "before"
         }
@@ -32345,6 +32767,14 @@
     },
     {
       "enabled": false,
+      "fingerprint": "4c13866a9b894276ae1cc2e8e073c42ee5f0d1174bc1d350e5e96d0d7624cac2",
+      "forced": false,
+      "policies": [],
+      "relation": "intercompany_accrual_schedules",
+      "schema": "ledger"
+    },
+    {
+      "enabled": false,
       "fingerprint": "cea8302f4cf1e02291f47fe5af31eaeec94b28e3f08434fd8fc1553ec71be84c",
       "forced": false,
       "policies": [],
@@ -41550,6 +41980,373 @@
           "level": "statement",
           "name": "tr_intercompany_account_binding_no_truncate",
           "relation": "intercompany_account_binding_revisions",
+          "schema": "ledger",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "c1de57592961ab73e17e102eb95f034c8942475d4e5c9f982fb98bca080043f3",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "schedule_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": null,
+          "fingerprint": "80d93d5d46995c55b204733af221fcfa619955aaaca0cb34d576a8c01c36fe1b",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "version",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "06149a255b2b0f090670b3758a4e42ae6300569f0112b450fdd40c37923c1146",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "364452d73e50dda478dd920de54b462d53af73db3a445eae080f45b68e29beb4",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "company_id",
+          "nullable": true,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "941dac865bb67b9323c2d345cf266966718425b9943af40e3d3645bad9bbcda1",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "ledger_book_id",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "eaa47b53c8288a3d83ac7fa39aa392a71e89628ba5d028793327ad13ca42e7d5",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "status",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "1c1787b5d97cda2158c4f74af4e3dda466f532ad1ef4f7bfa08016e6ad02993e",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "1225abadcfc987d043c90661f0f75e72cf1e63e0dccdda8719e200200dff658a",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "recorded_at",
+          "nullable": false,
+          "ordinal_position": 8,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (length(btrim(tenant_id)) > 0 AND lower(btrim(tenant_id)) <> 'all'::text)",
+          "delete_action": null,
+          "fingerprint": "be2138f0f29b9829e1a3565e3a51aaec085cf2256f762a168d6b4d52750ee433",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "intercompany_accrual_schedules_tenant_id_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "version"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (version > 0)",
+          "delete_action": null,
+          "fingerprint": "3c23a4a9f15d028709e725520ff43b2de581e804ada316775ef51803d6dfec37",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "intercompany_accrual_schedules_version_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "schedule_id",
+            "version"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (schedule_id, version)",
+          "delete_action": null,
+          "fingerprint": "fc00f52f2f3507cfc80c8139923ff4faef7dbbc923ad9e31b74cc80f8fddb19f",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "intercompany_accrual_schedules_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "a57f2ac09855dd4a65ac16c1b0be6977ca90d98b02bacd444d2bfd4543d79212",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX intercompany_accrual_schedules_pkey ON ledger.intercompany_accrual_schedules USING btree (schedule_id, version)",
+          "expression": null,
+          "fingerprint": "a60dc684e1f06b826cb028d0b66aeb292d2e892bea0e1d1272f90ad85efa70ec",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "schedule_id",
+            "version"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "intercompany_accrual_schedules_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_intercompany_accrual_schedule_book ON ledger.intercompany_accrual_schedules USING btree (tenant_id, ledger_book_id, schedule_id, version)",
+          "expression": null,
+          "fingerprint": "dc77e2ec1f4f9172a19b97835d8b804c2b48c3d8028805825abee828bdb21c93",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "tenant_id",
+            "ledger_book_id",
+            "schedule_id",
+            "version"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_intercompany_accrual_schedule_book",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX ux_intercompany_accrual_schedule_identity ON ledger.intercompany_accrual_schedules USING btree (schedule_id) WHERE (version = 1)",
+          "expression": null,
+          "fingerprint": "611b3a42644a9e85ac9ab1c57ac7a23ff4f873dfa97356d5990f5d0637bad0ec",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "schedule_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ux_intercompany_accrual_schedule_identity",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "version = 1",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "intercompany_accrual_schedules",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "ledger",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER tr_intercompany_accrual_schedule_immutable BEFORE DELETE OR UPDATE ON ledger.intercompany_accrual_schedules FOR EACH ROW EXECUTE FUNCTION ledger.refuse_intercompany_accrual_schedule_rewrite()",
+          "definition_hash": "d1ad379df84b9ec7a763e266c54871d4245df3fd90f8b10cbc2eb31ad7a3ad02",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "5bed5f13f5c4dfec94386d4ad5ae2e3b071a83955dd98e984aaf56d0c4474037",
+          "function_schema": "ledger",
+          "function_signature": "refuse_intercompany_accrual_schedule_rewrite()",
+          "level": "row",
+          "name": "tr_intercompany_accrual_schedule_immutable",
+          "relation": "intercompany_accrual_schedules",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER tr_intercompany_accrual_schedule_no_truncate BEFORE TRUNCATE ON ledger.intercompany_accrual_schedules FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_intercompany_accrual_schedule_rewrite()",
+          "definition_hash": "d636f564a803c961840ce1928e33d2a4b5ab006b7ae2144aa943742d8ff79beb",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "acdc1f0d9ef07f275afd782d2d0f7910c0f3371c06cc45176526691697e470fa",
+          "function_schema": "ledger",
+          "function_signature": "refuse_intercompany_accrual_schedule_rewrite()",
+          "level": "statement",
+          "name": "tr_intercompany_accrual_schedule_no_truncate",
+          "relation": "intercompany_accrual_schedules",
           "schema": "ledger",
           "timing": "before"
         }
@@ -58894,6 +59691,41 @@
       "level": "statement",
       "name": "tr_intercompany_account_binding_no_truncate",
       "relation": "intercompany_account_binding_revisions",
+      "schema": "ledger",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER tr_intercompany_accrual_schedule_immutable BEFORE DELETE OR UPDATE ON ledger.intercompany_accrual_schedules FOR EACH ROW EXECUTE FUNCTION ledger.refuse_intercompany_accrual_schedule_rewrite()",
+      "definition_hash": "d1ad379df84b9ec7a763e266c54871d4245df3fd90f8b10cbc2eb31ad7a3ad02",
+      "enabled": "origin",
+      "events": [
+        "delete",
+        "update"
+      ],
+      "fingerprint": "5bed5f13f5c4dfec94386d4ad5ae2e3b071a83955dd98e984aaf56d0c4474037",
+      "function_schema": "ledger",
+      "function_signature": "refuse_intercompany_accrual_schedule_rewrite()",
+      "level": "row",
+      "name": "tr_intercompany_accrual_schedule_immutable",
+      "relation": "intercompany_accrual_schedules",
+      "schema": "ledger",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER tr_intercompany_accrual_schedule_no_truncate BEFORE TRUNCATE ON ledger.intercompany_accrual_schedules FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_intercompany_accrual_schedule_rewrite()",
+      "definition_hash": "d636f564a803c961840ce1928e33d2a4b5ab006b7ae2144aa943742d8ff79beb",
+      "enabled": "origin",
+      "events": [
+        "truncate"
+      ],
+      "fingerprint": "acdc1f0d9ef07f275afd782d2d0f7910c0f3371c06cc45176526691697e470fa",
+      "function_schema": "ledger",
+      "function_signature": "refuse_intercompany_accrual_schedule_rewrite()",
+      "level": "statement",
+      "name": "tr_intercompany_accrual_schedule_no_truncate",
+      "relation": "intercompany_accrual_schedules",
       "schema": "ledger",
       "timing": "before"
     },

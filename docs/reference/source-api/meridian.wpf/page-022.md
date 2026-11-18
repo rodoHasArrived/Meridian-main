@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TrustBadgeControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Primitives.TrustBadgeControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:103](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L103).
+
+Provides a content surface for trust-status presentation.
+
+```csharp
+public sealed class TrustBadgeControl : ContentControl
+```
+
 ## WorkspaceHostControl
 
 Qualified name: <code>Meridian.Wpf.Workstation.Primitives.WorkspaceHostControl</code>. Kind: `class`.

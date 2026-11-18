@@ -1,0 +1,106 @@
+<UserControl x:Class="Meridian.Wpf.Views.IntercompanyAccrualSchedulesControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             AutomationProperties.Name="Intercompany accrual schedules">
+    <UserControl.Resources>
+        <Style TargetType="TextBox" BasedOn="{StaticResource FormTextBoxStyle}">
+            <Setter Property="Margin" Value="0,3,12,10" />
+            <Setter Property="MinWidth" Value="320" />
+            <Setter Property="Padding" Value="6" />
+        </Style>
+        <Style TargetType="Button" BasedOn="{StaticResource ConsoleButtonStyle}">
+            <Setter Property="Margin" Value="0,4,8,4" />
+            <Setter Property="Padding" Value="10,5" />
+        </Style>
+        <Style TargetType="DataGrid">
+            <Setter Property="AutoGenerateColumns" Value="False" />
+            <Setter Property="IsReadOnly" Value="True" />
+            <Setter Property="CanUserAddRows" Value="False" />
+            <Setter Property="CanUserDeleteRows" Value="False" />
+            <Setter Property="Margin" Value="0,8,0,12" />
+        </Style>
+    </UserControl.Resources>
+    <UserControl.Style>
+        <Style TargetType="UserControl">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsBusy}" Value="True"><Setter Property="IsEnabled" Value="False" /></DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Style>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="16">
+            <TextBlock Text="Accrual schedules" FontSize="20" FontWeight="SemiBold" />
+            <TextBlock Text="An opt-in, reviewed schedule drafts governed loan-interest accruals for one book, one approved loan-interest profile and its loan principal profile, for each completed schedule period ending on or after approval. It only drafts: every draft enters ordinary journal review and nothing posts. A schedule is approved by someone other than its proposer; rejecting or disabling requires a reason."
+                       Margin="0,5,0,12" TextWrapping="Wrap" />
+            <WrapPanel>
+                <Button Content="Load books" Command="{Binding LoadChoicesCommand}" VerticalAlignment="Center" AutomationProperties.Name="Load schedule books" />
+                <TextBlock Text="{Binding ChoicesStatus}" TextWrapping="Wrap" VerticalAlignment="Center" MaxWidth="640"
+                           AutomationProperties.Name="Schedule selection status" AutomationProperties.LiveSetting="Polite" />
+            </WrapPanel>
+            <WrapPanel>
+                <StackPanel><TextBlock Text="Ledger book" />
+                    <ComboBox ItemsSource="{Binding BookChoices}" DisplayMemberPath="Label" SelectedValuePath="Id" SelectedValue="{Binding SourceBook}"
+                              Style="{StaticResource FormComboBoxStyle}" Width="360" Margin="0,3,12,10" AutomationProperties.Name="Schedule ledger book" /></StackPanel>
+                <Button Content="Reload schedules" Command="{Binding LoadCommand}" VerticalAlignment="Center" />
+            </WrapPanel>
+            <TextBlock Text="{Binding StatusText}" TextWrapping="Wrap" AutomationProperties.Name="Accrual schedule status" AutomationProperties.LiveSetting="Polite" />
+            <TextBlock Text="{Binding PermissionNote}" TextWrapping="Wrap" Margin="0,4,0,0" AutomationProperties.Name="Accrual schedule permission" />
+
+            <TextBlock Text="Retained schedules" FontWeight="SemiBold" Margin="0,10,0,0" />
+            <DataGrid ItemsSource="{Binding Schedules}" SelectedItem="{Binding SelectedSchedule}" MaxHeight="220" SelectionMode="Single"
+                      AutomationProperties.Name="Accrual schedules">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100" />
+                    <DataGridTextColumn Header="Version" Binding="{Binding Version}" Width="70" />
+                    <DataGridTextColumn Header="Kind" Binding="{Binding Kind}" Width="110" />
+                    <DataGridTextColumn Header="Loan-interest profile" Binding="{Binding Profile}" Width="360" />
+                    <DataGridTextColumn Header="Loan principal profile" Binding="{Binding Principal}" Width="360" />
+                    <DataGridTextColumn Header="Active from" Binding="{Binding ActiveFrom}" Width="110" />
+                    <DataGridTextColumn Header="Proposed by" Binding="{Binding ProposedBy}" Width="160" />
+                    <DataGridTextColumn Header="Schedule" Binding="{Binding ScheduleId}" Width="300" />
+                </DataGrid.Columns>
+            </DataGrid>
+            <TextBlock Text="{Binding SelectedGuidance}" TextWrapping="Wrap" AutomationProperties.Name="Accrual schedule guidance" />
+            <Expander Header="Schedule history" Margin="0,6,0,0">
+                <TextBox Text="{Binding History, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" AutomationProperties.Name="Accrual schedule history" />
+            </Expander>
+            <WrapPanel Margin="0,6,0,0">
+                <StackPanel><TextBlock Text="Reason (required to reject or disable)" />
+                    <TextBox Text="{Binding DecisionReason, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Schedule decision reason" /></StackPanel>
+                <Button Content="Approve schedule" Command="{Binding ApproveCommand}" VerticalAlignment="Center" />
+                <Button Content="Reject schedule" Command="{Binding RejectCommand}" VerticalAlignment="Center" />
+                <Button Content="Disable schedule" Command="{Binding DisableCommand}" VerticalAlignment="Center" />
+            </WrapPanel>
+
+            <TextBlock Text="Schedule periods" FontWeight="SemiBold" Margin="0,10,0,0" />
+            <WrapPanel>
+                <Button Content="Preview due periods" Command="{Binding PreviewDueCommand}" VerticalAlignment="Center" />
+                <Button Content="Run now" Command="{Binding RunCommand}" VerticalAlignment="Center" />
+            </WrapPanel>
+            <TextBlock Text="{Binding WindowStatus}" TextWrapping="Wrap" AutomationProperties.Name="Accrual schedule period status" AutomationProperties.LiveSetting="Polite" />
+            <DataGrid ItemsSource="{Binding Windows}" MaxHeight="220" AutomationProperties.Name="Accrual schedule periods">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Period" Binding="{Binding Period}" Width="220" />
+                    <DataGridTextColumn Header="Outcome" Binding="{Binding Outcome}" Width="130" />
+                    <DataGridTextColumn Header="Draft" Binding="{Binding Draft}" Width="360" />
+                    <DataGridTextColumn Header="Reason" Binding="{Binding Reason}" Width="420" />
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <TextBlock Text="Propose a schedule" FontWeight="SemiBold" Margin="0,10,0,0" />
+            <WrapPanel>
+                <StackPanel><TextBlock Text="Loan-interest accounting profile" />
+                    <ComboBox ItemsSource="{Binding InterestProfileChoices}" DisplayMemberPath="Label" SelectedValuePath="Id" SelectedValue="{Binding InterestProfile}"
+                              Style="{StaticResource FormComboBoxStyle}" Width="360" Margin="0,3,12,10" AutomationProperties.Name="Schedule loan-interest profile" /></StackPanel>
+                <StackPanel><TextBlock Text="Loan principal accounting profile (same legal agreement)" />
+                    <ComboBox ItemsSource="{Binding PrincipalProfileChoices}" DisplayMemberPath="Label" SelectedValuePath="Id" SelectedValue="{Binding PrincipalProfile}"
+                              Style="{StaticResource FormComboBoxStyle}" Width="360" Margin="0,3,12,10" AutomationProperties.Name="Schedule loan principal profile" /></StackPanel>
+            </WrapPanel>
+            <WrapPanel>
+                <StackPanel><TextBlock Text="Reason for the schedule" />
+                    <TextBox Text="{Binding ProposeReason, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Schedule proposal reason" /></StackPanel>
+                <Button Content="Propose schedule for review" Command="{Binding ProposeCommand}" VerticalAlignment="Center" />
+            </WrapPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

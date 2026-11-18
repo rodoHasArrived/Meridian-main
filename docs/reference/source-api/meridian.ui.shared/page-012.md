@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## GovernedReportingRestatementChangedLineResolver
+
+Qualified name: <code>Meridian.Ui.Shared.Services.GovernedReportingRestatementChangedLineResolver</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:277](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L277).
+
+Server-owned placeholder disclosure at request time. Approval replaces it with an exact diff of the predecessor and recertified immutable source rows before the request is marked Approved.
+
+```csharp
+public sealed class GovernedReportingRestatementChangedLineResolver : IReportingRestatementChangedLineResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ValueTask&lt;ImmutableArray&lt;ReportingRestatementChangedLine&gt;&gt; ResolveAsync(GovernedReportingRun releasedPredecessor, string reason, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:280](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L280) |  |
+
 ## GovernedReportingTemplateCatalog
 
 Qualified name: <code>Meridian.Ui.Shared.Services.GovernedReportingTemplateCatalog</code>. Kind: `class`.
@@ -468,6 +486,25 @@ Declared public members:
 | <code>Task&lt;FundReportPackSnapshotDto?&gt; FindLatestByRunIdAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs:28](../../../../src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs#L28) |  |
 | <code>Task&lt;FundReportPackEvidenceBundleDto&gt; SaveEvidenceBundleAsync(FundReportPackSnapshotDto snapshot, FundReportPackEvidenceBundleDto bundle, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs:30](../../../../src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs#L30) |  |
 
+## IIntercompanyInterestAccrualDrafter
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IIntercompanyInterestAccrualDrafter</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs:218](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs#L218).
+
+The preview-then-draft contract an accrual schedule runs through; the same one operators use.
+
+```csharp
+public interface IIntercompanyInterestAccrualDrafter
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IntercompanyAccrualProposalDto&gt; PreviewAsync(string tenantId, string? companyId, string actor, IntercompanyAccrualRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs:220](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs#L220) |  |
+| <code>Task&lt;ManualJournalEntryDraftDto&gt; CreateDraftAsync(string tenantId, string? companyId, string actor, CreateIntercompanyAccrualDraftRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs:221](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs#L221) |  |
+
 ## ILedgerAccountingSourceReader
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ILedgerAccountingSourceReader</code>. Kind: `interface`.
@@ -902,71 +939,32 @@ Source: [src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs:15](
 Resolves approved terms, profile revisions and posted principal into a source-side accrual draft. It never approves or posts: the draft enters the source book&#x27;s ordinary review, and the counterpart is produced by the existing proposal pipeline only after the source journal commits.
 
 ```csharp
-public sealed class IntercompanyAccrualDraftService(IntercompanyAccountingArrangementService arrangements, ILedgerJournalStore journals, IIntercompanyAccountBindingStore bindings, IAccountingConfigurationService configuration, IManualJournalEntryDraftStore drafts, ManualJournalEntryWorkbenchService workbench, IIntercompanyAccrualPreviewService calculator, IConsolidationFxAuthority? fx = null, TimeProvider? time = null, Meridian.Application.FundStructure.IntercompanyRateFixingService? fixings = null)
+public sealed class IntercompanyAccrualDraftService(IntercompanyAccountingArrangementService arrangements, ILedgerJournalStore journals, IIntercompanyAccountBindingStore bindings, IAccountingConfigurationService configuration, IManualJournalEntryDraftStore drafts, ManualJournalEntryWorkbenchService workbench, IIntercompanyAccrualPreviewService calculator, IConsolidationFxAuthority? fx = null, TimeProvider? time = null, Meridian.Application.FundStructure.IntercompanyRateFixingService? fixings = null) : IIntercompanyInterestAccrualDrafter
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;IntercompanyAccrualProposalDto&gt; PreviewAsync(string tenantId, string? companyId, string actor, IntercompanyAccrualRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs:24](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs#L24) | Read-only: computes the amount, its evidence and the draft that would be retained. |
-| <code>public async Task&lt;ManualJournalEntryDraftDto&gt; CreateDraftAsync(string tenantId, string? companyId, string actor, CreateIntercompanyAccrualDraftRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs:163](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs#L163) | Retains the previewed computation as a draft in the source book&#x27;s review queue. A changed input since the preview is refused. An unreviewed draft of the same window is recomputed in place; one already submitted, approved or posted is never overwritten. |
+| <code>public async Task&lt;IntercompanyAccrualProposalDto&gt; PreviewAsync(string tenantId, string? companyId, string actor, IntercompanyAccrualRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs:25](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs#L25) | Read-only: computes the amount, its evidence and the draft that would be retained. |
+| <code>public async Task&lt;ManualJournalEntryDraftDto&gt; CreateDraftAsync(string tenantId, string? companyId, string actor, CreateIntercompanyAccrualDraftRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs:164](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs#L164) | Retains the previewed computation as a draft in the source book&#x27;s review queue. A changed input since the preview is refused. An unreviewed draft of the same window is recomputed in place; one already submitted, approved or posted is never overwritten. |
 
-## IntercompanyAgreementJournalProjection
+## IntercompanyAccrualScheduleRunner
 
-Qualified name: <code>Meridian.Ui.Shared.Services.IntercompanyAgreementJournalProjection</code>. Kind: `class`.
+Qualified name: <code>Meridian.Ui.Shared.Services.IntercompanyAccrualScheduleRunner</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/IntercompanyAgreementJournalProjection.cs:11](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAgreementJournalProjection.cs#L11).
+Source: [src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleRunner.cs:12](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleRunner.cs#L12).
 
-Projects posted line provenance without calculating agreement matches or changing consolidation.
+Runs every active accrual schedule on an interval. Each run drafts only completed periods without a draft; a refused period is logged and retried next time. A failing schedule never stops the others.
 
 ```csharp
-public static class IntercompanyAgreementJournalProjection
+public sealed class IntercompanyAccrualScheduleRunner(IServiceProvider services, ILogger<IntercompanyAccrualScheduleRunner> logger, TimeProvider? clock = null) : BackgroundService
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static IntercompanyAgreementJournalLinesDto Project(IntercompanyAgreementDetailDto agreement, LedgerBookRecord book, IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, DateOnly asOf, string? cursor = null, int pageSize = 100);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAgreementJournalProjection.cs:13](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAgreementJournalProjection.cs#L13) |  |
-
-## IntercompanyFeeAccrualDraftService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IntercompanyFeeAccrualDraftService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/IntercompanyFeeAccrualDraftService.cs:15](../../../../src/Meridian.Ui.Shared/Services/IntercompanyFeeAccrualDraftService.cs#L15).
-
-Resolves approved management-fee terms and profile revisions into a source-side fee draft (rule intercompany-fee-v1). It never approves or posts: the draft enters the source book&#x27;s ordinary review, and the counterpart is produced by the existing proposal pipeline only after the source journal commits.
-
-```csharp
-public sealed class IntercompanyFeeAccrualDraftService(IntercompanyAccountingArrangementService arrangements, ILedgerJournalStore journals, IIntercompanyAccountBindingStore bindings, IAccountingConfigurationService configuration, IManualJournalEntryDraftStore drafts, ManualJournalEntryWorkbenchService workbench, IIntercompanyFeeAccrualPreviewService calculator, IConsolidationFxAuthority? fx = null, TimeProvider? time = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IntercompanyFeeAccrualProposalDto&gt; PreviewAsync(string tenantId, string? companyId, string actor, IntercompanyFeeAccrualRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyFeeAccrualDraftService.cs:23](../../../../src/Meridian.Ui.Shared/Services/IntercompanyFeeAccrualDraftService.cs#L23) | Read-only: computes the fee, its evidence and the draft that would be retained. |
-| <code>public async Task&lt;ManualJournalEntryDraftDto&gt; CreateDraftAsync(string tenantId, string? companyId, string actor, CreateIntercompanyFeeAccrualDraftRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyFeeAccrualDraftService.cs:107](../../../../src/Meridian.Ui.Shared/Services/IntercompanyFeeAccrualDraftService.cs#L107) | Retains the previewed fee as a draft in the source book&#x27;s review queue. A changed input since the preview is refused; an unreviewed draft of the same window is recomputed in place; one already submitted is never overwritten. |
-
-## IntercompanyProposalDeliveryService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IntercompanyProposalDeliveryService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs:16](../../../../src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs#L16).
-
-Delivers retained sources into the destination&#x27;s existing review queue.
-
-```csharp
-public sealed class IntercompanyProposalDeliveryService(IIntercompanyProposalStore store, IntercompanyAccountingArrangementService agreements, ILedgerJournalStore journals, IIntercompanyAccountBindingStore bindings, IAccountingConfigurationService configuration, IManualJournalEntryDraftStore drafts, ManualJournalEntryWorkbenchService workbench, IFundProfileTenancyRegistry owners, IConsolidationFxAuthority fx, TimeProvider? time = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;int&gt; RunOnceAsync(string workerId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs:24](../../../../src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs#L24) |  |
-| <code>public async Task&lt;IntercompanyRefreshPreviewDto&gt; RefreshPreviewAsync(string tenant, string? company, Guid proposalId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs:162](../../../../src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs#L162) |  |
-| <code>public async Task&lt;ManualJournalEntryDraftDto&gt; RefreshAsync(string tenant, string? company, Guid proposalId, RefreshIntercompanyProposalRequest request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs:217](../../../../src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs#L217) |  |
-| <code>public async Task LinkAsync(string tenant, Guid proposalId, LinkIntercompanyCounterpartRequest request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs:259](../../../../src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs#L259) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;IntercompanyBreakDto&gt;&gt; BreaksAsync(string tenant, string? company, Guid sourceBookId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs:451](../../../../src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs#L451) |  |
+| <code>public static readonly TimeSpan Interval = TimeSpan.FromHours(6);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleRunner.cs:16](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleRunner.cs#L16) | How often active schedules are checked. |
+| <code>public static readonly TimeSpan StartupDelay = TimeSpan.FromMinutes(1);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleRunner.cs:20](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleRunner.cs#L20) | Delay before the first pass, so host start-up is never slowed by a run. |
+| <code>public async Task&lt;IReadOnlyList&lt;IntercompanyAccrualScheduleRunDto&gt;&gt; RunOnceAsync(CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleRunner.cs:37](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleRunner.cs#L37) | One pass over every active schedule as of today (UTC). |
