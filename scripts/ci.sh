@@ -309,6 +309,9 @@ verify_docs() {
   run_step "Validate status doc staleness" \
     "$python_cmd" scripts/check_status_doc_staleness.py
 
+  run_step "Enforce no-new-raw-evidence ratchet" \
+    "$python_cmd" build/scripts/ci/check-evidence-footprint.py
+
   # The agent validator needs PyYAML. Check for it here and name the install command
   # rather than pip-installing: this script runs against a developer's own interpreter,
   # and silently mutating it is worse than a failure that says what to do. The hosted
