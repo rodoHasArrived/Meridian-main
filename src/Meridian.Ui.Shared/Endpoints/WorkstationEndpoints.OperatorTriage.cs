@@ -70,16 +70,28 @@ public static partial class WorkstationEndpoints
         {
             if (request.Items is null || request.Items.Count is < 1 or > 100
                 || request.Items.Select(item => item.WorkItemId).Distinct(StringComparer.Ordinal).Count() != request.Items.Count
-                || request.Action != OperatorTriageAction.Assign || string.IsNullOrWhiteSpace(request.CommandId)
-                || request.CommandId.Length > 64)
-                return Results.BadRequest(new { error = "Bulk assign requires 1–100 distinct items and a command identity of at most 64 characters." });
+                || string.IsNullOrWhiteSpace(request.CommandId) || request.CommandId.Length > 64)
+                return Results.BadRequest(new { error = "Bulk triage requires 1–100 distinct items and a command identity of at most 64 characters." });
+            // Unsnooze stays single-item: it restores one operator's view of one item.
+            var actionError = request.Action switch
+            {
+                OperatorTriageAction.Assign when string.IsNullOrWhiteSpace(request.AssigneeId) => "Bulk assign requires an assignee.",
+                OperatorTriageAction.Snooze when request.SnoozedUntil is null => "Bulk snooze requires a snooze-until time.",
+                OperatorTriageAction.Assign or OperatorTriageAction.Acknowledge or OperatorTriageAction.Snooze => null,
+                _ => "Bulk triage supports assign, acknowledge and snooze."
+            };
+            if (actionError is not null)
+                return Results.BadRequest(new { error = actionError });
             var results = new List<OperatorTriageResult>();
             for (var index = 0; index < request.Items.Count; index++)
             {
                 var item = request.Items[index];
                 results.Add(await ApplyOperatorTriageAsync(item.WorkItemId,
                     new OperatorTriageCommand($"{request.CommandId}:{index}", request.Action, item.ExpectedVersion,
-                        request.Reason, request.AssigneeId, ExpectedSourceVersion: item.ExpectedSourceVersion,
+                        request.Reason,
+                        request.Action == OperatorTriageAction.Assign ? request.AssigneeId : null,
+                        request.Action == OperatorTriageAction.Snooze ? request.SnoozedUntil : null,
+                        ExpectedSourceVersion: item.ExpectedSourceVersion,
                         FundAccountId: request.FundAccountId), context).ConfigureAwait(false));
             }
             return Results.Json(new OperatorTriageBulkResult(results), jsonOptions);

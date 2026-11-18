@@ -105,7 +105,9 @@ public static class UiEndpoints
                 LegacyIntercompanyAttributionJsonContext.Default,
                 IntercompanyProposalJsonContext.Default,
                 IntercompanyAccrualJsonContext.Default,
+                IntercompanyFeeAccrualJsonContext.Default,
                 IntercompanyRateFixingJsonContext.Default,
+                IntercompanyAccrualScheduleJsonContext.Default,
                 IntercompanyBalanceScheduleJsonContext.Default,
                 IntercompanyBalanceConfirmationJsonContext.Default,
                 IntercompanyObligationMonitorJsonContext.Default,
@@ -231,6 +233,7 @@ public static class UiEndpoints
         app.MapIntercompanyOperationsEndpoints(jsonOptions);
         app.MapIntercompanyRateFixingEndpoints(jsonOptions);
         app.MapIntercompanyBalanceConfirmationEndpoints(jsonOptions);
+        app.MapIntercompanyAccrualScheduleEndpoints(jsonOptions);
         app.MapReportingGovernanceEndpoints(jsonOptions);
         app.MapReportingIncomeComparisonEndpoints(jsonOptions);
         app.MapSecureReportingDistributionEndpoints();

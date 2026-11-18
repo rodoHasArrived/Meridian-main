@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FileDistributionRequest
+
+Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.FileDistributionRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:300](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L300).
+
+Request to distribute one normalized file to a set of recipients. ContentLocation is the durable, retrievable location of the deliverable — a storage handle or URI into the platform&#x27;s secure-distribution artifact store. A production transport fetches the bytes from there and verifies them against ContentSha256 before dispatch, so the archived delivery evidence reflects a real transfer of an identified artifact rather than metadata alone.
+
+```csharp
+public sealed record FileDistributionRequest(string FileName, string ContentType, string ContentSha256, long ContentLength, string ContentLocation, IReadOnlyList<DistributionRecipient> Recipients, string DistributedBy, string? SubjectId = null, DateTimeOffset? DistributedAtUtc = null);
+```
+
+## IFileDistributionTransport
+
+Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.IFileDistributionTransport</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:344](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L344).
+
+Transport seam that actually dispatches a distributed file to one recipient. A production transport retrieves the deliverable from FileDistributionRequest.ContentLocation, verifies it against FileDistributionRequest.ContentSha256, and dispatches it over the recipient&#x27;s channel. The middle-office service records Delivered only when the transport reports success, so a real (SFTP/email/portal) transport injected in production yields honest delivery evidence.
+
+```csharp
+public interface IFileDistributionTransport
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>FileDeliveryOutcome Deliver(DistributionRecipient recipient, FileDistributionRequest request);</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:346](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L346) |  |
+
 ## LoopbackFileDistributionTransport
 
 Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.LoopbackFileDistributionTransport</code>. Kind: `class`.
@@ -1123,39 +1153,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public OperationsWorkflowStatusDto Derive(OperationsContinuityWorkflow workflow);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsStatusDerivationService.cs:19](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsStatusDerivationService.cs#L19) |  |
-
-## OperationsWorkflowAuditDraft
-
-Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.OperationsWorkflowAuditDraft</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:75](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L75).
-
-```csharp
-public sealed record OperationsWorkflowAuditDraft(Guid WorkflowId, Guid FundAccountId, string PeriodId, string EventType, OperationsWorkflowStatusDto FromState, OperationsWorkflowStatusDto ToState, OperationsGateKeyDto? Gate, OperationsGateStatusDto? FromGateStatus, OperationsGateStatusDto? ToGateStatus, string Actor, string? Rationale, string? CorrelationId, IReadOnlyList<OperationsEvidenceLinkDto> References, OperationsContinuityCorrelationKeysDto? CorrelationKeys = null, Meridian.Contracts.Operations.VerifiedOperationOutcome? Outcome = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public OperationsCloseChecklistSnapshotDto? CloseChecklistSnapshot { get; init; }</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:93](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L93) |  |
-
-## OperationsWorkflowAuditHashing
-
-Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.OperationsWorkflowAuditHashing</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowAuditHashing.cs:12](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowAuditHashing.cs#L12).
-
-Creates audit hashes and validates operations workflow timelines and hash chains.
-
-```csharp
-public static class OperationsWorkflowAuditHashing
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static OperationsWorkflowAuditDto Create(OperationsWorkflowAuditDraft draft, string? previousHash, DateTimeOffset occurredAtUtc);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowAuditHashing.cs:14](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowAuditHashing.cs#L14) |  |
-| <code>public static bool TryValidateTimeline(IReadOnlyList&lt;OperationsTimelineEntryDto&gt; timeline, out string blockerCode, out string message) =&gt; …;</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowAuditHashing.cs:75](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowAuditHashing.cs#L75) |  |
-| <code>public static bool TryValidateChain(IReadOnlyList&lt;OperationsWorkflowAuditDto&gt; timeline, out string blockerCode, out string message);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowAuditHashing.cs:101](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowAuditHashing.cs#L101) |  |

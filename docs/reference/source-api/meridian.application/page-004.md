@@ -1083,7 +1083,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const int MaximumFixingLagBusinessDays = 10;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.StructuredTerms.cs:125](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.StructuredTerms.cs#L125) | Upper bound on a declared in-advance fixing lag. |
+| <code>public const int MaximumFixingLagBusinessDays = 10;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementRules.StructuredTerms.cs:133](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementRules.StructuredTerms.cs#L133) | Upper bound on a declared in-advance fixing lag. |
 
 ## IntercompanyAgreementService
 
@@ -1150,6 +1150,24 @@ Source: [src/Meridian.Application/FundStructure/IntercompanyAgreementTimeline.cs
 ```csharp
 public sealed record IntercompanyAgreementTimelineResult(IntercompanyAgreementRevisionDto? Revision, IntercompanyAgreementStatusDto Status, DateOnly? TerminationCutoff);
 ```
+
+## IntercompanyFeeAccrualPreviewService
+
+Qualified name: <code>Meridian.Application.FundStructure.IntercompanyFeeAccrualPreviewService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/FundStructure/IntercompanyFeeAccrualPreviewService.cs:20](../../../../src/Meridian.Application/FundStructure/IntercompanyFeeAccrualPreviewService.cs#L20).
+
+Turns a declared fixed management fee into an amount for a half-open window (rule IntercompanyFeeAccrualRules.RuleVersion). Pure: it reads no ledger and creates nothing.
+
+```csharp
+public sealed class IntercompanyFeeAccrualPreviewService(IBusinessDayCalendarSource calendars) : IIntercompanyFeeAccrualPreviewService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyFeeAccrualPreviewDto Preview(IntercompanyFeeAccrualComputationInput input);</code> | [src/Meridian.Application/FundStructure/IntercompanyFeeAccrualPreviewService.cs:22](../../../../src/Meridian.Application/FundStructure/IntercompanyFeeAccrualPreviewService.cs#L22) |  |
 
 ## IntercompanyRateFixingRules
 
@@ -1339,21 +1357,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>ValueTask&lt;IReadOnlyList&lt;IPAddress&gt;&gt; ResolveAsync(string host, CancellationToken ct = default);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs:281](../../../../src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs#L281) |  |
-
-## IProviderIntegrationHttpTransport
-
-Qualified name: <code>Meridian.Application.Integrations.IProviderIntegrationHttpTransport</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/Integrations/ProviderIntegrationRestDryRunService.cs:17](../../../../src/Meridian.Application/Integrations/ProviderIntegrationRestDryRunService.cs#L17).
-
-Defines the HTTP request and response boundary used by provider integration dry runs.
-
-```csharp
-public interface IProviderIntegrationHttpTransport
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;ProviderIntegrationHttpResponse&gt; SendAsync(ProviderIntegrationHttpRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationRestDryRunService.cs:19](../../../../src/Meridian.Application/Integrations/ProviderIntegrationRestDryRunService.cs#L19) |  |

@@ -7894,6 +7894,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IIntercompanyFeeAccrualPreviewService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.FundStructure.IIntercompanyRateFixingStore"
     },
     {
@@ -8021,6 +8027,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccrualSliceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccrualWindowDto"
     },
     {
       "kind": "contract-set-member",
@@ -8237,6 +8249,36 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.FundStructure.IntercompanyExternalReviewJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyFeeAccrualComputationInput"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyFeeAccrualPreviewDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyFeeAccrualRules"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyFeeAccrualSliceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyFixedFeeBasisDto"
     },
     {
       "kind": "contract-set-member",
@@ -10126,6 +10168,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CreateIntercompanyFeeAccrualDraftRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.CreateLateAdjustmentRequestDto"
     },
     {
@@ -10157,6 +10205,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.CurrencyMinorUnits"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.DecideIntercompanyAccrualScheduleRequest"
     },
     {
       "kind": "contract-set-member",
@@ -10306,6 +10360,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IIntercompanyAccrualScheduleStore"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.IIntercompanyBalanceConfirmationStore"
     },
     {
@@ -10384,6 +10444,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualCompoundingEvidenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualEvidenceDto"
     },
     {
@@ -10421,6 +10487,60 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleActionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleEventDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleKindDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleOutcomeDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleRunDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleStatusDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleWindowDto"
     },
     {
       "kind": "contract-set-member",
@@ -10517,6 +10637,36 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.IntercompanyCounterpartLinkDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyFeeAccrualEvidenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyFeeAccrualEvidenceGuard"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyFeeAccrualJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyFeeAccrualProposalDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyFeeAccrualRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -10840,6 +10990,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerJournalExecutionLineageDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.LedgerJournalTaxResultsDto"
     },
     {
@@ -11099,6 +11255,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.PostPostingRuleJournalCandidateRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PostedComparisonMeasureDto"
     },
     {
       "kind": "contract-set-member",
@@ -11375,6 +11537,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalWorkbenchDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ProposeIntercompanyAccrualScheduleRequest"
     },
     {
       "kind": "contract-set-member",
@@ -22768,6 +22936,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationMetricHistoryPointDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationModeComparisonGroup"
     },
     {
@@ -25540,6 +25714,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IIntercompanyFeeAccrualPreviewService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
       "target": "contract:Meridian.Contracts.FundStructure.IIntercompanyRateFixingStore"
     },
     {
@@ -25667,6 +25847,12 @@
       "label": "",
       "source": "contract-set:fund-governance-contracts",
       "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccrualSliceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccrualWindowDto"
     },
     {
       "kind": "contract-set-member",
@@ -25883,6 +26069,36 @@
       "label": "",
       "source": "contract-set:fund-governance-contracts",
       "target": "contract:Meridian.Contracts.FundStructure.IntercompanyExternalReviewJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyFeeAccrualComputationInput"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyFeeAccrualPreviewDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyFeeAccrualRules"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyFeeAccrualSliceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyFixedFeeBasisDto"
     },
     {
       "kind": "contract-set-member",
@@ -27958,6 +28174,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CreateIntercompanyFeeAccrualDraftRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.CreateLateAdjustmentRequestDto"
     },
     {
@@ -27989,6 +28211,12 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.CurrencyMinorUnits"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.DecideIntercompanyAccrualScheduleRequest"
     },
     {
       "kind": "contract-set-member",
@@ -28138,6 +28366,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IIntercompanyAccrualScheduleStore"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.IIntercompanyBalanceConfirmationStore"
     },
     {
@@ -28216,6 +28450,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualCompoundingEvidenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualEvidenceDto"
     },
     {
@@ -28253,6 +28493,60 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleActionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleEventDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleKindDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleOutcomeDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleRunDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleStatusDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleWindowDto"
     },
     {
       "kind": "contract-set-member",
@@ -28349,6 +28643,36 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.IntercompanyCounterpartLinkDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyFeeAccrualEvidenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyFeeAccrualEvidenceGuard"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyFeeAccrualJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyFeeAccrualProposalDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyFeeAccrualRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -28672,6 +28996,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerJournalExecutionLineageDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.LedgerJournalTaxResultsDto"
     },
     {
@@ -28931,6 +29261,12 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.PostPostingRuleJournalCandidateRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PostedComparisonMeasureDto"
     },
     {
       "kind": "contract-set-member",
@@ -29207,6 +29543,12 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalWorkbenchDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ProposeIntercompanyAccrualScheduleRequest"
     },
     {
       "kind": "contract-set-member",
@@ -40756,6 +41098,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAccrualComputationInput",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccrualWindowDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAccrualComputationInput",
       "target": "contract:Meridian.Contracts.FundStructure.IntercompanyApprovedRateFixingDto"
     },
     {
@@ -40989,6 +41337,30 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyFeeAccrualComputationInput",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccrualAuthoritySegment"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyFeeAccrualPreviewDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccrualCalendarPinDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyFeeAccrualPreviewDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyFeeAccrualSliceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyFeeAccrualSliceDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyFixedFeeBasisDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.FundStructure.IntercompanyRateFixingDto",
       "target": "contract:Meridian.Contracts.FundStructure.IntercompanyRateFixingEventDto"
     },
@@ -41033,6 +41405,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.FundStructure.IntercompanyStructuredTermsDto",
       "target": "contract:Meridian.Contracts.FundStructure.IntercompanyDayCountDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyStructuredTermsDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyFixedFeeBasisDto"
     },
     {
       "kind": "contract-reference",
@@ -43617,6 +43995,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.CreateIntercompanyFeeAccrualDraftRequest",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyFeeAccrualRequestDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Ledger.CreateLateAdjustmentRequestDto",
       "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
     },
@@ -43637,6 +44021,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.CreatePreparedClosePlanRequestDto",
       "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.DecideIntercompanyAccrualScheduleRequest",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleActionDto"
     },
     {
       "kind": "contract-reference",
@@ -43809,6 +44199,18 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualCompoundingEvidenceDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccrualWindowDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualCompoundingEvidenceDto",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualPrincipalEvidenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualEvidenceDto",
       "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccrualPreviewDto"
     },
@@ -43823,6 +44225,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualEvidenceDto",
       "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccountRoleDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualEvidenceDto",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualCompoundingEvidenceDto"
     },
     {
       "kind": "contract-reference",
@@ -43859,6 +44267,42 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualProposalDto",
       "target": "contract:Meridian.Contracts.Ledger.ManualJournalEntryDraftDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleDto",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleEventDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleDto",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleKindDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleDto",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleEventDto",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleActionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleRunDto",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleWindowDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleWindowDto",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleOutcomeDto"
     },
     {
       "kind": "contract-reference",
@@ -43931,6 +44375,42 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceScheduleRowDto",
       "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccountRoleDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyFeeAccrualEvidenceDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyFeeAccrualPreviewDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyFeeAccrualEvidenceDto",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxAmountDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyFeeAccrualEvidenceDto",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccountRoleDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyFeeAccrualProposalDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyFeeAccrualPreviewDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyFeeAccrualProposalDto",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyFeeAccrualEvidenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyFeeAccrualProposalDto",
+      "target": "contract:Meridian.Contracts.Ledger.ManualJournalEntryDraftDto"
     },
     {
       "kind": "contract-reference",
@@ -44273,6 +44753,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.LedgerJournalEntryDto",
       "target": "contract:Meridian.Contracts.Ledger.LedgerJournalEntryLineDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.LedgerJournalEntryDto",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerJournalExecutionLineageDto"
     },
     {
       "kind": "contract-reference",
@@ -44753,6 +45239,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.PostedPeriodComparisonDto",
       "target": "contract:Meridian.Contracts.Ledger.LedgerDimensionSetDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PostedPeriodComparisonDto",
+      "target": "contract:Meridian.Contracts.Ledger.PostedComparisonMeasureDto"
     },
     {
       "kind": "contract-reference",
@@ -45383,6 +45875,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.PrivateCapitalWorkbenchDto",
       "target": "contract:Meridian.Contracts.Ledger.PrivateCapitalScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ProposeIntercompanyAccrualScheduleRequest",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleKindDto"
     },
     {
       "kind": "contract-reference",
@@ -57687,6 +58185,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.WorkstationMetricCard",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationMetricHistoryPointDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.WorkstationModeComparisonGroup",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationModeComparisonRun"
     },
@@ -61011,6 +61515,18 @@
       "label": "",
       "source": "database:ledger.intercompany_account_binding_revisions_tenant_id_check on ledger.intercompany_account_binding_revisions",
       "target": "database:ledger.intercompany_account_binding_revisions.tenant_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.intercompany_accrual_schedules_tenant_id_check on ledger.intercompany_accrual_schedules",
+      "target": "database:ledger.intercompany_accrual_schedules.tenant_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.intercompany_accrual_schedules_version_check on ledger.intercompany_accrual_schedules",
+      "target": "database:ledger.intercompany_accrual_schedules.version"
     },
     {
       "kind": "normal",
@@ -67363,6 +67879,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:ledger",
+      "target": "database:ledger.intercompany_accrual_schedules"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
       "target": "database:ledger.intercompany_balance_confirmations"
     },
     {
@@ -68649,7 +69171,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "bf226fe0f92781b01bcdaa6422f978aaabc3f3b40dd40c1d41c9f1e2fdef83cf",
+  "fingerprint": "2461213f9ba6f6153b5010dcbce3fc8d608439d0fd8a8516202127ceb65db5f7",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -76594,6 +77116,12 @@
     },
     {
       "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.FundStructure.IIntercompanyFeeAccrualPreviewService",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IIntercompanyFeeAccrualPreviewService"
+    },
+    {
+      "classification": "service_contract",
       "id": "contract:Meridian.Contracts.FundStructure.IIntercompanyRateFixingStore",
       "kind": "contract-type",
       "label": "Meridian.Contracts.FundStructure.IIntercompanyRateFixingStore"
@@ -76723,6 +77251,12 @@
       "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAccrualSliceDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.FundStructure.IntercompanyAccrualSliceDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAccrualWindowDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyAccrualWindowDto"
     },
     {
       "classification": "enum",
@@ -76939,6 +77473,36 @@
       "id": "contract:Meridian.Contracts.FundStructure.IntercompanyExternalReviewJsonContext",
       "kind": "contract-type",
       "label": "Meridian.Contracts.FundStructure.IntercompanyExternalReviewJsonContext"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyFeeAccrualComputationInput",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyFeeAccrualComputationInput"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyFeeAccrualPreviewDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyFeeAccrualPreviewDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyFeeAccrualRules",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyFeeAccrualRules"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyFeeAccrualSliceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyFeeAccrualSliceDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyFixedFeeBasisDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyFixedFeeBasisDto"
     },
     {
       "classification": "enum",
@@ -78825,6 +79389,12 @@
       "label": "Meridian.Contracts.Ledger.CreateIntercompanyAccrualDraftRequest"
     },
     {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Ledger.CreateIntercompanyFeeAccrualDraftRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.CreateIntercompanyFeeAccrualDraftRequest"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.Ledger.CreateLateAdjustmentRequestDto",
       "kind": "contract-type",
@@ -78859,6 +79429,12 @@
       "id": "contract:Meridian.Contracts.Ledger.CurrencyMinorUnits",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.CurrencyMinorUnits"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Ledger.DecideIntercompanyAccrualScheduleRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.DecideIntercompanyAccrualScheduleRequest"
     },
     {
       "classification": "dto",
@@ -79006,6 +79582,12 @@
     },
     {
       "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Ledger.IIntercompanyAccrualScheduleStore",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IIntercompanyAccrualScheduleStore"
+    },
+    {
+      "classification": "service_contract",
       "id": "contract:Meridian.Contracts.Ledger.IIntercompanyBalanceConfirmationStore",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.IIntercompanyBalanceConfirmationStore"
@@ -79084,6 +79666,12 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualCompoundingEvidenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyAccrualCompoundingEvidenceDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualEvidenceDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.IntercompanyAccrualEvidenceDto"
@@ -79123,6 +79711,60 @@
       "id": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualRequestDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.IntercompanyAccrualRequestDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleActionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyAccrualScheduleActionDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyAccrualScheduleDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleEventDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyAccrualScheduleEventDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleJsonContext",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyAccrualScheduleJsonContext"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleKindDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyAccrualScheduleKindDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleOutcomeDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyAccrualScheduleOutcomeDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleRunDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyAccrualScheduleRunDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleStatusDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyAccrualScheduleStatusDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyAccrualScheduleWindowDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyAccrualScheduleWindowDto"
     },
     {
       "classification": "enum",
@@ -79219,6 +79861,36 @@
       "id": "contract:Meridian.Contracts.Ledger.IntercompanyCounterpartLinkDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.IntercompanyCounterpartLinkDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyFeeAccrualEvidenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyFeeAccrualEvidenceDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyFeeAccrualEvidenceGuard",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyFeeAccrualEvidenceGuard"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyFeeAccrualJsonContext",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyFeeAccrualJsonContext"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyFeeAccrualProposalDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyFeeAccrualProposalDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyFeeAccrualRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyFeeAccrualRequestDto"
     },
     {
       "classification": "dto",
@@ -79540,6 +80212,12 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.LedgerJournalExecutionLineageDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.LedgerJournalExecutionLineageDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Ledger.LedgerJournalTaxResultsDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.LedgerJournalTaxResultsDto"
@@ -79801,6 +80479,12 @@
       "id": "contract:Meridian.Contracts.Ledger.PostPostingRuleJournalCandidateRequestDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.PostPostingRuleJournalCandidateRequestDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Ledger.PostedComparisonMeasureDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.PostedComparisonMeasureDto"
     },
     {
       "classification": "dto",
@@ -80077,6 +80761,12 @@
       "id": "contract:Meridian.Contracts.Ledger.PrivateCapitalWorkbenchDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.PrivateCapitalWorkbenchDto"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Ledger.ProposeIntercompanyAccrualScheduleRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ProposeIntercompanyAccrualScheduleRequest"
     },
     {
       "classification": "request",
@@ -91467,6 +92157,12 @@
       "label": "Meridian.Contracts.Workstation.WorkstationMetricCard"
     },
     {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.WorkstationMetricHistoryPointDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.WorkstationMetricHistoryPointDto"
+    },
+    {
       "classification": "record",
       "id": "contract:Meridian.Contracts.Workstation.WorkstationModeComparisonGroup",
       "kind": "contract-type",
@@ -94460,6 +95156,32 @@
       "id": "database:ledger.intercompany_account_binding_revisions_tenant_id_check on ledger.intercompany_account_binding_revisions",
       "kind": "database-object",
       "label": "ledger.intercompany_account_binding_revisions_tenant_id_check on ledger.intercompany_account_binding_revisions"
+    },
+    {
+      "id": "database:ledger.intercompany_accrual_schedules",
+      "kind": "database-table",
+      "label": "ledger.intercompany_accrual_schedules",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.intercompany_accrual_schedules.tenant_id",
+      "kind": "database-object",
+      "label": "ledger.intercompany_accrual_schedules.tenant_id"
+    },
+    {
+      "id": "database:ledger.intercompany_accrual_schedules.version",
+      "kind": "database-object",
+      "label": "ledger.intercompany_accrual_schedules.version"
+    },
+    {
+      "id": "database:ledger.intercompany_accrual_schedules_tenant_id_check on ledger.intercompany_accrual_schedules",
+      "kind": "database-object",
+      "label": "ledger.intercompany_accrual_schedules_tenant_id_check on ledger.intercompany_accrual_schedules"
+    },
+    {
+      "id": "database:ledger.intercompany_accrual_schedules_version_check on ledger.intercompany_accrual_schedules",
+      "kind": "database-object",
+      "label": "ledger.intercompany_accrual_schedules_version_check on ledger.intercompany_accrual_schedules"
     },
     {
       "id": "database:ledger.intercompany_balance_confirmations",
@@ -100871,11 +101593,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4231,
-    "contract_set_memberships": 5515,
-    "edges": 11404,
+    "contract_references": 4258,
+    "contract_set_memberships": 5572,
+    "edges": 11491,
     "foreign_keys": 208,
     "logical_references": 6,
-    "nodes": 5603
+    "nodes": 5637
   }
 }

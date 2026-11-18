@@ -53,3 +53,19 @@ it("validates supported dimension aliases and does not accept an old as-of cutof
   await expect(getPostedPeriodComparison({ bookId: "book-a", periodId: "current", asOf: "2026-11-11", dimensions: { fundProfileId: "fund-a", ledgerBookDimensionId: "dimension-book", externalGlDimensionKey: "department", externalGlDimensionValue: "treasury" } })).resolves.toEqual(expect.objectContaining({ status: "Ready" }));
   await expect(getPostedPeriodComparison({ bookId: "book-a", periodId: "current", asOf: "2026-11-12" })).rejects.toThrow("as-of cutoff");
 });
+
+it("requests closing balances by name and refuses a host that answers with movements", async () => {
+  vi.mocked(getJson).mockResolvedValue({ ...response(), measure: "ClosingBalances" });
+  await getPostedPeriodComparison({ bookId: "book-a", periodId: "current", measure: "ClosingBalances" });
+  expect(new URL(vi.mocked(getJson).mock.calls.at(-1)![0], "http://localhost").searchParams.get("measure")).toBe("ClosingBalances");
+
+  // An older host ignores the parameter and answers with movements (no measure field).
+  vi.mocked(getJson).mockResolvedValue(response());
+  await expect(getPostedPeriodComparison({ bookId: "book-a", periodId: "current", measure: "ClosingBalances" }))
+    .rejects.toThrow("does not match the requested measure");
+
+  // A plain movements request sends no measure and accepts a response without one.
+  vi.mocked(getJson).mockResolvedValue(response());
+  await getPostedPeriodComparison({ bookId: "book-a", periodId: "current" });
+  expect(new URL(vi.mocked(getJson).mock.calls.at(-1)![0], "http://localhost").searchParams.has("measure")).toBe(false);
+});

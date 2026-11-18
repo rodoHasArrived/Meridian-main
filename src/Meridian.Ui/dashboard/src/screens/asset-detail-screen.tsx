@@ -367,7 +367,7 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
               <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {overview.fields.map((field) => (
                   <div key={field.label}>
-                    <dt className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(field.label) && "font-mono uppercase tracking-[0.14em]")}>{field.label}</dt>
+                    <dt className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(field.label) && "type-label--caps")}>{field.label}</dt>
                     <dd className="mt-1 text-sm text-foreground">{field.value}</dd>
                   </div>
                 ))}
@@ -376,7 +376,7 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
                 <dl className="grid gap-3 sm:grid-cols-2">
                   {overview.technicalFields.map((field) => (
                     <div key={field.label}>
-                      <dt className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(field.label) && "font-mono uppercase tracking-[0.14em]")}>{field.label}</dt>
+                      <dt className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(field.label) && "type-label--caps")}>{field.label}</dt>
                       <dd className="mt-1 break-words font-mono text-sm text-foreground">{field.value}</dd>
                     </div>
                   ))}

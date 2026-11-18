@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ConfigurationServiceCredentialAdapter
+
+Qualified name: <code>Meridian.Application.Services.ConfigurationServiceCredentialAdapter</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Services/ConfigurationServiceCredentialAdapter.cs:10](../../../../src/Meridian.Application/Services/ConfigurationServiceCredentialAdapter.cs#L10).
+
+Adapter that wraps ConfigurationService to implement ICredentialResolver. Enables using ConfigurationService&#x27;s credential resolution with the unified ProviderFactory.
+
+```csharp
+public sealed class ConfigurationServiceCredentialAdapter : IProviderCredentialResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ConfigurationServiceCredentialAdapter(ConfigurationService configService);</code> | [src/Meridian.Application/Services/ConfigurationServiceCredentialAdapter.cs:14](../../../../src/Meridian.Application/Services/ConfigurationServiceCredentialAdapter.cs#L14) |  |
+| <code>public ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary&lt;string, string?&gt;? configuredValues = null);</code> | [src/Meridian.Application/Services/ConfigurationServiceCredentialAdapter.cs:19](../../../../src/Meridian.Application/Services/ConfigurationServiceCredentialAdapter.cs#L19) |  |
+
 ## ConfigurationWizard
 
 Qualified name: <code>Meridian.Application.Services.ConfigurationWizard</code>. Kind: `class`.
@@ -946,15 +965,3 @@ Declared public members:
 | <code>public async Task&lt;IndexSubscribeResult&gt; SubscribeToIndexAsync(IndexSubscribeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs:72](../../../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs#L72) | Subscribe to all components of an index. |
 | <code>public async Task&lt;IndexSubscribeResult&gt; UnsubscribeFromIndexAsync(string indexId, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs:167](../../../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs#L167) | Unsubscribe from all components of an index. |
 | <code>public async Task&lt;IndexSubscriptionStatus&gt; GetSubscriptionStatusAsync(string indexId, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs:214](../../../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs#L214) | Check which index components are currently subscribed. |
-
-## IndexSubscriptionStatus
-
-Qualified name: <code>Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs:416](../../../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs#L416).
-
-Status of index subscription coverage.
-
-```csharp
-public sealed record IndexSubscriptionStatus(string IndexId, string? IndexName, int TotalComponents, int SubscribedCount, string[] SubscribedSymbols, string[] NotSubscribedSymbols);
-```

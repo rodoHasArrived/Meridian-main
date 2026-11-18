@@ -567,6 +567,10 @@ classDiagram
         +IntercompanyAccrualRequestDto Accrual
         +string ExpectedEvidenceDigest
     }
+    class Meridian_Contracts_Ledger_CreateIntercompanyFeeAccrualDraftRequest["CreateIntercompanyFeeAccrualDraftRequest"] {
+        +IntercompanyFeeAccrualRequestDto Accrual
+        +string ExpectedEvidenceDigest
+    }
     class Meridian_Contracts_Ledger_CreateLateAdjustmentRequestDto["CreateLateAdjustmentRequestDto"] {
         +OperationsActionOriginDto ActionOrigin
         +decimal Amount
@@ -618,6 +622,12 @@ classDiagram
     }
     class Meridian_Contracts_Ledger_CurrencyMinorUnits["CurrencyMinorUnits"] {
     }
+    class Meridian_Contracts_Ledger_DecideIntercompanyAccrualScheduleRequest["DecideIntercompanyAccrualScheduleRequest"] {
+        +IntercompanyAccrualScheduleActionDto Action
+        +long ExpectedVersion
+        +string? Reason
+        +Guid RequestId
+    }
     class Meridian_Contracts_Ledger_DimensionMappingProfileDto["DimensionMappingProfileDto"] {
         +AccountingCertificationStateDto CertificationState
         +string DisplayName
@@ -657,34 +667,6 @@ classDiagram
         +LedgerDimensionSetDto? MeridianDimensions
         +decimal NetAmount
         +string ReconciliationRowId
-    }
-    class Meridian_Contracts_Ledger_ExternalGlExportPackageDto["ExternalGlExportPackageDto"] {
-        +ExternalGlExportCertificationDto? Certification
-        +string? CompanyId
-        +DateTimeOffset CreatedAtUtc
-        +string CreatedBy
-        +IReadOnlyList~string~ EvidenceLinks
-        +string ExportPackageId
-        +string FundProfileId
-        +IReadOnlyList~ExternalGlExportLineDto~ GeneratedLines
-        +IReadOnlyList~Guid~ JournalEntryIds
-        +Guid? LedgerBookId
-        +string? MappingProfileId
-        +DateOnly PeriodEnd
-    }
-    class Meridian_Contracts_Ledger_ExternalGlExportPackageManifestDto["ExternalGlExportPackageManifestDto"] {
-        +AccountingCertificationStateDto CertificationState
-        +string? CompanyId
-        +string ContentHash
-        +string ContentType
-        +IReadOnlyList~string~ EvidenceLinks
-        +string ExportPackageId
-        +bool ExternalPostingAllowed
-        +string FileName
-        +string FundProfileId
-        +DateTimeOffset GeneratedAtUtc
-        +IReadOnlyList~ExternalGlExportLineDto~ GeneratedLines
-        +Guid? LedgerBookId
     }
     Meridian_Contracts_Ledger_CloseDeadlineRuleDto --> Meridian_Contracts_Ledger_CloseDeadlineAdjustmentDto
     Meridian_Contracts_Ledger_CloseDeadlineRuleDto --> Meridian_Contracts_Ledger_CloseDeadlineAnchorDto
@@ -747,6 +729,3 @@ classDiagram
     Meridian_Contracts_Ledger_ConsolidationViewDto --> Meridian_Contracts_Ledger_ConsolidationDraftSummaryDto
     Meridian_Contracts_Ledger_ConsolidationViewDto --> Meridian_Contracts_Ledger_ConsolidationMatchDto
     Meridian_Contracts_Ledger_ConsolidationViewDto --> Meridian_Contracts_Ledger_ConsolidationRequestDto
-    Meridian_Contracts_Ledger_ExternalGlExportPackageDto --> Meridian_Contracts_Ledger_ExternalGlExportCertificationDto
-    Meridian_Contracts_Ledger_ExternalGlExportPackageDto --> Meridian_Contracts_Ledger_ExternalGlExportLineDto
-    Meridian_Contracts_Ledger_ExternalGlExportPackageManifestDto --> Meridian_Contracts_Ledger_ExternalGlExportLineDto

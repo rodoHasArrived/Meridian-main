@@ -315,7 +315,7 @@ export function SecurityDetailsPanel({
       <CardContent className="space-y-6">
         {vm.groups.map((group) => (
           <section key={group.id} aria-label={group.title} className="space-y-2">
-            <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(group.title) && "uppercase tracking-[0.14em]")}>{group.title}</div>
+            <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(group.title) && "type-label--caps")}>{group.title}</div>
             <dl className="grid gap-2 sm:grid-cols-2">
               {group.fields.map((field) => {
                 return (
@@ -859,7 +859,7 @@ function LotDraftField({
 }) {
   return (
     <div className={cn("min-w-0 space-y-1", className)}>
-      <label htmlFor={field.id} className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(field.label) && "uppercase tracking-[0.12em]")}>
+      <label htmlFor={field.id} className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(field.label) && "type-label--caps")}>
         {field.label}
       </label>
       <Input
@@ -889,7 +889,7 @@ function LotDraftField({
 function LotsMetric({ label, value, tone }: { label: string; value: string; tone?: "success" | "danger" }) {
   return (
     <div className="rounded-md border border-border/60 bg-secondary/25 px-3 py-2">
-      <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.12em]")}>{label}</div>
+      <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(label) && "type-label--caps")}>{label}</div>
       <div className={cn(
         "mt-1 font-mono text-sm font-semibold tabular-nums",
         tone === "success" ? "text-success" : tone === "danger" ? "text-danger" : "text-foreground"
