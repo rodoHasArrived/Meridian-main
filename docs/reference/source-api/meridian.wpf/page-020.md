@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkspaceShellContextStripControl
+
+Qualified name: <code>Meridian.Wpf.Views.WorkspaceShellContextStripControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs:12](../../../../src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs#L12).
+
+Displays shell context titles and badges in regular or compact form.
+
+```csharp
+public partial class WorkspaceShellContextStripControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly DependencyProperty ShellContextProperty = DependencyProperty.Register(nameof(ShellContext), typeof(WorkspaceShellContext), typeof(WorkspaceShellContextStripControl), new PropertyMetadata(new WorkspaceShellContext(), OnShellContextChanged));</code> | [src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs:17](../../../../src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs#L17) |  |
+| <code>public static readonly DependencyProperty IsCompactProperty = DependencyProperty.Register(nameof(IsCompact), typeof(bool), typeof(WorkspaceShellContextStripControl), new PropertyMetadata(false, OnCompactPresentationChanged));</code> | [src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs:24](../../../../src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs#L24) |  |
+| <code>public WorkspaceShellContextStripControl();</code> | [src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs:31](../../../../src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs#L31) |  |
+| <code>public WorkspaceShellContext ShellContext { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs:37](../../../../src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs#L37) |  |
+| <code>public bool IsCompact { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs:43](../../../../src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs#L43) |  |
+
 ## WorkspaceShellPageBase (generic arity 2)
 
 Qualified name: <code>Meridian.Wpf.Views.WorkspaceShellPageBase</code>. Kind: `class`.
@@ -881,13 +903,3 @@ Declared public members:
 | <code>public string Detail { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:323](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L323) |  |
 | <code>public WorkstationBadgeModel? Badge { get; init; }</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:325](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L325) |  |
 | <code>public IReadOnlyList&lt;KeyValueFactModel&gt; Facts { get; init; } = Array.Empty&lt;KeyValueFactModel&gt;();</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:327](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L327) |  |
-
-## KeyValueFactModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.KeyValueFactModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:330](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L330).
-
-```csharp
-public sealed record KeyValueFactModel(string Label, string Value, string Detail = "", string Tone = WorkspaceTone.Neutral);
-```

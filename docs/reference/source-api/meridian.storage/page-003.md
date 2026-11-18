@@ -872,6 +872,26 @@ Declared public members:
 | <code>public Task&lt;IntercompanyAccountingArrangementDto&gt; AppendAsync(string tenantId, long expectedVersion, IntercompanyAccountingArrangementEventDto item, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs:50](../../../../src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs#L50) |  |
 | <code>public async Task&lt;IntercompanyAccountingArrangementDto&gt; MutateAsync(string tenantId, Guid agreementId, Guid requestId, string requestDigest, Func&lt;IntercompanyAccountingArrangementHistoryDto?, CancellationToken, Task&lt;IntercompanyAccountingArrangementEventDto&gt;&gt; build, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs:58](../../../../src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs#L58) |  |
 
+## FileIntercompanyRateFixingStore
+
+Qualified name: <code>Meridian.Storage.FundStructure.FileIntercompanyRateFixingStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/FundStructure/FileIntercompanyRateFixingStore.cs:9](../../../../src/Meridian.Storage/FundStructure/FileIntercompanyRateFixingStore.cs#L9).
+
+Local durable fixing history: every version of every fixing, published atomically per tenant.
+
+```csharp
+public sealed class FileIntercompanyRateFixingStore(string rootDirectory, IFundScopeTenantAccessor tenants) : IIntercompanyRateFixingStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IntercompanyRateFixingDto?&gt; GetAsync(string tenantId, Guid fixingId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/FileIntercompanyRateFixingStore.cs:16](../../../../src/Meridian.Storage/FundStructure/FileIntercompanyRateFixingStore.cs#L16) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;IntercompanyRateFixingDto&gt;&gt; ListAsync(string tenantId, string indexReference, DateOnly from, DateOnly to, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/FileIntercompanyRateFixingStore.cs:22](../../../../src/Meridian.Storage/FundStructure/FileIntercompanyRateFixingStore.cs#L22) |  |
+| <code>public async Task&lt;IntercompanyRateFixingDto&gt; AppendAsync(IntercompanyRateFixingDto next, long expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/FileIntercompanyRateFixingStore.cs:31](../../../../src/Meridian.Storage/FundStructure/FileIntercompanyRateFixingStore.cs#L31) |  |
+
 ## FundStructureLegacyImportRequest
 
 Qualified name: <code>Meridian.Storage.FundStructure.FundStructureLegacyImportRequest</code>. Kind: `record`.
@@ -946,14 +966,4 @@ Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs
 
 ```csharp
 public sealed record FundStructureTenantBackfillEvidence(Guid BookId, string FundProfileId, Guid NodeId, string? TenantId, string? CompanyId, JsonElement RetainedBook, JsonElement? RetainedRegistryEntry);
-```
-
-## FundStructureTenantBackfillException
-
-Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillException</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs:22](../../../../src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs#L22).
-
-```csharp
-public sealed record FundStructureTenantBackfillException(Guid NodeId, string NodeKind, string Reason, IReadOnlyList<string> CandidateTenantIds);
 ```

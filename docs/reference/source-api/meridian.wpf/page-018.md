@@ -229,6 +229,22 @@ Declared public members:
 | --- | --- | --- |
 | <code>public IntercompanyInterestAccrualControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/IntercompanyInterestAccrualControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/IntercompanyInterestAccrualControl.xaml.cs#L7) |  |
 
+## IntercompanyRateFixingsControl
+
+Qualified name: <code>Meridian.Wpf.Views.IntercompanyRateFixingsControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/IntercompanyRateFixingsControl.xaml.cs:5](../../../../src/Meridian.Wpf/Views/IntercompanyRateFixingsControl.xaml.cs#L5).
+
+```csharp
+public partial class IntercompanyRateFixingsControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyRateFixingsControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/IntercompanyRateFixingsControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/IntercompanyRateFixingsControl.xaml.cs#L7) |  |
+
 ## IssueDisplayItem
 
 Qualified name: <code>Meridian.Wpf.Views.IssueDisplayItem</code>. Kind: `class`.
@@ -1044,27 +1060,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public RunMatPage(RunMatViewModel viewModel);</code> | [src/Meridian.Wpf/Views/RunMatPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/RunMatPage.xaml.cs#L14) |  |
-
-## RunPortfolioPage
-
-Qualified name: <code>Meridian.Wpf.Views.RunPortfolioPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:70](../../../../src/Meridian.Wpf/Views/Pages.cs#L70).
-
-```csharp
-public partial class RunPortfolioPage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/RunPortfolioPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/RunPortfolioPage.xaml.cs#L10).
-
-Provides the desktop page to review holdings, exposures, and weights for the selected run.
-
-```csharp
-public partial class RunPortfolioPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public RunPortfolioPage();</code> | [src/Meridian.Wpf/Views/RunPortfolioPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/RunPortfolioPage.xaml.cs#L12) |  |

@@ -6,6 +6,12 @@ namespace Meridian.Contracts.FundStructure;
 public static class IntercompanyAccrualRules
 {
     public const string RuleVersion = "intercompany-accrual-v1";
+    /// <summary>
+    /// v1 plus floating-rate simple interest: each schedule period uses the approved fixing of its declared index,
+    /// observed the declared lag before the period start, plus the declared spread. v1 windows stay v1.
+    /// </summary>
+    public const string FloatingRuleVersion = "intercompany-accrual-v2";
+    public static bool IsSupported(string? ruleVersion) => ruleVersion is RuleVersion or FloatingRuleVersion;
     public const string StatusReady = "Ready";
     public const string StatusUnavailable = "Unavailable";
     /// <summary>A single request never spans more than one year of daily authority resolution.</summary>
@@ -24,7 +30,17 @@ public sealed record IntercompanyAccrualPrincipalSegmentDto(DateOnly From, DateO
 /// <summary>Server-resolved facts only; no caller-supplied rate, day count or amount participates.</summary>
 public sealed record IntercompanyAccrualComputationInput(DateOnly AccrualFrom, DateOnly AccrualTo,
     IReadOnlyList<IntercompanyAccrualAuthoritySegment> Authority,
-    IReadOnlyList<IntercompanyAccrualPrincipalSegmentDto> Principal);
+    IReadOnlyList<IntercompanyAccrualPrincipalSegmentDto> Principal)
+{
+    /// <summary>Approved rate fixings the server resolved for the declared indices; never caller-supplied.</summary>
+    public IReadOnlyList<IntercompanyApprovedRateFixingDto> Fixings { get; init; } = [];
+}
+
+/// <summary>The approved fixing that set one floating slice's rate: <c>AnnualRate = IndexRate + SpreadBps / 10,000</c>.</summary>
+public sealed record IntercompanyAccrualFixingPinDto(Guid FixingId, string IndexReference, DateOnly FixingDate,
+    [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal IndexRate,
+    [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal SpreadBps,
+    int FixingLagBusinessDays, string ValueDigest);
 
 /// <summary>One homogeneous slice: one legal revision, one profile revision, one schedule period, one principal.</summary>
 public sealed record IntercompanyAccrualSliceDto(int Sequence, DateOnly From, DateOnly To,
@@ -34,7 +50,12 @@ public sealed record IntercompanyAccrualSliceDto(int Sequence, DateOnly From, Da
     string DayCount,
     [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal YearFraction,
     [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal UnroundedAmount,
-    string PrincipalEvidenceReference);
+    string PrincipalEvidenceReference)
+{
+    /// <summary>Floating slices only (rule v2). Absent on fixed slices, so v1 evidence keeps its exact text.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IntercompanyAccrualFixingPinDto? Fixing { get; init; }
+}
 
 public sealed record IntercompanyAccrualCalendarPinDto(string CalendarId, string ContentHash);
 

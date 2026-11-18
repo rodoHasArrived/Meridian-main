@@ -20,6 +20,12 @@ record external legal review while ordinary independent review remains available
 revisions retain the same separate audit facts. See
 [terms and review boundaries](../../docs/domain/intercompany-agreements.md).
 
+`IntercompanyAccrualPreviewService` computes floating slices under rule `intercompany-accrual-v2` from
+the approved fixing of each period plus the spread, and refuses a window with a missing fixing.
+`IntercompanyRateFixingRules` and `IntercompanyRateFixingService` own maker-checker fixing history;
+`IntercompanyEntityServiceRegistration` composes its PostgreSQL or file store. See
+[floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
+
 Structured decimal normalization preserves representable declarations when canonical formatting
 uses an exponent. Retrying an externally reviewed lifecycle append repairs an interrupted local
 profile projection from the latest retained revision while holding the history read lease.

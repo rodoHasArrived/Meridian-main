@@ -6,6 +6,63 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ExecutionStatistics
+
+Qualified name: <code>Meridian.Application.Scheduling.ExecutionStatistics</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:197](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L197).
+
+Statistics from a scheduled execution.
+
+```csharp
+public sealed class ExecutionStatistics
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int TotalSymbols { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:199](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L199) |  |
+| <code>public int SuccessfulSymbols { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:200](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L200) |  |
+| <code>public int FailedSymbols { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:201](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L201) |  |
+| <code>public int SkippedSymbols { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:202](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L202) |  |
+| <code>public int GapsDetected { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:204](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L204) |  |
+| <code>public int GapsFilled { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:205](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L205) |  |
+| <code>public int GapsRemaining =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:206](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L206) |  |
+| <code>public long TotalBarsRetrieved { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:208](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L208) |  |
+| <code>public long TotalBytesDownloaded { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:209](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L209) |  |
+| <code>public int TotalRequests { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:211](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L211) |  |
+| <code>public int SuccessfulRequests { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:212](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L212) |  |
+| <code>public int FailedRequests { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:213](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L213) |  |
+| <code>public int RateLimitedRequests { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:214](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L214) |  |
+| <code>public double AverageRequestDurationMs { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:216](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L216) |  |
+| <code>public double MaxRequestDurationMs { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:217](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L217) |  |
+| <code>public double SuccessRate =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:222](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L222) | Success rate (0.0 - 1.0). |
+
+## ExecutionStatus
+
+Qualified name: <code>Meridian.Application.Scheduling.ExecutionStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:170](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L170).
+
+Status of a scheduled execution.
+
+```csharp
+public enum ExecutionStatus : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Pending</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:173](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L173) | Execution is queued. |
+| <code>Running</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:176](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L176) | Execution is running. |
+| <code>Completed</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:179](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L179) | Execution completed successfully. |
+| <code>PartialSuccess</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:182](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L182) | Execution completed with some failures. |
+| <code>Failed</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:185](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L185) | Execution failed. |
+| <code>Cancelled</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:188](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L188) | Execution was cancelled. |
+| <code>Skipped</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:191](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L191) | Execution was skipped (e.g., already running). |
+
 ## ExecutionTrigger
 
 Qualified name: <code>Meridian.Application.Scheduling.ExecutionTrigger</code>. Kind: `enum`.
@@ -977,43 +1034,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public SecurityMasterTickerChangeService(ContractSecurityMasterQueryService queryService, ISecurityMasterService commandService, ILogger&lt;SecurityMasterTickerChangeService&gt; logger, ISecurityMasterAmender? systemAmender = null);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterTickerChangeService.cs:33](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterTickerChangeService.cs#L33) |  |
 | <code>public async Task&lt;SecurityDetailDto&gt; RecordAsync(RecordTickerChangeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterTickerChangeService.cs:47](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterTickerChangeService.cs#L47) |  |
-
-## CoverageInvalidationHandler
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CoverageInvalidationHandler</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/CoverageInvalidationHandler.cs:15](../../../../src/Meridian.Application/SecurityMaster/CoverageInvalidationHandler.cs#L15).
-
-Published-revision side effect (Order = 20, runs after the projection rebuild): evicts any cached multi-asset coverage / operational-readiness view affected by the edit, via IMultiAssetCoverageInvalidator, so the next coverage read recomputes against the freshly-rebuilt projection. Idempotent: invalidation is safe to repeat on a retried publish. The default invalidator is a no-op while the coverage read path is recomputed per request (uncached).
-
-```csharp
-public sealed class CoverageInvalidationHandler : ISecurityMasterRevisionPublishedHandler
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CoverageInvalidationHandler(IMultiAssetCoverageInvalidator invalidator, ILogger&lt;CoverageInvalidationHandler&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/CoverageInvalidationHandler.cs:20](../../../../src/Meridian.Application/SecurityMaster/CoverageInvalidationHandler.cs#L20) |  |
-| <code>public int Order =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/CoverageInvalidationHandler.cs:28](../../../../src/Meridian.Application/SecurityMaster/CoverageInvalidationHandler.cs#L28) |  |
-| <code>public async Task HandleAsync(SecurityMasterRevisionPublishedEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CoverageInvalidationHandler.cs:30](../../../../src/Meridian.Application/SecurityMaster/CoverageInvalidationHandler.cs#L30) |  |
-
-## StoredSecurityForwardCurveProvider
-
-Qualified name: <code>Meridian.Application.SecurityMaster.Curves.StoredSecurityForwardCurveProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs:14](../../../../src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs#L14).
-
-Supplies forward curves to the cash-flow projection from stored curves: the one Forward definition whose index matches (trimmed, ignoring case), at its latest version dated on or before the as-of. No definition, no version by that date, or several definitions for the index (the same index in two currencies or tenors) all yield null, so the leg stays flat forward, as a host without curves does today; ambiguity is logged and never guessed.
-
-```csharp
-public sealed class StoredSecurityForwardCurveProvider : ISecurityForwardCurveProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StoredSecurityForwardCurveProvider(ISecurityCurveStore store, ILogger&lt;StoredSecurityForwardCurveProvider&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs:19](../../../../src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs#L19) |  |
-| <code>public Task&lt;SecurityForwardCurve?&gt; GetForwardCurveAsync(string indexName, DateOnly asOf, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs:25](../../../../src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs#L25) |  |
-| <code>public async Task&lt;SecurityForwardCurve?&gt; GetForwardCurveAsync(string indexName, BondCalculationContext context, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs:28](../../../../src/Meridian.Application/SecurityMaster/Curves/StoredSecurityForwardCurveProvider.cs#L28) |  |

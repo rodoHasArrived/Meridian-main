@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## KeyValueFactModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.KeyValueFactModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:330](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L330).
+
+```csharp
+public sealed record KeyValueFactModel(string Label, string Value, string Detail = "", string Tone = WorkspaceTone.Neutral);
+```
+
 ## OperationsContinuityCloseBlockerPresentation
 
 Qualified name: <code>Meridian.Wpf.Workstation.Models.OperationsContinuityCloseBlockerPresentation</code>. Kind: `record`.
@@ -763,21 +773,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public ActivityLogGridControl();</code> | [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:51](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L51) |  |
-
-## DenseDataGridControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Tables.DenseDataGridControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:8](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L8).
-
-Displays read-only rows with explicit columns and row and column virtualization.
-
-```csharp
-public sealed class DenseDataGridControl : DataGrid
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DenseDataGridControl();</code> | [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:10](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L10) |  |

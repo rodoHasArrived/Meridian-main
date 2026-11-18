@@ -66,6 +66,10 @@ The close cockpit consumes this structured schedule instead of intercompany keyw
 NetSuite guarded export review retains its schedule hash and rechecks mapping completeness
 and freshness alongside the existing external NetSuite evidence requirements.
 
+`IntercompanyLedgerPostingAuthority` also re-reads every fixing a floating accrual pinned, so a value
+re-approved after drafting stops the draft before review or posting; the source builder retains the
+computation's own rule version. See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
+
 `IntercompanyBalanceConfirmationRules` and `IntercompanyBalanceConfirmationService` pin both sides'
 posted schedule balances for one approved accounting profile at a date, then record confirm, dispute
 and resolve steps against the exact version and balance digest shown. Advisory only; close is

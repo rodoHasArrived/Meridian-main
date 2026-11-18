@@ -157,6 +157,10 @@ responses preserve local edits. The desktop surface does not maintain its own ag
 posting authority. Native WPF interaction validation requires Windows; Linux checks do not establish
 native acceptance. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
 
+Fund Operations adds a Rate fixings tab (`Views/IntercompanyRateFixingsControl.xaml`) over the shared
+`IntercompanyRateFixingWorkspace`; the agreement editor declares the fixing lag and the Interest
+accrual tab shows each slice's fixing. See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
+
 A Counterpart proposals tab (`Views/IntercompanyCounterpartProposalsControl.xaml`) binds the shared
 `IntercompanyCounterpartQueueWorkspace`: delivery records and aged booking breaks for a source
 book, retained source lines and provenance, delivery retry, explicit FX repricing with a

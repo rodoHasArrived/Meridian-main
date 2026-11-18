@@ -81,6 +81,8 @@ export interface StructuredAgreementTerms {
   schemaVersion: number;
   schedule?: { startDate: string; endDate: string; frequency: "Monthly" | "Quarterly" | "SemiAnnual" | "Annual" | "AtMaturity"; calendarId: string; businessDayConvention: "Unadjusted" | "Following" | "ModifiedFollowing" | "Preceding" | "ModifiedPreceding"; settlementBusinessDays: number } | null;
   rateBasis?: "Fixed" | "Floating" | null; fixedAnnualRate?: string | null; floatingIndexReference?: string | null; spreadBps?: string | null;
+  /** Floating only (0–10): the fixing is observed this many schedule-calendar business days before each period's accrual start. */
+  fixingLagBusinessDays?: number | null;
   dayCount?: "Actual360" | "Actual365" | "Thirty360" | "Business252" | "ActualActualIsda" | "ThirtyE360" | "ThirtyE360Isda" | "ActualActualIcma" | "Nl365" | "Actual36525" | null;
   compounding?: "Simple" | "Monthly" | "Quarterly" | "SemiAnnual" | "Annual" | "Daily" | null;
   fixedFeeAmount?: string | null; annualFeeRate?: string | null; calculationBaseReference?: string | null;

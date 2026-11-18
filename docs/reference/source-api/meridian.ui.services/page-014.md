@@ -6,6 +6,52 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolQualityReport
+
+Qualified name: <code>Meridian.Ui.Services.Services.SymbolQualityReport</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:60](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L60).
+
+Groups a symbol&#x27;s quality scores, issues, gaps, and completeness breakdown.
+
+```csharp
+public sealed class SymbolQualityReport
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:62](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L62) |  |
+| <code>public double OverallScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:63](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L63) |  |
+| <code>public Dictionary&lt;string, double&gt; ScoresByType { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:64](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L64) |  |
+| <code>public List&lt;QualityIssue&gt; Issues { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:65](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L65) |  |
+| <code>public List&lt;QualityDataGap&gt; Gaps { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:66](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L66) |  |
+| <code>public QualityCompletenessReport Completeness { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:67](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L67) |  |
+
+## SymbolQualitySummary
+
+Qualified name: <code>Meridian.Ui.Services.Services.SymbolQualitySummary</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:28](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L28).
+
+Describes a symbol&#x27;s quality score, status, event count, and detected gaps.
+
+```csharp
+public sealed class SymbolQualitySummary
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:30](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L30) |  |
+| <code>public double QualityScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:31](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L31) |  |
+| <code>public string Status { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:32](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L32) |  |
+| <code>public int EventCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:33](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L33) |  |
+| <code>public int GapCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:34](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L34) |  |
+| <code>public DateTime LastUpdate { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:35](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L35) |  |
+
 ## ThemeServiceBase
 
 Qualified name: <code>Meridian.Ui.Services.Services.ThemeServiceBase</code>. Kind: `class`.
@@ -1132,46 +1178,3 @@ Declared public members:
 | <code>public int IntegrityIssues { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:555](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L555) |  |
 | <code>public string? ActiveProvider { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:558](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L558) |  |
 | <code>public string? MappedProviderSymbol { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:559](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L559) |  |
-
-## SymbolFileDto
-
-Qualified name: <code>Meridian.Ui.Services.SymbolFileDto</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/StorageModels.cs:68](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L68).
-
-Describes a stored symbol file&#x27;s type, size, modification time, records, and compression.
-
-```csharp
-public sealed class SymbolFileDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string FileName { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:70](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L70) |  |
-| <code>public string DataType { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:71](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L71) |  |
-| <code>public long SizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:72](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L72) |  |
-| <code>public DateTime ModifiedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:73](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L73) |  |
-| <code>public long RecordCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:74](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L74) |  |
-| <code>public string? CompressionType { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:75](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L75) |  |
-
-## SymbolGapAnalysisDto
-
-Qualified name: <code>Meridian.Ui.Services.SymbolGapAnalysisDto</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/BackfillApiService.cs:176](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L176).
-
-Minimal DTO for deserializing the /api/quality/gaps/{symbol} response. Only the fields used by the gap analysis UI are mapped here.
-
-```csharp
-public sealed class SymbolGapAnalysisDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Symbol { get; set; } = &quot;&quot;;</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:178](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L178) |  |
-| <code>public int TotalGaps { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:179](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L179) |  |
-| <code>public double DataAvailabilityPercent { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:181](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L181) | 0–100 percentage of trading time with data present. |

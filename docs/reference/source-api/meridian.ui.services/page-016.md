@@ -6,6 +6,46 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TokenRefreshEventArgs
+
+Qualified name: <code>Meridian.Ui.Services.TokenRefreshEventArgs</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:435](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L435).
+
+Event args for successful token refresh.
+
+```csharp
+public sealed class TokenRefreshEventArgs : EventArgs
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string ProviderId { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:437](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L437) |  |
+| <code>public DateTime RefreshedAt { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:438](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L438) |  |
+| <code>public TokenRefreshEventArgs(string providerId, DateTime refreshedAt);</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:440](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L440) |  |
+
+## TokenRefreshFailedEventArgs
+
+Qualified name: <code>Meridian.Ui.Services.TokenRefreshFailedEventArgs</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:450](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L450).
+
+Event args for failed token refresh.
+
+```csharp
+public sealed class TokenRefreshFailedEventArgs : EventArgs
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string ProviderId { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:452](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L452) |  |
+| <code>public string ErrorMessage { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:453](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L453) |  |
+| <code>public TokenRefreshFailedEventArgs(string providerId, string errorMessage);</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:455](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L455) |  |
+
 ## TooltipPlacement
 
 Qualified name: <code>Meridian.Ui.Services.TooltipPlacement</code>. Kind: `enum`.
