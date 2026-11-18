@@ -10,7 +10,7 @@ export const Label = forwardRef<HTMLLabelElement, LabelProps>(({ className, chil
     ref={ref}
     className={cn(
       "text-xs font-medium text-muted-foreground",
-      usesTrackedCaps(children) && "uppercase tracking-[0.14em]",
+      usesTrackedCaps(children) && "type-label--caps",
       className,
     )}
     {...props}

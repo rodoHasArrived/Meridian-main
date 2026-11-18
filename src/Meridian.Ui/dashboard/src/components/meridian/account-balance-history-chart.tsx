@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Select } from "@/components/ui/select";
 import { ChartCard } from "@/components/charts/ChartCard";
 import { EquityCurve } from "@/components/charts/EquityCurve";
 import { TableWorkbench } from "@/components/meridian/table-workbench";
@@ -37,9 +38,9 @@ export function AccountBalanceHistoryChart({ accountId }: { accountId: string | 
       : !active?.history ? <p role="status" className="text-xs text-muted-foreground">Loading retained account balances…</p>
       : points.length === 0 ? <p role="status" className="text-xs text-muted-foreground">No dated account balances have been retained.</p>
       : <>
-        <label className="block text-xs">Currency and source <select aria-label="Account history basis" value={selectedBasis} onChange={(event) => setBasis(event.target.value)} className="ml-2 border border-border bg-background p-2">
+        <label className="block text-xs">Currency and source <Select aria-label="Account history basis" value={selectedBasis} onChange={(event) => setBasis(event.target.value)} className="ml-2 border border-border bg-background p-2">
           {bases.map((value) => { const [unit, source] = JSON.parse(value) as string[]; return <option key={value} value={value}>{unit} · {source}</option>; })}
-        </select></label>
+        </Select></label>
         {chartable ? <ChartCard title={`Account balances · ${currency}`} subtitle={`${selected[0].source} · ${selected[0].asOfDate} to ${selected.at(-1)?.asOfDate}`} height={240}>
           <EquityCurve labels={selected.map((point) => point.asOfDate)} valueFmt={(value) => formatNumber(value)} series={[
             { label: `Cash · ${currency}`, color: "var(--chart-equity, #2E7655)", points: selected.map((point) => Number(point.cashBalance)) },

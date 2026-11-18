@@ -428,7 +428,7 @@ function CellDetail({ detail }: { detail: StrategyBuilderCellDetailViewModel | n
 function StrategyDetailField({ field }: { field: StrategyLegDetailFieldViewModel }) {
   return (
     <div className="rounded-sm border border-border/60 bg-background/30 px-2.5 py-2">
-      <dt className={cn("text-xs text-muted-foreground", usesTrackedCaps(field.label) && "uppercase tracking-[0.14em]")}>{field.label}</dt>
+      <dt className={cn("text-xs text-muted-foreground", usesTrackedCaps(field.label) && "type-label--caps")}>{field.label}</dt>
       <dd className="mt-1 break-words font-mono text-xs text-foreground">{field.value}</dd>
     </div>
   );
@@ -617,7 +617,7 @@ function OptionsPayoffPanel({ vm }: { vm: StrategyDesignerViewModel }) {
           <div className="ml-auto grid min-w-[11rem] gap-1">
             <label
               htmlFor={vm.spotPriceField.id}
-              className={cn("text-xs text-muted-foreground", usesTrackedCaps(vm.spotPriceField.label) && "uppercase tracking-[0.14em]")}
+              className={cn("text-xs text-muted-foreground", usesTrackedCaps(vm.spotPriceField.label) && "type-label--caps")}
             >
               {vm.spotPriceField.label}
             </label>

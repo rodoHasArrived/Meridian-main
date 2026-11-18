@@ -606,6 +606,10 @@ Blocked/critical work cannot be snoozed; observed escalation permanently cancels
 Account-scoped single and bulk commands carry the selected `FundAccountId`, recheck its retained
 ownership, and rebuild that account's source inbox before acting. Exact retries retain the original
 command identity; omitted account scope preserves legacy command fingerprints.
+`POST /operator/triage/bulk` applies one assign, acknowledge or snooze to 1–100 items, each under
+`{CommandId}:{index}` through the same per-item authorization and policy (a blocker still cannot be
+snoozed); assign without an assignee, snooze without a snooze-until time, and Unsnooze are refused
+with 400 before anything is written.
 Production uses PostgreSQL through `MERIDIAN_OPERATOR_TRIAGE_CONNECTION_STRING` (falling back to the
 ledger connection); missing persistence disables triage actions explicitly. Synthetic hosts use a
 durable file adapter. No notification delivery is implied by assignment or acknowledgement.
@@ -614,7 +618,31 @@ Posted-period comparison reads require retained fund ownership for the exact ten
 ledger book. The shared route recomputes filtered totals from immutable journals with exact decimal
 transport, policy/currency checks and source population identities. An open period compares the
 same elapsed fiscal interval in a completed baseline; missing or too-short baselines remain
-unavailable. These comparisons never consume the strategy-run simulated ledger.
+unavailable. `measure=ClosingBalances` instead compares cumulative balances: every posting in the
+book's earlier periods (by posting period) plus the period's own postings to the cutoff, against the
+baseline's full close; postings assigned to a period outside the book make the result Unavailable
+rather than guessed. These comparisons never consume the strategy-run simulated ledger.
+
+The Accounting workspace's open-breaks card carries a 14-day history from `OpenBreakHistory`: the
+count at each UTC day end rebuilt from break detection, resolution and reopen times in the retained
+queue (which keeps every status), with today's live count as the last point. A closed break without a
+resolution time, or any day before a reopen (reopen clears the earlier resolution time), is null,
+not guessed. No metric snapshots are stored.
+The timing-drift card carries a 14-day history from `TimingDriftHistory`: at each UTC day end, the
+workspace's most recent runs (six, newest start first) that had started by then, each judged by its
+latest retained reconciliation created before then (`IReconciliationRunService.GetHistoryForRunAsync`),
+with today's live count as the last point. Run start times never move (a restart is a new run), so the
+population is known from today's list, except when that list may have been cut off by the run read
+limit and holds fewer than six runs started by then; those days are null. Without a reconciliation
+service the card carries no history. The other accounting cards (security gaps, audit ready) have no
+retained timestamped source and carry none.
+
+Journal-entry DTOs carry `Execution` lineage from the posting's own metadata: the order id from the
+retained `source.orderId` tag (the execution journal's identifier) before the GUID `OrderId`, the
+`FillId`, and the `strategy.runId` tag. Nothing is matched by symbol, amount or time.
+`GET /api/ledger/books/{ledgerBookId}/execution-journal-entries?fillId=|orderId=` (exactly one) returns
+that book's postings recorded from a fill or order, with the period-comparison read checks. Automated
+fill accounting records the fill but not the order, so callers also look up fills.
 
 The posted-account running-balance read requires the same authenticated tenant/company and
 retained book ownership, including exact returned period, book and fund identities. Its optional

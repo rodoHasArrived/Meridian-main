@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityTermsProjectionReadJsonContext
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityTermsProjectionReadJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityTermsProjectionReadDtos.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsProjectionReadDtos.cs#L39).
+
+Provides source-generated JSON metadata for the generic registry projection read.
+
+```csharp
+public sealed partial class SecurityTermsProjectionReadJsonContext : JsonSerializerContext;
+```
+
+## SecurityTermsProjectionSatelliteRowDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityTermsProjectionSatelliteRowDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityTermsProjectionReadDtos.cs:32](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsProjectionReadDtos.cs#L32).
+
+The row one satellite projection table holds for a security, or null when it holds none.
+
+```csharp
+public sealed record SecurityTermsProjectionSatelliteRowDto(string TableName, IReadOnlyDictionary<string, JsonElement>? Row);
+```
+
 ## SecurityTermsUpgradeKind
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityTermsUpgradeKind</code>. Kind: `enum`.
@@ -799,25 +823,3 @@ Declared public members:
 | <code>public decimal? MinimumOrderSize { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:144](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L144) |  |
 | <code>public decimal? MinimumTradeIncrement { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:145](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L145) |  |
 | <code>public decimal? PriceIncrement { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:146](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L146) |  |
-
-## TransitionCorporateActionCaseRequestDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.TransitionCorporateActionCaseRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:688](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L688).
-
-```csharp
-public sealed record TransitionCorporateActionCaseRequestDto(Guid CaseId, long ExpectedVersion, string IdempotencyKey, string TenantId, string CompanyId, string ToState, string Actor, string Reason, string? BlockedReason = null, string? AssignedTo = null, string? CorrelationId = null, bool PolicyOverride = false, CorporateActionCaseTransitionAuthorityDto? Authority = null, CorporateActionCaseScopeDto? ScopeAssertion = null);
-```
-
-## TransitionOtcMarginCallRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.TransitionOtcMarginCallRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:141](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L141).
-
-Moves a call through its life. Amount is the agreed or settled amount; Reason explains a dispute or a cancellation.
-
-```csharp
-public sealed record TransitionOtcMarginCallRequest(Guid CallId, OtcMarginCallAction Action, decimal? Amount = null, string? Reason = null, DateOnly? SettledOn = null, string? Notes = null, string? UpdatedBy = null);
-```

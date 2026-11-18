@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecureReportingGrantExchangeCommand
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SecureReportingGrantExchangeCommand</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:66](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L66).
+
+```csharp
+public sealed record SecureReportingGrantExchangeCommand(string BearerToken, string ArtifactId);
+```
+
 ## SecureReportingGrantIssueCommand
 
 Qualified name: <code>Meridian.Ui.Shared.Services.SecureReportingGrantIssueCommand</code>. Kind: `record`.
@@ -794,6 +804,27 @@ Enum declarations:
 | <code>EarlyWarning</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:10](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L10) |  |
 | <code>HardBreach</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:11](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L11) |  |
 
+## TimingDriftHistory
+
+Qualified name: <code>Meridian.Ui.Shared.Services.TimingDriftHistory</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/TimingDriftHistory.cs:18](../../../../src/Meridian.Ui.Shared/Services/TimingDriftHistory.cs#L18).
+
+Rebuilds the accounting workspace&#x27;s Timing Drift count for recent days from retained strategy runs and retained reconciliation history, with no stored snapshots.
+
+```csharp
+public static class TimingDriftHistory
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Basis = &quot;Runs with timing drift at each UTC day end, rebuilt from run start times and retained reconciliation history; today is the live count. Days the retained run list cannot establish are left blank.&quot;;</code> | [src/Meridian.Ui.Shared/Services/TimingDriftHistory.cs:20](../../../../src/Meridian.Ui.Shared/Services/TimingDriftHistory.cs#L20) |  |
+| <code>public static async Task&lt;IReadOnlyList&lt;WorkstationMetricHistoryPointDto&gt;&gt; BuildAsync(IReadOnlyList&lt;StrategyRunSummary&gt; runs, bool runListMayBeTruncated, int populationSize, int liveCount, Func&lt;string, CancellationToken, Task&lt;IReadOnlyList&lt;ReconciliationRunSummary&gt;&gt;&gt; readHistory, DateTimeOffset now, CancellationToken ct, int days = 14);</code> | [src/Meridian.Ui.Shared/Services/TimingDriftHistory.cs:31](../../../../src/Meridian.Ui.Shared/Services/TimingDriftHistory.cs#L31) | days points, oldest first. The last point is liveCount, so it always equals the headline figure; earlier points are each UTC day&#x27;s end. |
+| <code>public static StrategyRunSummary[]? PopulationAt(IReadOnlyList&lt;StrategyRunSummary&gt; runs, bool runListMayBeTruncated, int populationSize, DateTimeOffset moment);</code> | [src/Meridian.Ui.Shared/Services/TimingDriftHistory.cs:80](../../../../src/Meridian.Ui.Shared/Services/TimingDriftHistory.cs#L80) | The most recent runs that had started before moment, or null when the list may be missing some of them. |
+| <code>public static bool HadTimingDriftAt(IReadOnlyList&lt;ReconciliationRunSummary&gt; history, DateTimeOffset moment);</code> | [src/Meridian.Ui.Shared/Services/TimingDriftHistory.cs:93](../../../../src/Meridian.Ui.Shared/Services/TimingDriftHistory.cs#L93) | Whether the run&#x27;s latest reconciliation created before moment reported timing drift. |
+
 ## TradingOperatorLiveOrderReadinessGate
 
 Qualified name: <code>Meridian.Ui.Shared.Services.TradingOperatorLiveOrderReadinessGate</code>. Kind: `class`.
@@ -894,39 +925,3 @@ Request body for creating or updating a provider module configuration. Credentia
 ```csharp
 public sealed record UpsertProviderModuleRequest(string ModuleId, bool Enabled = true, int Priority = 100, Dictionary<string, string?>? CredentialValues = null, Dictionary<string, string?>? Settings = null);
 ```
-
-## WorkstationEntityLifecycleExternalReviewEvidenceAuthority
-
-Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationEntityLifecycleExternalReviewEvidenceAuthority</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/EntityLifecycleExternalReviewEvidenceAuthority.cs:11](../../../../src/Meridian.Ui.Shared/Services/EntityLifecycleExternalReviewEvidenceAuthority.cs#L11).
-
-Resolves the accepted immutable source document supporting an externally reviewed entity fact.
-
-```csharp
-public sealed class WorkstationEntityLifecycleExternalReviewEvidenceAuthority(IHttpContextAccessor accessor, IEvidenceArtifactStore evidenceStore) : IEntityLifecycleExternalReviewEvidenceAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IntercompanyAgreementEvidenceDto&gt; ResolveAsync(string tenantId, string actor, Guid entityId, IntercompanyAgreementEvidenceDto evidence, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/EntityLifecycleExternalReviewEvidenceAuthority.cs:14](../../../../src/Meridian.Ui.Shared/Services/EntityLifecycleExternalReviewEvidenceAuthority.cs#L14) |  |
-
-## WorkstationIntercompanyAgreementEvidenceAuthority
-
-Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationIntercompanyAgreementEvidenceAuthority</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs:78](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs#L78).
-
-Resolves accepted, scoped Evidence Vault documents and verifies their retained bytes.
-
-```csharp
-public sealed class WorkstationIntercompanyAgreementEvidenceAuthority(IHttpContextAccessor accessor, IEvidenceArtifactStore evidenceStore) : IIntercompanyAgreementEvidenceAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyList&lt;IntercompanyAgreementEvidenceDto&gt;&gt; ResolveAsync(IntercompanyAgreementCallContext context, Guid agreementId, Guid proposalId, IReadOnlyList&lt;IntercompanyAgreementEvidenceDto&gt; evidence, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs:81](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs#L81) |  |

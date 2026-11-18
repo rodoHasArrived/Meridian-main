@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TransitionCorporateActionCaseRequestDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.TransitionCorporateActionCaseRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:688](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L688).
+
+```csharp
+public sealed record TransitionCorporateActionCaseRequestDto(Guid CaseId, long ExpectedVersion, string IdempotencyKey, string TenantId, string CompanyId, string ToState, string Actor, string Reason, string? BlockedReason = null, string? AssignedTo = null, string? CorrelationId = null, bool PolicyOverride = false, CorporateActionCaseTransitionAuthorityDto? Authority = null, CorporateActionCaseScopeDto? ScopeAssertion = null);
+```
+
+## TransitionOtcMarginCallRequest
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.TransitionOtcMarginCallRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:141](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L141).
+
+Moves a call through its life. Amount is the agreed or settled amount; Reason explains a dispute or a cancellation.
+
+```csharp
+public sealed record TransitionOtcMarginCallRequest(Guid CallId, OtcMarginCallAction Action, decimal? Amount = null, string? Reason = null, DateOnly? SettledOn = null, string? Notes = null, string? UpdatedBy = null);
+```
+
 ## UpsertCashFlowSourceRequest
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.UpsertCashFlowSourceRequest</code>. Kind: `record`.
@@ -873,37 +895,4 @@ Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:193](.
 
 ```csharp
 public sealed record StrategyEngineRunEvidence(string EvidenceId, string StrategyId, string StrategyVersion, string InputHash, string? OutputHash, string DataSource, DateTimeOffset CapturedAt, IReadOnlyList<string> DataSourceReferences, IReadOnlyList<string> Warnings, string ReviewRoute, string EvidenceRoute, string? ReportPackRoute = null);
-```
-
-## StrategyEngineRunMode
-
-Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineRunMode</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:30](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L30).
-
-Execution mode requested for a strategy run.
-
-```csharp
-public enum StrategyEngineRunMode : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Backtest</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:32](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L32) |  |
-| <code>Replay</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:33](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L33) |  |
-| <code>Simulation</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:34](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L34) |  |
-| <code>PaperValidation</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:35](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L35) |  |
-| <code>ReviewOnly</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:36](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L36) |  |
-| <code>LiveDisabled</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:37](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L37) |  |
-
-## StrategyEngineRunRequest
-
-Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineRunRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:156](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L156).
-
-```csharp
-public sealed record StrategyEngineRunRequest(string StrategyId, string StrategyVersion, IReadOnlyDictionary<string, string> Parameters, IReadOnlyList<string> Universe, DateTimeOffset From, DateTimeOffset To, string DataSource, StrategyEngineRunMode Mode, string? CostModel = null, string? SlippageModel = null, IReadOnlyDictionary<string, string>? RiskConstraints = null, string? RunReason = null, string? OperatorId = null);
 ```
