@@ -363,12 +363,18 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
     // structurally recognizable. Financial rows nevertheless require explicit currency evidence;
     // a legacy prefix without currency is refused instead of defaulting to USD. Only the first
     // four are carried onto CanonicalStatementRow; the remainder are artifact-level provenance that
-    // reconciliation does not consume, and are tolerated rather than mapped.
+    // reconciliation does not consume, and are tolerated rather than mapped. The trailing
+    // marketValue and accruedInterest columns are custodian holding evidence for instruments whose
+    // value is not quantity x price (a bond quoted per 100 face): when present they are carried onto
+    // the row so position reconciliation compares the stated market value and accrued interest.
     private static readonly string[] OptionalCanonicalColumns =
     [
         "settlementDate", "currency", "feesCommission", "externalTransactionId", "activityCategory",
-        "activitySubtype", "providerActivityCode", "relatedTransactionId", "orderId", "description"
+        "activitySubtype", "providerActivityCode", "relatedTransactionId", "orderId", "description",
+        "marketValue", "accruedInterest"
     ];
+    private const int MarketValueColumnIndex = 17;
+    private const int AccruedInterestColumnIndex = 18;
 
     public async Task<BrokerStatementValidationResult> ValidateAsync(BrokerStatementImportRequest request, CancellationToken ct = default)
     {
@@ -580,6 +586,9 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
                 externalTransactionId = fields[10].Trim();
             }
 
+            var marketValue = ParseOptionalAmount(fields, MarketValueColumnIndex, "marketValue", recordStartLine);
+            var accruedInterest = ParseOptionalAmount(fields, AccruedInterestColumnIndex, "accruedInterest", recordStartLine);
+
             rows.Add(new CanonicalStatementRow(
                 importId,
                 recordStartLine,
@@ -595,7 +604,9 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
                 Currency = currency,
                 SettlementDate = settlementDate,
                 FeesCommission = feesCommission,
-                ExternalTransactionId = externalTransactionId
+                ExternalTransactionId = externalTransactionId,
+                MarketValue = marketValue,
+                AccruedInterest = accruedInterest
             });
         }
 
@@ -605,6 +616,17 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
         }
 
         return rows;
+    }
+
+    // A blank optional amount is absent; a nonblank malformed value is refused rather than dropped,
+    // so a bad custodian figure can never silently fall back to a derived amount.
+    private static decimal? ParseOptionalAmount(IReadOnlyList<string> fields, int index, string column, int recordStartLine)
+    {
+        if (fields.Count <= index || string.IsNullOrWhiteSpace(fields[index]))
+            return null;
+        if (!decimal.TryParse(fields[index].Trim(), DecimalStyles, CultureInfo.InvariantCulture, out var value))
+            throw new InvalidDataException($"Statement CSV row {recordStartLine} contains an invalid {column} value.");
+        return value;
     }
 
     private static async Task<CsvRecord?> ReadCsvRecordAsync(StreamReader reader, CancellationToken ct)
