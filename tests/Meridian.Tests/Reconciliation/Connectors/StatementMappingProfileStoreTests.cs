@@ -120,6 +120,56 @@ public sealed class StatementMappingProfileStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task Catalog_BuildRegistryAsync_MatchesTheSynchronousStartupBuild()
+    {
+        var catalog = new StatementMappingProfileCatalog(new FileStatementMappingProfileStore(_root));
+        await catalog.UpsertAsync(CustomProfile());
+
+        var asynchronous = await catalog.BuildRegistryAsync();
+        var synchronous = catalog.BuildRegistry();
+
+        asynchronous.Resolve("acme-custodian-csv-v1").DisplayName.Should().Be("Acme Custodian CSV");
+        asynchronous.ListProfiles().Select(profile => profile.ProfileId)
+            .Should().BeEquivalentTo(synchronous.ListProfiles().Select(profile => profile.ProfileId));
+    }
+
+    [Fact]
+    public async Task Catalog_BuildRegistry_DoesNotDeadlockUnderASingleThreadedSynchronizationContext()
+    {
+        // The DI factory blocks on the store read. Every await on that path must avoid resuming on
+        // a captured context, or a UI-thread caller would deadlock against itself.
+        var catalog = new StatementMappingProfileCatalog(new FileStatementMappingProfileStore(_root));
+        await catalog.UpsertAsync(CustomProfile());
+        StatementMappingProfileRegistry? registry = null;
+        var thread = new Thread(() =>
+        {
+            SynchronizationContext.SetSynchronizationContext(new BlockingSynchronizationContext());
+            registry = catalog.BuildRegistry();
+        })
+        {
+            IsBackground = true
+        };
+
+        thread.Start();
+        var finished = thread.Join(TimeSpan.FromSeconds(10));
+
+        finished.Should().BeTrue("the synchronous build must complete on a thread that owns a synchronization context");
+        registry!.Resolve("acme-custodian-csv-v1").Should().NotBeNull();
+    }
+
+    /// <summary>
+    /// A context that never runs posted continuations, like a UI thread blocked on a wait: any
+    /// continuation captured on it can never complete.
+    /// </summary>
+    private sealed class BlockingSynchronizationContext : SynchronizationContext
+    {
+        public override void Post(SendOrPostCallback d, object? state)
+        {
+            // Dropped deliberately: the owning thread is blocked and would never pump it.
+        }
+    }
+
+    [Fact]
     public async Task Catalog_DriftDetection_ReportsAddedAndRemovedColumns()
     {
         var catalog = new StatementMappingProfileCatalog(new FileStatementMappingProfileStore(_root));

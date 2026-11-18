@@ -103,6 +103,15 @@ public interface IRecurringJournalStore
 }
 
 /// <summary>
+/// Explicit, administrator-only provisioning of a recurring journal store. Runners never call it,
+/// and an initialized store whose retained state is later lost refuses to reinitialize as empty.
+/// </summary>
+public interface IRecurringJournalStoreProvisioning
+{
+    Task InitializeAsync(CancellationToken ct = default);
+}
+
+/// <summary>
 /// The lease covers planning, claim retention, intake and completion. Dispose before reentering
 /// the store. Every mutating method commits before returning; disposal does not commit changes.
 /// </summary>

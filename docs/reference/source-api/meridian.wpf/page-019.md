@@ -6,6 +6,69 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RunRiskPage
+
+Qualified name: <code>Meridian.Wpf.Views.RunRiskPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:73](../../../../src/Meridian.Wpf/Views/Pages.cs#L73).
+
+```csharp
+public partial class RunRiskPage : Page
+```
+
+Source: [src/Meridian.Wpf/Views/RunRiskPage.xaml.cs:8](../../../../src/Meridian.Wpf/Views/RunRiskPage.xaml.cs#L8).
+
+Hosts risk details for the selected strategy run.
+
+```csharp
+public partial class RunRiskPage
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public RunRiskPage(RunRiskViewModel viewModel);</code> | [src/Meridian.Wpf/Views/RunRiskPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/RunRiskPage.xaml.cs#L12) |  |
+
+## SaveWatchlistDialog
+
+Qualified name: <code>Meridian.Wpf.Views.SaveWatchlistDialog</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs:11](../../../../src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs#L11).
+
+Dialog for saving or updating a watchlist. Replaces the former imperative SaveWatchlistDialog Window class that was embedded in SymbolsPage.xaml.cs.
+
+```csharp
+public partial class SaveWatchlistDialog : Window
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string WatchlistName =&gt; …;</code> | [src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs:14](../../../../src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs#L14) | Gets the watchlist name typed by the user. |
+| <code>public bool SaveAsNew =&gt; …;</code> | [src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs:17](../../../../src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs#L17) | Gets whether the user chose to create a new watchlist. |
+| <code>public string? SelectedWatchlistId =&gt; …;</code> | [src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs:20](../../../../src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs#L20) | Gets the selected existing watchlist name (null when SaveAsNew is true). |
+| <code>public SaveWatchlistDialog(IEnumerable&lt;string&gt; existingWatchlists);</code> | [src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs:22](../../../../src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs#L22) |  |
+
+## ScatterAnalysisPage
+
+Qualified name: <code>Meridian.Wpf.Views.ScatterAnalysisPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/ScatterAnalysisPage.xaml.cs:16](../../../../src/Meridian.Wpf/Views/ScatterAnalysisPage.xaml.cs#L16).
+
+Code-behind for the Scatter Analysis page. Keeps business logic in ScatterAnalysisViewModel; this file handles: • ScottPlot chart rendering (UI-specific, not MVVM-bindable) • Tab panel visibility switching • Time-range RadioButton selection → ViewModel propagation
+
+```csharp
+public partial class ScatterAnalysisPage
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ScatterAnalysisPage(ScatterAnalysisViewModel viewModel);</code> | [src/Meridian.Wpf/Views/ScatterAnalysisPage.xaml.cs:32](../../../../src/Meridian.Wpf/Views/ScatterAnalysisPage.xaml.cs#L32) |  |
+
 ## ScheduleManagerPage
 
 Qualified name: <code>Meridian.Wpf.Views.ScheduleManagerPage</code>. Kind: `class`.
@@ -1068,68 +1131,3 @@ Declared public members:
 | <code>public WorkspaceShellContextStripControl();</code> | [src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs:31](../../../../src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs#L31) |  |
 | <code>public WorkspaceShellContext ShellContext { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs:37](../../../../src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs#L37) |  |
 | <code>public bool IsCompact { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs:43](../../../../src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs#L43) |  |
-
-## WorkspaceShellPageBase (generic arity 2)
-
-Qualified name: <code>Meridian.Wpf.Views.WorkspaceShellPageBase</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:16](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L16).
-
-Binds derived pages to the workspace shell definition.
-
-```csharp
-public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel>: Page, IPageRefreshTarget where TStateProvider : class, IWorkspaceShellStateProvider where TViewModel : WorkspaceShellViewModelBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ICommand RefreshCommand =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:46](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L46) | The shell Refresh control (toolbar button and F5) reloads the workspace shell and every docked page in place instead of rebuilding the shell by re-navigation. |
-
-## AsyncCommandViewModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Commands.AsyncCommandViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs:9](../../../../src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs#L9).
-
-Adds busy, error, and cancellation presentation to an asynchronous workstation command.
-
-```csharp
-public sealed class AsyncCommandViewModel : BindableBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CommandViewModel Command { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs:18](../../../../src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs#L18) |  |
-| <code>public bool IsBusy { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs:24](../../../../src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs#L24) |  |
-| <code>public string BusyMessage { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs:30](../../../../src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs#L30) |  |
-| <code>public string ErrorMessage { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs:36](../../../../src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs#L36) |  |
-| <code>public bool CanCancel { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs:42](../../../../src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs#L42) |  |
-| <code>public IRelayCommand? CancelCommand { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs:48](../../../../src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs#L48) |  |
-
-## CommandViewModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Commands.CommandViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs:10](../../../../src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs#L10).
-
-Combines command identity, label, styling, availability, and executable behavior for desktop binding.
-
-```csharp
-public sealed class CommandViewModel : BindableBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Id { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs:20](../../../../src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs#L20) |  |
-| <code>public string Label { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs:26](../../../../src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs#L26) |  |
-| <code>public string IconGlyph { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs:32](../../../../src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs#L32) |  |
-| <code>public string Tone { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs:38](../../../../src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs#L38) |  |
-| <code>public string Tooltip { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs:44](../../../../src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs#L44) |  |
-| <code>public bool IsEnabled { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs:50](../../../../src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs#L50) |  |
-| <code>public ICommand? Command { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs:56](../../../../src/Meridian.Wpf/Workstation/Commands/CommandViewModel.cs#L56) |  |

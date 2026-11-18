@@ -21,7 +21,7 @@ public static class IntercompanyAccrualSourceBuilder
     /// resolution as posting. A day with no single approved revision refuses the whole window.
     /// </summary>
     public static IReadOnlyList<(DateOnly From, DateOnly To, Guid RevisionId)> ResolveAuthority(
-        IntercompanyAccountingArrangementHistoryDto history, DateOnly from, DateOnly to)
+        IntercompanyAccountingArrangementHistoryDto history, DateOnly from, DateOnly to, string profileLabel = "loan-interest")
     {
         ArgumentNullException.ThrowIfNull(history);
         var approved = history.Events.Where(item => item.Action == IntercompanyAccountingArrangementActionDto.Approve)
@@ -37,7 +37,7 @@ public static class IntercompanyAccrualSourceBuilder
                 catch (InvalidOperationException) { return false; }
             }).ToArray();
             if (effective.Length != 1)
-                throw new InvalidOperationException($"No single approved loan-interest profile revision applies on {day:yyyy-MM-dd}.");
+                throw new InvalidOperationException($"No single approved {profileLabel} profile revision applies on {day:yyyy-MM-dd}.");
             if (segments.Count > 0 && segments[^1].RevisionId == effective[0])
                 segments[^1] = (segments[^1].From, day.AddDays(1), effective[0]);
             else
@@ -217,7 +217,7 @@ public static class IntercompanyAccrualSourceBuilder
     /// A counterpart reversal is delivered as its own proposal draft, not as a source-linked correction, so a
     /// counterpart and the proposal-originated exact inverse of it cancel as a pair.
     /// </summary>
-    private static bool IsReversedCounterpart(LedgerJournalEntryRecord record, IReadOnlyList<LedgerJournalEntryRecord> records)
+    internal static bool IsReversedCounterpart(LedgerJournalEntryRecord record, IReadOnlyList<LedgerJournalEntryRecord> records)
     {
         static bool FromProposal(LedgerJournalEntryRecord item)
             => !string.IsNullOrWhiteSpace(item.Entry.Metadata.Tags?.GetValueOrDefault(IntercompanyAccrualEvidenceGuard.CounterpartOriginTag));
@@ -230,17 +230,20 @@ public static class IntercompanyAccrualSourceBuilder
     /// A journal is reversed only while one of its source-linked exact inverses is itself still standing.
     /// Reversing that reversal restores the original, so the correction chain is followed to its end.
     /// </summary>
-    private static bool IsReversed(LedgerJournalEntryRecord record, IReadOnlyList<LedgerJournalEntryRecord> records, int depth)
+    internal static bool IsReversed(LedgerJournalEntryRecord record, IReadOnlyList<LedgerJournalEntryRecord> records, int depth)
         => depth < 64 && records.Any(candidate => candidate.SourceJournalEntryId == record.Entry.JournalEntryId
             && IntercompanyJournalCorrectionEvidence.IsExactInverse(candidate.Entry, record.Entry)
             && !IsReversed(candidate, records, depth + 1));
 
-    private static bool IsInverse(LedgerJournalEntryRecord record, IReadOnlyList<LedgerJournalEntryRecord> records)
+    internal static bool IsInverse(LedgerJournalEntryRecord record, IReadOnlyList<LedgerJournalEntryRecord> records)
         => record.SourceJournalEntryId is { } source
             && records.FirstOrDefault(candidate => candidate.Entry.JournalEntryId == source) is { } original
             && IntercompanyJournalCorrectionEvidence.IsExactInverse(record.Entry, original.Entry);
 
-    /// <summary>One window of one profile in one book has one live draft identity; a recomputation updates it.</summary>
+    /// <summary>
+    /// One window of one profile in one book has one live draft identity; a recomputation updates it. The identity
+    /// stays keyed on the v1 rule name whatever rule computed the amount, so a window never gains a second identity.
+    /// </summary>
     public static Guid DraftId(string tenantId, IntercompanyAccrualRequestDto request, int generation = 0)
         => new(Sha256Digest.ComputeBytesUtf8(string.Join(":", IntercompanyAccrualRules.RuleVersion, tenantId,
             request.InterestArrangementId.ToString("D"), request.SourceBookId.ToString("D"),

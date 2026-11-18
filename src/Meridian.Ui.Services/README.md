@@ -54,6 +54,18 @@ input, server capabilities, exact approved versions, evidence and review history
 agreement authority in the desktop client. Source-line responses verify agreement/book/date identity
 and retain exact amount strings. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
 
+`IntercompanyManagementFeeWorkspace` is the desktop state for fixed management fees over the client's fee
+preview and draft calls; the agreement workspace carries the fixed-fee basis. See
+[governed fixed management fees](../../docs/domain/intercompany-agreements.md#governed-fixed-management-fees).
+
+`IntercompanyRateFixingWorkspace` is the desktop state for reviewed fixings over the client's
+list, propose and decide calls; the agreement workspace carries the fixing lag and accrual slices
+name their pinned fixing. See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
+
+`IntercompanyBalanceConfirmationWorkspace` is the desktop state for reciprocal balance confirmation
+over the client's exact-decimal confirmation reads and actions; a refused action keeps its request
+identity only for an identical retry. See [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
+
 The interest accrual workspace shows each slice's compounded interest for rule v3 previews. See
 [periodic compounding](../../docs/domain/intercompany-agreements.md#periodic-compounding).
 

@@ -6,6 +6,75 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingScheduleWorkerOptions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingScheduleWorkerOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingScheduleHostedService.cs:7](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleHostedService.cs#L7).
+
+```csharp
+public sealed record ReportingScheduleWorkerOptions(TimeSpan PollInterval)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ReportingScheduleWorkerOptions Default { get; } = new (TimeSpan.FromMinutes(1));</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleHostedService.cs:9](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleHostedService.cs#L9) |  |
+
+## ReportingScheduleWorkerReadinessState
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingScheduleWorkerReadinessState</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:63](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L63).
+
+Process-local liveness receipt for the server-owned reporting schedule worker. Readiness is earned only by a successful cycle and is cleared by a cycle-level failure or worker stop.
+
+```csharp
+public sealed class ReportingScheduleWorkerReadinessState
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsReady =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:69](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L69) |  |
+| <code>public int ConsecutiveFailures =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:71](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L71) |  |
+| <code>public DateTimeOffset? LastSuccessfulCycleUtc =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:73](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L73) |  |
+| <code>public bool IsHealthy(DateTimeOffset nowUtc, TimeSpan maximumHeartbeatAge) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:76](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L76) |  |
+
+## ReportingSecureDistributionApplicationService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingSecureDistributionApplicationService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:362](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L362).
+
+Canonical application boundary for reporting distribution. It derives actor and tenant from authenticated server context, derives the audience from the immutable access-policy snapshot, reconstructs release authority from governed state, and requires tenant-keyed artifact catalog matches before creating any outbox job or access grant.
+
+```csharp
+public sealed class ReportingSecureDistributionApplicationService : IReportingTransportInfrastructureReadiness
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportingSecureDistributionApplicationService(IReportingGovernanceRepository governanceRepository, IReportingArtifactCatalog artifactCatalog, ReportingDeliveryDispatcher dispatcher, IReportingDeliveryStore deliveryStore, ReportingAccessGrantService accessGrantService, IReportingAccessGrantStore accessGrantStore, ReportingArtifactVaultService artifactVault, IReportingReleaseAuthorizationVerifier releaseVerifier, IReportingProviderReceiptAuthenticator receiptAuthenticator, TimeProvider? timeProvider = null, SecureReportingDistributionOptions? options = null, IReportingRecipientDestinationResolver? destinationResolver = null, IReportingDeliveryGrantDownloadCommitter? grantDownloadCommitter = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:382](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L382) |  |
+| <code>public async Task&lt;ReportingDeliveryJobRecord&gt; QueueDeliveryAsync(SecureReportingDeliveryQueueCommand command, ReportingDistributionAuthority authority, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:413](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L413) |  |
+| <code>public async Task&lt;ReportingDeliveryJobRecord&gt; GetDeliveryAsync(string jobId, ReportingDistributionAuthority authority, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:492](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L492) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ReportingDeliveryJobRecord&gt;&gt; ListDeliveriesAsync(string runId, ReportingDistributionAuthority authority, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:506](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L506) |  |
+| <code>public IReadOnlyList&lt;SecureReportingTransportCapability&gt; GetTransportCapabilities(ReportingDistributionAuthority authority);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:526](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L526) |  |
+| <code>public IReadOnlyList&lt;SecureReportingTransportCapability&gt; GetTransportInfrastructureCapabilities() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:538](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L538) | Credential-free infrastructure truth used by the deployment gate. This does not authorize delivery; it only reports whether each adapter and its deployment-owned dependencies are configured. |
+| <code>public SecureReportingDistributionCapabilityCatalog GetDistributionCapabilities(ReportingDistributionAuthority authority);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:601](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L601) |  |
+| <code>public async Task&lt;ReportingDeliveryJobRecord&gt; RecordVerifiedProviderReceiptAsync(string transportId, string jobId, SecureReportingDeliveryReceiptCommand command, ReportingProviderReceiptAuthentication authentication, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:614](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L614) |  |
+| <code>public async Task&lt;SecureReportingGrantIssueResult&gt; IssueAccessGrantAsync(SecureReportingGrantIssueCommand command, ReportingDistributionAuthority authority, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:784](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L784) |  |
+| <code>public async Task&lt;bool&gt; RevokeAccessGrantAsync(string grantId, string reason, ReportingDistributionAuthority authority, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:839](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L839) |  |
+| <code>public async Task&lt;SecureReportingAccessGrantSummary&gt; GetAccessGrantAsync(string grantId, ReportingDistributionAuthority authority, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:866](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L866) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;SecureReportingAccessGrantSummary&gt;&gt; ListAccessGrantsAsync(string runId, ReportingDistributionAuthority authority, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:888](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L888) |  |
+| <code>public async Task&lt;ReportingArtifactDownload&gt; ExchangeGrantForDownloadAsync(string grantId, SecureReportingGrantExchangeCommand command, string correlationId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:914](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L914) | Exchanges a one-time opaque bearer in a POST body directly for one audited exact-byte download. Tenant, package, audience, and artifact policy are read from durable grant and catalog state; the public caller cannot supply them. |
+| <code>public async Task&lt;ReportingArtifactDownload&gt; DownloadArtifactAsync(string runId, string artifactId, ReportingDistributionAuthority authority, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:1138](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L1138) |  |
+| <code>public async Task AuthorizePortalPackageAsync(string runId, ReportingDistributionAuthority authority, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:1181](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L1181) | Authorizes the authenticated secure-portal landing route against the Released run&#x27;s exact tenant, company, and immutable access-policy snapshot before the browser workstation opens. |
+
 ## ReportingSecureDistributionHostedService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingSecureDistributionHostedService</code>. Kind: `class`.
@@ -805,38 +874,4 @@ Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationS
 
 ```csharp
 public sealed record SecureReportingGrantExchangeCommand(string BearerToken, string ArtifactId);
-```
-
-## SecureReportingGrantIssueCommand
-
-Qualified name: <code>Meridian.Ui.Shared.Services.SecureReportingGrantIssueCommand</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:44](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L44).
-
-```csharp
-public sealed record SecureReportingGrantIssueCommand(string RunId, string? RecipientPrincipalId, IReadOnlyList<string>? ArtifactIds = null, int? LifetimeSeconds = null, int? MaxUses = null, ReportingAccessPrincipalKind? RecipientPrincipalKind = null);
-```
-
-## SecureReportingGrantIssueResult
-
-Qualified name: <code>Meridian.Ui.Shared.Services.SecureReportingGrantIssueResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:56](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L56).
-
-The bearer is returned exactly once inside RecipientAccessUri&#x27;s fragment and is not duplicated into a second result property or persisted by the service.
-
-```csharp
-public sealed record SecureReportingGrantIssueResult(string GrantId, string RecipientAccessUri, DateTimeOffset ExpiresAtUtc, string Audience, string RunId, string PackageId, IReadOnlyList<string> ArtifactIds, ReportingAccessPrincipalKind AudienceKind = ReportingAccessPrincipalKind.User);
-```
-
-## SecureReportingTransportCapability
-
-Qualified name: <code>Meridian.Ui.Shared.Services.SecureReportingTransportCapability</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:88](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L88).
-
-Credential-free transport readiness exposed to authenticated reporting operators.
-
-```csharp
-public sealed record SecureReportingTransportCapability(string TransportId, string DisplayName, string DeliveryMode, bool IsExternal, bool RequiresDestination, bool UsesGovernedRecipientScope, bool IssuesAccessGrant, bool SupportsProviderReceipts, bool IsConfigured, bool IsInfrastructureReady, string? InfrastructureDisabledReasonCode, bool IsReady, string? DisabledReasonCode);
 ```

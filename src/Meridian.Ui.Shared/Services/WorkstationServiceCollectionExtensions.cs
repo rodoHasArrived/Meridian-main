@@ -1259,6 +1259,19 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IIntercompanyAccrualPreviewService>(sp =>
             sp.GetService<Meridian.Contracts.Calendars.IBusinessDayCalendarSource>() is { } calendars
                 ? new Meridian.Application.FundStructure.IntercompanyAccrualPreviewService(calendars) : null!);
+        services.TryAddSingleton<IIntercompanyFeeAccrualPreviewService>(sp =>
+            sp.GetService<Meridian.Contracts.Calendars.IBusinessDayCalendarSource>() is { } calendars
+                ? new Meridian.Application.FundStructure.IntercompanyFeeAccrualPreviewService(calendars) : null!);
+        services.TryAddSingleton<IntercompanyFeeAccrualDraftService>(sp =>
+            sp.GetService<IIntercompanyProposalStore>() is not null &&
+            sp.GetService<ILedgerJournalStore>() is { } journals &&
+            sp.GetService<IIntercompanyAccountBindingStore>() is { } bindings &&
+            sp.GetService<ManualJournalEntryWorkbenchService>() is { } workbench &&
+            sp.GetService<IIntercompanyFeeAccrualPreviewService>() is { } calculator
+                ? new IntercompanyFeeAccrualDraftService(sp.GetRequiredService<IntercompanyAccountingArrangementService>(),
+                    journals, bindings, sp.GetRequiredService<IAccountingConfigurationService>(),
+                    sp.GetRequiredService<IManualJournalEntryDraftStore>(), workbench, calculator,
+                    sp.GetService<IConsolidationFxAuthority>(), sp.GetRequiredService<TimeProvider>()) : null!);
         // Accrual drafting needs the same durable authorities as counterpart delivery; without them it is unavailable.
         services.TryAddSingleton<IntercompanyAccrualDraftService>(sp =>
             sp.GetService<IIntercompanyProposalStore>() is not null &&
@@ -1269,7 +1282,8 @@ public static class WorkstationServiceCollectionExtensions
                 ? new IntercompanyAccrualDraftService(sp.GetRequiredService<IntercompanyAccountingArrangementService>(),
                     journals, bindings, sp.GetRequiredService<IAccountingConfigurationService>(),
                     sp.GetRequiredService<IManualJournalEntryDraftStore>(), workbench, calculator,
-                    sp.GetService<IConsolidationFxAuthority>(), sp.GetRequiredService<TimeProvider>()) : null!);
+                    sp.GetService<IConsolidationFxAuthority>(), sp.GetRequiredService<TimeProvider>(),
+                    sp.GetService<Meridian.Application.FundStructure.IntercompanyRateFixingService>()) : null!);
         if (services.Any(item => item.ServiceType == typeof(IIntercompanyProposalStore)
             && item.ImplementationType == typeof(PostgresIntercompanyProposalStore)))
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, IntercompanyProposalHostedService>());

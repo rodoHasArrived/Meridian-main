@@ -90,6 +90,28 @@ public sealed class IntercompanyStructuredTermsTests
     }
 
     [Fact]
+    public void FloatingFixingLagIsDeclaredOnlyOnFloatingLoans_AndAbsentFromRetainedJsonWhenUnset()
+    {
+        var draft = Loan();
+        var floating = draft.Terms!.StructuredTerms! with
+        { RateBasis = IntercompanyRateBasisDto.Floating, FixedAnnualRate = null, FloatingIndexReference = "SOFR", SpreadBps = 175m };
+        IntercompanyAgreementRules.ValidateComplete(draft with { Terms = draft.Terms with { StructuredTerms = floating with { FixingLagBusinessDays = 2 } } });
+        IntercompanyAgreementRules.ValidateComplete(draft with { Terms = draft.Terms with { StructuredTerms = floating with { FixingLagBusinessDays = 0 } } });
+        foreach (var invalid in new[]
+        {
+            floating with { FixingLagBusinessDays = -1 },
+            floating with { FixingLagBusinessDays = IntercompanyAgreementRules.MaximumFixingLagBusinessDays + 1 },
+            draft.Terms.StructuredTerms with { FixingLagBusinessDays = 2 }
+        })
+            Assert.Throws<IntercompanyAgreementValidationException>(() => IntercompanyAgreementRules.ValidateComplete(
+                draft with { Terms = draft.Terms with { StructuredTerms = invalid } }));
+        // Revisions approved before the declaration existed keep their exact review hashes.
+        Assert.DoesNotContain("fixingLagBusinessDays", JsonSerializer.Serialize(draft.Terms, FundStructureContractsJsonContext.Default.IntercompanyAgreementTermsDto));
+        Assert.Contains("\"fixingLagBusinessDays\":2", JsonSerializer.Serialize(draft.Terms with { StructuredTerms = floating with { FixingLagBusinessDays = 2 } },
+            FundStructureContractsJsonContext.Default.IntercompanyAgreementTermsDto));
+    }
+
+    [Fact]
     public void LegacyAndStructuredRateOrSettlementConflictsCannotReachLegalApproval()
     {
         var draft = Loan();

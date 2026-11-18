@@ -993,63 +993,66 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;IntercompanyRateBasisDto&gt; RateBases { get; } = Enum.GetValues&lt;IntercompanyRateBasisDto&gt;();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:29](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L29) |  |
-| <code>public IReadOnlyList&lt;IntercompanyFrequencyDto&gt; Frequencies { get; } = Enum.GetValues&lt;IntercompanyFrequencyDto&gt;();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:30](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L30) |  |
-| <code>public IReadOnlyList&lt;IntercompanyDayCountDto&gt; DayCounts { get; } = Enum.GetValues&lt;IntercompanyDayCountDto&gt;();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:31](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L31) |  |
-| <code>public IReadOnlyList&lt;IntercompanyCompoundingDto&gt; CompoundingChoices { get; } = Enum.GetValues&lt;IntercompanyCompoundingDto&gt;();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:32](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L32) |  |
-| <code>public IReadOnlyList&lt;BusinessDayConvention&gt; BusinessDayConventions { get; } = Enum.GetValues&lt;BusinessDayConvention&gt;();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:33](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L33) |  |
-| <code>public ObservableCollection&lt;IntercompanyAllocationEditor&gt; StructuredAllocations { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:34](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L34) |  |
-| <code>public ObservableCollection&lt;IntercompanyDatePeriodDto&gt; DatePreviewPeriods { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:35](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L35) |  |
-| <code>public ObservableCollection&lt;IntercompanyObligationFindingDto&gt; ObligationFindings { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:36](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L36) |  |
-| <code>public ObservableCollection&lt;IntercompanyAgreementDetailDto&gt; GuaranteeDisclosures { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:37](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L37) |  |
-| <code>public ObservableCollection&lt;IntercompanyBalanceScheduleRowDto&gt; ObligationBalances { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:38](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L38) |  |
-| <code>public bool UseStructuredTerms { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:39](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L39) |  |
-| <code>public string RetainedStructuredTermsSummary { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:40](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L40) |  |
-| <code>public string TermsFormatLabel =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:48](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L48) |  |
-| <code>public bool UseExternalReview { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:49](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L49) |  |
-| <code>public string ScheduleStart { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:50](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L50) |  |
-| <code>public string ScheduleEnd { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:51](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L51) |  |
-| <code>public string CalendarId { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:52](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L52) |  |
-| <code>public string FloatingIndexReference { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:53](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L53) |  |
-| <code>public string SpreadBps { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:54](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L54) |  |
-| <code>public string FixedFeeAmount { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:55](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L55) |  |
-| <code>public string AnnualFeeRate { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:56](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L56) |  |
-| <code>public string CalculationBaseReference { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:57](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L57) |  |
-| <code>public string AllocationDriverReference { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:58](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L58) |  |
-| <code>public string BeneficiaryReference { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:59](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L59) |  |
-| <code>public string GuaranteeLimit { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:60](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L60) |  |
-| <code>public int SettlementBusinessDays { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:61](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L61) |  |
-| <code>public IntercompanyRateBasisDto RateBasis { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:62](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L62) |  |
-| <code>public IntercompanyFrequencyDto Frequency { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:63](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L63) |  |
-| <code>public IntercompanyDayCountDto DayCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:64](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L64) |  |
-| <code>public IntercompanyCompoundingDto Compounding { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:65](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L65) |  |
-| <code>public BusinessDayConvention BusinessDayConvention { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:66](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L66) |  |
-| <code>public string ExternalReviewer { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:67](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L67) |  |
-| <code>public string ReviewerReference { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:68](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L68) |  |
-| <code>public string ReviewedOn { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:69](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L69) |  |
-| <code>public string ReviewEvidenceReference { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:70](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L70) |  |
-| <code>public string ReviewEvidenceArtifact { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:71](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L71) |  |
-| <code>public string ReviewEvidenceHash { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:72](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L72) |  |
-| <code>public string DatePreviewStatus { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:73](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L73) |  |
-| <code>public string ObligationStatus { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:74](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L74) |  |
-| <code>public int ExpiryHorizonDays { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:75](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L75) |  |
-| <code>public IntercompanyAllocationEditor? SelectedStructuredAllocation { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:76](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L76) |  |
-| <code>public IntercompanyObligationMonitorDto? ObligationMonitor { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:77](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L77) |  |
-| <code>public IntercompanyAgreementDetailDto? SelectedGuaranteeDisclosure { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:78](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L78) |  |
-| <code>public IntercompanyObligationFindingDto? SelectedObligationFinding { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:79](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L79) |  |
-| <code>public IAsyncRelayCommand OpenGuaranteeDisclosureCommand { get; private set; } = null !;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:80](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L80) |  |
-| <code>public IAsyncRelayCommand InspectObligationAgreementCommand { get; private set; } = null !;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:81](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L81) |  |
-| <code>public IRelayCommand AddStructuredAllocationCommand { get; private set; } = null !;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:82](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L82) |  |
-| <code>public IRelayCommand RemoveStructuredAllocationCommand { get; private set; } = null !;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:83](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L83) |  |
-| <code>public IAsyncRelayCommand PreviewProposalDatesCommand { get; private set; } = null !;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:84](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L84) |  |
-| <code>public IAsyncRelayCommand PreviewRevisionDatesCommand { get; private set; } = null !;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:85](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L85) |  |
-| <code>public IAsyncRelayCommand EvaluateObligationsCommand { get; private set; } = null !;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:86](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L86) |  |
+| <code>public IReadOnlyList&lt;IntercompanyRateBasisDto&gt; RateBases { get; } = Enum.GetValues&lt;IntercompanyRateBasisDto&gt;();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:30](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L30) |  |
+| <code>public IReadOnlyList&lt;IntercompanyFrequencyDto&gt; Frequencies { get; } = Enum.GetValues&lt;IntercompanyFrequencyDto&gt;();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:31](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L31) |  |
+| <code>public IReadOnlyList&lt;IntercompanyDayCountDto&gt; DayCounts { get; } = Enum.GetValues&lt;IntercompanyDayCountDto&gt;();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:32](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L32) |  |
+| <code>public IReadOnlyList&lt;IntercompanyCompoundingDto&gt; CompoundingChoices { get; } = Enum.GetValues&lt;IntercompanyCompoundingDto&gt;();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:33](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L33) |  |
+| <code>public IReadOnlyList&lt;BusinessDayConvention&gt; BusinessDayConventions { get; } = Enum.GetValues&lt;BusinessDayConvention&gt;();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:34](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L34) |  |
+| <code>public IReadOnlyList&lt;string&gt; FixedFeeBasisChoices { get; } = [&quot;&quot;, nameof(IntercompanyFixedFeeBasisDto.PerPeriod), nameof(IntercompanyFixedFeeBasisDto.PerAnnum)];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:36](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L36) | Blank (undeclared, no fee is calculated), PerPeriod or PerAnnum. |
+| <code>public ObservableCollection&lt;IntercompanyAllocationEditor&gt; StructuredAllocations { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:37](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L37) |  |
+| <code>public ObservableCollection&lt;IntercompanyDatePeriodDto&gt; DatePreviewPeriods { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:38](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L38) |  |
+| <code>public ObservableCollection&lt;IntercompanyObligationFindingDto&gt; ObligationFindings { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:39](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L39) |  |
+| <code>public ObservableCollection&lt;IntercompanyAgreementDetailDto&gt; GuaranteeDisclosures { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:40](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L40) |  |
+| <code>public ObservableCollection&lt;IntercompanyBalanceScheduleRowDto&gt; ObligationBalances { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:41](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L41) |  |
+| <code>public bool UseStructuredTerms { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:42](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L42) |  |
+| <code>public string RetainedStructuredTermsSummary { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:43](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L43) |  |
+| <code>public string TermsFormatLabel =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:51](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L51) |  |
+| <code>public bool UseExternalReview { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:52](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L52) |  |
+| <code>public string ScheduleStart { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:53](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L53) |  |
+| <code>public string ScheduleEnd { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:54](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L54) |  |
+| <code>public string CalendarId { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:55](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L55) |  |
+| <code>public string FloatingIndexReference { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:56](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L56) |  |
+| <code>public string SpreadBps { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:57](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L57) |  |
+| <code>public string FixingLagBusinessDays { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:59](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L59) | Floating loans: business days before each period start at which the fixing is observed. Blank = undeclared. |
+| <code>public string FixedFeeAmount { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:60](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L60) |  |
+| <code>public string AnnualFeeRate { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:61](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L61) |  |
+| <code>public string FixedFeeBasis { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:63](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L63) | Fixed management fees: whether the amount covers each schedule period or one year (per annum uses DayCount). |
+| <code>public string CalculationBaseReference { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:64](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L64) |  |
+| <code>public string AllocationDriverReference { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:65](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L65) |  |
+| <code>public string BeneficiaryReference { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:66](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L66) |  |
+| <code>public string GuaranteeLimit { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:67](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L67) |  |
+| <code>public int SettlementBusinessDays { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:68](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L68) |  |
+| <code>public IntercompanyRateBasisDto RateBasis { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:69](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L69) |  |
+| <code>public IntercompanyFrequencyDto Frequency { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:70](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L70) |  |
+| <code>public IntercompanyDayCountDto DayCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:71](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L71) |  |
+| <code>public IntercompanyCompoundingDto Compounding { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:72](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L72) |  |
+| <code>public BusinessDayConvention BusinessDayConvention { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:73](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L73) |  |
+| <code>public string ExternalReviewer { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:74](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L74) |  |
+| <code>public string ReviewerReference { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:75](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L75) |  |
+| <code>public string ReviewedOn { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:76](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L76) |  |
+| <code>public string ReviewEvidenceReference { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:77](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L77) |  |
+| <code>public string ReviewEvidenceArtifact { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:78](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L78) |  |
+| <code>public string ReviewEvidenceHash { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:79](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L79) |  |
+| <code>public string DatePreviewStatus { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:80](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L80) |  |
+| <code>public string ObligationStatus { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:81](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L81) |  |
+| <code>public int ExpiryHorizonDays { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:82](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L82) |  |
+| <code>public IntercompanyAllocationEditor? SelectedStructuredAllocation { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:83](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L83) |  |
+| <code>public IntercompanyObligationMonitorDto? ObligationMonitor { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:84](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L84) |  |
+| <code>public IntercompanyAgreementDetailDto? SelectedGuaranteeDisclosure { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:85](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L85) |  |
+| <code>public IntercompanyObligationFindingDto? SelectedObligationFinding { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:86](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L86) |  |
+| <code>public IAsyncRelayCommand OpenGuaranteeDisclosureCommand { get; private set; } = null !;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:87](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L87) |  |
+| <code>public IAsyncRelayCommand InspectObligationAgreementCommand { get; private set; } = null !;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:88](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L88) |  |
+| <code>public IRelayCommand AddStructuredAllocationCommand { get; private set; } = null !;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:89](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L89) |  |
+| <code>public IRelayCommand RemoveStructuredAllocationCommand { get; private set; } = null !;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:90](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L90) |  |
+| <code>public IAsyncRelayCommand PreviewProposalDatesCommand { get; private set; } = null !;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:91](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L91) |  |
+| <code>public IAsyncRelayCommand PreviewRevisionDatesCommand { get; private set; } = null !;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:92](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L92) |  |
+| <code>public IAsyncRelayCommand EvaluateObligationsCommand { get; private set; } = null !;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:93](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L93) |  |
 
 ## IntercompanyAllocationEditor
 
 Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyAllocationEditor</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:238](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L238).
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:264](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L264).
 
 ```csharp
 public sealed class IntercompanyAllocationEditor : ObservableObject
@@ -1059,8 +1062,77 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string EntityId { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:241](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L241) |  |
-| <code>public string Percent { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:242](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L242) |  |
+| <code>public string EntityId { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:267](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L267) |  |
+| <code>public string Percent { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:268](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L268) |  |
+
+## IntercompanyBalanceConfirmationRow
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyBalanceConfirmationRow</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:257](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L257).
+
+One retained confirmation as seen from the loaded book; amounts are the server&#x27;s exact decimals.
+
+```csharp
+public sealed class IntercompanyBalanceConfirmationRow(IntercompanyBalanceConfirmationDto confirmation, Guid book)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyBalanceConfirmationDto Confirmation { get; } = confirmation;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:259](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L259) |  |
+| <code>public Guid ConfirmationId =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:260](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L260) |  |
+| <code>public long Version =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:261](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L261) |  |
+| <code>public string BalanceDigest =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:262](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L262) |  |
+| <code>public IntercompanyBalanceConfirmationStatusDto Status =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:263](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L263) |  |
+| <code>public IntercompanyBalanceConfirmationPartyDto ThisBookParty =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:264](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L264) |  |
+| <code>public string Profile =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:266](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L266) |  |
+| <code>public string StatusText =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:267](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L267) |  |
+| <code>public string PartyOne =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:276](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L276) |  |
+| <code>public string PartyTwo =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:277](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L277) |  |
+| <code>public string Net =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:278](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L278) |  |
+| <code>public string History =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:279](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L279) |  |
+| <code>public bool CanConfirm =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:281](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L281) |  |
+| <code>public bool CanDispute =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:284](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L284) |  |
+
+## IntercompanyBalanceConfirmationWorkspace
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyBalanceConfirmationWorkspace</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:16](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L16).
+
+Desktop state for reciprocal intercompany balance confirmation over the routes the browser uses. Balances are pinned by the server from posted journals; this book&#x27;s operator confirms or disputes only this book&#x27;s side. Advisory only: nothing here changes close eligibility, and nothing is calculated here.
+
+```csharp
+public sealed partial class IntercompanyBalanceConfirmationWorkspace : ObservableObject, IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyBalanceConfirmationWorkspace(IWorkstationIntercompanyAgreementApiClient client);</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:31](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L31) |  |
+| <code>public ObservableCollection&lt;IntercompanyBalanceConfirmationRow&gt; Confirmations { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:44](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L44) |  |
+| <code>public ObservableCollection&lt;string&gt; Findings { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:45](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L45) |  |
+| <code>public ObservableCollection&lt;IntercompanyChoiceRow&gt; Profiles { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:47](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L47) | Approved accounting profiles that map the loaded book on the loaded date. |
+| <code>public IAsyncRelayCommand LoadCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:48](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L48) |  |
+| <code>public IAsyncRelayCommand ProposeCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:49](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L49) |  |
+| <code>public IAsyncRelayCommand ConfirmCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:50](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L50) |  |
+| <code>public IAsyncRelayCommand DisputeCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:51](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L51) |  |
+| <code>public IAsyncRelayCommand ResolveCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:52](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L52) |  |
+| <code>public bool IsBusy { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:53](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L53) |  |
+| <code>public bool CanManageLedger { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:54](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L54) |  |
+| <code>public string PermissionNote =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:55](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L55) |  |
+| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:58](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L58) |  |
+| <code>public string SummaryText { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:60](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L60) | The advisory position, stated as advisory: close eligibility is unchanged. |
+| <code>public string LedgerBook { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:61](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L61) |  |
+| <code>public string AsOf { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:63](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L63) | Confirmation date (yyyy-MM-dd), normally the period end. |
+| <code>public string Reason { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:64](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L64) |  |
+| <code>public string SelectedProfile { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:65](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L65) |  |
+| <code>public IntercompanyBalanceConfirmationRow? SelectedConfirmation { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:66](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L66) |  |
+| <code>public void ResetSession();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:206](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L206) | Clear prior-session evidence and invalidate every outstanding response on account changes. |
+| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:219](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L219) |  |
 
 ## IntercompanyChoice
 
@@ -1079,6 +1151,24 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Choices.cs:32](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Choices.cs#L32) |  |
+
+## IntercompanyChoiceRow
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyChoiceRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:251](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L251).
+
+One selectable identifier with a readable label.
+
+```csharp
+public sealed record IntercompanyChoiceRow(string Id, string Label)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:253](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L253) |  |
 
 ## IntercompanyCounterpartBreakRow
 
@@ -1230,92 +1320,3 @@ Declared public members:
 | <code>public string TransactionCredit =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:434](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L434) |  |
 | <code>public string FunctionalDebit =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:435](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L435) |  |
 | <code>public string FunctionalCredit =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:436](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L436) |  |
-
-## IntercompanyInterestAccrualLineRow
-
-Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyInterestAccrualLineRow</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:341](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L341).
-
-One line of the proposed source journal, exactly as the server would retain it.
-
-```csharp
-public sealed class IntercompanyInterestAccrualLineRow(ManualJournalEntryLineDto line)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Account =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:343](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L343) |  |
-| <code>public string Side =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:344](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L344) |  |
-| <code>public string Amount =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:345](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L345) |  |
-| <code>public string Original =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:346](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L346) |  |
-
-## IntercompanyInterestAccrualSliceRow
-
-Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyInterestAccrualSliceRow</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:327](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L327).
-
-One homogeneous accrual slice; every figure is the server&#x27;s exact decimal.
-
-```csharp
-public sealed class IntercompanyInterestAccrualSliceRow(IntercompanyAccrualSliceDto slice)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Days =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:329](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L329) |  |
-| <code>public string Principal =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:330](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L330) |  |
-| <code>public string CompoundedInterest =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:332](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L332) | Posted accrued interest added at the period start (rule v3), or &quot;Simple&quot;. |
-| <code>public string AnnualRate =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:333](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L333) |  |
-| <code>public string DayCount =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:334](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L334) |  |
-| <code>public string UnroundedAmount =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:335](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L335) |  |
-| <code>public string Authority =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:336](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L336) |  |
-| <code>public string PrincipalEvidence =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:337](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L337) |  |
-
-## IntercompanyInterestAccrualWorkspace
-
-Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyInterestAccrualWorkspace</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:16](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L16).
-
-Desktop presentation state for requesting a governed loan-interest accrual. The operator supplies selections only; every rate, principal, amount and permission comes from the shared intercompany API, and a draft is bound to the evidence digest of the preview the operator saw. Nothing is calculated here.
-
-```csharp
-public sealed partial class IntercompanyInterestAccrualWorkspace : ObservableObject, IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IntercompanyInterestAccrualWorkspace(IWorkstationIntercompanyAgreementApiClient client);</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:34](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L34) |  |
-| <code>public ObservableCollection&lt;IntercompanyChoice&gt; BookChoices { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:43](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L43) | Books the signed-in account can see; choosing one sets SourceBook. |
-| <code>public ObservableCollection&lt;IntercompanyChoice&gt; InterestProfileChoices { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:45](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L45) | Approved LoanInterest profiles that map the chosen book today. |
-| <code>public ObservableCollection&lt;IntercompanyChoice&gt; PrincipalProfileChoices { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:47](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L47) | Approved Loan profiles of the same legal agreement as the chosen interest profile. |
-| <code>public IAsyncRelayCommand LoadChoicesCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:48](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L48) |  |
-| <code>public string ChoicesStatus { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:50](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L50) | What the selection lists hold, or why one is empty. |
-| <code>public Task ProfileChoicesLoad { get; private set; } = Task.CompletedTask;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:52](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L52) | The latest profile read for the chosen book; completed when no read is outstanding. |
-| <code>public ObservableCollection&lt;IntercompanyInterestAccrualSliceRow&gt; Slices { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:54](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L54) |  |
-| <code>public ObservableCollection&lt;IntercompanyInterestAccrualLineRow&gt; Lines { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:55](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L55) |  |
-| <code>public ObservableCollection&lt;string&gt; Refusals { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:56](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L56) |  |
-| <code>public IAsyncRelayCommand PreviewCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:57](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L57) |  |
-| <code>public IAsyncRelayCommand CreateDraftCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:58](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L58) |  |
-| <code>public bool IsBusy { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:59](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L59) |  |
-| <code>public bool CanManageLedger { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:61](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L61) | The server&#x27;s answer for the signed-in account. Source-book authority is still checked per command. |
-| <code>public string PermissionNote =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:62](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L62) |  |
-| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:65](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L65) |  |
-| <code>public string Summary { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:67](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L67) | The previewed amount and journal date, or the reason no amount is shown. |
-| <code>public string Evidence { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:68](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L68) |  |
-| <code>public string DraftStatus { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:69](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L69) |  |
-| <code>public string SourceBook { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:70](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L70) |  |
-| <code>public string InterestProfile { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:79](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L79) |  |
-| <code>public string PrincipalProfile { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:88](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L88) |  |
-| <code>public string AccrualFrom { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:90](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L90) | First accrued day (yyyy-MM-dd). |
-| <code>public string AccrualTo { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:92](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L92) | First day not accrued (yyyy-MM-dd); the journal is dated the day before. |
-| <code>public void ResetSession();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:274](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L274) | Clear prior-session evidence and invalidate every outstanding response on account changes. |
-| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs:300](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs#L300) |  |

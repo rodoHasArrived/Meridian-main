@@ -7,14 +7,18 @@ import { describeApiError } from "@/lib/api-errors";
 import { entityOperationEndpoints as endpoints, postEntityOperation } from "@/lib/api/entity-operations.api";
 import { formatMoney } from "@/lib/format";
 import type { ManualJournalEntryDraft } from "@/types";
-import type { EntityOperationScope, IntercompanyAccountingArrangement, IntercompanyAccrualProposal, IntercompanyAccrualRequest } from "@/types/entity-operations";
+import type { EntityOperationScope, IntercompanyAccountingArrangement, IntercompanyAccrualProposal, IntercompanyAccrualRequest, IntercompanyAccrualSliceFixing } from "@/types/entity-operations";
 import { EntityOperationTable, MutationFeedback, OperationError, OperationField, useEntityMutation } from "./accounting-screen.entity-operations.shared";
 
 /**
  * Requests the governed loan-interest accrual for one approved LoanInterest profile. The operator selects
  * the principal profile and the window only; the rate, day count, principal and amount are server-resolved.
+ * Floating slices (rule intercompany-accrual-v2) carry the approved fixing that set their rate.
  * Drafting retains exactly the previewed computation in the source book's journal review and never posts.
  */
+/** Exact server text only: a floating slice's rate is the approved index fixing plus the declared spread. */
+const fixingText = (fixing: IntercompanyAccrualSliceFixing) => `${fixing.indexReference} ${fixing.fixingDate} · ${fixing.indexRate} + ${fixing.spreadBps} bps`;
+
 export function IntercompanyInterestAccrual({ scope, arrangement, arrangements }: {
   scope: EntityOperationScope; arrangement: IntercompanyAccountingArrangement; arrangements: IntercompanyAccountingArrangement[];
 }) {
@@ -75,7 +79,7 @@ export function IntercompanyInterestAccrual({ scope, arrangement, arrangements }
 
   return <section className="space-y-3 rounded border border-border p-3" aria-label="Loan interest accrual">
     <h5 className="text-sm font-semibold">Accrue interest</h5>
-    <p className="text-xs text-muted-foreground">Fixed-rate interest is calculated by the server from the approved legal terms, this profile's approved revisions and the posted loan principal in {scope.book.displayName}. A loan that compounds at each schedule period adds the accrued interest already posted at the period start, once every earlier day is accrued and posted. No rate, principal or amount is entered here. Fees and floating rates are not calculated here.</p>
+    <p className="text-xs text-muted-foreground">Interest is calculated by the server from the approved legal terms, this profile's approved revisions and the posted loan principal in {scope.book.displayName}. No rate, principal or amount is entered here. A floating loan uses only the approved index fixing for each period (see Rate fixings); a missing fixing is never inferred and nothing is fetched from a market feed. A fixed-rate loan that compounds at each schedule period adds the accrued interest already posted at the period start, once every earlier day is accrued and posted; a floating rate is never compounded. Fees are not calculated here.</p>
     {!mapsBook ? <p role="note" className="text-xs text-warning">This profile does not map {scope.book.displayName}. Open the lender's or borrower's own book to accrue its side.</p> : null}
     {principalProfiles.length === 0 ? <p role="note" className="text-xs text-warning">No loan principal profile of the same legal agreement is retained in this perimeter. Principal is read only from posted journals of a reviewed Loan profile.</p> : null}
     <form className="space-y-3" onSubmit={(event) => void runPreview(event)}><fieldset className="space-y-3" disabled={previewing || mutation.busy}>
@@ -96,7 +100,7 @@ export function IntercompanyInterestAccrual({ scope, arrangement, arrangements }
       <ul className="list-disc pl-5">{[...new Set(current.diagnostics.length > 0 ? current.diagnostics : computation.diagnostics)].map((reason) => <li key={reason}>{reason}</li>)}</ul>
     </div> : null}
     {current && computation && ready ? <div className="space-y-3">
-      <p className="text-sm"><span className="font-semibold">{formatMoney(computation.amount ?? "", { context: "accounting", currency: computation.currency ?? "" })}</span> interest for {computation.accrualFrom} up to {computation.accrualTo} · journal date {current.evidence?.postingDate ?? current.draft!.accountingDate}</p>
+      <p className="text-sm"><span className="font-semibold">{formatMoney(computation.amount ?? "", { context: "accounting", currency: computation.currency ?? "" })}</span> interest for {computation.accrualFrom} up to {computation.accrualTo} · journal date {current.evidence?.postingDate ?? current.draft!.accountingDate} · rule {computation.ruleVersion}</p>
       {current.evidence && current.evidence.functionalCurrency !== computation.currency ? <p className="text-sm">Booked as {formatMoney(current.evidence.functionalAmount, { context: "accounting", currency: current.evidence.functionalCurrency })} through the governed FX authority.</p> : null}
       <EntityOperationTable label="Interest accrual slices" rows={computation.slices} getRowId={(slice) => String(slice.sequence)} emptyText="No accrual slices."
         columns={[
@@ -104,6 +108,7 @@ export function IntercompanyInterestAccrual({ scope, arrangement, arrangements }
           { id: "principal", label: "Posted principal", numeric: true, render: (slice) => slice.principal },
           { id: "compounded", label: "Compounded interest", numeric: true, render: (slice) => slice.compoundedInterest ?? "Simple" },
           { id: "rate", label: "Annual rate", numeric: true, render: (slice) => slice.annualRate },
+          { id: "fixing", label: "Fixing", render: (slice) => slice.fixing ? <><span>{fixingText(slice.fixing)}</span><p className="mt-1 text-xs">{slice.fixing.fixingLagBusinessDays} business-day lag</p></> : "Fixed" },
           { id: "basis", label: "Day count", render: (slice) => `${slice.dayCount} · ${slice.yearFraction}` },
           { id: "amount", label: "Unrounded interest", numeric: true, render: (slice) => slice.unroundedAmount },
           { id: "authority", label: "Legal version", render: (slice) => `Version ${slice.agreementVersion}` }
@@ -121,6 +126,7 @@ export function IntercompanyInterestAccrual({ scope, arrangement, arrangements }
           <div><dt>Opening posted principal</dt><dd>{current.evidence.principal.openingPrincipal} from {current.evidence.principal.openingJournalCount} posted journal(s); {current.evidence.principal.movements.length} movement(s) inside the window</dd></div></> : null}
         {computation.calendars.map((calendar) => <div key={calendar.calendarId}><dt>Calendar {calendar.calendarId}</dt><dd className="font-mono">{calendar.contentHash}</dd></div>)}
         {computation.slices.map((slice) => <div key={slice.sequence}><dt>Slice {slice.sequence} authority</dt><dd>Mapping revision {slice.accountingArrangementRevisionId} · legal payload <span className="font-mono">{slice.agreementPayloadHash}</span> · {slice.principalEvidenceReference}</dd></div>)}
+        {computation.slices.filter((slice) => slice.fixing).map((slice) => <div key={`fixing-${slice.sequence}`}><dt>Slice {slice.sequence} approved fixing</dt><dd>{slice.fixing!.fixingId} · value <span className="font-mono">{slice.fixing!.valueDigest}</span></dd></div>)}
       </dl></TechnicalDetails>
       <Button type="button" disabled={mutation.busy || Boolean(drafted)} disabledReason={drafted ? "This computation is already retained as a draft." : "Wait for the current accrual change to finish."} onClick={() => void createDraft()}>Create accrual draft for review</Button>
       <p className="text-xs text-muted-foreground">The draft enters ordinary journal review in this book. It is refused if the approved terms, profile, principal or FX inputs changed after this preview.</p>

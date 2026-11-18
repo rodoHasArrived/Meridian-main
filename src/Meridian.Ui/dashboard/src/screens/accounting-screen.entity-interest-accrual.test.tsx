@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { axe } from "jest-axe";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithRouter } from "@/test/render";
@@ -67,6 +67,30 @@ describe("Intercompany interest accrual", () => {
       { accrual: selection, expectedEvidenceDigest: digest }, expect.objectContaining({ signal: expect.any(AbortSignal) }));
     expect(screen.getByText(/Nothing was approved or posted/)).toBeVisible();
     expect(screen.getByRole("button", { name: "Create accrual draft for review" })).toBeDisabled();
+    expect((await axe(container)).violations).toEqual([]);
+  });
+
+  it("shows each floating slice's approved fixing as exact text and labels fixed slices", async () => {
+    const fixed = readyProposal.computation.slices[0];
+    const floating: IntercompanyAccrualProposal = { ...readyProposal, computation: { ...readyProposal.computation, ruleVersion: "intercompany-accrual-v2",
+      slices: [{ ...fixed, to: "2026-06-16" },
+        { ...fixed, sequence: 2, from: "2026-06-16", schedulePeriodSequence: 2, annualRate: "0.05500000000000000000000000001",
+          fixing: { fixingId: "fixing-a", indexReference: "SOFR", fixingDate: "2026-05-28", indexRate: "0.04250000000000000000000000001", spreadBps: "125", fixingLagBusinessDays: 2, valueDigest: "f".repeat(64) } }] } };
+    vi.mocked(postEntityOperation).mockResolvedValue(floating);
+    const { container } = renderWithRouter(<IntercompanyInterestAccrual scope={scope} arrangement={interest} arrangements={[interest, principal]} />);
+    expect(screen.getByText(/a missing fixing is never inferred and nothing is fetched from a market feed/)).toBeVisible();
+    enterWindow();
+    fireEvent.click(screen.getByRole("button", { name: "Preview interest accrual" }));
+    await screen.findByText(/rule intercompany-accrual-v2/);
+    const table = screen.getByRole("region", { name: "Interest accrual slices" });
+    expect(within(table).getByRole("columnheader", { name: "Fixing" })).toBeInTheDocument();
+    // Exact decimal text is never parsed to a float, so trailing precision survives.
+    expect(within(table).getByText("SOFR 2026-05-28 · 0.04250000000000000000000000001 + 125 bps")).toBeVisible();
+    expect(within(table).getByText("0.05500000000000000000000000001")).toBeVisible();
+    expect(within(table).getByText("2 business-day lag")).toBeVisible();
+    expect(within(table).getByText("Fixed")).toBeVisible();
+    expect(screen.getByText(/intercompany-accrual-v2 · day-count-v1/)).toBeInTheDocument();
+    expect(screen.getByText("f".repeat(64))).toBeInTheDocument();
     expect((await axe(container)).violations).toEqual([]);
   });
 

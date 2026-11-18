@@ -6,6 +6,68 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ConfigurationServiceCredentialAdapter
+
+Qualified name: <code>Meridian.Application.Services.ConfigurationServiceCredentialAdapter</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Services/ConfigurationServiceCredentialAdapter.cs:10](../../../../src/Meridian.Application/Services/ConfigurationServiceCredentialAdapter.cs#L10).
+
+Adapter that wraps ConfigurationService to implement ICredentialResolver. Enables using ConfigurationService&#x27;s credential resolution with the unified ProviderFactory.
+
+```csharp
+public sealed class ConfigurationServiceCredentialAdapter : IProviderCredentialResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ConfigurationServiceCredentialAdapter(ConfigurationService configService);</code> | [src/Meridian.Application/Services/ConfigurationServiceCredentialAdapter.cs:14](../../../../src/Meridian.Application/Services/ConfigurationServiceCredentialAdapter.cs#L14) |  |
+| <code>public ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary&lt;string, string?&gt;? configuredValues = null);</code> | [src/Meridian.Application/Services/ConfigurationServiceCredentialAdapter.cs:19](../../../../src/Meridian.Application/Services/ConfigurationServiceCredentialAdapter.cs#L19) |  |
+
+## ConfigurationWizard
+
+Qualified name: <code>Meridian.Application.Services.ConfigurationWizard</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Services/ConfigurationWizard.cs:23](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L23).
+
+Interactive configuration wizard for first-time setup. Guides users through configuration with a step-by-step process. Delegates orchestration to WizardCoordinator and individual IWizardStep implementations.
+
+```csharp
+public sealed class ConfigurationWizard
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ConfigurationWizard(TextWriter? output = null, TextReader? input = null, ProviderCredentialOwnershipPolicy? ownershipPolicy = null);</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:39](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L39) |  |
+| <code>public async Task&lt;WizardResult&gt; RunAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:51](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L51) | Runs the interactive configuration wizard using the step-graph coordinator. |
+| <code>public WizardResult RunQuickSetup();</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:83](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L83) | Runs a quick auto-configuration without interactive prompts. |
+| <code>public async Task&lt;WizardResult&gt; RunQuickstartAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Services/ConfigurationWizard.cs:138](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L138) | Runs a quickstart flow: auto-configures, validates, and returns a config ready to launch. |
+
+## ConnectivityProbeService
+
+Qualified name: <code>Meridian.Application.Services.ConnectivityProbeService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Services/ConnectivityProbeService.cs:17](../../../../src/Meridian.Application/Services/ConnectivityProbeService.cs#L17).
+
+Sealed implementation that probes connectivity every 60 seconds using HTTP GET to Google&#x27;s connectivity check endpoint.
+
+```csharp
+public sealed class ConnectivityProbeService : IConnectivityProbeService, IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsOnline { get; private set; }</code> | [src/Meridian.Application/Services/ConnectivityProbeService.cs:30](../../../../src/Meridian.Application/Services/ConnectivityProbeService.cs#L30) |  |
+| <code>public event EventHandler&lt;bool&gt;? ConnectivityChanged;</code> | [src/Meridian.Application/Services/ConnectivityProbeService.cs:43](../../../../src/Meridian.Application/Services/ConnectivityProbeService.cs#L43) |  |
+| <code>public ConnectivityProbeService(IHttpClientFactory httpClientFactory, ILogger? log = null);</code> | [src/Meridian.Application/Services/ConnectivityProbeService.cs:49](../../../../src/Meridian.Application/Services/ConnectivityProbeService.cs#L49) | Initializes ConnectivityProbeService using IHttpClientFactory for HTTP calls. Per ADR-010, HttpClient is never instantiated directly. |
+| <code>public void Start();</code> | [src/Meridian.Application/Services/ConnectivityProbeService.cs:63](../../../../src/Meridian.Application/Services/ConnectivityProbeService.cs#L63) | Starts the periodic connectivity probe. |
+| <code>public void Dispose();</code> | [src/Meridian.Application/Services/ConnectivityProbeService.cs:143](../../../../src/Meridian.Application/Services/ConnectivityProbeService.cs#L143) |  |
+
 ## ConnectivityTestService
 
 Qualified name: <code>Meridian.Application.Services.ConnectivityTestService</code>. Kind: `class`.
@@ -903,59 +965,3 @@ Declared public members:
 | <code>public async Task&lt;IndexSubscribeResult&gt; SubscribeToIndexAsync(IndexSubscribeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs:72](../../../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs#L72) | Subscribe to all components of an index. |
 | <code>public async Task&lt;IndexSubscribeResult&gt; UnsubscribeFromIndexAsync(string indexId, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs:167](../../../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs#L167) | Unsubscribe from all components of an index. |
 | <code>public async Task&lt;IndexSubscriptionStatus&gt; GetSubscriptionStatusAsync(string indexId, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs:214](../../../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs#L214) | Check which index components are currently subscribed. |
-
-## IndexSubscriptionStatus
-
-Qualified name: <code>Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs:416](../../../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs#L416).
-
-Status of index subscription coverage.
-
-```csharp
-public sealed record IndexSubscriptionStatus(string IndexId, string? IndexName, int TotalComponents, int SubscribedCount, string[] SubscribedSymbols, string[] NotSubscribedSymbols);
-```
-
-## IPortfolioOpeningBalanceQueue
-
-Qualified name: <code>Meridian.Application.Subscriptions.Services.IPortfolioOpeningBalanceQueue</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/Subscriptions/Services/PortfolioImportRunService.cs:11](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioImportRunService.cs#L11).
-
-Queues the retained complete source population through the ordinary human approval lifecycle.
-
-```csharp
-public interface IPortfolioOpeningBalanceQueue
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;Guid&gt; QueueAsync(PortfolioImportRun run, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/PortfolioImportRunService.cs:13](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioImportRunService.cs#L13) |  |
-
-## MetadataEnrichmentService
-
-Qualified name: <code>Meridian.Application.Subscriptions.Services.MetadataEnrichmentService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs:15](../../../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs#L15).
-
-Service for enriching symbols with metadata (industry, sector, market cap). Provides filtering capabilities based on symbol metadata.
-
-```csharp
-public sealed class MetadataEnrichmentService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public MetadataEnrichmentService(string? cachePath = null, ILogger? log = null);</code> | [src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs:26](../../../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs#L26) |  |
-| <code>public async Task&lt;SymbolMetadata?&gt; GetMetadataAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs:38](../../../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs#L38) | Get metadata for a specific symbol. |
-| <code>public async Task&lt;IReadOnlyDictionary&lt;string, SymbolMetadata&gt;&gt; GetMetadataBatchAsync(IEnumerable&lt;string&gt; symbols, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs:57](../../../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs#L57) | Get metadata for multiple symbols. |
-| <code>public async Task&lt;MetadataFilterResult&gt; FilterSymbolsAsync(SymbolMetadataFilter filter, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs:78](../../../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs#L78) | Filter symbols based on metadata criteria. |
-| <code>public async Task&lt;IReadOnlyList&lt;string&gt;&gt; GetAvailableSectorsAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs:153](../../../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs#L153) | Get available sectors from cached metadata. |
-| <code>public async Task&lt;IReadOnlyList&lt;string&gt;&gt; GetAvailableIndustriesAsync(string? sector = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs:168](../../../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs#L168) | Get available industries from cached metadata. |
-| <code>public async Task UpdateMetadataAsync(SymbolMetadata metadata, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs:193](../../../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs#L193) | Update metadata for a symbol. |
-| <code>public async Task UpdateMetadataBatchAsync(IEnumerable&lt;SymbolMetadata&gt; metadataList, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs:203](../../../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs#L203) | Update metadata for multiple symbols. |
-| <code>public static MarketCapCategory CategorizeMarketCap(decimal marketCap);</code> | [src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs:219](../../../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs#L219) | Categorize market cap value. |

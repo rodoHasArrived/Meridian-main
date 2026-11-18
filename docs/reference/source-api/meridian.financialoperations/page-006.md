@@ -6,6 +6,99 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IbFlexWebServiceClient
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.IbFlex.IbFlexWebServiceClient</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexWebServiceClient.cs:23](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexWebServiceClient.cs#L23).
+
+Implements the IB Flex Web Service v3 send-and-retrieve protocol. Retrieval is polled only for IB&#x27;s documented generation-in-progress response; every other error fails closed.
+
+```csharp
+public sealed class IbFlexWebServiceClient(HttpClient httpClient, TimeSpan? pollDelay = null, int maxRetrieveAttempts = 12) : IIbFlexWebServiceClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;ReadOnlyMemory&lt;byte&gt;&gt; FetchStatementAsync(string token, string queryId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexWebServiceClient.cs:38](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexWebServiceClient.cs#L38) |  |
+
+## IIbFlexWebServiceClient
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.IbFlex.IIbFlexWebServiceClient</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexWebServiceClient.cs:11](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexWebServiceClient.cs#L11).
+
+Fetches Interactive Brokers Flex statement payloads for the configured query request.
+
+```csharp
+public interface IIbFlexWebServiceClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ReadOnlyMemory&lt;byte&gt;&gt; FetchStatementAsync(string token, string queryId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexWebServiceClient.cs:13](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexWebServiceClient.cs#L13) |  |
+
+## IFetchingStatementConnector
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.IFetchingStatementConnector</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:232](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L232).
+
+A connector that can pull statements from a remote source. Fetch yields a retained document that IStatementConnector.ParseAsync then consumes, keeping a single parse path and raw evidence for every import regardless of origin. A connector must not silently ignore StatementFetchRequest.UntilExclusive.
+
+```csharp
+public interface IFetchingStatementConnector : IStatementConnector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;StatementSourceDocument&gt; FetchAsync(StatementFetchRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:234](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L234) |  |
+
+## IStatementConnector
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.IStatementConnector</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:195](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L195).
+
+Parses a source statement document into normalized statement entities and parse issues.
+
+```csharp
+public interface IStatementConnector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>StatementConnectorDescriptor Descriptor { get; }</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:197](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L197) |  |
+| <code>bool CanHandle(StatementSourceDocument document);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:200](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L200) | Extension and content sniffing; used for connector auto-detection. |
+| <code>Task&lt;StatementParseResult&gt; ParseAsync(StatementSourceDocument document, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:202](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L202) |  |
+
+## IStatementFetchIngestionAuthority
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.IStatementFetchIngestionAuthority</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs:50](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs#L50).
+
+Compatibility seam used by the connector scheduler to reauthorize retained account ownership before provider access and then enter the existing statement reconciliation report workflow. Implementations must not commit through a parallel import path.
+
+```csharp
+public interface IStatementFetchIngestionAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;StatementAccountingScope&gt; AuthorizeAsync(StatementFetchAuthorizationCommand command, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs:52](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs#L52) |  |
+| <code>Task&lt;StatementImportCommitResultDto&gt; IngestAsync(StatementFetchIngestionCommand command, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs:56](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs#L56) |  |
+
 ## IStatementFetchScheduleStore
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.IStatementFetchScheduleStore</code>. Kind: `interface`.
@@ -765,91 +858,4 @@ Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextCo
 
 ```csharp
 public sealed record DataIntegrationIngestionResult(string ImportId, string SourceKind, string SourcePath, int ImportedRowCount);
-```
-
-## DefaultReconciliationIngestionScheduler
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.DefaultReconciliationIngestionScheduler</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/DefaultReconciliationIngestionScheduler.cs:23](../../../../src/Meridian.FinancialOperations/Reconciliation/DefaultReconciliationIngestionScheduler.cs#L23).
-
-Captures source snapshots for a reconciliation run with a real scheduling policy instead of a sequential foreach: bounded concurrent capture across adapters, a per-attempt timeout, and exponential-backoff retries for transient per-source failures. Results are returned in a deterministic order (source type, then registration order) regardless of completion order, and a source that exhausts its attempts fails the run by rethrowing its final attempt&#x27;s exception with the original type and stack intact — retry telemetry is carried in structured logs, not in wrapper exception types. Adapters are invoked behind the deadline fence (their synchronous prefixes cannot stall the run), cooperative timeouts retry, and a source that ignores cancellation past the grace period fails terminally rather than stacking further live captures outside the concurrency accounting. Queueing is governed only by run cancellation; the per-source deadline starts after dispatch, so a queued callback can neither consume a source attempt before the adapter runs nor start later after its run has already been cancelled.
-
-```csharp
-public sealed class DefaultReconciliationIngestionScheduler : IReconciliationIngestionScheduler
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DefaultReconciliationIngestionScheduler(ReconciliationIngestionOptions? options = null, ILogger&lt;DefaultReconciliationIngestionScheduler&gt;? log = null) : this(options, log, static (capture, ct) =&gt; Task.Run(capture, ct));</code> | [src/Meridian.FinancialOperations/Reconciliation/DefaultReconciliationIngestionScheduler.cs:29](../../../../src/Meridian.FinancialOperations/Reconciliation/DefaultReconciliationIngestionScheduler.cs#L29) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;DataSourceSnapshot&gt;&gt; CaptureAsync(IReadOnlyList&lt;IReconciliationSourceAdapter&gt; adapters, ReconciliationIngestionRequest request, CancellationToken ct);</code> | [src/Meridian.FinancialOperations/Reconciliation/DefaultReconciliationIngestionScheduler.cs:47](../../../../src/Meridian.FinancialOperations/Reconciliation/DefaultReconciliationIngestionScheduler.cs#L47) |  |
-
-## DeterministicFingerprint
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.DeterministicFingerprint</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationService.cs:1092](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationService.cs#L1092).
-
-Computes stable SHA-256 fingerprints for statement reconciliation evidence.
-
-```csharp
-public static class DeterministicFingerprint
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static string Compute(string value);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationService.cs:1094](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationService.cs#L1094) |  |
-
-## EmptyInternalReconciliationBookSource
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.EmptyInternalReconciliationBookSource</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationBook.cs:42](../../../../src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationBook.cs#L42).
-
-Default internal-book source that returns an empty book. It never fabricates an internal side: with no internal records, the sided matcher reports every statement row as an unmatched break, which is the truthful state for an account whose internal book has not been wired in.
-
-```csharp
-public sealed class EmptyInternalReconciliationBookSource : IInternalReconciliationBookSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static EmptyInternalReconciliationBookSource Instance { get; } = new ();</code> | [src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationBook.cs:44](../../../../src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationBook.cs#L44) |  |
-| <code>public Task&lt;InternalReconciliationBook&gt; GetBookAsync(StatementRunRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationBook.cs:46](../../../../src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationBook.cs#L46) |  |
-
-## EmptyInternalReconciliationPopulationProvider
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.EmptyInternalReconciliationPopulationProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationPopulations.cs:55](../../../../src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationPopulations.cs#L55).
-
-The safe default provider: returns an empty internal book. With no internal populations, the matching engine reports every statement line as unmatched — the correct, fail-closed behavior when no book is connected (as opposed to fabricating matches). Wire a real provider to reconcile against live positions, cash, and ledger.
-
-```csharp
-public sealed class EmptyInternalReconciliationPopulationProvider : IInternalReconciliationPopulationProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static EmptyInternalReconciliationPopulationProvider Instance { get; } = new ();</code> | [src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationPopulations.cs:57](../../../../src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationPopulations.cs#L57) |  |
-| <code>public Task&lt;InternalReconciliationPopulations&gt; GetPopulationsAsync(InternalReconciliationPopulationContext context, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationPopulations.cs:59](../../../../src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationPopulations.cs#L59) |  |
-
-## EngineReconciliationRequest
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.EngineReconciliationRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationEngineService.cs:222](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationEngineService.cs#L222).
-
-Request payload for ReconciliationEngineService.RunAsync.
-
-```csharp
-public sealed record EngineReconciliationRequest(string PortfolioId, DateTimeOffset AsOf, IReadOnlyList<PortfolioPositionInput> PortfolioPositions, IReadOnlyDictionary<string, decimal> LedgerBalances, IEnumerable<SecurityLookupKey> SecurityIdentifiers, decimal AmountTolerance = 0.01m, int MaxAsOfDriftMinutes = 5);
 ```

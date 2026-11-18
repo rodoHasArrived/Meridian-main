@@ -35,6 +35,7 @@ public static class IntercompanyEntityServiceRegistration
         {
             services.TryAddSingleton<IEntityLifecycleStore, PostgresEntityLifecycleStore>();
             services.TryAddSingleton<IIntercompanyAccountingArrangementStore, PostgresIntercompanyAccountingArrangementStore>();
+            services.TryAddSingleton<IIntercompanyRateFixingStore, PostgresIntercompanyRateFixingStore>();
         }
         else
         {
@@ -42,6 +43,8 @@ public static class IntercompanyEntityServiceRegistration
                 Path.Combine(Root(sp), "governance", "entity-lifecycle")));
             services.TryAddSingleton<IIntercompanyAccountingArrangementStore>(sp => new FileIntercompanyAccountingArrangementStore(
                 Path.Combine(Root(sp), "governance", "intercompany-accounting-arrangements")));
+            services.TryAddSingleton<IIntercompanyRateFixingStore>(sp => new FileIntercompanyRateFixingStore(
+                Path.Combine(Root(sp), "governance", "intercompany-rate-fixings"), sp.GetRequiredService<IFundScopeTenantAccessor>()));
         }
 
         if (hasLedgerDatabase)
@@ -52,6 +55,7 @@ public static class IntercompanyEntityServiceRegistration
             services.TryAddSingleton<LegacyIntercompanyAttributionValidator>();
             services.TryAddSingleton<ILegacyIntercompanyAttributionStore, PostgresLegacyIntercompanyAttributionStore>();
             services.TryAddSingleton<IIntercompanyProposalStore, PostgresIntercompanyProposalStore>();
+            services.TryAddSingleton<IIntercompanyBalanceConfirmationStore, PostgresIntercompanyBalanceConfirmationStore>();
             services.TryAddSingleton<ILedgerBookControlStore>(sp => sp.GetService<ILedgerJournalStore>() as ILedgerBookControlStore ?? null!);
             services.TryAddSingleton<IControlledCloseAuthorizationStore>(sp => sp.GetService<ILedgerJournalStore>() as IControlledCloseAuthorizationStore ?? null!);
         }
@@ -82,6 +86,9 @@ public static class IntercompanyEntityServiceRegistration
                 sp.GetService<IFundProfileTenancyRegistry>() is { } owners
                     ? new ConsolidationTransitionFileStore(Path.Combine(Root(sp), "accounting", "consolidation-transitions.json"),
                         sp.GetRequiredService<IFundScopeTenantAccessor>(), journals, owners) : null!);
+            services.TryAddSingleton<IIntercompanyBalanceConfirmationStore>(sp => new FileIntercompanyBalanceConfirmationStore(
+                Path.Combine(Root(sp), "accounting", "intercompany-balance-confirmations.json"),
+                sp.GetRequiredService<IFundScopeTenantAccessor>()));
             // A local host without a journal database cannot promise atomic source/outbox delivery.
             // No substitute proposal store is registered; its accounting routes return unavailable.
         }
@@ -108,6 +115,7 @@ public static class IntercompanyEntityServiceRegistration
                 timeProvider: sp.GetRequiredService<TimeProvider>());
         });
         services.TryAddSingleton<IntercompanyAccountingArrangementService>();
+        services.TryAddSingleton<IntercompanyRateFixingService>();
         services.TryAddSingleton<IntercompanyBalanceScheduleService>(sp =>
             sp.GetService<ILedgerJournalStore>() is { } journals &&
             sp.GetService<IIntercompanyAccountBindingStore>() is { } bindings &&
@@ -117,6 +125,13 @@ public static class IntercompanyEntityServiceRegistration
                     bindings, chart, owners, sp.GetRequiredService<IIntercompanyAccountingArrangementStore>(),
                     sp.GetService<ILegacyIntercompanyAttributionStore>()) : null!);
         services.TryAddSingleton<IIntercompanyBalanceScheduleSource>(sp => sp.GetService<IntercompanyBalanceScheduleService>()!);
+        services.TryAddSingleton<IntercompanyBalanceConfirmationService>(sp =>
+            sp.GetService<IIntercompanyBalanceConfirmationStore>() is { } confirmations &&
+            sp.GetService<IIntercompanyBalanceScheduleSource>() is { } schedules &&
+            sp.GetService<ILedgerJournalStore>() is { } journals &&
+            sp.GetService<IFundProfileTenancyRegistry>() is { } owners
+                ? new IntercompanyBalanceConfirmationService(confirmations, schedules, sp.GetRequiredService<IntercompanyAccountingArrangementService>(),
+                    sp.GetRequiredService<IIntercompanyAccountingArrangementStore>(), journals, owners, sp.GetRequiredService<TimeProvider>()) : null!);
         services.TryAddSingleton<IEntityLifecycleService, EntityLifecycleService>();
 
         if (hasLedgerDatabase)

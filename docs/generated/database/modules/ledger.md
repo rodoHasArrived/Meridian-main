@@ -2,9 +2,9 @@
 
 # `ledger` schema
 
-- Relations: 57
-- Functions/procedures: 32
-- Triggers: 62
+- Relations: 59
+- Functions/procedures: 34
+- Triggers: 66
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -276,6 +276,16 @@ erDiagram
         date effective_to
         timestamp_with_time_zone recorded_at_utc
         jsonb payload
+    }
+    ledger_intercompany_balance_confirmations {
+        uuid confirmation_id PK
+        bigint version PK
+        text tenant_id
+        text company_id
+        uuid accounting_arrangement_id
+        date as_of
+        jsonb payload
+        timestamp_with_time_zone recorded_at
     }
     ledger_intercompany_counterpart_reservations {
         text tenant_id PK
@@ -660,6 +670,14 @@ erDiagram
         uuid journal_entry_id FK
         date effective_date
     }
+    ledger_recurring_journal_state {
+        text store_id PK
+        bigint revision
+        text content_hash
+        text envelope_json
+        timestamp_with_time_zone initialized_at
+        timestamp_with_time_zone updated_at
+    }
     ledger_tax_lot_mutations {
         uuid mutation_record_id PK
         uuid mutation_batch_id FK
@@ -852,6 +870,7 @@ erDiagram
 | `entity_controlled_close_authorization` | table | 7 | `authorization_id` | 1 | 2 | - |
 | `fund_profile_tenancy` | table | 4 | `fund_profile_id` | 0 | 2 | - |
 | `intercompany_account_binding_revisions` | table | 11 | `revision_id` | 1 | 3 | - |
+| `intercompany_balance_confirmations` | table | 8 | `confirmation_id`, `version` | 0 | 3 | - |
 | `intercompany_counterpart_reservations` | table | 5 | `tenant_id`, `target_book_id`, `target_journal_id` | 1 | 1 | - |
 | `intercompany_proposal_links` | table | 10 | `tenant_id`, `request_id` | 1 | 1 | - |
 | `intercompany_proposal_retries` | table | 6 | `tenant_id`, `request_id` | 1 | 1 | - |
@@ -885,6 +904,7 @@ erDiagram
 | `private_capital_calls` | table | 6 | `tenant_id`, `company_id`, `fund_profile_id`, `ledger_book_id`, `call_id` | 1 | 2 | Immutable reviewed capital-call allocations bound to exact approved commitment revisions and accounting scope. |
 | `private_capital_commitments` | table | 7 | `tenant_id`, `company_id`, `fund_profile_id`, `ledger_book_id`, `commitment_id`, `revision` | 1 | 2 | Effective-dated source-backed investor commitment revisions; approval changes only retained review metadata. |
 | `private_capital_postings` | table | 17 | `tenant_id`, `company_id`, `fund_profile_id`, `ledger_book_id`, `posting_id` | 4 | 8 | Immutable issuance and funding receipts committed atomically with their ledger journals and source identities. |
+| `recurring_journal_state` | table | 6 | `store_id` | 0 | 1 | Retained recurring journal definitions, activations and occurrence claims (W10-JRNL-001). |
 | `tax_lot_mutations` | table | 25 | `mutation_record_id` | 4 | 5 | - |
 | `tax_lot_policies` | table | 16 | `policy_record_id` | 1 | 3 | - |
 | `tax_lots` | table | 27 | `tax_lot_record_id` | 4 | 8 | - |

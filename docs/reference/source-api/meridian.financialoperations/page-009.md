@@ -6,6 +6,77 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementMatchTier
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementMatchTier</code>. Kind: `enum`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1042](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1042).
+
+```csharp
+public enum StatementMatchTier
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Exact</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1044](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1044) |  |
+| <code>Tolerance</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1045](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1045) |  |
+| <code>Candidate</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1046](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1046) |  |
+| <code>Unmatched</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1047](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1047) |  |
+
+## StatementMatchTolerance
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementMatchTolerance</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1031](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1031).
+
+```csharp
+public sealed record StatementMatchTolerance(decimal? Quantity = null, decimal? Amount = null);
+```
+
+## StatementMatchVariance
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementMatchVariance</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1019](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1019).
+
+```csharp
+public sealed record StatementMatchVariance(decimal? Quantity = null, decimal? MarketValue = null, decimal? Amount = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal LargestAbsoluteAmount =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1024](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1024) |  |
+
+## StatementNormalizedEntities
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementNormalizedEntities</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:218](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L218).
+
+```csharp
+public sealed record StatementNormalizedEntities(string RunId, string ImportId, IReadOnlyList<StatementPosition> Positions, IReadOnlyList<StatementCashBalance> CashBalances, IReadOnlyList<StatementTransaction> Transactions, IReadOnlyList<StatementSecurityReference> Securities, IReadOnlyList<StatementSourceRowReference> SourceRows)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static StatementNormalizedEntities FromImport(string runId, NormalizedStatementImportResult import);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:227](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L227) |  |
+
+## StatementProfileVersion
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementProfileVersion</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:168](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L168).
+
+```csharp
+public sealed record StatementProfileVersion(string ProfileId, string Version);
+```
+
 ## StatementRawFileEvidenceReference
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementRawFileEvidenceReference</code>. Kind: `record`.

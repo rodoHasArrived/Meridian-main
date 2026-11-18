@@ -30,7 +30,7 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="16">
             <TextBlock Text="Accrue interest" FontSize="20" FontWeight="SemiBold" />
-            <TextBlock Text="Fixed-rate simple interest is calculated by the server from the approved legal terms, the loan-interest profile's approved revisions and the posted loan principal. No rate, principal or amount is entered here. A loan that compounds at each schedule period adds the accrued interest already posted at the period start, once every earlier day is accrued and posted. Fees and floating rates are not calculated here. The calculation and its evidence are shared with the browser workstation and nothing posts automatically."
+            <TextBlock Text="Interest is calculated by the server from the approved legal terms, the loan-interest profile's approved revisions and the posted loan principal. No rate, principal or amount is entered here. A floating rate uses the approved index fixing for each period (see the Rate fixings tab) plus the declared spread; a missing fixing refuses the window. A fixed-rate loan that compounds at each schedule period adds the accrued interest already posted at the period start, once every earlier day is accrued and posted; a floating rate is never compounded. Fees are not calculated here. The calculation and its evidence are shared with the browser workstation and nothing posts automatically."
                        Margin="0,5,0,12" TextWrapping="Wrap" />
             <WrapPanel>
                 <Button Content="Load books" Command="{Binding LoadChoicesCommand}" VerticalAlignment="Center" AutomationProperties.Name="Load accrual books" />
@@ -68,6 +68,7 @@
                     <DataGridTextColumn Header="Posted principal" Binding="{Binding Principal}" Width="180" />
                     <DataGridTextColumn Header="Compounded interest" Binding="{Binding CompoundedInterest}" Width="170" />
                     <DataGridTextColumn Header="Annual rate" Binding="{Binding AnnualRate}" Width="110" />
+                    <DataGridTextColumn Header="Fixing" Binding="{Binding Fixing}" Width="230" />
                     <DataGridTextColumn Header="Day count" Binding="{Binding DayCount}" Width="300" />
                     <DataGridTextColumn Header="Unrounded interest" Binding="{Binding UnroundedAmount}" Width="260" />
                     <DataGridTextColumn Header="Authority" Binding="{Binding Authority}" Width="420" />

@@ -111,6 +111,14 @@ loan principal profile of the same legal agreement and a window, previews the se
 interest with its slices and evidence, and creates the source-book draft bound to that preview's
 evidence digest. No rate, principal or amount is entered, and nothing is approved or posted there.
 
+An approved management-fee accounting profile exposes **Accrue fee** (rule `intercompany-fee-v1`):
+the operator selects only the window, previews the server's amount, slices (period, basis, declared
+fee, fraction, unrounded amount and per-annum day count), direction from the agreement's declared
+roles and proposed lines, then creates the source-book draft bound to that preview's evidence digest.
+Structured management-fee terms declare **Fixed fee covers** (`fixedFeeBasis`: each schedule period,
+or per annum with a declared day count); without it, and for percentage fees, nothing is calculated.
+Nothing posts; each side reviews its own books and the counterpart is proposed only after posting.
+
 Accounting's journal workbench exposes **Accrual schedules** with reviewed fixed amounts, cadence,
 dates, accounts, source evidence, authoritative period preview, occurrence generation and the
 retained journal queue. Account-owned and sleeve-owned books accept a reviewed fund-account
@@ -221,6 +229,20 @@ commands explain their existing blockers. Controlled-close receipt navigation re
 response's journal, book, profile and version even when the next request is edited; incomplete
 receipt identities provide no journal link. Active FX edits retain their as-of scope until save or
 explicit cancel, and pending saves retain the mounted editor.
+Floating-rate loan interest (rule `intercompany-accrual-v2`) uses the entity view's Rate fixings
+tab: operators load an index and inclusive date range, propose an exact decimal fraction with its
+source and justification, and a different person approves or rejects (with a reason) the exact
+pending value; read-only operators only inspect values and history. Only approved fixings set
+accrual rates; a missing fixing is never inferred and nothing is fetched from a market feed. The
+accrual preview's Fixing column shows each slice's index, fixing date, index rate and spread as exact
+text (`Fixed` otherwise), and structured Floating loan terms declare a whole-number fixing lag in
+business days before each period start. Focused coverage: `accounting-screen.entity-rate-fixings.test.tsx`,
+`accounting-screen.entity-interest-accrual.test.tsx` and `intercompany-agreement-editor.test.tsx`.
+
+The Balance confirmation tab (`accounting-screen.entity-confirmations.tsx`) loads one book's
+advisory confirmation summary, pins current balances and confirms, disputes or resolves only this
+book's side; focused coverage is `accounting-screen.entity-confirmations.test.tsx`. See
+[reciprocal balance confirmation](../../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
 
 The interest accrual preview shows a Compounded interest column for rule `intercompany-accrual-v3`; see
 [periodic compounding](../../../docs/domain/intercompany-agreements.md#periodic-compounding).

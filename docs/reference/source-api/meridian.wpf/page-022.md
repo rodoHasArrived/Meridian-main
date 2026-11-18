@@ -6,6 +6,56 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## KeyValueFactGridControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Tables.KeyValueFactGridControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:37](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L37).
+
+Displays read-only key-value facts using virtualized rows and columns.
+
+```csharp
+public sealed class KeyValueFactGridControl : DataGrid
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public KeyValueFactGridControl();</code> | [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:39](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L39) |  |
+
+## SearchFilterBarControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Tables.SearchFilterBarControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:30](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L30).
+
+Provides a content surface for table search and filter controls.
+
+```csharp
+public sealed class SearchFilterBarControl : ContentControl
+```
+
+## AuditTimelineEntry
+
+Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.AuditTimelineEntry</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs:8](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs#L8).
+
+Carries an audit event&#x27;s timestamp, actor, and message.
+
+```csharp
+public sealed class AuditTimelineEntry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DateTimeOffset Timestamp { get; init; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs:10](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs#L10) |  |
+| <code>public string Actor { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs:11](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs#L11) |  |
+| <code>public string Message { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs:12](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs#L12) |  |
+
 ## AuditTimelineViewModel
 
 Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.AuditTimelineViewModel</code>. Kind: `class`.

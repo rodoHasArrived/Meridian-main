@@ -114,6 +114,12 @@ public static class IntercompanyAccrualEvidenceGuard
     {
         if (string.IsNullOrWhiteSpace(draft.IntercompanyAccrualEvidenceJson))
             return false;
+        if (IntercompanyFeeAccrualEvidenceGuard.IsFeeEvidence(draft.IntercompanyAccrualEvidenceJson))
+        {
+            try
+            { return IntercompanyFeeAccrualEvidenceGuard.Deserialize(draft.IntercompanyAccrualEvidenceJson)?.DraftId == draft.JournalEntryId; }
+            catch (JsonException) { return false; }
+        }
         try
         {
             return JsonSerializer.Deserialize(draft.IntercompanyAccrualEvidenceJson,
@@ -143,6 +149,9 @@ public static class IntercompanyAccrualEvidenceGuard
             || !Sha256Digest.IsCanonical(draft.IntercompanyAccrualEvidenceDigest)
             || !Sha256Digest.FixedEquals(draft.IntercompanyAccrualEvidenceDigest, Digest(draft.IntercompanyAccrualEvidenceJson)))
             return "Accrual provenance is missing or differs from the retained server computation.";
+        // Fixed management fees share the accrual-evidence fields under their own rule and their own line checks.
+        if (IntercompanyFeeAccrualEvidenceGuard.IsFeeEvidence(draft.IntercompanyAccrualEvidenceJson))
+            return IntercompanyFeeAccrualEvidenceGuard.Validate(draft);
         IntercompanyAccrualEvidenceDto? evidence;
         try
         { evidence = JsonSerializer.Deserialize(draft.IntercompanyAccrualEvidenceJson, IntercompanyAccrualJsonContext.Default.IntercompanyAccrualEvidenceDto); }
@@ -156,6 +165,12 @@ public static class IntercompanyAccrualEvidenceGuard
             || evidence.Computation.Slices.Any(slice => slice.CompoundedInterest is not null)
                 != (evidence.RuleVersion == IntercompanyAccrualRules.CompoundingRuleVersion))
             return "Accrual provenance states compounding that differs from its retained interest facts.";
+        // v1 never carries a fixing; under v2 every pinned slice's rate is exactly its fixing plus the declared spread.
+        if (evidence.Computation.Slices.Any(slice => slice.Fixing is { } pin
+                ? evidence.RuleVersion != IntercompanyAccrualRules.FloatingRuleVersion || slice.AnnualRate != pin.IndexRate + pin.SpreadBps / 10_000m
+                : false)
+            || (evidence.RuleVersion == IntercompanyAccrualRules.FloatingRuleVersion && evidence.Computation.Slices.All(slice => slice.Fixing is null)))
+            return "Accrual provenance states a floating rate that differs from its pinned fixing.";
         // A reversal or rebook of a posted accrual is a different journal; its inverse is proved by the
         // correction workflow against the immutable original, not by restating the original computation.
         // A rebook carries the posted accrual's inverse plus its replacement, so it must net to zero on

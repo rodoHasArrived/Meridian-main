@@ -7,8 +7,9 @@ using Meridian.Contracts.SecurityMaster.Schedules;
 namespace Meridian.Application.FundStructure;
 
 /// <summary>
-/// Turns declared fixed-rate loan terms into an interest amount for a half-open accrual window.
-/// Pure: it never reads a ledger, fetches a fixing, creates a draft or authorizes a journal.
+/// Turns declared fixed- or floating-rate loan terms into an interest amount for a half-open accrual window.
+/// Pure: it never reads a ledger, fetches a fixing, creates a draft or authorizes a journal. Floating slices use
+/// only the approved fixings the server placed on the input (rule <see cref="IntercompanyAccrualRules.FloatingRuleVersion"/>).
 /// </summary>
 /// <remarks>
 /// Proration (<see cref="IntercompanyAccrualRules.RuleVersion"/>): every day accrues under the approved
@@ -26,13 +27,20 @@ public sealed class IntercompanyAccrualPreviewService(IBusinessDayCalendarSource
         ArgumentNullException.ThrowIfNull(input);
         var agreementId = input.Authority?.FirstOrDefault()?.LegalRevision?.AgreementId;
         var currency = input.Authority?.FirstOrDefault()?.LegalRevision?.Terms?.Currency;
-        // Any compounding day makes the whole window a v3 computation; an all-simple window stays exactly v1.
-        var rule = input.Authority?.Any(item => item.LegalRevision?.Terms?.Terms?.StructuredTerms?.Compounding is { } compounding
-            && compounding != IntercompanyCompoundingDto.Simple) == true
-            ? IntercompanyAccrualRules.CompoundingRuleVersion : IntercompanyAccrualRules.RuleVersion;
+        // Any compounding day makes the whole window a v3 computation and any floating day a v2 one; an all-simple,
+        // all-fixed window stays exactly v1. A day that is both floating and compounding is refused below.
+        var terms0 = (input.Authority ?? []).Select(item => item.LegalRevision?.Terms?.Terms?.StructuredTerms).ToArray();
+        var rule = terms0.Any(item => item?.Compounding is { } compounding && compounding != IntercompanyCompoundingDto.Simple)
+            ? IntercompanyAccrualRules.CompoundingRuleVersion
+            : terms0.Any(item => item?.RateBasis == IntercompanyRateBasisDto.Floating)
+                ? IntercompanyAccrualRules.FloatingRuleVersion : IntercompanyAccrualRules.RuleVersion;
         IntercompanyAccrualPreviewDto Unavailable(string reason) => new(IntercompanyAccrualRules.StatusUnavailable,
             rule, agreementId, currency, input.AccrualFrom, input.AccrualTo, null, null,
             ScheduleGenerator.KernelVersion, [], [], [reason]);
+        // One version that both floats and compounds is refused per day below with its own reason.
+        if (terms0.Any(item => item?.RateBasis != IntercompanyRateBasisDto.Floating && item?.Compounding is { } c && c != IntercompanyCompoundingDto.Simple)
+            && terms0.Any(item => item?.RateBasis == IntercompanyRateBasisDto.Floating))
+            return Unavailable("The window mixes floating-rate and compounding agreement versions; accrue each version's days in separate windows.");
 
         if (input.AccrualTo <= input.AccrualFrom)
             return Unavailable("The accrual window must be a nonempty [from, to) range.");
@@ -61,9 +69,14 @@ public sealed class IntercompanyAccrualPreviewService(IBusinessDayCalendarSource
             { IntercompanyAgreementRules.ValidateComplete(draft); }
             catch (IntercompanyAgreementValidationException error)
             { return Unavailable($"Agreement version {legal.AgreementVersion}: {error.Message}"); }
-            if (terms.RateBasis != IntercompanyRateBasisDto.Fixed || terms.FixedAnnualRate is not { } rate)
-                return Unavailable("Floating-rate loans need a governed fixing authority that this release does not provide.");
+            var floating = terms.RateBasis == IntercompanyRateBasisDto.Floating;
             var compounding = terms.Compounding != IntercompanyCompoundingDto.Simple;
+            if (floating && compounding)
+                return Unavailable($"Agreement version {legal.AgreementVersion} compounds a floating rate; floating-rate interest is calculated as simple interest only.");
+            if (floating && terms.FixingLagBusinessDays is null)
+                return Unavailable($"Agreement version {legal.AgreementVersion} declares a floating rate without a fixing lag; no fixing date is inferred.");
+            if (!floating && terms.FixedAnnualRate is null)
+                return Unavailable($"Agreement version {legal.AgreementVersion} declares no fixed annual rate.");
             if (compounding && !string.Equals(terms.Compounding.ToString(), terms.Schedule!.Frequency.ToString(), StringComparison.Ordinal))
                 return Unavailable($"Agreement version {legal.AgreementVersion} compounds {terms.Compounding} on a {terms.Schedule!.Frequency} schedule; this rule compounds only at each schedule period start.");
             var schedule = terms.Schedule!;
@@ -97,6 +110,15 @@ public sealed class IntercompanyAccrualPreviewService(IBusinessDayCalendarSource
                         return Unavailable(refusal);
                     compounded = balance;
                 }
+                IntercompanyAccrualFixingPinDto? pin = null;
+                var rate = terms.FixedAnnualRate ?? 0m;
+                if (floating)
+                {
+                    if (Fixing(input, terms, calendar, period.AccrualStart) is not { } found)
+                        return Unavailable(FixingRefusal(terms, calendar, period.AccrualStart));
+                    pin = found;
+                    rate = found.IndexRate + found.SpreadBps / 10_000m;
+                }
                 foreach (var principal in input.Principal!)
                 {
                     var start = Later(from, principal.From);
@@ -113,7 +135,7 @@ public sealed class IntercompanyAccrualPreviewService(IBusinessDayCalendarSource
                         legal.AgreementVersion, legal.PayloadHash, period.Sequence, principal.Principal, rate,
                         DayCountConventions.TermLabel(convention), fraction, (principal.Principal + (compounded ?? 0m)) * rate * fraction,
                         principal.EvidenceReference)
-                    { CompoundedInterest = compounded });
+                    { CompoundedInterest = compounded, Fixing = pin });
                 }
                 cursor = to;
             }
@@ -172,6 +194,35 @@ public sealed class IntercompanyAccrualPreviewService(IBusinessDayCalendarSource
             ? (0m, $"Posted accrued interest is negative on {periodStart:yyyy-MM-dd}; resolve it before compounding.")
             : (at.Principal, null);
     }
+
+    /// <summary>
+    /// The fixing observed the declared lag before the period's accrual start, on the schedule calendar. Exactly
+    /// that date's approved value is used: never the nearest, latest or a carried-forward rate.
+    /// </summary>
+    private static IntercompanyAccrualFixingPinDto? Fixing(IntercompanyAccrualComputationInput input, IntercompanyStructuredTermsDto terms,
+        IBusinessDayCalendar calendar, DateOnly periodStart)
+    {
+        if (FixingDate(terms, calendar, periodStart) is not { } date)
+            return null;
+        var index = terms.FloatingIndexReference!.Trim().ToUpperInvariant();
+        var matches = (input.Fixings ?? []).Where(item => item.FixingDate == date
+            && string.Equals(item.IndexReference.Trim(), index, StringComparison.OrdinalIgnoreCase)).ToArray();
+        return matches.Length == 1
+            ? new(matches[0].FixingId, index, date, matches[0].RateFraction, terms.SpreadBps!.Value, terms.FixingLagBusinessDays!.Value, matches[0].ValueDigest)
+            : null;
+    }
+
+    private static DateOnly? FixingDate(IntercompanyStructuredTermsDto terms, IBusinessDayCalendar calendar, DateOnly periodStart)
+    {
+        try
+        { return calendar.AddBusinessDays(periodStart, -terms.FixingLagBusinessDays!.Value); }
+        catch (InvalidOperationException) { return null; }
+    }
+
+    private static string FixingRefusal(IntercompanyStructuredTermsDto terms, IBusinessDayCalendar calendar, DateOnly periodStart)
+        => FixingDate(terms, calendar, periodStart) is { } date
+            ? $"No single approved {terms.FloatingIndexReference!.Trim().ToUpperInvariant()} fixing exists for {date:yyyy-MM-dd} (the period starting {periodStart:yyyy-MM-dd}); a missing fixing is never inferred."
+            : $"The fixing date for the period starting {periodStart:yyyy-MM-dd} cannot be derived on calendar {calendar.CalendarId}.";
 
     /// <summary>Segments must tile the window exactly, in order, with no gap, overlap or overhang.</summary>
     private static string? Coverage(IEnumerable<(DateOnly From, DateOnly To)>? segments, IntercompanyAccrualComputationInput input)

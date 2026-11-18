@@ -1413,6 +1413,7 @@ Meridian-main
 │   │   ├── 026-stored-curves-and-valuation-seam.md
 │   │   ├── 027-single-economic-model-consolidation.md
 │   │   ├── 028-governed-intercompany-interest-accrual.md
+│   │   ├── 029-governed-intercompany-fixed-management-fees.md
 │   │   ├── 030-intercompany-interest-compounding.md
 │   │   ├── _template.md
 │   │   └── README.md
@@ -1885,6 +1886,7 @@ Meridian-main
 │   │   │   │   ├── fund-governance-contracts-page-01.md
 │   │   │   │   ├── fund-governance-contracts-page-02.md
 │   │   │   │   ├── fund-governance-contracts-page-03.md
+│   │   │   │   ├── fund-governance-contracts-page-04.md
 │   │   │   │   ├── fund-governance-contracts.md
 │   │   │   │   ├── identity-access-contracts.md
 │   │   │   │   ├── ledger-contracts-page-01.md
@@ -1916,6 +1918,7 @@ Meridian-main
 │   │   │   │   ├── contracts-fund-governance-contracts-page-01.mmd
 │   │   │   │   ├── contracts-fund-governance-contracts-page-02.mmd
 │   │   │   │   ├── contracts-fund-governance-contracts-page-03.mmd
+│   │   │   │   ├── contracts-fund-governance-contracts-page-04.mmd
 │   │   │   │   ├── contracts-identity-access-contracts.mmd
 │   │   │   │   ├── contracts-ledger-contracts-page-01.mmd
 │   │   │   │   ├── contracts-ledger-contracts-page-02.mmd
@@ -2173,7 +2176,8 @@ Meridian-main
 │   │   │   │   ├── page-074.md
 │   │   │   │   ├── page-075.md
 │   │   │   │   ├── page-076.md
-│   │   │   │   └── page-077.md
+│   │   │   │   ├── page-077.md
+│   │   │   │   └── page-078.md
 │   │   │   ├── meridian.core
 │   │   │   │   ├── page-001.md
 │   │   │   │   ├── page-002.md
@@ -5313,6 +5317,9 @@ Meridian-main
 │   │   │   ├── IntercompanyAgreementService.Reads.cs
 │   │   │   ├── IntercompanyAgreementTimeline.cs
 │   │   │   ├── IntercompanyExternalReviewValidation.cs
+│   │   │   ├── IntercompanyFeeAccrualPreviewService.cs
+│   │   │   ├── IntercompanyRateFixingRules.cs
+│   │   │   ├── IntercompanyRateFixingService.cs
 │   │   │   ├── IntercompanyStructuredTermsPreviewService.cs
 │   │   │   ├── LifecycleLedgerPostingAuthority.cs
 │   │   │   ├── OwnershipGraphValidation.cs
@@ -6006,6 +6013,8 @@ Meridian-main
 │   │   │   ├── IntercompanyAgreementDtos.cs
 │   │   │   ├── IntercompanyAgreementJournalLineDtos.cs
 │   │   │   ├── IntercompanyExternalReviewDtos.cs
+│   │   │   ├── IntercompanyFeeAccrualDtos.cs
+│   │   │   ├── IntercompanyRateFixingDtos.cs
 │   │   │   ├── IntercompanyStructuredTermsDtos.cs
 │   │   │   ├── IntercompanyStructuredTermsJsonContext.cs
 │   │   │   ├── LedgerGroupId.cs
@@ -6045,7 +6054,9 @@ Meridian-main
 │   │   │   ├── IConsolidationBookPolicyValidator.cs
 │   │   │   ├── IntercompanyAccountDtos.cs
 │   │   │   ├── IntercompanyAccrualEvidenceDtos.cs
+│   │   │   ├── IntercompanyBalanceConfirmationDtos.cs
 │   │   │   ├── IntercompanyBalanceScheduleDtos.cs
+│   │   │   ├── IntercompanyFeeAccrualEvidenceDtos.cs
 │   │   │   ├── IntercompanyObligationMonitorDtos.cs
 │   │   │   ├── IntercompanyProposalDtos.cs
 │   │   │   ├── LedgerAccountingArrangementDimensions.cs
@@ -6875,13 +6886,19 @@ Meridian-main
 │   │   │   ├── FundAdministrationControlService.cs
 │   │   │   ├── FundAdministrationModels.cs
 │   │   │   ├── FundAdministrationRegisters.cs
+│   │   │   ├── PostgresRecurringJournalStore.cs
+│   │   │   ├── RecurringJournalDocumentRules.cs
+│   │   │   ├── RecurringJournalDocumentSession.cs
 │   │   │   └── RecurringJournalState.cs
 │   │   ├── Intercompany
 │   │   │   ├── FundStructureIntercompanyAccountingArrangementScopeAuthority.cs
 │   │   │   ├── IntercompanyAccountingArrangementService.cs
 │   │   │   ├── IntercompanyAccrualSourceBuilder.cs
+│   │   │   ├── IntercompanyBalanceConfirmationRules.cs
+│   │   │   ├── IntercompanyBalanceConfirmationService.cs
 │   │   │   ├── IntercompanyBalanceScheduleService.cs
 │   │   │   ├── IntercompanyCounterpartReversalBuilder.cs
+│   │   │   ├── IntercompanyFeeAccrualSourceBuilder.cs
 │   │   │   ├── IntercompanyJournalFamily.cs
 │   │   │   ├── IntercompanyLedgerPostingAuthority.cs
 │   │   │   ├── IntercompanyObligationMonitorService.cs
@@ -8166,11 +8183,13 @@ Meridian-main
 │   │   │   │   ├── 005_tenant_backfill_receipts.sql
 │   │   │   │   ├── 006_intercompany_agreements.sql
 │   │   │   │   ├── 007_entity_lifecycle.sql
-│   │   │   │   └── 008_intercompany_accounting_arrangements.sql
+│   │   │   │   ├── 008_intercompany_accounting_arrangements.sql
+│   │   │   │   └── 009_intercompany_rate_fixings.sql
 │   │   │   ├── EntityLifecycleLeaseGate.cs
 │   │   │   ├── EntityLifecycleStoreRules.cs
 │   │   │   ├── FileEntityLifecycleStore.cs
 │   │   │   ├── FileIntercompanyAccountingArrangementStore.cs
+│   │   │   ├── FileIntercompanyRateFixingStore.cs
 │   │   │   ├── FundStructureMigrationRunner.cs
 │   │   │   ├── FundStructureStoreOptions.cs
 │   │   │   ├── IEntityLifecycleStore.cs
@@ -8184,6 +8203,7 @@ Meridian-main
 │   │   │   ├── InMemoryIntercompanyAccountingArrangementStore.cs
 │   │   │   ├── IntercompanyAccountingArrangementAuthorityLease.cs
 │   │   │   ├── IntercompanyAccountingArrangementStoreRules.cs
+│   │   │   ├── IntercompanyRateFixingStoreRules.cs
 │   │   │   ├── JsonFileFundStructureStateStore.cs
 │   │   │   ├── PostgresEntityLifecycleStore.cs
 │   │   │   ├── PostgresFundStructureStore.Consolidation.cs
@@ -8191,7 +8211,8 @@ Meridian-main
 │   │   │   ├── PostgresFundStructureTenantBackfillStore.cs
 │   │   │   ├── PostgresIntercompanyAccountingArrangementStore.cs
 │   │   │   ├── PostgresIntercompanyAgreementStore.cs
-│   │   │   └── PostgresIntercompanyAgreementStore.Persistence.cs
+│   │   │   ├── PostgresIntercompanyAgreementStore.Persistence.cs
+│   │   │   └── PostgresIntercompanyRateFixingStore.cs
 │   │   ├── Integrations
 │   │   │   ├── FileProviderIntegrationManifestStore.cs
 │   │   │   ├── FileProviderIntegrationManifestStore.IdentityDecisions.cs
@@ -8268,7 +8289,9 @@ Meridian-main
 │   │   │   │   ├── V_ledger_069__automated_posting_grants.sql
 │   │   │   │   ├── V_ledger_070__automatic_policy_snapshot.sql
 │   │   │   │   ├── V_ledger_071__fee_economic_identity.sql
-│   │   │   │   └── V_ledger_072__onboarding_workspaces.sql
+│   │   │   │   ├── V_ledger_072__onboarding_workspaces.sql
+│   │   │   │   ├── V_ledger_073__intercompany_balance_confirmations.sql
+│   │   │   │   └── V_ledger_074__recurring_journal_state.sql
 │   │   │   ├── AccountingPostingCommandFingerprintJsonContext.cs
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── AtomicTaxLotJournalFingerprint.cs
@@ -8285,6 +8308,7 @@ Meridian-main
 │   │   │   ├── DurableAutomatedJournalPoster.cs
 │   │   │   ├── FileBondIncomePreparationEvidenceStore.cs
 │   │   │   ├── FileIntercompanyAccountBindingStore.cs
+│   │   │   ├── FileIntercompanyBalanceConfirmationStore.cs
 │   │   │   ├── FileLegacyIntercompanyAttributionStore.cs
 │   │   │   ├── GeneralLedgerExportBuilder.cs
 │   │   │   ├── GeneralLedgerSymbolPnlBuilder.cs
@@ -8324,6 +8348,7 @@ Meridian-main
 │   │   │   ├── PostgresAccountingConfigurationStore.cs
 │   │   │   ├── PostgresFundProfileTenancyRegistry.cs
 │   │   │   ├── PostgresIntercompanyAccountBindingStore.cs
+│   │   │   ├── PostgresIntercompanyBalanceConfirmationStore.cs
 │   │   │   ├── PostgresIntercompanyProposalStore.cs
 │   │   │   ├── PostgresLedgerBookService.cs
 │   │   │   ├── PostgresLedgerCurrencyBackfill.cs
@@ -9914,6 +9939,8 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.entity-agreement-editor.tsx
 │   │   │   │   │   ├── accounting-screen.entity-agreements.tsx
 │   │   │   │   │   ├── accounting-screen.entity-book-controls.tsx
+│   │   │   │   │   ├── accounting-screen.entity-confirmations.test.tsx
+│   │   │   │   │   ├── accounting-screen.entity-confirmations.tsx
 │   │   │   │   │   ├── accounting-screen.entity-counterpart-repricing.tsx
 │   │   │   │   │   ├── accounting-screen.entity-fx-policy.tsx
 │   │   │   │   │   ├── accounting-screen.entity-fx-rates.tsx
@@ -9921,6 +9948,8 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.entity-interest-accrual.test.tsx
 │   │   │   │   │   ├── accounting-screen.entity-interest-accrual.tsx
 │   │   │   │   │   ├── accounting-screen.entity-legacy-coverage.tsx
+│   │   │   │   │   ├── accounting-screen.entity-management-fee.test.tsx
+│   │   │   │   │   ├── accounting-screen.entity-management-fee.tsx
 │   │   │   │   │   ├── accounting-screen.entity-obligations.test.tsx
 │   │   │   │   │   ├── accounting-screen.entity-obligations.tsx
 │   │   │   │   │   ├── accounting-screen.entity-operations.shared.tsx
@@ -9929,6 +9958,8 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.entity-party-accounts.tsx
 │   │   │   │   │   ├── accounting-screen.entity-perimeter-transition.tsx
 │   │   │   │   │   ├── accounting-screen.entity-proposals.tsx
+│   │   │   │   │   ├── accounting-screen.entity-rate-fixings.test.tsx
+│   │   │   │   │   ├── accounting-screen.entity-rate-fixings.tsx
 │   │   │   │   │   ├── accounting-screen.entity-timeline.tsx
 │   │   │   │   │   ├── accounting-screen.evidence-timeline.ts
 │   │   │   │   │   ├── accounting-screen.external-gl-panel.tsx
@@ -10469,7 +10500,10 @@ Meridian-main
 │   │   │   │   │   ├── instrument-accounting.test.ts
 │   │   │   │   │   ├── instrument-accounting.ts
 │   │   │   │   │   ├── intercompany-agreements.ts
+│   │   │   │   │   ├── intercompany-confirmations.ts
+│   │   │   │   │   ├── intercompany-fees.ts
 │   │   │   │   │   ├── intercompany-obligations.ts
+│   │   │   │   │   ├── intercompany-rate-fixings.ts
 │   │   │   │   │   ├── jest-axe.d.ts
 │   │   │   │   │   ├── ledger-amount-proof.ts
 │   │   │   │   │   ├── ledger-tax-results.ts
@@ -10585,8 +10619,11 @@ Meridian-main
 │   │   │   │   ├── IntercompanyAgreementWorkspace.cs
 │   │   │   │   ├── IntercompanyAgreementWorkspace.LegacyCoverage.cs
 │   │   │   │   ├── IntercompanyAgreementWorkspace.StructuredTerms.cs
+│   │   │   │   ├── IntercompanyBalanceConfirmationWorkspace.cs
 │   │   │   │   ├── IntercompanyCounterpartQueueWorkspace.cs
 │   │   │   │   ├── IntercompanyInterestAccrualWorkspace.cs
+│   │   │   │   ├── IntercompanyManagementFeeWorkspace.cs
+│   │   │   │   ├── IntercompanyRateFixingWorkspace.cs
 │   │   │   │   ├── OnboardingShadowWorkspace.cs
 │   │   │   │   ├── PostedLedgerProjection.cs
 │   │   │   │   ├── WorkstationAccountingCloseApiClient.cs
@@ -10594,10 +10631,13 @@ Meridian-main
 │   │   │   │   ├── WorkstationEntityConsolidationApiClient.Lifecycle.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.Accruals.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.Choices.cs
+│   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.Confirmations.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.cs
+│   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.Fees.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.LegacyCoverage.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.Obligations.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.Proposals.cs
+│   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.RateFixings.cs
 │   │   │   │   ├── WorkstationManualJournalApiClient.cs
 │   │   │   │   └── WorkstationOnboardingApiClient.cs
 │   │   │   ├── DataQuality
@@ -10804,9 +10844,11 @@ Meridian-main
 │   │   │   ├── InitialAccountBootstrapEndpoints.cs
 │   │   │   ├── IntercompanyAccountingArrangementEndpoints.cs
 │   │   │   ├── IntercompanyAgreementEndpoints.cs
+│   │   │   ├── IntercompanyBalanceConfirmationEndpoints.cs
 │   │   │   ├── IntercompanyDecimalJsonConverter.cs
 │   │   │   ├── IntercompanyObligationEndpoints.cs
 │   │   │   ├── IntercompanyOperationsEndpoints.cs
+│   │   │   ├── IntercompanyRateFixingEndpoints.cs
 │   │   │   ├── LeanEndpoints.cs
 │   │   │   ├── LedgerEndpoints.AccountingConfiguration.cs
 │   │   │   ├── LedgerEndpoints.AccountOversight.cs
@@ -11160,6 +11202,7 @@ Meridian-main
 │   │   │   ├── IntercompanyAccrualDraftService.cs
 │   │   │   ├── IntercompanyAgreementAuthorities.cs
 │   │   │   ├── IntercompanyAgreementJournalProjection.cs
+│   │   │   ├── IntercompanyFeeAccrualDraftService.cs
 │   │   │   ├── IntercompanyP1P2ServiceRegistration.cs
 │   │   │   ├── IntercompanyProposalDeliveryService.cs
 │   │   │   ├── InvestmentAccountingTransactionLabService.cs
@@ -12070,10 +12113,16 @@ Meridian-main
 │   │   │   ├── InstitutionalShellFrameControl.cs
 │   │   │   ├── IntercompanyAgreementsControl.xaml
 │   │   │   ├── IntercompanyAgreementsControl.xaml.cs
+│   │   │   ├── IntercompanyBalanceConfirmationControl.xaml
+│   │   │   ├── IntercompanyBalanceConfirmationControl.xaml.cs
 │   │   │   ├── IntercompanyCounterpartProposalsControl.xaml
 │   │   │   ├── IntercompanyCounterpartProposalsControl.xaml.cs
 │   │   │   ├── IntercompanyInterestAccrualControl.xaml
 │   │   │   ├── IntercompanyInterestAccrualControl.xaml.cs
+│   │   │   ├── IntercompanyManagementFeeControl.xaml
+│   │   │   ├── IntercompanyManagementFeeControl.xaml.cs
+│   │   │   ├── IntercompanyRateFixingsControl.xaml
+│   │   │   ├── IntercompanyRateFixingsControl.xaml.cs
 │   │   │   ├── KeyboardShortcutsPage.xaml
 │   │   │   ├── KeyboardShortcutsPage.xaml.cs
 │   │   │   ├── LeanIntegrationPage.xaml
@@ -12415,6 +12464,7 @@ Meridian-main
 │   │   ├── CorporateActionGoldenAdjustmentTests.cs
 │   │   ├── CorporateActionKnownDefectTests.cs
 │   │   ├── CorporateActionSeriesInvariants.cs
+│   │   ├── DelistingMonitorTests.cs
 │   │   ├── FillModelExpansionTests.cs
 │   │   ├── FillModelTests.cs
 │   │   ├── GlobalUsings.cs
@@ -12582,6 +12632,9 @@ Meridian-main
 │   │   ├── IntercompanyAgreementServiceTests.ExternalReview.cs
 │   │   ├── IntercompanyAgreementServiceTests.Lifecycle.cs
 │   │   ├── IntercompanyCompoundingAccrualPreviewTests.cs
+│   │   ├── IntercompanyFeeAccrualPreviewServiceTests.cs
+│   │   ├── IntercompanyFloatingAccrualPreviewTests.cs
+│   │   ├── IntercompanyRateFixingServiceTests.cs
 │   │   ├── IntercompanyStructuredDecimalTests.cs
 │   │   ├── IntercompanyStructuredTermsTests.cs
 │   │   ├── LedgerGroupingRulesTests.cs
@@ -13323,9 +13376,12 @@ Meridian-main
 │   │   │   │   └── LegacyIntercompanyAttributionTests.cs
 │   │   │   ├── Intercompany
 │   │   │   │   ├── IntercompanyAccrualSourceBuilderTests.cs
+│   │   │   │   ├── IntercompanyBalanceConfirmationRulesTests.cs
+│   │   │   │   ├── IntercompanyBalanceConfirmationServiceTests.cs
 │   │   │   │   ├── IntercompanyBalanceScheduleTests.cs
 │   │   │   │   ├── IntercompanyCompoundingSourceTests.cs
 │   │   │   │   ├── IntercompanyCounterpartReversalBuilderTests.cs
+│   │   │   │   ├── IntercompanyFeeAccrualSourceBuilderTests.cs
 │   │   │   │   ├── IntercompanyObligationExpiryChronologyTests.cs
 │   │   │   │   ├── IntercompanyObligationMonitorServiceTests.cs
 │   │   │   │   └── IntercompanyProposalDraftBuilderTests.cs
@@ -13868,7 +13924,8 @@ Meridian-main
 │   │   │   ├── PluginLoaderServiceTests.cs
 │   │   │   ├── ProviderIdentityTests.cs
 │   │   │   ├── ProviderModuleLoaderTests.cs
-│   │   │   └── ProviderModuleRegistrationTests.cs
+│   │   │   ├── ProviderModuleRegistrationTests.cs
+│   │   │   └── ProviderSdkContractTests.cs
 │   │   ├── Reconciliation
 │   │   │   ├── Connectors
 │   │   │   │   ├── AlpacaActivityStatementConnectorTests.cs
@@ -14279,6 +14336,7 @@ Meridian-main
 │   │   │   ├── FundStructure
 │   │   │   │   ├── EntityLifecyclePostgresTests.cs
 │   │   │   │   ├── IntercompanyAccountingArrangementPostgresTests.cs
+│   │   │   │   ├── IntercompanyRateFixingStoreTests.cs
 │   │   │   │   └── PostgresFundStructureStoreTests.cs
 │   │   │   ├── Integrations
 │   │   │   │   ├── FileProviderIntegrationManifestStoreTests.cs
@@ -14424,6 +14482,7 @@ Meridian-main
 │   │   │   ├── IntercompanyAccrualPostAndDeliverPostgresTests.cs
 │   │   │   ├── IntercompanyAgreementPostingGuardTests.cs
 │   │   │   ├── IntercompanyAgreementPostingPostgresTests.cs
+│   │   │   ├── IntercompanyBalanceConfirmationStoreTests.cs
 │   │   │   ├── IntercompanyProposalPostgresTests.cs
 │   │   │   ├── IntercompanyProposalPostgresTests.Restart.cs
 │   │   │   ├── JsonFileIBDataResultStoreTests.cs
@@ -14489,6 +14548,7 @@ Meridian-main
 │   │   │   ├── QuotaEnforcementServiceTests.cs
 │   │   │   ├── RecurringJournalCalculationPostgresTests.cs
 │   │   │   ├── RecurringJournalPeriodAuthorityPostgresTests.cs
+│   │   │   ├── RecurringJournalPostgresStoreTests.cs
 │   │   │   ├── ReportingOperationalStoreTests.cs
 │   │   │   ├── RetainedDataQueryStoreTests.cs
 │   │   │   ├── SecurityEntitlementInventoryPostgresTests.cs
@@ -14636,6 +14696,7 @@ Meridian-main
 │   │   │   ├── ControllableReportingReleaseConsistencyGate.cs
 │   │   │   ├── ImmediateReportingReleaseConsistencyGate.cs
 │   │   │   ├── IntercompanyArrangementTestData.cs
+│   │   │   ├── IntercompanyBalanceConfirmationFixture.cs
 │   │   │   ├── PostgresTestConnectionResolverTests.cs
 │   │   │   ├── PostgresTestSchemaTests.cs
 │   │   │   └── ProviderCatalogTestLease.cs
@@ -14670,6 +14731,7 @@ Meridian-main
 │   │   │   ├── AccountingConfigurationServiceTests.ConsolidationChartRecovery.cs
 │   │   │   ├── AccountingConfigurationServiceTests.cs
 │   │   │   ├── AccountingConfigurationServiceTests.IntercompanyAccrual.cs
+│   │   │   ├── AccountingConfigurationServiceTests.IntercompanyFee.cs
 │   │   │   ├── AccountingConfigurationServiceTests.ManualAuditRecovery.cs
 │   │   │   ├── AccountingConfigurationServiceTests.ManualRecoveryArchive.cs
 │   │   │   ├── AccountingConfigurationServiceTests.ManualRecoveryScope.cs
@@ -14785,13 +14847,16 @@ Meridian-main
 │   │   │   ├── InMemoryFundStructureTenancyGuardTests.cs
 │   │   │   ├── IntercompanyAccrualDraftServiceTests.Compounding.cs
 │   │   │   ├── IntercompanyAccrualDraftServiceTests.cs
+│   │   │   ├── IntercompanyAccrualDraftServiceTests.Floating.cs
 │   │   │   ├── IntercompanyAgreementAuthorityTests.cs
 │   │   │   ├── IntercompanyAgreementEndpointTests.cs
 │   │   │   ├── IntercompanyAgreementEvidenceAuthorityTests.cs
 │   │   │   ├── IntercompanyAgreementJournalProjectionTests.cs
 │   │   │   ├── IntercompanyAgreementReviewPermissionTests.cs
+│   │   │   ├── IntercompanyBalanceConfirmationEndpointTests.cs
 │   │   │   ├── IntercompanyCloseAdvisoryAuthorizationTests.cs
 │   │   │   ├── IntercompanyCloseAdvisoryMembershipTests.cs
+│   │   │   ├── IntercompanyFeeAccrualDraftServiceTests.cs
 │   │   │   ├── IntercompanyObligationEndpointTests.cs
 │   │   │   ├── IntercompanyProposalBreakAgingTests.cs
 │   │   │   ├── IntercompanyProposalDeliveryRetryTests.cs
@@ -14799,6 +14864,7 @@ Meridian-main
 │   │   │   ├── IntercompanyProposalMissingArrangementTests.cs
 │   │   │   ├── IntercompanyProposalResolutionTests.cs
 │   │   │   ├── IntercompanyProposalReversalDeliveryTests.cs
+│   │   │   ├── IntercompanyRateFixingEndpointTests.cs
 │   │   │   ├── InvestmentAccountingTransactionLabServiceTests.cs
 │   │   │   ├── LedgerAccountingCompletenessReadServiceTests.cs
 │   │   │   ├── LedgerAccountingSharedPaperScopeTests.cs
@@ -15144,10 +15210,13 @@ Meridian-main
 │   │   │   ├── IntegrityEventsServiceTests.cs
 │   │   │   ├── IntercompanyAgreementWorkspaceTests.cs
 │   │   │   ├── IntercompanyAgreementWorkspaceTests.Structured.cs
+│   │   │   ├── IntercompanyBalanceConfirmationWorkspaceTests.cs
 │   │   │   ├── IntercompanyBookChoiceTests.cs
 │   │   │   ├── IntercompanyCompoundingSliceRowTests.cs
 │   │   │   ├── IntercompanyCounterpartQueueWorkspaceTests.cs
 │   │   │   ├── IntercompanyInterestAccrualWorkspaceTests.cs
+│   │   │   ├── IntercompanyManagementFeeWorkspaceTests.cs
+│   │   │   ├── IntercompanyRateFixingWorkspaceTests.cs
 │   │   │   ├── LeanIntegrationServiceTests.cs
 │   │   │   ├── LiveDataServiceTests.cs
 │   │   │   ├── LoggingServiceBaseTests.cs
@@ -15182,6 +15251,7 @@ Meridian-main
 │   │   │   ├── WorkstationEntityConsolidationApiClientTests.cs
 │   │   │   ├── WorkstationIntercompanyAgreementApiClientTests.Accruals.cs
 │   │   │   ├── WorkstationIntercompanyAgreementApiClientTests.Choices.cs
+│   │   │   ├── WorkstationIntercompanyAgreementApiClientTests.Confirmations.cs
 │   │   │   ├── WorkstationIntercompanyAgreementApiClientTests.cs
 │   │   │   ├── WorkstationIntercompanyAgreementApiClientTests.Obligations.cs
 │   │   │   ├── WorkstationIntercompanyAgreementApiClientTests.Proposals.cs
@@ -15452,10 +15522,13 @@ Meridian-main
 │   │   │   ├── FullNavigationSweepTests.cs
 │   │   │   ├── FundProfileSelectionPageSmokeTests.cs
 │   │   │   ├── HelpPageSmokeTests.cs
+│   │   │   ├── IntercompanyNativeControlSmokeTests.BalanceConfirmation.cs
 │   │   │   ├── IntercompanyNativeControlSmokeTests.CounterpartProposals.cs
 │   │   │   ├── IntercompanyNativeControlSmokeTests.cs
 │   │   │   ├── IntercompanyNativeControlSmokeTests.Fixtures.cs
 │   │   │   ├── IntercompanyNativeControlSmokeTests.InterestAccrual.cs
+│   │   │   ├── IntercompanyNativeControlSmokeTests.ManagementFee.cs
+│   │   │   ├── IntercompanyNativeControlSmokeTests.RateFixings.cs
 │   │   │   ├── LifecycleControlPageSmokeTests.cs
 │   │   │   ├── MainPageLaunchNavigationTests.cs
 │   │   │   ├── MainPageNormalNavigationTests.cs

@@ -1,5 +1,7 @@
 classDiagram
     %% fund-governance-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_FundStructure_FundStructureContractsJsonContext["FundStructureContractsJsonContext"] {
+    }
     class Meridian_Contracts_FundStructure_FundStructureGraphDto["FundStructureGraphDto"] {
         +IReadOnlyList~FundStructureAssignmentDto~ Assignments
         +IReadOnlyList~FundStructureNodeDto~ Nodes
@@ -295,6 +297,10 @@ classDiagram
     }
     class Meridian_Contracts_FundStructure_IIntercompanyAccrualPreviewService["IIntercompanyAccrualPreviewService"] {
     }
+    class Meridian_Contracts_FundStructure_IIntercompanyFeeAccrualPreviewService["IIntercompanyFeeAccrualPreviewService"] {
+    }
+    class Meridian_Contracts_FundStructure_IIntercompanyRateFixingStore["IIntercompanyRateFixingStore"] {
+    }
     class Meridian_Contracts_FundStructure_IIntercompanyStructuredTermsPreviewService["IIntercompanyStructuredTermsPreviewService"] {
     }
     class Meridian_Contracts_FundStructure_ILegalEntityReadAuthorityLease["ILegalEntityReadAuthorityLease"] {
@@ -387,8 +393,18 @@ classDiagram
         +IReadOnlyList~IntercompanyAccrualPrincipalSegmentDto~ AccruedInterest
         +IReadOnlyList~IntercompanyAccrualAuthoritySegment~ Authority
         +DateOnly? FirstPrincipalDate
+        +IReadOnlyList~IntercompanyApprovedRateFixingDto~ Fixings
         +IReadOnlyList~IntercompanyAccrualWindowDto~ PostedAccrualWindows
         +IReadOnlyList~IntercompanyAccrualPrincipalSegmentDto~ Principal
+    }
+    class Meridian_Contracts_FundStructure_IntercompanyAccrualFixingPinDto["IntercompanyAccrualFixingPinDto"] {
+        +DateOnly FixingDate
+        +Guid FixingId
+        +int FixingLagBusinessDays
+        +decimal IndexRate
+        +string IndexReference
+        +decimal SpreadBps
+        +string ValueDigest
     }
     class Meridian_Contracts_FundStructure_IntercompanyAccrualPreviewDto["IntercompanyAccrualPreviewDto"] {
         +DateOnly AccrualFrom
@@ -419,12 +435,12 @@ classDiagram
         +decimal AnnualRate
         +decimal? CompoundedInterest
         +string DayCount
+        +IntercompanyAccrualFixingPinDto? Fixing
         +DateOnly From
         +decimal Principal
         +string PrincipalEvidenceReference
         +int SchedulePeriodSequence
         +int Sequence
-        +DateOnly To
     }
     class Meridian_Contracts_FundStructure_IntercompanyAccrualWindowDto["IntercompanyAccrualWindowDto"] {
         +DateOnly From
@@ -576,32 +592,6 @@ classDiagram
         +int PageSize
         +IntercompanyAgreementStatusDto? Status
     }
-    class Meridian_Contracts_FundStructure_IntercompanyAgreementReviewIntegrity["IntercompanyAgreementReviewIntegrity"] {
-    }
-    class Meridian_Contracts_FundStructure_IntercompanyAgreementReviewPayloadDto["IntercompanyAgreementReviewPayloadDto"] {
-        +Guid AgreementId
-        +int? BaseAgreementVersion
-        +IntercompanyAgreementDraftDto Draft
-        +int? PredecessorAgreementVersion
-        +Guid ProposalId
-        +string? Rationale
-    }
-    class Meridian_Contracts_FundStructure_IntercompanyAgreementRevisionDto["IntercompanyAgreementRevisionDto"] {
-        +IntercompanyAgreementActionDto Action
-        +Guid AgreementId
-        +int AgreementVersion
-        +DateTimeOffset ApprovedAtUtc
-        +string Approver
-        +IReadOnlyList~string~ Authors
-        +int? BaseAgreementVersion
-        +IntercompanyExternalReviewAttestationDto? ExternalReview
-        +string PayloadHash
-        +int? PredecessorAgreementVersion
-        +Guid ProposalId
-        +string Rationale
-    }
-    class Meridian_Contracts_FundStructure_IntercompanyAgreementStatusDto["IntercompanyAgreementStatusDto"] {
-    }
     Meridian_Contracts_FundStructure_FundStructureGraphDto --> Meridian_Contracts_FundStructure_FundStructureNodeDto
     Meridian_Contracts_FundStructure_FundStructureNodeDto --> Meridian_Contracts_FundStructure_FundStructureNodeKindDto
     Meridian_Contracts_FundStructure_FundStructureQuery --> Meridian_Contracts_FundStructure_FundStructureNodeKindDto
@@ -639,12 +629,12 @@ classDiagram
     Meridian_Contracts_FundStructure_IntercompanyAccountingArrangementEventDto --> Meridian_Contracts_FundStructure_IntercompanyAccountingArrangementActionDto
     Meridian_Contracts_FundStructure_IntercompanyAccountingArrangementEventDto --> Meridian_Contracts_FundStructure_IntercompanyAccountingArrangementDto
     Meridian_Contracts_FundStructure_IntercompanyAccountingArrangementHistoryDto --> Meridian_Contracts_FundStructure_IntercompanyAccountingArrangementEventDto
-    Meridian_Contracts_FundStructure_IntercompanyAccrualAuthoritySegment --> Meridian_Contracts_FundStructure_IntercompanyAgreementRevisionDto
     Meridian_Contracts_FundStructure_IntercompanyAccrualComputationInput --> Meridian_Contracts_FundStructure_IntercompanyAccrualAuthoritySegment
     Meridian_Contracts_FundStructure_IntercompanyAccrualComputationInput --> Meridian_Contracts_FundStructure_IntercompanyAccrualPrincipalSegmentDto
     Meridian_Contracts_FundStructure_IntercompanyAccrualComputationInput --> Meridian_Contracts_FundStructure_IntercompanyAccrualWindowDto
     Meridian_Contracts_FundStructure_IntercompanyAccrualPreviewDto --> Meridian_Contracts_FundStructure_IntercompanyAccrualCalendarPinDto
     Meridian_Contracts_FundStructure_IntercompanyAccrualPreviewDto --> Meridian_Contracts_FundStructure_IntercompanyAccrualSliceDto
+    Meridian_Contracts_FundStructure_IntercompanyAccrualSliceDto --> Meridian_Contracts_FundStructure_IntercompanyAccrualFixingPinDto
     Meridian_Contracts_FundStructure_IntercompanyAgreementAuditDto --> Meridian_Contracts_FundStructure_IntercompanyAgreementDraftDto
     Meridian_Contracts_FundStructure_IntercompanyAgreementCommandDto --> Meridian_Contracts_FundStructure_IntercompanyAgreementDraftDto
     Meridian_Contracts_FundStructure_IntercompanyAgreementCommandReceiptDto --> Meridian_Contracts_FundStructure_IntercompanyAgreementDetailDto
@@ -653,8 +643,6 @@ classDiagram
     Meridian_Contracts_FundStructure_IntercompanyAgreementDetailDto --> Meridian_Contracts_FundStructure_IntercompanyAgreementAuditDto
     Meridian_Contracts_FundStructure_IntercompanyAgreementDetailDto --> Meridian_Contracts_FundStructure_IntercompanyAgreementCapabilitiesDto
     Meridian_Contracts_FundStructure_IntercompanyAgreementDetailDto --> Meridian_Contracts_FundStructure_IntercompanyAgreementProposalDto
-    Meridian_Contracts_FundStructure_IntercompanyAgreementDetailDto --> Meridian_Contracts_FundStructure_IntercompanyAgreementRevisionDto
-    Meridian_Contracts_FundStructure_IntercompanyAgreementDetailDto --> Meridian_Contracts_FundStructure_IntercompanyAgreementStatusDto
     Meridian_Contracts_FundStructure_IntercompanyAgreementDraftDto --> Meridian_Contracts_FundStructure_IntercompanyAgreementActionDto
     Meridian_Contracts_FundStructure_IntercompanyAgreementDraftDto --> Meridian_Contracts_FundStructure_IntercompanyAgreementEvidenceDto
     Meridian_Contracts_FundStructure_IntercompanyAgreementJournalLinesDto --> Meridian_Contracts_FundStructure_IntercompanyAgreementJournalLineDto
@@ -662,7 +650,3 @@ classDiagram
     Meridian_Contracts_FundStructure_IntercompanyAgreementProposalDto --> Meridian_Contracts_FundStructure_IntercompanyAgreementActionDto
     Meridian_Contracts_FundStructure_IntercompanyAgreementProposalDto --> Meridian_Contracts_FundStructure_IntercompanyAgreementDraftDto
     Meridian_Contracts_FundStructure_IntercompanyAgreementProposalDto --> Meridian_Contracts_FundStructure_IntercompanyAgreementProposalStateDto
-    Meridian_Contracts_FundStructure_IntercompanyAgreementQueryDto --> Meridian_Contracts_FundStructure_IntercompanyAgreementStatusDto
-    Meridian_Contracts_FundStructure_IntercompanyAgreementReviewPayloadDto --> Meridian_Contracts_FundStructure_IntercompanyAgreementDraftDto
-    Meridian_Contracts_FundStructure_IntercompanyAgreementRevisionDto --> Meridian_Contracts_FundStructure_IntercompanyAgreementActionDto
-    Meridian_Contracts_FundStructure_IntercompanyAgreementRevisionDto --> Meridian_Contracts_FundStructure_IntercompanyAgreementDraftDto

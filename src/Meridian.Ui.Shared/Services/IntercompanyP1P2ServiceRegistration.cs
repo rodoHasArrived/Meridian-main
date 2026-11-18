@@ -111,6 +111,39 @@ internal sealed class IntercompanyCloseAdvisorySource(IServiceProvider services)
         }
         var advisory = await monitor.EvaluateAsync(new(tenantId, caller.Actor), companyId,
             new(book.FundProfileId, bookId, period.EndDate, 30, entityId), ct);
-        return advisory with { BalanceSchedule = null };
+        advisory = advisory with { BalanceSchedule = null };
+        return await WithConfirmationFindingsAsync(advisory, tenantId, companyId, bookId, period.EndDate, ct);
     }
+
+    // Reciprocal balance confirmation status joins the same advisory list. Close readiness attaches the advisory
+    // after deciding eligibility, so these findings inform the controller and never block close.
+    private async Task<IntercompanyObligationMonitorDto> WithConfirmationFindingsAsync(IntercompanyObligationMonitorDto advisory,
+        string tenantId, string companyId, Guid bookId, DateOnly periodEnd, CancellationToken ct)
+    {
+        if (services.GetService<IntercompanyBalanceConfirmationService>() is not { } confirmations)
+            return advisory;
+        IReadOnlyList<IntercompanyObligationFindingDto> added;
+        try
+        {
+            var summary = await confirmations.SummaryAsync(tenantId, companyId, bookId, periodEnd, ct);
+            added = summary.Findings.Select(finding => new IntercompanyObligationFindingDto(ConfirmationCode(finding.Code), "Warning",
+                $"{finding.Message} Accounting profile {finding.AccountingArrangementId:D}.", LedgerBookId: bookId)).ToArray();
+        }
+        catch (Exception error) when (error is not OperationCanceledException)
+        {
+            added = [new("intercompany.confirmation.unavailable", "Warning",
+                "Reciprocal balance confirmation status could not be read for this period.", LedgerBookId: bookId)];
+        }
+        return added.Count == 0 ? advisory : advisory with { Findings = [.. advisory.Findings, .. added] };
+    }
+
+    private static string ConfirmationCode(string code) => "intercompany.confirmation." + code switch
+    {
+        "NotProposed" => "not-proposed",
+        "AwaitingConfirmation" => "awaiting-confirmation",
+        "Disputed" => "disputed",
+        "BalancesChanged" => "balances-changed",
+        "ResolvedAwaitingProposal" => "resolved-awaiting-proposal",
+        _ => "unavailable"
+    };
 }
