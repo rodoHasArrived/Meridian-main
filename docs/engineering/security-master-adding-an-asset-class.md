@@ -39,6 +39,7 @@ build warnings for each file above. Run
 | `SecurityAssetTermsCodecBindings.cs` | The flat codec bindings for the class's members, when the class uses the schema-bound codec. |
 | `SecurityAssetSpecificTermsUpcasterChain.cs`, `SecurityRateFieldUnits.cs` | Rate units and any key renames the class's terms carry. |
 | `ClassificationLabelReader.cs`, `SecurityAssetPackRegistry*.cs` | The classification label and the pack's readiness specification. |
+| `SecurityAssetClassCatalog.cs` (lot unit) | The `LotUnit` also governs ledger postings: only a `FaceValue` class may be booked with a `Face` quantity basis (`LotQuantityBasisRules`, enforced by the acquisition reference authority). |
 | `InstrumentTypeDescriptorCatalog.cs` | When an instrument type maps to the class, its family and sub-type labels must equal the F# table's, or be listed in `DomainLabelExceptions` / `ApproximateDomainLabelMappings`. |
 
 ## 3. Application codec and validation (`src/Meridian.Application/SecurityMaster/`)
