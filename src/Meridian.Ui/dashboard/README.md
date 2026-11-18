@@ -281,6 +281,12 @@ entrypoint retains its public exports, React gate state and command transport. P
 rules and approval semantics are unchanged. Three fixed-number formatting allowances follow their
 unchanged checklist declarations; the original aggregate allowance of six remains unchanged.
 
+Order authority presentation lives in `trading-screen.order-authority.ts`: working-order Origin
+labels, ticket text for an `OrderResult.authorityDecision` refusal (checkpoint and reason code), and
+the manual-entry verdict. When `TradingWorkspaceResponse.manualOrderEntry.available` is false (a live
+routing path), the order ticket shows the server's reason up front and disables submission; the
+browser never decides live availability itself.
+
 Strategy overview composition lives in `strategy-overview-hub.tsx`; equity-path comparison state,
 load results and presentation live in `strategy-screen.equity-paths.view-model.ts` and
 `strategy-screen.equity-paths.tsx`. The existing Strategy

@@ -77,8 +77,11 @@ public sealed partial class LiveTradingEngineTests
             await using var auditTrail = new ExecutionAuditTrailService(
                 new ExecutionAuditTrailOptions(Path.Combine(dataRoot, "audit")),
                 NullLogger<ExecutionAuditTrailService>.Instance);
+            // Strategy orders route under typed run authority, which binds them to an active run
+            // that an approved live promotion targets.
             await using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance,
-                brokerageConfiguration: brokerage, liveOrderReadinessGate: gate, auditTrail: auditTrail);
+                brokerageConfiguration: brokerage, liveOrderReadinessGate: gate, auditTrail: auditTrail,
+                strategyRunAuthority: await LivePromotionAuthorityAsync(repository, run.RunId));
             await oms.StartAsync();
             await using var engine = CreateEngine(repository, hub, cache, oms,
                 options: new LiveTradingEngineOptions { AllowLiveRuns = true }, brokerageConfiguration: brokerage);
@@ -1759,6 +1762,10 @@ public sealed partial class LiveTradingEngineTests
     {
         public ConcurrentQueue<ExecutionSdk.OrderRequest> Requests { get; } = new();
 
+        // Strategy runs with a fund account submit under typed authority; record the order the same way.
+        public Task<ExecutionSdk.OrderResult> SubmitAsync(ExecutionSdk.OrderSubmitCommand command, CancellationToken ct = default) =>
+            PlaceOrderAsync(command.Order, ct);
+
         public Task<ExecutionSdk.OrderResult> PlaceOrderAsync(
             ExecutionSdk.OrderRequest request,
             CancellationToken ct = default)
@@ -1883,6 +1890,32 @@ public sealed partial class LiveTradingEngineTests
             }
         }
     };
+
+    /// <summary>
+    /// Production run authority over the test's own run store, with an approved live promotion
+    /// targeting <paramref name="runId"/> (the promotion the readiness fakes already assume).
+    /// </summary>
+    private static async Task<Meridian.Execution.OrderManagement.IStrategyRunAuthoritySource> LivePromotionAuthorityAsync(
+        IStrategyRepository runs,
+        string runId)
+    {
+        var promotions = new InMemoryPromotionRecordStore();
+        await promotions.AppendAsync(new StrategyPromotionRecord(
+            PromotionId: $"promotion-{runId}",
+            StrategyId: "live-strategy",
+            StrategyName: "Live strategy",
+            SourceRunType: RunType.Paper,
+            TargetRunType: RunType.Live,
+            SourceRunId: "paper-source",
+            TargetRunId: runId,
+            QualifyingSharpe: 1.0,
+            QualifyingMaxDrawdownPercent: 1m,
+            QualifyingTotalReturn: 0.1m,
+            Decision: PromotionDecisionKinds.Approved,
+            PromotedAt: DateTimeOffset.UtcNow,
+            AuditReference: "AUDIT-LIVE-001"));
+        return new StrategyRunAuthoritySource(runs, promotions);
+    }
 
     private sealed class AccountReadinessProvider(string runId, Guid authorizedAccountId)
         : ITradingOperatorReadinessProvider

@@ -40,7 +40,11 @@ public sealed record RiskEscalationEntry(
     // metadata, which was unreserved before the retained-submitter migration — so a null
     // value reliably identifies a pre-migration entry whose identity binding cannot be
     // trusted.
-    string? SubmitterProvenance = null);
+    string? SubmitterProvenance = null,
+    // The typed authority the order was submitted under, attached by the OMS after it parks.
+    // Null for orders submitted through the untyped path and for entries parked before typed
+    // authority existed; their release stays on the untyped path.
+    OrderSubmissionAuthorityRecord? Authority = null);
 
 /// <summary>Persisted snapshot of the governed-approval queue.</summary>
 public sealed record RiskEscalationSnapshot(IReadOnlyList<RiskEscalationEntry> Entries);

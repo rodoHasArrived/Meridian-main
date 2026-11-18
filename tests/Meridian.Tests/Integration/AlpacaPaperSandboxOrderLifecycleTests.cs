@@ -8,6 +8,7 @@ using Meridian.Risk.Rules;
 using Meridian.Strategies.Services;
 using Meridian.Tests.Ui;
 using Meridian.Ui.Shared.Services;
+using Meridian.Tests.TestHelpers;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit.Abstractions;
 
@@ -56,6 +57,10 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
 
     private const string SandboxRunId = "alpaca-paper-sandbox";
 
+    // Every Alpaca route is live routing, which refuses untyped orders, so sandbox orders are
+    // submitted the way a promoted live strategy run submits them.
+    private static readonly LiveRunOrderAuthority SandboxRuns = LiveRunOrderAuthority.Default;
+
     // extended_hours keeps a limit order eligible outside the regular session; runId is the
     // run the readiness gate below approves.
     private static readonly IReadOnlyDictionary<string, string> SandboxOrderMetadata =
@@ -79,15 +84,15 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
         await using (var unconfigured = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance))
         {
             await unconfigured.StartAsync();
-            var refused = await unconfigured.PlaceOrderAsync(RestingBuy(NewClientOrderId(), localAccountId), ct);
+            var refused = await unconfigured.SubmitLiveRunAsync(RestingBuy(NewClientOrderId(), localAccountId), SandboxRuns, ct);
             refused.Success.Should().BeFalse("a brokerage route needs explicit brokerage configuration");
         }
 
         await using (var withoutReadiness = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance,
-            brokerageConfiguration: SandboxRoutingConfiguration()))
+            brokerageConfiguration: SandboxRoutingConfiguration(), strategyRunAuthority: SandboxRuns.Source))
         {
             await withoutReadiness.StartAsync();
-            var refused = await withoutReadiness.PlaceOrderAsync(RestingBuy(NewClientOrderId(), localAccountId), ct);
+            var refused = await withoutReadiness.SubmitLiveRunAsync(RestingBuy(NewClientOrderId(), localAccountId), SandboxRuns, ct);
             refused.Success.Should().BeFalse("configuration alone does not approve a run");
         }
 
@@ -98,12 +103,12 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
             {
                 Metadata = new Dictionary<string, string>(StringComparer.Ordinal) { ["extended_hours"] = "true" },
             };
-            (await gated.PlaceOrderAsync(withoutRun, ct)).Success.Should().BeFalse("an order outside an approved run is refused");
+            (await gated.SubmitLiveRunAsync(withoutRun, SandboxRuns, ct)).Success.Should().BeFalse("an order outside an approved run is refused");
             var otherRun = RestingBuy(NewClientOrderId(), localAccountId) with
             {
                 Metadata = new Dictionary<string, string>(StringComparer.Ordinal) { ["extended_hours"] = "true", ["runId"] = "another-run" },
             };
-            (await gated.PlaceOrderAsync(otherRun, ct)).Success.Should().BeFalse("the readiness gate approves only the sandbox run");
+            (await gated.SubmitLiveRunAsync(otherRun, SandboxRuns, ct)).Success.Should().BeFalse("the readiness gate approves only the sandbox run");
         }
 
         clients.SubmissionCount.Should().Be(0, "every refusal happened before the network boundary");
@@ -131,7 +136,7 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
         try
         {
             var request = RestingBuy(clientOrderId, localAccountId);
-            var placed = await oms.PlaceOrderAsync(request, ct);
+            var placed = await oms.SubmitLiveRunAsync(request, SandboxRuns, ct);
             placed.Success.Should().BeTrue("a one-share resting paper limit order must be accepted; error: {0}", placed.ErrorMessage);
             placed.OrderId.Should().Be(clientOrderId);
 
@@ -158,7 +163,7 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
             // A repeated dispatch of the same identity must not create a second broker order,
             // neither through the order manager nor if it reached the broker anyway.
             var submissionsBeforeRepeat = clients.SubmissionCount;
-            (await oms.PlaceOrderAsync(request, ct)).Success.Should().BeFalse("the order manager already tracks this client id");
+            (await oms.SubmitLiveRunAsync(request, SandboxRuns, ct)).Success.Should().BeFalse("the order manager already tracks this client id");
             clients.SubmissionCount.Should().Be(submissionsBeforeRepeat, "a locally refused duplicate never reaches the broker");
             var brokerDuplicate = () => gateway.SubmitOrderAsync(request, ct);
             await brokerDuplicate.Should().ThrowAsync<HttpRequestException>(
@@ -252,7 +257,7 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
             // The submission reaches the paper API and is accepted there; its response never
             // reaches the order manager.
             clients.DropNextOrderSubmissionResponse();
-            var placed = await oms.PlaceOrderAsync(request, ct);
+            var placed = await oms.SubmitLiveRunAsync(request, SandboxRuns, ct);
 
             placed.Success.Should().BeFalse("an unacknowledged dispatch is not a confirmed order");
             clients.SubmissionCount.Should().Be(1);
@@ -261,7 +266,7 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
             sync.GetStatus(localAccountId).IsReady.Should().BeFalse();
             var blocked = await new BrokeragePortfolioStateRule(exposure).EvaluateAsync(request with { ClientOrderId = NewClientOrderId() }, ct);
             blocked.IsApproved.Should().BeFalse("an unresolved dispatch blocks further orders on the account");
-            (await oms.PlaceOrderAsync(request, ct)).Success.Should().BeFalse("the unresolved client id cannot be dispatched again");
+            (await oms.SubmitLiveRunAsync(request, SandboxRuns, ct)).Success.Should().BeFalse("the unresolved client id cannot be dispatched again");
             clients.SubmissionCount.Should().Be(1, "exactly one submission reached the broker");
 
             // The broker really holds the order the order manager never heard back about.
@@ -328,7 +333,7 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
             await using (var oms = CreateOms(gateway, new FileBrokerageOrderRecoveryStore(recoveryPath, gateway.GatewayId)))
             {
                 await oms.StartAsync();
-                var placed = await oms.PlaceOrderAsync(new OrderRequest
+                var placed = await oms.SubmitLiveRunAsync(new OrderRequest
                 {
                     Symbol = Symbol,
                     Side = OrderSide.Buy,
@@ -338,7 +343,7 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
                     ClientOrderId = buyClientOrderId,
                     FundAccountId = localAccountId,
                     Metadata = SandboxOrderMetadata,
-                }, ct);
+                }, SandboxRuns, ct);
                 placed.Success.Should().BeTrue("a one-share marketable paper order must be accepted; error: {0}", placed.ErrorMessage);
 
                 var filled = await PollAsync(
@@ -424,7 +429,7 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
                 "the restored filled order and holdings reconcile after a restart");
 
             // Flatten through the same governed path and prove holdings return to the baseline.
-            var sold = await restartedOms.PlaceOrderAsync(new OrderRequest
+            var sold = await restartedOms.SubmitLiveRunAsync(new OrderRequest
             {
                 Symbol = Symbol,
                 Side = OrderSide.Sell,
@@ -434,7 +439,7 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
                 ClientOrderId = sellClientOrderId,
                 FundAccountId = localAccountId,
                 Metadata = SandboxOrderMetadata,
-            }, ct);
+            }, SandboxRuns, ct);
             sold.Success.Should().BeTrue("the closing paper order must be accepted; error: {0}", sold.ErrorMessage);
             var closed = await PollAsync(
                 () => restartedGateway.GetOrderForRecoveryAsync(sellClientOrderId, ct),
@@ -470,7 +475,8 @@ public sealed class AlpacaPaperSandboxOrderLifecycleTests(ITestOutputHelper outp
         new(gateway, NullLogger<OrderManagementSystem>.Instance,
             brokerageConfiguration: SandboxRoutingConfiguration(),
             liveOrderReadinessGate: new SandboxRunReadinessGate(),
-            recoveryStore: recoveryStore);
+            recoveryStore: recoveryStore,
+            strategyRunAuthority: SandboxRuns.Source);
 
     /// <summary>
     /// The admission evidence the order manager demands before any Alpaca route, stated for the

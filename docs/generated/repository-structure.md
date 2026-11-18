@@ -1811,6 +1811,7 @@ Meridian-main
 │   │   │   ├── direct-lending-excess-payment-application.md
 │   │   │   ├── direct-lending-pik-capitalization-and-rate-resets.md
 │   │   │   ├── financing-liabilities-depreciation-blueprint.md
+│   │   │   ├── governed-order-command-boundary-blueprint.md
 │   │   │   ├── intercompany-agreement-registry.md
 │   │   │   ├── investor-performance-pack-blueprint.md
 │   │   │   ├── portfolio-cash-ladder-blueprint-2026-07.md
@@ -1819,6 +1820,7 @@ Meridian-main
 │   │   │   ├── risk-engine-severity-and-decision-journal-blueprint.md
 │   │   │   ├── security-lot-convergence-blueprint.md
 │   │   │   ├── security-master-passport-workbench.md
+│   │   │   ├── strategy-artifact-identity-blueprint.md
 │   │   │   ├── w10-mark-001-fail-closed-marks.md
 │   │   │   └── web-ui-report-run-stream-blueprint-2026-07.md
 │   │   ├── plans
@@ -6711,6 +6713,8 @@ Meridian-main
 │   │   │   ├── OrderAmendmentBook.cs
 │   │   │   ├── OrderApprovalReservations.cs
 │   │   │   ├── OrderAuditMetadata.cs
+│   │   │   ├── OrderAuthority.cs
+│   │   │   ├── OrderAuthorityMetadata.cs
 │   │   │   ├── OrderBrokerIdentityIndex.cs
 │   │   │   ├── OrderDispatchRegistry.cs
 │   │   │   ├── OrderExecutionAudit.cs
@@ -6790,6 +6794,7 @@ Meridian-main
 │   │   ├── OrderManagementSystem.Retention.cs
 │   │   ├── OrderManagementSystem.RiskOutcomes.cs
 │   │   ├── OrderManagementSystem.UntrackedFills.cs
+│   │   ├── OrderManagementSystemFactory.cs
 │   │   ├── OrderManagementSystemOptions.cs
 │   │   ├── PaperExecutionContext.cs
 │   │   ├── PaperTradingGateway.cs
@@ -6833,6 +6838,7 @@ Meridian-main
 │   │   ├── KillSwitchSweepResult.cs
 │   │   ├── Meridian.Execution.Sdk.csproj
 │   │   ├── Models.cs
+│   │   ├── OrderCommandAuthority.cs
 │   │   ├── OrderSizingMetadata.cs
 │   │   ├── OrderSubmissionRefusal.cs
 │   │   ├── PositionExtensions.cs
@@ -8806,6 +8812,7 @@ Meridian-main
 │   │   │   ├── StrategyEngineRegistry.cs
 │   │   │   ├── StrategyEngineValidationService.cs
 │   │   │   ├── StrategyLifecycleManager.cs
+│   │   │   ├── StrategyRunAuthoritySource.cs
 │   │   │   ├── StrategyRunContinuityService.cs
 │   │   │   ├── StrategyRunReadService.cs
 │   │   │   ├── StrategyRunReadService.Ledger.cs
@@ -10414,6 +10421,8 @@ Meridian-main
 │   │   │   │   │   ├── trading-screen.journal.tsx
 │   │   │   │   │   ├── trading-screen.linked-context.ts
 │   │   │   │   │   ├── trading-screen.operator-focus.ts
+│   │   │   │   │   ├── trading-screen.order-authority.test.tsx
+│   │   │   │   │   ├── trading-screen.order-authority.ts
 │   │   │   │   │   ├── trading-screen.order-ticket-form.tsx
 │   │   │   │   │   ├── trading-screen.order-ticket-state.ts
 │   │   │   │   │   ├── trading-screen.order-ticket-text.ts
@@ -13288,6 +13297,7 @@ Meridian-main
 │   │   │   ├── FileBrokerageOrderRecoveryStoreTests.cs
 │   │   │   ├── FixedIncomeFillBookingTests.cs
 │   │   │   ├── HostedBrokerageGatewayRegistrationTests.cs
+│   │   │   ├── KillSwitchAuthorityRecordingTests.cs
 │   │   │   ├── KillSwitchBrokerTruthTests.cs
 │   │   │   ├── KillSwitchCloseOnlyTests.cs
 │   │   │   ├── KillSwitchTripRaceTests.cs
@@ -13298,6 +13308,8 @@ Meridian-main
 │   │   │   ├── OrderAdmissionPolicyTests.cs
 │   │   │   ├── OrderAmendmentBookTests.cs
 │   │   │   ├── OrderApprovalReservationsTests.cs
+│   │   │   ├── OrderAuthorityPaperRehearsalTests.cs
+│   │   │   ├── OrderAuthorityResolverTests.cs
 │   │   │   ├── OrderBrokerIdentityIndexTests.cs
 │   │   │   ├── OrderDispatchRegistryTests.cs
 │   │   │   ├── OrderFillProcessorTests.AccountingEvidence.cs
@@ -13310,14 +13322,17 @@ Meridian-main
 │   │   │   ├── OrderManagementSystemAmendmentRecoveryTests.RejectedSuccessor.cs
 │   │   │   ├── OrderManagementSystemAmendmentRecoveryTests.Validation.cs
 │   │   │   ├── OrderManagementSystemDurableHandoffOrderingTests.cs
+│   │   │   ├── OrderManagementSystemFactoryTests.cs
 │   │   │   ├── OrderManagementSystemGovernanceTests.cs
 │   │   │   ├── OrderManagementSystemLifecycleBoundaryTests.cs
 │   │   │   ├── OrderManagementSystemLifecycleTests.cs
 │   │   │   ├── OrderManagementSystemReportStreamTests.cs
 │   │   │   ├── OrderManagementSystemSubscriptionFailureTests.cs
 │   │   │   ├── OrderManagementSystemTests.cs
+│   │   │   ├── OrderManagementSystemTypedSubmitTests.cs
 │   │   │   ├── OrderRiskSizingPolicyTests.cs
 │   │   │   ├── OrderStateTableTests.cs
+│   │   │   ├── OrderSubmissionAuthorityTests.cs
 │   │   │   ├── PaperExecutionGatewayLotSizeTests.cs
 │   │   │   ├── PaperFillEnvelopeRegressionTests.cs
 │   │   │   ├── PaperFinancingPostingTests.cs
@@ -13349,6 +13364,7 @@ Meridian-main
 │   │   │   ├── PaperTradingPortfolioVariationMarginTests.cs
 │   │   │   ├── PortfolioStatePositionTrackerTests.cs
 │   │   │   ├── PositionLotSelectorTests.cs
+│   │   │   ├── RiskEscalationAuthorityRetentionTests.cs
 │   │   │   ├── RiskValidationResultTests.cs
 │   │   │   ├── RiskValidatorSubstitute.cs
 │   │   │   ├── RobinhoodHostedSynchronizationTests.cs
@@ -14646,6 +14662,7 @@ Meridian-main
 │   │   │   ├── StrategyLifecycleManagerTests.cs
 │   │   │   ├── StrategyLifecyclePostconditionTests.cs
 │   │   │   ├── StrategyLifecycleRecoveryTests.cs
+│   │   │   ├── StrategyRunAuthoritySourceTests.cs
 │   │   │   ├── StrategyRunContinuityServiceTests.cs
 │   │   │   ├── StrategyRunDrillInTests.cs
 │   │   │   ├── StrategyRunLedgerArchiveTests.cs
@@ -14695,6 +14712,7 @@ Meridian-main
 │   │   │   ├── ActivityCapturingPublisher.cs
 │   │   │   ├── ActivityTestListenerFactory.cs
 │   │   │   ├── AlphaVantageTestBudget.cs
+│   │   │   ├── LiveRunOrderAuthority.cs
 │   │   │   ├── MarketScenarioBuilder.cs
 │   │   │   ├── PolygonStubClient.cs
 │   │   │   ├── RecordingLogger.cs
@@ -15145,6 +15163,7 @@ Meridian-main
 │   │   │   ├── WorkstationFinancialRecordExplorerPersonalViewEndpointTests.cs
 │   │   │   ├── WorkstationFinancialRecordExplorerPersonalViewScopeTests.cs
 │   │   │   ├── WorkstationMaintenanceTableExportTests.cs
+│   │   │   ├── WorkstationManualOrderEntryTests.cs
 │   │   │   ├── WorkstationMultiAssetCoverageEndpointsTests.cs
 │   │   │   ├── WorkstationPersonalTableViewStoreTests.cs
 │   │   │   ├── WorkstationPortfolioAggregationScopeTests.cs

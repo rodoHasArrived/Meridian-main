@@ -118,6 +118,8 @@ The host-served bundle carries the design-system consolidation. It includes one 
 component; one formatting module (year-bearing UTC timestamps; accounting negatives in
 parentheses); and one table system with sorting, sticky headers, operator density and column
 visibility on positions, orders, the ledger, breaks, the execution blotter and report families.
+Working orders show their origin, and the order ticket states when manual live orders are
+unavailable and why an order-authority refusal happened (see the dashboard README).
 It also adds a three-tier type scale with sentence-case labels past two words and prose in the
 body face. Ratchets in `dashboard/scripts/design-system-ratchets.mjs`, and the sub-12px
 typography floor check in `dashboard/scripts/check-typography-floor.mjs` (run by `npm run lint`),
