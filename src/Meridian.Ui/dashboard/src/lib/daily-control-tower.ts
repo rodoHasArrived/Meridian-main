@@ -37,14 +37,6 @@ export interface DailyControlTowerFocusRow {
   proofPassportSummary: string;
 }
 
-export interface DailyControlTowerDriverItem {
-  id: string;
-  label: string;
-  value: string;
-  detail: string;
-  badgeVariant: DailyControlTowerBadgeVariant;
-}
-
 export interface DailyControlTowerModel {
   decision: AppShellDecisionBrief;
   statusLabel: string;
@@ -56,13 +48,10 @@ export interface DailyControlTowerModel {
   nextActionHref: string;
   nextActionAriaLabel: string;
   evidenceLabel: string;
-  driverItems: DailyControlTowerDriverItem[];
   queueRows: DailyControlTowerFocusRow[];
   /** The row for the decision the headline names; its evidence is shown until a row is chosen. */
   leadingRow: DailyControlTowerFocusRow | null;
   trustItems: AppShellTrustStripItem[];
-  linkedContextItems: AppShellLinkedContextItem[];
-  evidenceTimelineItems: AppShellEvidenceTimelineItem[];
   emptyQueueText: string;
 }
 
@@ -138,83 +127,11 @@ export function buildDailyControlTowerModel(
     nextActionHref: decision.actionHref,
     nextActionAriaLabel: decision.actionAriaLabel,
     evidenceLabel: buildDecisionEvidenceLabel(decision.evidenceLabel, leadingRow, viewModel.evidenceTimelineItems[0] ?? null),
-    driverItems: buildDriverItems({
-      viewModel,
-      queueRows,
-      trustItems: trustStrip.items,
-      linkedContextItems: viewModel.linkedContextItems,
-      evidenceTimelineItems: viewModel.evidenceTimelineItems
-    }),
     queueRows,
     leadingRow,
     trustItems: trustStrip.items,
-    linkedContextItems: viewModel.linkedContextItems,
-    evidenceTimelineItems: viewModel.evidenceTimelineItems,
     emptyQueueText: viewModel.operatorFocusEmptyText
   };
-}
-
-function buildDriverItems({
-  viewModel,
-  queueRows,
-  trustItems,
-  linkedContextItems,
-  evidenceTimelineItems
-}: {
-  viewModel: AppShellWorkflowContinuityViewModel;
-  queueRows: DailyControlTowerFocusRow[];
-  trustItems: AppShellTrustStripItem[];
-  linkedContextItems: AppShellLinkedContextItem[];
-  evidenceTimelineItems: AppShellEvidenceTimelineItem[];
-}): DailyControlTowerDriverItem[] {
-  const blockedRows = queueRows.filter((row) => row.item.tone === "blocked").length;
-  const reviewRows = queueRows.filter((row) => row.item.tone === "review").length;
-  const trustAttention = trustItems.filter((item) => item.tone === "blocked" || item.tone === "review").length;
-  const linkedAttention = linkedContextItems.filter((item) => item.tone === "blocked" || item.tone === "review" || item.tone === "pending").length;
-
-  return [
-    {
-      id: "continuity",
-      label: "Continuity source",
-      value: viewModel.title,
-      detail: `${viewModel.summary} Source route: ${viewModel.routeLabel}.`,
-      badgeVariant: badgeVariantForTone(viewModel.decisionBrief.statusTone)
-    },
-    {
-      id: "queue",
-      label: "Finance queue",
-      value: queueRows.length > 0 ? `${blockedRows} blocked / ${reviewRows} review` : "0 queued",
-      detail: queueRows.length > 0
-        ? `${queueRows.length} ranked finance focus item(s) drive the daily decision queue.`
-        : "No finance focus items are currently queued.",
-      badgeVariant: blockedRows > 0 ? "danger" : reviewRows > 0 ? "warning" : "success"
-    },
-    {
-      id: "trust",
-      label: "Trust status",
-      value: trustAttention > 0 ? `${trustAttention} need attention` : "Trusted",
-      detail: `${trustItems.length} shell trust signal(s) are folded into the landing decision.`,
-      badgeVariant: trustItems.some((item) => item.tone === "blocked") ? "danger" : trustAttention > 0 ? "warning" : "success"
-    },
-    {
-      id: "context",
-      label: "Linked context",
-      value: linkedContextItems.length > 0 ? `${linkedAttention}/${linkedContextItems.length} checks` : "No subject",
-      detail: linkedContextItems.length > 0
-        ? "Cross-workspace context is linked before the operator leaves the landing queue."
-        : "No symbol or operating subject is linked yet.",
-      badgeVariant: linkedContextItems.some((item) => item.tone === "blocked") ? "danger" : linkedAttention > 0 ? "warning" : "outline"
-    },
-    {
-      id: "proof",
-      label: "Evidence events",
-      value: evidenceTimelineItems.length > 0 ? `${evidenceTimelineItems.length} retained` : "No events",
-      detail: evidenceTimelineItems.length > 0
-        ? "Timestamped evidence events back the visible queue and evidence summaries."
-        : "No timestamped evidence event is linked to this decision.",
-      badgeVariant: evidenceTimelineItems.length > 0 ? "success" : "warning"
-    }
-  ];
 }
 
 /** Where a Today queue row comes from (UX consolidation P1). */

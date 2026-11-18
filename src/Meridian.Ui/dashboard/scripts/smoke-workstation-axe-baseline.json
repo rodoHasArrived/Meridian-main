@@ -1,0 +1,11 @@
+{
+  "description": "Serious and critical axe findings the workstation smoke still allows, as route:rule. It may only shrink (npm run smoke:workstation -- --write-axe-baseline).",
+  "allowed": [
+    "accounting-exceptions:label-content-name-mismatch",
+    "accounting-ledger:label-content-name-mismatch",
+    "accounting-reconciliation:label-content-name-mismatch",
+    "portfolio-nav:label-content-name-mismatch",
+    "today:label-content-name-mismatch",
+    "trading:label-content-name-mismatch"
+  ]
+}

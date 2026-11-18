@@ -307,3 +307,34 @@ describe("appendOperatingScopeToRoute", () => {
     expect(appendOperatingScopeToRoute("/trading", buildOperatingScopeFromSearch(""))).toBe("/trading");
   });
 });
+
+describe("carryOperatingScopeIntoSearch (Phase 1)", () => {
+  it("adds the stored fund hierarchy to a route that lacks it", async () => {
+    const { carryOperatingScopeIntoSearch } = await import("./app-shell.operating-scope");
+    const next = carryOperatingScopeIntoSearch("/portfolio/accounts", "?view=household", { entityId: "entity-1", fundId: "fund-1", fundAccountId: "acct-1", symbol: "MSFT" });
+    const params = new URLSearchParams(next);
+    expect(params.get("view")).toBe("household");
+    expect(params.get("entityId")).toBe("entity-1");
+    expect(params.get("fundId")).toBe("fund-1");
+    expect(params.get("fundAccountId")).toBe("acct-1");
+    // Symbol, run, provider and windows travel only through the view-model link builders.
+    expect(params.has("symbol")).toBe(false);
+  });
+
+  it("keeps explicit values, honours accountId, and returns the same string when nothing changes", async () => {
+    const { carryOperatingScopeIntoSearch } = await import("./app-shell.operating-scope");
+    const scope = { fundId: "fund-1", fundAccountId: "acct-1" };
+    expect(new URLSearchParams(carryOperatingScopeIntoSearch("/portfolio", "?fundId=fund-2", scope)).get("fundId")).toBe("fund-2");
+    expect(new URLSearchParams(carryOperatingScopeIntoSearch("/portfolio", "?accountId=acct-9", scope)).has("fundAccountId")).toBe(false);
+    const search = "?fundId=fund-1&fundAccountId=acct-1";
+    expect(carryOperatingScopeIntoSearch("/portfolio", search, scope)).toBe(search);
+    expect(carryOperatingScopeIntoSearch("/portfolio", "", {})).toBe("");
+  });
+
+  it("does not add a fund account where the workspace does not carry one", async () => {
+    const { carryOperatingScopeIntoSearch } = await import("./app-shell.operating-scope");
+    const params = new URLSearchParams(carryOperatingScopeIntoSearch("/data/providers", "", { fundId: "fund-1", fundAccountId: "acct-1" }));
+    expect(params.get("fundId")).toBe("fund-1");
+    expect(params.has("fundAccountId")).toBe(false);
+  });
+});
