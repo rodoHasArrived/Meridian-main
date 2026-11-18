@@ -76,8 +76,9 @@ internal sealed partial class SimulatedPortfolio
             : new Dictionary<string, (SecurityLotUnitKind UnitKind, decimal Multiplier)>(lotConventions, StringComparer.OrdinalIgnoreCase);
         foreach (var convention in _lotConventions.Values)
         {
-            if (convention.UnitKind is not (SecurityLotUnitKind.Shares or SecurityLotUnitKind.Units) || convention.Multiplier != 1m)
-                throw new NotSupportedException("The simulated portfolio requires share or fund-unit pricing with multiplier 1.");
+            if (convention.UnitKind is not (SecurityLotUnitKind.Shares or SecurityLotUnitKind.Units or SecurityLotUnitKind.FaceValue)
+                || convention.Multiplier != 1m)
+                throw new NotSupportedException("The simulated portfolio requires share, fund-unit, or face-value pricing with multiplier 1.");
         }
         _defaultBrokerageAccountId = defaultBrokerageAccountId.Trim();
         _accounts = accounts
@@ -112,6 +113,22 @@ internal sealed partial class SimulatedPortfolio
         }
     }
 
+    // ── Quote conventions ────────────────────────────────────────────────────
+
+    // Face-value symbols (bonds) carry quantity as face and quote prices as a clean percentage of
+    // par, matching PaperTradingPortfolio. Prices stay in quote convention everywhere they are
+    // stored (fills, lots, last prices, average cost) because OpenLot/ClosedLot already value
+    // FaceValue lots through LotQuantity's percent-of-par conversion. Every bare quantity × price
+    // money computation divides by this once: 100,000 face at 101.25 moves $101,250.
+    private decimal QuoteDivisor(string symbol)
+        => _lotConventions.TryGetValue(symbol, out var convention) ? QuoteDivisor(convention.UnitKind) : 1m;
+
+    private static decimal QuoteDivisor(SecurityLotUnitKind unitKind)
+        => unitKind == SecurityLotUnitKind.FaceValue ? 100m : 1m;
+
+    private decimal Money(string symbol, decimal quantity, decimal price)
+        => quantity * price / QuoteDivisor(symbol);
+
     // ── Price updates ────────────────────────────────────────────────────────
 
     public void UpdateLastPrice(string symbol, decimal price)
@@ -137,7 +154,7 @@ internal sealed partial class SimulatedPortfolio
 
         account.Positions.TryGetValue(symbol, out var existingQty);
 
-        if (_canonicalActions is not null && (existingQty + qty < 0 || account.Cash - qty * price - commission < 0m))
+        if (_canonicalActions is not null && (existingQty + qty < 0 || account.Cash - Money(symbol, qty, price) - commission < 0m))
             throw new FillRejectedException("Canonical raw-price replay permits long positions and fully funded fills only.");
 
         // Any sell that leaves the position net short opens short exposure, including a sell
@@ -145,7 +162,7 @@ internal sealed partial class SimulatedPortfolio
         if (qty < 0 && existingQty + qty < 0 && !account.Rules.AllowShortSelling)
             throw new FillRejectedException($"Account '{accountId}' does not permit short selling.");
 
-        var cashImpact = -(qty * price) - commission;
+        var cashImpact = -Money(symbol, qty, price) - commission;
         var projectedCash = account.Cash + cashImpact;
         if (projectedCash < 0m && !account.Rules.AllowMargin)
             throw new FillRejectedException($"Account '{accountId}' does not permit margin borrowing.");
@@ -188,7 +205,7 @@ internal sealed partial class SimulatedPortfolio
             realised = RealiseLots(account, symbol, closeQty, price, fill.FilledAt, fill.FillId, fill.TargetLotId,
                 commission * closeQty / -qty);
             account.RealizedPnl[symbol] = account.RealizedPnl.GetValueOrDefault(symbol) + realised.Value;
-            costBasisRemoved = closeQty * price - realised.Value;
+            costBasisRemoved = Money(symbol, closeQty, price) - realised.Value;
         }
 
         if (qty < 0)
@@ -241,7 +258,7 @@ internal sealed partial class SimulatedPortfolio
             account.AvgCost[symbol] = ComputeAvgCost(account, symbol);
         }
 
-        _cashFlows.Add(new TradeCashFlow(fill.FilledAt, -(qty * price), symbol, qty, price, accountId));
+        _cashFlows.Add(new TradeCashFlow(fill.FilledAt, -Money(symbol, qty, price), symbol, qty, price, accountId));
 
         if (commission > 0)
             _cashFlows.Add(new CommissionCashFlow(fill.FilledAt, -commission, symbol, fill.OrderId, accountId));
@@ -435,7 +452,7 @@ internal sealed partial class SimulatedPortfolio
                 if (lastPrice <= 0)
                     continue;
 
-                var shortNotional = Math.Abs(qty) * lastPrice;
+                var shortNotional = Money(symbol, Math.Abs(qty), lastPrice);
                 var rebate = shortNotional * (decimal)(account.Rules.AnnualShortRebateRate / 365.0);
                 account.Cash += rebate;
                 _cashFlows.Add(new ShortRebateCashFlow(ts, rebate, symbol, Math.Abs(qty), account.Rules.AnnualShortRebateRate, account.Account.AccountId));
@@ -563,7 +580,7 @@ internal sealed partial class SimulatedPortfolio
                 }).ToArray();
                 var remainingBasis = adjusted.Sum(static component => component.AllocatedBasis);
                 basisRelieved += lot.CostBasis() - remainingBasis;
-                node.Value = lot with { EntryPrice = remainingBasis / lot.Quantity, BasisComponents = adjusted };
+                node.Value = lot with { EntryPrice = remainingBasis / lot.Quantity * QuoteDivisor(lot.UnitKind), BasisComponents = adjusted };
             }
         }
 
@@ -1058,7 +1075,7 @@ internal sealed partial class SimulatedPortfolio
             LotId = lotId,
             Symbol = targetSymbol,
             Quantity = quantity,
-            EntryPrice = allocatedBasis / quantity,
+            EntryPrice = allocatedBasis / quantity * QuoteDivisor(template.UnitKind),
             OpenedAt = openedAt,
             OpenFillId = openFillId,
             Notes = BuildTransformedLotNotes(template.Notes, components),
@@ -1295,7 +1312,7 @@ internal sealed partial class SimulatedPortfolio
                 ts,
                 $"Buy {longBuyQty} {symbol} @ {price:F4} – {account.Account.DisplayName}",
                 SecurityTradePostingProjector.Project(
-                    new(SecurityTradePostingKind.OpenLong, longBuyQty, longBuyQty * price),
+                    new(SecurityTradePostingKind.OpenLong, longBuyQty, Money(symbol, longBuyQty, price)),
                     symbol, accountId, _chart),
                 fillMetadata with { ActivityType = "buy" });
         }
@@ -1306,7 +1323,7 @@ internal sealed partial class SimulatedPortfolio
                 ts,
                 $"Sell {closeQty} {symbol} @ {price:F4} – {account.Account.DisplayName}",
                 SecurityTradePostingProjector.Project(
-                    new(SecurityTradePostingKind.CloseLong, closeQty, closeQty * price, CarryingValue: costBasisRemoved),
+                    new(SecurityTradePostingKind.CloseLong, closeQty, Money(symbol, closeQty, price), CarryingValue: costBasisRemoved),
                     symbol, accountId, _chart),
                 fillMetadata with { ActivityType = "sell" });
         }
@@ -1317,7 +1334,7 @@ internal sealed partial class SimulatedPortfolio
                 ts,
                 $"Short sell {shortOpenQty} {symbol} @ {price:F4} – {account.Account.DisplayName}",
                 SecurityTradePostingProjector.Project(
-                    new(SecurityTradePostingKind.OpenShort, shortOpenQty, shortOpenQty * price),
+                    new(SecurityTradePostingKind.OpenShort, shortOpenQty, Money(symbol, shortOpenQty, price)),
                     symbol, accountId, _chart),
                 fillMetadata with { ActivityType = "short_sell" });
         }
@@ -1329,7 +1346,7 @@ internal sealed partial class SimulatedPortfolio
                 ts,
                 $"Cover short {coverQty} {symbol} @ {price:F4} – {account.Account.DisplayName}",
                 SecurityTradePostingProjector.Project(
-                    new(SecurityTradePostingKind.CoverShort, coverQty, coverQty * price, CarryingValue: shortOriginalProceeds),
+                    new(SecurityTradePostingKind.CoverShort, coverQty, Money(symbol, coverQty, price), CarryingValue: shortOriginalProceeds),
                     symbol, accountId, _chart),
                 fillMetadata with { ActivityType = "cover_short" });
         }
@@ -1456,9 +1473,9 @@ internal sealed partial class SimulatedPortfolio
             {
                 var positions = BuildPositions(account);
                 var longMv = positions.Values.Where(position => position.Quantity > 0)
-                    .Sum(position => position.NotionalValue(_lastPrices.GetValueOrDefault(position.Symbol, position.AverageCostBasis)));
+                    .Sum(position => Money(position.Symbol, position.Quantity, _lastPrices.GetValueOrDefault(position.Symbol, position.AverageCostBasis)));
                 var shortMv = positions.Values.Where(position => position.Quantity < 0)
-                    .Sum(position => position.NotionalValue(_lastPrices.GetValueOrDefault(position.Symbol, position.AverageCostBasis)));
+                    .Sum(position => Money(position.Symbol, position.Quantity, _lastPrices.GetValueOrDefault(position.Symbol, position.AverageCostBasis)));
                 var receivable = account.DividendEntitlements.Values.Sum(static entitlement => entitlement.Amount);
                 var equity = account.Cash + longMv + shortMv + receivable;
                 var openLots = account.Lots.Values
@@ -1506,7 +1523,7 @@ internal sealed partial class SimulatedPortfolio
                 openLots = Array.Empty<OpenLot>();
             var unrealised = openLots.Count > 0
                 ? openLots.Sum(lot => lot.UnrealizedPnl(lastPrice))
-                : (lastPrice - avgCost) * qty;
+                : Money(symbol, qty, lastPrice - avgCost);
             result[symbol] = new Position(symbol, qty, avgCost, unrealised, realised, openLots);
         }
 
@@ -1537,7 +1554,9 @@ internal sealed partial class SimulatedPortfolio
             totalCost += lot.CostBasis();
         }
 
-        return totalQty == 0 ? 0m : totalCost / totalQty;
+        // CostBasis is money; restate the average in the lots' quote convention (percent of par
+        // for face value) so it compares directly with fill and last prices.
+        return totalQty == 0 ? 0m : totalCost / totalQty * QuoteDivisor(lots.First!.Value.UnitKind);
     }
 
     /// <summary>
@@ -1573,14 +1592,14 @@ internal sealed partial class SimulatedPortfolio
             var quantity = (long)slice.Quantity;
             var lotBasis = lot.CostBasis();
             var basisRemoved = slice.CostBasis;
-            var closedEntryPrice = basisRemoved / quantity;
+            var closedEntryPrice = basisRemoved / quantity * QuoteDivisor(lot.UnitKind);
             var entryCommission = slice.ClosesLot
                 ? lot.EntryCommission
                 : lot.EntryCommission * quantity / lot.Quantity;
             var closeCommission = AllocateCommission(ref exitCommission, quantity, remainingCloseQty);
             remainingCloseQty -= quantity;
 
-            realised += (quantity * sellPrice) - basisRemoved;
+            realised += (quantity * sellPrice / QuoteDivisor(lot.UnitKind)) - basisRemoved;
             account.ClosedLots.Add(new ClosedLot(
                 lot.LotId, symbol, quantity, closedEntryPrice, lot.OpenedAt,
                 lot.OpenFillId, sellPrice, closedAt, closeFillId, account.Account.AccountId)
@@ -1638,13 +1657,13 @@ internal sealed partial class SimulatedPortfolio
             var lotClose = (long)slice.Quantity;
             var lotBasis = lot.CostBasis();
             var lotProceeds = slice.CostBasis;
-            var closedEntryPrice = lotProceeds / lotClose;
+            var closedEntryPrice = lotProceeds / lotClose * QuoteDivisor(lot.UnitKind);
             var entryCommission = slice.ClosesLot
                 ? lot.EntryCommission
                 : lot.EntryCommission * lotClose / lot.Quantity;
             var closeCommission = AllocateCommission(ref exitCommission, lotClose, remainingCloseQty);
             remainingCloseQty -= lotClose;
-            realised += lotProceeds - lotClose * coverPrice;
+            realised += lotProceeds - lotClose * coverPrice / QuoteDivisor(lot.UnitKind);
             shortSaleProceeds += lotProceeds;
 
             account.ClosedLots.Add(new ClosedLot(
@@ -1714,7 +1733,7 @@ internal sealed partial class SimulatedPortfolio
         return lot with
         {
             Quantity = remainingQuantity,
-            EntryPrice = remainingBasis / remainingQuantity,
+            EntryPrice = remainingBasis / remainingQuantity * QuoteDivisor(lot.UnitKind),
             BasisComponents = basisComponents,
             EntryCommission = remainingCommission
         };
