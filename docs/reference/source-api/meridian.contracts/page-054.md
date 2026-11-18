@@ -6,16 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## SecuritySearchRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecuritySearchRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs#L10).
-
-```csharp
-public sealed record SecuritySearchRequest(string Query, int Take = 50, int Skip = 0, bool ActiveOnly = false, string? CustomProfileId = null, int? ProfileVersion = null, string? ProfileFieldKey = null, string? ProfileFieldValue = null);
-```
-
 ## SecuritySettlementMethod
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecuritySettlementMethod</code>. Kind: `enum`.
@@ -609,7 +599,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationAccountingTreatment</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1541](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1541).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1511](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1511).
 
 The declared mark-based accounting treatment for an asset class.
 
@@ -621,8 +611,8 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Unspecified</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1543](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1543) |  |
-| <code>FairValueThroughProfitOrLoss</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1544](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1544) |  |
+| <code>Unspecified</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1513](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1513) |  |
+| <code>FairValueThroughProfitOrLoss</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1514](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1514) |  |
 
 ## SecurityValuationBlockerDto
 
@@ -877,3 +867,23 @@ One dated step of an amortizing or accreting leg notional.
 ```csharp
 public sealed record StructuredCashFlowNotionalStep(DateOnly EffectiveDate, decimal Notional);
 ```
+
+## StructuredCashFlowProjectionDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCashFlowProjectionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:356](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L356).
+
+Full projected cash flow schedule for a security under one rate scenario.
+
+```csharp
+public sealed record StructuredCashFlowProjectionDto(Guid SecurityId, StructuredCashFlowSourceKind SourceKind, StructuredCashFlowScenario Scenario, DateTimeOffset AsOf, IReadOnlyList<StructuredCashFlowScheduleEntry> Schedule, StructuredCashFlowStaleness Staleness = StructuredCashFlowStaleness.Unknown, DateTimeOffset? SourceLastUpdatedUtc = null, IReadOnlyList<StructuredFactorScheduleEntry>? FactorSchedule = null, StructuredCashFlowTerms? TermsUsed = null, IReadOnlyList<StructuredCashFlowLegSchedule>? LegSchedules = null, string? BlockedReason = null, bool IsNormalizedPer100 = false)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public SecurityCashFlowBlockerDto? Blocker { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:372](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L372) | Typed capability refusal; null on successful and older projections. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public StructuredCashFlowScheduleEvidence? ScheduleEvidence { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:376](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L376) | Calendar and kernel evidence for a declared projection; absent on legacy projections. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;Meridian.Contracts.FixedIncome.BondCalculationInput&gt;? InputManifest { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:380](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L380) | Exact dependencies selected by the context-aware calculation path. |

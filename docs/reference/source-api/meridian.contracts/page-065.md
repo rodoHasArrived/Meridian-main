@@ -6,16 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## OperationsCloseReadinessComponentDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseReadinessComponentDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1350](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1350).
-
-```csharp
-public sealed record OperationsCloseReadinessComponentDto(string Key, string Label, int Score, int Weight, bool IsReady, string Severity, string? BlockingReason, OperationsGateKeyDto? Gate, string? RouteHint);
-```
-
 ## OperationsCloseReadinessDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseReadinessDto</code>. Kind: `record`.
@@ -717,4 +707,16 @@ The operator&#x27;s pop-up notification choices. Each value is optional: null ke
 
 ```csharp
 public sealed record OperatorNotificationPreferencesDto(bool? Enabled = null, bool? ConnectionStatus = null, bool? Errors = null, bool? BackfillComplete = null, bool? DataGaps = null, bool? StorageWarnings = null, bool? QuietHoursEnabled = null, string? QuietHoursStart = null, string? QuietHoursEnd = null);
+```
+
+## OperatorPreferencesDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperatorPreferencesDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs:88](../../../../src/Meridian.Contracts/Workstation/OperatorPreferencesDtos.cs#L88).
+
+The signed-in operator&#x27;s stored presentation preferences and when they last changed.
+
+```csharp
+public sealed record OperatorPreferencesDto(OperatorPreferenceValuesDto Preferences, DateTimeOffset? UpdatedAt);
 ```

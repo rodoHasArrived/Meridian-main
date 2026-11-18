@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
-import { formatCount as formatCountValue, formatDecimal, formatFixed, formatNumber, formatTimestamp, pluralizeCount } from "@/lib/format";
+import { formatCount as formatCountValue, formatDecimal, formatFixed, formatNumber, formatRelativeTime, formatTimestamp, pluralizeCount } from "@/lib/format";
 import { useQuotesStream } from "@/hooks/use-quotes-stream";
 import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import type { ApiRequestOptions } from "@/lib/api";
@@ -1601,10 +1601,7 @@ function formatRelativeAge(iso: string | null | undefined): string {
   if (elapsedMs < 1000) return "just now";
   const seconds = Math.round(elapsedMs / 1000);
   if (seconds < 60) return `${seconds}s ago`;
-  const minutes = Math.round(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.round(minutes / 60);
-  return `${hours}h ago`;
+  return formatRelativeTime(then, then + elapsedMs);
 }
 
 function formatCount(count: number, noun: string): string {

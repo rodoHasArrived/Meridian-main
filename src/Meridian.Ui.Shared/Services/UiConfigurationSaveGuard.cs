@@ -84,9 +84,20 @@ public static class UiConfigurationSaveGuard
                 errors["Backfill.ValidationProfiles"] = ["Every provider validation profile must have a supported provider ID and bounded finite tolerances."];
             }
         }
+        if (next.DataQuality?.CrossProvider is { } crossProvider)
+        {
+            try
+            {
+                crossProvider.Validate();
+            }
+            catch (ArgumentException)
+            {
+                errors["DataQuality.CrossProvider"] = ["Cross-provider tolerances must be finite and within their supported bounds."];
+            }
+        }
         // Invalid floating-point values cannot be serialized. Refuse them with safe property-only
         // validation evidence before producing the before/after JSON used by the remaining guards.
-        if (errors.ContainsKey("Backfill.ValidationProfiles"))
+        if (errors.ContainsKey("Backfill.ValidationProfiles") || errors.ContainsKey("DataQuality.CrossProvider"))
             throw new UiConfigurationValidationException(errors);
         if (next.Backfill?.Providers is { } providers)
         {
@@ -104,6 +115,8 @@ public static class UiConfigurationSaveGuard
                 }
             }
         }
+        if (FailoverRuleReferences.FindUnknownInChangedRules(current.DataSources, next.DataSources) is { } unknownProvider)
+            errors["DataSources.FailoverRules"] = [unknownProvider];
         if (!string.Equals(current.TenantScopeEnforcement, next.TenantScopeEnforcement, StringComparison.Ordinal))
             errors["TenantScopeEnforcement"] = ["Tenant posture is a host deployment setting and cannot be changed by a UI save."];
 
@@ -112,7 +125,7 @@ public static class UiConfigurationSaveGuard
         CheckChanges(before, after, "", confirmDataSemantics, errors);
         if (wholeDocument)
         {
-            foreach (var path in new[] { "Backfill.ValidationProfiles", "Backfill.ValidationProfileAudit", "DataSources.FailoverRules", "DataSources.FailoverRuleAudit", "ProviderConnections" })
+            foreach (var path in new[] { "Backfill.ValidationProfiles", "Backfill.ValidationProfileAudit", "DataSources.FailoverRules", "DataSources.FailoverRuleAudit", "DataQuality.CrossProvider", "DataQuality.CrossProviderAudit", "ProviderConnections" })
             {
                 if (!JsonNode.DeepEquals(At(before, path), At(after, path)))
                     errors[path] = ["Use the dedicated provider editor so validation reasons and audit evidence are retained."];

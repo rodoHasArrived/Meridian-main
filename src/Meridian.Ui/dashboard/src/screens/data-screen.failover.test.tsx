@@ -69,6 +69,39 @@ describe("FailoverRegion", () => {
     expect(await screen.findByText("Pending host restart")).toBeInTheDocument();
   });
 
+  it("reports a live apply when the host confirms it, instead of a restart banner", async () => {
+    const api = makeApi();
+    api.saveRule.mockResolvedValue({ id: "stream", changeImpact: {
+      impact: "Live", changes: [], pendingChanges: [], savedAtUtc: "2026-11-18T10:05:00Z", requiresRestart: false, requiresReconnect: false,
+      lastApply: { appliedAtUtc: "2026-11-18T10:05:00Z", entries: [{ path: "dataSources.failoverRules.0.failoverThreshold", kind: "AppliedLive", detail: "The failover coordinator now uses the saved rule." }] }
+    } });
+    const { user } = await openEditor(api);
+    await user.click(screen.getByRole("button", { name: "Edit stream" }));
+    const field = screen.getByRole("spinbutton", { name: "Consecutive failures" });
+    await user.clear(field); await user.type(field, "2");
+    await user.click(screen.getByRole("button", { name: "Save rule" }));
+    expect(await screen.findByText("Applied live")).toBeInTheDocument();
+    expect(screen.getByText("The failover coordinator now uses the saved rule.")).toBeInTheDocument();
+    expect(screen.queryByText("Pending host restart")).not.toBeInTheDocument();
+  });
+
+  it("names the settings a restart is still needed for", async () => {
+    const api = makeApi();
+    api.saveSettings.mockResolvedValue({ changeImpact: {
+      impact: "RestartHost", changes: [], pendingChanges: [{ path: "dataSources.enableFailover", impact: "RestartHost" }], savedAtUtc: null,
+      requiresRestart: true, requiresReconnect: false,
+      lastApply: { appliedAtUtc: "2026-11-18T10:05:00Z", entries: [
+        { path: "dataSources.enableFailover", kind: "Deferred", detail: "Turning failover on or off takes effect after a host restart." },
+        { path: "dataSources.healthCheckIntervalSeconds", kind: "AppliedLive", detail: "Health checks now run at the saved interval." }
+      ] }
+    } });
+    const { user } = await openEditor(api);
+    await user.click(screen.getByRole("button", { name: "Save failover settings" }));
+    expect(await screen.findByText("Pending host restart")).toBeInTheDocument();
+    expect(screen.getByText(/Part of this save is already live/)).toBeInTheDocument();
+    expect(screen.getByText("Turning failover on or off takes effect after a host restart.")).toBeInTheDocument();
+  });
+
   it("sends a recorded reason with rule threshold changes", async () => {
     const { api, user } = await openEditor();
     await user.click(screen.getByRole("button", { name: "Edit stream" }));

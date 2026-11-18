@@ -6,59 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## ConfigPreset
-
-Qualified name: <code>Meridian.Application.Services.ConfigPreset</code>. Kind: `enum`.
-
-Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:930](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L930).
-
-Available configuration presets for different user roles.
-
-```csharp
-public enum ConfigPreset : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Researcher</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:933](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L933) | Historical analysis, daily bars, Parquet export. |
-| <code>DayTrader</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:935](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L935) | Real-time streaming, L2 depth, low-latency storage. |
-| <code>OptionsTrader</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:937](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L937) | Options chain + Greeks, IB streaming, derivatives enabled. |
-| <code>Crypto</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:939](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L939) | 24/7 crypto collection, Alpaca crypto feed, extended retention. |
-
-## ConfigPresetInfo
-
-Qualified name: <code>Meridian.Application.Services.ConfigPresetInfo</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:945](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L945).
-
-Descriptive information about a configuration preset.
-
-```csharp
-public sealed record ConfigPresetInfo(ConfigPreset Preset, string Name, string Description, string[] KeySettings);
-```
-
-## ConfigurationPresets
-
-Qualified name: <code>Meridian.Application.Services.ConfigurationPresets</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:992](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L992).
-
-Role-based configuration presets that configure ~15 settings at once. Reduces time-to-value from 30+ minutes of manual config to a single --preset flag.
-
-```csharp
-public static class ConfigurationPresets
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;string&gt; AvailablePresets =&gt; …;</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:997](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L997) | Available preset names. |
-| <code>public static IReadOnlyDictionary&lt;string, string&gt; PresetDescriptions =&gt; …;</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:1005](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L1005) | Gets the preset description for display. |
-| <code>public static AppConfig ApplyPreset(string presetName, AppConfig config);</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:1016](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L1016) | Applies a named preset to the given config, returning a new config with preset values. |
-
 ## ConfigurationService
 
 Qualified name: <code>Meridian.Application.Services.ConfigurationService</code>. Kind: `class`.
@@ -969,3 +916,84 @@ Result of scanning archived symbols.
 ```csharp
 public sealed record ArchivedSymbolsResult(ArchivedSymbolInfo[] Symbols, int TotalCount, int TotalFiles, long TotalSizeBytes, string DataRoot, long ScanDurationMs);
 ```
+
+## AutoResubscribeOptions
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.AutoResubscribeOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:444](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L444).
+
+Configuration options for the auto-resubscribe policy.
+
+```csharp
+public sealed record AutoResubscribeOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntegritySeverity MinSeverityForResubscribe { get; init; } = IntegritySeverity.Error;</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:450](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L450) | Minimum severity level required to trigger auto-resubscribe. Default: Error (only Error-level integrity events trigger resubscription). |
+| <code>public TimeSpan SymbolCooldown { get; init; } = TimeSpan.FromSeconds(30);</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:457](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L457) | Cooldown period after a successful resubscription. Prevents rapid repeated resubscriptions for the same symbol. Default: 30 seconds. |
+| <code>public TimeSpan MinResubscribeInterval { get; init; } = TimeSpan.FromSeconds(5);</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:464](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L464) | Minimum interval between resubscription attempts for the same symbol. Applies even if previous attempt failed. Default: 5 seconds. |
+| <code>public int CircuitBreakerThreshold { get; init; } = 5;</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:470](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L470) | Number of consecutive failures before the global circuit breaker opens. Default: 5 failures. |
+| <code>public TimeSpan CircuitBreakerDuration { get; init; } = TimeSpan.FromSeconds(60);</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:476](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L476) | Duration the global circuit breaker remains open before transitioning to half-open. Default: 60 seconds. |
+| <code>public int SymbolCircuitBreakerThreshold { get; init; } = 3;</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:482](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L482) | Number of consecutive failures before a per-symbol circuit breaker opens. Default: 3 failures. |
+| <code>public TimeSpan SymbolCircuitBreakerDuration { get; init; } = TimeSpan.FromSeconds(120);</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:488](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L488) | Duration a per-symbol circuit breaker remains open. Default: 120 seconds (longer than global to allow global recovery first). |
+
+## AutoResubscribePolicy
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.AutoResubscribePolicy</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:24](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L24).
+
+Auto-resubscribe policy that triggers resubscription when integrity events occur. Implements rate limiting and delegates circuit-breaking (global and per-symbol) to the shared CircuitBreaker primitive. Flow: 1. Integrity event received → check rate limit → check circuit breaker → resubscribe 2. If resubscription fails → increment failure count → possibly open circuit 3. Circuit opens after threshold failures → waits break duration → half-open → test
+
+```csharp
+public sealed class AutoResubscribePolicy : IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public AutoResubscribePolicy(SubscriptionOrchestrator subscriptionManager, AutoResubscribeOptions? options = null, ILogger? log = null, TimeProvider? clock = null);</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:44](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L44) |  |
+| <code>public CircuitState CurrentCircuitState =&gt; …;</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:86](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L86) | Current state of the global circuit breaker. |
+| <code>public int SymbolsInCooldown =&gt; …;</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:91](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L91) | Number of symbols currently in cooldown. |
+| <code>public int SymbolsWithOpenCircuit =&gt; …;</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:96](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L96) | Number of symbols with open circuit breakers. |
+| <code>public async Task&lt;bool&gt; OnIntegrityEventAsync(string symbol, IntegritySeverity severity, AppConfig config, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:107](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L107) | Handles an integrity event and potentially triggers resubscription. This is the main entry point for the policy. |
+| <code>public Task&lt;bool&gt; OnDepthIntegrityEventAsync(DepthIntegrityEvent evt, AppConfig config, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:207](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L207) | Handles a depth integrity event. |
+| <code>public Task&lt;bool&gt; OnTradeIntegrityEventAsync(IntegrityEvent evt, AppConfig config, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:231](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L231) | Handles a trade integrity event. |
+| <code>public void ResetCircuitBreaker();</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:243](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L243) | Manually resets the circuit breaker to closed state. Use with caution. |
+| <code>public void ResetSymbolCircuit(string symbol);</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:260](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L260) | Resets the circuit breaker for a specific symbol. |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs:345](../../../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs#L345) |  |
+
+## BatchOperationsService
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.BatchOperationsService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs:13](../../../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs#L13).
+
+Service for performing batch operations on symbol subscriptions. Supports bulk delete, toggle, update, and other multi-symbol operations.
+
+```csharp
+public sealed class BatchOperationsService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public BatchOperationsService(ConfigStore configStore, WatchlistService watchlistService);</code> | [src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs:18](../../../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs#L18) |  |
+| <code>public async Task&lt;BatchOperationResult&gt; DeleteSymbolsAsync(BatchDeleteRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs:27](../../../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs#L27) | Delete multiple symbols at once. |
+| <code>public async Task&lt;BatchOperationResult&gt; ToggleSubscriptionsAsync(BatchToggleRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs:85](../../../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs#L85) | Toggle subscription settings for multiple symbols. |
+| <code>public async Task&lt;BatchOperationResult&gt; UpdateSymbolsAsync(BatchUpdateRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs:142](../../../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs#L142) | Update configuration for multiple symbols. |
+| <code>public async Task&lt;BatchOperationResult&gt; AddSymbolsAsync(BatchAddRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs:200](../../../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs#L200) | Add multiple symbols at once. |
+| <code>public Task&lt;BatchOperationResult&gt; EnableTradesAsync(string[] symbols, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs:272](../../../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs#L272) | Enable trades for multiple symbols. |
+| <code>public Task&lt;BatchOperationResult&gt; DisableTradesAsync(string[] symbols, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs:280](../../../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs#L280) | Disable trades for multiple symbols. |
+| <code>public Task&lt;BatchOperationResult&gt; EnableDepthAsync(string[] symbols, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs:288](../../../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs#L288) | Enable depth for multiple symbols. |
+| <code>public Task&lt;BatchOperationResult&gt; DisableDepthAsync(string[] symbols, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs:296](../../../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs#L296) | Disable depth for multiple symbols. |
+| <code>public async Task&lt;BatchOperationResult&gt; CopySettingsAsync(BatchCopySettingsRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs:304](../../../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs#L304) | Copy settings from one symbol to multiple others. |
+| <code>public async Task&lt;string[]&gt; GetFilteredSymbolsAsync(BatchFilter filter, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs:383](../../../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs#L383) | Get symbols matching a filter. |
+| <code>public async Task&lt;BatchOperationResult&gt; PerformFilteredOperationAsync(BatchFilteredOperationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs:448](../../../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs#L448) | Perform a batch operation with a filter. |
+| <code>public async Task&lt;BatchOperationResult&gt; MoveToWatchlistAsync(BatchMoveToWatchlistRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs:495](../../../../src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs#L495) | Move symbols to a watchlist. |

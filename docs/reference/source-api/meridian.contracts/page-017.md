@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LoanEventLineageDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.LoanEventLineageDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:207](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L207).
+
+```csharp
+public sealed record LoanEventLineageDto(Guid EventId, long AggregateVersion, string EventType, int EventSchemaVersion, DateOnly? EffectiveDate, DateTimeOffset RecordedAt, string PayloadJson, Guid? CausationId, Guid? CorrelationId, Guid? CommandId, string? SourceSystem, bool ReplayFlag);
+```
+
+## LoanMaturityBucketDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.LoanMaturityBucketDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:401](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L401).
+
+Amounts are exact invariant decimal text; an unknown denomination has no amount.
+
+```csharp
+public sealed record LoanMaturityBucketDto(CurrencyCode Currency, int? Year, int? Quarter, string? PrincipalOutstanding, IReadOnlyList<Guid> LoanIds);
+```
+
 ## LoanPortfolioCurrencyTotalsDto
 
 Qualified name: <code>Meridian.Contracts.DirectLending.LoanPortfolioCurrencyTotalsDto</code>. Kind: `record`.
@@ -665,24 +687,4 @@ Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:394](
 
 ```csharp
 public sealed record ServicerStatementApplyResultDto(Guid BatchId, int RequestedRowCount, int AppliedRowCount, int SkippedRowCount, IReadOnlyList<ServicerStatementRowDto> Rows, IReadOnlyList<ServicerStatementValidationIssueDto> Issues, string Status);
-```
-
-## ServicerStatementImportRequestDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.ServicerStatementImportRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:305](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L305).
-
-```csharp
-public sealed record ServicerStatementImportRequestDto(ServicerStatementKind Kind, string ServicerName, DateOnly StatementDate, string SourceFormat, string? SourceFileName, string? RawPayload, string? ImportedBy = null, string? FundAccountId = null, string? CashAccountId = null, string? StatementRunId = null, IReadOnlyList<ServicerStatementRowDto>? Rows = null, string? Notes = null);
-```
-
-## ServicerStatementImportResultDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.ServicerStatementImportResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:382](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L382).
-
-```csharp
-public sealed record ServicerStatementImportResultDto(Guid BatchId, string Status, string EvidenceRoute, ServicerStatementPreviewDto Preview);
 ```

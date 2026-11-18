@@ -5,6 +5,8 @@ import { createRequire } from "node:module";
 import fs from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
+import { chromiumLaunchOptions } from "./design-system-smoke-helpers.mjs";
+import { A11Y_ROUTES, checkInspectorFocusNotObscured, compareAxeFindings, nextAxeBaseline, readAxeBaseline, runAxe, writeAxeBaseline } from "./smoke-workstation-a11y.mjs";
 
 const navLabels = ["Trading", "Portfolio", "Accounting", "Reporting", "Strategy", "Data", "Settings"];
 
@@ -61,6 +63,8 @@ Options:
   --manifest <path>        JSON result path. Default: artifacts/browser-workstation-smoke/manifest.json.
   --screenshot <path>      Screenshot path. Default: artifacts/browser-workstation-smoke/workstation-smoke.png.
   --min-text-length <n>    Minimum rendered body text length. Default: 200.
+  --skip-a11y              Skip the axe route audit and the inspector focus check.
+  --write-axe-baseline     Seed scripts/smoke-workstation-axe-baseline.json, or lock in removed findings.
   --help                   Show this help text.
 `);
 }
@@ -256,7 +260,7 @@ async function main() {
 
     const dashboardRequire = createRequire(path.join(dashboardDir, "package.json"));
     const { chromium } = dashboardRequire("playwright");
-    browser = await chromium.launch();
+    browser = await chromium.launch(chromiumLaunchOptions());
     const page = await browser.newPage({ viewport: { width: 1440, height: 1100 }, deviceScaleFactor: 1 });
 
     page.on("console", (message) => {
@@ -304,6 +308,16 @@ async function main() {
       throw new Error(`Smoke screenshot is unexpectedly small: ${screenshot.length} bytes`);
     }
 
+    if (!flags.has("skip-a11y")) {
+      manifest.accessibility = await runAccessibilityChecks({
+        page,
+        baseUrl: new URL("/workstation", targetUrl).toString(),
+        dashboardDir,
+        timeoutMs,
+        writeBaseline: flags.has("write-axe-baseline")
+      });
+    }
+
     if (errors.length > 0) {
       throw new Error(`Browser console/page errors detected: ${errors.join(" | ")}`);
     }
@@ -323,6 +337,7 @@ async function main() {
   } catch (error) {
     manifest.status = "failed";
     manifest.error = error instanceof Error ? error.message : String(error);
+    if (error && typeof error === "object" && "accessibility" in error) manifest.accessibility = error.accessibility;
     throw error;
   } finally {
     if (browser) {
@@ -340,6 +355,40 @@ async function main() {
     await fs.mkdir(path.dirname(manifestPath), { recursive: true });
     await fs.writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
   }
+}
+
+async function runAccessibilityChecks({ page, baseUrl, dashboardDir, timeoutMs, writeBaseline }) {
+  const dashboardRequire = createRequire(path.join(dashboardDir, "package.json"));
+  const axeSource = await fs.readFile(dashboardRequire.resolve("axe-core/axe.min.js"), "utf8");
+  const baselinePath = path.join(dashboardDir, "scripts/smoke-workstation-axe-baseline.json");
+  const findings = [];
+  const focus = { checked: 0, obscured: [] };
+  for (const route of A11Y_ROUTES) {
+    await page.goto(`${baseUrl}${route.path === "/" ? "/" : route.path}`, { waitUntil: "domcontentloaded", timeout: timeoutMs });
+    await page.waitForSelector(".workstation-frame", { timeout: timeoutMs });
+    await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => undefined);
+    findings.push(...await runAxe(page, axeSource, route.id));
+    if (route.id === "accounting-reconciliation") {
+      Object.assign(focus, await checkInspectorFocusNotObscured(page, timeoutMs));
+    }
+  }
+
+  const baseline = await readAxeBaseline(baselinePath);
+  if (writeBaseline) {
+    await writeAxeBaseline(baselinePath, nextAxeBaseline(findings, baseline));
+  }
+  const comparison = compareAxeFindings(findings, writeBaseline ? await readAxeBaseline(baselinePath) : baseline ?? { allowed: [] });
+  const result = { routes: A11Y_ROUTES.map((route) => route.id), findings, focus, ...comparison };
+  if (comparison.regressions.length > 0) {
+    throw Object.assign(new Error(`New serious or critical axe findings: ${comparison.regressions.join(", ")}`), { accessibility: result });
+  }
+  if (comparison.improvements.length > 0) {
+    console.log(`Axe findings no longer present; lock them in with --write-axe-baseline: ${comparison.improvements.join(", ")}`);
+  }
+  if (focus.obscured.length > 0) {
+    throw Object.assign(new Error(`Focused controls are obscured in the reconciliation inspector: ${focus.obscured.join(" | ")}`), { accessibility: result });
+  }
+  return result;
 }
 
 main().catch((error) => {

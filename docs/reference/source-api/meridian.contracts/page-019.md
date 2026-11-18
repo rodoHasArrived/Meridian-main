@@ -6,6 +6,71 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## GreeksSnapshot
+
+Qualified name: <code>Meridian.Contracts.Domain.Models.GreeksSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs:9](../../../../src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs#L9).
+
+Point-in-time snapshot of option greeks and implied volatility. Greeks measure the sensitivity of an option&#x27;s price to various factors.
+
+```csharp
+public sealed record GreeksSnapshot : MarketEventPayload
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DateTimeOffset Timestamp { get; }</code> | [src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs:14](../../../../src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs#L14) | Gets the timestamp of this greeks observation. |
+| <code>public string Symbol { get; }</code> | [src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs:19](../../../../src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs#L19) | Gets the option contract symbol (OCC or provider-specific). |
+| <code>public OptionContractSpec Contract { get; }</code> | [src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs:24](../../../../src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs#L24) | Gets the option contract specification. |
+| <code>public decimal Delta { get; }</code> | [src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs:30](../../../../src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs#L30) | Gets the delta — rate of change of option price with respect to underlying price. Range: &#91;-1, 1&#93;. Calls: &#91;0, 1&#93;, Puts: &#91;-1, 0&#93;. |
+| <code>public decimal Gamma { get; }</code> | [src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs:36](../../../../src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs#L36) | Gets the gamma — rate of change of delta with respect to underlying price. Always non-negative. Highest for at-the-money options near expiration. |
+| <code>public decimal Theta { get; }</code> | [src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs:42](../../../../src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs#L42) | Gets the theta — rate of time decay per calendar day. Typically negative (options lose value over time). |
+| <code>public decimal Vega { get; }</code> | [src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs:48](../../../../src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs#L48) | Gets the vega — sensitivity to a 1% change in implied volatility. Always non-negative. |
+| <code>public decimal Rho { get; }</code> | [src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs:53](../../../../src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs#L53) | Gets the rho — sensitivity to a 1% change in interest rates. |
+| <code>public decimal ImpliedVolatility { get; }</code> | [src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs:58](../../../../src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs#L58) | Gets the implied volatility as a decimal (e.g., 0.25 = 25%). |
+| <code>public decimal UnderlyingPrice { get; }</code> | [src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs:63](../../../../src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs#L63) | Gets the underlying price at the time of this snapshot. |
+| <code>public decimal? TheoreticalPrice { get; }</code> | [src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs:68](../../../../src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs#L68) | Gets the option&#x27;s theoretical price based on the model. |
+| <code>public decimal? TimeToExpiry { get; }</code> | [src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs:73](../../../../src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs#L73) | Gets the time to expiration in years (used for greeks computation). |
+| <code>public long SequenceNumber { get; }</code> | [src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs:78](../../../../src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs#L78) | Gets the sequence number for ordering events. |
+| <code>public string Source { get; }</code> | [src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs:83](../../../../src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs#L83) | Gets the data source identifier. |
+| <code>public GreeksSnapshot(DateTimeOffset Timestamp, string Symbol, OptionContractSpec Contract, decimal Delta, decimal Gamma, decimal Theta, decimal Vega, decimal Rho, decimal ImpliedVolatility, decimal UnderlyingPrice, decimal? TheoreticalPrice = null, decimal? TimeToExpiry = null, long SequenceNumber = 0, string Source = MarketDataSources.Unknown);</code> | [src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs:88](../../../../src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs#L88) | Initializes a new instance of the GreeksSnapshot record. |
+| <code>public string ImpliedVolatilityPercent =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs:138](../../../../src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs#L138) | Gets the implied volatility as a percentage string (e.g., &quot;25.00%&quot;). |
+| <code>public bool IsInTheMoney =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs:143](../../../../src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs#L143) | Returns true if the option is in-the-money based on the underlying price. |
+| <code>public decimal IntrinsicValue =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs:153](../../../../src/Meridian.Contracts/Domain/Models/GreeksSnapshot.cs#L153) | Gets the intrinsic value of the option. |
+
+## HistoricalAuction
+
+Qualified name: <code>Meridian.Contracts.Domain.Models.HistoricalAuction</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs:10](../../../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs#L10).
+
+Historical auction data from Alpaca Markets API. Contains opening and closing auction information for a trading session. Useful for VWAP calculations and understanding market open/close dynamics.
+
+```csharp
+public sealed record HistoricalAuction : MarketEventPayload
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Symbol { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs:15](../../../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs#L15) | Gets the ticker symbol for the security. |
+| <code>public DateOnly SessionDate { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs:20](../../../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs#L20) | Gets the trading session date. |
+| <code>public IReadOnlyList&lt;AuctionPrice&gt; OpeningAuctions { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs:25](../../../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs#L25) | Gets the collection of opening auction prices. |
+| <code>public IReadOnlyList&lt;AuctionPrice&gt; ClosingAuctions { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs:30](../../../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs#L30) | Gets the collection of closing auction prices. |
+| <code>public string Source { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs:35](../../../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs#L35) | Gets the data source identifier (e.g., &quot;alpaca&quot;). |
+| <code>public long SequenceNumber { get; }</code> | [src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs:40](../../../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs#L40) | Gets the sequence number for ordering events. |
+| <code>public HistoricalAuction(string Symbol, DateOnly SessionDate, IReadOnlyList&lt;AuctionPrice&gt;? OpeningAuctions, IReadOnlyList&lt;AuctionPrice&gt;? ClosingAuctions, string Source = &quot;alpaca&quot;, long SequenceNumber = 0);</code> | [src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs:51](../../../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs#L51) | Initializes a new instance of the HistoricalAuction record. |
+| <code>public decimal? PrimaryOpenPrice =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs:73](../../../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs#L73) | Gets the primary opening auction price (first valid opening auction). |
+| <code>public long? PrimaryOpenVolume =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs:78](../../../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs#L78) | Gets the primary opening auction volume. |
+| <code>public decimal? PrimaryClosePrice =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs:83](../../../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs#L83) | Gets the primary closing auction price (first valid closing auction). |
+| <code>public long? PrimaryCloseVolume =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs:88](../../../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs#L88) | Gets the primary closing auction volume. |
+| <code>public long TotalOpeningVolume =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs:93](../../../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs#L93) | Total volume from all opening auctions. |
+| <code>public long TotalClosingVolume =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs:98](../../../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs#L98) | Total volume from all closing auctions. |
+
 ## HistoricalBar
 
 Qualified name: <code>Meridian.Contracts.Domain.Models.HistoricalBar</code>. Kind: `record`.
@@ -1002,24 +1067,4 @@ Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:117](
 
 ```csharp
 public sealed record EnvironmentNodeRemapDto(string RemovedNodeDefinitionId, string ReplacementNodeDefinitionId);
-```
-
-## EnvironmentPublishChangeDto
-
-Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentPublishChangeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:146](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L146).
-
-```csharp
-public sealed record EnvironmentPublishChangeDto(string ChangeType, EnvironmentNodeKind? NodeKind, string TargetId, string Summary, bool IsBreaking = false);
-```
-
-## EnvironmentPublishPlanDto
-
-Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:121](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L121).
-
-```csharp
-public sealed record EnvironmentPublishPlanDto(Guid DraftId, string PublishedBy, bool AllowDestructiveDeletes = false, string? VersionLabel = null, string? Notes = null, IReadOnlyList<EnvironmentNodeRemapDto>? NodeRemaps = null);
 ```

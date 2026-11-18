@@ -6,25 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## ScheduleDecision
-
-Qualified name: <code>Meridian.Contracts.Services.ScheduleDecision</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Services/IOperationalScheduler.cs:55](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L55).
-
-Decision about whether an operation can be executed.
-
-```csharp
-public sealed record ScheduleDecision(bool CanExecute, string? Reason = null, TimeSpan? SuggestedDelay = null, IReadOnlyDictionary<string, object>? Context = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly ScheduleDecision Allowed = new (true);</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:64](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L64) | Decision indicating operation can execute. |
-| <code>public static ScheduleDecision Denied(string reason, TimeSpan? suggestedDelay = null) =&gt; …;</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:69](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L69) | Creates a denied decision with reason. |
-
 ## ScheduleSlot
 
 Qualified name: <code>Meridian.Contracts.Services.ScheduleSlot</code>. Kind: `record`.
@@ -889,4 +870,14 @@ Sweep-eligibility and fee profile for a money market fund. Used by cash-manageme
 
 ```csharp
 public sealed record MmfSweepProfileDto(Guid SecurityId, bool IsSweepEligible, bool HasLiquidityFee, string? FundFamily, DateTimeOffset AsOf);
+```
+
+## AccountBalanceHistoryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AccountBalanceHistoryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/AccountBalanceHistoryDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/AccountBalanceHistoryDtos.cs#L8).
+
+```csharp
+public sealed record AccountBalanceHistoryDto(Guid AccountId, DateTimeOffset AsOfUtc, IReadOnlyList<AccountBalanceHistoryPointDto> Points, bool IsTruncated);
 ```

@@ -3,6 +3,7 @@ import { AlertCircle, LineChart, Loader2, RefreshCcw, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { StretchedChartLabels } from "@/components/charts/stretched-chart-labels";
 import { cn } from "@/lib/utils";
 import {
   useHistoricalChartViewModel,
@@ -300,60 +301,41 @@ function CompareChip({ chip }: { chip: CompareChipViewModel }) {
 function CompareChartView({ viewModel: vm }: { viewModel: CompareChartViewModel }) {
   return (
     <div className="relative">
-      <svg
-        viewBox={vm.viewBox}
-        preserveAspectRatio="none"
-        className="block h-64 w-full overflow-visible"
-        role="img"
-        aria-label={vm.ariaLabel}
-      >
-        <line
-          x1={vm.guideX1}
-          x2={vm.guideX2}
-          y1={vm.zeroLineY}
-          y2={vm.zeroLineY}
-          stroke="var(--chart-grid-major, currentColor)"
-          strokeOpacity="0.4"
-          strokeDasharray="4 4"
-        />
-        <text
-          x={vm.highLabel.x}
-          y={vm.highLabel.y}
-          textAnchor="end"
-          fontFamily="var(--font-data, IBM Plex Mono, ui-monospace, Consolas, monospace)"
-          fontSize="10"
-          fill="currentColor"
-          fillOpacity="0.55"
+      <div className="relative">
+        <svg
+          viewBox={vm.viewBox}
+          preserveAspectRatio="none"
+          className="block h-64 w-full overflow-visible"
+          role="img"
+          aria-label={vm.ariaLabel}
         >
-          {vm.highLabel.value}
-        </text>
-        <text
-          x={vm.lowLabel.x}
-          y={vm.lowLabel.y}
-          textAnchor="end"
-          fontFamily="var(--font-data, IBM Plex Mono, ui-monospace, Consolas, monospace)"
-          fontSize="10"
-          fill="currentColor"
-          fillOpacity="0.55"
-        >
-          {vm.lowLabel.value}
-        </text>
-        {vm.series.map((series) =>
-          series.points ? (
-            <polyline
-              key={series.symbol}
-              fill="none"
-              stroke={series.color}
-              strokeOpacity={series.isBase ? 1 : 0.9}
-              strokeWidth={series.isBase ? 2 : 1.5}
-              strokeLinejoin="round"
-              strokeLinecap="round"
-              points={series.points}
-              data-testid={`historical-chart-compare-series-${series.symbol}`}
-            />
-          ) : null
-        )}
-      </svg>
+          <line
+            x1={vm.guideX1}
+            x2={vm.guideX2}
+            y1={vm.zeroLineY}
+            y2={vm.zeroLineY}
+            stroke="var(--chart-grid-major, currentColor)"
+            strokeOpacity="0.4"
+            strokeDasharray="4 4"
+          />
+          {vm.series.map((series) =>
+            series.points ? (
+              <polyline
+                key={series.symbol}
+                fill="none"
+                stroke={series.color}
+                strokeOpacity={series.isBase ? 1 : 0.9}
+                strokeWidth={series.isBase ? 2 : 1.5}
+                strokeLinejoin="round"
+                strokeLinecap="round"
+                points={series.points}
+                data-testid={`historical-chart-compare-series-${series.symbol}`}
+              />
+            ) : null
+          )}
+        </svg>
+        <StretchedChartLabels viewBox={vm.viewBox} labels={[vm.highLabel, vm.lowLabel]} fontSize={12} />
+      </div>
       <CompareLegend series={vm.series} />
     </div>
   );
@@ -440,72 +422,53 @@ function HistoricalChartStatePanelView({
 
 function BarChartSparkline({ viewModel }: { viewModel: HistoricalChartSparklineViewModel }) {
   return (
-    <svg
-      viewBox={viewModel.viewBox}
-      preserveAspectRatio="none"
-      className="block h-56 w-full overflow-visible"
-      role="img"
-      aria-label={viewModel.ariaLabel}
-    >
-      <line
-        x1={viewModel.guideX1}
-        x2={viewModel.guideX2}
-        y1={viewModel.highGuideY}
-        y2={viewModel.highGuideY}
-        stroke="var(--chart-grid)"
-        strokeOpacity="0.85"
-        strokeDasharray="4 4"
-      />
-      <line
-        x1={viewModel.guideX1}
-        x2={viewModel.guideX2}
-        y1={viewModel.lowGuideY}
-        y2={viewModel.lowGuideY}
-        stroke="var(--chart-grid)"
-        strokeOpacity="0.85"
-        strokeDasharray="4 4"
-      />
-      <path d={viewModel.areaPath} fill={viewModel.stroke} fillOpacity="0.12" stroke="none" />
-      <polyline
-        fill="none"
-        stroke={viewModel.stroke}
-        strokeWidth="1.75"
-        strokeLinejoin="round"
-        strokeLinecap="round"
-        points={viewModel.points}
-      />
-      <circle
-        cx={viewModel.lastPoint.x}
-        cy={viewModel.lastPoint.y}
-        r="3.25"
-        fill={viewModel.stroke}
-        stroke="var(--chart-grid-major)"
-        strokeOpacity="0.8"
-        strokeWidth="1"
-      />
-      <text
-        x={viewModel.highLabel.x}
-        y={viewModel.highLabel.y}
-        textAnchor="end"
-        fontFamily="var(--font-data, IBM Plex Mono, ui-monospace, Consolas, monospace)"
-        fontSize="10"
-        fill="currentColor"
-        fillOpacity="0.55"
+    <div className="relative">
+      <svg
+        viewBox={viewModel.viewBox}
+        preserveAspectRatio="none"
+        className="block h-56 w-full overflow-visible"
+        role="img"
+        aria-label={viewModel.ariaLabel}
       >
-        {viewModel.highLabel.value}
-      </text>
-      <text
-        x={viewModel.lowLabel.x}
-        y={viewModel.lowLabel.y}
-        textAnchor="end"
-        fontFamily="var(--font-data, IBM Plex Mono, ui-monospace, Consolas, monospace)"
-        fontSize="10"
-        fill="currentColor"
-        fillOpacity="0.55"
-      >
-        {viewModel.lowLabel.value}
-      </text>
-    </svg>
+        <line
+          x1={viewModel.guideX1}
+          x2={viewModel.guideX2}
+          y1={viewModel.highGuideY}
+          y2={viewModel.highGuideY}
+          stroke="var(--chart-grid)"
+          strokeOpacity="0.85"
+          strokeDasharray="4 4"
+        />
+        <line
+          x1={viewModel.guideX1}
+          x2={viewModel.guideX2}
+          y1={viewModel.lowGuideY}
+          y2={viewModel.lowGuideY}
+          stroke="var(--chart-grid)"
+          strokeOpacity="0.85"
+          strokeDasharray="4 4"
+        />
+        <path d={viewModel.areaPath} fill={viewModel.stroke} fillOpacity="0.12" stroke="none" />
+        <polyline
+          fill="none"
+          stroke={viewModel.stroke}
+          strokeWidth="1.75"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+          points={viewModel.points}
+        />
+        <circle
+          cx={viewModel.lastPoint.x}
+          cy={viewModel.lastPoint.y}
+          r="3.25"
+          fill={viewModel.stroke}
+          stroke="var(--chart-grid-major)"
+          strokeOpacity="0.8"
+          strokeWidth="1"
+        />
+      </svg>
+      <StretchedChartLabels viewBox={viewModel.viewBox} labels={[viewModel.highLabel, viewModel.lowLabel]} fontSize={12} />
+    </div>
   );
 }
 
@@ -653,126 +616,105 @@ function CandlestickChartView({ viewModel: vm }: { viewModel: CandlestickChartVi
 
   return (
     <div className="relative">
-      <svg
-        ref={svgRef}
-        viewBox={vm.viewBox}
-        preserveAspectRatio="none"
-        className={cn("block w-full overflow-visible focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40", heightClass)}
-        role="img"
-        aria-label={vm.ariaLabel}
-        tabIndex={0}
-        onPointerMove={handlePointer}
-        onPointerDown={handlePointer}
-        onPointerLeave={clearHover}
-        onPointerCancel={clearHover}
-        onBlur={clearHover}
-        onKeyDown={handleKeyDown}
-      >
-        {/* High guide line */}
-        <line
-          x1={vm.guideX1}
-          x2={vm.guideX2}
-          y1={vm.highGuideY}
-          y2={vm.highGuideY}
-          stroke="var(--chart-grid)"
-          strokeOpacity="0.85"
-          strokeDasharray="4 4"
-        />
-        {/* Low guide line */}
-        <line
-          x1={vm.guideX1}
-          x2={vm.guideX2}
-          y1={vm.lowGuideY}
-          y2={vm.lowGuideY}
-          stroke="var(--chart-grid)"
-          strokeOpacity="0.85"
-          strokeDasharray="4 4"
-        />
-        {/* High price label */}
-        <text
-          x={vm.highLabel.x}
-          y={vm.highLabel.y}
-          textAnchor="end"
-          fontFamily="var(--font-data, IBM Plex Mono, ui-monospace, Consolas, monospace)"
-          fontSize="10"
-          fill="currentColor"
-          fillOpacity="0.55"
+      <div className="relative">
+        <svg
+          ref={svgRef}
+          viewBox={vm.viewBox}
+          preserveAspectRatio="none"
+          className={cn("block w-full overflow-visible focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40", heightClass)}
+          role="img"
+          aria-label={vm.ariaLabel}
+          tabIndex={0}
+          onPointerMove={handlePointer}
+          onPointerDown={handlePointer}
+          onPointerLeave={clearHover}
+          onPointerCancel={clearHover}
+          onBlur={clearHover}
+          onKeyDown={handleKeyDown}
         >
-          {vm.highLabel.value}
-        </text>
-        {/* Low price label */}
-        <text
-          x={vm.lowLabel.x}
-          y={vm.lowLabel.y}
-          textAnchor="end"
-          fontFamily="var(--font-data, IBM Plex Mono, ui-monospace, Consolas, monospace)"
-          fontSize="10"
-          fill="currentColor"
-          fillOpacity="0.55"
-        >
-          {vm.lowLabel.value}
-        </text>
-        {/* Separator between price and volume areas */}
-        <line
-          x1={vm.guideX1}
-          x2={vm.guideX2}
-          y1={vm.volumeAreaTop - 2}
-          y2={vm.volumeAreaTop - 2}
-          stroke="var(--chart-grid)"
-          strokeOpacity="0.3"
-        />
-        {/* Candlestick bars */}
-        {vm.bars.map((bar, i) => (
-          <CandlestickBar key={i} bar={bar} />
-        ))}
-        {/* Volume bars */}
-        {vm.volumeBars.map((vb, i) => (
-          <rect
-            key={i}
-            x={vb.x}
-            y={vb.y}
-            width={vb.width}
-            height={vb.height}
-            fill={vb.isBullish ? "var(--chart-up)" : "var(--chart-dn)"}
-            fillOpacity="0.35"
-          />
-        ))}
-        {/* Bollinger Bands overlay (renders below SMA so SMA stays prominent) */}
-        {vm.bollingerOverlay ? (
-          <BollingerBandsOverlay overlay={vm.bollingerOverlay} />
-        ) : null}
-        {/* Simple moving average overlays */}
-        {vm.smaOverlays.map((overlay) => (
-          <polyline
-            key={overlay.period}
-            fill="none"
-            stroke={overlay.stroke}
-            strokeOpacity="0.9"
-            strokeWidth="1.5"
-            strokeLinejoin="round"
-            strokeLinecap="round"
-            points={overlay.points}
-            aria-label={overlay.ariaLabel}
-            data-testid={`historical-chart-sma-${overlay.period}`}
-          />
-        ))}
-        {/* RSI sub-panel */}
-        {vm.rsiPanel ? <RsiPanelView panel={vm.rsiPanel} /> : null}
-        {/* Crosshair on hovered bar */}
-        {hoveredBar ? (
+          {/* High guide line */}
           <line
-            x1={hoveredBar.midX}
-            x2={hoveredBar.midX}
-            y1={0}
-            y2={vm.geometry.height}
-            stroke="var(--chart-grid-major, currentColor)"
-            strokeOpacity="0.6"
-            strokeDasharray="3 3"
-            data-testid="historical-chart-crosshair"
-            pointerEvents="none"
+            x1={vm.guideX1}
+            x2={vm.guideX2}
+            y1={vm.highGuideY}
+            y2={vm.highGuideY}
+            stroke="var(--chart-grid)"
+            strokeOpacity="0.85"
+            strokeDasharray="4 4"
           />
-        ) : null}
-      </svg>
+          {/* Low guide line */}
+          <line
+            x1={vm.guideX1}
+            x2={vm.guideX2}
+            y1={vm.lowGuideY}
+            y2={vm.lowGuideY}
+            stroke="var(--chart-grid)"
+            strokeOpacity="0.85"
+            strokeDasharray="4 4"
+          />
+          {/* Separator between price and volume areas */}
+          <line
+            x1={vm.guideX1}
+            x2={vm.guideX2}
+            y1={vm.volumeAreaTop - 2}
+            y2={vm.volumeAreaTop - 2}
+            stroke="var(--chart-grid)"
+            strokeOpacity="0.3"
+          />
+          {/* Candlestick bars */}
+          {vm.bars.map((bar, i) => (
+            <CandlestickBar key={i} bar={bar} />
+          ))}
+          {/* Volume bars */}
+          {vm.volumeBars.map((vb, i) => (
+            <rect
+              key={i}
+              x={vb.x}
+              y={vb.y}
+              width={vb.width}
+              height={vb.height}
+              fill={vb.isBullish ? "var(--chart-up)" : "var(--chart-dn)"}
+              fillOpacity="0.35"
+            />
+          ))}
+          {/* Bollinger Bands overlay (renders below SMA so SMA stays prominent) */}
+          {vm.bollingerOverlay ? (
+            <BollingerBandsOverlay overlay={vm.bollingerOverlay} />
+          ) : null}
+          {/* Simple moving average overlays */}
+          {vm.smaOverlays.map((overlay) => (
+            <polyline
+              key={overlay.period}
+              fill="none"
+              stroke={overlay.stroke}
+              strokeOpacity="0.9"
+              strokeWidth="1.5"
+              strokeLinejoin="round"
+              strokeLinecap="round"
+              points={overlay.points}
+              aria-label={overlay.ariaLabel}
+              data-testid={`historical-chart-sma-${overlay.period}`}
+            />
+          ))}
+          {/* RSI sub-panel */}
+          {vm.rsiPanel ? <RsiPanelView panel={vm.rsiPanel} /> : null}
+          {/* Crosshair on hovered bar */}
+          {hoveredBar ? (
+            <line
+              x1={hoveredBar.midX}
+              x2={hoveredBar.midX}
+              y1={0}
+              y2={vm.geometry.height}
+              stroke="var(--chart-grid-major, currentColor)"
+              strokeOpacity="0.6"
+              strokeDasharray="3 3"
+              data-testid="historical-chart-crosshair"
+              pointerEvents="none"
+            />
+          ) : null}
+        </svg>
+        <StretchedChartLabels viewBox={vm.viewBox} labels={[vm.highLabel, vm.lowLabel, ...(vm.rsiPanel ? [vm.rsiPanel.overboughtLabel, vm.rsiPanel.oversoldLabel] : [])]} fontSize={12} />
+      </div>
       {hoverDetail ? (
         <HistoricalChartHoverPanel detail={hoverDetail} />
       ) : (
@@ -893,28 +835,6 @@ function RsiPanelView({ panel }: { panel: CandlestickRsiPanel }) {
         stroke="var(--chart-grid)"
         strokeOpacity="0.35"
       />
-      <text
-        x={panel.overboughtLabel.x}
-        y={panel.overboughtLabel.y}
-        textAnchor="end"
-        fontFamily="var(--font-data, IBM Plex Mono, ui-monospace, Consolas, monospace)"
-        fontSize="9"
-        fill="currentColor"
-        fillOpacity="0.55"
-      >
-        {panel.overboughtLabel.value}
-      </text>
-      <text
-        x={panel.oversoldLabel.x}
-        y={panel.oversoldLabel.y}
-        textAnchor="end"
-        fontFamily="var(--font-data, IBM Plex Mono, ui-monospace, Consolas, monospace)"
-        fontSize="9"
-        fill="currentColor"
-        fillOpacity="0.55"
-      >
-        {panel.oversoldLabel.value}
-      </text>
       <polyline
         fill="none"
         stroke="var(--chart-rsi, #2E4B6E)"

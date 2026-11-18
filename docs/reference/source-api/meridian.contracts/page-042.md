@@ -6,6 +6,48 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IPlaidIngestionService
+
+Qualified name: <code>Meridian.Contracts.Plaid.IPlaidIngestionService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:370](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L370).
+
+Coordinates Plaid connection setup, account ingestion, synchronization, and webhook recording.
+
+```csharp
+public interface IPlaidIngestionService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;PlaidLinkTokenResponse&gt; CreateLinkTokenAsync(PlaidLinkTokenRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:372](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L372) |  |
+| <code>Task&lt;PlaidInstitutionSearchResult&gt; SearchInstitutionsAsync(string query, IReadOnlyList&lt;PlaidProductDto&gt;? products = null, IReadOnlyList&lt;string&gt;? countryCodes = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:374](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L374) |  |
+| <code>Task&lt;PlaidPublicTokenExchangeResult&gt; ExchangePublicTokenAsync(PlaidPublicTokenExchangeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:380](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L380) |  |
+| <code>Task&lt;IReadOnlyList&lt;PlaidItemDto&gt;&gt; ListItemsAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:382](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L382) |  |
+| <code>Task&lt;IReadOnlyList&lt;PlaidAccountDto&gt;&gt; ListAccountsAsync(string? itemId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:384](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L384) |  |
+| <code>Task&lt;PlaidSyncResult&gt; SyncItemAsync(PlaidSyncRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:386](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L386) |  |
+| <code>Task&lt;PlaidWebhookEventDto&gt; RecordWebhookAsync(PlaidWebhookEventDto webhook, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:388](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L388) |  |
+
+## IPlaidTransferService
+
+Qualified name: <code>Meridian.Contracts.Plaid.IPlaidTransferService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:394](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L394).
+
+Creates sandbox Plaid transfers from explicit transfer requests.
+
+```csharp
+public interface IPlaidTransferService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;PlaidTransferResult&gt; CreateSandboxTransferAsync(PlaidTransferRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:396](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L396) |  |
+
 ## PlaidAccountDto
 
 Qualified name: <code>Meridian.Contracts.Plaid.PlaidAccountDto</code>. Kind: `record`.
@@ -556,31 +598,3 @@ Source: [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:9](.
 ```csharp
 public sealed record StatementReconciliationRunAuthorization(string RunId, Guid FundAccountId, string FundProfileId, Guid LedgerBookId, Guid AccountingPeriodId, DateOnly AsOfDate, DateOnly PeriodStart, DateOnly PeriodEnd);
 ```
-
-## StatementRunEvidenceLinkDto
-
-Qualified name: <code>Meridian.Contracts.Reconciliation.StatementRunEvidenceLinkDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs:48](../../../../src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs#L48).
-
-```csharp
-public sealed record StatementRunEvidenceLinkDto(string EvidenceId, string EvidenceRoute, string RunId, string SourceFileHash, string BrokerCustodian, string Account, string StatementPeriodStart, string StatementPeriodEnd, string MappingProfileId, int MappingProfileVersion, string ToleranceProfileId, int ToleranceProfileVersion, string ValidationSummary, string MatchSummary, IReadOnlyList<string> BreakIds, IReadOnlyList<string> CaseIds, string ImportedBy, string ImportedAtUtc, string ReconciledBy, string ReconciledAtUtc);
-```
-
-## GovernedReportingRunDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.GovernedReportingRunDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:144](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L144).
-
-Immutable governed reporting run projection returned by canonical lifecycle routes.
-
-```csharp
-public sealed record GovernedReportingRunDto(string RunId, string SeriesId, int Revision, string TemplateId, string TemplateVersion, ReportingGovernanceOperationalScopeDto Scope, ReportingGovernanceAccessScopeDto Access, ReportingGovernanceCertifiedSnapshotDto Snapshot, ReportingGovernanceAuthorityDto CreationAuthority, DateTimeOffset CreatedAtUtc, string? RestatementOfRunId, string ExecutionState, string GovernanceState, long Version, ReportingGovernanceReadinessDto? Readiness, ReportingGovernanceApprovalDto? Approval, ReportingGovernanceReleaseDto? Release, IReadOnlyList<ReportingGovernanceAuditEntryDto> AuditTrail, ReportingRunParametersDto? NormalizedParameters = null, IReadOnlyList<ReportingGovernanceActionAvailabilityDto>? ActionAvailability = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;ReportingGovernanceActionAvailabilityDto&gt; ActionAvailability { get; init; } = ActionAvailability??[];</code> | [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:166](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L166) |  |

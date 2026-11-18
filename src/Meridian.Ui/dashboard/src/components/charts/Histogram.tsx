@@ -2,7 +2,9 @@
 // raw `values` (auto-binned) or precomputed `bins`. When `signed`, bars left of zero tint red and
 // right of zero green so a returns distribution reads instantly; an optional dashed mean rule
 // overlays. Flat, token-driven, explicit-height svg.
+import { AXIS_LABEL_STYLE } from "./axis-ticks";
 import { ChartSvg, type ChartA11yProps } from "./chart-a11y";
+import { useChartSize } from "./use-chart-size";
 
 export interface HistogramBin {
   x0: number;
@@ -74,8 +76,9 @@ export function Histogram({
   accessibleData
 }: HistogramProps) {
   const bins = presetBins || (values && values.length ? buildBins(values, binCount) : []);
-  const W = 960;
-  const H = 340;
+  const [plotRef, size] = useChartSize({ width: 960, height: 340 });
+  const W = size.width;
+  const H = size.height;
   const padT = 14;
   const axisB = 28;
   const axisL = 40;
@@ -98,10 +101,11 @@ export function Histogram({
     meanProp != null ? meanProp : values && values.length ? values.reduce((a, b) => a + b, 0) / values.length : null;
 
   const cTicks = [0, 0.25, 0.5, 0.75, 1].map((f) => Math.round(f * maxCount));
-  const labelFont = { fontFamily: "var(--font-data, monospace)", fontSize: 11 };
+  const labelFont = { fontFamily: AXIS_LABEL_STYLE.fontFamily, fontVariantNumeric: "tabular-nums", fontSize: 12 };
   const tStep = Math.max(1, Math.round((n || 1) / xTicks));
 
   return (
+    <div ref={plotRef} style={{ width: "100%", height: "100%", minHeight: 0 }}>
     <ChartSvg
       viewBox={`0 0 ${W} ${H}`}
       style={{ width: "100%", height: "100%", display: "block" }}
@@ -159,6 +163,7 @@ export function Histogram({
       <line x1={plotL} x2={plotR} y1={plotB} y2={plotB} stroke={BORDER} strokeWidth="1.2" />
       <line x1={plotL} x2={plotL} y1={plotT} y2={plotB} stroke={BORDER} strokeWidth="1" opacity="0.5" />
     </ChartSvg>
+    </div>
   );
 }
 

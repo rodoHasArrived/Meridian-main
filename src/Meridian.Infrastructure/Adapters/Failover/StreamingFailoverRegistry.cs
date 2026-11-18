@@ -13,9 +13,17 @@ namespace Meridian.Infrastructure.Adapters.Failover;
 public sealed class StreamingFailoverRegistry
 {
     /// <summary>
+    /// Process-wide instance. Desktop mode runs the UI server and the collector in separate DI
+    /// containers; both register this instance so the UI reads the collector's live coordinator.
+    /// </summary>
+    public static StreamingFailoverRegistry Process { get; } = new();
+
+    /// <summary>
     /// The runtime failover service, or null if failover is disabled.
     /// </summary>
-    public StreamingFailoverService? Service { get; set; }
+    public StreamingFailoverService? Service { get => _service; set => _service = value; }
+
+    private volatile StreamingFailoverService? _service;
 
     /// <summary>
     /// Whether a runtime failover service is available.

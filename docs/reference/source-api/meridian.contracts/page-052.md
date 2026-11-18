@@ -6,25 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## SecurityCurveRatePolicy
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCurveRatePolicy</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L39).
-
-Write-once admission policy. Legacy definitions retain nonnegative-rate restrictions.
-
-```csharp
-public enum SecurityCurveRatePolicy
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>LegacyNonNegative</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L39) |  |
-| <code>SignedRates</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L39) |  |
-
 ## SecurityCurveRules
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCurveRules</code>. Kind: `class`.
@@ -699,9 +680,9 @@ public sealed record SecurityListItemBinding(string Key, string Member);
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityLotModel</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L49).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:40](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L40).
 
-The one lot model: every SecurityLotUnitKind maps to exactly one entry stating what its quantity means and which typed lot carries it. Consumers that need to know how a holding is sized read For(SecurityLotUnitKind) or ForAssetClass(string?) instead of switching on asset-class strings. Shares, listed contracts and currency amounts deliberately have no typed lot: the generic execution, backtesting and ledger lots carry them, with the catalog&#x27;s unit and multiplier (LotQuantity.UnitFor). Ledger relief-history lots are normalized to units with a multiplier of one and a monetary unit cost, so quantity times unit cost is the basis; they do not restate the instrument&#x27;s unit. Two guards keep the boundaries aligned with the catalog: LotQuantityBasisRules refuses a face-booked acquisition of a class that is not face-denominated, and PaperLotUnitCatalogAgreementTests holds paper fills to the catalog unit.
+The one lot model: every SecurityLotUnitKind maps to exactly one entry stating what its quantity means and which typed lot carries it. Consumers that need to know how a holding is sized read For(SecurityLotUnitKind) or ForAssetClass(string?) instead of switching on asset-class strings.
 
 ```csharp
 public static class SecurityLotModel
@@ -711,12 +692,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static IReadOnlyList&lt;SecurityLotUnitDescriptor&gt; All =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:66](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L66) | Every lot unit the model describes, in enum order. |
-| <code>public static SecurityLotUnitDescriptor For(SecurityLotUnitKind unitKind) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:69](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L69) | The entry for unitKind. |
-| <code>public static SecurityLotUnitDescriptor ForAssetClass(string? assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:75](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L75) | The entry for the lot unit the asset-class registry assigns to assetClass. |
-| <code>public static SecurityLotUnitDescriptor For(IUnitizedLot lot);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:79](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L79) | The entry for the unit a lot reports. |
-| <code>public static IReadOnlyList&lt;string&gt; AssetClassesWithUnit(SecurityLotUnitKind unitKind) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:86](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L86) | The asset classes whose lots carry unitKind, in catalog order. |
-| <code>public static bool IsCanonicalLot(IUnitizedLot lot);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:96](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L96) | True when lot is the canonical typed lot for its own unit, or its unit has no typed lot and any IUnitizedLot may carry it. |
+| <code>public static IReadOnlyList&lt;SecurityLotUnitDescriptor&gt; All =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:57](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L57) | Every lot unit the model describes, in enum order. |
+| <code>public static SecurityLotUnitDescriptor For(SecurityLotUnitKind unitKind) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:60](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L60) | The entry for unitKind. |
+| <code>public static SecurityLotUnitDescriptor ForAssetClass(string? assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:66](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L66) | The entry for the lot unit the asset-class registry assigns to assetClass. |
+| <code>public static SecurityLotUnitDescriptor For(IUnitizedLot lot);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L70) | The entry for the unit a lot reports. |
+| <code>public static IReadOnlyList&lt;string&gt; AssetClassesWithUnit(SecurityLotUnitKind unitKind) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:77](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L77) | The asset classes whose lots carry unitKind, in catalog order. |
+| <code>public static bool IsCanonicalLot(IUnitizedLot lot);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:87](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L87) | True when lot is the canonical typed lot for its own unit, or its unit has no typed lot and any IUnitizedLot may carry it. |
 
 ## SecurityLotUnitDescriptor
 
@@ -902,4 +883,14 @@ Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs
 
 ```csharp
 public sealed record SecurityMasterCorporateActionAppendResultDto(CorporateActionDto CorporateAction, SecurityMasterCorporateActionAuditDto Audit, SecurityMasterCorporateActionRestatementDto? Restatement = null);
+```
+
+## SecurityMasterCorporateActionAuditDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterCorporateActionAuditDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs:56](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs#L56).
+
+```csharp
+public sealed record SecurityMasterCorporateActionAuditDto(string AuditId, Guid SecurityId, Guid CorporateActionId, string EventType, string SourceSystem, string Actor, DateTimeOffset RecordedAtUtc, string? SourceRecordId, string? Reason, string? CorrelationId);
 ```

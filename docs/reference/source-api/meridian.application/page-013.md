@@ -6,26 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## ValidateCredentialsStep
-
-Qualified name: <code>Meridian.Application.Wizard.Steps.ValidateCredentialsStep</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Wizard/Steps/ValidateCredentialsStep.cs:13](../../../../src/Meridian.Application/Wizard/Steps/ValidateCredentialsStep.cs#L13).
-
-Step 5: Validates credentials for the selected data source. Does not modify context state; purely informational.
-
-```csharp
-public sealed class ValidateCredentialsStep : IWizardStep
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/ValidateCredentialsStep.cs:20](../../../../src/Meridian.Application/Wizard/Steps/ValidateCredentialsStep.cs#L20) |  |
-| <code>public ValidateCredentialsStep(TextWriter output, TextReader input, ProviderCredentialOwnershipPolicy? ownershipPolicy = null) : this(output, input, ownershipPolicy, ValidateAsync);</code> | [src/Meridian.Application/Wizard/Steps/ValidateCredentialsStep.cs:22](../../../../src/Meridian.Application/Wizard/Steps/ValidateCredentialsStep.cs#L22) |  |
-| <code>public async Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/ValidateCredentialsStep.cs:38](../../../../src/Meridian.Application/Wizard/Steps/ValidateCredentialsStep.cs#L38) |  |
-
 ## WizardWorkflowFactory
 
 Qualified name: <code>Meridian.Application.Wizard.WizardWorkflowFactory</code>. Kind: `class`.

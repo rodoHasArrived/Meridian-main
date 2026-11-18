@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ApplyWriteOffRequest
+
+Qualified name: <code>Meridian.Contracts.DirectLending.ApplyWriteOffRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:82](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L82).
+
+```csharp
+public sealed record ApplyWriteOffRequest(decimal Amount, DateOnly EffectiveDate, string Reason);
+```
+
+## AssessFeeRequest
+
+Qualified name: <code>Meridian.Contracts.DirectLending.AssessFeeRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:76](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L76).
+
+```csharp
+public sealed record AssessFeeRequest(string FeeType, decimal Amount, DateOnly EffectiveDate, string? Note);
+```
+
 ## BookDrawdownRequest
 
 Qualified name: <code>Meridian.Contracts.DirectLending.BookDrawdownRequest</code>. Kind: `record`.
@@ -643,26 +663,4 @@ Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:195](../../..
 
 ```csharp
 public sealed record LoanContractDetailDto(Guid LoanId, string FacilityName, BorrowerInfoDto Borrower, LoanStatus Status, DateOnly EffectiveDate, DateOnly? ActivationDate, DateOnly? CloseDate, int CurrentTermsVersion, DirectLendingTermsDto CurrentTerms, IReadOnlyList<LoanTermsVersionDto> TermsVersions);
-```
-
-## LoanEventLineageDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.LoanEventLineageDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:207](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L207).
-
-```csharp
-public sealed record LoanEventLineageDto(Guid EventId, long AggregateVersion, string EventType, int EventSchemaVersion, DateOnly? EffectiveDate, DateTimeOffset RecordedAt, string PayloadJson, Guid? CausationId, Guid? CorrelationId, Guid? CommandId, string? SourceSystem, bool ReplayFlag);
-```
-
-## LoanMaturityBucketDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.LoanMaturityBucketDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:401](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L401).
-
-Amounts are exact invariant decimal text; an unknown denomination has no amount.
-
-```csharp
-public sealed record LoanMaturityBucketDto(CurrencyCode Currency, int? Year, int? Quarter, string? PrincipalOutstanding, IReadOnlyList<Guid> LoanIds);
 ```

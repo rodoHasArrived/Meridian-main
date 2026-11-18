@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ExportAnalysisApiFile
+
+Qualified name: <code>Meridian.Contracts.Export.ExportAnalysisApiFile</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:236](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L236).
+
+File-level evidence returned from an analysis export run.
+
+```csharp
+public sealed record ExportAnalysisApiFile(string Path, string? Symbol, string? Format, long SizeBytes, long RecordCount);
+```
+
+## ExportAnalysisApiRequest
+
+Qualified name: <code>Meridian.Contracts.Export.ExportAnalysisApiRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:226](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L226).
+
+Browser and desktop request contract for the shared analysis export endpoint.
+
+```csharp
+public sealed record ExportAnalysisApiRequest(string? ProfileId, string[]? Symbols, string? Format, DateTime? StartDate, DateTime? EndDate);
+```
+
 ## ExportAnalysisApiResponse
 
 Qualified name: <code>Meridian.Contracts.Export.ExportAnalysisApiResponse</code>. Kind: `record`.
@@ -862,34 +886,4 @@ Source: [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:44](../../../..
 
 ```csharp
 public sealed record BondAnalyticsBlocker(string Code, string Reason);
-```
-
-## BondAnalyticsCashFlow
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondAnalyticsCashFlow</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:47](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L47).
-
-Cash per 100 face; identity depends on unadjusted contractual period dates.
-
-```csharp
-public sealed record BondAnalyticsCashFlow(Guid FlowId, DateOnly PaymentDate, DateOnly AccrualStart, DateOnly AccrualEnd, decimal Interest, decimal Principal, decimal TimeInYears)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public BondAnalyticsFloatingCoupon? FloatingCoupon { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:58](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L58) | Resolved floating-coupon inputs. Omitted for fixed and zero-coupon models. |
-
-## BondAnalyticsFloatingCoupon
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondAnalyticsFloatingCoupon</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:68](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L68).
-
-Inputs used for one floating coupon, not a separate pricing model. Index and coupon rates are annual fractions; spread is in basis points. CouponRate includes the retained cap and floor. IsObserved follows the economic cutoff, while settlement governs cash-flow entitlement. Source names the retained reset schedule, sourced current fixing, or forward curve; the result&#x27;s Inputs identify the exact retained security and curve versions or content hashes.
-
-```csharp
-public sealed record BondAnalyticsFloatingCoupon(DateOnly ResetDate, bool IsObserved, string IndexName, decimal IndexRate, decimal SpreadBps, decimal CouponRate, string Source);
 ```

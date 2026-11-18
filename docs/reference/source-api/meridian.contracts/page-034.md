@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ClosePreparationCalendarDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.ClosePreparationCalendarDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs:18](../../../../src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs#L18).
+
+An explicit, immutable operator-selected calendar; Sunday is 0 and Saturday is 6.
+
+```csharp
+public sealed record ClosePreparationCalendarDto(string CalendarId, string Version, IReadOnlyList<int> WeekendDays, IReadOnlyList<DateOnly> Holidays);
+```
+
+## ClosePreparationHistoryDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.ClosePreparationHistoryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs:29](../../../../src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs#L29).
+
+```csharp
+public sealed record ClosePreparationHistoryDto(string EventType, DateTimeOffset OccurredAtUtc, string Actor, string Description);
+```
+
 ## ClosePreparationIssueDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.ClosePreparationIssueDto</code>. Kind: `record`.
@@ -646,31 +668,3 @@ The digest proves the operator is drafting exactly the computation they previewe
 ```csharp
 public sealed record CreateIntercompanyAccrualDraftRequest(IntercompanyAccrualRequestDto Accrual, string ExpectedEvidenceDigest);
 ```
-
-## CreateIntercompanyFeeAccrualDraftRequest
-
-Qualified name: <code>Meridian.Contracts.Ledger.CreateIntercompanyFeeAccrualDraftRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyFeeAccrualEvidenceDtos.cs:12](../../../../src/Meridian.Contracts/Ledger/IntercompanyFeeAccrualEvidenceDtos.cs#L12).
-
-The digest proves the operator is drafting exactly the computation they previewed.
-
-```csharp
-public sealed record CreateIntercompanyFeeAccrualDraftRequest(IntercompanyFeeAccrualRequestDto Accrual, string ExpectedEvidenceDigest);
-```
-
-## CreateLateAdjustmentRequestDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.CreateLateAdjustmentRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:310](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L310).
-
-```csharp
-public sealed record CreateLateAdjustmentRequestDto(Guid WorkflowId, Guid JournalEntryId, decimal Amount, string Currency, string Reason, string RequestedBy, IReadOnlyList<string>? EvidenceLinks = null, string? CorrelationId = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:321](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L321) |  |

@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OtcExposureSnapshotInputsDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcExposureSnapshotInputsDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:186](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L186).
+
+What an exposure snapshot was computed from, besides the master and collateral agreement versions the snapshot carries itself. The records, each at the version read: the netting set; every contract in it, closed and not-yet-traded ones included, because a change of status or trade date changes which contracts enter; every collateral balance under the collateral agreement, fully returned ones included; and the netting sets that reference the agreement. The market data: Securities, the securities of the contracts that were valued, whose prices and pricing hierarchy the valuations read as known at KnowledgeAsOf. Each list is in id order, so the digest is the same however the records were read. A call is issued from the snapshot only while every record is unchanged, no market data for those securities bearing on the as-of date has been recorded since, and the knowledge time is not earlier than the computation (OtcMarginCallRules.RequireUnchangedInputs). The knowledge time and the securities describe the computation rather than a stored record, so the record set a store reads back for that check leaves them at their defaults.
+
+```csharp
+public sealed record OtcExposureSnapshotInputsDto(long NettingSetVersion, IReadOnlyList<OtcExposureInputVersionDto> Contracts, IReadOnlyList<OtcExposureInputVersionDto> CollateralBalances, IReadOnlyList<Guid> NettingSetsUnderAgreement, DateTimeOffset KnowledgeAsOf = default, IReadOnlyList<Guid>? Securities = null);
+```
+
 ## OtcExposureSnapshotStatus
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcExposureSnapshotStatus</code>. Kind: `enum`.
@@ -773,22 +785,3 @@ Source: [src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs:3](../../../..
 ```csharp
 public sealed record ResolveSecurityRequest(SecurityIdentifierKind IdentifierKind, string IdentifierValue, string? Provider, DateTimeOffset? AsOfUtc, bool ActiveOnly = false);
 ```
-
-## ScheduleConventionTerms
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ScheduleConventionTerms</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/ScheduleConventionTerms.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleConventionTerms.cs#L26).
-
-A scheduleConventions block as the shared reader (SecurityVersionedTerms.ReadScheduleConventions) reads it: how the contractual schedule kernel (ADR-025) builds an instrument&#x27;s periods. The members follow the F# ScheduleConventions record in order and meaning. Text members are kept verbatim, blank strings included, so a consumer can refuse a blank spelling instead of reading it as absent; a member the block does not carry, or carries with the wrong JSON kind, is null.
-
-```csharp
-public sealed record ScheduleConventionTerms(string? BusinessDayConvention, bool? AccrualAdjusted, IReadOnlyList<string> PaymentCalendars, int? PaymentLagBusinessDays, string? RollConvention, bool? EndOfMonthRule, DateOnly? FirstRegularDate, DateOnly? LastRegularDate, string? Direction, string? StubPolicy, string? CouponRateUnit, string? CouponCashBasis)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ScheduleConventionTerms Empty { get; } = new (null, null, [], null, null, null, null, null, null, null, null, null);</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleConventionTerms.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleConventionTerms.cs#L41) | No convention declared. |
-| <code>public bool IsEmpty =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleConventionTerms.cs:45](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleConventionTerms.cs#L45) | Whether nothing is declared: no payment calendar and every other member null. |

@@ -6,43 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## SymbolRegistryEntry
-
-Qualified name: <code>Meridian.Contracts.Catalog.SymbolRegistryEntry</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:78](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L78).
-
-Individual symbol entry in the registry.
-
-```csharp
-public sealed class SymbolRegistryEntry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;securityId&quot;)] public Guid? SecurityId { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:84](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L84) | Durable Security Master identity. The canonical ticker is a lookup projection, not identity. |
-| <code>[JsonPropertyName(&quot;canonical&quot;)] public string Canonical { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:90](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L90) | Canonical symbol name used internally. |
-| <code>[JsonPropertyName(&quot;securityMasterOwnsCanonical&quot;)][JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public bool SecurityMasterOwnsCanonical { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:98](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L98) | True only when the canonical ticker was introduced solely by Security Master reconciliation. Missing historical provenance defaults to independent authority. |
-| <code>[JsonPropertyName(&quot;securityMasterCanonicalWithdrawn&quot;)][JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public bool SecurityMasterCanonicalWithdrawn { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:106](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L106) | Security Master withdrew this canonical spelling while independently owned mappings retain the definition. The internal canonical key is not itself lookup authority. |
-| <code>[JsonPropertyName(&quot;displayName&quot;)] public string? DisplayName { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:112](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L112) | Display name (e.g., &quot;Apple Inc.&quot;). |
-| <code>[JsonPropertyName(&quot;assetClass&quot;)] public string AssetClass { get; set; } = &quot;equity&quot;;</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:118](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L118) | Asset class (equity, option, future, forex, crypto, index). |
-| <code>[JsonPropertyName(&quot;exchange&quot;)] public string? Exchange { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:124](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L124) | Primary exchange. |
-| <code>[JsonPropertyName(&quot;currency&quot;)] public string? Currency { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:130](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L130) | Base currency. |
-| <code>[JsonPropertyName(&quot;country&quot;)] public string? Country { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:136](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L136) | Country of listing. |
-| <code>[JsonPropertyName(&quot;aliases&quot;)] public List&lt;SymbolAlias&gt; Aliases { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:142](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L142) | All known aliases for this symbol. |
-| <code>[JsonPropertyName(&quot;identifiers&quot;)] public SymbolIdentifiers Identifiers { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:148](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L148) | Industry identifiers. |
-| <code>[JsonPropertyName(&quot;providerSymbols&quot;)] public Dictionary&lt;string, string&gt; ProviderSymbols { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:154](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L154) | Provider-specific symbols. |
-| <code>[JsonPropertyName(&quot;providerSymbolMetadata&quot;)] public Dictionary&lt;string, ProviderSymbolMetadata&gt; ProviderSymbolMetadata { get; set; } = new ();</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:161](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L161) | Additive provenance for ProviderSymbols. Kept separate so existing registry JSON containing string values remains readable. |
-| <code>[JsonPropertyName(&quot;classification&quot;)] public SymbolClassification? Classification { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:167](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L167) | Classification information. |
-| <code>[JsonPropertyName(&quot;corporateActions&quot;)] public List&lt;CorporateActionRef&gt;? CorporateActions { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:173](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L173) | Corporate action history affecting symbol. |
-| <code>[JsonPropertyName(&quot;createdAt&quot;)] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:179](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L179) | When this entry was created. |
-| <code>[JsonPropertyName(&quot;lastUpdatedAt&quot;)] public DateTime LastUpdatedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:185](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L185) | When this entry was last updated. |
-| <code>[JsonPropertyName(&quot;isActive&quot;)] public bool IsActive { get; set; } = true;</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:191](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L191) | Whether this symbol is currently active. |
-| <code>[JsonPropertyName(&quot;delistedAt&quot;)] public DateTime? DelistedAt { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:197](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L197) | Date when symbol was delisted (if applicable). |
-| <code>[JsonPropertyName(&quot;metadata&quot;)] public Dictionary&lt;string, string&gt;? Metadata { get; set; }</code> | [src/Meridian.Contracts/Catalog/SymbolRegistry.cs:203](../../../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs#L203) | Additional metadata. |
-
 ## SymbolRegistryStatistics
 
 Qualified name: <code>Meridian.Contracts.Catalog.SymbolRegistryStatistics</code>. Kind: `class`.
@@ -416,6 +379,57 @@ Source: [src/Meridian.Contracts/Configuration/AppConfigDto.cs:381](../../../../s
 public sealed record BackfillVendorTierDto(string Id, string Label, int? RateLimitPerMinute, int? RateLimitPerHour);
 ```
 
+## ConfigurationApplyEntry
+
+Qualified name: <code>Meridian.Contracts.Configuration.ConfigurationApplyEntry</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:38](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L38).
+
+One runtime-apply outcome. Detail is a fixed explanation and may name provider or rule IDs; it never contains configuration or credential values.
+
+```csharp
+public sealed record ConfigurationApplyEntry(string Path, ConfigurationApplyKind Kind, string? Detail = null);
+```
+
+## ConfigurationApplyKind
+
+Qualified name: <code>Meridian.Contracts.Configuration.ConfigurationApplyKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:19](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L19).
+
+What the running host did with one saved setting path.
+
+```csharp
+public enum ConfigurationApplyKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>AppliedLive</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:22](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L22) | The running host now uses the saved value. |
+| <code>ProviderReconfigured</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:25](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L25) | A streaming provider was excluded from or re-included in failover in-process. |
+| <code>NoRuntimeEffect</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:28](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L28) | The value was saved; it has no runtime effect in the current host mode. |
+| <code>Deferred</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:31](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L31) | The value was saved but the running host could not apply it; a restart is required. |
+
+## ConfigurationApplySummary
+
+Qualified name: <code>Meridian.Contracts.Configuration.ConfigurationApplySummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:41](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L41).
+
+Outcome of the most recent save&#x27;s runtime apply, reported by the host component that applied it.
+
+```csharp
+public sealed record ConfigurationApplySummary(IReadOnlyList<ConfigurationApplyEntry> Entries, DateTimeOffset AppliedAtUtc)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool AnyDeferred =&gt; …;</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:45](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L45) |  |
+
 ## ConfigurationChangeImpact
 
 Qualified name: <code>Meridian.Contracts.Configuration.ConfigurationChangeImpact</code>. Kind: `enum`.
@@ -440,20 +454,20 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Configuration.ConfigurationChangeStatus</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:18](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L18).
+Source: [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:49](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L49).
 
 Shared by browser and desktop clients. Pending means saved, but not confirmed applied.
 
 ```csharp
-public sealed record ConfigurationChangeStatus(ConfigurationChangeImpact Impact, IReadOnlyList<ConfigurationFieldChange> Changes, IReadOnlyList<ConfigurationFieldChange> PendingChanges, DateTimeOffset? SavedAtUtc, bool CanReconnectInProcess = false)
+public sealed record ConfigurationChangeStatus(ConfigurationChangeImpact Impact, IReadOnlyList<ConfigurationFieldChange> Changes, IReadOnlyList<ConfigurationFieldChange> PendingChanges, DateTimeOffset? SavedAtUtc, bool CanReconnectInProcess = false, ConfigurationApplySummary? LastApply = null)
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool RequiresRestart =&gt; …;</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:25](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L25) |  |
-| <code>public bool RequiresReconnect =&gt; …;</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:27](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L27) |  |
+| <code>public bool RequiresRestart =&gt; …;</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:57](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L57) |  |
+| <code>public bool RequiresReconnect =&gt; …;</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:59](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L59) |  |
 
 ## ConfigurationFieldChange
 
@@ -1035,38 +1049,3 @@ Source: [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:114](../
 ```csharp
 public sealed record ProviderCredentialVerificationResultDto(string ProviderId, bool Success, ProviderVerificationStateDto VerificationState, ProviderContinuityHealthDto Health, DateTimeOffset? LastVerifiedAt, string? LastError, string? ExternalAccountId, IReadOnlyList<string> Warnings);
 ```
-
-## ProviderEnvironmentOptionDto
-
-Qualified name: <code>Meridian.Contracts.Configuration.ProviderEnvironmentOptionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:71](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L71).
-
-```csharp
-public sealed record ProviderEnvironmentOptionDto(string Value, string Label, bool IsDefault = false, string? HelpText = null);
-```
-
-## ProviderPolicyConfigDto
-
-Qualified name: <code>Meridian.Contracts.Configuration.ProviderPolicyConfigDto</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:113](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L113).
-
-Configures capability selection safeguards and permitted provider failover choices.
-
-```csharp
-public sealed class ProviderPolicyConfigDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;policyId&quot;)] public string PolicyId { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:116](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L116) |  |
-| <code>[JsonPropertyName(&quot;capability&quot;)] public string Capability { get; set; } = &quot;RealtimeMarketData&quot;;</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:119](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L119) |  |
-| <code>[JsonPropertyName(&quot;safetyMode&quot;)] public string SafetyMode { get; set; } = &quot;HealthAwareFailover&quot;;</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:122](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L122) |  |
-| <code>[JsonPropertyName(&quot;requireExplicitBinding&quot;)] public bool RequireExplicitBinding { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:125](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L125) |  |
-| <code>[JsonPropertyName(&quot;requireProductionReady&quot;)] public bool RequireProductionReady { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:128](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L128) |  |
-| <code>[JsonPropertyName(&quot;allowedFailoverConnectionIds&quot;)] public string[]? AllowedFailoverConnectionIds { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:131](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L131) |  |
-| <code>[JsonPropertyName(&quot;allowedProviderFamilies&quot;)] public string[]? AllowedProviderFamilies { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:134](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L134) |  |
-| <code>[JsonPropertyName(&quot;description&quot;)] public string? Description { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:137](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L137) |  |

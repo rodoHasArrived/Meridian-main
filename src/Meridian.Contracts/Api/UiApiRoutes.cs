@@ -270,6 +270,8 @@ public static class UiApiRoutes
     public const string QualityComparison = "/api/quality/comparison/{symbol}";
     public const string QualityComparisonDiscrepancies = "/api/quality/comparison/discrepancies";
     public const string QualityComparisonStatistics = "/api/quality/comparison/statistics";
+    public const string QualityCrossProviderPolicy = "/api/quality/cross-provider/policy";
+    public const string QualityCrossProviderPreview = "/api/quality/cross-provider/preview";
     public const string QualityReportsDaily = "/api/quality/reports/daily";
     public const string QualityReportsWeekly = "/api/quality/reports/weekly";
     public const string QualityReportsExport = "/api/quality/reports/export";

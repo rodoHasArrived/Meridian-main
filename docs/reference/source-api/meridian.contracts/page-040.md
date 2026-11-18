@@ -6,6 +6,32 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SaveManualJournalEntryDraftRequest
+
+Qualified name: <code>Meridian.Contracts.Ledger.SaveManualJournalEntryDraftRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:946](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L946).
+
+```csharp
+public sealed record SaveManualJournalEntryDraftRequest(ManualJournalEntryDraftDto Draft, string Actor, string? CorrelationId = null, IReadOnlyList<string>? EvidenceLinks = null, bool PeriodIsLocked = false, Guid? LedgerBookId = null, string? TenantId = null, string? CompanyId = null, IReadOnlyList<string>? ReportGroupPrincipalIds = null);
+```
+
+## SignOffCloseTaskRequestDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.SignOffCloseTaskRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:339](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L339).
+
+```csharp
+public sealed record SignOffCloseTaskRequestDto(Guid WorkflowId, string TaskId, string Role, ManualJournalEntryStatusDto Decision, string Actor, string Notes, IReadOnlyList<string>? EvidenceLinks = null, string? CorrelationId = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:350](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L350) |  |
+
 ## SubmitManualJournalEntryApprovalRequest
 
 Qualified name: <code>Meridian.Contracts.Ledger.SubmitManualJournalEntryApprovalRequest</code>. Kind: `record`.
@@ -965,43 +991,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;bool&gt; IsPreparerReceiptReferenceAsync(string tenantId, string companyId, string? reference, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs:68](../../../../src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs#L68) |  |
-
-## OperationalCaseApproval
-
-Qualified name: <code>Meridian.Contracts.Operations.OperationalCaseApproval</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:34](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L34).
-
-```csharp
-public sealed record OperationalCaseApproval
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public required string ApprovalId { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:36](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L36) |  |
-| <code>public required string Decision { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:37](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L37) |  |
-| <code>public required string DecidedBy { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:38](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L38) |  |
-| <code>public required DateTimeOffset DecidedAtUtc { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:39](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L39) |  |
-| <code>public required string Reason { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:40](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L40) |  |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceIds { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:41](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L41) |  |
-
-## OperationalCaseAssignment
-
-Qualified name: <code>Meridian.Contracts.Operations.OperationalCaseAssignment</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:10](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L10).
-
-```csharp
-public sealed record OperationalCaseAssignment
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? PreviousAssigneeId { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:12](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L12) |  |
-| <code>public string? AssigneeId { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:13](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L13) |  |
-| <code>public required string AssignedBy { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:14](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L14) |  |
-| <code>public required DateTimeOffset AssignedAtUtc { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:15](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L15) |  |

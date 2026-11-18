@@ -42,9 +42,18 @@ Focused coverage: `data-screen.symbol-mapping-editor.test.tsx` and existing cano
 The Data provider workspace includes an on-demand streaming failover editor. It reads authoritative
 saved settings, distinguishes unavailable runtime state, and refreshes the active provider after a
 committed switch/reset. Settings and rule create/edit/delete use shared guarded API saves and show
-pending host restart; relaxed rule thresholds require an audited reason. Focused coverage lives in
+what the host reported (`describeConfigurationApply` over `changeImpact.lastApply`): "Applied live",
+"Provider routing updated live" or "Pending host restart" with per-setting reasons; without host
+evidence the banner stays "Pending host restart". Relaxed rule thresholds require an audited reason. Focused coverage lives in
 `data-screen.failover.test.tsx` and the shared `FailoverEndpointTests`.
 Deleting a rule also requires an explicit operator reason and retains the removed protection snapshot.
+
+Data-quality watch includes an on-demand Cross-provider tolerances panel
+(`data-quality-watch.cross-provider-policy.tsx`, API in `lib/api/cross-provider-tolerance.api.ts`):
+bounded tolerances, volume mode, asset-class overrides, a required reason when loosening, audit
+history and a preview of what the draft would have flagged over the last 30 days for one symbol,
+with its provider-call cost shown first. Focused coverage:
+`data-quality-watch.cross-provider-policy.test.tsx`.
 
 ## Fixed-income workflow access
 
@@ -623,6 +632,25 @@ Workflow features (UX Phase E):
 - `components/meridian/nav-trend-chart.tsx` draws ledger NAV at the last 12 month-ends above the NAV
   comparison, and securities exposure (long, short, gross) when the ledger holds any, each with a
   data table. Reporting P&L slices tagged `no-prior` show "—" for Prior and Change.
+
+Rendering (UX Phase F):
+- The SVG charts measure their box with `useChartSize` (`components/charts/use-chart-size.ts`) and
+  draw at that size, so axis text is never stretched. `components/charts/axis-ticks.ts` spaces time
+  ticks at least 72px and value ticks at least 24px apart (`fitValueTicks`), reads ISO dates as
+  "Aug '25" (or "Aug 5" within about two months), and sets axis text in the body face with tabular
+  figures. `EquityCurve` puts its value axis on the left.
+- `historical-chart.tsx` keeps its stretched plot but draws its labels in an HTML layer
+  (`components/charts/stretched-chart-labels.tsx`).
+- Evidence charts with fewer than `CHART_MIN_CATEGORIES` (3) categories show the figures and a
+  sentence instead of bars.
+- The workbench inspector shows a fade and a "More below" button, and sets `data-more-below`, while
+  it has content beneath its visible area (`components/meridian/use-more-below.ts`). Route focus on
+  `#workbench-content` draws no frame around the page.
+- `formatRelativeTime` keeps hours to 48h and days to 60d, then reads "since May 8, 2026"; Live
+  quotes and the provider capability matrix use it. Reconciliation case dates go through
+  `formatAccountingDate`. NAV's prior date and the journal-entry date use `DatePicker`.
+- The screenshot harness adds `detail-rail-clipped` (a detail panel hides content with neither its
+  own scroll nor the cue) and `chart-label-overlap` (two labels in one chart overlap).
 
 The holdings table, the headline figures and the holding detail panel read one model,
 `lib/holdings-model.ts`, so they cannot disagree. Values the source supplies are shown
@@ -1717,8 +1745,8 @@ Strategy equity-path comparison is composed by `strategy-screen.equity-paths.tsx
 exports. The chart set remains separate from Compare, Diff and Promote selection.
 
 The SVG charts in `src/components/charts/` (`CandleChart`, `EquityCurve`, `DrawdownChart`,
-`Histogram`, `DepthChart`) render through the shared `ChartSvg` frame in `chart-a11y.tsx` and
-accept three optional props:
+`Histogram`, `DepthChart`) render through the shared `ChartSvg` frame in `chart-a11y.tsx`, draw at
+their measured size (`useChartSize`) so text is not stretched, and accept three optional props:
 
 - `ariaLabel` names the graphic. Each chart defaults to a generic type label, so screens should
   pass a specific one (run, symbol, or study) and must not wrap the chart in their own
@@ -3420,6 +3448,16 @@ npm --prefix src/Meridian.Ui/dashboard run test
 npm --prefix src/Meridian.Ui/dashboard run build
 npm --prefix src/Meridian.Ui/dashboard run smoke:workstation
 ```
+
+`smoke:workstation` also audits six task routes (Today, Accounting reconciliation, exceptions and
+ledger, Portfolio NAV, Trading) with axe at WCAG 2.0–2.2 A/AA, and focuses each control in the
+reconciliation inspector to check nothing covers it (SC 2.4.11 Focus Not Obscured). Serious and
+critical axe findings fail unless `scripts/smoke-workstation-axe-baseline.json` lists them as
+`route:rule`; that baseline only shrinks (`npm run smoke:workstation -- --write-axe-baseline` locks
+in a removal and refuses any addition). `--skip-a11y` skips both checks. Set
+`CHROMIUM_EXECUTABLE_PATH` or `MERIDIAN_CHROMIUM_PATH` to use a system Chromium. The helpers are
+covered by `scripts/smoke-workstation-a11y.test.mjs` (`npm run test:tooling`). The smoke is not
+part of `scripts/ci.sh`.
 
 Linting is a correctness-only ESLint flat-config baseline (`eslint.config.mjs`): typescript-eslint
 recommended, react-hooks rules, and a local kebab-case filename rule with grandfathered

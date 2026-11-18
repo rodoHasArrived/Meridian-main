@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FundStructureSetupResultDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureSetupResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs:125](../../../../src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs#L125).
+
+```csharp
+public sealed record FundStructureSetupResultDto(OrganizationSummaryDto Organization, BusinessSummaryDto BusinessLane, ClientSummaryDto? Client, FundSummaryDto? Fund, LegalEntitySummaryDto LegalEntity, VehicleSummaryDto Vehicle, InvestmentPortfolioSummaryDto InvestmentPortfolio, IReadOnlyList<OwnershipLinkDto> OwnershipLinks, FundStructureAssignmentDto AccountHandoffAssignment, FundStructureGraphDto Graph, FundStructureSetupValidationSummaryDto ValidationSummary);
+```
+
+## FundStructureSetupValidationIssueDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureSetupValidationIssueDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs:102](../../../../src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs#L102).
+
+```csharp
+public sealed record FundStructureSetupValidationIssueDto(string Code, string Message, string FieldPath, bool IsBlocking);
+```
+
 ## FundStructureSetupValidationSummaryDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureSetupValidationSummaryDto</code>. Kind: `record`.
@@ -714,23 +734,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IntercompanyExternalReviewDto? ExternalReview { get; init; }</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:41](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L41) |  |
-
-## IntercompanyAgreementCommandReceiptDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementCommandReceiptDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:98](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L98).
-
-```csharp
-public sealed record IntercompanyAgreementCommandReceiptDto(Guid CommandId, string Action, string PayloadHash, string Actor, DateTimeOffset RecordedAtUtc, long AggregateVersion, IntercompanyAgreementDetailDto Detail);
-```
-
-## IntercompanyAgreementCommandResultDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementCommandResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:101](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L101).
-
-```csharp
-public sealed record IntercompanyAgreementCommandResultDto(IntercompanyAgreementDetailDto Detail, IntercompanyAgreementCommandReceiptDto Receipt, bool Replayed = false);
-```

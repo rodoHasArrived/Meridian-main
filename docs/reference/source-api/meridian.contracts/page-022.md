@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BondAnalyticsCashFlow
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondAnalyticsCashFlow</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:47](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L47).
+
+Cash per 100 face; identity depends on unadjusted contractual period dates.
+
+```csharp
+public sealed record BondAnalyticsCashFlow(Guid FlowId, DateOnly PaymentDate, DateOnly AccrualStart, DateOnly AccrualEnd, decimal Interest, decimal Principal, decimal TimeInYears)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public BondAnalyticsFloatingCoupon? FloatingCoupon { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:58](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L58) | Resolved floating-coupon inputs. Omitted for fixed and zero-coupon models. |
+
+## BondAnalyticsFloatingCoupon
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondAnalyticsFloatingCoupon</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:68](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L68).
+
+Inputs used for one floating coupon, not a separate pricing model. Index and coupon rates are annual fractions; spread is in basis points. CouponRate includes the retained cap and floor. IsObserved follows the economic cutoff, while settlement governs cash-flow entitlement. Source names the retained reset schedule, sourced current fixing, or forward curve; the result&#x27;s Inputs identify the exact retained security and curve versions or content hashes.
+
+```csharp
+public sealed record BondAnalyticsFloatingCoupon(DateOnly ResetDate, bool IsObserved, string IndexName, decimal IndexRate, decimal SpreadBps, decimal CouponRate, string Source);
+```
+
 ## BondAnalyticsRequest
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondAnalyticsRequest</code>. Kind: `record`.
@@ -707,35 +737,3 @@ Explicit reviewed assignment; no coupon-unit or calendar convention is inferred.
 ```csharp
 public sealed record BondMigrationPreviewRequest(Guid SecurityId, long ExpectedVersion, BondCalculationContext Context, JsonElement ScheduleConventions);
 ```
-
-## BondMigrationSubmitRequest
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondMigrationSubmitRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondMigrationApiRequests.cs:4](../../../../src/Meridian.Contracts/FixedIncome/BondMigrationApiRequests.cs#L4).
-
-Stages a reviewed preview through the existing Security Master draft workflow.
-
-```csharp
-public sealed record BondMigrationSubmitRequest(BondMigrationPreviewRequest Request, string PreviewSha256, string SecurityContentSha256, string Justification);
-```
-
-## BondMonitoringCaptureRequest
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondMonitoringCaptureRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs:36](../../../../src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs#L36).
-
-```csharp
-public sealed record BondMonitoringCaptureRequest(string RunId, AccountCashForecastScopeDto Scope, DateTimeOffset RecordedAtUtc, IReadOnlyList<BondMonitoringObligationDto> Obligations, IReadOnlyList<AccountCashFlowDto> Payments, IReadOnlyList<AccountCashPaymentAllocationDto> Allocations, IReadOnlyList<AccountCashReceiptRevisionDto> ReceiptRevisions, IReadOnlyList<BondWatchObservationDto> Observations, string? PreviousSnapshotId = null, string? CorrectionRationale = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? PlanningRunId { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs:43](../../../../src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs#L43) |  |
-| <code>public IReadOnlyList&lt;BondMonitoringResetDto&gt; Resets { get; init; } = [];</code> | [src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs:44](../../../../src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs#L44) |  |
-| <code>public BondCalculationContext? CalculationContext { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs:45](../../../../src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs#L45) |  |
-| <code>public IReadOnlyList&lt;BondExerciseNoticeWatchResult&gt; ExerciseWindows { get; init; } = [];</code> | [src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs:46](../../../../src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs#L46) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public BondMonitoringMarketWatchDto? MarketWatch { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs:48](../../../../src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs#L48) |  |

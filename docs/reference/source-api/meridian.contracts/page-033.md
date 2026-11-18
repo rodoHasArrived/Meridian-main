@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ActivateLedgerBookControlsRequestDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.ActivateLedgerBookControlsRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs:36](../../../../src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs#L36).
+
+```csharp
+public sealed record ActivateLedgerBookControlsRequestDto(long ExpectedVersion, string PreflightDigest, string Reason, string EvidenceReference);
+```
+
+## AllocationRuleBasisDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.AllocationRuleBasisDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:82](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L82).
+
+```csharp
+public enum AllocationRuleBasisDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>FixedPercent = 0</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:84](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L84) |  |
+| <code>InvestorCommitment = 1</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:85](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L85) |  |
+| <code>CapitalAccountBalance = 2</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:86](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L86) |  |
+| <code>StrategyWeight = 3</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:87](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L87) |  |
+| <code>CustomFormula = 4</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:88](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L88) |  |
+
 ## AllocationRuleDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.AllocationRuleDto</code>. Kind: `record`.
@@ -689,25 +719,3 @@ Enum declarations:
 | <code>Posted = 6</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:581](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L581) |  |
 | <code>ReversalQueued = 7</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:582](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L582) |  |
 | <code>Blocked = 8</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:583](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L583) |  |
-
-## ClosePreparationCalendarDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.ClosePreparationCalendarDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs:18](../../../../src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs#L18).
-
-An explicit, immutable operator-selected calendar; Sunday is 0 and Saturday is 6.
-
-```csharp
-public sealed record ClosePreparationCalendarDto(string CalendarId, string Version, IReadOnlyList<int> WeekendDays, IReadOnlyList<DateOnly> Holidays);
-```
-
-## ClosePreparationHistoryDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.ClosePreparationHistoryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs:29](../../../../src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs#L29).
-
-```csharp
-public sealed record ClosePreparationHistoryDto(string EventType, DateTimeOffset OccurredAtUtc, string Actor, string Description);
-```

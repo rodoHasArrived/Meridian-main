@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DefineSecurityCurveRequest
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.DefineSecurityCurveRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:91](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L91).
+
+Defines a curve identity. The key is unique, ignoring case, and is write-once.
+
+```csharp
+public sealed record DefineSecurityCurveRequest(string CurveKey, SecurityCurveKind Kind, string Currency, string? IndexName, string? Tenor, string DayCount, SecurityCurveInterpolation Interpolation, string Source, string? Description, string? CreatedBy = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public SecurityCurveRatePolicy RatePolicy { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:104](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L104) |  |
+
+## EconomicTermsSchema
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.EconomicTermsSchema</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:62](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L62).
+
+Schema versions for the economic-terms payload family — the structured maturity/coupon/discount/accrual/payment document written by the economic definition adapter. This is a distinct family from AssetSpecificTermsSchema: the two shapes share nothing but the schemaVersion key, so their version numbers must never be compared against each other&#x27;s acceptance sets.
+
+```csharp
+public static class EconomicTermsSchema
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int Current = 2;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:65](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L65) | The current structured economic-terms shape. |
+
 ## EdgarAddress
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarAddress</code>. Kind: `record`.
@@ -429,7 +465,7 @@ public sealed record IngestSecurityRatesRequest(Guid CurveId, DateOnly AsOf, Sec
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptor</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:538](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L538).
+Source: [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:541](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L541).
 
 ```csharp
 public sealed record InstrumentTypeDescriptor(InstrumentType InstrumentType, string DisplayName, string SecurityMasterAssetClass, string? SecurityMasterAssetFamily, string? SecurityMasterSubType, string DefaultProviderSecurityType, bool IsTradeable, bool IsReferenceOnly, bool IsDerivative, bool RequiresUnderlying, bool ProducesCashFlows, bool RequiresLotTracking, string SettlementModel, IReadOnlyList<string> CompatibleSecurityMasterAssetClasses, IReadOnlyList<string> PreferredIdentifierKinds, IReadOnlyList<string> RequiredEconomicTerms, IReadOnlyList<string> ProviderCapabilities, IReadOnlyList<string> LifecycleEvents, IReadOnlyList<string> ValidationRules, IReadOnlyList<string> LedgerBehaviorHints, IReadOnlyList<string> RiskModelHints);
@@ -453,21 +489,21 @@ Declared public members:
 | --- | --- | --- |
 | <code>public const string UnclassifiedAssetFamilyLabel = &quot;OtherFamily&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:398](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L398) | The descriptor placeholder for &quot;no specific domain family&quot;. It is a descriptor-taxonomy label, not an F# AssetFamily name: the domain carries an unlisted family as OtherFamily &quot;value&quot;, stored as the bare caller value. |
 | <code>public const string UnclassifiedSubTypeLabel = &quot;OtherSubType&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:401](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L401) | The descriptor placeholder for &quot;no specific domain sub-type&quot;; see UnclassifiedAssetFamilyLabel. |
-| <code>public static IReadOnlyList&lt;InstrumentTypeDescriptorLabelException&gt; DomainLabelExceptions { get; } = [new (InstrumentType.Forex, InstrumentTypeDescriptorLabelField.SubType, UnclassifiedSubTypeLabel, &quot;The domain declares no FX spot sub-type; FX spot records carry OtherSubType with a caller value.&quot;), new (InstrumentType.Commodity, InstrumentTypeDescriptorLabelField.AssetFamily, UnclassifiedAssetFamilyLabel, &quot;The domain declares no commodity family.&quot;), new (InstrumentType.Commodity, InstrumentTypeDescriptorLabelField.SubType, UnclassifiedSubTypeLabel, &quot;The domain declares no commodity sub-type.&quot;), new (InstrumentType.Crypto, InstrumentTypeDescriptorLabelField.AssetFamily, UnclassifiedAssetFamilyLabel, &quot;The domain declares no digital-asset family.&quot;), new (InstrumentType.Crypto, InstrumentTypeDescriptorLabelField.SubType, UnclassifiedSubTypeLabel, &quot;The domain declares no digital-asset sub-type.&quot;), new (InstrumentType.Index, InstrumentTypeDescriptorLabelField.AssetFamily, UnclassifiedAssetFamilyLabel, &quot;A reference-only index has no domain security family.&quot;), new (InstrumentType.Index, InstrumentTypeDescriptorLabelField.SubType, UnclassifiedSubTypeLabel, &quot;A reference-only index has no domain security sub-type.&quot;), new (InstrumentType.CFD, InstrumentTypeDescriptorLabelField.SubType, UnclassifiedSubTypeLabel, &quot;The domain declares no contract-for-difference sub-type.&quot;)];</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:415](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L415) | Every descriptor family/sub-type label that is intentionally NOT an F# domain familyName/subTypeName value. All other descriptor labels map one-to-one onto the domain label of the same text (see ResolveDomainAssetFamilyLabel); a coverage test fails when a descriptor label is neither. The descriptor values themselves are unchanged and still surface as passport fallbacks, so this reconciliation changes no output. Some matching labels are reviewed approximations rather than identities: Warrant uses OptionContract and Deposit uses DemandDeposit, because the domain declares no closer case. They are listed in ApproximateDomainLabelMappings. |
-| <code>public static IReadOnlyList&lt;InstrumentTypeDescriptorLabelException&gt; ApproximateDomainLabelMappings { get; } = [new (InstrumentType.Warrant, InstrumentTypeDescriptorLabelField.SubType, &quot;OptionContract&quot;, &quot;The domain declares no warrant sub-type; a warrant is recorded as an option contract.&quot;), new (InstrumentType.Deposit, InstrumentTypeDescriptorLabelField.SubType, &quot;DemandDeposit&quot;, &quot;A generic deposit descriptor defaults to the demand-deposit sub-type; time deposits use TimeDeposit.&quot;)];</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:440](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L440) | Descriptor labels that equal a domain label but approximate its meaning (see DomainLabelExceptions). Recorded so the approximation is a reviewed decision rather than an implied identity; nothing consumes them as classification authority. |
-| <code>public static string? ResolveDomainAssetFamilyLabel(InstrumentTypeDescriptor descriptor) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:453](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L453) | Maps a descriptor&#x27;s family label onto the domain family label: the same text, or null when the descriptor label is a listed DomainLabelExceptions placeholder that names no domain family. |
-| <code>public static string? ResolveDomainSubTypeLabel(InstrumentTypeDescriptor descriptor) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:457](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L457) | Maps a descriptor&#x27;s sub-type label onto the domain sub-type label; see ResolveDomainAssetFamilyLabel. |
-| <code>public static IReadOnlyList&lt;InstrumentTypeDescriptor&gt; All =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:479](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L479) |  |
-| <code>public static InstrumentTypeDescriptor? Find(InstrumentType instrumentType) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:481](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L481) |  |
-| <code>public static bool TryGet(InstrumentType instrumentType, out InstrumentTypeDescriptor descriptor) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:484](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L484) |  |
-| <code>public static bool RequiresContractMultiplier(string? assetClass);</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:495](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L495) | True when a descriptor whose PRIMARY asset class is assetClass declares a contract multiplier among its required economic terms (listed options and futures; not swaps, warrants or FX forwards). Compatible-class lists are deliberately not consulted: they let a class be recorded under a related instrument type (an equity as a single-stock future, a spot commodity as a future), which must not make every record of that class require a multiplier. Clients use this instead of matching the asset-class name so they cannot diverge. |
-| <code>public static IReadOnlyList&lt;InstrumentTypeDescriptor&gt; FindBySecurityMasterAssetClass(string? assetClass);</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:508](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L508) |  |
+| <code>public static IReadOnlyList&lt;InstrumentTypeDescriptorLabelException&gt; DomainLabelExceptions { get; } = [new (InstrumentType.Forex, InstrumentTypeDescriptorLabelField.SubType, UnclassifiedSubTypeLabel, &quot;The domain declares no FX spot sub-type; FX spot records carry OtherSubType with a caller value.&quot;), new (InstrumentType.Commodity, InstrumentTypeDescriptorLabelField.AssetFamily, UnclassifiedAssetFamilyLabel, &quot;The domain declares no commodity family.&quot;), new (InstrumentType.Commodity, InstrumentTypeDescriptorLabelField.SubType, UnclassifiedSubTypeLabel, &quot;The domain declares no commodity sub-type.&quot;), new (InstrumentType.Crypto, InstrumentTypeDescriptorLabelField.AssetFamily, UnclassifiedAssetFamilyLabel, &quot;The domain declares no digital-asset family.&quot;), new (InstrumentType.Crypto, InstrumentTypeDescriptorLabelField.SubType, UnclassifiedSubTypeLabel, &quot;The domain declares no digital-asset sub-type.&quot;), new (InstrumentType.Index, InstrumentTypeDescriptorLabelField.AssetFamily, UnclassifiedAssetFamilyLabel, &quot;A reference-only index has no domain security family.&quot;), new (InstrumentType.Index, InstrumentTypeDescriptorLabelField.SubType, UnclassifiedSubTypeLabel, &quot;A reference-only index has no domain security sub-type.&quot;), new (InstrumentType.CFD, InstrumentTypeDescriptorLabelField.SubType, UnclassifiedSubTypeLabel, &quot;The domain declares no contract-for-difference sub-type.&quot;)];</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:416](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L416) | Every descriptor family/sub-type label that is intentionally NOT an F# domain familyName/subTypeName value. All other descriptor labels map one-to-one onto the domain label of the same text (see ResolveDomainAssetFamilyLabel); a coverage test fails when a descriptor label is neither. The descriptor values themselves are unchanged and still surface as passport fallbacks, so this reconciliation changes no output. Some matching labels are reviewed approximations rather than identities: Warrant uses OptionContract, FX spot uses the BankProduct family and Deposit uses DemandDeposit, because the domain declares no closer case. They are listed in ApproximateDomainLabelMappings. |
+| <code>public static IReadOnlyList&lt;InstrumentTypeDescriptorLabelException&gt; ApproximateDomainLabelMappings { get; } = [new (InstrumentType.Warrant, InstrumentTypeDescriptorLabelField.SubType, &quot;OptionContract&quot;, &quot;The domain declares no warrant sub-type; a warrant is recorded as an option contract.&quot;), new (InstrumentType.Forex, InstrumentTypeDescriptorLabelField.AssetFamily, &quot;BankProduct&quot;, &quot;The domain declares no FX family; FX spot is grouped with bank products.&quot;), new (InstrumentType.Deposit, InstrumentTypeDescriptorLabelField.SubType, &quot;DemandDeposit&quot;, &quot;A generic deposit descriptor defaults to the demand-deposit sub-type; time deposits use TimeDeposit.&quot;)];</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:441](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L441) | Descriptor labels that equal a domain label but approximate its meaning (see DomainLabelExceptions). Recorded so the approximation is a reviewed decision rather than an implied identity; nothing consumes them as classification authority. |
+| <code>public static string? ResolveDomainAssetFamilyLabel(InstrumentTypeDescriptor descriptor) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:456](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L456) | Maps a descriptor&#x27;s family label onto the domain family label: the same text, or null when the descriptor label is a listed DomainLabelExceptions placeholder that names no domain family. |
+| <code>public static string? ResolveDomainSubTypeLabel(InstrumentTypeDescriptor descriptor) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:460](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L460) | Maps a descriptor&#x27;s sub-type label onto the domain sub-type label; see ResolveDomainAssetFamilyLabel. |
+| <code>public static IReadOnlyList&lt;InstrumentTypeDescriptor&gt; All =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:482](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L482) |  |
+| <code>public static InstrumentTypeDescriptor? Find(InstrumentType instrumentType) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:484](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L484) |  |
+| <code>public static bool TryGet(InstrumentType instrumentType, out InstrumentTypeDescriptor descriptor) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:487](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L487) |  |
+| <code>public static bool RequiresContractMultiplier(string? assetClass);</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:498](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L498) | True when a descriptor whose PRIMARY asset class is assetClass declares a contract multiplier among its required economic terms (listed options and futures; not swaps, warrants or FX forwards). Compatible-class lists are deliberately not consulted: they let a class be recorded under a related instrument type (an equity as a single-stock future, a spot commodity as a future), which must not make every record of that class require a multiplier. Clients use this instead of matching the asset-class name so they cannot diverge. |
+| <code>public static IReadOnlyList&lt;InstrumentTypeDescriptor&gt; FindBySecurityMasterAssetClass(string? assetClass);</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:511](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L511) |  |
 
 ## InstrumentTypeDescriptorLabelException
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelException</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:532](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L532).
+Source: [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:535](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L535).
 
 A reviewed descriptor label whose relationship to the domain label is recorded explicitly.
 
@@ -479,7 +515,7 @@ public sealed record InstrumentTypeDescriptorLabelException(InstrumentType Instr
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelField</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:525](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L525).
+Source: [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:528](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L528).
 
 Which descriptor classification label an exception or mapping entry describes.
 
@@ -491,8 +527,8 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>AssetFamily</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:527](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L527) |  |
-| <code>SubType</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:528](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L528) |  |
+| <code>AssetFamily</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:530](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L530) |  |
+| <code>SubType</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:531](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L531) |  |
 
 ## IOtcCollateralStore
 
@@ -747,24 +783,6 @@ Declared public members:
 | <code>Task&lt;StructuredCashFlowProjectionDto&gt; ReplayProjectionAsync(SecurityCashFlowCalculationReceipt receipt, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs:45](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs#L45) | Recomputes a retained receipt, refusing changed or unavailable calendar evidence. |
 | <code>Task&lt;StructuredCashFlowProjectionDto?&gt; ReplayProjectionAsync(string contentSha256, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs#L50) | Replays evidence fetched from the configured immutable receipt store. |
 
-## ISecurityMasterClassificationDriftReportService
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityMasterClassificationDriftReportService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterClassificationDrift.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterClassificationDrift.cs#L41).
-
-Builds the classification drift report for the active Security Master population.
-
-```csharp
-public interface ISecurityMasterClassificationDriftReportService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SecurityClassificationDriftReportDto&gt; BuildReportAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterClassificationDrift.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterClassificationDrift.cs#L44) | Scans active securities and compares each one&#x27;s retained classification with the current taxonomy. |
-
 ## ISecurityMasterCorporateActionCommandService
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityMasterCorporateActionCommandService</code>. Kind: `interface`.
@@ -874,21 +892,3 @@ Declared public members:
 | <code>Task&lt;SecurityEconomicDefinitionRecord?&gt; GetEconomicDefinitionByIdAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterQueryService.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterQueryService.cs#L70) | Returns the full economic definition record for a security, rebuilt from its event stream. This is a heavier operation than GetByIdAsync and should only be called by governance or drill-in surfaces that need classification and sub-type detail. |
 | <code>Task&lt;PreferredEquityTermsDto?&gt; GetPreferredEquityTermsAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterQueryService.cs:76](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterQueryService.cs#L76) | Returns the preferred-equity-specific terms for a security. Returns null when the security has no preferred-equity terms recorded. |
 | <code>Task&lt;ConvertibleEquityTermsDto?&gt; GetConvertibleEquityTermsAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterQueryService.cs:82](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterQueryService.cs#L82) | Returns the convertible-equity-specific terms for a security. Returns null when the security has no convertible-equity terms recorded. |
-
-## ISecurityMasterReportingQueryService
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityMasterReportingQueryService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/ISecurityMasterReportingQueryService.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterReportingQueryService.cs#L8).
-
-Supplies a single, point-in-time Security Master reference for governed reporting. Implementations must return the detail and economic definition from the same historical source state so report rendering never combines yesterday&#x27;s identity with today&#x27;s terms.
-
-```csharp
-public interface ISecurityMasterReportingQueryService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SecurityMasterReportingReference?&gt; GetReportingReferenceByIdentifierAsOfAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, DateTimeOffset asOfUtc, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterReportingQueryService.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterReportingQueryService.cs#L10) |  |

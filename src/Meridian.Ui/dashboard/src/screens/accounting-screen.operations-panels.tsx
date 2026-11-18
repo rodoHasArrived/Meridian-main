@@ -1,9 +1,7 @@
-import { DetailFieldItem } from "@/components/meridian/detail-pane";
 import { SnapshotMetricTile } from "@/components/meridian/snapshot-metric-tile";
 import { AlertCircle, BookCheck, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TechnicalDetails } from "@/components/ui/technical-details";
@@ -137,7 +135,13 @@ export function ReconciliationQueueSummaryCard({ view }: { view: ReconciliationQ
 }
 
 
+/**
+ * Header of the Exceptions page. The cases themselves are worked in the reconciliation break queue
+ * rendered below it, so this panel no longer repeats them as a second list (Phase 1, P3 step 1):
+ * it says how many are active, links to them, and keeps the approval, evidence and audit routes.
+ */
 export function OperationalExceptionWorkbenchPanel({ view }: { view: OperationalExceptionWorkbenchViewState }) {
+  const activeCount = view.cases.length;
   return (
     <section id="accounting-exceptions" className="workspace-section-band" aria-labelledby="accounting-exceptions-heading">
       <div className="workspace-section-subheader">
@@ -149,83 +153,27 @@ export function OperationalExceptionWorkbenchPanel({ view }: { view: Operational
         </div>
         <div className="flex flex-wrap gap-2">
           <Button asChild size="sm" variant="outline">
-            <Link to={view.reconciliationHref}>Reconciliation queue</Link>
+            <Link to={view.approvalsHref}>Approval gate</Link>
           </Button>
           <Button asChild size="sm" variant="outline">
-            <Link to={view.approvalsHref}>Approval gate</Link>
+            <Link to={view.evidenceHref}>Open exception evidence packet</Link>
+          </Button>
+          <Button asChild size="sm" variant="outline">
+            <Link to={view.auditHref}>Open audit timeline</Link>
           </Button>
         </div>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
-        <Card className="panel-surface" role="region" aria-label="Unified operational exception queue">
-          <CardHeader className="px-3 py-2">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <AlertCircle className="h-4 w-4 text-primary" aria-hidden="true" />
-              Case queue
-            </CardTitle>
-            <SectionDescription descriptionKey="accounting:operational-exception-queue" label="About the operational exception queue">
-              Reconciliation exceptions with owner, SLA, comments, and audit evidence counts.
-            </SectionDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {view.cases.length > 0 ? (
-              <div role="list" className="space-y-2" aria-label="Operational exception cases">
-                {view.cases.map((item) => (
-                  <div key={item.id} role="listitem" aria-label={item.ariaLabel} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="font-semibold text-foreground">{item.title}</div>
-                        <div className="mt-1 break-words text-xs leading-5 text-muted-foreground">{item.subtitle}</div>
-                      </div>
-                      <Badge variant={item.statusTone}>{item.statusLabel}</Badge>
-                    </div>
-                    <div className="mt-3 grid gap-2 text-xs text-muted-foreground sm:grid-cols-2 xl:grid-cols-4">
-                      <span>Owner: {item.ownerLabel}</span>
-                      <span>Urgency: {item.slaLabel}</span>
-                      <span>{item.commentLabel}</span>
-                      <span>{item.auditLabel}</span>
-                    </div>
-                    <Button asChild size="sm" variant="ghost" className="mt-3">
-                      <Link to={item.routeHref}>{item.routeLabel}</Link>
-                    </Button>
-                    <TechnicalDetails label="Audit details" className="mt-3 bg-background/45">
-                      <dl className="grid gap-2 text-xs text-muted-foreground">
-                        <OperationalDetailValue label="Case ID" value={item.id} />
-                        <OperationalDetailValue label="Raw category" value={item.rawCategoryLabel} />
-                      </dl>
-                    </TechnicalDetails>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p role="status" className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3 text-sm text-muted-foreground">
-                {view.emptyText}
-              </p>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="panel-surface" role="region" aria-label="Exception workflow next steps">
-          <CardHeader>
-            <CardTitle className="text-base">Workflow next steps</CardTitle>
-            <CardDescription>Resolution work stays connected to approval, audit, and retained evidence paths.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <Button asChild variant="secondary" className="w-full justify-start">
-              <Link to={view.reconciliationHref}>Open break queue</Link>
-            </Button>
-            <Button asChild variant="outline" className="w-full justify-start">
-              <Link to={view.approvalsHref}>Review approval blockers</Link>
-            </Button>
-            <Button asChild variant="outline" className="w-full justify-start">
-              <Link to={view.evidenceHref}>Open exception evidence packet</Link>
-            </Button>
-            <Button asChild variant="outline" className="w-full justify-start">
-              <Link to={view.auditHref}>Open audit timeline</Link>
-            </Button>
-          </CardContent>
-        </Card>
+      <div role="region" aria-label="Unified operational exception queue" className="flex flex-wrap items-center gap-2 text-sm">
+        <AlertCircle className="h-4 w-4 text-primary" aria-hidden="true" />
+        {activeCount > 0 ? (
+          <p>
+            {activeCount === 1 ? "1 exception is" : `${activeCount} exceptions are`} in the reconciliation break queue below.{" "}
+            <a href="#reconciliation-break-queue" className="underline underline-offset-2">Go to the break queue</a>
+          </p>
+        ) : (
+          <p role="status" className="text-muted-foreground">{view.emptyText}</p>
+        )}
       </div>
       <TechnicalDetails label="Exception summary">
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -238,9 +186,3 @@ export function OperationalExceptionWorkbenchPanel({ view }: { view: Operational
   );
 }
 
-
-function OperationalDetailValue({ label, value }: { label: string; value: string }) {
-  return (
-    <DetailFieldItem label={label} value={value} />
-  );
-}

@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IBondWorkflowQuoteSource
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.IBondWorkflowQuoteSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:126](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L126).
+
+Authenticated tenant-scoped access to an exact retained quote observation.
+
+```csharp
+public interface IBondWorkflowQuoteSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;BondMarketObservationDto?&gt; GetAsync(Guid observationId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:128](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L128) |  |
+
+## IBondWorkflowService
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.IBondWorkflowService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:91](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L91).
+
+```csharp
+public interface IBondWorkflowService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;BondWorkflowResult?&gt; CalculateAsync(BondWorkflowRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:93](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L93) |  |
+| <code>Task&lt;BondWorkflowResult?&gt; CalculateIncomeScheduleAsync(BondWorkflowRequest request, DateOnly freezeIndexAt, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:94](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L94) |  |
+| <code>Task&lt;BondWorkflowResult?&gt; ReplayAsync(BondWorkflowResult retained, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:96](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L96) |  |
+
 ## IBondWorkflowTypedObservationSource
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.IBondWorkflowTypedObservationSource</code>. Kind: `interface`.
@@ -694,24 +730,4 @@ Request to create a new fund account.
 
 ```csharp
 public sealed record CreateAccountRequest(Guid AccountId, AccountTypeDto AccountType, string AccountCode, string DisplayName, string BaseCurrency, DateTimeOffset EffectiveFrom, string CreatedBy, Guid? FundId = null, Guid? EntityId = null, Guid? SleeveId = null, Guid? VehicleId = null, string? Institution = null, string? PortfolioId = null, string? LedgerReference = null, string? StrategyId = null, string? RunId = null, AccountOperationalStatusDto OperationalStatus = AccountOperationalStatusDto.Active, CustodianAccountDetailsDto? CustodianDetails = null, BankAccountDetailsDto? BankDetails = null);
-```
-
-## CreateBusinessRequest
-
-Qualified name: <code>Meridian.Contracts.FundStructure.CreateBusinessRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureCommands.cs:12](../../../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs#L12).
-
-```csharp
-public sealed record CreateBusinessRequest(Guid BusinessId, Guid OrganizationId, BusinessKindDto BusinessKind, string Code, string Name, string BaseCurrency, DateTimeOffset EffectiveFrom, string CreatedBy, string? Description = null);
-```
-
-## CreateClientRequest
-
-Qualified name: <code>Meridian.Contracts.FundStructure.CreateClientRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureCommands.cs:23](../../../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs#L23).
-
-```csharp
-public sealed record CreateClientRequest(Guid ClientId, Guid BusinessId, string Code, string Name, string BaseCurrency, DateTimeOffset EffectiveFrom, string CreatedBy, string? Description = null, ClientSegmentKind ClientSegmentKind = ClientSegmentKind.Unspecified);
 ```

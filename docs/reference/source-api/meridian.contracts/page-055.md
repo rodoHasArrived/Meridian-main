@@ -6,26 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## StructuredCashFlowProjectionDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCashFlowProjectionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:356](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L356).
-
-Full projected cash flow schedule for a security under one rate scenario.
-
-```csharp
-public sealed record StructuredCashFlowProjectionDto(Guid SecurityId, StructuredCashFlowSourceKind SourceKind, StructuredCashFlowScenario Scenario, DateTimeOffset AsOf, IReadOnlyList<StructuredCashFlowScheduleEntry> Schedule, StructuredCashFlowStaleness Staleness = StructuredCashFlowStaleness.Unknown, DateTimeOffset? SourceLastUpdatedUtc = null, IReadOnlyList<StructuredFactorScheduleEntry>? FactorSchedule = null, StructuredCashFlowTerms? TermsUsed = null, IReadOnlyList<StructuredCashFlowLegSchedule>? LegSchedules = null, string? BlockedReason = null, bool IsNormalizedPer100 = false)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public SecurityCashFlowBlockerDto? Blocker { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:372](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L372) | Typed capability refusal; null on successful and older projections. |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public StructuredCashFlowScheduleEvidence? ScheduleEvidence { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:376](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L376) | Calendar and kernel evidence for a declared projection; absent on legacy projections. |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;Meridian.Contracts.FixedIncome.BondCalculationInput&gt;? InputManifest { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:380](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L380) | Exact dependencies selected by the context-aware calculation path. |
-
 ## StructuredCashFlowResetFixing
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCashFlowResetFixing</code>. Kind: `record`.
@@ -876,3 +856,22 @@ Resource requirements for an operation.
 ```csharp
 public sealed record ResourceRequirements(bool RequiresCpuIntensive = false, bool RequiresIoIntensive = false, bool RequiresNetwork = false, TimeSpan? EstimatedDuration = null, bool CanBeInterrupted = true);
 ```
+
+## ScheduleDecision
+
+Qualified name: <code>Meridian.Contracts.Services.ScheduleDecision</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Services/IOperationalScheduler.cs:55](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L55).
+
+Decision about whether an operation can be executed.
+
+```csharp
+public sealed record ScheduleDecision(bool CanExecute, string? Reason = null, TimeSpan? SuggestedDelay = null, IReadOnlyDictionary<string, object>? Context = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly ScheduleDecision Allowed = new (true);</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:64](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L64) | Decision indicating operation can execute. |
+| <code>public static ScheduleDecision Denied(string reason, TimeSpan? suggestedDelay = null) =&gt; …;</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:69](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L69) | Creates a denied decision with reason. |

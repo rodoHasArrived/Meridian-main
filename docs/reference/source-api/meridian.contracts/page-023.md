@@ -6,6 +6,38 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BondMigrationSubmitRequest
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondMigrationSubmitRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondMigrationApiRequests.cs:4](../../../../src/Meridian.Contracts/FixedIncome/BondMigrationApiRequests.cs#L4).
+
+Stages a reviewed preview through the existing Security Master draft workflow.
+
+```csharp
+public sealed record BondMigrationSubmitRequest(BondMigrationPreviewRequest Request, string PreviewSha256, string SecurityContentSha256, string Justification);
+```
+
+## BondMonitoringCaptureRequest
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondMonitoringCaptureRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs:36](../../../../src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs#L36).
+
+```csharp
+public sealed record BondMonitoringCaptureRequest(string RunId, AccountCashForecastScopeDto Scope, DateTimeOffset RecordedAtUtc, IReadOnlyList<BondMonitoringObligationDto> Obligations, IReadOnlyList<AccountCashFlowDto> Payments, IReadOnlyList<AccountCashPaymentAllocationDto> Allocations, IReadOnlyList<AccountCashReceiptRevisionDto> ReceiptRevisions, IReadOnlyList<BondWatchObservationDto> Observations, string? PreviousSnapshotId = null, string? CorrectionRationale = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? PlanningRunId { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs:43](../../../../src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs#L43) |  |
+| <code>public IReadOnlyList&lt;BondMonitoringResetDto&gt; Resets { get; init; } = [];</code> | [src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs:44](../../../../src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs#L44) |  |
+| <code>public BondCalculationContext? CalculationContext { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs:45](../../../../src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs#L45) |  |
+| <code>public IReadOnlyList&lt;BondExerciseNoticeWatchResult&gt; ExerciseWindows { get; init; } = [];</code> | [src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs:46](../../../../src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs#L46) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public BondMonitoringMarketWatchDto? MarketWatch { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs:48](../../../../src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs#L48) |  |
+
 ## BondMonitoringJsonContext
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondMonitoringJsonContext</code>. Kind: `class`.
@@ -634,43 +666,3 @@ Source: [src/Meridian.Contracts/FixedIncome/BondScreeningDtos.cs:11](../../../..
 ```csharp
 public sealed record BondScreeningRow(BondReferenceDto Reference, IReadOnlyList<BondMarketObservationDto> Ratings, IReadOnlyList<string> Gaps);
 ```
-
-## BondSecurityTermsDigest
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondSecurityTermsDigest</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondSecurityTermsDigest.cs:27](../../../../src/Meridian.Contracts/FixedIncome/BondSecurityTermsDigest.cs#L27).
-
-The content hash a bond calculation records for its SecurityTerms input (BondCalculationInput.ContentSha256): SHA-256 over the common terms&#x27; raw text, a line feed, and the asset-specific terms&#x27; raw text. The asset-specific terms are hashed without a top-level SecurityTermsEnvelope.FormatKey that only restates the family the frozen shape rule infers (SecurityTermsEnvelope.RemoveRedundantDeclaredFormat). That declaration is the only key a write, a replay or migration 068 adds to the same economic terms (ADR-024 amendment 2026-11-13), so declaring it never moves the hash; every other byte, including schemaVersion and SecurityTermsEnvelope.AssetClassTermsVersionKey, stays hashed. Receipts calculated before this rule hashed the asset-specific terms&#x27; raw text as read, which for terms that already declared their family includes the declaration. Resolve lets a replay report that retained hash when it is exactly the raw-text hash of the terms resolved now, so an unchanged security keeps verifying; any other retained value is ignored and the canonical hash is reported, so changed terms never verify.
-
-```csharp
-public static class BondSecurityTermsDigest
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static string Compute(JsonElement commonTerms, JsonElement assetSpecificTerms) =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondSecurityTermsDigest.cs:30](../../../../src/Meridian.Contracts/FixedIncome/BondSecurityTermsDigest.cs#L30) | The canonical, declared-format-invariant hash of the terms. |
-| <code>public static string ComputeRawText(JsonElement commonTerms, JsonElement assetSpecificTerms) =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondSecurityTermsDigest.cs:34](../../../../src/Meridian.Contracts/FixedIncome/BondSecurityTermsDigest.cs#L34) | The raw-text hash receipts recorded before the declared-format-invariant rule. |
-| <code>public static string Resolve(JsonElement commonTerms, JsonElement assetSpecificTerms, string? retainedSha256);</code> | [src/Meridian.Contracts/FixedIncome/BondSecurityTermsDigest.cs:44](../../../../src/Meridian.Contracts/FixedIncome/BondSecurityTermsDigest.cs#L44) | The hash a calculation over these terms reports. Without a retained hash, or when the retained hash is not the raw-text hash of exactly these terms, this is Compute. When a replay supplies the hash its receipt retained and it equals ComputeRawText of these terms (the bytes the receipt hashed are the bytes resolved now), the retained hash is reported so the replayed input manifest equals the retained one. |
-
-## BondSettlementConsideration
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondSettlementConsideration</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs:95](../../../../src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs#L95).
-
-Pure receipt validation shared by candidate admission and retained instruction checks.
-
-```csharp
-public static class BondSettlementConsideration
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static decimal Round(decimal amount, string currency) =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs:97](../../../../src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs#L97) |  |
-| <code>public static IReadOnlyList&lt;string&gt; Validate(BondSettlementConsiderationDto receipt);</code> | [src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs:100](../../../../src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs#L100) |  |
-| <code>public static IReadOnlyList&lt;string&gt; ValidateAcquisition(AssetAcquisitionLotDto acquisition, IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt;? evidence = null);</code> | [src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs:162](../../../../src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs#L162) |  |

@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterCorporateActionCommandService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.SecurityMasterCorporateActionCommandService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterCorporateActionCommandService.cs:10](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterCorporateActionCommandService.cs#L10).
+
+Appends corporate actions through the Security Master command boundary.
+
+```csharp
+public sealed class SecurityMasterCorporateActionCommandService : ISecurityMasterCorporateActionCommandService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterCorporateActionCommandService(ISecurityMasterEventStore eventStore, ILogger&lt;SecurityMasterCorporateActionCommandService&gt; logger, ISecurityMasterStore? store = null, ICorporateActionRestatementTrigger? restatementTrigger = null, ICorporateActionOperationsService? durableOperations = null);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterCorporateActionCommandService.cs:18](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterCorporateActionCommandService.cs#L18) |  |
+| <code>public async Task&lt;SecurityMasterCorporateActionAppendResultDto&gt; AppendAsync(SecurityMasterCorporateActionAppendRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterCorporateActionCommandService.cs:32](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterCorporateActionCommandService.cs#L32) |  |
+
 ## SecurityMasterTickerChangeService
 
 Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.SecurityMasterTickerChangeService</code>. Kind: `class`.
@@ -872,24 +891,6 @@ Declared public members:
 | <code>public Task&lt;StructuredCashFlowProjectionDto?&gt; GetProjectionAsync(Guid securityId, StructuredCashFlowScenario scenario, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:76](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L76) |  |
 | <code>public Task&lt;StructuredCashFlowProjectionDto?&gt; GetProjectionAsOfAsync(Guid securityId, StructuredCashFlowScenario scenario, DateTimeOffset asOf, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:80](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L80) |  |
 
-## NullSecurityMasterClassificationDriftReportService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.NullSecurityMasterClassificationDriftReportService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:138](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L138).
-
-Rejects classification drift reports when Security Master is unavailable.
-
-```csharp
-public sealed class NullSecurityMasterClassificationDriftReportService : ISecurityMasterClassificationDriftReportService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;SecurityClassificationDriftReportDto&gt; BuildReportAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:140](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L140) |  |
-
 ## NullSecurityMasterCorporateActionCommandService
 
 Qualified name: <code>Meridian.Application.SecurityMaster.NullSecurityMasterCorporateActionCommandService</code>. Kind: `class`.
@@ -979,7 +980,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.SecurityMaster.NullSecurityMasterProfilePromotionService</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:148](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L148).
+Source: [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:138](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L138).
 
 Rejects CustomAsset profile promotion reports when Security Master is unavailable.
 
@@ -991,4 +992,4 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public Task&lt;SecurityMasterProfilePromotionReportDto&gt; BuildReportAsync(string profileId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:150](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L150) |  |
+| <code>public Task&lt;SecurityMasterProfilePromotionReportDto&gt; BuildReportAsync(string profileId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:140](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L140) |  |

@@ -6,6 +6,46 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountingAuditRecoveryException
+
+Qualified name: <code>Meridian.Contracts.Ledger.AccountingAuditRecoveryException</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs:105](../../../../src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs#L105).
+
+Raised when an outstanding marker cannot be resolved because the retained state matches neither the mutation&#x27;s before-state nor its after-state.
+
+```csharp
+public sealed class AccountingAuditRecoveryException : Exception
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public AccountingAuditRecoveryException(Guid auditEventId, string message) : base(message);</code> | [src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs:107](../../../../src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs#L107) |  |
+| <code>public Guid AuditEventId { get; }</code> | [src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs:113](../../../../src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs#L113) |  |
+
+## AccountingAuditRecoveryOutcome
+
+Qualified name: <code>Meridian.Contracts.Ledger.AccountingAuditRecoveryOutcome</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs:74](../../../../src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs#L74).
+
+How an outstanding marker was resolved.
+
+```csharp
+public enum AccountingAuditRecoveryOutcome
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Nothing</code> | [src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs:77](../../../../src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs#L77) | No marker was outstanding. |
+| <code>AlreadyAudited</code> | [src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs:80](../../../../src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs#L80) | The audit event was already retained; the marker was stale and has been cleared. |
+| <code>AuditReplayed</code> | [src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs:83](../../../../src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs#L83) | The mutation had landed without its audit event, which has now been appended. |
+| <code>MutationDiscarded</code> | [src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs:86](../../../../src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs#L86) | The mutation never landed, so there was nothing to audit and the marker was discarded. |
+
 ## AccountingAuditRecoveryResult
 
 Qualified name: <code>Meridian.Contracts.Ledger.AccountingAuditRecoveryResult</code>. Kind: `record`.
@@ -731,33 +771,3 @@ Source: [src/Meridian.Contracts/Ledger/AutomatedPostingGrantDtos.cs:19](../../..
 ```csharp
 public sealed record ActivateAutomatedPostingGrantRequest(Guid GrantId, string FinancialAccountId, Guid LedgerBookId, Guid PeriodId, string PolicyId, string PolicyVersion, string MappingRevision, string SourceMode = "Synthetic", string? CompanyId = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 ```
-
-## ActivateLedgerBookControlsRequestDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.ActivateLedgerBookControlsRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs:36](../../../../src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs#L36).
-
-```csharp
-public sealed record ActivateLedgerBookControlsRequestDto(long ExpectedVersion, string PreflightDigest, string Reason, string EvidenceReference);
-```
-
-## AllocationRuleBasisDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.AllocationRuleBasisDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:82](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L82).
-
-```csharp
-public enum AllocationRuleBasisDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>FixedPercent = 0</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:84](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L84) |  |
-| <code>InvestorCommitment = 1</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:85](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L85) |  |
-| <code>CapitalAccountBalance = 2</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:86](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L86) |  |
-| <code>StrategyWeight = 3</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:87](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L87) |  |
-| <code>CustomFormula = 4</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:88](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L88) |  |

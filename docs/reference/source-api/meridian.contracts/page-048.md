@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ISecurityMasterReportingQueryService
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityMasterReportingQueryService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/ISecurityMasterReportingQueryService.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterReportingQueryService.cs#L8).
+
+Supplies a single, point-in-time Security Master reference for governed reporting. Implementations must return the detail and economic definition from the same historical source state so report rendering never combines yesterday&#x27;s identity with today&#x27;s terms.
+
+```csharp
+public interface ISecurityMasterReportingQueryService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;SecurityMasterReportingReference?&gt; GetReportingReferenceByIdentifierAsOfAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, DateTimeOffset asOfUtc, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterReportingQueryService.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterReportingQueryService.cs#L10) |  |
+
 ## ISecurityMasterRuntimeStatus
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus</code>. Kind: `interface`.
@@ -826,16 +844,4 @@ The append-only valuation of one netting set on one date: the contracts valued, 
 
 ```csharp
 public sealed record OtcExposureSnapshotDto(Guid SnapshotId, Guid NettingSetId, Guid MasterAgreementId, Guid? CollateralAgreementId, DateOnly AsOfDate, int Version, string RuleVersion, string Currency, OtcNettingBasis NettingBasis, OtcExposureSnapshotStatus Status, DataProvenance Provenance, long MasterAgreementVersion, long? CollateralAgreementVersion, IReadOnlyList<OtcContractValuationDto> Contracts, decimal GrossPositive, decimal GrossNegative, decimal NetExposure, OtcCreditSupportSideDto? FundAsSecuredParty, OtcCreditSupportSideDto? CounterpartyAsSecuredParty, IReadOnlyList<OtcCollateralHeldLineDto> CollateralHeld, IReadOnlyList<OtcCollateralMovementDto> Movements, IReadOnlyList<OtcValuationBlockerDto> Blockers, OtcExposureSnapshotInputsDto? Inputs, string PayloadSha256, string ComputedBy, DateTimeOffset ComputedAt);
-```
-
-## OtcExposureSnapshotInputsDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcExposureSnapshotInputsDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:186](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L186).
-
-What an exposure snapshot was computed from, besides the master and collateral agreement versions the snapshot carries itself. The records, each at the version read: the netting set; every contract in it, closed and not-yet-traded ones included, because a change of status or trade date changes which contracts enter; every collateral balance under the collateral agreement, fully returned ones included; and the netting sets that reference the agreement. The market data: Securities, the securities of the contracts that were valued, whose prices and pricing hierarchy the valuations read as known at KnowledgeAsOf. Each list is in id order, so the digest is the same however the records were read. A call is issued from the snapshot only while every record is unchanged, no market data for those securities bearing on the as-of date has been recorded since, and the knowledge time is not earlier than the computation (OtcMarginCallRules.RequireUnchangedInputs). The knowledge time and the securities describe the computation rather than a stored record, so the record set a store reads back for that check leaves them at their defaults.
-
-```csharp
-public sealed record OtcExposureSnapshotInputsDto(long NettingSetVersion, IReadOnlyList<OtcExposureInputVersionDto> Contracts, IReadOnlyList<OtcExposureInputVersionDto> CollateralBalances, IReadOnlyList<Guid> NettingSetsUnderAgreement, DateTimeOffset KnowledgeAsOf = default, IReadOnlyList<Guid>? Securities = null);
 ```

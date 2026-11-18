@@ -6,16 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## StatementActivityCompletenessDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementActivityCompletenessDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:122](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L122).
-
-```csharp
-public sealed record StatementActivityCompletenessDto(string? LastEventId = null, DateTimeOffset? HighWatermark = null, int PageCount = default, int SourceRecordCount = default, bool IsComplete = default);
-```
-
 ## StatementActivitySubtypeSummaryDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementActivitySubtypeSummaryDto</code>. Kind: `record`.
@@ -699,3 +689,13 @@ Enum declarations:
 | <code>Warning = 1</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:30](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L30) |  |
 | <code>Error = 2</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:31](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L31) |  |
 | <code>Critical = 3</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:32](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L32) |  |
+
+## StorageAssurancePermissionsDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StorageAssurancePermissionsDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:147](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L147).
+
+```csharp
+public sealed record StorageAssurancePermissionsDto(bool CanView, bool CanRunQualityCheck, bool CanMigrate, bool CanDelete);
+```

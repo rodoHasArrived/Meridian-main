@@ -6,18 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## SecurityMasterDeclaredExerciseOutcomeDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterDeclaredExerciseOutcomeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:251](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L251).
-
-The typed outcome of a record&#x27;s declared call and put schedule at the snapshot&#x27;s evaluation date. Present only for a record that declares a schedule its terms stamp decodes; a record that declares none carries no outcome and keeps the scalar call date. Blockers is empty for a resolved outcome. The same outcome the asset-operations obligation timeline carries in its extension payload (ADR-025).
-
-```csharp
-public sealed record SecurityMasterDeclaredExerciseOutcomeDto(SecurityMasterDeclaredExerciseStatus Status, DateOnly AsOf, long? SecurityVersion, int WindowCount, IReadOnlyList<SecurityMasterScheduleBlockerDto> Blockers, IReadOnlyList<string> Diagnostics);
-```
-
 ## SecurityMasterDeclaredExerciseStatus
 
 Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterDeclaredExerciseStatus</code>. Kind: `enum`.
@@ -628,4 +616,14 @@ Provider-reported margin and restriction evidence shown before import.
 
 ```csharp
 public sealed record StatementAccountSnapshotPreviewDto(string ProviderId = default !, string AccountId = default !, DateTimeOffset AsOf = default, string Currency = default !, string Status = default !, string MarginRegime = default !, decimal Cash = default, decimal Equity = default, decimal BuyingPower = default, decimal? InitialMargin = null, decimal? MaintenanceMargin = null, decimal? ExcessLiquidity = null, decimal? MarginLoan = null, decimal? Multiplier = null, bool TradingBlocked = default, bool TransfersBlocked = default, bool AccountBlocked = default, bool ShortingEnabled = default, int? OptionsApprovedLevel = null, int? OptionsTradingLevel = null, IReadOnlyList<string> Restrictions = default !);
+```
+
+## StatementActivityCompletenessDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementActivityCompletenessDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:122](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L122).
+
+```csharp
+public sealed record StatementActivityCompletenessDto(string? LastEventId = null, DateTimeOffset? HighWatermark = null, int PageCount = default, int SourceRecordCount = default, bool IsComplete = default);
 ```

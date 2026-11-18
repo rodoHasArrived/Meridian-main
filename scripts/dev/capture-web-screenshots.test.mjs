@@ -843,6 +843,21 @@ test("a clipped status badge is reported once per badge text", () => {
   assert.deepEqual(findCaptureContentIssues("Reconciliation", { truncatedBadges: [] }), []);
 });
 
+test("a detail panel that clips content without a cue is reported once per panel", () => {
+  assert.deepEqual(
+    findCaptureContentIssues("Portfolio", { clippedDetailPanels: ["Holding detail", "Holding detail"] }),
+    [{ kind: "detail-rail-clipped", excerpt: "Holding detail" }]
+  );
+  assert.deepEqual(findCaptureContentIssues("Portfolio", { clippedDetailPanels: [] }), []);
+});
+
+test("overlapping chart labels are reported", () => {
+  assert.deepEqual(
+    findCaptureContentIssues("NAV", { overlappingChartLabels: ['"Sep \'26" overlaps "Oct \'26"'] }),
+    [{ kind: "chart-label-overlap", excerpt: '"Sep \'26" overlaps "Oct \'26"' }]
+  );
+});
+
 test("a Latency term followed by a clock time or Never is reported", () => {
   assert.deepEqual(
     findCaptureContentIssues("Plaid\nLatency\nNever\nAlpaca paper\nLatency\nJul 13, 06:55 PM UTC\nYahoo Finance\nLatency\nnever"),

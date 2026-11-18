@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityAssetProfileLineageDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfileLineageDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:161](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L161).
+
+```csharp
+public sealed record SecurityAssetProfileLineageDto(string ProfileId, IReadOnlyList<SecurityAssetProfileDefinitionDto> Versions, IReadOnlyList<SecurityAssetProfileGovernanceAuditEventDto> AuditEvents);
+```
+
 ## SecurityAssetProfilePromotionCandidateDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfilePromotionCandidateDto</code>. Kind: `record`.
@@ -584,30 +594,6 @@ The bindings of one asset class.
 public sealed record SecurityClassCodecBinding(string AssetClass, bool ReadsResolvedTerms, IReadOnlyList<SecurityTermBinding> Members, bool VersionedSchedules = false, SecurityCodecInputs Inputs = SecurityCodecInputs.None, bool WritesConventionsFlag = false);
 ```
 
-## SecurityClassificationDriftEntryDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityClassificationDriftEntryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterClassificationDrift.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterClassificationDrift.cs#L17).
-
-One group of active securities whose latest retained event recorded a classification that the current asset-class taxonomy now derives differently (for example a Swap recorded under the ListedDerivative family before the taxonomy moved it to OtcDerivative).
-
-```csharp
-public sealed record SecurityClassificationDriftEntryDto(string TypeName, string StoredAssetClass, string? StoredAssetFamily, string CurrentAssetClass, string? CurrentAssetFamily, int SecurityCount, IReadOnlyList<Guid> SecurityIds);
-```
-
-## SecurityClassificationDriftReportDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityClassificationDriftReportDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterClassificationDrift.cs:32](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterClassificationDrift.cs#L32).
-
-Report of active securities whose retained classification differs from the one the current taxonomy derives. Classification is derived on read, so every current projection, snapshot and export already shows the current labels; only retained events keep the old ones, and they are append-only. Building the report changes nothing.
-
-```csharp
-public sealed record SecurityClassificationDriftReportDto(DateTimeOffset GeneratedAt, int SecuritiesScanned, int UnreadableCount, int WithoutRetainedClassificationCount, int DriftedSecurityCount, IReadOnlyList<SecurityClassificationDriftEntryDto> Entries);
-```
-
 ## SecurityClosePriceApprovalDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityClosePriceApprovalDto</code>. Kind: `record`.
@@ -861,3 +847,22 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public SecurityRatePointEvidenceDto? RateEvidence { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L49) |  |
+
+## SecurityCurveRatePolicy
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCurveRatePolicy</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L39).
+
+Write-once admission policy. Legacy definitions retain nonnegative-rate restrictions.
+
+```csharp
+public enum SecurityCurveRatePolicy
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>LegacyNonNegative</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L39) |  |
+| <code>SignedRates</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L39) |  |

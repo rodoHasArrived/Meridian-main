@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CreateBusinessRequest
+
+Qualified name: <code>Meridian.Contracts.FundStructure.CreateBusinessRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureCommands.cs:12](../../../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs#L12).
+
+```csharp
+public sealed record CreateBusinessRequest(Guid BusinessId, Guid OrganizationId, BusinessKindDto BusinessKind, string Code, string Name, string BaseCurrency, DateTimeOffset EffectiveFrom, string CreatedBy, string? Description = null);
+```
+
+## CreateClientRequest
+
+Qualified name: <code>Meridian.Contracts.FundStructure.CreateClientRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureCommands.cs:23](../../../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs#L23).
+
+```csharp
+public sealed record CreateClientRequest(Guid ClientId, Guid BusinessId, string Code, string Name, string BaseCurrency, DateTimeOffset EffectiveFrom, string CreatedBy, string? Description = null, ClientSegmentKind ClientSegmentKind = ClientSegmentKind.Unspecified);
+```
+
 ## CreateFundRequest
 
 Qualified name: <code>Meridian.Contracts.FundStructure.CreateFundRequest</code>. Kind: `record`.
@@ -586,24 +606,4 @@ Source: [src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs:
 
 ```csharp
 public sealed record FundStructureSetupPreviewLinkDto(FundStructureSetupNodeAlias Parent, FundStructureSetupNodeAlias Child, OwnershipRelationshipTypeDto RelationshipType, decimal? OwnershipPercent, bool IsPrimary, string? Notes);
-```
-
-## FundStructureSetupResultDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureSetupResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs:125](../../../../src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs#L125).
-
-```csharp
-public sealed record FundStructureSetupResultDto(OrganizationSummaryDto Organization, BusinessSummaryDto BusinessLane, ClientSummaryDto? Client, FundSummaryDto? Fund, LegalEntitySummaryDto LegalEntity, VehicleSummaryDto Vehicle, InvestmentPortfolioSummaryDto InvestmentPortfolio, IReadOnlyList<OwnershipLinkDto> OwnershipLinks, FundStructureAssignmentDto AccountHandoffAssignment, FundStructureGraphDto Graph, FundStructureSetupValidationSummaryDto ValidationSummary);
-```
-
-## FundStructureSetupValidationIssueDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureSetupValidationIssueDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs:102](../../../../src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs#L102).
-
-```csharp
-public sealed record FundStructureSetupValidationIssueDto(string Code, string Message, string FieldPath, bool IsBlocking);
 ```

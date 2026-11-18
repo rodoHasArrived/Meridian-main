@@ -6,6 +6,41 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderEnvironmentOptionDto
+
+Qualified name: <code>Meridian.Contracts.Configuration.ProviderEnvironmentOptionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs:71](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionDtos.cs#L71).
+
+```csharp
+public sealed record ProviderEnvironmentOptionDto(string Value, string Label, bool IsDefault = false, string? HelpText = null);
+```
+
+## ProviderPolicyConfigDto
+
+Qualified name: <code>Meridian.Contracts.Configuration.ProviderPolicyConfigDto</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:113](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L113).
+
+Configures capability selection safeguards and permitted provider failover choices.
+
+```csharp
+public sealed class ProviderPolicyConfigDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;policyId&quot;)] public string PolicyId { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:116](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L116) |  |
+| <code>[JsonPropertyName(&quot;capability&quot;)] public string Capability { get; set; } = &quot;RealtimeMarketData&quot;;</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:119](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L119) |  |
+| <code>[JsonPropertyName(&quot;safetyMode&quot;)] public string SafetyMode { get; set; } = &quot;HealthAwareFailover&quot;;</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:122](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L122) |  |
+| <code>[JsonPropertyName(&quot;requireExplicitBinding&quot;)] public bool RequireExplicitBinding { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:125](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L125) |  |
+| <code>[JsonPropertyName(&quot;requireProductionReady&quot;)] public bool RequireProductionReady { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:128](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L128) |  |
+| <code>[JsonPropertyName(&quot;allowedFailoverConnectionIds&quot;)] public string[]? AllowedFailoverConnectionIds { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:131](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L131) |  |
+| <code>[JsonPropertyName(&quot;allowedProviderFamilies&quot;)] public string[]? AllowedProviderFamilies { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:134](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L134) |  |
+| <code>[JsonPropertyName(&quot;description&quot;)] public string? Description { get; set; }</code> | [src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs:137](../../../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs#L137) |  |
+
 ## ProviderPresetConfigDto
 
 Qualified name: <code>Meridian.Contracts.Configuration.ProviderPresetConfigDto</code>. Kind: `class`.
@@ -888,24 +923,4 @@ PRD-115: applies part of the loan&#x27;s unapplied cash to amounts owed, by the 
 
 ```csharp
 public sealed record ApplyUnappliedCashRequest(decimal Amount, DateOnly EffectiveDate, PaymentBreakdownDto? Breakdown, string? ExternalRef);
-```
-
-## ApplyWriteOffRequest
-
-Qualified name: <code>Meridian.Contracts.DirectLending.ApplyWriteOffRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:82](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L82).
-
-```csharp
-public sealed record ApplyWriteOffRequest(decimal Amount, DateOnly EffectiveDate, string Reason);
-```
-
-## AssessFeeRequest
-
-Qualified name: <code>Meridian.Contracts.DirectLending.AssessFeeRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:76](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L76).
-
-```csharp
-public sealed record AssessFeeRequest(string FeeType, decimal Amount, DateOnly EffectiveDate, string? Note);
 ```

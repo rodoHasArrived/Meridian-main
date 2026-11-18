@@ -6,6 +6,41 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## InvestmentPortfolioSummaryDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:254](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L254).
+
+```csharp
+public sealed record InvestmentPortfolioSummaryDto(Guid InvestmentPortfolioId, Guid BusinessId, string Code, string Name, string BaseCurrency, bool IsActive, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, Guid? ClientId, Guid? FundId, Guid? SleeveId, Guid? VehicleId, Guid? EntityId, IReadOnlyList<Guid> AccountIds, string? Description = null, FundStructureSharedDataAccessDto? SharedDataAccess = null);
+```
+
+## LedgerGroupId
+
+Qualified name: <code>Meridian.Contracts.FundStructure.LedgerGroupId</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Contracts/FundStructure/LedgerGroupId.cs:7](../../../../src/Meridian.Contracts/FundStructure/LedgerGroupId.cs#L7).
+
+```csharp
+public readonly record struct LedgerGroupId
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string UnassignedValue = &quot;unassigned&quot;;</code> | [src/Meridian.Contracts/FundStructure/LedgerGroupId.cs:9](../../../../src/Meridian.Contracts/FundStructure/LedgerGroupId.cs#L9) |  |
+| <code>public const string ValidationMessage = &quot;Ledger group IDs must be non-empty and may contain only letters, digits, &#x27;-&#x27;, &#x27;_&#x27;, &#x27;.&#x27;, or &#x27;:&#x27;.&quot;;</code> | [src/Meridian.Contracts/FundStructure/LedgerGroupId.cs:10](../../../../src/Meridian.Contracts/FundStructure/LedgerGroupId.cs#L10) |  |
+| <code>public static LedgerGroupId Unassigned { get; } = new (UnassignedValue, skipValidation : true);</code> | [src/Meridian.Contracts/FundStructure/LedgerGroupId.cs:13](../../../../src/Meridian.Contracts/FundStructure/LedgerGroupId.cs#L13) |  |
+| <code>public string Value { get; }</code> | [src/Meridian.Contracts/FundStructure/LedgerGroupId.cs:15](../../../../src/Meridian.Contracts/FundStructure/LedgerGroupId.cs#L15) |  |
+| <code>public LedgerGroupId(string value);</code> | [src/Meridian.Contracts/FundStructure/LedgerGroupId.cs:17](../../../../src/Meridian.Contracts/FundStructure/LedgerGroupId.cs#L17) |  |
+| <code>public static bool TryCreate(string? value, out LedgerGroupId ledgerGroupId);</code> | [src/Meridian.Contracts/FundStructure/LedgerGroupId.cs:27](../../../../src/Meridian.Contracts/FundStructure/LedgerGroupId.cs#L27) |  |
+| <code>public static LedgerGroupId Create(string value) =&gt; …;</code> | [src/Meridian.Contracts/FundStructure/LedgerGroupId.cs:41](../../../../src/Meridian.Contracts/FundStructure/LedgerGroupId.cs#L41) |  |
+| <code>public static string Normalize(string value);</code> | [src/Meridian.Contracts/FundStructure/LedgerGroupId.cs:43](../../../../src/Meridian.Contracts/FundStructure/LedgerGroupId.cs#L43) |  |
+| <code>public static bool TryNormalize(string? value, out string normalized);</code> | [src/Meridian.Contracts/FundStructure/LedgerGroupId.cs:53](../../../../src/Meridian.Contracts/FundStructure/LedgerGroupId.cs#L53) |  |
+| <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Contracts/FundStructure/LedgerGroupId.cs:87](../../../../src/Meridian.Contracts/FundStructure/LedgerGroupId.cs#L87) |  |
+
 ## LedgerGroupIdJsonConverter
 
 Qualified name: <code>Meridian.Contracts.FundStructure.LedgerGroupIdJsonConverter</code>. Kind: `class`.
@@ -677,38 +712,3 @@ Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:204](../../..
 ```csharp
 public sealed record VehicleSummaryDto(Guid VehicleId, Guid FundId, Guid LegalEntityId, string Code, string Name, string BaseCurrency, bool IsActive, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, IReadOnlyList<Guid> InvestmentPortfolioIds, IReadOnlyList<Guid> AccountIds, string? Description = null);
 ```
-
-## FutureLifecycleStat
-
-Qualified name: <code>Meridian.Contracts.Futures.FutureLifecycleStat</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Futures/FutureReferenceDtos.cs:7](../../../../src/Meridian.Contracts/Futures/FutureReferenceDtos.cs#L7).
-
-```csharp
-public enum FutureLifecycleStat
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Active</code> | [src/Meridian.Contracts/Futures/FutureReferenceDtos.cs:9](../../../../src/Meridian.Contracts/Futures/FutureReferenceDtos.cs#L9) |  |
-| <code>RollTarget</code> | [src/Meridian.Contracts/Futures/FutureReferenceDtos.cs:10](../../../../src/Meridian.Contracts/Futures/FutureReferenceDtos.cs#L10) |  |
-| <code>Expired</code> | [src/Meridian.Contracts/Futures/FutureReferenceDtos.cs:11](../../../../src/Meridian.Contracts/Futures/FutureReferenceDtos.cs#L11) |  |
-| <code>Retired</code> | [src/Meridian.Contracts/Futures/FutureReferenceDtos.cs:12](../../../../src/Meridian.Contracts/Futures/FutureReferenceDtos.cs#L12) |  |
-
-## FutureReferenceDto
-
-Qualified name: <code>Meridian.Contracts.Futures.FutureReferenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Futures/FutureReferenceDtos.cs:15](../../../../src/Meridian.Contracts/Futures/FutureReferenceDtos.cs#L15).
-
-```csharp
-public sealed record FutureReferenceDto(Guid SecurityId, string DisplayName, string Currency, string RootSymbol, string ContractMonth, DateOnly ExpiryDate, decimal Multiplier, string? SettlementType, bool IsRollTarget, int? RollWindowDays, DateOnly? LastTradingDate, DateOnly? FirstNoticeDate, DateOnly? DeliveryMonthDate, string? DeliveryLocationCode, FutureLifecycleStat LifecycleStat, string PrimaryIdentifier, long Version)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecuritySettlementMethod? SettlementMethod =&gt; …;</code> | [src/Meridian.Contracts/Futures/FutureReferenceDtos.cs:38](../../../../src/Meridian.Contracts/Futures/FutureReferenceDtos.cs#L38) | SettlementType as a typed convention, or null when the stored text is absent or names no recognized settlement method. The raw text stays on SettlementType. |

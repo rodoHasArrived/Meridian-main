@@ -6,18 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## RecurringJournalQueueDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.RecurringJournalQueueDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/RecurringJournalDtos.cs:28](../../../../src/Meridian.Contracts/Workstation/RecurringJournalDtos.cs#L28).
-
-An exact fund, book and entity projection. Unavailable state must fail the read.
-
-```csharp
-public sealed record RecurringJournalQueueDto(string FundProfileId, Guid LedgerBookId, string EntityId, IReadOnlyList<RecurringJournalOccurrenceDto> Occurrences);
-```
-
 ## RejectWorkflow
 
 Qualified name: <code>Meridian.Contracts.Workstation.RejectWorkflow</code>. Kind: `record`.
@@ -632,4 +620,14 @@ Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:872](
 
 ```csharp
 public sealed record ReportPackDeliveryArtifactDto(GovernanceReportArtifactFormatDto Format, string ArtifactName, string ContentType, string RetainedPath, long ByteSize, string EvidenceId, string ChecksumSha256 = "", string VersionStamp = "", string? DownloadRoute = null);
+```
+
+## ReportPackDeliveryAttemptDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportPackDeliveryAttemptDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:994](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L994).
+
+```csharp
+public sealed record ReportPackDeliveryAttemptDto(Guid AttemptId, Guid ReportId, string DistributionId, string Recipient, string RecipientRole, string Channel, ReportPackDeliveryStateDto State, DateTimeOffset AttemptedAtUtc, string Actor, int AttemptNumber, string DeliveryReference, string? Note = null, string? FailureReason = null, IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null, ReportPackDeliveryPackageDto? Package = null);
 ```

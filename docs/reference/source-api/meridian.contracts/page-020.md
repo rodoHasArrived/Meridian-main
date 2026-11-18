@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EnvironmentPublishChangeDto
+
+Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentPublishChangeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:146](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L146).
+
+```csharp
+public sealed record EnvironmentPublishChangeDto(string ChangeType, EnvironmentNodeKind? NodeKind, string TargetId, string Summary, bool IsBreaking = false);
+```
+
+## EnvironmentPublishPlanDto
+
+Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPlanDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:121](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L121).
+
+```csharp
+public sealed record EnvironmentPublishPlanDto(Guid DraftId, string PublishedBy, bool AllowDestructiveDeletes = false, string? VersionLabel = null, string? Notes = null, IReadOnlyList<EnvironmentNodeRemapDto>? NodeRemaps = null);
+```
+
 ## EnvironmentPublishPreviewDto
 
 Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentPublishPreviewDto</code>. Kind: `record`.
@@ -935,27 +955,3 @@ Enum declarations:
 | <code>LastYear</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:223](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L223) | Export last year. |
 | <code>All</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:225](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L225) | Export all available data. |
 | <code>Custom</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:227](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L227) | Use custom date range. |
-
-## ExportAnalysisApiFile
-
-Qualified name: <code>Meridian.Contracts.Export.ExportAnalysisApiFile</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:236](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L236).
-
-File-level evidence returned from an analysis export run.
-
-```csharp
-public sealed record ExportAnalysisApiFile(string Path, string? Symbol, string? Format, long SizeBytes, long RecordCount);
-```
-
-## ExportAnalysisApiRequest
-
-Qualified name: <code>Meridian.Contracts.Export.ExportAnalysisApiRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:226](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L226).
-
-Browser and desktop request contract for the shared analysis export endpoint.
-
-```csharp
-public sealed record ExportAnalysisApiRequest(string? ProfileId, string[]? Symbols, string? Format, DateTime? StartDate, DateTime? EndDate);
-```
