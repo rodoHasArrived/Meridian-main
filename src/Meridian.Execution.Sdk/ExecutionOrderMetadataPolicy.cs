@@ -28,7 +28,18 @@ public static class ExecutionOrderMetadataPolicy
         // path may stamp the retained submitter. A caller-supplied value would bind an
         // escalation's segregation-of-duties identity to someone other than the real
         // submitter, letting the submitter approve their own escalation.
-        "riskSubmitter"
+        "riskSubmitter",
+        // Run and session identity is server-owned order authority. The OMS reads "runId" to bind
+        // a live order to a promoted strategy run (the readiness gate approves when it equals the
+        // promotion's target run), so a client-supplied value would let a manual ticket borrow a
+        // strategy's live authority. Only server-side callers (LiveStrategyRunSession, paper
+        // sessions) may stamp these. "orderOrigin" is reserved for the typed order-origin field.
+        // See docs/engineering/blueprints/governed-order-command-boundary-blueprint.md (Phase 0).
+        "runId",
+        "run_id",
+        "sessionId",
+        "session_id",
+        "orderOrigin"
     ];
 
     private static readonly string[] ServerOwnedRoutingKeys =

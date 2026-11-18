@@ -1471,6 +1471,22 @@ without endpoint or workstation orchestration. The larger cross-domain workflows
 
 The shared host composes equity session/coverage policies, authoritative previews, a durable operational journal, reconciliation/notification workers, an independent disabled-by-default webhook outbox, and retained strategy comparison. Browser Orders, Settings and Strategy reuse these authenticated services. Unavailable baseline, activity or cost evidence remains unassessed. See [execution workflows](../../docs/engineering/execution-workflows.md).
 
+Order authority: the order ticket and position actions submit under typed authority
+(`OperatorTicket`, `PositionAction`) with an account grant once the operator is verified for the
+named account; accountless operator orders stay untyped, which live routing refuses. Client
+metadata naming `runId`, `sessionId` or `orderOrigin` is refused with 403 on submit and preview, and
+removed from broker-reported position metadata. The order ticket's `correlationId` is minted by the
+server; a client's value is kept as `clientCorrelationId`. A risk-escalation release submits under
+the authority retained with the parked entry, plus the approver's grant for the account, which the
+approve endpoint verifies, so an approval given long after parking can still release the order. Live manual orders, position actions included, are
+refused until a reviewed manual-intent contract exists. The workstation registers
+`StrategyRunAuthoritySource` for the OMS. The trading workspace payload carries
+`ManualOrderEntry`, which mirrors the OMS's mode for the active gateway so the order ticket can
+disable live manual submission with the reason up front, and each working-order row carries its
+`Origin`. Both kill-switch entry points, `/orders/cancel-all` and opening the circuit breaker, sweep under
+`KillSwitch` authority naming the operator. Cancel-all correlates to its action id and records an
+unresolved identity as `unidentified-operator` rather than refusing the sweep.
+
 The `execution-webhook` client dials only public addresses: it resolves the host, refuses loopback, private, link-local and other internal addresses at connection time, pins the connection to the validated addresses, follows no redirects and uses no system proxy.
 
 `GET /api/config` requires configuration-read permission and masks every configured backfill

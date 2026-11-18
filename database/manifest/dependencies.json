@@ -22696,6 +22696,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationManualOrderEntry"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationMetricCard"
     },
     {
@@ -58120,6 +58126,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.WorkstationTradingPayload",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationManualOrderEntry"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.WorkstationTradingPayload",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationMetricCard"
     },
     {
@@ -68547,7 +68559,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "b76b0d2405ac12ddd5c9273d89f200464b3926967d14c82a261d78fe6888db66",
+  "fingerprint": "269db898ed6810edccf6640cfc28695781e4d20da647a125837a980c00858040",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -91294,6 +91306,12 @@
     },
     {
       "classification": "record",
+      "id": "contract:Meridian.Contracts.Workstation.WorkstationManualOrderEntry",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.WorkstationManualOrderEntry"
+    },
+    {
+      "classification": "record",
       "id": "contract:Meridian.Contracts.Workstation.WorkstationMetricCard",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.WorkstationMetricCard"
@@ -100703,11 +100721,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4226,
-    "contract_set_memberships": 5503,
-    "edges": 11387,
+    "contract_references": 4227,
+    "contract_set_memberships": 5504,
+    "edges": 11389,
     "foreign_keys": 208,
     "logical_references": 6,
-    "nodes": 5592
+    "nodes": 5593
   }
 }

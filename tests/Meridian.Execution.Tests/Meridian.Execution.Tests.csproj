@@ -47,6 +47,7 @@
     <Compile Include="@(ExecutionTestSource)" Link="Execution/%(RecursiveDir)%(Filename)%(Extension)" />
     <Compile Include="../Shared/Ledger/CanonicalCashFlowTestData.cs" Link="Support/CanonicalCashFlowTestData.cs" />
     <Compile Include="../Meridian.Tests/TestHelpers/RecordingLogger.cs" Link="Support/RecordingLogger.cs" />
+    <Compile Include="../Meridian.Tests/TestHelpers/LiveRunOrderAuthority.cs" Link="Support/LiveRunOrderAuthority.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="../Meridian.Tests/GlobalUsings*.cs" Link="Support/%(Filename)%(Extension)" />

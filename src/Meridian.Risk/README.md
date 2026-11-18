@@ -152,7 +152,9 @@ exposes one. During submission admission, rule severity maps to an outcome in `C
   `ICircuitBreakerTripHandler` is composed (the workstation registers `KillSwitchSweepTripHandler`),
   the trip is followed by the same kill-switch cancel-all sweep of the open book the operator
   breaker endpoint performs, with the sweep outcome audited as `controls/CircuitBreakerCancelAll`;
-  the sweep runs strictly after the trip and can never delay, block, or revert it.
+  the sweep runs strictly after the trip and can never delay, block, or revert it. The sweep runs
+  under kill-switch authority naming what tripped the breaker, which the OMS records on every
+  cancellation it makes.
 
 Portfolio-aware rules read a `PortfolioExposureSnapshot` per evaluation, so thresholds tuned
 through the UI runtime service apply immediately and enforcement always sees the same

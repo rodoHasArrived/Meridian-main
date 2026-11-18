@@ -50,7 +50,12 @@ public sealed class KillSwitchSweepTripHandler : ICircuitBreakerTripHandler
         {
             // A null sweep is an order manager that established nothing about the book. Fail
             // closed on it rather than dereferencing, exactly as the operator endpoint does.
-            var sweep = await orderManager.CancelAllAsync(ct).ConfigureAwait(false)
+            // The automated trip sweeps under kill-switch authority naming what tripped it, so each
+            // cancellation's audit record says who acted, not just that something did.
+            var killSwitch = OrderSubmissionAuthority.ForKillSwitch(
+                string.IsNullOrWhiteSpace(trippedBy) ? "circuit-breaker" : trippedBy,
+                $"circuit-breaker-trip-{Guid.NewGuid():N}");
+            var sweep = await orderManager.CancelAllAsync(new OrderCancelAllCommand(killSwitch), ct).ConfigureAwait(false)
                 ?? KillSwitchSweepResult.Unestablished(openCount);
 
             // Outcome, not invocation: the catch below fires only on a thrown exception, so a

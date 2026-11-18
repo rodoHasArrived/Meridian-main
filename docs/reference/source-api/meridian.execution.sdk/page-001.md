@@ -141,6 +141,18 @@ Declared public members:
 | <code>public int? OptionsApprovedLevel { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:206](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L206) |  |
 | <code>public int? OptionsTradingLevel { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:208](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L208) |  |
 
+## AuthorityDecisionSummary
+
+Qualified name: <code>Meridian.Execution.Sdk.AuthorityDecisionSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:429](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L429).
+
+Which authority admitted or refused an order, for display on the order ticket. Carried on OrderResult.AuthorityDecision; Checkpoint is preflight or dispatch.
+
+```csharp
+public sealed record AuthorityDecisionSummary(OrderCommandOrigin Origin, bool IsAuthorized, string? ReasonCode, string? Reason, string Checkpoint, string? ReadinessSnapshotVersion, string? PromotionAuditReference);
+```
+
 ## BracketOrderMetadata
 
 Qualified name: <code>Meridian.Execution.Sdk.BracketOrderMetadata</code>. Kind: `class`.
@@ -943,26 +955,3 @@ Enum declarations:
 | --- | --- | --- |
 | <code>European</code> | [src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs:21](../../../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs#L21) | May only be exercised at expiry (European-style). |
 | <code>American</code> | [src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs:24](../../../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs#L24) | May be exercised at any time before or at expiry (American-style). |
-
-## ExecutionDiagnostics
-
-Qualified name: <code>Meridian.Execution.Sdk.ExecutionDiagnostics</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution.Sdk/Models.cs:281](../../../../src/Meridian.Execution.Sdk/Models.cs#L281).
-
-Normalized operational diagnostics derived from broker status/reject payloads.
-
-```csharp
-public sealed record ExecutionDiagnostics
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? BrokerStatus { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:283](../../../../src/Meridian.Execution.Sdk/Models.cs#L283) |  |
-| <code>public string? BrokerRejectReason { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:284](../../../../src/Meridian.Execution.Sdk/Models.cs#L284) |  |
-| <code>public string? RejectCode { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:285](../../../../src/Meridian.Execution.Sdk/Models.cs#L285) |  |
-| <code>public string? Category { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:286](../../../../src/Meridian.Execution.Sdk/Models.cs#L286) |  |
-| <code>public string? Severity { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:287](../../../../src/Meridian.Execution.Sdk/Models.cs#L287) |  |
-| <code>public string? RecommendedAction { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:288](../../../../src/Meridian.Execution.Sdk/Models.cs#L288) |  |
