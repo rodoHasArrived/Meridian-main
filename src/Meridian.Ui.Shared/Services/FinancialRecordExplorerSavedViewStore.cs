@@ -152,9 +152,22 @@ public sealed class FileFinancialRecordExplorerSavedViewStore
         await using var writerLease = await AcquireWriterLeaseAsync(ct).ConfigureAwait(false);
         return await UpdateSnapshotAsync(snapshot =>
         {
-            var retained = (snapshot.PersonalViews ?? []).Append(new WorkstationPersonalTableViewRecord(
-                NormalizeTenantId(tenantId), operatorId.Trim(), tableId.Trim(), view)).ToArray();
-            return (snapshot with { Version = SnapshotVersion, PersonalViews = retained }, view);
+            // Saving under an existing name replaces that view (keeping its id) instead of appending a
+            // duplicate. Earlier duplicates of the same name for this operator and table are folded in.
+            // Legacy tenant views live in a separate list and are never touched here.
+            var normalizedTenantId = NormalizeTenantId(tenantId);
+            var personal = snapshot.PersonalViews ?? [];
+            bool SameView(WorkstationPersonalTableViewRecord record) =>
+                Same(record.TenantId, normalizedTenantId) && Same(record.OperatorId, operatorId) && Same(record.TableId, tableId) &&
+                string.Equals(record.View.Label.Trim(), label, StringComparison.OrdinalIgnoreCase);
+            var existing = personal.FirstOrDefault(SameView);
+            var saved = existing is null ? view : view with { ViewId = existing.View.ViewId };
+            var record = new WorkstationPersonalTableViewRecord(normalizedTenantId, operatorId.Trim(), tableId.Trim(), saved);
+            var retained = existing is null
+                ? personal.Append(record).ToArray()
+                : personal.Where(candidate => !SameView(candidate) || ReferenceEquals(candidate, existing))
+                    .Select(candidate => ReferenceEquals(candidate, existing) ? record : candidate).ToArray();
+            return (snapshot with { Version = SnapshotVersion, PersonalViews = retained }, saved);
         }, ct).ConfigureAwait(false);
     }
 

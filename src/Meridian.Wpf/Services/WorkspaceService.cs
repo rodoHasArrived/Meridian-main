@@ -881,8 +881,10 @@ public sealed class WorkspaceService
             {
                 await EnsureInitializedAsync(ct).ConfigureAwait(false);
 
-                var workspace = JsonSerializer.Deserialize<WorkspaceTemplate>(json);
-                if (workspace != null)
+                // Read with the same options used by ExportWorkspaceAsync (camelCase, case-insensitive)
+                // so an exported file round-trips; legacy PascalCase files still match case-insensitively.
+                var workspace = JsonSerializer.Deserialize<WorkspaceTemplate>(json, UiServices.DesktopJsonOptions.PrettyPrint);
+                if (workspace != null && !string.IsNullOrWhiteSpace(workspace.Name))
                 {
                     workspace.Id = Guid.NewGuid().ToString();
                     workspace.IsBuiltIn = false;

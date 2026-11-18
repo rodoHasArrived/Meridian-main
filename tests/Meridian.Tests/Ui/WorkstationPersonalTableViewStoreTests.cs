@@ -39,6 +39,46 @@ public sealed class WorkstationPersonalTableViewStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task SavingTheSameNameTwice_ReplacesTheViewAndKeepsItsId()
+    {
+        var store = NewStore();
+        var first = await store.SavePersonalViewAsync("tenant", "alice", "accounting-reconciliation-breaks",
+            new("Open breaks", "", ["break-id", "age"], "compact"));
+        var second = await store.SavePersonalViewAsync("tenant", "alice", "accounting-reconciliation-breaks",
+            new(" open BREAKS ", "aged", ["break-id", "age", "owner"], "compact", "age", "desc"));
+
+        second.ViewId.Should().Be(first.ViewId);
+        var views = await NewStore().LoadPersonalViewsAsync("tenant", "alice", "accounting-reconciliation-breaks");
+        var view = views.Should().ContainSingle().Subject;
+        view.ViewId.Should().Be(first.ViewId);
+        view.Label.Should().Be("open BREAKS");
+        view.ColumnIds.Should().Equal("break-id", "age", "owner");
+        view.SortColumnId.Should().Be("age");
+    }
+
+    [Fact]
+    public async Task SavingAnExistingName_DoesNotTouchOtherOperatorsTablesOrLegacyViews()
+    {
+        Directory.CreateDirectory(Path.Combine(_root, "explorers"));
+        await File.WriteAllTextAsync(Path.Combine(_root, "explorers", "financial-record-explorer-saved-views.json"), """
+            {"version":1,"views":[{"tenantId":"tenant","explorerId":"ledger","savedView":{"viewId":"old","label":"Cash","description":"","isSystem":false,"isActive":false,"filters":[],"searchText":"cash","columnIds":["account"]}}]}
+            """);
+        var store = NewStore();
+        await store.SavePersonalViewAsync("tenant", "bob", "ledger", new("Cash", "", ["account"], "compact"));
+        await store.SavePersonalViewAsync("tenant", "alice", "strategy-runs", new("Cash", "", ["strategy"], "compact"));
+
+        await store.SavePersonalViewAsync("tenant", "alice", "ledger", new("Cash", "", ["account", "amount"], "compact"));
+        await store.SavePersonalViewAsync("tenant", "alice", "ledger", new("Cash", "", ["account"], "compact"));
+
+        var alice = await NewStore().LoadPersonalViewsAsync("tenant", "alice", "ledger");
+        alice.Should().HaveCount(2);
+        alice.Should().ContainSingle(view => view.ViewId == "old" && view.IsReadOnly);
+        alice.Should().ContainSingle(view => !view.IsReadOnly && view.Label == "Cash");
+        (await NewStore().LoadPersonalViewsAsync("tenant", "bob", "ledger")).Should().ContainSingle();
+        (await NewStore().LoadPersonalViewsAsync("tenant", "alice", "strategy-runs")).Should().ContainSingle();
+    }
+
+    [Fact]
     public async Task InvalidPresentationSettings_AreRejectedBeforePersistence()
     {
         var action = () => NewStore().SavePersonalViewAsync("tenant", "alice", "ledger", new("View", "", [], "compact"));

@@ -99,7 +99,8 @@ public partial class StrategyWorkspaceShellPage : StrategyWorkspaceShellPageBase
         switch (request.Kind)
         {
             case StrategyWorkspaceShellActionKind.ResetLayout:
-                _ = LoadDefaultDockLayoutAsync(StrategyDockManager);
+                // Persist the default panes too, so the reset survives a restart.
+                _ = ResetDockLayoutAsync(StrategyDockManager);
                 return;
             case StrategyWorkspaceShellActionKind.Navigate when !string.IsNullOrWhiteSpace(request.PageTag):
                 NavigationService.NavigateTo(request.PageTag, request.Parameter);

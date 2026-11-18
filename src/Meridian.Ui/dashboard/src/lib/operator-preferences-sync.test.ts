@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { readSectionDescriptionsHidden, resetSectionDescriptionChoices, setSectionDescriptionsHidden } from "@/components/ui/section-description";
-import { readStoredDensity, writeStoredDensity } from "@/lib/density";
+import { applySessionDensity, clearSessionDensity, readStoredDensity, writeStoredDensity } from "@/lib/density";
 import { getDisplayTimeZone, reloadDisplayTimeZone, setDisplayTimeZone } from "@/lib/display-time-zone";
 import { getGlobalKeyBinding, reloadKeyBindingOverrides, setKeyBindingOverride } from "@/lib/keymap";
 import { DEFAULT_NOTIFICATION_PREFERENCES, getNotificationPreferences, reloadNotificationPreferences, setNotificationPreferences } from "@/lib/notification-preferences";
@@ -19,6 +19,7 @@ function resetBrowserPreferences() {
   resetSectionDescriptionChoices();
   document.documentElement.removeAttribute("data-theme");
   document.body.removeAttribute("data-theme-density");
+  clearSessionDensity();
 }
 
 function hostWith(preferences: OperatorPreferenceValues, updatedAt: string | null = "2026-11-17T09:00:00Z"): OperatorPreferences {
@@ -108,6 +109,29 @@ describe("startOperatorPreferenceSync", () => {
     expect(readStoredDensity()).toBe("spacious");
     expect(readStoredAppearance()).toBe("dark");
     expect(save.mock.calls[0]![0]).toMatchObject({ appearance: "dark", density: "spacious" });
+    stop();
+  });
+
+  it("never saves a restored layout's session density as the operator's density", async () => {
+    writeStoredDensity("default");
+    const save = vi.fn(async (preferences: OperatorPreferenceValues) => hostWith(preferences));
+    const stop = startOperatorPreferenceSync({
+      operatorKey: OPERATOR,
+      load: async () => hostWith({ appearance: "dark", density: "default", displayTimeZone: "UTC", pageDescriptionsHidden: false }),
+      save
+    });
+    await settle();
+    save.mockClear();
+
+    applySessionDensity("compact");
+    await vi.runAllTimersAsync();
+    expect(save).not.toHaveBeenCalled();
+
+    // A later change to another preference saves the whole set, still with the stored density.
+    writeStoredAppearance("light");
+    await vi.runAllTimersAsync();
+    expect(save).toHaveBeenCalledTimes(1);
+    expect(save.mock.calls[0]![0]).toMatchObject({ appearance: "light", density: "default" });
     stop();
   });
 

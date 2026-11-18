@@ -37,6 +37,7 @@
                                           Grid.Row="2"
                                           CommandGroup="{Binding CommandGroup}"
                                           CommandInvoked="OnCommandBarCommandInvoked"
+                                          ResetLayoutCommand="{Binding ResetLayoutCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                                           Margin="0,16,0,0"
                                           AutomationProperties.AutomationId="WorkspaceCommandSurfaceReporting" />
 
