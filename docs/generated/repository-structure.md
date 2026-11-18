@@ -12022,6 +12022,7 @@ Meridian-main
 │   │   │   ├── FundAccountsViewModel.cs
 │   │   │   ├── FundLedgerViewModel.CloseReadiness.cs
 │   │   │   ├── FundLedgerViewModel.cs
+│   │   │   ├── FundLedgerViewModel.IntercompanyOperations.cs
 │   │   │   ├── FundLedgerViewModel.NavComparison.cs
 │   │   │   ├── FundLedgerViewModel.PrivateCapitalCloseScope.cs
 │   │   │   ├── FundLedgerViewModel.Reconciliation.cs
