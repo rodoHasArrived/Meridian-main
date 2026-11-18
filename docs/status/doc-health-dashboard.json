@@ -1,11 +1,11 @@
 {
-  "total_files": 1281,
+  "total_files": 1285,
   "orphaned_count": 396,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 303,
   "health_score": 85,
-  "signal_digest": "sha256:7fd70c4c1a9f4693442e64ee81ed0bc52164e3b69eb1a06425177686fb3eef51",
+  "signal_digest": "sha256:ec38c11b6274ce1598d485644bf021a106bbbfc28afcd833bcd6b0861f258806",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -1243,6 +1243,13 @@
     },
     {
       "path": "docs/adr/030-intercompany-interest-compounding.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/adr/031-intercompany-accrual-schedules.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2874,6 +2881,13 @@
     },
     {
       "path": "docs/generated/database/contracts/ledger-contracts-page-06.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/generated/database/contracts/ledger-contracts-page-07.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5204,6 +5218,13 @@
       "stale": false
     },
     {
+      "path": "docs/reference/source-api/meridian.storage/page-016.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/reference/source-api/meridian.strategies/page-001.md",
       "has_heading": true,
       "todo_count": 0,
@@ -5338,6 +5359,13 @@
     },
     {
       "path": "docs/reference/source-api/meridian.ui.services/page-016.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.services/page-017.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

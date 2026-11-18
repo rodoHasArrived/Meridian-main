@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkspaceDialogChromeControl
+
+Qualified name: <code>Meridian.Wpf.Views.WorkspaceDialogChromeControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs:10](../../../../src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs#L10).
+
+Provides consistent dialog titles, subtitles, content slots, and automation identifiers.
+
+```csharp
+public class WorkspaceDialogChromeControl : ContentControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly DependencyProperty DialogAutomationIdProperty = DependencyProperty.Register(nameof(DialogAutomationId), typeof(string), typeof(WorkspaceDialogChromeControl), new PropertyMetadata(&quot;WorkspaceDialogChrome&quot;, OnDialogAutomationIdChanged));</code> | [src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs:12](../../../../src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs#L12) |  |
+| <code>public static readonly DependencyProperty TitleAutomationIdProperty = DependencyProperty.Register(nameof(TitleAutomationId), typeof(string), typeof(WorkspaceDialogChromeControl), new PropertyMetadata(&quot;WorkspaceDialogTitle&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs:19](../../../../src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs#L19) |  |
+| <code>public static readonly DependencyProperty SubtitleAutomationIdProperty = DependencyProperty.Register(nameof(SubtitleAutomationId), typeof(string), typeof(WorkspaceDialogChromeControl), new PropertyMetadata(&quot;WorkspaceDialogSubtitle&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs:22](../../../../src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs#L22) |  |
+| <code>public static readonly DependencyProperty BodyAutomationIdProperty = DependencyProperty.Register(nameof(BodyAutomationId), typeof(string), typeof(WorkspaceDialogChromeControl), new PropertyMetadata(&quot;WorkspaceDialogBody&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs:25](../../../../src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs#L25) |  |
+| <code>public static readonly DependencyProperty TitleTextProperty = DependencyProperty.Register(nameof(TitleText), typeof(string), typeof(WorkspaceDialogChromeControl), new PropertyMetadata(&quot;Dialog&quot;, OnTitleTextChanged));</code> | [src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs:28](../../../../src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs#L28) |  |
+| <code>public static readonly DependencyProperty SubtitleTextProperty = DependencyProperty.Register(nameof(SubtitleText), typeof(string), typeof(WorkspaceDialogChromeControl), new PropertyMetadata(string.Empty));</code> | [src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs:35](../../../../src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs#L35) |  |
+| <code>public WorkspaceDialogChromeControl();</code> | [src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs:38](../../../../src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs#L38) |  |
+| <code>public string DialogAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs:43](../../../../src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs#L43) |  |
+| <code>public string TitleAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs:49](../../../../src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs#L49) |  |
+| <code>public string SubtitleAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs:55](../../../../src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs#L55) |  |
+| <code>public string BodyAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs:61](../../../../src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs#L61) |  |
+| <code>public string TitleText { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs:67](../../../../src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs#L67) |  |
+| <code>public string SubtitleText { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs:73](../../../../src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs#L73) |  |
+
 ## WorkspaceEvidenceStripControl
 
 Qualified name: <code>Meridian.Wpf.Views.WorkspaceEvidenceStripControl</code>. Kind: `class`.
@@ -958,14 +988,4 @@ Source: [src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs:
 
 ```csharp
 public sealed record EvidenceVaultDocumentRowModel(string DocumentId, string FileName, string ClassificationText, string ExtractionText, string ReviewText, string SourceHashText, string SourceText, string ActorText, string TenantScopeText, string ObjectLinksText, string OpenRequestCountText, string ManifestRoute, WorkstationReadinessTone ReadinessTone, string Tone, IReadOnlyList<WorkstationEvidenceLinkModel> EvidenceLinks);
-```
-
-## EvidenceVaultManifestSnapshotModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.EvidenceVaultManifestSnapshotModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs:35](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs#L35).
-
-```csharp
-public sealed record EvidenceVaultManifestSnapshotModel(string ManifestId, string PackageText, string FrozenText, string ContentHashText, string DocumentCountText, string RequestCountText, string ObjectLinkCountText, WorkstationReadinessTone ReadinessTone, string Tone);
 ```

@@ -6,6 +6,209 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OtcMarginCallStatus
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcMarginCallStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L44).
+
+Where a margin call is in its life. Settled and cancelled calls are terminal.
+
+```csharp
+public enum OtcMarginCallStatus
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Issued</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:46](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L46) |  |
+| <code>Agreed</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:47](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L47) |  |
+| <code>Disputed</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L48) |  |
+| <code>Settled</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L49) |  |
+| <code>Cancelled</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L50) |  |
+
+## OtcMarketDataRecordDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcMarketDataRecordDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:199](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L199).
+
+A market data record for a security a snapshot valued that was recorded after the snapshot&#x27;s knowledge time: a price observation (Record names its source) or a pricing hierarchy version, with the instant it takes effect and the instant it was recorded.
+
+```csharp
+public sealed record OtcMarketDataRecordDto(Guid SecurityId, string Record, DateTimeOffset EffectiveAt, DateTimeOffset RecordedAt);
+```
+
+## OtcMasterAgreementDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcMasterAgreementDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:59](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L59).
+
+A master agreement (ISDA, GMRA, GMSLA) between one of the fund&#x27;s legal entities and a counterparty. Every bilateral contract hangs off one through its netting set, so close-out netting and collateral terms are facts about the relationship, not copied onto each trade.
+
+```csharp
+public sealed record OtcMasterAgreementDto(Guid AgreementId, string Counterparty, string? CounterpartyLei, string OurEntity, Guid? OurEntityId, OtcMasterAgreementType AgreementType, DateOnly AgreementDate, string? GoverningLaw, string? Notes, long Version, string UpdatedBy, DateTimeOffset UpdatedAt);
+```
+
+## OtcMasterAgreementType
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcMasterAgreementType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L8).
+
+The form of master agreement a counterparty relationship is documented under.
+
+```csharp
+public enum OtcMasterAgreementType
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Isda1992</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L11) | ISDA 1992 Master Agreement. |
+| <code>Isda2002</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L14) | ISDA 2002 Master Agreement. |
+| <code>Gmra</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L17) | Global Master Repurchase Agreement (repo). |
+| <code>Gmsla</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L20) | Global Master Securities Lending Agreement. |
+| <code>Other</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L23) | Any other bilateral master or long-form confirmation. |
+
+## OtcMovementKind
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcMovementKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L28).
+
+Whether a movement adds collateral to what the Secured Party holds or gives some back.
+
+```csharp
+public enum OtcMovementKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Delivery</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:30](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L30) |  |
+| <code>Return</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:31](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L31) |  |
+
+## OtcMovementParty
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcMovementParty</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L36).
+
+The party that transfers collateral in a movement.
+
+```csharp
+public enum OtcMovementParty
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Fund</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:38](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L38) |  |
+| <code>Counterparty</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L39) |  |
+
+## OtcNettingBasis
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcNettingBasis</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:112](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L112).
+
+How the contracts in a netting set are combined into one exposure.
+
+```csharp
+public enum OtcNettingBasis
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>CloseOutNet</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:115](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L115) | The master agreement permits close-out netting: exposure is the signed sum of marks. |
+| <code>Gross</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:118](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L118) | Netting is not relied on: each side&#x27;s exposure is the sum of the marks in its favour. |
+
+## OtcNettingSetDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcNettingSetDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:103](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L103).
+
+The set of contracts under one master agreement whose exposures net against each other on close-out, optionally margined under one collateral agreement.
+
+```csharp
+public sealed record OtcNettingSetDto(Guid NettingSetId, Guid MasterAgreementId, Guid? CollateralAgreementId, string Name, string? Notes, long Version, string UpdatedBy, DateTimeOffset UpdatedAt);
+```
+
+## OtcNettingSetViewDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcNettingSetViewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:138](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L138).
+
+A netting set with the agreements it sits under and the contracts it holds.
+
+```csharp
+public sealed record OtcNettingSetViewDto(OtcNettingSetDto NettingSet, OtcMasterAgreementDto MasterAgreement, OtcCollateralAgreementDto? CollateralAgreement, IReadOnlyList<OtcContractDto> Contracts);
+```
+
+## OtcNovationData
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcNovationData</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:35](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L35).
+
+A complete novation to a separately booked successor contract; no successor is fabricated.
+
+```csharp
+public sealed record OtcNovationData([property : JsonRequired] Guid SuccessorContractId) : OtcContractLifecycleData;
+```
+
+## OtcRateResetData
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcRateResetData</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L29).
+
+A fixing for one contract leg. IndexRate is an annual fraction, including an explicit zero or negative rate.
+
+```csharp
+public sealed record OtcRateResetData([property : JsonRequired] string LegId, [property : JsonRequired] string IndexName, [property : JsonRequired] DateOnly FixingDate, [property : JsonRequired] decimal IndexRate) : OtcContractLifecycleData;
+```
+
+## OtcValuationBlockerCodes
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcValuationBlockerCodes</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:59](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L59).
+
+The blocker codes the exposure rules and the first valuation source emit.
+
+```csharp
+public static class OtcValuationBlockerCodes
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string MissingInput = &quot;MissingInput&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:62](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L62) | No price or mark is recorded for the instrument as of the date. |
+| <code>public const string UnitMismatch = &quot;UnitMismatch&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:65](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L65) | The recorded price is not quoted as a percent of notional. |
+| <code>public const string StaleInput = &quot;StaleInput&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:68](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L68) | The pricing hierarchy fell back to an observation older than its staleness limit. |
+| <code>public const string CurrencyMismatch = &quot;CurrencyMismatch&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:71](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L71) | The contract is denominated in a currency other than the computation currency. |
+| <code>public const string MissingValuation = &quot;MissingValuation&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:74](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L74) | The valuation source returned nothing for a contract the snapshot considers. |
+| <code>public const string PastTermination = &quot;PastTermination&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:77](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L77) | An open contract whose scheduled termination date has passed; nothing matures contracts automatically. |
+| <code>public const string NoCollateralAgreement = &quot;NoCollateralAgreement&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:80](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L80) | The netting set has no collateral agreement, so no credit support can be computed. |
+| <code>public const string CollateralAgreementTerminated = &quot;CollateralAgreementTerminated&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:83](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L83) | The collateral agreement terminated before the as-of date. |
+| <code>public const string CollateralAgreementNotYetEffective = &quot;CollateralAgreementNotYetEffective&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:86](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L86) | The collateral agreement takes effect after the as-of date, so its thresholds and independent amount do not yet apply. |
+| <code>public const string SharedCollateralAgreement = &quot;SharedCollateralAgreement&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:92](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L92) | The collateral agreement is also referenced by another netting set; its balances are not allocated across netting sets, so crediting them to each would count the same collateral twice. |
+| <code>public const string CollateralValuationAfterAsOf = &quot;CollateralValuationAfterAsOf&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:98](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L98) | A positive collateral balance is valued after the as-of date. Balances are current-state records, so what was held on the earlier date is unknown. |
+| <code>public const string IneligibleCollateral = &quot;IneligibleCollateral&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:101](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L101) | A collateral balance&#x27;s description is no longer an eligible-collateral line of the agreement, so no haircut applies to it. |
+| <code>public const string CollateralCurrencyMismatch = &quot;CollateralCurrencyMismatch&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:107](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L107) | A positive collateral balance is held in a currency other than the computation currency (for example after the agreement&#x27;s currency was amended); this increment does no FX. |
+
 ## OtcValuationBlockerDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcValuationBlockerDto</code>. Kind: `record`.
@@ -586,260 +789,3 @@ Declared public members:
 | <code>public static DayCountPeriodContext ContextFor(SchedulePeriod period, ScheduleGenerationResult schedule);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleDayCount.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleDayCount.cs#L21) | The day-count context of period within schedule. |
 | <code>public static bool TryFraction(DayCountConvention convention, SchedulePeriod period, ScheduleGenerationResult schedule, DateOnly start, DateOnly end, out decimal fraction, [NotNullWhen(false)] out string? refusal);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleDayCount.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleDayCount.cs#L44) | The fraction of &#91;start, end) inside period, or a refusal when the window leaves the period&#x27;s accrual dates, the convention lacks context, or ICMA is asked of an accrual-adjusted schedule. |
 | <code>public static bool TryPeriodFraction(DayCountConvention convention, SchedulePeriod period, ScheduleGenerationResult schedule, out decimal fraction, [NotNullWhen(false)] out string? refusal);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleDayCount.cs:79](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleDayCount.cs#L79) | The fraction of the whole accrual period of period; see TryFraction. |
-
-## ScheduleDiagnostic
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleDiagnostic</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:78](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L78).
-
-A non-fatal observation recorded while generating a schedule.
-
-```csharp
-public sealed record ScheduleDiagnostic(ScheduleDiagnosticCode Code, string CalendarId, DateOnly Date, string Message);
-```
-
-## ScheduleDiagnosticCode
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleDiagnosticCode</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:67](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L67).
-
-A non-fatal observation recorded while generating a schedule.
-
-```csharp
-public enum ScheduleDiagnosticCode
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>CalendarCoverageExceeded</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L70) | A calendar was asked about a date outside its declared coverage. |
-
-## ScheduleDirection
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleDirection</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L8).
-
-Which end of the schedule the regular grid is generated from.
-
-```csharp
-public enum ScheduleDirection
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Forward</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L11) | Generate from the effective date (or first regular date) towards termination; any stub is at the end. |
-| <code>Backward</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L14) | Generate from the termination date (or last regular date) towards the effective date; any stub is at the start. |
-
-## ScheduleFailure
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleFailure</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L64).
-
-A refusal from the schedule kernel.
-
-```csharp
-public sealed record ScheduleFailure(ScheduleFailureCode Code, string Message, DateOnly? Date = null);
-```
-
-## ScheduleFailureCode
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleFailureCode</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L6).
-
-Why the schedule kernel refused a ScheduleSpec.
-
-```csharp
-public enum ScheduleFailureCode
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>InvalidPeriodLimit</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L9) | ScheduleSpec.MaxPeriods is set below 1. |
-| <code>NegativePaymentLag</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L12) | ScheduleSpec.PaymentLagBusinessDays is negative. |
-| <code>TermTenorDisallowsRegularDates</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L15) | A term tenor was given explicit regular dates. |
-| <code>TenorNotAllowedForDirection</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L18) | A day or week tenor was asked to generate backward. |
-| <code>RollNotAllowedForTenor</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L21) | A day or week tenor was given a roll other than the anchor day. |
-| <code>CompoundedModeRestricted</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L24) | Compounded mode was combined with backward generation, a roll, explicit regular dates or a non-short stub policy. |
-| <code>RegularDateOutOfRange</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:27](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L27) | An explicit regular date lies outside the schedule span or out of order. |
-| <code>DirectionConflictsWithRegularDates</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:30](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L30) | The generation direction conflicts with the explicit regular dates given. |
-| <code>AdjustmentRequiresCalendar</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:33](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L33) | A business-day convention other than unadjusted has no calendar. |
-| <code>PaymentLagRequiresCalendar</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L36) | A payment lag was set without a payment calendar. |
-| <code>AnchorNotOnRollDay</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L39) | The generation anchor does not satisfy the roll convention. |
-| <code>RegularDatesNotOnGrid</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L42) | The last regular date is not on the grid generated from the first regular date. |
-| <code>DoesNotFitRegularGrid</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:45](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L45) | The stub policy requires a regular grid and the span does not fit one. |
-| <code>PeriodLimitExceeded</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L48) | The schedule would exceed ScheduleSpec.MaxPeriods. |
-| <code>AdjustedPeriodCollapsed</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:51](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L51) | Business-day adjustment made a period&#x27;s accrual end fall on or before its start. |
-| <code>InvalidSpecification</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:54](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L54) | The spec is structurally invalid: a default tenor or an undefined enum value. |
-| <code>BusinessDayAdjustmentFailed</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:57](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L57) | A business-day adjustment or payment lag could not be applied: the calendar is degenerate or the walk leaves the supported date range. |
-
-## ScheduleGenerationResult
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleGenerationResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:111](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L111).
-
-The output of ScheduleGenerator.Generate: the periods on success, or a failure, plus the diagnostics and calendar evidence of the run.
-
-```csharp
-public sealed record ScheduleGenerationResult(ScheduleSpec Spec, IReadOnlyList<SchedulePeriod> Periods, ScheduleFailure? Failure, IReadOnlyList<ScheduleDiagnostic> Diagnostics, IReadOnlyList<ScheduleCalendarUsage> CalendarsUsed)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[MemberNotNullWhen(false, nameof(Failure))] public bool Succeeded =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:120](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L120) | Whether generation succeeded; when false, Failure is set. |
-| <code>public string KernelVersion =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:123](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L123) | The kernel version that produced the schedule. |
-
-## ScheduleGenerator
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleGenerator</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.Adjustment.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.Adjustment.cs#L7).
-
-```csharp
-public static partial class ScheduleGenerator
-```
-
-Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.cs#L29).
-
-The contractual schedule kernel: one pure, deterministic generator of period dates for every Meridian schedule consumer. It owns date and period arithmetic, business-day adjustment and the reference periods day counts are measured against; economic interpretation stays with its owners.
-
-```csharp
-public static partial class ScheduleGenerator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string KernelVersion = &quot;contractual-schedule-kernel-v1&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.cs:32](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.cs#L32) | The version of the kernel&#x27;s generation semantics, stamped on every result. |
-| <code>public static ScheduleGenerationResult Generate(ScheduleSpec spec);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.cs#L36) | Generates the schedule spec describes, or the reason it cannot be generated. |
-| <code>public static IEnumerable&lt;DateOnly&gt; RollDates(DateOnly anchor, ScheduleTenor tenor, ScheduleAnchorMode mode, ScheduleRoll roll = default);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.cs:68](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.cs#L68) | The grid dates from anchor, lazily: k = 0, 1, 2, … until the next date would leave the DateOnly range. The anchored grid rolls each date with roll; the compounded grid steps from the previous date. |
-
-Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.Validation.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.Validation.cs#L7).
-
-```csharp
-public static partial class ScheduleGenerator
-```
-
-## SchedulePeriod
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriod</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:46](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L46).
-
-One period of a contractual schedule: its unadjusted dates (its identity and its ICMA reference frame), its adjusted accrual dates, its payment date, and its notional reference periods.
-
-```csharp
-public sealed record SchedulePeriod(int Sequence, DateOnly UnadjustedStart, DateOnly UnadjustedEnd, DateOnly AccrualStart, DateOnly AccrualEnd, DateOnly PaymentDate, SchedulePeriodKind Kind, IReadOnlyList<DayCountReferencePeriod> ReferencePeriods, bool IsFinal)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsStub =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L58) | Whether the period is an initial or final stub, short or long. |
-| <code>public bool Equals(SchedulePeriod? other) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:71](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L71) | Value equality over every member, comparing ReferencePeriods element by element. The generated record equality would compare the list by reference, so the same period from two generations of the same spec would be unequal; schedules are regenerated rather than stored, so a period must equal its regenerated twin. |
-| <code>public override int GetHashCode();</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:85](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L85) | A hash consistent with Equals(SchedulePeriod?). |
-
-## SchedulePeriodId
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriodId</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs#L24).
-
-Deterministic identity for a schedule period, keyed on its unadjusted dates within a consumer-chosen scope and stream, so a calendar, business-day convention or payment-lag change never re-identifies a period.
-
-```csharp
-public static class SchedulePeriodId
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static Guid Derive(Guid scopeId, string streamKey, SchedulePeriod period);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs:34](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs#L34) | The id of period within scopeId and streamKey. |
-| <code>public static Guid Derive(Guid scopeId, string streamKey, DateOnly unadjustedStart, DateOnly unadjustedEnd);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs#L42) | The id of the period &#91;unadjustedStart, unadjustedEnd&#93; within scopeId and streamKey. |
-| <code>public static string PeriodKey(SchedulePeriod period);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs:63](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs#L63) | The period&#x27;s unadjusted dates as yyyy-MM-dd/yyyy-MM-dd. |
-
-## SchedulePeriodKind
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriodKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L7).
-
-The shape of a schedule period relative to the regular grid.
-
-```csharp
-public enum SchedulePeriodKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Regular</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L10) | A full regular period on the grid. |
-| <code>Term</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L13) | The single period of a term tenor. |
-| <code>ShortInitialStub</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L16) | An initial period shorter than a regular period. |
-| <code>LongInitialStub</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L19) | An initial period longer than a regular period. |
-| <code>ShortFinalStub</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L22) | A final period shorter than a regular period. |
-| <code>LongFinalStub</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L25) | A final period longer than a regular period. |
-
-## ScheduleRoll
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleRoll</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:33](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L33).
-
-The roll convention of a schedule grid: where in its month each month-based grid date falls. default(ScheduleRoll) is AnchorDay.
-
-```csharp
-public readonly record struct ScheduleRoll
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ScheduleRoll AnchorDay { get; } = default;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L42) | Keep the raw grid date as it is. |
-| <code>public static ScheduleRoll EndOfMonth { get; } = new (ScheduleRollKind.EndOfMonth, 0);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:45](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L45) | Roll each grid date to the last day of its month. |
-| <code>public static ScheduleRoll Imm { get; } = new (ScheduleRollKind.Imm, 0);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L48) | Roll each grid date to the third Wednesday of its month. |
-| <code>public static ScheduleRoll FixedDay(int dayOfMonth);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:52](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L52) | Roll each grid date to dayOfMonth, clamped to the month&#x27;s length. |
-| <code>public static ScheduleRoll ForAnchor(DateOnly anchor, bool endOfMonthRule) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L64) | The roll a schedule anchored on anchor implies: EndOfMonth when endOfMonthRule is set and the anchor is a month end, otherwise FixedDay(int) of the anchor&#x27;s day. |
-| <code>public ScheduleRollKind Kind { get; }</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L70) | The roll rule. |
-| <code>public int DayOfMonth { get; }</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:73](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L73) | The fixed day of month for ScheduleRollKind.FixedDay; 0 otherwise. |
-| <code>public DateOnly Apply(DateOnly rawGridDate);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:76](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L76) | Places rawGridDate within its month according to the rule. |
-| <code>public bool Matches(DateOnly date) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:89](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L89) | Whether date already satisfies the rule. |
-| <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:92](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L92) | The rule in shorthand, for example FixedDay(15) or EndOfMonth. |
-
-## ScheduleRollKind
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleRollKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L8).
-
-The rule that places each month-based grid date within its month.
-
-```csharp
-public enum ScheduleRollKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>AnchorDay</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L11) | Keep the anchor&#x27;s day of month, clamped to shorter months (DateOnly.AddMonths semantics). |
-| <code>FixedDay</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L14) | A fixed day of month (1 to 31), clamped to shorter months. |
-| <code>EndOfMonth</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L17) | The last day of the month. |
-| <code>Imm</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L20) | The third Wednesday of the month (IMM dates). |

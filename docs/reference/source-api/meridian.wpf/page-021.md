@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EvidenceVaultManifestSnapshotModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.EvidenceVaultManifestSnapshotModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs:35](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs#L35).
+
+```csharp
+public sealed record EvidenceVaultManifestSnapshotModel(string ManifestId, string PackageText, string FrozenText, string ContentHashText, string DocumentCountText, string RequestCountText, string ObjectLinkCountText, WorkstationReadinessTone ReadinessTone, string Tone);
+```
+
 ## EvidenceVaultPresentationMapper
 
 Qualified name: <code>Meridian.Wpf.Workstation.Models.EvidenceVaultPresentationMapper</code>. Kind: `class`.
@@ -742,16 +752,4 @@ Provides an items-control surface for workstation status indicators.
 
 ```csharp
 public sealed class StatusRibbonControl : ItemsControl
-```
-
-## TrustBadgeControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Primitives.TrustBadgeControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:103](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L103).
-
-Provides a content surface for trust-status presentation.
-
-```csharp
-public sealed class TrustBadgeControl : ContentControl
 ```
