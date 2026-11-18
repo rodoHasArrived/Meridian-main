@@ -68,6 +68,7 @@ remains in the [roadmap registry](../../roadmap/README.md) and
 | [WPF / Web-UI Alignment Plan](../plans/wpf-web-ui-alignment-plan.md) | `docs/engineering/plans/` | Desktop workstation | Active; drives `W8-WPF-PARITY-001` |
 | [Desktop Workstation Screen Checklist Reference](../plans/desktop-workstation-screen-blueprint.md) | `docs/engineering/plans/` | Desktop validation | Active compatibility reference; preserves twenty tracked screen scopes without re-certifying readiness |
 | [God-File Burn-Down Plan](../plans/god-file-burn-down-plan.md) | `docs/engineering/plans/` | Engineering hygiene | Active; the size ceilings it burns down are checked by `build/scripts/ci/check-file-size.py` |
+| [Governed Strategy, OMS, and Execution](../plans/governed-strategy-oms-execution-plan.md) | `docs/engineering/plans/` | Strategy Analytics / Execution and Fund Accounts | Draft; phased slices for `W13-STRAT-001` and `W13-OMS-001`, grants no live authority |
 | [Bond Capability Expansion](../plans/bond-capability-expansion.md) | `docs/engineering/plans/` | Fixed income | User-approved implementation and reviewed-cutover acceptance criteria |
 | [Web-UI Improvements Implementation Plan (2026-07)](../plans/web-ui-improvements-implementation-plan-2026-07.md) | `docs/engineering/plans/` | Browser workstation | Proposed |
 | [Browser Workstation UX Review and Improvement Plan (2026-11)](../plans/web-workstation-ux-review-plan-2026-11.md) | `docs/engineering/plans/` | Browser workstation | In progress (Phase 3) |
