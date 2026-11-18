@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AuditTrailSourceStatusDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AuditTrailSourceStatusDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:73](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L73).
+
+Source availability is independent of the number of matching records.
+
+```csharp
+public sealed record AuditTrailSourceStatusDto(string Source, string State);
+```
+
 ## AuditTrailTimelineEntryDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.AuditTrailTimelineEntryDto</code>. Kind: `record`.
@@ -603,14 +615,4 @@ Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:20](../../../.
 
 ```csharp
 public sealed record CouponEvent(Guid EventId, Guid AccountId, string SecurityId, string Currency, decimal CouponAmount, DateOnly ExDate, DateOnly PayDate);
-```
-
-## CreateOnboardingWorkspaceRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.CreateOnboardingWorkspaceRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:21](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L21).
-
-```csharp
-public sealed record CreateOnboardingWorkspaceRequestDto(string Name, OnboardingScopeDto Scope, OnboardingCriteriaDto Criteria);
 ```

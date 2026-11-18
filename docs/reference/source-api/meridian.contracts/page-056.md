@@ -6,6 +6,29 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategyEngineRunMode
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineRunMode</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:30](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L30).
+
+Execution mode requested for a strategy run.
+
+```csharp
+public enum StrategyEngineRunMode : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Backtest</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:32](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L32) |  |
+| <code>Replay</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:33](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L33) |  |
+| <code>Simulation</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:34](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L34) |  |
+| <code>PaperValidation</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:35](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L35) |  |
+| <code>ReviewOnly</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:36](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L36) |  |
+| <code>LiveDisabled</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:37](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L37) |  |
+
 ## StrategyEngineRunRequest
 
 Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineRunRequest</code>. Kind: `record`.
@@ -757,16 +780,4 @@ Distinguishes an empty retained trail from a source that is not configured.
 
 ```csharp
 public sealed record AuditTrailSourceAvailabilityDto(bool ExecutionAudit, bool OperationsContinuity);
-```
-
-## AuditTrailSourceStatusDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AuditTrailSourceStatusDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:73](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L73).
-
-Source availability is independent of the number of matching records.
-
-```csharp
-public sealed record AuditTrailSourceStatusDto(string Source, string State);
 ```

@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MaterialityPolicyDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.MaterialityPolicyDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:187](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L187).
+
+```csharp
+public sealed record MaterialityPolicyDto(string PolicyId, decimal AmountThreshold, decimal PercentThreshold, string Currency, string ReviewRole, bool RequiresLateAdjustmentApproval);
+```
+
 ## NavPackageDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.NavPackageDto</code>. Kind: `record`.
@@ -747,13 +757,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;string&gt; RequiredActions { get; init; } = RequiredActions??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:341](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L341) |  |
-
-## PrivateCapitalFundEventDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.PrivateCapitalFundEventDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:8](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L8).
-
-```csharp
-public sealed record PrivateCapitalFundEventDto(string FundEventId, string FundEventType, ManualJournalEntryTypeDto EntryType, ManualJournalEntryStatusDto JournalStatus, Guid JournalEntryId, DateOnly EffectiveDate, string CapitalAccountId, string? InvestorId, string Currency, decimal GrossAmount, decimal NetCapitalActivity, string Memo, string? PaymentIntentId, string? SettlementReference, IReadOnlyList<string> EvidenceLinks, IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues, DateTimeOffset UpdatedAtUtc, bool IsPosted = false, string? ApprovalId = null);
-```

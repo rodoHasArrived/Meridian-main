@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityFactorSource
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityFactorSource</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L7).
+
+Where a dated factor point comes from.
+
+```csharp
+public enum SecurityFactorSource
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>TermsSchedule</code> | [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L10) | A point of the declared factor schedule in the security&#x27;s terms. |
+| <code>PrincipalPaydown</code> | [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L13) | The post-paydown factor recorded on an effective principal-paydown corporate action. |
+| <code>CurrentFactor</code> | [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L16) | The scalar current factor in the terms, dated by its retained factor date. |
+
 ## SecurityFieldProvenance
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityFieldProvenance</code>. Kind: `record`.
@@ -854,22 +874,3 @@ Declared public members:
 | <code>public static bool IsAcceptedAssetSpecificTermsVersion(int schemaVersion, bool isProfileBacked) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:85](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L85) |  |
 | <code>public static IReadOnlyList&lt;int&gt; AcceptedAssetSpecificTermsVersions(bool isProfileBacked) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:89](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L89) |  |
 | <code>public static string DescribeAcceptedAssetSpecificTermsVersions(bool isProfileBacked) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:93](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L93) |  |
-
-## SecurityOptionRight
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityOptionRight</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L25).
-
-The right an option grants.
-
-```csharp
-public enum SecurityOptionRight
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Call</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:27](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L27) |  |
-| <code>Put</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L28) |  |

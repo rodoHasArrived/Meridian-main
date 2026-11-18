@@ -32,6 +32,15 @@ public sealed partial class FundOperationsWorkspaceReadService
         string currency,
         FundLedgerBook fundLedgerBook,
         DateTimeOffset asOf,
+        CancellationToken ct) =>
+        (await AttributeNavAsync(fundProfileId, currency, fundLedgerBook, asOf, ct).ConfigureAwait(false)).Summary;
+
+    /// <summary>The NAV summary at <paramref name="asOf"/> together with the consolidated components it was built from.</summary>
+    private async Task<(FundNavAttributionSummaryDto Summary, IReadOnlyList<NavComponent> Components)> AttributeNavAsync(
+        string fundProfileId,
+        string currency,
+        FundLedgerBook fundLedgerBook,
+        DateTimeOffset asOf,
         CancellationToken ct)
     {
         var result = await _navAttributionService
@@ -51,7 +60,7 @@ public sealed partial class FundOperationsWorkspaceReadService
                 NetBalance: pair.Value))
             .ToArray();
 
-        return new FundNavAttributionSummaryDto(
+        var summary = new FundNavAttributionSummaryDto(
             Currency: result.Currency,
             TotalNav: result.Consolidated.TotalNav,
             ComponentCount: result.Consolidated.Components.Count,
@@ -59,6 +68,7 @@ public sealed partial class FundOperationsWorkspaceReadService
             SleeveCount: result.BySleeve.Count,
             VehicleCount: result.ByVehicle.Count,
             AssetClassExposure: assetClassExposure);
+        return (summary, result.Consolidated.Components);
     }
 
     private async Task<FundLedgerSummary> BuildLedgerSummaryAsync(

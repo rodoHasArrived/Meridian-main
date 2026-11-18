@@ -6,6 +6,40 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IngestionSymbolProgressDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.IngestionSymbolProgressDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:52](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L52).
+
+```csharp
+public sealed record IngestionSymbolProgressDto(string Symbol, string State, long DataPointsProcessed, long ExpectedDataPoints, double ProgressPercent, DateTimeOffset? LastCommittedAt, int RetryCount, string? ErrorMessage);
+```
+
+## InsightFeed
+
+Qualified name: <code>Meridian.Contracts.Workstation.InsightFeed</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs#L19).
+
+Personalized insight feed shown at the top of the Strategy workspace.
+
+```csharp
+public sealed record InsightFeed(string FeedId, string Title, string Summary, DateTimeOffset GeneratedAt, IReadOnlyList<InsightWidget> Widgets);
+```
+
+## InsightWidget
+
+Qualified name: <code>Meridian.Contracts.Workstation.InsightWidget</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs#L6).
+
+Shared insight tile used by Market Briefing style surfaces.
+
+```csharp
+public sealed record InsightWidget(string WidgetId, string Title, string Subtitle, string Headline, string Tone, string Summary, string? RunId = null, string? DrillInRoute = null);
+```
+
 ## InstrumentPassportClassificationProfileDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.InstrumentPassportClassificationProfileDto</code>. Kind: `record`.
@@ -620,36 +654,4 @@ Source: [src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs:49](../..
 
 ```csharp
 public sealed record MarginControlPrimeSummaryDto(string ProviderId = default !, int AccountCount = default, decimal TotalEquity = default, decimal? ProviderMaintenanceMargin = null, decimal? ProviderExcessLiquidity = null, int CriticalAccountCount = default);
-```
-
-## MarginPositionContributionDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.MarginPositionContributionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs:36](../../../../src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs#L36).
-
-```csharp
-public sealed record MarginPositionContributionDto(string Symbol = default !, decimal Quantity = default, decimal MarketValue = default, decimal ShadowInitialMargin = default, decimal ShadowMaintenanceMargin = default, string? BorrowStatus = null, decimal? BorrowRate = null, int TaxLotCount = default, int OptionLifecycleEventCount = default, string? SecurityId = null, string? SecurityMasterSource = null);
-```
-
-## MarginRequirementDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.MarginRequirementDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs:23](../../../../src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs#L23).
-
-```csharp
-public sealed record MarginRequirementDto(decimal InitialMargin, decimal VariationMargin, decimal TotalRequired);
-```
-
-## MarkFreshnessAssessmentDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.MarkFreshnessAssessmentDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/MarkFreshnessDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/MarkFreshnessDtos.cs#L4).
-
-Server-assessed mark support for a single position and valuation date.
-
-```csharp
-public sealed record MarkFreshnessAssessmentDto(string Symbol, Guid? SecurityId, string? FinancialAccountId, DateOnly ValuationDate, DateOnly? ObservedOn, int? AgeDays, string PolicyVersion, string Status, string? BlockReason);
 ```

@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FundReconciliationItem
+
+Qualified name: <code>Meridian.Contracts.Workstation.FundReconciliationItem</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:166](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L166).
+
+Reconciliation row shown in Accounting operator queues.
+
+```csharp
+public sealed record FundReconciliationItem(Guid ReconciliationRunId, Guid AccountId, string AccountDisplayName, DateOnly AsOfDate, string Status, int TotalChecks, int TotalMatched, int TotalBreaks, decimal BreakAmountTotal, DateTimeOffset RequestedAt, DateTimeOffset? CompletedAt, string ScopeLabel = "Account", string? StrategyName = null, string? RunId = null, int SecurityIssueCount = 0, bool HasSecurityCoverageIssues = false, string CoverageLabel = "n/a");
+```
+
+## FundReportAssetClassSectionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FundReportAssetClassSectionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:493](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L493).
+
+Asset-class total included in a report-pack preview.
+
+```csharp
+public sealed record FundReportAssetClassSectionDto(string AssetClass, decimal Total);
+```
+
+## FundReportingProfileDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FundReportingProfileDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:126](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L126).
+
+Reporting profile metadata exposed to Accounting and Reporting workflows.
+
+```csharp
+public sealed record FundReportingProfileDto(string Id, string Name, string TargetTool, string Format, string Description, bool LoaderScript, bool DataDictionary);
+```
+
 ## FundReportingSummaryDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.FundReportingSummaryDto</code>. Kind: `record`.
@@ -706,38 +742,4 @@ Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:11](.
 
 ```csharp
 public sealed record IngestionOperationsSummaryDto(int Total, int Queued, int Running, int Paused, int Failed, int Completed, int Cancelled, int Resumable);
-```
-
-## IngestionSymbolProgressDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.IngestionSymbolProgressDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:52](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L52).
-
-```csharp
-public sealed record IngestionSymbolProgressDto(string Symbol, string State, long DataPointsProcessed, long ExpectedDataPoints, double ProgressPercent, DateTimeOffset? LastCommittedAt, int RetryCount, string? ErrorMessage);
-```
-
-## InsightFeed
-
-Qualified name: <code>Meridian.Contracts.Workstation.InsightFeed</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs#L19).
-
-Personalized insight feed shown at the top of the Strategy workspace.
-
-```csharp
-public sealed record InsightFeed(string FeedId, string Title, string Summary, DateTimeOffset GeneratedAt, IReadOnlyList<InsightWidget> Widgets);
-```
-
-## InsightWidget
-
-Qualified name: <code>Meridian.Contracts.Workstation.InsightWidget</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs#L6).
-
-Shared insight tile used by Market Briefing style surfaces.
-
-```csharp
-public sealed record InsightWidget(string WidgetId, string Title, string Subtitle, string Headline, string Tone, string Summary, string? RunId = null, string? DrillInRoute = null);
 ```

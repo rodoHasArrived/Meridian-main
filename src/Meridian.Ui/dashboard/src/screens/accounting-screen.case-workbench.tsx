@@ -9,9 +9,13 @@ import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { BreakAuditRebuildCheck } from "@/screens/accounting-screen.break-audit-rebuild";
 import type { ReconciliationBreakRowViewModel, ReconciliationBreakDetailViewModel, ReconciliationDetailActionsViewModel, CloseCommandCenterViewState } from "@/screens/accounting-screen.view-model";
 import { AccountingValue } from "@/screens/accounting-screen.accounting-value";
+import { SinceLastVisitBadge } from "@/components/meridian/since-last-visit-badge";
+import { classifySinceLastVisit } from "@/lib/since-last-visit";
 
 interface AccountingCaseWorkbenchProps {
   breakRows: ReconciliationBreakRowViewModel[];
+  /** The break queue's last-visit baseline, so casework marks the same new and updated breaks (UX Phase E). */
+  visitBaseline?: string | null;
   selectedBreakId: string | null;
   selectedBreakDetail: ReconciliationBreakDetailViewModel | null;
   closeCommandCenter: CloseCommandCenterViewState | null;
@@ -24,6 +28,7 @@ interface AccountingCaseWorkbenchProps {
 
 export function AccountingCaseWorkbench({
   breakRows,
+  visitBaseline = null,
   selectedBreakId,
   selectedBreakDetail,
   closeCommandCenter,
@@ -82,7 +87,10 @@ export function AccountingCaseWorkbench({
                     aria-pressed={row.breakId === selectedBreak?.breakId}
                     onClick={() => onSelectBreak(row.breakId)}
                   >
-                    <span className="block text-sm font-semibold text-foreground">{row.financeLabel}</span>
+                    <span className="flex items-start justify-between gap-2">
+                      <span className="block text-sm font-semibold text-foreground">{row.financeLabel}</span>
+                      {(() => { const mark = classifySinceLastVisit(row, visitBaseline); return mark ? <SinceLastVisitBadge mark={mark} /> : null; })()}
+                    </span>
                     <span className="mt-1 block text-xs leading-5 text-muted-foreground">
                       {row.strategyName} · {row.varianceLabel} · {row.ownerLabel}
                     </span>
@@ -120,7 +128,8 @@ export function AccountingCaseWorkbench({
           <CardContent className="space-y-4 text-sm">
             {selectedBreakDetail ? (
               <>
-                <div className="grid gap-3 sm:grid-cols-2">
+                {/* Two columns only when each cell fits a timestamp; a narrow column stacks the values. */}
+                <div className="grid gap-3 grid-cols-[repeat(auto-fit,minmax(12rem,1fr))]">
                   {selectedBreakDetail.fields.filter((field) => field.label !== "Run").slice(0, 6).map((field) => (
                     <AccountingValue key={field.label} label={field.label} value={field.value} />
                   ))}

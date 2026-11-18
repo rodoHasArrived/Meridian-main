@@ -1139,6 +1139,99 @@ Represents an ARGB color value.
 public readonly record struct ArgbColor(byte A, byte R, byte G, byte B);
 ```
 
+## IPeriodComparisonApiClient
+
+Qualified name: <code>Meridian.Ui.Services.Services.Comparisons.IPeriodComparisonApiClient</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs:9](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs#L9).
+
+Reads the shared prior-period comparisons that the desktop does not compose in process.
+
+```csharp
+public interface IPeriodComparisonApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ApiResponse&lt;PeriodComparisonDto&gt;&gt; GetCashLadderComparisonAsync(DateOnly? baselineAsOf = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs:12](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs#L12) | The portfolio cash ladder today against the ladder rebuilt as of baselineAsOf (default: the end of last month). |
+
+## PeriodComparisonApiClient
+
+Qualified name: <code>Meridian.Ui.Services.Services.Comparisons.PeriodComparisonApiClient</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs:20](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs#L20).
+
+HTTP client for UiApiRoutes.PortfolioCashLadderComparison. The cash ladder service needs host-composed holdings and cash providers, so the desktop reads it over the API; a host without them answers 501, which PeriodComparisonProjection.DescribeFailure{T} explains.
+
+```csharp
+public sealed class PeriodComparisonApiClient : IPeriodComparisonApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PeriodComparisonApiClient(ApiClientService apiClient);</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs:24](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs#L24) |  |
+| <code>public Task&lt;ApiResponse&lt;PeriodComparisonDto&gt;&gt; GetCashLadderComparisonAsync(DateOnly? baselineAsOf = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs:30](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs#L30) |  |
+| <code>public static string BuildCashLadderComparisonRoute(DateOnly? baselineAsOf) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs:34](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs#L34) | The comparison route, with the prior date when one is given. |
+
+## PeriodComparisonProjection
+
+Qualified name: <code>Meridian.Ui.Services.Services.Comparisons.PeriodComparisonProjection</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:58](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L58).
+
+Presentation projection for PeriodComparisonDto, shared by the desktop NAV, run attribution and cash ladder comparisons (UX Phase E parity). Lives here rather than in the desktop assembly so it runs in tests on any platform. It mirrors the browser&#x27;s period-comparison-panel.tsx: amounts to two places with negatives in parentheses, counts as whole numbers, the server&#x27;s percent (never recomputed) to two places, &quot;Not comparable · prior zero&quot; for a zero prior, and the Portfolio materiality threshold from lib/reporting-materiality.ts on amount lines.
+
+```csharp
+public static class PeriodComparisonProjection
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const decimal PortfolioMaterialAbsoluteVariance = 250_000m;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:61](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L61) | The Portfolio policy&#x27;s absolute-variance threshold in lib/reporting-materiality.ts. |
+| <code>public const string NotComparablePriorZero = &quot;Not comparable · prior zero&quot;;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:64](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L64) | Shown in place of a percent when the prior is zero. |
+| <code>public static readonly IReadOnlyCollection&lt;string&gt; CashLadderCountKeys = [&quot;breaches&quot;];</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:67](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L67) | Lines of the cash ladder comparison that are counts, not amounts. |
+| <code>public static PeriodComparisonView Project(PeriodComparisonDto? comparison, decimal? materialThreshold = PortfolioMaterialAbsoluteVariance, IReadOnlyCollection&lt;string&gt;? countKeys = null);</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:70](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L70) | Formats a comparison. A null comparison reads as still loading. |
+| <code>public static string FormatAmount(decimal value);</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:113](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L113) | Two places, thousands separated, negatives in parentheses. |
+| <code>public static string FormatCount(decimal value) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:120](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L120) | A whole number, negative with a minus sign. |
+| <code>public static string FormatPercent(decimal? percent) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:124](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L124) | The server&#x27;s percent to two places, or the not-comparable text when there is none. |
+| <code>public static string DescribeFailure&lt;T&gt;(ApiResponse&lt;T&gt; response) where T : class;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:130](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L130) | What to tell the operator when a comparison request fails. |
+
+## PeriodComparisonRow
+
+Qualified name: <code>Meridian.Ui.Services.Services.Comparisons.PeriodComparisonRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:17](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L17).
+
+One line of a prior-period comparison, formatted for display.
+
+```csharp
+public sealed record PeriodComparisonRow(string Key, string Label, string Current, string Prior, string Change, string ChangePercent, bool IsTotal, bool IsMaterial, bool IsPriorZero)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string MaterialLabel =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:29](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L29) | &quot;Material&quot; when the change is past the threshold, otherwise empty. |
+
+## PeriodComparisonView
+
+Qualified name: <code>Meridian.Ui.Services.Services.Comparisons.PeriodComparisonView</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:39](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L39).
+
+A prior-period comparison ready to show: a heading, why it is empty if it is, rows and notes.
+
+```csharp
+public sealed record PeriodComparisonView(bool IsReady, string Heading, string Windows, string? Message, IReadOnlyList<PeriodComparisonRow> Rows, IReadOnlyList<string> Notes);
+```
+
 ## ConfigProfile
 
 Qualified name: <code>Meridian.Ui.Services.Services.ConfigProfile</code>. Kind: `record`.
@@ -1362,112 +1455,3 @@ Declared public members:
 | <code>public async Task&lt;QualityCheckResult?&gt; RunQualityCheckAsync(string path, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:281](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L281) |  |
 | <code>public async Task&lt;List&lt;DataGapInfo&gt;&gt; GetDataGapsAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:284](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L284) |  |
 | <code>public async Task&lt;IntegrityVerificationResult&gt; VerifySymbolIntegrityAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:303](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L303) |  |
-
-## DataQualitySummary
-
-Qualified name: <code>Meridian.Ui.Services.Services.DataQualitySummary</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:12](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L12).
-
-Summarizes file health, alerts, and per-symbol quality at the last check.
-
-```csharp
-public sealed class DataQualitySummary
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public double OverallScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:14](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L14) |  |
-| <code>public int TotalFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:15](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L15) |  |
-| <code>public int HealthyFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:16](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L16) |  |
-| <code>public int WarningFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:17](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L17) |  |
-| <code>public int CriticalFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:18](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L18) |  |
-| <code>public int ActiveAlerts { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:19](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L19) |  |
-| <code>public int UnacknowledgedAlerts { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:20](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L20) |  |
-| <code>public DateTime LastChecked { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:21](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L21) |  |
-| <code>public List&lt;SymbolQualitySummary&gt; SymbolSummaries { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:22](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L22) |  |
-
-## DesktopOperatorPreferenceMapping
-
-Qualified name: <code>Meridian.Ui.Services.Services.DesktopOperatorPreferenceMapping</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:18](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L18).
-
-Maps the shared operator preference vocabulary (OperatorPreferenceVocabulary) to the desktop shell&#x27;s own types. The browser has three densities and the desktop shell two, so default and spacious both show as ShellDensityMode.Standard, and a desktop save never narrows an operator&#x27;s browser spacious to default.
-
-```csharp
-public static class DesktopOperatorPreferenceMapping
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static AppTheme? ToAppTheme(string? appearance) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:21](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L21) | The desktop theme for a host appearance, or null for a value the desktop does not know. |
-| <code>public static string ToAppearance(AppTheme theme) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:29](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L29) |  |
-| <code>public static ShellDensityMode? ToShellDensity(string? density) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:37](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L37) | The desktop density for a host density, or null for a value the desktop does not know. |
-| <code>public static string ToHostDensity(ShellDensityMode density, string? currentHostDensity) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:48](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L48) | The host density to save for a desktop density. ShellDensityMode.Standard keeps a stored default or spacious, because both already show as Standard on the desktop. |
-| <code>public static IReadOnlyDictionary&lt;string, OperatorDesktopShortcutDto&gt; ToHostShortcuts(IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; overrides);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:57](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L57) | The host form of the desktop&#x27;s shortcut overrides, sorted by action id. |
-| <code>public static IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; ToDesktopShortcuts(IReadOnlyDictionary&lt;string, OperatorDesktopShortcutDto&gt; host);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:74](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L74) | The desktop form of the host&#x27;s desktop shortcut overrides. |
-| <code>public static bool SameShortcuts(IReadOnlyDictionary&lt;string, OperatorDesktopShortcutDto&gt;? left, IReadOnlyDictionary&lt;string, OperatorDesktopShortcutDto&gt;? right);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:91](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L91) | True when two desktop shortcut override sets hold the same entries. |
-| <code>public static NotificationSettings ToNotificationSettings(OperatorNotificationPreferencesDto host, NotificationSettings current);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:109](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L109) | The desktop notification settings for a host notification set: each value the host holds, otherwise the default (pop-ups on, every type on, quiet hours off from 22:00 to 07:00). A quiet-hours time that does not read as HH:mm keeps its default. The sound choice is desktop-only and kept. |
-| <code>public static OperatorNotificationPreferencesDto ToHostNotifications(NotificationSettings settings);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:129](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L129) | The host form of the desktop notification settings, with every value written out. |
-| <code>public static bool TryResolveTimeZone(string? ianaZone, out TimeZoneInfo zone);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:148](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L148) | Resolves an IANA display time zone with this machine&#x27;s time zone data. False for a missing or unknown zone, in which case the desktop keeps showing times as it does today. |
-
-## DesktopOperatorPreferenceSync
-
-Qualified name: <code>Meridian.Ui.Services.Services.DesktopOperatorPreferenceSync</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:267](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L267).
-
-Keeps the desktop shell&#x27;s theme, density and keyboard shortcut overrides in step with the operator&#x27;s host preferences, the same set the browser workstation syncs (OperatorPreferencesDto). On start, the values the host holds are applied. Theme and density are not saved back: the desktop does not persist its theme, so its startup theme is a default, not an operator choice. Desktop shortcut overrides (OperatorPreferenceValuesDto.DesktopKeyBindings) held by the host replace this desktop&#x27;s, including an empty set (every default). When the host has none yet, this desktop&#x27;s own overrides are saved up, so the first desktop to sync seeds them. When the operator changes the theme or density here, the latest host set is re-read and saved with only the appearance and density replaced; a shortcut change likewise replaces only the desktop shortcut overrides. Browser-only values (time zone, page descriptions, browser shortcut overrides, a spacious density) are kept. Notification choices and quiet hours (OperatorPreferenceValuesDto.Notifications) held by the host replace this desktop&#x27;s at start; a desktop change saves only that set. When the host cannot be read at start (no session, an older host, offline), the desktop stays local for the run and saves nothing. A failed save keeps the local change. The display time zone is applied to Meridian.Ui.Services.DisplayTimeZone, which desktop timestamps are formatted in; it is read at start and again whenever the desktop saves.
-
-```csharp
-public sealed class DesktopOperatorPreferenceSync : IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DesktopOperatorPreferenceSync(IOperatorPreferencesApi api, IDesktopPreferenceSurface surface, Action&lt;TimeZoneInfo?&gt;? applyDisplayTimeZone = null);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:280](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L280) |  |
-| <code>public TimeZoneInfo? DisplayTimeZone { get; private set; }</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:291](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L291) | The operator&#x27;s display time zone from the host, when it resolves on this machine (else null, meaning UTC). |
-| <code>public bool IsSyncing =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:294](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L294) | True once the host was read and local changes are being saved. |
-| <code>public async Task StartAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:297](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L297) | Reads the host set, applies it, and starts saving operator changes. Safe to call once. |
-| <code>public Task SaveLocalChangeAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:410](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L410) | Saves the current desktop theme and density into the operator&#x27;s host set, keeping every other stored value. Exposed for tests; the sync calls it after each operator change. |
-| <code>public Task SaveShortcutOverridesAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:423](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L423) | Saves this desktop&#x27;s shortcut overrides into the operator&#x27;s host set, keeping every other stored value. Exposed for tests; the sync calls it after each shortcut change. |
-| <code>public Task SaveNotificationsAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:435](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L435) | Saves this desktop&#x27;s notification settings into the operator&#x27;s host set, keeping every other stored value. Exposed for tests; the sync calls it after each notification change. |
-| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:492](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L492) |  |
-
-## DesktopShellPreferences
-
-Qualified name: <code>Meridian.Ui.Services.Services.DesktopShellPreferences</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:29](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L29).
-
-Persisted desktop shell preferences consumed by the WPF workstation shell.
-
-```csharp
-public sealed record DesktopShellPreferences(ShellDensityMode ShellDensityMode)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static DesktopShellPreferences Default { get; } = new (ShellDensityMode.Standard);</code> | [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:35](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L35) |  |
-| <code>public IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; ShortcutOverrides { get; init; } = NoShortcutOverrides;</code> | [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:40](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L40) | The operator&#x27;s shortcut overrides; empty when every shortcut uses its default binding. |
-
-## DesktopShortcutOverride
-
-Qualified name: <code>Meridian.Ui.Services.Services.DesktopShortcutOverride</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:21](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L21).
-
-A persisted operator change to one default desktop keyboard shortcut, keyed by action id. Keys and modifiers are stored as their WPF enum names (for example F10 and Control, Shift) so this contract stays free of WPF types; a null member means &quot;keep the default&quot; for that part of the binding.
-
-```csharp
-public sealed record DesktopShortcutOverride(string? Key = null, string? Modifiers = null, bool? IsEnabled = null);
-```

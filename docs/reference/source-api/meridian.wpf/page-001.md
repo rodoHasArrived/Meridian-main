@@ -714,6 +714,42 @@ Declared public members:
 | <code>public string SubTextAutomationId { get; set; }</code> | [src/Meridian.Wpf/Controls/MetricCard.xaml.cs:110](../../../../src/Meridian.Wpf/Controls/MetricCard.xaml.cs#L110) |  |
 | <code>public string IconAutomationId { get; set; }</code> | [src/Meridian.Wpf/Controls/MetricCard.xaml.cs:116](../../../../src/Meridian.Wpf/Controls/MetricCard.xaml.cs#L116) |  |
 
+## NavTrendPanel
+
+Qualified name: <code>Meridian.Wpf.Controls.NavTrendPanel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Controls/NavTrendPanel.xaml.cs:10](../../../../src/Meridian.Wpf/Controls/NavTrendPanel.xaml.cs#L10).
+
+Shows ledger NAV and securities exposure at recent month-ends as charts with a data table, why there is no trend when there is not, a retry after a failure, and the source&#x27;s notes. Bind its DataContext to a ViewModels.Comparisons.NavTrendSectionViewModel.
+
+```csharp
+public partial class NavTrendPanel : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public NavTrendPanel();</code> | [src/Meridian.Wpf/Controls/NavTrendPanel.xaml.cs:12](../../../../src/Meridian.Wpf/Controls/NavTrendPanel.xaml.cs#L12) |  |
+
+## PeriodComparisonPanel
+
+Qualified name: <code>Meridian.Wpf.Controls.PeriodComparisonPanel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Controls/PeriodComparisonPanel.xaml.cs:10](../../../../src/Meridian.Wpf/Controls/PeriodComparisonPanel.xaml.cs#L10).
+
+Shows a prior-period comparison section: the windows compared, the comparison table with material variances flagged, why it is empty when it is, a retry after a failure, and the source&#x27;s notes. Bind its DataContext to a ViewModels.Comparisons.PeriodComparisonSectionViewModel.
+
+```csharp
+public partial class PeriodComparisonPanel : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PeriodComparisonPanel();</code> | [src/Meridian.Wpf/Controls/PeriodComparisonPanel.xaml.cs:12](../../../../src/Meridian.Wpf/Controls/PeriodComparisonPanel.xaml.cs#L12) |  |
+
 ## PreparerDraftCheckPanel
 
 Qualified name: <code>Meridian.Wpf.Controls.PreparerDraftCheckPanel</code>. Kind: `class`.
@@ -1212,43 +1248,3 @@ Declared public members:
 | <code>public const string ShellTitle = Strategy.ShellTitle;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:176](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L176) |  |
 | <code>public const string ShellSubtitle = Strategy.ShellSubtitle;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:177](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L177) |  |
 | <code>public const string PrimaryScopeLabel = Strategy.PrimaryScopeLabel;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:178](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L178) |  |
-
-## Scope
-
-Qualified name: <code>Meridian.Wpf.Copy.WorkspaceCopyCatalog.Scope</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:27](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L27).
-
-Provides the two shared phrases the desktop shell uses when no scope is selected.
-
-```csharp
-public static class Scope
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string AllAuthorized = &quot;All authorized scopes&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:30](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L30) | Shown where the page still lists everything the operator may see. |
-| <code>public const string NoneSelected = &quot;No scope selected&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:33](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L33) | Shown where the page stays empty or locked until a scope is chosen. |
-
-## Settings
-
-Qualified name: <code>Meridian.Wpf.Copy.WorkspaceCopyCatalog.Settings</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:153](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L153).
-
-Provides titles, descriptions, and scope copy for the settings workspace.
-
-```csharp
-public static class Settings
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string WorkspaceId = WorkstationWorkspaceCatalog.SettingsKey;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:155](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L155) |  |
-| <code>public static readonly WorkspaceDescriptorCopy Descriptor = new (WorkspaceId, WorkstationWorkspaceCatalog.SettingsLabel, WorkstationWorkspaceCatalog.SettingsDesktopDescription, WorkstationWorkspaceCatalog.SettingsDesktopSummary, WorkstationWorkspaceCatalog.SettingsDesktopTileSummary, WorkstationWorkspaceCatalog.SettingsDesktopShellDisplayName);</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:156](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L156) |  |
-| <code>public const string ShellTitle = &quot;Settings Workspace&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:164](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L164) |  |
-| <code>public const string ShellSubtitle = &quot;Pick the setup task you need.&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:165](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L165) |  |

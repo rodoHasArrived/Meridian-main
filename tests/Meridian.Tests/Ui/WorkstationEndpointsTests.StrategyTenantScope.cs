@@ -108,6 +108,7 @@ public sealed partial class WorkstationEndpointsTests
             $"/api/workstation/runs/{foreign.RunId}/equity-curve",
             $"/api/workstation/runs/{foreign.RunId}/fills",
             $"/api/workstation/runs/{foreign.RunId}/attribution",
+            $"/api/workstation/runs/{foreign.RunId}/attribution/period-comparison",
             $"/api/workstation/runs/{foreign.RunId}/ledger/trial-balance",
             $"/api/workstation/runs/{foreign.RunId}/ledger/journal",
             $"/api/workstation/runs/{foreign.RunId}/reconciliation",

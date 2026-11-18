@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionDeadlineEvidenceDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDeadlineEvidenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L21).
+
+```csharp
+public sealed record CorporateActionDeadlineEvidenceDto(int SchemaVersion, CorporateActionElectionDeadlineDto Deadline);
+```
+
 ## CorporateActionDeadlineHistoryDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDeadlineHistoryDto</code>. Kind: `record`.
@@ -880,21 +890,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public CorporateActionScopeMismatchException(string message) : base(CorporateActionProblemCodes.ScopeMismatch, message);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:943](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L943) |  |
-
-## CorporateActionSourceConflictException
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionSourceConflictException</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:930](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L930).
-
-Signals an unresolved conflict between corporate action source data.
-
-```csharp
-public sealed class CorporateActionSourceConflictException : CorporateActionOperationException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CorporateActionSourceConflictException(string message) : base(CorporateActionProblemCodes.SourceConflict, message);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:932](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L932) |  |

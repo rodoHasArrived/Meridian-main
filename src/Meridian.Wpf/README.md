@@ -1291,6 +1291,21 @@ page still shows everything the operator may see, and "No scope selected" where 
 nothing until a scope is chosen (`WorkspaceCopyCatalog.Scope`). The position blotter shows the
 market value the execution source reports, and labels the cost column "Avg cost".
 
+## Prior-period comparisons and NAV trend (2026-11)
+
+The desktop shows the browser's Phase E comparisons from the same shared contracts.
+`ViewModels/Comparisons/PeriodComparisonSectionViewModel` loads a `PeriodComparisonDto` from a
+delegate and renders it through `PeriodComparisonProjection` (in `Meridian.Ui.Services`), with
+`Controls/PeriodComparisonPanel.xaml`: the windows compared, the table with material variances
+flagged, why it is empty, a retry after a failure, and the notes.
+- Fund Operations → Portfolio: NAV against a prior date (`NavBaselineDate`, empty means the end of
+  last month) and `NavTrendSectionViewModel` with `Controls/NavTrendPanel.xaml` (NAV and
+  long/short/gross exposure at the last 12 month-ends, with a table). Both read
+  `FundOperationsWorkspaceReadService` in process.
+- Run Risk: the run's last month against the month before (`AttributionComparison`).
+- Run Cash Flow: "Vs end of last month" loads the portfolio cash ladder comparison over the API
+  (`PeriodComparisonApiClient`), because its providers are composed only in the host.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.

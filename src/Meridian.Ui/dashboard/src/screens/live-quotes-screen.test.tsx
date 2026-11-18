@@ -1316,6 +1316,7 @@ describe("LiveQuotesScreen quick trade", () => {
   });
 
   it("disables empty symbol lookup and describes the required input", () => {
+    vi.spyOn(api, "getSymbols").mockResolvedValue([]);
     renderWithRouter(<LiveQuotesScreen />, { initialEntries: ["/data/quotes"] });
 
     const submitButton = screen.getByRole("button", { name: "View live quote" });
@@ -1333,7 +1334,35 @@ describe("LiveQuotesScreen quick trade", () => {
     expect(api.getLiveQuote).not.toHaveBeenCalled();
   });
 
+  it("starts an empty quote list from the watchlist, skipping archived symbols", async () => {
+    const getSymbols = vi.spyOn(api, "getSymbols").mockResolvedValue([
+      { symbol: "MSFT", status: "Active" }, { symbol: "OLD", status: "Archived" }, { symbol: "NVDA", status: "Monitored" }
+    ] as never);
+    vi.spyOn(api, "getLiveQuote").mockResolvedValue(quoteFixture);
+    vi.spyOn(api, "getLiveTrades").mockResolvedValue(tradesFixture);
+    vi.spyOn(api, "getLiveOrderbook").mockResolvedValue(orderbookFixture);
+    renderWithRouter(<LiveQuotesScreen />, { initialEntries: ["/data/quotes"] });
+    expect(await screen.findByDisplayValue("MSFT, NVDA")).toBeInTheDocument();
+    await waitForAsyncEffects();
+    expect(screen.getByDisplayValue("MSFT, NVDA")).toBeInTheDocument();
+    // Read once per screen (StrictMode re-issues an aborted first read).
+    expect(getSymbols).toHaveBeenCalled();
+    expect(screen.queryByText("Start a quote list")).not.toBeInTheDocument();
+  });
+
+  it("does not claim a connection is healthy when no symbols are subscribed", () => {
+    vi.spyOn(api, "getSymbols").mockResolvedValue([]);
+    renderWithRouter(<LiveQuotesScreen />, { initialEntries: ["/data/quotes"] });
+    const strip = screen.getByLabelText("Market status strip");
+    expect(strip).toHaveTextContent("Connection: Connected · no symbols subscribed");
+    expect(strip).not.toHaveTextContent("Coverage");
+    expect(strip).toHaveTextContent("Market panels:");
+    expect(strip).toHaveTextContent("Quote matrix:");
+    expect(screen.getByRole("heading", { name: /Live quotes/ })).toBeInTheDocument();
+  });
+
   it("has no basic accessibility violations in the no-symbol state", async () => {
+    vi.spyOn(api, "getSymbols").mockResolvedValue([]);
     const { container } = renderWithRouter(<LiveQuotesScreen />, { initialEntries: ["/data/quotes"] });
 
     const results = await axe(container);

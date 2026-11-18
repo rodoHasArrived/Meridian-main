@@ -838,6 +838,10 @@ items:
         path: tests/Meridian.Ui.Tests/Services/IntercompanyCounterpartQueueWorkspaceTests.cs
       - type: test
         path: tests/Meridian.Wpf.Tests/Views/IntercompanyNativeControlSmokeTests.CounterpartProposals.cs
+      - type: source
+        path: src/Meridian.Ui.Shared/Services/WorkstationKpiDefinitions.cs
+      - type: test
+        path: tests/Meridian.Tests/Ui/WorkstationKpiDefinitionsTests.cs
     last_reviewed: 2026-07-06
 
   - id: W8-UX-CONSOL-001

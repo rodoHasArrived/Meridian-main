@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OtcValuationBlockerDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcValuationBlockerDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:56](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L56).
+
+Why a contract, or a snapshot, could not be completed.
+
+```csharp
+public sealed record OtcValuationBlockerDto(string Code, string Reason);
+```
+
 ## OtcValuationInputDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcValuationInputDto</code>. Kind: `record`.
@@ -831,24 +843,3 @@ Enum declarations:
 | <code>FixedDay</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L14) | A fixed day of month (1 to 31), clamped to shorter months. |
 | <code>EndOfMonth</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L17) | The last day of the month. |
 | <code>Imm</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L20) | The third Wednesday of the month (IMM dates). |
-
-## ScheduleSpec
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleSpec</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:77](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L77).
-
-The inputs of the contractual schedule kernel: the span, tenor, generation direction and mode, roll, stub policy, optional explicit regular dates, business-day adjustments and payment lag.
-
-```csharp
-public sealed record ScheduleSpec(DateOnly EffectiveDate, DateOnly TerminationDate, ScheduleTenor Tenor, ScheduleDirection Direction = ScheduleDirection.Forward, ScheduleAnchorMode AnchorMode = ScheduleAnchorMode.Anchored, ScheduleRoll Roll = default, ScheduleStubPolicy StubPolicy = ScheduleStubPolicy.Short, DateOnly? FirstRegularDate = null, DateOnly? LastRegularDate = null, BusinessDayAdjustment? AccrualAdjustment = null, BusinessDayAdjustment? PaymentAdjustment = null, BusinessDayAdjustment? EffectiveDateAdjustment = null, BusinessDayAdjustment? TerminationDateAdjustment = null, int PaymentLagBusinessDays = 0, int? MaxPeriods = ScheduleSpec.DefaultMaxPeriods)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const int DefaultMaxPeriods = 1200;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:95](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L95) | The default period limit, matching the 1200-period bound of the legacy constant-yield generators. |
-| <code>public static ScheduleSpec IssueAnchoredForward(DateOnly issueDate, DateOnly maturity, ScheduleTenor tenor) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:110](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L110) | The Security Master coupon-period roll: forward from the issue date in anchored mode, anchor-day roll, a short final stub, no adjustments and no period limit. |
-| <code>public static ScheduleSpec CompoundedForward(DateOnly start, DateOnly termination, ScheduleTenor tenor) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:125](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L125) | The legacy compounded roll: forward from start, each date one tenor after the previous one, anchor-day roll, a short final stub, no adjustments and no period limit. |
-| <code>public static ScheduleSpec BackwardFromTermination(DateOnly effective, DateOnly termination, ScheduleTenor tenor, ScheduleRoll roll, ScheduleStubPolicy stubPolicy = ScheduleStubPolicy.Short) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:141](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L141) | The market bond convention: generated backward from termination in anchored mode with roll, any stub at the start, no adjustments and the default period limit. |

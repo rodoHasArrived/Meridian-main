@@ -219,6 +219,12 @@ Provider health caches and history use ProviderSdk canonical family identities s
 configuration and telemetry aliases address the same health row.
 
 
+`Services/Comparisons/PeriodComparisonProjection.cs` formats any `PeriodComparisonDto` for the
+desktop exactly as the browser comparison panel does: two-place amounts with negatives in
+parentheses, whole counts, the server's percent (never recomputed), "Not comparable · prior zero",
+and the Portfolio materiality threshold. `PeriodComparisonApiClient` reads the portfolio cash ladder
+comparison over `UiApiRoutes.PortfolioCashLadderComparison`.
+
 `Services/Accounting/AccountingProjectionQueryService.cs` exposes shared accounting close projections for desktop and browser surfaces: trial balance, dimension-scoped roll-forward, source-linked audit rows, and close-state evidence gates.
 
 `Services/Accounting/WorkstationAccountingCloseApiClient.cs` implements the

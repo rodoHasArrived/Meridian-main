@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderIntegrationQuarantineReviewDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationQuarantineReviewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:354](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L354).
+
+```csharp
+public sealed record ProviderIntegrationQuarantineReviewDto(string ConnectionId, IReadOnlyList<string> SyncRunIds, IReadOnlyList<QuarantinedRecordDto> Records, IReadOnlyList<ProviderIntegrationQuarantineIssueGroupDto> IssueGroups, IReadOnlyList<ProviderIntegrationQuarantineDecisionDto> Decisions, int TotalQuarantinedRecords, int CriticalIssueCount, int WarningIssueCount, int PendingReviewRecordCount, int DecisionedRecordCount, int ReplayRequestedRecordCount, int IgnoredRecordCount, int CashPositionCandidateCount);
+```
+
 ## ProviderIntegrationReconciliationHandoffHistoryDto
 
 Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationReconciliationHandoffHistoryDto</code>. Kind: `record`.
@@ -697,23 +707,3 @@ What a recovery pass found and did.
 ```csharp
 public sealed record AccountingAuditRecoveryResult(AccountingAuditRecoveryOutcome Outcome, Guid? AuditEventId = null, string? Detail = null);
 ```
-
-## AccountingBasisKindDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.AccountingBasisKindDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:8](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L8).
-
-```csharp
-public enum AccountingBasisKindDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Primary = 0</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:10](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L10) |  |
-| <code>Gaap = 1</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:11](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L11) |  |
-| <code>Cash = 2</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:12](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L12) |  |
-| <code>Tax = 3</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:13](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L13) |  |
-| <code>Statutory = 4</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:14](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L14) |  |

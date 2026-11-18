@@ -6,6 +6,123 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AuditReportItem
+
+Qualified name: <code>Meridian.Wpf.Views.RetentionAssurancePage.AuditReportItem</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:191](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L191).
+
+Presents a retention audit report&#x27;s outcome, summary, retained size, and timestamp.
+
+```csharp
+public sealed class AuditReportItem
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string StatusText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:193](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L193) |  |
+| <code>public Brush StatusColor { get; set; } = Brushes.Gray;</code> | [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:194](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L194) |  |
+| <code>public string Summary { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:195](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L195) |  |
+| <code>public string SizeText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:196](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L196) |  |
+| <code>public string TimeText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:197](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L197) |  |
+
+## LegalHoldItem
+
+Qualified name: <code>Meridian.Wpf.Views.RetentionAssurancePage.LegalHoldItem</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:179](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L179).
+
+Presents a legal hold&#x27;s identity, reason, covered symbols, and creation date.
+
+```csharp
+public sealed class LegalHoldItem
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Id { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:181](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L181) |  |
+| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:182](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L182) |  |
+| <code>public string Reason { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:183](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L183) |  |
+| <code>public string SymbolsText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:184](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L184) |  |
+| <code>public string CreatedText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:185](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L185) |  |
+
+## RunCashFlowPage
+
+Qualified name: <code>Meridian.Wpf.Views.RunCashFlowPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:72](../../../../src/Meridian.Wpf/Views/Pages.cs#L72).
+
+```csharp
+public partial class RunCashFlowPage : Page
+```
+
+Source: [src/Meridian.Wpf/Views/RunCashFlowPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/RunCashFlowPage.xaml.cs#L12).
+
+Provides the desktop page to review simulated cash, financing, and funding impacts.
+
+```csharp
+public partial class RunCashFlowPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public RunCashFlowPage() : this(ResolveRequired&lt;StrategyRunWorkspaceService&gt;(), ResolveRequired&lt;WpfNavigationService&gt;(), ResolveOptional&lt;StrategyRunContinuityService&gt;());</code> | [src/Meridian.Wpf/Views/RunCashFlowPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/RunCashFlowPage.xaml.cs#L14) |  |
+| <code>public RunCashFlowPage(StrategyRunWorkspaceService workspaceService, WpfNavigationService navigationService, StrategyRunContinuityService? continuityService = null);</code> | [src/Meridian.Wpf/Views/RunCashFlowPage.xaml.cs:22](../../../../src/Meridian.Wpf/Views/RunCashFlowPage.xaml.cs#L22) |  |
+
+## RunDetailPage
+
+Qualified name: <code>Meridian.Wpf.Views.RunDetailPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:69](../../../../src/Meridian.Wpf/Views/Pages.cs#L69).
+
+```csharp
+public partial class RunDetailPage : Page
+```
+
+Source: [src/Meridian.Wpf/Views/RunDetailPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/RunDetailPage.xaml.cs#L10).
+
+Provides the desktop page to review diagnostics and execution details for a selected run.
+
+```csharp
+public partial class RunDetailPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public RunDetailPage();</code> | [src/Meridian.Wpf/Views/RunDetailPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/RunDetailPage.xaml.cs#L12) |  |
+
+## RunLedgerPage
+
+Qualified name: <code>Meridian.Wpf.Views.RunLedgerPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:71](../../../../src/Meridian.Wpf/Views/Pages.cs#L71).
+
+```csharp
+public partial class RunLedgerPage : Page
+```
+
+Source: [src/Meridian.Wpf/Views/RunLedgerPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/RunLedgerPage.xaml.cs#L10).
+
+Provides the desktop page to review run postings and execution-linked cash movement.
+
+```csharp
+public partial class RunLedgerPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public RunLedgerPage();</code> | [src/Meridian.Wpf/Views/RunLedgerPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/RunLedgerPage.xaml.cs#L12) |  |
+
 ## RunMatPage
 
 Qualified name: <code>Meridian.Wpf.Views.RunMatPage</code>. Kind: `class`.
@@ -986,148 +1103,3 @@ Declared public members:
 | <code>public string BodyAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs:61](../../../../src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs#L61) |  |
 | <code>public string TitleText { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs:67](../../../../src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs#L67) |  |
 | <code>public string SubtitleText { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs:73](../../../../src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs#L73) |  |
-
-## WorkspaceEvidenceStripControl
-
-Qualified name: <code>Meridian.Wpf.Views.WorkspaceEvidenceStripControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs:9](../../../../src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs#L9).
-
-Hosts workflow evidence summaries and primary and secondary actions.
-
-```csharp
-public partial class WorkspaceEvidenceStripControl : UserControl
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly DependencyProperty StripAutomationIdProperty = DependencyProperty.Register(nameof(StripAutomationId), typeof(string), typeof(WorkspaceEvidenceStripControl), new PropertyMetadata(&quot;WorkspaceEvidenceStrip&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs:11](../../../../src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs#L11) |  |
-| <code>public static readonly DependencyProperty WorkflowSummaryStripAutomationIdProperty = DependencyProperty.Register(nameof(WorkflowSummaryStripAutomationId), typeof(string), typeof(WorkspaceEvidenceStripControl), new PropertyMetadata(&quot;WorkflowSummaryStrip&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs:14](../../../../src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs#L14) |  |
-| <code>public static readonly DependencyProperty PrimaryActionButtonAutomationIdProperty = DependencyProperty.Register(nameof(PrimaryActionButtonAutomationId), typeof(string), typeof(WorkspaceEvidenceStripControl), new PropertyMetadata(&quot;PrimaryWorkflowActionButton&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs:17](../../../../src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs#L17) |  |
-| <code>public static readonly DependencyProperty SecondaryToggleButtonAutomationIdProperty = DependencyProperty.Register(nameof(SecondaryToggleButtonAutomationId), typeof(string), typeof(WorkspaceEvidenceStripControl), new PropertyMetadata(&quot;SecondaryWorkflowToggleButton&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs:20](../../../../src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs#L20) |  |
-| <code>public WorkspaceEvidenceStripControl();</code> | [src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs:23](../../../../src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs#L23) |  |
-| <code>public string StripAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs:28](../../../../src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs#L28) |  |
-| <code>public string WorkflowSummaryStripAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs:34](../../../../src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs#L34) |  |
-| <code>public string PrimaryActionButtonAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs:40](../../../../src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs#L40) |  |
-| <code>public string SecondaryToggleButtonAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs:46](../../../../src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs#L46) |  |
-
-## WorkspaceInspectorActionInvokedEventArgs
-
-Qualified name: <code>Meridian.Wpf.Views.WorkspaceInspectorActionInvokedEventArgs</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:17](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L17).
-
-Carries the action identity selected in a workspace inspector.
-
-```csharp
-public sealed class WorkspaceInspectorActionInvokedEventArgs : EventArgs
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WorkspaceInspectorActionInvokedEventArgs(string actionId) =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:19](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L19) |  |
-| <code>public string ActionId { get; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:22](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L22) |  |
-
-## WorkspaceInspectorHostControl
-
-Qualified name: <code>Meridian.Wpf.Views.WorkspaceInspectorHostControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:28](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L28).
-
-Displays inspector selection, loading, empty, and error states and dispatches inspector actions.
-
-```csharp
-public partial class WorkspaceInspectorHostControl : UserControl
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly DependencyProperty InspectorStateProperty = DependencyProperty.Register(nameof(InspectorState), typeof(WorkspaceInspectorState), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(WorkspaceInspectorState.Empty, OnInspectorStateChanged));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:30](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L30) |  |
-| <code>public static readonly DependencyProperty HostAutomationIdProperty = DependencyProperty.Register(nameof(HostAutomationId), typeof(string), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(&quot;WorkspaceInspectorHost&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:37](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L37) |  |
-| <code>public static readonly DependencyProperty EmptyAutomationIdProperty = DependencyProperty.Register(nameof(EmptyAutomationId), typeof(string), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(&quot;WorkspaceInspectorEmptyState&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:40](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L40) |  |
-| <code>public static readonly DependencyProperty SelectedAutomationIdProperty = DependencyProperty.Register(nameof(SelectedAutomationId), typeof(string), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(&quot;WorkspaceInspectorSelectedState&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:43](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L43) |  |
-| <code>public static readonly DependencyProperty LoadingAutomationIdProperty = DependencyProperty.Register(nameof(LoadingAutomationId), typeof(string), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(&quot;WorkspaceInspectorLoadingState&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:46](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L46) |  |
-| <code>public static readonly DependencyProperty ErrorAutomationIdProperty = DependencyProperty.Register(nameof(ErrorAutomationId), typeof(string), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(&quot;WorkspaceInspectorErrorState&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:49](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L49) |  |
-| <code>public static readonly DependencyProperty EmptyTitleProperty = DependencyProperty.Register(nameof(EmptyTitle), typeof(string), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(&quot;No row selected&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:52](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L52) |  |
-| <code>public static readonly DependencyProperty EmptyDetailProperty = DependencyProperty.Register(nameof(EmptyDetail), typeof(string), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(&quot;Select an operational row to inspect evidence, actions, and recovery context.&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:55](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L55) |  |
-| <code>public static readonly DependencyProperty SelectedTitleProperty = DependencyProperty.Register(nameof(SelectedTitle), typeof(string), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(&quot;Selection details&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:58](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L58) |  |
-| <code>public static readonly DependencyProperty SelectedDetailProperty = DependencyProperty.Register(nameof(SelectedDetail), typeof(string), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(&quot;Evidence for the selected row is available.&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:61](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L61) |  |
-| <code>public static readonly DependencyProperty SelectedActionDetailProperty = DependencyProperty.Register(nameof(SelectedActionDetail), typeof(string), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(&quot;Available actions are scoped to the selected row.&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:64](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L64) |  |
-| <code>public static readonly DependencyProperty LoadingTitleProperty = DependencyProperty.Register(nameof(LoadingTitle), typeof(string), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(&quot;Loading inspector&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:67](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L67) |  |
-| <code>public static readonly DependencyProperty LoadingDetailProperty = DependencyProperty.Register(nameof(LoadingDetail), typeof(string), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(&quot;Loading selected row evidence.&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:70](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L70) |  |
-| <code>public static readonly DependencyProperty ErrorTitleProperty = DependencyProperty.Register(nameof(ErrorTitle), typeof(string), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(&quot;Inspector unavailable&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:73](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L73) |  |
-| <code>public static readonly DependencyProperty ErrorDetailProperty = DependencyProperty.Register(nameof(ErrorDetail), typeof(string), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(&quot;The selected row detail could not be loaded.&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:76](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L76) |  |
-| <code>public static readonly DependencyProperty SelectedEvidenceTabHeaderProperty = DependencyProperty.Register(nameof(SelectedEvidenceTabHeader), typeof(string), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(&quot;Evidence&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:79](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L79) |  |
-| <code>public static readonly DependencyProperty SelectedActionsTabHeaderProperty = DependencyProperty.Register(nameof(SelectedActionsTabHeader), typeof(string), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(&quot;Actions&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:82](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L82) |  |
-| <code>public static readonly DependencyProperty ErrorActionLabelProperty = DependencyProperty.Register(nameof(ErrorActionLabel), typeof(string), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(string.Empty, OnErrorActionChanged));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:85](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L85) |  |
-| <code>public static readonly DependencyProperty ErrorActionIdProperty = DependencyProperty.Register(nameof(ErrorActionId), typeof(string), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(string.Empty, OnErrorActionChanged));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:92](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L92) |  |
-| <code>public WorkspaceInspectorHostControl();</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:99](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L99) |  |
-| <code>public event EventHandler&lt;WorkspaceInspectorActionInvokedEventArgs&gt;? InspectorActionInvoked;</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:106](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L106) |  |
-| <code>public WorkspaceInspectorState InspectorState { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:108](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L108) |  |
-| <code>public string HostAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:114](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L114) |  |
-| <code>public string EmptyAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:120](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L120) |  |
-| <code>public string SelectedAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:126](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L126) |  |
-| <code>public string LoadingAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:132](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L132) |  |
-| <code>public string ErrorAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:138](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L138) |  |
-| <code>public string EmptyTitle { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:144](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L144) |  |
-| <code>public string EmptyDetail { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:150](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L150) |  |
-| <code>public string SelectedTitle { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:156](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L156) |  |
-| <code>public string SelectedDetail { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:162](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L162) |  |
-| <code>public string SelectedActionDetail { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:168](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L168) |  |
-| <code>public string LoadingTitle { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:174](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L174) |  |
-| <code>public string LoadingDetail { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:180](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L180) |  |
-| <code>public string ErrorTitle { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:186](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L186) |  |
-| <code>public string ErrorDetail { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:192](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L192) |  |
-| <code>public string SelectedEvidenceTabHeader { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:198](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L198) |  |
-| <code>public string SelectedActionsTabHeader { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:204](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L204) |  |
-| <code>public string ErrorActionLabel { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:210](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L210) |  |
-| <code>public string ErrorActionId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:216](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L216) |  |
-
-## WorkspaceInspectorState
-
-Qualified name: <code>Meridian.Wpf.Views.WorkspaceInspectorState</code>. Kind: `enum`.
-
-Source: [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:6](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L6).
-
-```csharp
-public enum WorkspaceInspectorState
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Empty</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:8](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L8) |  |
-| <code>Selected</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:9](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L9) |  |
-| <code>Loading</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:10](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L10) |  |
-| <code>Error</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:11](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L11) |  |
-
-## WorkspacePage
-
-Qualified name: <code>Meridian.Wpf.Views.WorkspacePage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:95](../../../../src/Meridian.Wpf/Views/Pages.cs#L95).
-
-```csharp
-public partial class WorkspacePage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/WorkspacePage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/WorkspacePage.xaml.cs#L15).
-
-Workspace management page for creating, editing, activating, and importing/exporting workspace templates with session restore.
-
-```csharp
-public partial class WorkspacePage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WorkspacePage();</code> | [src/Meridian.Wpf/Views/WorkspacePage.xaml.cs:19](../../../../src/Meridian.Wpf/Views/WorkspacePage.xaml.cs#L19) |  |

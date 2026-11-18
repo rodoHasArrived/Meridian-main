@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { AccountingPeriodComparison } from "./accounting-period-comparison";
 import type { PostedPeriodComparison } from "@/lib/posted-period-comparison-api";
@@ -71,4 +71,20 @@ it("hides previous-book comparison data immediately and ignores delayed response
   await act(async () => finish(fixture()));
   expect(screen.queryByText("9,007,199,254,740,993.12")).not.toBeInTheDocument();
   expect(screen.getByText("Current scope has no prior period.")).toBeInTheDocument();
+});
+
+it("marks variances past the Accounting materiality threshold and leaves smaller ones plain", async () => {
+  const line = fixture().lines[0]!;
+  const service = vi.fn().mockResolvedValue({ ...fixture(), lines: [
+    { ...line, accountKey: "fees", accountName: "Fees", currentBalance: "-50000.00", priorBalance: "-200000.00", change: "150000.00", percentChange: "75.00" },
+    { ...line, accountKey: "cash", accountName: "Cash", currentBalance: "1000.00", priorBalance: "900.00", change: "100.00", percentChange: "11.11" }
+  ] });
+  render(<MemoryRouter initialEntries={["/accounting/trial-balance?comparison=prior"]}><AccountingPeriodComparison bookId="book-a" periodId="period-a" periodOptions={options} service={service} /></MemoryRouter>);
+  const table = await screen.findByRole("table", { name: "Posted period account comparison" });
+  const fees = within(table).getByRole("row", { name: /Fees/ });
+  expect(fees.querySelector("[data-variance-material]")).not.toBeNull();
+  expect(within(fees).getByText("Material")).toHaveAttribute("title", expect.stringMatching(/\$100,000/));
+  expect(fees).toHaveTextContent("75.00%");
+  expect(within(table).getByRole("row", { name: /Cash/ }).querySelector("[data-variance-material]")).toBeNull();
+  expect(screen.getByText(/Variances over \$100,000 are marked Material/)).toBeInTheDocument();
 });

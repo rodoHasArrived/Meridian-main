@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LifecycleSessionReceiptDto
+
+Qualified name: <code>Meridian.Contracts.Lifecycle.LifecycleSessionReceiptDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:95](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L95).
+
+```csharp
+public sealed record LifecycleSessionReceiptDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public required string SessionId { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:97](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L97) |  |
+| <code>public required DateTimeOffset StartedAtUtc { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:98](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L98) |  |
+| <code>public required DateTimeOffset CompletedAtUtc { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:99](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L99) |  |
+| <code>public required LifecycleShutdownOutcome Outcome { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:100](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L100) |  |
+| <code>public LifecycleShutdownReceiptDto? HostReceipt { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:101](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L101) |  |
+| <code>public LifecycleShutdownOutcome? DatabaseOutcome { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:102](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L102) |  |
+| <code>public required bool HostForced { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:103](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L103) |  |
+| <code>public required bool DatabaseForced { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:104](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L104) |  |
+| <code>public string? Message { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:105](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L105) |  |
+
 ## LifecycleShutdownAcceptedDto
 
 Qualified name: <code>Meridian.Contracts.Lifecycle.LifecycleShutdownAcceptedDto</code>. Kind: `record`.
@@ -1067,15 +1091,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;string&gt; EvidenceIds { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/VerifiedOperationOutcome.cs:78](../../../../src/Meridian.Contracts/Operations/VerifiedOperationOutcome.cs#L78) |  |
 | <code>public IReadOnlyList&lt;string&gt; ArtifactIds { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/VerifiedOperationOutcome.cs:79](../../../../src/Meridian.Contracts/Operations/VerifiedOperationOutcome.cs#L79) |  |
-
-## OperationsContractsJsonContext
-
-Qualified name: <code>Meridian.Contracts.Operations.OperationsContractsJsonContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Operations/OperationsContractsJsonContext.cs:46](../../../../src/Meridian.Contracts/Operations/OperationsContractsJsonContext.cs#L46).
-
-Provides source-generated JSON metadata for verified outcomes, provenance, and operational case history.
-
-```csharp
-public sealed partial class OperationsContractsJsonContext : JsonSerializerContext;
-```

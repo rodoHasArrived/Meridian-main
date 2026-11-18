@@ -6,6 +6,46 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationsLedgerJournalLineDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsLedgerJournalLineDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:604](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L604).
+
+```csharp
+public sealed record OperationsLedgerJournalLineDto(Guid? EntryId, string AccountName, string AccountType, decimal Debit, decimal Credit, string? Symbol = null, string? FinancialAccountId = null, Guid? SecurityId = null, bool SecurityMasterApproved = false, string? SecurityMasterProvenance = null, string? LedgerMappingReference = null, string? SecurityMasterApprovalReference = null, SecurityStatusDto? SecurityMasterStatus = null, LedgerDimensionSetDto? Dimensions = null);
+```
+
+## OperationsLedgerPostingStateDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsLedgerPostingStateDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:72](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L72).
+
+```csharp
+public enum OperationsLedgerPostingStateDto : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Pending = 0</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:74](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L74) |  |
+| <code>Drafted = 1</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:75](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L75) |  |
+| <code>Validated = 2</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:76](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L76) |  |
+| <code>Posted = 3</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:77](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L77) |  |
+| <code>Complete = 4</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:78](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L78) |  |
+
+## OperationsLedgerPostRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsLedgerPostRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:563](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L563).
+
+```csharp
+public sealed record OperationsLedgerPostRequestDto(long ExpectedVersion, string Actor, string LedgerBatchId, string PostingKind, bool PeriodOpen, bool HasValidatedJournal = true, bool HasDuplicatePostingCandidate = false, string? Rationale = null, string? CorrelationId = null, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null, OperationsLedgerJournalCandidateDto? JournalCandidate = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
+```
+
 ## OperationsLedgerPreviewDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsLedgerPreviewDto</code>. Kind: `record`.
@@ -632,49 +672,3 @@ Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:38](../../../.
 ```csharp
 public sealed record OperatorTriageResult(string Status, string WorkItemId, OperatorTriageItemDto? Item = null, string? Error = null, bool Replayed = false);
 ```
-
-## OperatorTriageScope
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageScope</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:54](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L54).
-
-```csharp
-public sealed record OperatorTriageScope(string TenantId, string CompanyId);
-```
-
-## OperatorTriageState
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageState</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:43](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L43).
-
-Metadata only: never a copy of the source work item or financial workflow.
-
-```csharp
-public sealed record OperatorTriageState(long Version, string? AssigneeId, IReadOnlyList<OperatorTriagePersonalState> Personal, IReadOnlyList<OperatorTriageActivity> Activity, IReadOnlyList<OperatorTriageReceipt> Receipts)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static OperatorTriageState Empty =&gt; …;</code> | [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:49](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L49) |  |
-
-## OperatorWorkflowHomeSummary
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperatorWorkflowHomeSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs#L6).
-
-Shared home-summary projection for operator workflow guidance across the workstation shell.
-
-```csharp
-public sealed record OperatorWorkflowHomeSummary(DateTimeOffset GeneratedAt, bool HasOperatingContext, string OperatingContextLabel, string FundDisplayName, IReadOnlyList<WorkspaceWorkflowSummary> Workspaces)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public MeridianAssuranceScoreDto AssuranceScore { get; init; } = new (100, EvidenceStatusDto.Ready, [], []);</code> | [src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs:13](../../../../src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs#L13) |  |

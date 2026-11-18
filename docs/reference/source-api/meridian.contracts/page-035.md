@@ -6,6 +6,22 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CreateLedgerPeriodRequest
+
+Qualified name: <code>Meridian.Contracts.Ledger.CreateLedgerPeriodRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:250](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L250).
+
+```csharp
+public sealed record CreateLedgerPeriodRequest(Guid LedgerBookId, int FiscalYear, int PeriodNo, string Label, DateOnly StartDate, DateOnly EndDate)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? CreatedBy { get; init; }</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:260](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L260) | Actual creator, stamped from the authenticated caller at public boundaries. |
+
 ## CreatePreparedClosePlanRequestDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.CreatePreparedClosePlanRequestDto</code>. Kind: `record`.
@@ -844,16 +860,4 @@ Confirms, disputes or resolves the exact retained version. ExpectedBalanceDigest
 
 ```csharp
 public sealed record IntercompanyBalanceConfirmationActionRequest(Guid RequestId, IntercompanyBalanceConfirmationActionDto Action, IntercompanyBalanceConfirmationPartyDto? Party, long ExpectedVersion, string ExpectedBalanceDigest, string? Reason);
-```
-
-## IntercompanyBalanceConfirmationDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:57](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L57).
-
-A per-period reciprocal balance confirmation for one approved accounting profile. Party one and party two follow the profile&#x27;s legal agreement. NetTransactionBalance is the sum of both sides&#x27; signed transaction-currency balances; reciprocal books net to zero.
-
-```csharp
-public sealed record IntercompanyBalanceConfirmationDto(Guid ConfirmationId, string TenantId, string? CompanyId, Guid AccountingArrangementId, Guid IntercompanyAgreementId, DateOnly AsOf, long Version, IntercompanyBalanceConfirmationStatusDto Status, IntercompanyBalanceConfirmationSideDto PartyOne, IntercompanyBalanceConfirmationSideDto PartyTwo, decimal NetTransactionBalance, string BalanceDigest, IReadOnlyList<IntercompanyBalanceConfirmationEventDto> Events);
 ```

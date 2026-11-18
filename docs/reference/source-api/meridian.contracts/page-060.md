@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FinancialRecordExplorerGraphEdgeDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FinancialRecordExplorerGraphEdgeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:133](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L133).
+
+```csharp
+public sealed record FinancialRecordExplorerGraphEdgeDto(string SourceNodeId, string TargetNodeId, string Label, FinancialRecordExplorerTone Tone = FinancialRecordExplorerTone.Default);
+```
+
 ## FinancialRecordExplorerGraphNodeDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.FinancialRecordExplorerGraphNodeDto</code>. Kind: `record`.
@@ -507,6 +517,30 @@ Accounting-facing NAV attribution summary for one fund workspace.
 public sealed record FundNavAttributionSummaryDto(string Currency, decimal TotalNav, int ComponentCount, int EntityCount, int SleeveCount, int VehicleCount, IReadOnlyList<FundNavAssetClassExposureDto> AssetClassExposure);
 ```
 
+## FundNavTrendDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FundNavTrendDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundNavTrendDtos.cs:25](../../../../src/Meridian.Contracts/Workstation/FundNavTrendDtos.cs#L25).
+
+A fund&#x27;s ledger NAV at each month-end over a recent window, ending with NAV at the as-of date. Every point is the posted ledger as it stood on that date, through the same NAV attribution the workspace and the NAV comparison use.
+
+```csharp
+public sealed record FundNavTrendDto(string FundProfileId, string Subject, string Currency, IReadOnlyList<FundNavTrendPointDto> Points, IReadOnlyList<string> Notes, DateTimeOffset GeneratedAt);
+```
+
+## FundNavTrendPointDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FundNavTrendPointDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundNavTrendDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/FundNavTrendDtos.cs#L11).
+
+Ledger NAV at one date.
+
+```csharp
+public sealed record FundNavTrendPointDto(DateOnly AsOf, decimal TotalNav, int ComponentCount, decimal LongExposure = 0m, decimal ShortExposure = 0m, decimal GrossExposure = 0m, decimal NetExposure = 0m);
+```
+
 ## FundOperationsNavigationContext
 
 Qualified name: <code>Meridian.Contracts.Workstation.FundOperationsNavigationContext</code>. Kind: `record`.
@@ -580,40 +614,4 @@ Fund-level position row aggregated across strategy-run portfolio summaries.
 
 ```csharp
 public sealed record FundPortfolioPosition(string Symbol, long NetQuantity, decimal WeightedAverageCostBasis, decimal RealizedPnl, decimal UnrealizedPnl, int ContributingRuns, int LinkedAccounts, Guid? SecurityId = null, string? SecurityDisplayName = null, string? AssetClass = null, string? SecuritySubType = null, string? PrimaryIdentifier = null, bool HasSecurityCoverage = false, string CoverageLabel = "Unresolved", IReadOnlyList<string>? ContributingRunIds = null, int SecurityResolvedContributions = 0, int SecurityMissingContributions = 0, MarkFreshnessAssessmentDto? MarkFreshness = null);
-```
-
-## FundReconciliationItem
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundReconciliationItem</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:166](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L166).
-
-Reconciliation row shown in Accounting operator queues.
-
-```csharp
-public sealed record FundReconciliationItem(Guid ReconciliationRunId, Guid AccountId, string AccountDisplayName, DateOnly AsOfDate, string Status, int TotalChecks, int TotalMatched, int TotalBreaks, decimal BreakAmountTotal, DateTimeOffset RequestedAt, DateTimeOffset? CompletedAt, string ScopeLabel = "Account", string? StrategyName = null, string? RunId = null, int SecurityIssueCount = 0, bool HasSecurityCoverageIssues = false, string CoverageLabel = "n/a");
-```
-
-## FundReportAssetClassSectionDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundReportAssetClassSectionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:493](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L493).
-
-Asset-class total included in a report-pack preview.
-
-```csharp
-public sealed record FundReportAssetClassSectionDto(string AssetClass, decimal Total);
-```
-
-## FundReportingProfileDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundReportingProfileDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:126](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L126).
-
-Reporting profile metadata exposed to Accounting and Reporting workflows.
-
-```csharp
-public sealed record FundReportingProfileDto(string Id, string Name, string TargetTool, string Format, string Description, bool LoaderScript, bool DataDictionary);
 ```

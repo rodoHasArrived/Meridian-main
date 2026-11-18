@@ -1,0 +1,46 @@
+<UserControl x:Class="Meridian.Wpf.Controls.PeriodComparisonPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:workstation="clr-namespace:Meridian.Wpf.Workstation.Controls"
+             AutomationProperties.Name="{Binding Title}">
+    <!-- DataContext: Meridian.Wpf.ViewModels.Comparisons.PeriodComparisonSectionViewModel -->
+    <Border Style="{StaticResource CardStyle}">
+        <StackPanel>
+            <TextBlock Text="{Binding Title}" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,4" />
+            <TextBlock Text="{Binding Description}" Style="{StaticResource CardDescriptionStyle}" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding Heading}" FontWeight="SemiBold" Margin="0,12,0,0"
+                       AutomationProperties.AutomationId="PeriodComparisonHeading" />
+            <TextBlock Text="{Binding Windows}" Style="{StaticResource CardDescriptionStyle}" TextWrapping="Wrap"
+                       AutomationProperties.AutomationId="PeriodComparisonWindows" />
+
+            <StackPanel Margin="0,12,0,0"
+                        Visibility="{Binding IsMessageVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                        AutomationProperties.AutomationId="PeriodComparisonMessage">
+                <TextBlock Text="{Binding Message}" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" />
+                <Button Content="Retry comparison"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        HorizontalAlignment="Left"
+                        Margin="0,8,0,0"
+                        Command="{Binding RetryCommand}"
+                        Visibility="{Binding HasFailed, Converter={StaticResource BoolToVisibilityConverter}}"
+                        AutomationProperties.AutomationId="PeriodComparisonRetry" />
+            </StackPanel>
+
+            <workstation:DenseDataGridControl Table="{Binding Table}"
+                                              Height="300"
+                                              Margin="0,12,0,0"
+                                              GridAutomationId="PeriodComparisonGrid"
+                                              EmptyAutomationId="PeriodComparisonGridEmptyState"
+                                              Visibility="{Binding HasRows, Converter={StaticResource BoolToVisibilityConverter}}"
+                                              AutomationProperties.Name="{Binding Title}" />
+
+            <ItemsControl ItemsSource="{Binding Notes}" Margin="0,8,0,0" AutomationProperties.AutomationId="PeriodComparisonNotes">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding StringFormat='• {0}'}" Style="{StaticResource CardDescriptionStyle}" TextWrapping="Wrap" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </Border>
+</UserControl>

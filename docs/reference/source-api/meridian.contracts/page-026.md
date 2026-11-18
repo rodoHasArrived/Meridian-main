@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CreateIntercompanyAccountingArrangementRequest
+
+Qualified name: <code>Meridian.Contracts.FundStructure.CreateIntercompanyAccountingArrangementRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:75](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L75).
+
+```csharp
+public sealed record CreateIntercompanyAccountingArrangementRequest(Guid RequestId, Guid ArrangementId, Guid OrganizationId, string ArrangementReference, IntercompanyAccountingTemplateKindDto TemplateKind, Guid CanonicalAgreementId, int CanonicalAgreementVersion, string CanonicalPayloadHash, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, IReadOnlyList<IntercompanyPartyMappingDto> PartyMappings);
+```
+
 ## CreateInvestmentPortfolioRequest
 
 Qualified name: <code>Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest</code>. Kind: `record`.
@@ -596,14 +606,4 @@ Source: [src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs:
 
 ```csharp
 public sealed record FundStructureSetupValidationSummaryDto(bool IsValid, IReadOnlyList<FundStructureSetupValidationIssueDto> Issues);
-```
-
-## FundStructureSetupVehicleDraftDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureSetupVehicleDraftDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs:59](../../../../src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs#L59).
-
-```csharp
-public sealed record FundStructureSetupVehicleDraftDto(Guid? VehicleId, string Code, string Name, string BaseCurrency, string? Description = null);
 ```

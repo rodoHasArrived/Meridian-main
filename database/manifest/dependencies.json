@@ -2974,6 +2974,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.IPortfolioCashBalanceHistoryProvider"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.IPortfolioCashBalanceProvider"
     },
     {
@@ -17938,6 +17944,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.FundNavTrendDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.FundNavTrendPointDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.FundOperationsNavigationContext"
     },
     {
@@ -19517,6 +19535,36 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.PerformanceReturnFigureDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.PeriodChange"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.PeriodComparisonDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.PeriodComparisonLineDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.PeriodComparisonStatus"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.PeriodComparisonWindowDto"
     },
     {
       "kind": "contract-set-member",
@@ -22780,6 +22828,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationKpiDefinitionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationKpiDefinitionsDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationManualOrderEntry"
     },
     {
@@ -23855,6 +23915,12 @@
       "label": "",
       "source": "contract-set:asset-operations-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.IPortfolioCapitalScheduleProvider"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.IPortfolioCashBalanceHistoryProvider"
     },
     {
       "kind": "contract-set-member",
@@ -51243,6 +51309,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.FundNavTrendDto",
+      "target": "contract:Meridian.Contracts.Workstation.FundNavTrendPointDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.FundOperationsNavigationContext",
       "target": "contract:Meridian.Contracts.Workstation.FundOperationsTab"
     },
@@ -53657,6 +53729,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.OperatorWorkflowHomeSummary",
       "target": "contract:Meridian.Contracts.Workstation.WorkspaceWorkflowSummary"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.PeriodComparisonDto",
+      "target": "contract:Meridian.Contracts.Workstation.PeriodComparisonLineDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.PeriodComparisonDto",
+      "target": "contract:Meridian.Contracts.Workstation.PeriodComparisonWindowDto"
     },
     {
       "kind": "contract-reference",
@@ -57851,6 +57935,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.WorkstationKernelObservabilityPayload",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationKernelDomainPayload"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.WorkstationKpiDefinitionsDto",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationKpiDefinitionDto"
     },
     {
       "kind": "contract-reference",
@@ -68823,7 +68913,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "cafa1441db57637535903f66b20fcf3cfedd8e94e109275f7392e74f1683fe5e",
+  "fingerprint": "4428a1179ed1c96081b8c5dd14e79eaf47847b9d9a06a338cf78e3cb1bb97c4c",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -71845,6 +71935,12 @@
       "id": "contract:Meridian.Contracts.AssetOperations.IPortfolioCapitalScheduleProvider",
       "kind": "contract-type",
       "label": "Meridian.Contracts.AssetOperations.IPortfolioCapitalScheduleProvider"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.AssetOperations.IPortfolioCashBalanceHistoryProvider",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.IPortfolioCashBalanceHistoryProvider"
     },
     {
       "classification": "service_contract",
@@ -86811,6 +86907,18 @@
       "label": "Meridian.Contracts.Workstation.FundNavAttributionSummaryDto"
     },
     {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.FundNavTrendDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.FundNavTrendDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.FundNavTrendPointDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.FundNavTrendPointDto"
+    },
+    {
       "classification": "record",
       "id": "contract:Meridian.Contracts.Workstation.FundOperationsNavigationContext",
       "kind": "contract-type",
@@ -88393,6 +88501,36 @@
       "id": "contract:Meridian.Contracts.Workstation.PerformanceReturnFigureDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.PerformanceReturnFigureDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Workstation.PeriodChange",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.PeriodChange"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.PeriodComparisonDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.PeriodComparisonDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.PeriodComparisonLineDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.PeriodComparisonLineDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Workstation.PeriodComparisonStatus",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.PeriodComparisonStatus"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.PeriodComparisonWindowDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.PeriodComparisonWindowDto"
     },
     {
       "classification": "enum",
@@ -91651,6 +91789,18 @@
       "id": "contract:Meridian.Contracts.Workstation.WorkstationKernelObservabilityPayload",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.WorkstationKernelObservabilityPayload"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.WorkstationKpiDefinitionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.WorkstationKpiDefinitionDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.WorkstationKpiDefinitionsDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.WorkstationKpiDefinitionsDto"
     },
     {
       "classification": "record",
@@ -101069,11 +101219,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4243,
-    "contract_set_memberships": 5532,
-    "edges": 11433,
+    "contract_references": 4247,
+    "contract_set_memberships": 5543,
+    "edges": 11448,
     "foreign_keys": 208,
     "logical_references": 6,
-    "nodes": 5607
+    "nodes": 5617
   }
 }

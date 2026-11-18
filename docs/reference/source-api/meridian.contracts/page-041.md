@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationsContractsJsonContext
+
+Qualified name: <code>Meridian.Contracts.Operations.OperationsContractsJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Operations/OperationsContractsJsonContext.cs:46](../../../../src/Meridian.Contracts/Operations/OperationsContractsJsonContext.cs#L46).
+
+Provides source-generated JSON metadata for verified outcomes, provenance, and operational case history.
+
+```csharp
+public sealed partial class OperationsContractsJsonContext : JsonSerializerContext;
+```
+
 ## OperationsOriginGuard
 
 Qualified name: <code>Meridian.Contracts.Operations.OperationsOriginGuard</code>. Kind: `class`.
@@ -782,21 +794,3 @@ Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:95](../../../../src/Meridia
 ```csharp
 public sealed record PlaidLinkTokenResponse(string LinkToken, DateTimeOffset? Expiration, string? RequestId, IReadOnlyList<PlaidProductDto> Products, string? InstitutionId = null, string? InstitutionName = null, PlaidEnvironmentDto? Environment = null);
 ```
-
-## PlaidOptions
-
-Qualified name: <code>Meridian.Contracts.Plaid.PlaidOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:42](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L42).
-
-```csharp
-public sealed record PlaidOptions(PlaidEnvironmentDto Environment = PlaidEnvironmentDto.Sandbox, string? ClientId = null, string? Secret = null, string? WebhookBaseUrl = null, string? WebhookVerificationKeyPem = null, string? WebhookVerificationKeyId = null, bool EnableTransfers = false, bool EnableInvestments = true, IReadOnlyList<PlaidProductDto>? DefaultProducts = null, bool EnableLiveTransfers = false)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static PlaidOptions Default =&gt; …;</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:54](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L54) |  |
-| <code>public bool CanVerifyWebhooks =&gt; …;</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:70](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L70) | True when an ES256 public key is configured for verifying the Plaid-Verification header on inbound webhooks. When false the webhook route fails closed: an unverifiable callback is refused rather than recorded, because the payload hash a webhook carries authenticates nothing when the caller supplies the payload. |
-| <code>public bool AllowsTransferCreation =&gt; …;</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:72](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L72) |  |

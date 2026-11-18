@@ -97,6 +97,9 @@ import { NotificationCenter } from "@/components/meridian/notification-center";
 import { ActivityCenter } from "@/components/meridian/activity-center";
 import { DegradedModeBanner } from "@/components/meridian/degraded-mode-banner";
 import { resolveWorkstationDataProvenance } from "@/app-shell.data-provenance-badge";
+import { resolveShellFreshness } from "@/app-shell.trust-strip";
+import { WorkspaceSectionNav } from "@/components/meridian/workspace-section-nav";
+import { recordRecentPage, togglePinnedPage, useSavedPages } from "@/lib/recent-pages";
 import { DesignSystemMasthead } from "@/design-system/primitives";
 import {
   WorkstationStatusBar,
@@ -146,6 +149,7 @@ const EvidenceWorkbenchScreen = lazy(() => import("@/screens/evidence-workbench-
 const AccountingScreen = lazy(() => import("@/screens/accounting-screen").then((module) => ({ default: memo(module.AccountingScreen) })));
 const FamilyOfficeScreen = lazy(() => import("@/screens/family-office-screen").then((module) => ({ default: module.FamilyOfficeScreen })));
 const LoanBookScreen = lazy(() => import("@/screens/loan-book-screen").then((module) => ({ default: module.LoanBookScreen })));
+const NavComparisonScreen = lazy(() => import("@/screens/nav-comparison-screen").then((module) => ({ default: module.NavComparisonScreen })));
 const CashLadderScreen = lazy(() => import("@/screens/cash-ladder-screen").then((module) => ({ default: module.CashLadderScreen })));
 const MarketDataScreen = lazy(() => import("@/screens/market-data-screen").then((module) => ({ default: module.MarketDataScreen })));
 const OperatorReadinessConsole = lazy(() => import("@/screens/operator-readiness-console").then((module) => ({ default: memo(module.OperatorReadinessConsole) })));
@@ -816,6 +820,30 @@ function AppShell({
     () => buildWorkspaceBreadcrumbItems(pathname, shell.activeWorkspace, navigate),
     [pathname, shell.activeWorkspace, navigate]
   );
+  // Recent and pinned pages for the palette (UX Phase D): the page's own name and its query, so
+  // reopening one restores its scope and filters.
+  const currentPageLabel = breadcrumbItems[breadcrumbItems.length - 1]?.label;
+  const currentPageRoute = `${pathname}${search}`;
+  useEffect(() => {
+    if (typeof currentPageLabel === "string") recordRecentPage({ route: currentPageRoute, label: currentPageLabel });
+  }, [currentPageRoute, currentPageLabel]);
+  const savedPages = useSavedPages();
+  const currentPagePinned = savedPages.pinned.some((page) => page.route === currentPageRoute);
+  const pinPageActionItem = useMemo<CommandPaletteActionItem | null>(
+    () => typeof currentPageLabel === "string" ? {
+      id: "page-pin",
+      verbLabel: currentPagePinned ? `Unpin ${currentPageLabel}` : `Pin ${currentPageLabel}`,
+      description: currentPagePinned
+        ? "Remove this page from the pinned pages shown first in the palette."
+        : "Keep this page, with its scope and filters, at the top of the palette.",
+      keywords: ["pin", "page", "favourite", "bookmark"],
+      run: async () => {
+        const pinned = togglePinnedPage({ route: currentPageRoute, label: currentPageLabel });
+        return { title: pinned ? `Pinned ${currentPageLabel}.` : `Unpinned ${currentPageLabel}.`, tone: "success" as const };
+      }
+    } : null,
+    [currentPageLabel, currentPagePinned, currentPageRoute]
+  );
   const headerWorkspace = useMemo(
     () => buildHeaderWorkspaceSummary(pathname, shell.activeWorkspace),
     [pathname, shell.activeWorkspace]
@@ -1025,6 +1053,7 @@ function AppShell({
 
           <div className="workbench-scroll px-4 py-4 lg:px-6 lg:py-5">
             {shell.statusPanel ? <WorkspaceStatus panel={shell.statusPanel} onRetry={refresh} refreshing={refreshStatus.inFlight} /> : null}
+            <WorkspaceSectionNav operatingContextScope={operatingScopeInput} />
             {shell.canRenderRoutes ? (
               <RouteErrorBoundary routeKey={routeErrorContext.routeKey} context={routeErrorContext}>
                 <Suspense fallback={<WorkspaceRouteFallback title={`Loading ${shell.activeWorkspace.label}`} />}>
@@ -1051,6 +1080,7 @@ function AppShell({
                   <Route path="/trading/*" element={<TradingScreen data={trading} fundAccountId={operatingScopeInput.fundAccountId} />} />
                   <Route path="/portfolio/family-office" element={<FamilyOfficeScreen />} />
                   <Route path="/portfolio/loan-book" element={<LoanBookScreen />} />
+                  <Route path="/portfolio/nav" element={<NavComparisonScreen defaultFundProfileId={reporting?.selectedFundProfileId ?? reporting?.fundProfileId ?? null} />} />
                   <Route path="/portfolio/cash-ladder" element={<CashLadderScreen fundAccountId={operatingScopeInput.fundAccountId ?? undefined} />} />
                   <Route path="/portfolio/asset-detail" element={<AssetDetailScreen />} />
                   <Route path="/portfolio/*" element={(
@@ -1129,7 +1159,8 @@ function AppShell({
           workspaceLabel: headerWorkspace.label,
           refreshing: loading || refreshStatus.inFlight,
           hasError: Boolean(error),
-          pageFreshness
+          pageFreshness,
+          shellFreshness: resolveShellFreshness(shell.trustStrip)
         })}
       />
 
@@ -1141,7 +1172,7 @@ function AppShell({
         workflowPresets={workflowPresets}
         workflowError={workflowError}
         operatorFocusItems={shell.workflowContinuity.operatorFocusCommandItems}
-        actionItems={paletteActionItems}
+        actionItems={pinPageActionItem ? [pinPageActionItem, ...paletteActionItems] : paletteActionItems}
         operatingContextSymbol={operatingContextSymbol}
         operatingScope={operatingScopeInput}
         onPresetUsed={handleWorkflowPresetUsed}

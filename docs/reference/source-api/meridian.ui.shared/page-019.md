@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationKpiDefinitions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationKpiDefinitions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/WorkstationKpiDefinitions.cs:11](../../../../src/Meridian.Ui.Shared/Services/WorkstationKpiDefinitions.cs#L11).
+
+The one catalog of workstation headline figures (UX Phase A). Each figure has a fixed label, the population it counts and its comparison basis; the browser&#x27;s lib/kpi-registry.ts mirrors it and tests/fixtures/kpi-definitions/kpi-definitions.json holds both to the same values. Served at /api/workstation/kpi-definitions for the WPF desktop.
+
+```csharp
+public static class WorkstationKpiDefinitions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;WorkstationKpiDefinitionDto&gt; All { get; } = [new (&quot;accounting.audit-ready&quot;, &quot;Audit ready&quot;, AccountingWorkspace, null), new (&quot;accounting.kernel-critical-jumps&quot;, &quot;Kernel jump alerts&quot;, AccountingWorkspace, null), new (&quot;accounting.open-breaks&quot;, &quot;Open breaks&quot;, &quot;Unresolved reconciliation breaks&quot;, &quot;Your last visit&quot;), new (&quot;accounting.security-gaps&quot;, &quot;Security gaps&quot;, AccountingWorkspace, null), new (&quot;accounting.timing-drift&quot;, &quot;Timing drift&quot;, AccountingWorkspace, null), new (&quot;data.backfills-running&quot;, &quot;Backfills running&quot;, DataOperations, null), new (&quot;data.exports-ready&quot;, &quot;Exports ready&quot;, DataOperations, null), new (&quot;data.kernel-critical-jumps&quot;, &quot;Kernel jump alerts&quot;, DataOperations, null), new (&quot;data.ops-review&quot;, &quot;Needs review&quot;, DataOperations, null), new (&quot;data.providers-healthy&quot;, &quot;Providers healthy&quot;, ProvidersInUse, null), new (&quot;data.replacement-cost&quot;, &quot;Est. replacement cost&quot;, DataOperations, null), new (&quot;portfolio.cash&quot;, &quot;Cash&quot;, LiveHoldings, null), new (&quot;portfolio.open-positions&quot;, &quot;Open positions&quot;, LiveHoldings, null), new (&quot;portfolio.retained-market-value&quot;, &quot;Market value&quot;, RetainedRecords, null), new (&quot;portfolio.retained-records&quot;, &quot;Retained positions&quot;, RetainedRecords, null), new (&quot;portfolio.total-exposure&quot;, &quot;Total exposure&quot;, LiveHoldings, null), new (&quot;portfolio.unrealized-pnl&quot;, &quot;Unrealized P&amp;L&quot;, LiveHoldings, null), new (&quot;strategy.active-runs&quot;, &quot;Active recent runs&quot;, RecentRuns, null), new (&quot;strategy.promotions&quot;, &quot;Promotions&quot;, RecentRuns, null), new (&quot;strategy.queued&quot;, &quot;Queued&quot;, RecentRuns, null), new (&quot;strategy.queued-runs&quot;, &quot;Queued promotions&quot;, RecentRuns, null), new (&quot;strategy.review-runs&quot;, &quot;Needs review&quot;, RecentRuns, null), new (&quot;strategy.winning-runs&quot;, &quot;Positive P&amp;L&quot;, RecentRuns, null), new (&quot;system.active-runs&quot;, &quot;Active runs&quot;, &quot;All strategy runs · system&quot;, null), new (&quot;system.providers-online&quot;, &quot;Providers healthy&quot;, ProvidersInUse, null), new (&quot;system.storage-health&quot;, &quot;Storage health&quot;, &quot;Storage · system&quot;, null), new (&quot;trading.cash&quot;, &quot;Cash&quot;, BrokerageSession, null), new (&quot;trading.fills&quot;, &quot;Fills&quot;, BrokerageSession, null), new (&quot;trading.net-pnl&quot;, &quot;Net P&amp;L&quot;, BrokerageSession, &quot;Session open&quot;), new (&quot;trading.open-orders&quot;, &quot;Open orders&quot;, &quot;Open orders · selected account&quot;, null), new (&quot;trading.portfolio-value&quot;, &quot;Portfolio value&quot;, BrokerageSession, null), new (&quot;trading.risk&quot;, &quot;Risk&quot;, BrokerageSession, null)];</code> | [src/Meridian.Ui.Shared/Services/WorkstationKpiDefinitions.cs:21](../../../../src/Meridian.Ui.Shared/Services/WorkstationKpiDefinitions.cs#L21) |  |
+| <code>public static WorkstationKpiDefinitionsDto Catalog { get; } = new (All);</code> | [src/Meridian.Ui.Shared/Services/WorkstationKpiDefinitions.cs:57](../../../../src/Meridian.Ui.Shared/Services/WorkstationKpiDefinitions.cs#L57) |  |
+
 ## WorkstationPersonalTableViewRecord
 
 Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationPersonalTableViewRecord</code>. Kind: `record`.

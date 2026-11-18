@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EvidencePacketDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.EvidencePacketDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:660](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L660).
+
+```csharp
+public sealed record EvidencePacketDto(EvidenceSubjectDto Subject, DateTimeOffset GeneratedAt, IReadOnlyList<EvidenceNodeDto> Nodes, IReadOnlyList<EvidenceEdgeDto> Edges, EvidenceCompletenessDto Completeness, IReadOnlyList<WorkflowActionDto> Actions, IReadOnlyList<string> Warnings)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public EvidenceProofChainDto ProofChain { get; init; } = EvidenceProofChainDto.Empty;</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:669](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L669) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public LedgerAmountProofDto? LedgerAmount { get; init; }</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:671](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L671) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public PreparerAttestationEvidenceProjectionDto? PreparerAttestations { get; init; }</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:673](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L673) |  |
+
 ## EvidencePacketExportRequest
 
 Qualified name: <code>Meridian.Contracts.Workstation.EvidencePacketExportRequest</code>. Kind: `record`.
@@ -696,14 +714,4 @@ Source: [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:60](.
 
 ```csharp
 public sealed record FinancialRecordExplorerFilterDto(string FilterId, string Label, string Value, string Operator = "equals", FinancialRecordExplorerTone Tone = FinancialRecordExplorerTone.Default);
-```
-
-## FinancialRecordExplorerGraphEdgeDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.FinancialRecordExplorerGraphEdgeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:133](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L133).
-
-```csharp
-public sealed record FinancialRecordExplorerGraphEdgeDto(string SourceNodeId, string TargetNodeId, string Label, FinancialRecordExplorerTone Tone = FinancialRecordExplorerTone.Default);
 ```

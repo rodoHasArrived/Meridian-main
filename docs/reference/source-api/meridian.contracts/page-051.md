@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityAssetTermRole
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetTermRole</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:77](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L77).
+
+One declarative field in the per-asset-class asset-specific-terms contract: the canonical JSON key, its value type, whether the serialize side always emits it, any legacy flat key aliases a tolerant reader should also accept, and — for discriminant strings — the closed vocabulary its value must come from.
+
+```csharp
+public enum SecurityAssetTermRole
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Economic</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:80](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L80) | The instrument&#x27;s contractual economics. |
+| <code>Operational</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:83](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L83) | An operational or vendor reference (pricing source, data feed) carried with the terms. |
+
 ## SecurityAssetTermsCodecBindings
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetTermsCodecBindings</code>. Kind: `class`.
@@ -847,23 +866,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static SecurityFactorHistoryDto Build(Guid securityId, StructuredCashFlowTerms terms, DateOnly? currentFactorDate, IReadOnlyList&lt;CorporateActionDto&gt; actions, DateTimeOffset asOf);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L50) |  |
-
-## SecurityFactorSource
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityFactorSource</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L7).
-
-Where a dated factor point comes from.
-
-```csharp
-public enum SecurityFactorSource
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>TermsSchedule</code> | [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L10) | A point of the declared factor schedule in the security&#x27;s terms. |
-| <code>PrincipalPaydown</code> | [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L13) | The post-paydown factor recorded on an effective principal-paydown corporate action. |
-| <code>CurrentFactor</code> | [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L16) | The scalar current factor in the terms, dated by its retained factor date. |

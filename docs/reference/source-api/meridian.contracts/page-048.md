@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OfferCorporateActionTerms
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OfferCorporateActionTerms</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:201](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L201).
+
+An offer the holder may accept (tender offer).
+
+```csharp
+public sealed record OfferCorporateActionTerms(string EventType, decimal? OfferPricePerUnit, DateOnly? ExpiryDate, bool? IsPartial, bool? IsVoluntary) : CorporateActionTerms(EventType);
+```
+
 ## OperatorOverrideDecisionRequest
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.OperatorOverrideDecisionRequest</code>. Kind: `record`.
@@ -802,15 +814,3 @@ Declared public members:
 | <code>public const string CollateralValuationAfterAsOf = &quot;CollateralValuationAfterAsOf&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:98](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L98) | A positive collateral balance is valued after the as-of date. Balances are current-state records, so what was held on the earlier date is unknown. |
 | <code>public const string IneligibleCollateral = &quot;IneligibleCollateral&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:101](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L101) | A collateral balance&#x27;s description is no longer an eligible-collateral line of the agreement, so no haircut applies to it. |
 | <code>public const string CollateralCurrencyMismatch = &quot;CollateralCurrencyMismatch&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:107](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L107) | A positive collateral balance is held in a currency other than the computation currency (for example after the agreement&#x27;s currency was amended); this increment does no FX. |
-
-## OtcValuationBlockerDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcValuationBlockerDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:56](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L56).
-
-Why a contract, or a snapshot, could not be completed.
-
-```csharp
-public sealed record OtcValuationBlockerDto(string Code, string Reason);
-```

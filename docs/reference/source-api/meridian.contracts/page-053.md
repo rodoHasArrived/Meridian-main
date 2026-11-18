@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityOptionRight
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityOptionRight</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L25).
+
+The right an option grants.
+
+```csharp
+public enum SecurityOptionRight
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Call</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:27](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L27) |  |
+| <code>Put</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L28) |  |
+
 ## SecurityOverrideApprovalStatusDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityOverrideApprovalStatusDto</code>. Kind: `enum`.
@@ -918,16 +937,4 @@ One security&#x27;s relational terms projection, read generically from the proje
 
 ```csharp
 public sealed record SecurityTermsProjectionReadDto(Guid SecurityId, string AssetClass, string TableName, IReadOnlyDictionary<string, JsonElement> Columns, IReadOnlyList<SecurityTermsProjectionChildRowsDto> ChildTables, IReadOnlyList<SecurityTermsProjectionSatelliteRowDto> SatelliteTables);
-```
-
-## SecurityTermsProjectionReadJsonContext
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityTermsProjectionReadJsonContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityTermsProjectionReadDtos.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsProjectionReadDtos.cs#L39).
-
-Provides source-generated JSON metadata for the generic registry projection read.
-
-```csharp
-public sealed partial class SecurityTermsProjectionReadJsonContext : JsonSerializerContext;
 ```

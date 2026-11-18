@@ -6,6 +6,38 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MarginPositionContributionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.MarginPositionContributionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs:36](../../../../src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs#L36).
+
+```csharp
+public sealed record MarginPositionContributionDto(string Symbol = default !, decimal Quantity = default, decimal MarketValue = default, decimal ShadowInitialMargin = default, decimal ShadowMaintenanceMargin = default, string? BorrowStatus = null, decimal? BorrowRate = null, int TaxLotCount = default, int OptionLifecycleEventCount = default, string? SecurityId = null, string? SecurityMasterSource = null);
+```
+
+## MarginRequirementDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.MarginRequirementDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs:23](../../../../src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs#L23).
+
+```csharp
+public sealed record MarginRequirementDto(decimal InitialMargin, decimal VariationMargin, decimal TotalRequired);
+```
+
+## MarkFreshnessAssessmentDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.MarkFreshnessAssessmentDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/MarkFreshnessDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/MarkFreshnessDtos.cs#L4).
+
+Server-assessed mark support for a single position and valuation date.
+
+```csharp
+public sealed record MarkFreshnessAssessmentDto(string Symbol, Guid? SecurityId, string? FinancialAccountId, DateOnly ValuationDate, DateOnly? ObservedOn, int? AgeDays, string PolicyVersion, string Status, string? BlockReason);
+```
+
 ## MeridianAssuranceScoreDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.MeridianAssuranceScoreDto</code>. Kind: `record`.
@@ -580,44 +612,4 @@ Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1153](..
 
 ```csharp
 public sealed record OperationsAccountingRecordSummaryDto(string RecordId, bool IsAuditReady, int CompleteCategoryCount, int RequiredCategoryCount, string Summary, IReadOnlyList<OperationsAccountingRecordEvidenceCategoryDto> EvidenceCategories, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, FundAuditPackReadinessDto? AuditPackReadiness = null);
-```
-
-## OperationsActionOriginDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsActionOriginDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:467](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L467).
-
-```csharp
-public enum OperationsActionOriginDto : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>HumanOperator = 0</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:469](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L469) |  |
-| <code>AutomationSuggestion = 1</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:470](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L470) |  |
-| <code>AssistantDraft = 2</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:471](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L471) |  |
-| <code>AutomationAssistant = 3</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:472](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L472) |  |
-| <code>AuthorizedSystem = 4</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:474](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L474) | Deterministic system execution under retained operator delegation; never a human or assistant. |
-
-## OperationsApprovalCollaborationDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsApprovalCollaborationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsApprovalCollaborationDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/OperationsApprovalCollaborationDtos.cs#L11).
-
-```csharp
-public sealed record OperationsApprovalCollaborationDto(Guid WorkflowId, long Version, OperationsApprovalStateDto ApprovalState, string? CurrentApprovalId, string? Submitter, string? Reviewer, IReadOnlyList<OperationsApprovalCommentDto> Comments, IReadOnlyList<OperationsApprovalDto> ApprovalHistory, bool CanComment, bool CanReassign, string? DisabledReason);
-```
-
-## OperationsApprovalCollaborationReceipt
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsApprovalCollaborationReceipt</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsApprovalCollaborationDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/OperationsApprovalCollaborationDtos.cs#L8).
-
-```csharp
-public sealed record OperationsApprovalCollaborationReceipt(string Actor, string CommandId, string Fingerprint);
 ```

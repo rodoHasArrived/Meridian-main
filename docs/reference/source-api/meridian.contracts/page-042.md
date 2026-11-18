@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PlaidOptions
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:42](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L42).
+
+```csharp
+public sealed record PlaidOptions(PlaidEnvironmentDto Environment = PlaidEnvironmentDto.Sandbox, string? ClientId = null, string? Secret = null, string? WebhookBaseUrl = null, string? WebhookVerificationKeyPem = null, string? WebhookVerificationKeyId = null, bool EnableTransfers = false, bool EnableInvestments = true, IReadOnlyList<PlaidProductDto>? DefaultProducts = null, bool EnableLiveTransfers = false)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static PlaidOptions Default =&gt; …;</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:54](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L54) |  |
+| <code>public bool CanVerifyWebhooks =&gt; …;</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:70](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L70) | True when an ES256 public key is configured for verifying the Plaid-Verification header on inbound webhooks. When false the webhook route fails closed: an unverifiable callback is refused rather than recorded, because the payload hash a webhook carries authenticates nothing when the caller supplies the payload. |
+| <code>public bool AllowsTransferCreation =&gt; …;</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:72](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L72) |  |
+
 ## PlaidProductDto
 
 Qualified name: <code>Meridian.Contracts.Plaid.PlaidProductDto</code>. Kind: `enum`.
@@ -550,16 +568,4 @@ Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:198](../
 
 ```csharp
 public sealed record ReportingGovernanceRestatementApprovalDto(ReportingGovernanceRestatementDto Request, GovernedReportingRunDto DraftRun);
-```
-
-## ReportingGovernanceRestatementApprovalRequestDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceRestatementApprovalRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:29](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L29).
-
-Optimistic concurrency token for approval of a retained restatement request. The replacement certified snapshot is resolved and verified by the server.
-
-```csharp
-public sealed record ReportingGovernanceRestatementApprovalRequestDto(long ExpectedVersion);
 ```

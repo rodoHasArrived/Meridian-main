@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ClosePreparationOwnerMappingDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.ClosePreparationOwnerMappingDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs:44](../../../../src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs#L44).
+
+Explicit owner assignment for this preparation; it does not certify directory membership.
+
+```csharp
+public sealed record ClosePreparationOwnerMappingDto(string SourceOwner, string TargetOwner);
+```
+
 ## ClosePreparationPreviewDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.ClosePreparationPreviewDto</code>. Kind: `record`.
@@ -662,19 +674,3 @@ Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:153](../../../../src/Me
 ```csharp
 public sealed record CreateLedgerBookRequest(string FundProfileId, Guid FundStructureNodeId, FundStructureNodeKindDto FundStructureNodeKind, string DisplayName, string BaseCurrency, string? Description = null, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, string AccountingPolicyId = "legacy-v1", string AccountingPolicyVersion = "legacy-v1");
 ```
-
-## CreateLedgerPeriodRequest
-
-Qualified name: <code>Meridian.Contracts.Ledger.CreateLedgerPeriodRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:250](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L250).
-
-```csharp
-public sealed record CreateLedgerPeriodRequest(Guid LedgerBookId, int FiscalYear, int PeriodNo, string Label, DateOnly StartDate, DateOnly EndDate)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? CreatedBy { get; init; }</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:260](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L260) | Actual creator, stamped from the authenticated caller at public boundaries. |

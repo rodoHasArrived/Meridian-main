@@ -10,6 +10,7 @@ import * as approvalCollaboration from "@/lib/approval-collaboration";
 import * as ledgerReportsApi from "@/lib/ledger-reports-api";
 import * as markFreshnessApi from "@/lib/api/mark-freshness.api";
 import * as recurringJournalsApi from "@/lib/api/recurring-journals.api";
+import * as accrualSchedulesApi from "@/lib/api/accrual-schedules.api";
 import { AccountingScreen } from "@/screens/accounting-screen";
 import { bondLadderRowId } from "@/components/meridian/bond-reference-ladder-panel";
 import { resetSinceLastVisitCache } from "@/lib/since-last-visit";
@@ -87,6 +88,19 @@ vi.mock("@/lib/ledger-reports-api", () => ({
 vi.mock("@/lib/api/recurring-journals.api", () => ({
   getRecurringJournalQueue: vi.fn(async (scope) => ({ ...scope, occurrences: [] }))
 }));
+
+vi.mock("@/lib/api/accrual-schedules.api", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/api/accrual-schedules.api")>("@/lib/api/accrual-schedules.api");
+  return { ...actual, getAccrualSchedules: vi.fn(actual.getAccrualSchedules) };
+});
+
+// The journal automation entity picker reads the organization structure; it is unavailable by
+// default here (a typed entity ID), and a test can make it ready.
+const scopeStructureState = vi.hoisted(() => ({ current: null as null | { structure: unknown; loading: boolean } }));
+vi.mock("@/lib/operating-scope/use-scope-structure", async () => {
+  const options = await vi.importActual<typeof import("@/lib/operating-scope/structure-options")>("@/lib/operating-scope/structure-options");
+  return { useScopeStructure: () => scopeStructureState.current ?? { structure: options.UNAVAILABLE_SCOPE_STRUCTURE, loading: false } };
+});
 
 vi.mock("@/lib/api/operator-workstation.api", () => ({
   getCrossScreenCounts: vi.fn().mockResolvedValue(null),
@@ -3640,6 +3654,50 @@ describe("AccountingScreen", () => {
     expect(within(queue).getByText("Period lock owner: controller-a")).toBeInTheDocument();
     expect(recurringJournalsApi.getRecurringJournalQueue).toHaveBeenCalledWith(scope, expect.any(AbortSignal));
     expect(within(queue).queryByRole("button", { name: "Review retained draft" })).not.toBeInTheDocument();
+  });
+
+  it("puts the journal editor before journal automation and shows one notice with one Retry when automation is down", async () => {
+    const scope = { fundProfileId: "fund-alpha", ledgerBookId: "book-alpha", entityId: "entity-master" };
+    vi.mocked(recurringJournalsApi.getRecurringJournalQueue).mockRejectedValue(new ApiError({ path: "/api/ledger/journal-automation/recurring/occurrences", status: 503, title: "Service unavailable" }));
+    vi.mocked(accrualSchedulesApi.getAccrualSchedules).mockRejectedValue(new ApiError({ path: "/api/ledger/journal-automation/accrual-schedules", status: 503, title: "Service unavailable" }));
+    vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce(manualJournalWorkbench);
+    await renderAccountingScreen(data, `/accounting/journal-entries?fundProfileId=${scope.fundProfileId}&ledgerBookId=${scope.ledgerBookId}&entityId=${scope.entityId}`);
+    const automation = await screen.findByTestId("journal-automation");
+    const editor = screen.getByRole("region", { name: "Journal source lines" });
+    expect(Boolean(editor.compareDocumentPosition(automation) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
+    const notice = await within(automation).findByText("Journal automation unavailable");
+    expect(within(automation).getAllByRole("alert")).toHaveLength(1);
+    expect(within(automation).getAllByRole("button", { name: /retry/i })).toHaveLength(1);
+    expect(within(automation).getByText(/Journal automation · unavailable/)).toBeInTheDocument();
+    vi.mocked(recurringJournalsApi.getRecurringJournalQueue).mockClear();
+    vi.mocked(accrualSchedulesApi.getAccrualSchedules).mockClear();
+    fireEvent.click(within(notice.closest("[role=alert]") as HTMLElement).getByRole("button", { name: /retry/i }));
+    await waitFor(() => {
+      expect(recurringJournalsApi.getRecurringJournalQueue).toHaveBeenCalled();
+      expect(accrualSchedulesApi.getAccrualSchedules).toHaveBeenCalled();
+    });
+    vi.mocked(recurringJournalsApi.getRecurringJournalQueue).mockReset();
+    vi.mocked(recurringJournalsApi.getRecurringJournalQueue).mockImplementation(async (requested) => ({ ...requested, occurrences: [] }));
+    vi.mocked(accrualSchedulesApi.getAccrualSchedules).mockReset();
+  });
+
+  it("chooses the journal automation entity by name when the organization structure is available", async () => {
+    scopeStructureState.current = {
+      structure: { status: "ready", entities: [{ id: "entity-master", label: "Master Fund LP" }], funds: [], accounts: [] },
+      loading: false
+    };
+    try {
+      await renderAccountingScreen(data, "/accounting/journal-entries?fundProfileId=fund-alpha&ledgerBookId=book-alpha");
+      expect(screen.queryByLabelText("Recurring journal entity scope")).not.toBeInTheDocument();
+      const picker = screen.getByRole("combobox", { name: "Recurring journal entity" });
+      fireEvent.focus(picker);
+      fireEvent.change(picker, { target: { value: "Master" } });
+      fireEvent.click(await screen.findByRole("option", { name: "Master Fund LP" }));
+      await waitFor(() => expect(recurringJournalsApi.getRecurringJournalQueue).toHaveBeenCalledWith(
+        { fundProfileId: "fund-alpha", ledgerBookId: "book-alpha", entityId: "entity-master" }, expect.any(AbortSignal)));
+    } finally {
+      scopeStructureState.current = null;
+    }
   });
 
   it("shows retained asset drafts as immutable review records with approval and posting unavailable", async () => {

@@ -37,6 +37,7 @@ import type {
   ExecutionGatewayHealth
 } from "@/types/execution-blotter.types";
 import { cn } from "@/lib/utils";
+import { describeExecutionGatewaySource, positionSourceAttributes } from "@/lib/position-source";
 import { usesTrackedCaps } from "@/design-system/label-case";
 
 /** The status these endpoints answer when their execution service is not registered. */
@@ -143,6 +144,7 @@ export function ExecutionBlotterPanel() {
           ))}
         </div>
 
+        <div {...positionSourceAttributes(describeExecutionGatewaySource(provenance.label))}>
         <TableWorkbench<(typeof rows)[number]> workbenchId="trading-execution-blotter" sourceKey={`${blotter?.source ?? "unavailable"}:${blotter?.asOf ?? ""}`} sourceDescription="Authoritative execution position snapshot. Source numbers are exported without display formatting; provenance remains explicit."
  completePopulation={readState === "ready" && !error} rows={rows} getRowId={(row)=>row.positionKey} getRowAriaLabel={(row)=>row.ariaLabel}
  maxVisibleRows={null} ariaLabel="Execution blotter positions" emptyText={executionBlotterEmptyMessage(readState)}
@@ -180,6 +182,7 @@ export function ExecutionBlotterPanel() {
                     )
                   ) : null}
                 </>)}]} />
+        </div>
       </CardContent>
     </Card>
   );

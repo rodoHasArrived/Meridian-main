@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingGovernanceRestatementApprovalRequestDto
+
+Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceRestatementApprovalRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:29](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L29).
+
+Optimistic concurrency token for approval of a retained restatement request. The replacement certified snapshot is resolved and verified by the server.
+
+```csharp
+public sealed record ReportingGovernanceRestatementApprovalRequestDto(long ExpectedVersion);
+```
+
 ## ReportingGovernanceRestatementDto
 
 Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceRestatementDto</code>. Kind: `record`.
@@ -688,14 +700,4 @@ Source: [src/Meridian.Contracts/SecurityMaster/CashDividendAttestationDeclaratio
 
 ```csharp
 public sealed record CashDividendAttestationDeclarationStateDto(string TenantId, string CompanyId, bool PolicyEnabled, string PolicyVersion, string PolicyHash, CashDividendAttestationDeclarationDto? Declaration, IReadOnlyList<CashDividendAttestationDeclarationDto> History);
-```
-
-## CashDividendDeclarationAuthorityDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CashDividendDeclarationAuthorityDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CashDividendAttestationDeclarationContracts.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/CashDividendAttestationDeclarationContracts.cs#L23).
-
-```csharp
-public sealed record CashDividendDeclarationAuthorityDto(bool CanAdministerDeclaration, OperationsActionOriginDto Origin = OperationsActionOriginDto.HumanOperator, bool CanBindAccountingRoles = false);
 ```

@@ -1,0 +1,197 @@
+{
+  "description": "Every registered workstation headline figure: its label, the population it counts and what a change is measured against. Read by WorkstationKpiDefinitionsTests (C#) and lib/kpi-registry.test.ts (browser) so both clients state each figure identically.",
+  "definitions": [
+    {
+      "id": "accounting.audit-ready",
+      "label": "Audit ready",
+      "population": "Accounting workspace",
+      "comparisonBasis": null
+    },
+    {
+      "id": "accounting.kernel-critical-jumps",
+      "label": "Kernel jump alerts",
+      "population": "Accounting workspace",
+      "comparisonBasis": null
+    },
+    {
+      "id": "accounting.open-breaks",
+      "label": "Open breaks",
+      "population": "Unresolved reconciliation breaks",
+      "comparisonBasis": "Your last visit"
+    },
+    {
+      "id": "accounting.security-gaps",
+      "label": "Security gaps",
+      "population": "Accounting workspace",
+      "comparisonBasis": null
+    },
+    {
+      "id": "accounting.timing-drift",
+      "label": "Timing drift",
+      "population": "Accounting workspace",
+      "comparisonBasis": null
+    },
+    {
+      "id": "data.backfills-running",
+      "label": "Backfills running",
+      "population": "Data operations",
+      "comparisonBasis": null
+    },
+    {
+      "id": "data.exports-ready",
+      "label": "Exports ready",
+      "population": "Data operations",
+      "comparisonBasis": null
+    },
+    {
+      "id": "data.kernel-critical-jumps",
+      "label": "Kernel jump alerts",
+      "population": "Data operations",
+      "comparisonBasis": null
+    },
+    {
+      "id": "data.ops-review",
+      "label": "Needs review",
+      "population": "Data operations",
+      "comparisonBasis": null
+    },
+    {
+      "id": "data.providers-healthy",
+      "label": "Providers healthy",
+      "population": "Providers in use",
+      "comparisonBasis": null
+    },
+    {
+      "id": "data.replacement-cost",
+      "label": "Est. replacement cost",
+      "population": "Data operations",
+      "comparisonBasis": null
+    },
+    {
+      "id": "portfolio.cash",
+      "label": "Cash",
+      "population": "Live holdings · all accounts",
+      "comparisonBasis": null
+    },
+    {
+      "id": "portfolio.open-positions",
+      "label": "Open positions",
+      "population": "Live holdings · all accounts",
+      "comparisonBasis": null
+    },
+    {
+      "id": "portfolio.retained-market-value",
+      "label": "Market value",
+      "population": "Retained run records",
+      "comparisonBasis": null
+    },
+    {
+      "id": "portfolio.retained-records",
+      "label": "Retained positions",
+      "population": "Retained run records",
+      "comparisonBasis": null
+    },
+    {
+      "id": "portfolio.total-exposure",
+      "label": "Total exposure",
+      "population": "Live holdings · all accounts",
+      "comparisonBasis": null
+    },
+    {
+      "id": "portfolio.unrealized-pnl",
+      "label": "Unrealized P&L",
+      "population": "Live holdings · all accounts",
+      "comparisonBasis": null
+    },
+    {
+      "id": "strategy.active-runs",
+      "label": "Active recent runs",
+      "population": "Recent strategy runs",
+      "comparisonBasis": null
+    },
+    {
+      "id": "strategy.promotions",
+      "label": "Promotions",
+      "population": "Recent strategy runs",
+      "comparisonBasis": null
+    },
+    {
+      "id": "strategy.queued",
+      "label": "Queued",
+      "population": "Recent strategy runs",
+      "comparisonBasis": null
+    },
+    {
+      "id": "strategy.queued-runs",
+      "label": "Queued promotions",
+      "population": "Recent strategy runs",
+      "comparisonBasis": null
+    },
+    {
+      "id": "strategy.review-runs",
+      "label": "Needs review",
+      "population": "Recent strategy runs",
+      "comparisonBasis": null
+    },
+    {
+      "id": "strategy.winning-runs",
+      "label": "Positive P&L",
+      "population": "Recent strategy runs",
+      "comparisonBasis": null
+    },
+    {
+      "id": "system.active-runs",
+      "label": "Active runs",
+      "population": "All strategy runs · system",
+      "comparisonBasis": null
+    },
+    {
+      "id": "system.providers-online",
+      "label": "Providers healthy",
+      "population": "Providers in use",
+      "comparisonBasis": null
+    },
+    {
+      "id": "system.storage-health",
+      "label": "Storage health",
+      "population": "Storage · system",
+      "comparisonBasis": null
+    },
+    {
+      "id": "trading.cash",
+      "label": "Cash",
+      "population": "Brokerage session · selected account",
+      "comparisonBasis": null
+    },
+    {
+      "id": "trading.fills",
+      "label": "Fills",
+      "population": "Brokerage session · selected account",
+      "comparisonBasis": null
+    },
+    {
+      "id": "trading.net-pnl",
+      "label": "Net P&L",
+      "population": "Brokerage session · selected account",
+      "comparisonBasis": "Session open"
+    },
+    {
+      "id": "trading.open-orders",
+      "label": "Open orders",
+      "population": "Open orders · selected account",
+      "comparisonBasis": null
+    },
+    {
+      "id": "trading.portfolio-value",
+      "label": "Portfolio value",
+      "population": "Brokerage session · selected account",
+      "comparisonBasis": null
+    },
+    {
+      "id": "trading.risk",
+      "label": "Risk",
+      "population": "Brokerage session · selected account",
+      "comparisonBasis": null
+    }
+  ]
+}

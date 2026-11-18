@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CreateOnboardingWorkspaceRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.CreateOnboardingWorkspaceRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:21](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L21).
+
+```csharp
+public sealed record CreateOnboardingWorkspaceRequestDto(string Name, OnboardingScopeDto Scope, OnboardingCriteriaDto Criteria);
+```
+
 ## CrossFundReportingConsolidationDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.CrossFundReportingConsolidationDto</code>. Kind: `record`.
@@ -738,21 +748,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public IReadOnlyDictionary&lt;string, string&gt; Metadata { get; init; } = new Dictionary&lt;string, string&gt;();</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:300](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L300) |  |
-
-## EvidencePacketDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.EvidencePacketDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:660](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L660).
-
-```csharp
-public sealed record EvidencePacketDto(EvidenceSubjectDto Subject, DateTimeOffset GeneratedAt, IReadOnlyList<EvidenceNodeDto> Nodes, IReadOnlyList<EvidenceEdgeDto> Edges, EvidenceCompletenessDto Completeness, IReadOnlyList<WorkflowActionDto> Actions, IReadOnlyList<string> Warnings)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public EvidenceProofChainDto ProofChain { get; init; } = EvidenceProofChainDto.Empty;</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:669](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L669) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public LedgerAmountProofDto? LedgerAmount { get; init; }</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:671](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L671) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public PreparerAttestationEvidenceProjectionDto? PreparerAttestations { get; init; }</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:673](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L673) |  |

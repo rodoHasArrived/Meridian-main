@@ -6,6 +6,52 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperatorTriageScope
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageScope</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:54](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L54).
+
+```csharp
+public sealed record OperatorTriageScope(string TenantId, string CompanyId);
+```
+
+## OperatorTriageState
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageState</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:43](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L43).
+
+Metadata only: never a copy of the source work item or financial workflow.
+
+```csharp
+public sealed record OperatorTriageState(long Version, string? AssigneeId, IReadOnlyList<OperatorTriagePersonalState> Personal, IReadOnlyList<OperatorTriageActivity> Activity, IReadOnlyList<OperatorTriageReceipt> Receipts)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static OperatorTriageState Empty =&gt; …;</code> | [src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:49](../../../../src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs#L49) |  |
+
+## OperatorWorkflowHomeSummary
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperatorWorkflowHomeSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs#L6).
+
+Shared home-summary projection for operator workflow guidance across the workstation shell.
+
+```csharp
+public sealed record OperatorWorkflowHomeSummary(DateTimeOffset GeneratedAt, bool HasOperatingContext, string OperatingContextLabel, string FundDisplayName, IReadOnlyList<WorkspaceWorkflowSummary> Workspaces)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public MeridianAssuranceScoreDto AssuranceScore { get; init; } = new (100, EvidenceStatusDto.Ready, [], []);</code> | [src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs:13](../../../../src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs#L13) |  |
+
 ## OperatorWorkItemDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorWorkItemDto</code>. Kind: `record`.
@@ -101,6 +147,87 @@ One labeled return figure produced by the shared return kernel (W10-PERF-001). A
 
 ```csharp
 public sealed record PerformanceReturnFigureDto(string Convention, string Status, string Currency, DateOnly PeriodStart, DateOnly PeriodEnd, decimal? Value, decimal? AnnualizedValue, int SubPeriodCount, IReadOnlyList<decimal> CandidateRates, string Source, IReadOnlyList<string> Reasons);
+```
+
+## PeriodChange
+
+Qualified name: <code>Meridian.Contracts.Workstation.PeriodChange</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs:9](../../../../src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs#L9).
+
+The period-over-period rule shared by every prior-period comparison: change is current minus prior, and percent change divides by the absolute prior so its sign follows the change. A prior of zero has no percentage. The posted-ledger comparison and the NAV, attribution and cash-ladder comparisons all use it, so one figure never has two percentages.
+
+```csharp
+public static class PeriodChange
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static decimal Change(decimal current, decimal prior) =&gt; …;</code> | [src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs#L11) |  |
+| <code>public static decimal? Percent(decimal current, decimal prior) =&gt; …;</code> | [src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs:13](../../../../src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs#L13) |  |
+
+## PeriodComparisonDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.PeriodComparisonDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs:65](../../../../src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs#L65).
+
+A prior-period comparison for a workstation surface (NAV, run attribution, cash ladder). Notes states what the figures do and do not include; a surface shows them beside the table rather than implying more than the source supports.
+
+```csharp
+public sealed record PeriodComparisonDto(string Status, string? Reason, string Subject, string? Currency, PeriodComparisonWindowDto Current, PeriodComparisonWindowDto? Baseline, IReadOnlyList<PeriodComparisonLineDto> Lines, IReadOnlyList<string> Notes, DateTimeOffset GeneratedAt);
+```
+
+## PeriodComparisonLineDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.PeriodComparisonLineDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs:46](../../../../src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs#L46).
+
+One compared figure.
+
+```csharp
+public sealed record PeriodComparisonLineDto(string Key, string Label, decimal Current, decimal Prior, decimal Change, decimal? PercentChange, bool IsTotal = false)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static PeriodComparisonLineDto Create(string key, string label, decimal current, decimal prior, bool isTotal = false) =&gt; …;</code> | [src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs:56](../../../../src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs#L56) | Builds a line with change and percent from PeriodChange. |
+
+## PeriodComparisonStatus
+
+Qualified name: <code>Meridian.Contracts.Workstation.PeriodComparisonStatus</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs:18](../../../../src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs#L18).
+
+Outcome of a prior-period comparison request.
+
+```csharp
+public static class PeriodComparisonStatus
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Ready = &quot;Ready&quot;;</code> | [src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs:20](../../../../src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs#L20) |  |
+| <code>public const string Unavailable = &quot;Unavailable&quot;;</code> | [src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs:22](../../../../src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs#L22) | No baseline figures exist for the requested prior period. |
+| <code>public const string Incompatible = &quot;Incompatible&quot;;</code> | [src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs:24](../../../../src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs#L24) | The request cannot be compared, for example a baseline on or after the current date. |
+
+## PeriodComparisonWindowDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.PeriodComparisonWindowDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs:32](../../../../src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs#L32).
+
+One side of a comparison: the period it covers and whether it is complete.
+
+```csharp
+public sealed record PeriodComparisonWindowDto(string Label, DateOnly? Start, DateOnly End, bool IsPartial);
 ```
 
 ## PilotAcceptanceEvidenceCategoryDto
@@ -622,105 +749,3 @@ Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1393](..
 ```csharp
 public sealed record PrivateCapitalCloseCockpitWorkflowDto(Guid WorkflowId, Guid FundAccountId, string PeriodId, OperationsWorkflowStatusDto Status, int CloseReadinessScore, bool IsReadyToClose, string WorkflowRoute, string? ClosePackageId, string? ClosePackageRoute, int BlockerCount, int OpenChecklistCount, DateTimeOffset UpdatedAtUtc, long Version = 0);
 ```
-
-## PrivateCapitalNavSupportComponentDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.PrivateCapitalNavSupportComponentDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1440](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1440).
-
-```csharp
-public sealed record PrivateCapitalNavSupportComponentDto(string ComponentId, string Label, EvidenceStatusDto Status, bool IsReady, string Summary, string? Route, int Score);
-```
-
-## PrivateCapitalNavSupportPackageDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.PrivateCapitalNavSupportPackageDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1468](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1468).
-
-```csharp
-public sealed record PrivateCapitalNavSupportPackageDto(string PackageId, string Label, EvidenceStatusDto Status, bool IsReady, string Summary, string? Route, decimal? ShadowNav, string? Currency, int EvidenceLinkCount, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, IReadOnlyList<PrivateCapitalNavSupportComponentDto> Components, IReadOnlyList<string>? RequiredActions = null, PrivateCapitalShadowNavTieOutDto? ShadowNavTieOut = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; RequiredActions { get; init; } = RequiredActions??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1483](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1483) |  |
-
-## PrivateCapitalShadowNavTieOutDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.PrivateCapitalShadowNavTieOutDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1449](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1449).
-
-```csharp
-public sealed record PrivateCapitalShadowNavTieOutDto(string TieOutId, EvidenceStatusDto Status, bool IsReady, decimal? MeridianShadowNav, decimal? AdministratorNav, decimal? Variance, decimal Tolerance, string? Currency, string Summary, string? Route, int EvidenceLinkCount, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, IReadOnlyList<string>? RequiredActions = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; RequiredActions { get; init; } = RequiredActions??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1464](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1464) |  |
-
-## ProductExposureDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ProductExposureDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs:21](../../../../src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs#L21).
-
-```csharp
-public sealed record ProductExposureDto(string ProductType, decimal NetExposure, decimal GrossExposure);
-```
-
-## PromoteShadowBookRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.PromoteShadowBookRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:127](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L127).
-
-```csharp
-public sealed record PromoteShadowBookRequestDto(int ExpectedVersion, string CertificateId, string Rationale, IReadOnlyList<string> EvidenceIds);
-```
-
-## ProviderCorporateActionEvidenceCandidateDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ProviderCorporateActionEvidenceCandidateDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:453](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L453).
-
-```csharp
-public sealed record ProviderCorporateActionEvidenceCandidateDto(string CandidateId, string CandidateType, string? Symbol, Guid? SecurityId, string? SecurityDisplayName, ProviderLedgerReconciliationCheckStatusDto Status, string RequiredFeed, string EvidenceSource, string ProviderId, string ExternalAccountId, string? ProviderEventId, DateTimeOffset ObservedAt, decimal? Amount, decimal? Quantity, string? Currency, string Reason);
-```
-
-## ProviderCorporateActionLedgerEffectDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ProviderCorporateActionLedgerEffectDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:471](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L471).
-
-```csharp
-public sealed record ProviderCorporateActionLedgerEffectDto(string CandidateId, string CandidateType, string? Symbol, Guid? SecurityId, string? ProviderEventId, string LedgerEffectKind, DateOnly? EffectiveDate, decimal? Factor, decimal? CashAmount, decimal? PrincipalAmount, decimal? IncomeAmount, string? Currency, ProviderLedgerReconciliationCheckStatusDto Status, string Reason, IReadOnlyList<ExpectedJournalPreviewLineDto> JournalLines);
-```
-
-## ProviderCorporateActionReadinessDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ProviderCorporateActionReadinessDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:512](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L512).
-
-```csharp
-public sealed record ProviderCorporateActionReadinessDto(bool ProviderCorporateActionsRoutable, ProviderLedgerReconciliationCheckStatusDto Status, int PositionCount, int SecurityResolvedCount, int EquityPositionCount, int FixedIncomeOrStructuredPositionCount, int FactorScheduleCandidateCount, int IncomeCashTransactionCount, int DividendCashTransactionCount, int InterestCashTransactionCount, IReadOnlyList<string> RequiredFeeds, IReadOnlyList<string> MissingFeeds, IReadOnlyList<string> Warnings, IReadOnlyList<string> EvidenceLinks, IReadOnlyList<ProviderCorporateActionReadinessLineDto> Lines, int ProviderCorporateActionEventCount = 0, int FactorScheduleEventCount = 0, bool FactorScheduleRoutable = false, int LoanScheduleEventCount = 0)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;ProviderCorporateActionEvidenceCandidateDto&gt; EvidenceCandidates { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:533](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L533) |  |
-| <code>public IReadOnlyList&lt;ProviderCorporateActionLedgerEffectDto&gt; LedgerEffects { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:535](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L535) |  |
-| <code>public IReadOnlyList&lt;ProviderSecurityMasterScheduleFeedDto&gt; SecurityMasterScheduleFeeds { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:537](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L537) |  |
-| <code>public int PrincipalCashTransactionCount { get; init; }</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:539](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L539) |  |
-| <code>public int AmortizationScheduleEventCount { get; init; }</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:541](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L541) |  |

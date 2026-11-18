@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyBalanceConfirmationDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:57](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L57).
+
+A per-period reciprocal balance confirmation for one approved accounting profile. Party one and party two follow the profile&#x27;s legal agreement. NetTransactionBalance is the sum of both sides&#x27; signed transaction-currency balances; reciprocal books net to zero.
+
+```csharp
+public sealed record IntercompanyBalanceConfirmationDto(Guid ConfirmationId, string TenantId, string? CompanyId, Guid AccountingArrangementId, Guid IntercompanyAgreementId, DateOnly AsOf, long Version, IntercompanyBalanceConfirmationStatusDto Status, IntercompanyBalanceConfirmationSideDto PartyOne, IntercompanyBalanceConfirmationSideDto PartyTwo, decimal NetTransactionBalance, string BalanceDigest, IReadOnlyList<IntercompanyBalanceConfirmationEventDto> Events);
+```
+
 ## IntercompanyBalanceConfirmationEventDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationEventDto</code>. Kind: `record`.
@@ -712,14 +724,4 @@ Source: [src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs:8](../../../../s
 
 ```csharp
 public sealed record LedgerBookControlProfileDto(Guid LedgerBookId, LedgerBookControlModeDto Mode, long Version, string PolicyVersion, DateTimeOffset CreatedAtUtc, DateTimeOffset? ActivatedAtUtc = null, string? ActivatedBy = null, string? MigrationReceiptId = null);
-```
-
-## LedgerBookDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.LedgerBookDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:164](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L164).
-
-```csharp
-public sealed record LedgerBookDto(Guid LedgerBookId, string FundProfileId, Guid FundStructureNodeId, FundStructureNodeKindDto FundStructureNodeKind, string DisplayName, string BaseCurrency, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, string? Description = null, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, string AccountingPolicyId = "legacy-v1", string AccountingPolicyVersion = "legacy-v1");
 ```

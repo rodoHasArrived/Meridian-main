@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CashDividendDeclarationAuthorityDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CashDividendDeclarationAuthorityDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CashDividendAttestationDeclarationContracts.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/CashDividendAttestationDeclarationContracts.cs#L23).
+
+```csharp
+public sealed record CashDividendDeclarationAuthorityDto(bool CanAdministerDeclaration, OperationsActionOriginDto Origin = OperationsActionOriginDto.HumanOperator, bool CanBindAccountingRoles = false);
+```
+
 ## CashDividendReconciliationAccountDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CashDividendReconciliationAccountDto</code>. Kind: `record`.
@@ -720,13 +730,3 @@ Declared public members:
 | <code>public const string Resolved = &quot;Resolved&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:268](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L268) |  |
 | <code>public const string Waived = &quot;Waived&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:269](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L269) |  |
 | <code>public static bool IsKnown(string? state) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:271](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L271) |  |
-
-## CorporateActionDeadlineEvidenceDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDeadlineEvidenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L21).
-
-```csharp
-public sealed record CorporateActionDeadlineEvidenceDto(int SchemaVersion, CorporateActionElectionDeadlineDto Deadline);
-```

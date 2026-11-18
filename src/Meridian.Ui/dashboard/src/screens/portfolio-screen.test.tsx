@@ -693,7 +693,7 @@ describe("PortfolioScreen", () => {
     expect(within(strip).getByText("+$120")).not.toHaveClass("text-success");
     // The totals cover every workspace position, so that is the scope they state.
     expect(strip.parentElement).toHaveTextContent(
-      "Stale figures · Source: Portfolio workspace · As of Jan 2, 2026, 14:00 UTC · Scope: All workspace positions"
+      "Stale figures · Covers: Live holdings · all accounts · Source: Portfolio workspace · As of Jan 2, 2026, 14:00 UTC · Scope: All workspace positions"
     );
   });
 
@@ -727,7 +727,7 @@ describe("PortfolioScreen", () => {
     const strip = screen.getByLabelText("Portfolio headline metrics");
     expect(within(strip).getByText("+$120")).not.toHaveClass("text-success");
     expect(strip.parentElement).toHaveTextContent(
-      `Stale figures · Source: Portfolio workspace · As of ${formatUtcTimestamp(new Date(lastComplete))} · Scope: All workspace positions`
+      `Stale figures · Covers: Live holdings · all accounts · Source: Portfolio workspace · As of ${formatUtcTimestamp(new Date(lastComplete))} · Scope: All workspace positions`
     );
     expect(screen.getByLabelText("Portfolio data confidence")).toHaveTextContent(
       "The latest refresh did not complete; the last loaded figures are shown."
@@ -765,7 +765,7 @@ describe("PortfolioScreen", () => {
     const strip = screen.getByLabelText("Portfolio headline metrics");
     expect(within(strip).getByText("+$120")).not.toHaveClass("text-success");
     expect(strip.parentElement).toHaveTextContent(
-      "Stale figures · Source: Portfolio workspace · As of Jan 2, 2026, 14:00 UTC · Scope: All workspace positions"
+      "Stale figures · Covers: Live holdings · all accounts · Source: Portfolio workspace · As of Jan 2, 2026, 14:00 UTC · Scope: All workspace positions"
     );
   });
 
