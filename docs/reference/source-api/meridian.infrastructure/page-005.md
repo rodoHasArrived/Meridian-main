@@ -6,6 +6,37 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IIBDataServiceTransport
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBDataServiceTransport</code>. Kind: `interface`.
+
+Source: [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:27](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L27).
+
+Compile-neutral IB data-service transport. The connection manager supplies the vendor calls in an IBAPI build; tests can supply a deterministic transport without an official SDK assembly.
+
+```csharp
+public interface IIBDataServiceTransport
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>void RequestScanner(int requestId, IBScannerRequest request);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:29](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L29) |  |
+| <code>void RequestContractDetails(int requestId, SymbolConfig contract);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:30](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L30) |  |
+| <code>void RequestOptionChain(int requestId, SymbolConfig underlying);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:31](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L31) |  |
+| <code>void RequestHistoricalNews(int requestId, int conId, string providerCodes, DateTimeOffset start, DateTimeOffset end, int maximumResults);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:32](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L32) |  |
+| <code>void RequestNewsArticle(int requestId, string providerCode, string articleId);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:33](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L33) |  |
+| <code>void RequestFundamentals(int requestId, SymbolConfig contract, string reportType);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:34](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L34) |  |
+| <code>void RequestDividendEarnings(int requestId, SymbolConfig contract);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:35](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L35) |  |
+| <code>void RequestTickByTick(int requestId, SymbolConfig contract, string tickType, int numberOfTicks, bool ignoreSize);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:36](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L36) |  |
+| <code>void RequestPnl(int requestId, string account, string? modelCode);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:37](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L37) |  |
+| <code>void RequestMarketRule(int requestId, int marketRuleId);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:38](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L38) |  |
+| <code>void RequestDepthExchanges(int requestId);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:39](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L39) |  |
+| <code>void RequestRealTimeBars(int requestId, IBRealTimeBarRequest request) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:40](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L40) |  |
+| <code>void RequestHistoricalTicks(int requestId, IBHistoricalTickRequest request) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:41](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L41) |  |
+| <code>void CancelDataRequest(int requestId, string capability);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:42](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L42) |  |
+
 ## IIBProviderConnectionIdentity
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.InteractiveBrokers.IIBProviderConnectionIdentity</code>. Kind: `interface`.
@@ -1239,30 +1270,3 @@ Declared public members:
 | <code>public Task&lt;IReadOnlyList&lt;BrokerOrder&gt;&gt; GetOpenOrdersAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:214](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L214) |  |
 | <code>public async Task&lt;BrokerHealthStatus&gt; CheckHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:225](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L225) |  |
 | <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:240](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L240) |  |
-
-## TemplateBrokerageGatewayOptions
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.TemplateBrokerageGatewayOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:303](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L303).
-
-```csharp
-public sealed record TemplateBrokerageGatewayOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string GatewayId { get; init; } = &quot;template&quot;;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:305](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L305) |  |
-| <code>public string BrokerDisplayName { get; init; } = &quot;Template Broker&quot;;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:306](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L306) |  |
-| <code>public BrokerageCapabilities Capabilities { get; init; } = BrokerageCapabilities.UsEquity(modification : true, partialFills : true, shortSelling : false, fractional : false, extendedHours : false);</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:307](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L307) |  |
-| <code>public bool ConnectionReady { get; init; } = true;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:314](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L314) |  |
-| <code>public string ConnectionFailureMessage { get; init; } = &quot;Template broker connection is not ready.&quot;;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:315](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L315) |  |
-| <code>public string AccountId { get; init; } = &quot;template-account&quot;;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:316](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L316) |  |
-| <code>public decimal Equity { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:317](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L317) |  |
-| <code>public decimal Cash { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:318](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L318) |  |
-| <code>public decimal BuyingPower { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:319](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L319) |  |
-| <code>public string Currency { get; init; } = &quot;USD&quot;;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:320](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L320) |  |
-| <code>public string AccountStatus { get; init; } = &quot;paper-template&quot;;</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:321](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L321) |  |
-| <code>public IReadOnlyList&lt;BrokerPosition&gt; Positions { get; init; } = Array.Empty&lt;BrokerPosition&gt;();</code> | [src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs:322](../../../../src/Meridian.Infrastructure/Adapters/Templates/TemplateBrokerageGateway.cs#L322) |  |

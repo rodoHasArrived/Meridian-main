@@ -2097,7 +2097,8 @@ Meridian-main
 │   │   │   │   ├── page-009.md
 │   │   │   │   ├── page-010.md
 │   │   │   │   ├── page-011.md
-│   │   │   │   └── page-012.md
+│   │   │   │   ├── page-012.md
+│   │   │   │   └── page-013.md
 │   │   │   ├── meridian.audit
 │   │   │   │   └── page-001.md
 │   │   │   ├── meridian.backtesting
@@ -2184,13 +2185,15 @@ Meridian-main
 │   │   │   │   ├── page-075.md
 │   │   │   │   ├── page-076.md
 │   │   │   │   ├── page-077.md
-│   │   │   │   └── page-078.md
+│   │   │   │   ├── page-078.md
+│   │   │   │   └── page-079.md
 │   │   │   ├── meridian.core
 │   │   │   │   ├── page-001.md
 │   │   │   │   ├── page-002.md
 │   │   │   │   ├── page-003.md
 │   │   │   │   ├── page-004.md
-│   │   │   │   └── page-005.md
+│   │   │   │   ├── page-005.md
+│   │   │   │   └── page-006.md
 │   │   │   ├── meridian.dataintegration
 │   │   │   │   ├── page-001.md
 │   │   │   │   ├── page-002.md
@@ -2339,7 +2342,8 @@ Meridian-main
 │   │   │   │   ├── page-016.md
 │   │   │   │   ├── page-017.md
 │   │   │   │   ├── page-018.md
-│   │   │   │   └── page-019.md
+│   │   │   │   ├── page-019.md
+│   │   │   │   └── page-020.md
 │   │   │   ├── meridian.workflow
 │   │   │   │   └── page-001.md
 │   │   │   ├── meridian.wpf
@@ -5228,6 +5232,7 @@ Meridian-main
 │   │   │   │   ├── EventPipelineShutdownParticipant.cs
 │   │   │   │   ├── HostModeOrchestrator.cs
 │   │   │   │   ├── LifecycleSupervisorBridgeHostedService.cs
+│   │   │   │   ├── ProviderConfigReconciler.cs
 │   │   │   │   ├── RuntimeReadinessService.cs
 │   │   │   │   ├── RuntimeShutdownSequence.cs
 │   │   │   │   ├── SharedStartupBootstrapper.cs
@@ -5277,6 +5282,7 @@ Meridian-main
 │   │   │   └── IBGatewayProbe.cs
 │   │   ├── DataQuality
 │   │   │   ├── CompositeDataQualityReadService.cs
+│   │   │   ├── CrossProviderPolicyApplier.cs
 │   │   │   └── QualityMonitoringPublisher.cs
 │   │   ├── DirectLending
 │   │   │   ├── AccrualLedgerService.cs
@@ -5343,7 +5349,8 @@ Meridian-main
 │   │   │   ├── Endpoints
 │   │   │   │   └── StatusEndpointHandlers.cs
 │   │   │   ├── ConfigStore.cs
-│   │   │   └── ConfigurationChangeTracker.cs
+│   │   │   ├── ConfigurationChangeTracker.cs
+│   │   │   └── ConfigurationRuntimeAppliers.cs
 │   │   ├── Integrations
 │   │   │   ├── BondHoldingImportService.cs
 │   │   │   ├── ProviderIntegrationActivationReadinessService.cs
@@ -6402,11 +6409,13 @@ Meridian-main
 │   │   │   ├── ConfigWatcher.cs
 │   │   │   ├── CoordinationConfig.cs
 │   │   │   ├── CredentialPlaceholderDetector.cs
+│   │   │   ├── CrossProviderTolerancePolicy.cs
 │   │   │   ├── DataSourceConfig.cs
 │   │   │   ├── DataSourceKind.cs
 │   │   │   ├── DataSourceKindConverter.cs
 │   │   │   ├── DefaultConfigPathResolver.cs
 │   │   │   ├── DerivativesConfig.cs
+│   │   │   ├── FailoverRuleReferences.cs
 │   │   │   ├── FeatureCapabilityCatalog.cs
 │   │   │   ├── FeatureCapabilityDescriptor.cs
 │   │   │   ├── FeatureCapabilityOptions.cs
@@ -9566,6 +9575,7 @@ Meridian-main
 │   │   │   │   │   │   ├── corporate-action-calendar.api.ts
 │   │   │   │   │   │   ├── covered-call.api.test.ts
 │   │   │   │   │   │   ├── covered-call.api.ts
+│   │   │   │   │   │   ├── cross-provider-tolerance.api.ts
 │   │   │   │   │   │   ├── data-operations-assurance.api.ts
 │   │   │   │   │   │   ├── data-quality-watch.api.ts
 │   │   │   │   │   │   ├── data-workspace.api.ts
@@ -9727,6 +9737,7 @@ Meridian-main
 │   │   │   │   │   ├── close-board.ts
 │   │   │   │   │   ├── combined-load-state.test.ts
 │   │   │   │   │   ├── combined-load-state.ts
+│   │   │   │   │   ├── configuration-apply.ts
 │   │   │   │   │   ├── consolidation-api.test.ts
 │   │   │   │   │   ├── consolidation-api.ts
 │   │   │   │   │   ├── cross-screen-counts-context.tsx
@@ -10148,6 +10159,8 @@ Meridian-main
 │   │   │   │   │   ├── data-operations-maintenance.view-model.test.ts
 │   │   │   │   │   ├── data-operations-maintenance.view-model.ts
 │   │   │   │   │   ├── data-provider-display-view-model.ts
+│   │   │   │   │   ├── data-quality-watch.cross-provider-policy.test.tsx
+│   │   │   │   │   ├── data-quality-watch.cross-provider-policy.tsx
 │   │   │   │   │   ├── data-quality-watch.test.tsx
 │   │   │   │   │   ├── data-quality-watch.tsx
 │   │   │   │   │   ├── data-quality-watch.view-model.test.ts
@@ -10896,6 +10909,7 @@ Meridian-main
 │   │   │   ├── CoveredCallEndpoints.cs
 │   │   │   ├── CredentialEndpoints.cs
 │   │   │   ├── CronEndpoints.cs
+│   │   │   ├── CrossProviderToleranceEndpoints.cs
 │   │   │   ├── CryptoReferenceEndpoints.cs
 │   │   │   ├── DataQualityEndpoints.cs
 │   │   │   ├── DemoModeEndpoints.cs
@@ -12921,6 +12935,7 @@ Meridian-main
 │   │   │   │   ├── ProviderCapabilityContractRegistrationTests.cs
 │   │   │   │   ├── ProviderCatalogCompositionTests.cs
 │   │   │   │   ├── ProviderCompositionTests.cs
+│   │   │   │   ├── ProviderConfigReconcilerTests.cs
 │   │   │   │   ├── ProviderFeatureRegistrationTests.cs
 │   │   │   │   ├── ProviderModuleCompositionTests.cs
 │   │   │   │   ├── SecurityMasterStartupTests.cs
@@ -13124,6 +13139,7 @@ Meridian-main
 │   │   │   │   ├── ConfigStoreCredentialPersistenceTests.cs
 │   │   │   │   ├── ConfigStoreTests.cs
 │   │   │   │   ├── ConfigurationChangeTrackingTests.cs
+│   │   │   │   ├── ConfigurationRuntimeApplyTests.cs
 │   │   │   │   ├── ProviderCredentialStoreTests.cs
 │   │   │   │   ├── ProviderModuleCredentialSelectionTests.cs
 │   │   │   │   └── ProviderModuleSetupServiceTests.cs
@@ -13248,6 +13264,10 @@ Meridian-main
 │   │   │   └── ImmutableAuditLogServiceTests.cs
 │   │   ├── Contracts
 │   │   │   └── CoreExtensibilityContractsTests.cs
+│   │   ├── Core
+│   │   │   └── Config
+│   │   │       ├── CrossProviderTolerancePolicyTests.cs
+│   │   │       └── FailoverRuleReferencesTests.cs
 │   │   ├── CryptoCurrency
 │   │   │   └── CryptoProjectionServiceTests.cs
 │   │   ├── DataIntegration
@@ -13295,6 +13315,7 @@ Meridian-main
 │   │   │   │   └── HistoricalDataQueryServiceTests.cs
 │   │   │   ├── Monitoring
 │   │   │   │   ├── DataQuality
+│   │   │   │   │   ├── CrossProviderTolerancePolicyComparisonTests.cs
 │   │   │   │   │   ├── DataFreshnessSlaMonitorTests.cs
 │   │   │   │   │   ├── DataQualityReportExportTests.cs
 │   │   │   │   │   ├── DataQualityTests.cs
@@ -13725,6 +13746,7 @@ Meridian-main
 │   │   │   │   ├── CompositeProviderStaleDataTests.cs
 │   │   │   │   ├── CorporateActionFetchOutcomeTests.cs
 │   │   │   │   ├── CorporateActionFetchResultTests.cs
+│   │   │   │   ├── CrossProviderValidatorTests.cs
 │   │   │   │   ├── EdgarReferenceDataProviderTests.cs
 │   │   │   │   ├── EdgarSymbolSearchProviderTests.cs
 │   │   │   │   ├── FailoverAwareMarketDataClientTests.cs
@@ -13807,6 +13829,7 @@ Meridian-main
 │   │   │   │   ├── SharedProviderRequestBudgetTests.cs
 │   │   │   │   ├── StooqHistoricalDataProviderTests.cs
 │   │   │   │   ├── StoredProviderCredentialPreparationTests.cs
+│   │   │   │   ├── StreamingFailoverLiveConfigurationTests.cs
 │   │   │   │   ├── StreamingFailoverServiceTests.cs
 │   │   │   │   ├── SymbolSearchProviderLifetimeTests.cs
 │   │   │   │   ├── SyntheticHistoricalProviderContractTests.cs
@@ -14950,6 +14973,7 @@ Meridian-main
 │   │   │   ├── CredentialCompatibilityEndpointsTests.cs
 │   │   │   ├── CronEndpointsTests.cs
 │   │   │   ├── CrossProcessFileLockTests.cs
+│   │   │   ├── CrossProviderToleranceEndpointTests.cs
 │   │   │   ├── CrossScreenCountDefinitionsTests.cs
 │   │   │   ├── CustomAssetPromotionReportEndpointsTests.cs
 │   │   │   ├── DailyValuationBatchLifecycleServiceTests.cs
