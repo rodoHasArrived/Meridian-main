@@ -6,6 +6,152 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementRunDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementRunDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:270](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L270).
+
+Shared workstation payload for a statement reconciliation run and its normalized evidence.
+
+```csharp
+public sealed record StatementRunDto(string? RunId, StatementRunStatus? Status, StatementSourceDto? Source, DateTimeOffset? StartedAtUtc, DateTimeOffset? CompletedAtUtc, string? SourceFileName, string? SourceFileHash, string? MappingProfileId, int? MappingProfileVersion, string? ToleranceProfileId, int? ToleranceProfileVersion, string? ImportedBy, DateTimeOffset? ImportedAtUtc, IReadOnlyList<StatementValidationIssueDto>? ValidationIssues, IReadOnlyList<StatementNormalizedPositionDto>? Positions, IReadOnlyList<StatementNormalizedCashDto>? CashBalances, IReadOnlyList<StatementNormalizedTransactionDto>? Transactions, StatementMatchSummaryDto? MatchSummary, IReadOnlyList<StatementBreakDto>? Breaks, IReadOnlyList<StatementReconciliationCaseDto>? Cases, string? ImportId = null, string? FundProfileId = null, Guid? FundAccountId = null, string? Notes = null);
+```
+
+## StatementRunExceptionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementRunExceptionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:362](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L362).
+
+Backward-compatible open exception projection for statement reconciliation queues.
+
+```csharp
+public sealed record StatementRunExceptionDto(string BreakId, string RunId, string ImportId, string SourceReference, string BreakCode, string Category, decimal Delta, decimal Tolerance, bool ToleranceBreached, string CreatedAtUtc, string Status);
+```
+
+## StatementRunReconcileRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementRunReconcileRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:317](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L317).
+
+Request to trigger reconciliation matching for an existing statement run.
+
+```csharp
+public sealed record StatementRunReconcileRequestDto(string? Actor = null, string? Reason = null, bool Force = false);
+```
+
+## StatementRunStatus
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementRunStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:9](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L9).
+
+Lifecycle state for a statement reconciliation run shared by workstation clients.
+
+```csharp
+public enum StatementRunStatus : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unknown = 0</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L11) |  |
+| <code>PendingValidation = 1</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L12) |  |
+| <code>Validating = 2</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:13](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L13) |  |
+| <code>ValidationFailed = 3</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:14](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L14) |  |
+| <code>Importing = 4</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:15](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L15) |  |
+| <code>Reconciling = 5</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L16) |  |
+| <code>ReviewRequired = 6</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:17](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L17) |  |
+| <code>Completed = 7</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:18](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L18) |  |
+| <code>Failed = 8</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L19) |  |
+| <code>Canceled = 9</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:20](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L20) |  |
+
+## StatementRunSummaryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementRunSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:325](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L325).
+
+Lightweight statement-run index row returned by the workstation reconciliation API.
+
+```csharp
+public sealed record StatementRunSummaryDto(string RunId, string ImportId, StatementRunStatus Status, DateTimeOffset StartedAtUtc, DateTimeOffset? CompletedAtUtc, int PositionMatches, int CashMatches, int TransactionMatches, int OpenExceptionCount);
+```
+
+## StatementRunValidationDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementRunValidationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:339](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L339).
+
+Validation envelope for a statement reconciliation run.
+
+```csharp
+public sealed record StatementRunValidationDto(string RunId, IReadOnlyList<StatementValidationIssueDto> Issues, bool IsBlocked);
+```
+
+## StatementSourceDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementSourceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:76](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L76).
+
+Source metadata for a broker, custodian, or administrator statement payload.
+
+```csharp
+public sealed record StatementSourceDto(string? SourceId, string? SourceKind, string? SourceSystem, string? AccountId, string? AccountName, string? Currency, DateOnly? PeriodStart, DateOnly? PeriodEnd, DateTimeOffset? StatementAsOfUtc = null, string? CustodianId = null, string? ExternalAccountId = null);
+```
+
+## StatementToReportArtifactDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementToReportArtifactDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:328](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L328).
+
+Source-compatibility artifact contract for pre-rename clients.
+
+```csharp
+public sealed record StatementToReportArtifactDto(string ArtifactId, string ArtifactKind, string FileName, string ContentType, long ByteLength, string ContentHashSha256, string DownloadRoute, DateTimeOffset RetainedAtUtc);
+```
+
+## StatementToReportWorkflowDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementToReportWorkflowDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:343](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L343).
+
+Source-compatibility workflow contract for pre-rename clients. Legacy HTTP routes project this wire shape directly over the canonical statement reconciliation report operation.
+
+```csharp
+public sealed record StatementToReportWorkflowDto(string WorkflowId, StatementToReportWorkflowStatusDto Status, long Version, string TenantId, string? CompanyId, string SourceInstitution, string FundAccountId, string ExternalAccountId, DateOnly PeriodStart, DateOnly PeriodEnd, string? StatementRunId, EvidenceVaultIdentityDto? EvidenceVaultIdentity, IReadOnlyList<StatementToReportArtifactDto> RetainedArtifacts, IReadOnlyList<string> EvidenceReferences, int BreakCount, int CaseCount, DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc, DateTimeOffset? CompletedAtUtc, string? FailureReason, string? RecoveryAction, string StatusRoute, string ResumeRoute);
+```
+
+## StatementToReportWorkflowStatusDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementToReportWorkflowStatusDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:316](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L316).
+
+Source-compatibility status contract for clients compiled before the operation was renamed. Newly persisted and returned workflows use StatementReconciliationReportWorkflowStatusDto.
+
+```csharp
+public enum StatementToReportWorkflowStatusDto : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>InputRetained = 0</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:318](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L318) |  |
+| <code>Importing = 1</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:319](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L319) |  |
+| <code>AwaitingReconciliation = 2</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:320](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L320) |  |
+| <code>RenderingReport = 3</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:321](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L321) |  |
+| <code>Completed = 4</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:322](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L322) |  |
+| <code>Failed = 5</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:323](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L323) |  |
+
 ## StatementValidationIssueDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementValidationIssueDto</code>. Kind: `record`.
@@ -500,136 +646,3 @@ Enum declarations:
 | <code>ReviewRequired</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:295](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L295) |  |
 | <code>Ready</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:296](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L296) |  |
 | <code>Rejected</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:297](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L297) |  |
-
-## StrategyRunArtifactCompleteness
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunArtifactCompleteness</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:694](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L694).
-
-Completeness indicator for run artifacts used by comparison workflows.
-
-```csharp
-public sealed record StrategyRunArtifactCompleteness(bool HasPortfolio, bool HasLedger, bool HasCashFlow, bool HasFills, bool HasAuditTrail);
-```
-
-## StrategyRunCashFlowDigest
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunCashFlowDigest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1046](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1046).
-
-Compact cash-flow digest attached to a continuity drill-in.
-
-```csharp
-public sealed record StrategyRunCashFlowDigest(DateTimeOffset AsOf, string Currency, int TotalEntries, decimal TotalInflows, decimal TotalOutflows, decimal NetCashFlow, decimal ProjectedNetPosition, int BucketCount, DateTimeOffset? NextBucketStart = null, DateTimeOffset? NextBucketEnd = null, decimal? NextBucketNetFlow = null);
-```
-
-## StrategyRunComparison
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunComparison</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:667](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L667).
-
-Comparison row used when reviewing multiple runs side by side.
-
-```csharp
-public sealed record StrategyRunComparison(string RunId, string StrategyName, StrategyRunMode Mode, StrategyRunEngine Engine, StrategyRunStatus Status, decimal? NetPnl, decimal? TotalReturn, decimal? FinalEquity, decimal? MaxDrawdown, double? SharpeRatio, int FillCount, DateTimeOffset LastUpdatedAt, StrategyRunPromotionState PromotionState = StrategyRunPromotionState.None, bool HasLedger = false, bool HasAuditTrail = false, IReadOnlyList<string>? CompatibilityWarnings = null, StrategyRunArtifactCompleteness? ArtifactCompleteness = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? FinancingCoverageStatus { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:686](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L686) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.Never)] public decimal? RunAttributedMarginInterest { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:688](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L688) |  |
-
-## StrategyRunContinuityDetail
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunContinuityDetail</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1124](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1124).
-
-Backward-compatible alias for StrategyRunContinuityDto.
-
-```csharp
-public sealed record StrategyRunContinuityDetail(StrategyRunDetail Run, StrategyRunContinuityLineage Lineage, StrategyRunCashFlowDigest? CashFlow, ReconciliationRunSummary? Reconciliation, StrategyRunContinuityStatus ContinuityStatus) : StrategyRunContinuityDto(Run, Lineage, CashFlow, Reconciliation, ContinuityStatus);
-```
-
-## StrategyRunContinuityDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunContinuityDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1114](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1114).
-
-Canonical shared continuity drill-in contract used by Strategy, Trading, and Accounting run drill-ins.
-
-```csharp
-public record StrategyRunContinuityDto(StrategyRunDetail Run, StrategyRunContinuityLineage Lineage, StrategyRunCashFlowDigest? CashFlow, ReconciliationRunSummary? Reconciliation, StrategyRunContinuityStatus ContinuityStatus);
-```
-
-## StrategyRunContinuityLineage
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunContinuityLineage</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1038](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1038).
-
-Parent/child run linkage used by shared continuity drill-ins.
-
-```csharp
-public sealed record StrategyRunContinuityLineage(string? ParentRunId, StrategyRunContinuityLink? ParentRun, IReadOnlyList<StrategyRunContinuityLink> ChildRuns);
-```
-
-## StrategyRunContinuityLink
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunContinuityLink</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1023](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1023).
-
-Lightweight run identity used to connect Strategy, Trading, and Accounting flows.
-
-```csharp
-public sealed record StrategyRunContinuityLink(string RunId, string StrategyId, string StrategyName, StrategyRunMode Mode, StrategyRunStatus Status, DateTimeOffset StartedAt, DateTimeOffset? CompletedAt, StrategyRunPromotionState PromotionState, string? FundProfileId = null, string? FundDisplayName = null);
-```
-
-## StrategyRunContinuitySeamHealthStatus
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunContinuitySeamHealthStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1082](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1082).
-
-```csharp
-public enum StrategyRunContinuitySeamHealthStatus : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Healthy</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1084](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1084) |  |
-| <code>Missing</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1085](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1085) |  |
-| <code>Stale</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1086](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1086) |  |
-
-## StrategyRunContinuityStatus
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunContinuityStatus</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1092](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1092).
-
-Continuity posture across run, portfolio, ledger, cash-flow, and reconciliation seams.
-
-```csharp
-public sealed record StrategyRunContinuityStatus(bool HasRun, StrategyRunContinuitySeamHealthStatus RunHealth, bool HasFills, StrategyRunContinuitySeamHealthStatus FillsHealth, bool HasPortfolio, StrategyRunContinuitySeamHealthStatus PortfolioHealth, bool HasLedger, StrategyRunContinuitySeamHealthStatus LedgerHealth, bool HasCashFlow, StrategyRunContinuitySeamHealthStatus CashFlowHealth, bool HasReconciliation, StrategyRunContinuitySeamHealthStatus ReconciliationHealth, int AsOfDriftMinutes, int OpenReconciliationBreaks, int SecurityCoverageIssueCount, bool HasWarnings, IReadOnlyList<StrategyRunContinuityWarning> Warnings);
-```
-
-## StrategyRunContinuityWarning
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunContinuityWarning</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1067](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1067).
-
-Machine-readable continuity warning for shared run-centered workflows. Known warning codes include: missing-portfolio, missing-ledger, missing-cash-flow, missing-reconciliation, as-of-drift, open-reconciliation-breaks, security-coverage, lineage-parent-source-mismatch, lineage-missing-parent-with-source, promotion-target-run-missing, and promotion-lineage-shape-inconsistent.
-
-```csharp
-public sealed record StrategyRunContinuityWarning(string Code, StrategyRunContinuityWarningSeverity Severity, string Message, string SourceSeam);
-```

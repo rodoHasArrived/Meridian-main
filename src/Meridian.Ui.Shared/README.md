@@ -30,6 +30,11 @@ through trusted workbench intake. It never submits, approves or posts. The workb
 accrual evidence against client saves, blocks review when lines no longer match it, refuses a draft
 whose window a posted accrual already covers, and carries the evidence onto the posted journal.
 
+`IntercompanyAccrualDraftService` resolves the approved fixings of each declared floating index before
+computing. `IntercompanyRateFixingEndpoints` serves `/api/ledger/intercompany/rate-fixings` (list,
+propose and `/{id}/decisions`) with exact-decimal strings; mutations need tenant scope and ledger
+management. See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
+
 `IntercompanyBalanceConfirmationEndpoints` serves `/api/ledger/intercompany/confirmations` (summary,
 record, propose and `/{id}/actions`) with exact-decimal strings; mutations need tenant and company
 scope plus ledger management. Confirmation findings join the close advisory as warnings only. See

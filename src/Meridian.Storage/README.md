@@ -163,6 +163,10 @@ reads remain stable under entity authority locks; sorted shared agreement leases
 the ledger store's owned commit. Explicit references require that authority, while unsupported
 caller-owned append paths refuse them. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
 
+`PostgresIntercompanyRateFixingStore` (fund-structure migration `009`, rewrite and truncate refused)
+and `FileIntercompanyRateFixingStore` retain every fixing version append-only and tenant-scoped under
+an expected-version check. See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
+
 `LedgerOpenLotProjection` uses shared successor quote validation without rounding retained basis.
 The exception still requires unit-successor lineage, an originating atomic mutation batch and a
 retained basis adjustment; ordinary acquisitions retain exact quantity/price/basis checks.

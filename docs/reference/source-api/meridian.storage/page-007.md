@@ -6,6 +6,59 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerTaxLotRecord
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerTaxLotRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:422](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L422).
+
+```csharp
+public sealed record LedgerTaxLotRecord(Guid TaxLotRecordId, Guid LedgerBookId, LedgerAccount Account, string LotId, DateOnly AcquiredDate, decimal OriginalQuantity, decimal OpenQuantity, decimal UnitCost, string Currency, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, Guid? SourceJournalEntryId = null, string? EvidenceRef = null, long Version = 0, Guid? OriginatingMutationBatchId = null, Guid? LastMutationBatchId = null, Guid SecurityId = default, Guid BookPositionId = default, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] decimal? OriginalFace = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] decimal? BookedFactor = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] decimal? ParBasis = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto? Acquisition = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Meridian.Contracts.Accounting.Lots.OpenLotBasisAdjustmentDto? BasisAdjustment = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] decimal? CurrentFactor = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool HasFaceValueTerms =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:470](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L470) | True when the lot recorded the acquisition-time par conventions (OriginalFace, BookedFactor, ParBasis). They are persisted all-three-or-none, so a lot either states its face terms or states nothing and consumers fail closed rather than inheriting a price-per-100, factor-1 default. |
+
+## LegacyIntercompanyAttributionRules
+
+Qualified name: <code>Meridian.Storage.Ledger.LegacyIntercompanyAttributionRules</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs:10](../../../../src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs#L10).
+
+```csharp
+public static class LegacyIntercompanyAttributionRules
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string SourceDigest(LedgerBookRecord book, LedgerJournalEntryRecord record, LedgerEntry line) =&gt; …;</code> | [src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs:12](../../../../src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs#L12) |  |
+| <code>public static IReadOnlyList&lt;LegacyIntercompanyAttributionDto&gt; Resolve(IEnumerable&lt;LegacyIntercompanyAttributionDto&gt; history) =&gt; …;</code> | [src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs:16](../../../../src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs#L16) |  |
+| <code>public static void ValidateAppend(LegacyIntercompanyAttributionDto fact, Guid? expectedPrevious, IReadOnlyList&lt;LegacyIntercompanyAttributionDto&gt; history);</code> | [src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs:21](../../../../src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs#L21) |  |
+
+## LegacyIntercompanyAttributionValidator
+
+Qualified name: <code>Meridian.Storage.Ledger.LegacyIntercompanyAttributionValidator</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs:76](../../../../src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs#L76).
+
+Checks reviewer assertions against immutable journal facts and retained approved terms.
+
+```csharp
+public sealed class LegacyIntercompanyAttributionValidator(ILedgerJournalStore journals, IIntercompanyAccountBindingStore bindings, IIntercompanyAccountingArrangementStore agreements, IIntercompanyAccountingArrangementLegalAuthority legalAuthority)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IAsyncDisposable&gt; AcquireAuthorityLeaseAsync(LegacyIntercompanyAttributionDto fact, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs:80](../../../../src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs#L80) |  |
+| <code>public async Task ValidateAsync(LegacyIntercompanyAttributionDto fact, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs:117](../../../../src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs#L117) |  |
+
 ## OpenLotBackfillRules
 
 Qualified name: <code>Meridian.Storage.Ledger.OpenLotBackfillRules</code>. Kind: `class`.
@@ -1564,65 +1617,3 @@ Declared public members:
 | <code>[JsonPropertyName(&quot;validationErrors&quot;)] public ValidationError[]? ValidationErrors { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageResult.cs:283](../../../../src/Meridian.Storage/Packaging/PackageResult.cs#L283) | Details of validation failures. |
 | <code>public static ImportResult CreateSuccess(string sourcePath, string destinationPath, PackageManifest manifest) =&gt; …;</code> | [src/Meridian.Storage/Packaging/PackageResult.cs:288](../../../../src/Meridian.Storage/Packaging/PackageResult.cs#L288) | Create a successful result. |
 | <code>public static ImportResult CreateFailure(string sourcePath, string error) =&gt; …;</code> | [src/Meridian.Storage/Packaging/PackageResult.cs:301](../../../../src/Meridian.Storage/Packaging/PackageResult.cs#L301) | Create a failure result. |
-
-## ImportScriptTarget
-
-Qualified name: <code>Meridian.Storage.Packaging.ImportScriptTarget</code>. Kind: `enum`.
-
-Source: [src/Meridian.Storage/Packaging/PackageOptions.cs:232](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L232).
-
-Target platforms for import script generation.
-
-```csharp
-public enum ImportScriptTarget : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Python</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:235](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L235) | Python with pandas. |
-| <code>R</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:238](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L238) | R with tidyverse. |
-| <code>PostgreSql</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:241](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L241) | PostgreSQL/TimescaleDB. |
-| <code>ClickHouse</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:244](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L244) | ClickHouse. |
-| <code>Spark</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:247](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L247) | Apache Spark. |
-| <code>DuckDb</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:250](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L250) | DuckDB. |
-
-## IPortableLedgerValidator
-
-Qualified name: <code>Meridian.Storage.Packaging.IPortableLedgerValidator</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Packaging/PortableLedgerPayload.cs:13](../../../../src/Meridian.Storage/Packaging/PortableLedgerPayload.cs#L13).
-
-Accounting-owned validation boundary for an opaque portable journal. Implementations verify its schema, double-entry invariants and declared account-balance checksum, or throw.
-
-```csharp
-public interface IPortableLedgerValidator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task ValidateAsync(PortableLedgerPayload payload, CancellationToken ct = default);</code> | [src/Meridian.Storage/Packaging/PortableLedgerPayload.cs:15](../../../../src/Meridian.Storage/Packaging/PortableLedgerPayload.cs#L15) |  |
-
-## PackageCompressionLevel
-
-Qualified name: <code>Meridian.Storage.Packaging.PackageCompressionLevel</code>. Kind: `enum`.
-
-Source: [src/Meridian.Storage/Packaging/PackageOptions.cs:178](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L178).
-
-Compression level for package archives.
-
-```csharp
-public enum PackageCompressionLevel : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>None</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:181](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L181) | No compression - fastest, largest files. |
-| <code>Fast</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:184](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L184) | Fast compression - good speed, moderate size. |
-| <code>Balanced</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:187](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L187) | Balanced compression - good balance of speed and size. |
-| <code>Maximum</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:190](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L190) | Maximum compression - slowest, smallest files. |

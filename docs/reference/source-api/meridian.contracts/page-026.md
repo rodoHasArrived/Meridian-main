@@ -142,6 +142,18 @@ Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:106](../.
 public sealed record CustodianStatementBatchDto(Guid BatchId, Guid AccountId, DateOnly AsOfDate, string CustodianName, string SourceFormat, int LineCount, DateTimeOffset IngestedAt, string LoadedBy, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] CustodianStatementAuthorityDto? Authority = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? ContentSha256 = null);
 ```
 
+## DecideIntercompanyRateFixingRequest
+
+Qualified name: <code>Meridian.Contracts.FundStructure.DecideIntercompanyRateFixingRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyRateFixingDtos.cs:31](../../../../src/Meridian.Contracts/FundStructure/IntercompanyRateFixingDtos.cs#L31).
+
+Approves or rejects exactly the pending value the reviewer saw.
+
+```csharp
+public sealed record DecideIntercompanyRateFixingRequest(Guid RequestId, IntercompanyRateFixingActionDto Action, long ExpectedVersion, string ExpectedValueDigest, string? Reason = null);
+```
+
 ## EntityLifecycleEligibilityDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.EntityLifecycleEligibilityDto</code>. Kind: `record`.
@@ -594,14 +606,4 @@ Source: [src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs:
 
 ```csharp
 public sealed record FundStructureSetupVehicleDraftDto(Guid? VehicleId, string Code, string Name, string BaseCurrency, string? Description = null);
-```
-
-## FundStructureSharedDataAccessDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:295](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L295).
-
-```csharp
-public sealed record FundStructureSharedDataAccessDto(SecurityMasterAccessSummaryDto SecurityMaster, HistoricalPriceAccessSummaryDto HistoricalPrices, BackfillAccessSummaryDto Backfill);
 ```

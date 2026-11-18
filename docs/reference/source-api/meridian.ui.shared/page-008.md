@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ScoreExplanationProjection
+
+Qualified name: <code>Meridian.Ui.Shared.ScoreExplanationProjection</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/ScoreExplanationProjection.cs:6](../../../../src/Meridian.Ui.Shared/ScoreExplanationProjection.cs#L6).
+
+Compact UI-facing projection for rendering &quot;why&quot; artifacts next to a score.
+
+```csharp
+public sealed record ScoreExplanationProjection(double Score, string Summary, IReadOnlyList<ScoreReasonProjection> Reasons)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ScoreExplanationProjection Create(double score, IEnumerable&lt;ScoreReasonProjection&gt; reasons, int maxReasons = 3);</code> | [src/Meridian.Ui.Shared/ScoreExplanationProjection.cs:11](../../../../src/Meridian.Ui.Shared/ScoreExplanationProjection.cs#L11) |  |
+
 ## ScoreReasonProjection
 
 Qualified name: <code>Meridian.Ui.Shared.ScoreReasonProjection</code>. Kind: `record`.
@@ -889,33 +907,3 @@ Declared public members:
 | <code>public IReadOnlyList&lt;string&gt; Blockers { get; init; } = Blockers??[];</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:117](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L117) |  |
 | <code>public IReadOnlyList&lt;AutomatedJournalScheduleRunHistory&gt; RunHistory { get; init; } = RunHistory??[];</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:119](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L119) |  |
 | <code>public IReadOnlyList&lt;AutomatedJournalPositionSnapshotScope&gt; PositionSnapshotScopes { get; init; } = PositionSnapshotScopes??[];</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:121](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L121) |  |
-
-## BackfillCoordinator
-
-Qualified name: <code>Meridian.Ui.Shared.Services.BackfillCoordinator</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:16](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L16).
-
-Read-model façade over the core CoreBackfillCoordinator for UI hosts. The core coordinator owns all execution, provider discovery, and preview/estimation logic; this wrapper only adapts the UI ConfigStore seam and exposes the surface consumed by workstation endpoints.
-
-```csharp
-public sealed class BackfillCoordinator : IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public BackfillCoordinator(ConfigStore store, ProviderRegistry? registry = null, ProviderFactory? factory = null, IProviderCatalog? providerCatalog = null);</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:28](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L28) | Creates a façade that owns a private core coordinator built from the UI config store. |
-| <code>public BackfillCoordinator(CoreBackfillCoordinator core);</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:41](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L41) | Creates a façade over an externally owned core coordinator (typically the composition-root singleton) so UI endpoints and non-UI callers share one run gate. |
-| <code>public IEnumerable&lt;object&gt; DescribeProviders() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:50](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L50) | Gets descriptions of all available backfill providers. |
-| <code>public BackfillResult? TryReadLast() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:55](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L55) | Tries to read the last backfill result. |
-| <code>public IReadOnlyDictionary&lt;string, DateOnly&gt;? TryReadSymbolCheckpoints() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:60](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L60) | Returns the per-symbol checkpoint map, or null when no checkpoints exist. |
-| <code>public IReadOnlyDictionary&lt;string, long&gt;? TryReadSymbolBarCounts() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:65](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L65) | Returns the per-symbol bar-count sidecar, or null when no bar-count data exists. |
-| <code>public Task&lt;BackfillResult&gt; RunAsync(BackfillRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:70](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L70) | Runs a backfill operation for the specified request. |
-| <code>public void ValidateRequest(BackfillRequest request) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:73](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L73) |  |
-| <code>public Task&lt;IReadOnlyDictionary&lt;string, ProviderHealthStatus&gt;&gt; CheckProviderHealthAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:78](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L78) | Gets health status of all providers. |
-| <code>public Task&lt;Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolResolution?&gt; ResolveSymbolAsync(string symbol, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:84](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L84) | Resolve a symbol using OpenFIGI. |
-| <code>public object? GetProgress() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:90](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L90) | Gets backfill progress snapshot from the core coordinator, if available. |
-| <code>public Task&lt;BackfillPreviewResult&gt; PreviewAsync(BackfillRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:96](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L96) | Previews a backfill operation without actually fetching data. Returns information about what would be backfilled. |
-| <code>public void Dispose();</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:99](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L99) |  |

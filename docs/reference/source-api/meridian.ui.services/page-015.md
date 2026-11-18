@@ -6,6 +6,49 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolFileDto
+
+Qualified name: <code>Meridian.Ui.Services.SymbolFileDto</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/StorageModels.cs:68](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L68).
+
+Describes a stored symbol file&#x27;s type, size, modification time, records, and compression.
+
+```csharp
+public sealed class SymbolFileDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string FileName { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:70](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L70) |  |
+| <code>public string DataType { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:71](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L71) |  |
+| <code>public long SizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:72](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L72) |  |
+| <code>public DateTime ModifiedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:73](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L73) |  |
+| <code>public long RecordCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:74](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L74) |  |
+| <code>public string? CompressionType { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:75](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L75) |  |
+
+## SymbolGapAnalysisDto
+
+Qualified name: <code>Meridian.Ui.Services.SymbolGapAnalysisDto</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/BackfillApiService.cs:176](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L176).
+
+Minimal DTO for deserializing the /api/quality/gaps/{symbol} response. Only the fields used by the gap analysis UI are mapped here.
+
+```csharp
+public sealed class SymbolGapAnalysisDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Symbol { get; set; } = &quot;&quot;;</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:178](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L178) |  |
+| <code>public int TotalGaps { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:179](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L179) |  |
+| <code>public double DataAvailabilityPercent { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillApiService.cs:181](../../../../src/Meridian.Ui.Services/Services/BackfillApiService.cs#L181) | 0–100 percentage of trading time with data present. |
+
 ## SymbolGapSummary
 
 Qualified name: <code>Meridian.Ui.Services.SymbolGapSummary</code>. Kind: `class`.
@@ -1139,43 +1182,3 @@ Declared public members:
 | <code>public bool CanAutoRefresh { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:469](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L469) |  |
 | <code>public TimeSpan TimeRemaining =&gt; …;</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:470](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L470) |  |
 | <code>public TokenExpirationWarningEventArgs(string providerId, DateTime expiresAt, bool canAutoRefresh);</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:472](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L472) |  |
-
-## TokenRefreshEventArgs
-
-Qualified name: <code>Meridian.Ui.Services.TokenRefreshEventArgs</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:435](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L435).
-
-Event args for successful token refresh.
-
-```csharp
-public sealed class TokenRefreshEventArgs : EventArgs
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ProviderId { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:437](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L437) |  |
-| <code>public DateTime RefreshedAt { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:438](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L438) |  |
-| <code>public TokenRefreshEventArgs(string providerId, DateTime refreshedAt);</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:440](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L440) |  |
-
-## TokenRefreshFailedEventArgs
-
-Qualified name: <code>Meridian.Ui.Services.TokenRefreshFailedEventArgs</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:450](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L450).
-
-Event args for failed token refresh.
-
-```csharp
-public sealed class TokenRefreshFailedEventArgs : EventArgs
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ProviderId { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:452](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L452) |  |
-| <code>public string ErrorMessage { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:453](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L453) |  |
-| <code>public TokenRefreshFailedEventArgs(string providerId, string errorMessage);</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:455](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L455) |  |

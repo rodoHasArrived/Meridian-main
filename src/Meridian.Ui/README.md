@@ -32,6 +32,9 @@ journal-line reference editing follows the server's rollout capability; the brow
 rate text and source amounts. Rebuild with the canonical dashboard command after changes. See
 [intercompany agreements](../../docs/domain/intercompany-agreements.md) for authority and configuration.
 
+The served Entity operations bundle adds a Rate fixings tab over
+`/api/ledger/intercompany/rate-fixings`. See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
+
 The served Entity operations bundle adds a Balance confirmation tab over
 `/api/ledger/intercompany/confirmations`. See [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
 

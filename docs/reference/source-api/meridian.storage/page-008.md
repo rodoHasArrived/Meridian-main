@@ -6,6 +6,68 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ImportScriptTarget
+
+Qualified name: <code>Meridian.Storage.Packaging.ImportScriptTarget</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/Packaging/PackageOptions.cs:232](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L232).
+
+Target platforms for import script generation.
+
+```csharp
+public enum ImportScriptTarget : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Python</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:235](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L235) | Python with pandas. |
+| <code>R</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:238](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L238) | R with tidyverse. |
+| <code>PostgreSql</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:241](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L241) | PostgreSQL/TimescaleDB. |
+| <code>ClickHouse</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:244](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L244) | ClickHouse. |
+| <code>Spark</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:247](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L247) | Apache Spark. |
+| <code>DuckDb</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:250](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L250) | DuckDB. |
+
+## IPortableLedgerValidator
+
+Qualified name: <code>Meridian.Storage.Packaging.IPortableLedgerValidator</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Packaging/PortableLedgerPayload.cs:13](../../../../src/Meridian.Storage/Packaging/PortableLedgerPayload.cs#L13).
+
+Accounting-owned validation boundary for an opaque portable journal. Implementations verify its schema, double-entry invariants and declared account-balance checksum, or throw.
+
+```csharp
+public interface IPortableLedgerValidator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task ValidateAsync(PortableLedgerPayload payload, CancellationToken ct = default);</code> | [src/Meridian.Storage/Packaging/PortableLedgerPayload.cs:15](../../../../src/Meridian.Storage/Packaging/PortableLedgerPayload.cs#L15) |  |
+
+## PackageCompressionLevel
+
+Qualified name: <code>Meridian.Storage.Packaging.PackageCompressionLevel</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/Packaging/PackageOptions.cs:178](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L178).
+
+Compression level for package archives.
+
+```csharp
+public enum PackageCompressionLevel : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>None</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:181](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L181) | No compression - fastest, largest files. |
+| <code>Fast</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:184](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L184) | Fast compression - good speed, moderate size. |
+| <code>Balanced</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:187](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L187) | Balanced compression - good balance of speed and size. |
+| <code>Maximum</code> | [src/Meridian.Storage/Packaging/PackageOptions.cs:190](../../../../src/Meridian.Storage/Packaging/PackageOptions.cs#L190) | Maximum compression - slowest, smallest files. |
+
 ## PackageContents
 
 Qualified name: <code>Meridian.Storage.Packaging.PackageContents</code>. Kind: `class`.
@@ -1065,86 +1127,3 @@ Declared public members:
 | <code>public PostgresReportingArtifactStore(ReportingArtifactStoreOptions options);</code> | [src/Meridian.Storage/Reporting/PostgresReportingArtifactStore.cs:20](../../../../src/Meridian.Storage/Reporting/PostgresReportingArtifactStore.cs#L20) |  |
 | <code>public async Task&lt;ReportingArtifactWriteResult&gt; StoreAsync(ReportingArtifactWriteRequest request, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingArtifactStore.cs:28](../../../../src/Meridian.Storage/Reporting/PostgresReportingArtifactStore.cs#L28) |  |
 | <code>public async Task&lt;ReportingArtifactReadResult&gt; ReadAsync(ReportingArtifactIdentity identity, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingArtifactStore.cs:198](../../../../src/Meridian.Storage/Reporting/PostgresReportingArtifactStore.cs#L198) |  |
-
-## PostgresReportingDeliveryStore
-
-Qualified name: <code>Meridian.Storage.Reporting.PostgresReportingDeliveryStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs:13](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs#L13).
-
-PostgreSQL outbox for reporting delivery. Jobs are claimed with row locks and skip-locked leasing; state, retry metadata, and append-only receipts are committed atomically.
-
-```csharp
-public sealed class PostgresReportingDeliveryStore : IReportingDeliveryStore, IReportingDeliveryGrantDownloadCommitter
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostgresReportingDeliveryStore(ReportingArtifactStoreOptions options);</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs:23](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs#L23) |  |
-| <code>public Task&lt;ReportingDeliveryJobRecord?&gt; GetAsync(string jobId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs:34](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs#L34) |  |
-| <code>public Task&lt;ReportingDeliveryJobRecord?&gt; GetByIdempotencyKeyAsync(string idempotencyKey, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs:45](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs#L45) |  |
-| <code>public Task&lt;ReportingDeliveryJobRecord?&gt; GetByAccessGrantIdAsync(string accessGrantId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs:53](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs#L53) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ReportingDeliveryJobRecord&gt;&gt; ListByPackageAsync(string tenantId, string packageId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs:64](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs#L64) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ReportingDeliveryJobRecord&gt;&gt; ListByRunAsync(string tenantId, string runId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs:86](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs#L86) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ReportingDeliveryGrantRevocationCandidate&gt;&gt; ListPendingAccessGrantRevocationsAsync(int take, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs:153](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs#L153) |  |
-| <code>public async Task&lt;bool&gt; TryCreateAsync(ReportingDeliveryJobRecord job, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs:216](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs#L216) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ReportingDeliveryJobRecord&gt;&gt; ClaimDueAsync(DateTimeOffset nowUtc, string leaseOwner, TimeSpan leaseDuration, int take, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs:287](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs#L287) |  |
-| <code>public async Task&lt;bool&gt; TryUpdateAsync(string jobId, long expectedVersion, ReportingDeliveryJobRecord updatedJob, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs:381](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs#L381) |  |
-| <code>public async Task&lt;ReportingDeliveryGrantDownloadCommitStatus&gt; TryCommitAsync(ReportingDeliveryGrantDownloadCommit commit, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs:424](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeliveryStore.cs#L424) |  |
-
-## PostgresReportingDeploymentProbe
-
-Qualified name: <code>Meridian.Storage.Reporting.PostgresReportingDeploymentProbe</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs:20](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs#L20).
-
-Read-only liveness and schema probe for the canonical PostgreSQL reporting authority. It exposes only stable component identifiers and never returns connection details.
-
-```csharp
-public sealed class PostgresReportingDeploymentProbe : IReportingDeploymentProbe
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string AccessGrantArtifactConsumptionCompatibilityMarker = &quot;reporting-access-grant-artifact-consumption:v1&quot;;</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs:22](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs#L22) |  |
-| <code>public const string AccessGrantArtifactConsumptionTriggerName = &quot;trg_reporting_access_grants_guard_v012&quot;;</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs:25](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs#L25) |  |
-| <code>public const string StatementReconciliationAuthorityCompatibilityMarker = &quot;reporting-statement-reconciliation-authority:v1&quot;;</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs:28](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs#L28) |  |
-| <code>public const string StatementDocumentGuardTriggerName = &quot;trg_reporting_statement_document_guard&quot;;</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs:31](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs#L31) |  |
-| <code>public const string StatementDocumentRevisionTriggerName = &quot;trg_reporting_statement_document_revision&quot;;</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs:34](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs#L34) |  |
-| <code>public const string StatementDocumentTruncateGuardTriggerName = &quot;trg_reporting_statement_document_truncate_guard&quot;;</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs:37](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs#L37) |  |
-| <code>public const string StatementRevisionAppendTriggerName = &quot;trg_reporting_statement_revision_append&quot;;</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs:40](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs#L40) |  |
-| <code>public const string StatementRevisionGuardTriggerName = &quot;trg_reporting_statement_revision_guard&quot;;</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs:43](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs#L43) |  |
-| <code>public const string StatementRevisionTruncateGuardTriggerName = &quot;trg_reporting_statement_revision_truncate_guard&quot;;</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs:46](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs#L46) |  |
-| <code>public const string SchemaIncompleteFailureCode = &quot;REPORTING_SCHEMA_INCOMPLETE&quot;;</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs:49](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs#L49) |  |
-| <code>public const string BinaryMigrationAssetUnavailableFailureCode = &quot;REPORTING_BINARY_MIGRATION_ASSET_UNAVAILABLE&quot;;</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs:52](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs#L52) |  |
-| <code>public PostgresReportingDeploymentProbe(ReportingArtifactStoreOptions options);</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs:693](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs#L693) |  |
-| <code>public ReportingDeploymentProbeResult Probe();</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs:711](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs#L711) |  |
-
-## PostgresReportingGovernanceRepository
-
-Qualified name: <code>Meridian.Storage.Reporting.PostgresReportingGovernanceRepository</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Reporting/PostgresReportingGovernanceRepository.cs:19](../../../../src/Meridian.Storage/Reporting/PostgresReportingGovernanceRepository.cs#L19).
-
-PostgreSQL implementation of the governed-reporting transaction boundary. Current aggregate state is versioned optimistically while audit events are appended to a separately protected hash chain in the same database transaction.
-
-```csharp
-public sealed partial class PostgresReportingGovernanceRepository : IReportingGovernanceRepository
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostgresReportingGovernanceRepository(ReportingArtifactStoreOptions options);</code> | [src/Meridian.Storage/Reporting/PostgresReportingGovernanceRepository.cs:26](../../../../src/Meridian.Storage/Reporting/PostgresReportingGovernanceRepository.cs#L26) |  |
-| <code>public async ValueTask&lt;TResult&gt; ExecuteTransactionAsync&lt;TResult&gt;(Func&lt;IReportingGovernanceTransaction, CancellationToken, ValueTask&lt;TResult&gt;&gt; operation, CancellationToken cancellationToken = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingGovernanceRepository.cs:38](../../../../src/Meridian.Storage/Reporting/PostgresReportingGovernanceRepository.cs#L38) |  |
-
-Source: [src/Meridian.Storage/Reporting/PostgresReportingGovernanceRepository.RunBatches.cs:7](../../../../src/Meridian.Storage/Reporting/PostgresReportingGovernanceRepository.RunBatches.cs#L7).
-
-```csharp
-public sealed partial class PostgresReportingGovernanceRepository
-```

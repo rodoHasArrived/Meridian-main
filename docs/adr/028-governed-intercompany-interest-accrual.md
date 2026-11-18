@@ -1,10 +1,11 @@
 # ADR-028: Governed Intercompany Loan-Interest Accrual from Structured Terms
 
-**Status:** Proposed; first increment implemented
+**Status:** Proposed; first increment implemented; floating-rate extension (2026-11-17) implemented
 **Date:** 2026-11-14
 **Owner:** Accounting and Ledger
-**Reviewed:** 2026-11-14
-**Deciders:** Repository owner (scope direction recorded as `DEC-IC-ACCRUAL-001`)
+**Reviewed:** 2026-11-17
+**Deciders:** Repository owner (scope direction recorded as `DEC-IC-ACCRUAL-001` and, for floating rates,
+`DEC-IC-FLOAT-001`)
 **Supersedes:** None. It narrows the "interest and fees are not calculated" boundary of the
 intercompany agreement registry for one declared case.
 **Superseded by:** None
@@ -87,13 +88,39 @@ result through the existing review and proposal pipeline. It never posts on its 
   accrual is unavailable. The destination side is converted by the existing counterpart delivery
   under the destination book's own FX configuration.
 
+### Extension (2026-11-17): rule `intercompany-accrual-v2`, floating rates
+
+Recorded as `DEC-IC-FLOAT-001`. Rule v1 is unchanged; v2 adds floating-rate simple interest.
+
+- **Declared reset.** A floating loan's structured terms add `FixingLagBusinessDays` (0 to 10). The
+  index fixing for a schedule period is observed that many business days, on the schedule calendar,
+  before the period's accrual start and holds for the whole period (set in advance). The field is
+  null-omitted, so revisions approved before it existed keep their exact review hashes; a floating
+  revision without it cannot accrue, because no fixing date is inferred.
+- **Reviewed fixings.** `IntercompanyRateFixingService` retains fixings per tenant, index and
+  observation date as append-only versions (fund-structure migration `009`, or an atomic file store).
+  An operator proposes a value with its source and justification; it sets rates only after someone
+  else approves it. A correction is a new pending value: the approved value stays in force until the
+  correction is approved, and a rejection needs a reason. Nothing is fetched from a market feed.
+- **Calculation.** Each floating slice's annual rate is the approved fixing of its period plus
+  `SpreadBps / 10,000`. Exactly that date's approved value is used: never the nearest, the latest or
+  a carried-forward rate. A missing fixing refuses the whole window. Everything else (authority by
+  day, proration, cutting, one rounding) is v1's rule.
+- **Rule identity.** A window with any floating day computes under v2; an all-fixed window stays v1,
+  with unchanged evidence. The draft identity stays keyed on the v1 rule name, so a window never
+  gains a second identity. Each floating slice pins its fixing identity, index rate, spread, lag and
+  value digest, and the evidence guard refuses a slice whose rate differs from its pin.
+- **Staleness.** Before an accrual draft is submitted, approved or posted, every pinned fixing is read
+  again; a value re-approved after drafting stops the draft until it is recomputed.
+
 ### Not decided here
 
 - **Fees.** A fixed management fee has no declared amount period in terms schema v1, and a
   percentage fee has no measured calculation base. Both stay uncalculated until the terms declare
   what would otherwise be guessed.
-- **Floating rates and compounding.** They need a governed fixing authority and retained
-  capitalization history.
+- **Compounding, in-arrears or averaged rates, floors and caps.** Compounding needs retained
+  capitalization history; in-arrears and averaged conventions, floors and caps need their own
+  declared terms and rule version.
 - **Scheduling.** Nothing runs on a timer. An operator requests each accrual.
 
 ## Implementation Links
@@ -114,6 +141,13 @@ result through the existing review and proposal pipeline. It never posts on its 
 | Browser | `src/Meridian.Ui/dashboard/src/screens/accounting-screen.entity-interest-accrual.tsx` | "Accrue interest" on an approved `LoanInterest` accounting profile |
 | Desktop | `src/Meridian.Ui.Services/Services/Accounting/IntercompanyInterestAccrualWorkspace.cs`, `src/Meridian.Wpf/Views/IntercompanyInterestAccrualControl.xaml` | Interest accrual tab over the same two routes |
 | Tests | `tests/Meridian.Tests/Storage/IntercompanyAccrualPostAndDeliverPostgresTests.cs` | PostgreSQL post at source, deliver, post at destination |
+| Fixing contracts | `src/Meridian.Contracts/FundStructure/IntercompanyRateFixingDtos.cs` | Reviewed fixing record, requests and store interface (v2) |
+| Fixing authority | `src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs`, `IntercompanyRateFixingService.cs` | Maker-checker transitions and approved-value reads |
+| Fixing stores | `src/Meridian.Storage/FundStructure/PostgresIntercompanyRateFixingStore.cs`, `FileIntercompanyRateFixingStore.cs` | Append-only versions; fund-structure migration `009` |
+| Fixing routes | `src/Meridian.Ui.Shared/Endpoints/IntercompanyRateFixingEndpoints.cs` | `/api/ledger/intercompany/rate-fixings` list, propose and decide |
+| Tests | `tests/Meridian.FundStructure.Tests/IntercompanyFloatingAccrualPreviewTests.cs`, `IntercompanyRateFixingServiceTests.cs` | v2 calculation, refusals and maker-checker |
+| Tests | `tests/Meridian.Tests/Ui/IntercompanyAccrualDraftServiceTests.Floating.cs`, `IntercompanyRateFixingEndpointTests.cs`, `tests/Meridian.Tests/Storage/FundStructure/IntercompanyRateFixingStoreTests.cs` | Draft evidence, staleness, routes and durable stores |
+| Desktop | `src/Meridian.Ui.Services/Services/Accounting/IntercompanyRateFixingWorkspace.cs`, `src/Meridian.Wpf/Views/IntercompanyRateFixingsControl.xaml` | Rate fixings tab |
 
 The calculator, template, source draft, evidence guard, endpoints and the tests above are
 implemented. Since 2026-11-16 both workstations can request an accrual over the same preview and

@@ -6,6 +6,112 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkflowPresetSaveRequest
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkflowPresetSaveRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:71](../../../../src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs#L71).
+
+Request to create or update an operator-saved workflow preset.
+
+```csharp
+public sealed record WorkflowPresetSaveRequest(string? PresetId, string Name, string? Description, string WorkflowId, string? ActionId, IReadOnlyList<string>? Tags, bool IsPinned, string? ViewStateEnvelope = null);
+```
+
+## WorkspaceModeDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkspaceModeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:62](../../../../src/Meridian.Contracts/Workstation/FirstRunDtos.cs#L62).
+
+```csharp
+public sealed record WorkspaceModeDto(string Id, string Name, bool IsSample, string Badge, string SafetyMessage, string SamplePackVersion);
+```
+
+## WorkspaceWorkflowSummary
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkspaceWorkflowSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs:20](../../../../src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs#L20).
+
+Workflow posture for one top-level workstation workspace.
+
+```csharp
+public sealed record WorkspaceWorkflowSummary(string WorkspaceId, string WorkspaceTitle, string StatusLabel, string StatusDetail, string StatusTone, WorkflowNextAction NextAction, WorkflowBlockerSummary PrimaryBlocker, IReadOnlyList<WorkflowEvidenceBadge> Evidence);
+```
+
+## WorkstationAccountingAgingBucketPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingAgingBucketPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:844](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L844).
+
+```csharp
+public sealed record WorkstationAccountingAgingBucketPayload(string Bucket, int Count);
+```
+
+## WorkstationAccountingAlertPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingAlertPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:861](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L861).
+
+```csharp
+public sealed record WorkstationAccountingAlertPayload(string Tone, string Message);
+```
+
+## WorkstationAccountingCashFlowSummaryPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingCashFlowSummaryPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:812](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L812).
+
+```csharp
+public sealed record WorkstationAccountingCashFlowSummaryPayload(decimal TotalCash, decimal TotalLedgerCash, decimal NetVariance, decimal TotalFinancing, int RunsWithCashSignals, int RunsWithCashVariance, string Tone, string Summary);
+```
+
+## WorkstationAccountingControlCenterPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingControlCenterPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:865](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L865).
+
+```csharp
+public sealed record WorkstationAccountingControlCenterPayload(string CloseReadiness, IReadOnlyList<string> PortfolioFilterOptions, IReadOnlyList<string> AccountFilterOptions, IReadOnlyList<WorkstationAccountingSeverityCountPayload> BlockerSeverityDistribution, IReadOnlyList<WorkstationAccountingAgingBucketPayload> AgingCurves, IReadOnlyList<WorkstationAccountingOwnerWorkloadPayload> OwnerWorkload, int SlaBreachCount, IReadOnlyList<WorkstationAccountingTrendSnapshotPayload> TrendSnapshots, IReadOnlyList<WorkstationAccountingDrillLinkPayload> DrillLinks, IReadOnlyList<WorkstationAccountingAlertPayload> Alerts);
+```
+
+## WorkstationAccountingDrillLinkPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingDrillLinkPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:857](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L857).
+
+```csharp
+public sealed record WorkstationAccountingDrillLinkPayload(string Label, string Href);
+```
+
+## WorkstationAccountingOwnerWorkloadPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingOwnerWorkloadPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:848](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L848).
+
+```csharp
+public sealed record WorkstationAccountingOwnerWorkloadPayload(string Owner, int OpenCount);
+```
+
+## WorkstationAccountingPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:926](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L926).
+
+Typed payload returned by GET /api/workstation/accounting. The independent reporting route returns the nested WorkstationReportingPayload directly.
+
+```csharp
+public sealed record WorkstationAccountingPayload(IReadOnlyList<WorkstationMetricCard> Metrics, IReadOnlyList<WorkstationAccountingRunRecord> ReconciliationQueue, IReadOnlyList<ReconciliationBreakQueueItem> BreakQueue, WorkstationAccountingWorkspaceSummary Workspace, WorkstationAccountingCashFlowSummaryPayload CashFlow, WorkstationReportingPayload Reporting, WorkstationAccountingControlCenterPayload ControlCenter, WorkstationKernelObservabilityPayload KernelObservability, ManualJournalEntryWorkbenchDto? ManualJournalWorkbench = null);
+```
+
 ## WorkstationAccountingRunCashFlowPayload
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingRunCashFlowPayload</code>. Kind: `record`.
@@ -446,112 +552,4 @@ Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:296](../
 
 ```csharp
 public sealed record WorkstationPlotToolStatisticsPayload(string Eyebrow, string Title, string Description, IReadOnlyList<WorkstationPlotToolSummaryTilePayload> SummaryTiles, IReadOnlyList<int> DistributionBars, string DistributionSummary, string DistributionFootnote, IReadOnlyList<WorkstationPlotToolMomentPayload> Moments, WorkstationPlotToolRegressionPayload Regression, IReadOnlyList<WorkstationPlotToolSampleRowPayload> SampleRows);
-```
-
-## WorkstationPlotToolStudyPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPlotToolStudyPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:308](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L308).
-
-```csharp
-public sealed record WorkstationPlotToolStudyPayload(string Id, string Title, string Subtitle, string StatusText, string StatusBadgeLabel, string StatusBadgeVariant, string MetricText, string NoteText, bool IsActive);
-```
-
-## WorkstationPlotToolSummaryItemPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPlotToolSummaryItemPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:223](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L223).
-
-```csharp
-public sealed record WorkstationPlotToolSummaryItemPayload(string Id, string Label, string Value);
-```
-
-## WorkstationPlotToolSummaryTilePayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPlotToolSummaryTilePayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:270](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L270).
-
-```csharp
-public sealed record WorkstationPlotToolSummaryTilePayload(string Id, string Label, string Value, string Detail, string Tone);
-```
-
-## WorkstationPlotToolTabState
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPlotToolTabState</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:201](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L201).
-
-PlotTool tab strip state attached to the strategy payload.
-
-```csharp
-public sealed record WorkstationPlotToolTabState(string Id, string Label, string TabId, string PanelId, bool Selected, string ButtonVariant, int TabIndex, string AriaLabel);
-```
-
-## WorkstationPlotToolTickPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPlotToolTickPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:214](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L214).
-
-PlotTool workspace/statistics payload embedded in strategy responses.
-
-```csharp
-public sealed record WorkstationPlotToolTickPayload(int Value, string Label);
-```
-
-## WorkstationPlotToolWorkspacePayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPlotToolWorkspacePayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:247](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L247).
-
-```csharp
-public sealed record WorkstationPlotToolWorkspacePayload(string Eyebrow, string Title, string Description, string StatusBadgeLabel, string StatusBadgeVariant, string Expression, IReadOnlyList<string> ToolbarPills, IReadOnlyList<string> MetaItems, string XAxisLabel, string YAxisLabel, IReadOnlyList<WorkstationPlotToolTickPayload> XTicks, IReadOnlyList<WorkstationPlotToolTickPayload> YTicks, IReadOnlyList<WorkstationPlotToolPointPayload> Points, IReadOnlyList<WorkstationPlotToolSummaryItemPayload> StudySummary, IReadOnlyList<WorkstationPlotToolLegendItemPayload> LegendItems, WorkstationPlotToolFocusPointPayload FocusPoint, IReadOnlyList<WorkstationPlotToolSignalCardPayload> SignalCards, string ConsoleTitle, string ConsoleBody, string OverlayTitle, IReadOnlyList<string> OverlayItems);
-```
-
-## WorkstationPortfolioPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPortfolioPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:964](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L964).
-
-Unified payload returned by GET /api/workstation/portfolio. Aggregates paper positions, brokerage wiring state, run-linked equity, and cash-flow summary so the Portfolio workspace needs a single request.
-
-```csharp
-public sealed record WorkstationPortfolioPayload(IReadOnlyList<WorkstationMetricCard> Metrics, IReadOnlyList<WorkstationTradingPositionRow> Positions, WorkstationTradingRiskState Risk, WorkstationTradingBrokerageState Brokerage, IReadOnlyList<WorkstationPortfolioRunRow> Runs, WorkstationAccountingCashFlowSummaryPayload? CashFlow);
-```
-
-## WorkstationPortfolioRunRow
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPortfolioRunRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:945](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L945).
-
-A single run linked to the portfolio view — lightweight digest for the portfolio run-linked equity panel.
-
-```csharp
-public sealed record WorkstationPortfolioRunRow(string RunId, string StrategyName, string Engine, string Mode, string Status, string Pnl, string Sharpe, string Dataset, string Window, string LastUpdated, string Notes, string? PromotionState);
-```
-
-## WorkstationPortfolioSummaryPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPortfolioSummaryPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:981](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L981).
-
-```csharp
-public sealed record WorkstationPortfolioSummaryPayload(string FundAccountId, string StrategyId, string Entity, IReadOnlyList<WorkstationMetricCard> ConsolidatedCards, IReadOnlyList<WorkstationTradingPositionRow> Positions, WorkstationTradingRiskState Risk, WorkstationPortfolioSummaryTelemetry Telemetry, IReadOnlyDictionary<string, string> DrillThroughRoutes);
-```
-
-## WorkstationPortfolioSummaryTelemetry
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPortfolioSummaryTelemetry</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:974](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L974).
-
-```csharp
-public sealed record WorkstationPortfolioSummaryTelemetry(long RefreshLatencyMs, int PayloadSizeBytes, bool IsStale, string? StaleReason, string AsOfUtc);
 ```

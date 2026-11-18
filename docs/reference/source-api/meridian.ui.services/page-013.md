@@ -6,6 +6,57 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FeatureHelp
+
+Qualified name: <code>Meridian.Ui.Services.Services.FeatureHelp</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/TooltipContent.cs:7](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L7).
+
+Contextual help information for a feature. Shared across desktop platforms.
+
+```csharp
+public sealed class FeatureHelp
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Title { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:9](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L9) |  |
+| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:10](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L10) |  |
+| <code>public string[]? Tips { get; set; }</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:11](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L11) |  |
+| <code>public string? LearnMoreUrl { get; set; }</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:12](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L12) |  |
+| <code>public Dictionary&lt;string, string&gt;? KeyboardShortcuts { get; set; }</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:13](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L13) |  |
+
+## FixtureDataService
+
+Qualified name: <code>Meridian.Ui.Services.Services.FixtureDataService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/FixtureDataService.cs:9](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L9).
+
+Provides canned fixture data for UI development without backend dependency. Enables offline development and deterministic testing scenarios.
+
+```csharp
+public sealed class FixtureDataService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static FixtureDataService Instance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:12](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L12) |  |
+| <code>public FixtureScenario ActiveScenario =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:26](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L26) | Gets the currently active fixture scenario. |
+| <code>public void SetScenario(FixtureScenario scenario);</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:29](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L29) | Sets the active fixture scenario. |
+| <code>public static string GetScenarioLabel(FixtureScenario scenario) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:35](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L35) | Returns a human-readable label for the given scenario. |
+| <code>public StatusResponse GetMockStatusResponse() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:48](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L48) | Gets a mock status response showing a running system. |
+| <code>public StatusResponse GetMockDisconnectedStatus() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:79](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L79) | Gets a mock status response showing a disconnected system. |
+| <code>public TradeDataResponse GetMockTradeData(string symbol) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:91](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L91) | Gets mock trade data for a given symbol. |
+| <code>public QuoteDataResponse GetMockQuoteData(string symbol);</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:105](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L105) | Gets mock quote data for a given symbol. |
+| <code>public BackfillHealthResponse GetMockBackfillHealth() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:128](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L128) | Gets a mock backfill health response showing healthy providers. |
+| <code>public string[] GetMockSymbols() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:160](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L160) | Gets a collection of mock symbols for testing. |
+| <code>public TradesResponse GetMockTradesResponse(string symbol, int count = 10);</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:169](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L169) | Gets mock trades response with multiple trades. |
+| <code>public async Task SimulateNetworkDelayAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:199](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L199) | Simulates network delay for realistic fixture behavior. |
+
 ## FixtureModeDetector
 
 Qualified name: <code>Meridian.Ui.Services.Services.FixtureModeDetector</code>. Kind: `class`.
@@ -1100,49 +1151,3 @@ Declared public members:
 | <code>public void SetReady() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:466](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L466) |  |
 | <code>public void SetError(string errorMessage) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:467](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L467) |  |
 | <code>public void SetConnectionStatus(bool isConnected, string? providerName = null);</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:469](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L469) |  |
-
-## SymbolQualityReport
-
-Qualified name: <code>Meridian.Ui.Services.Services.SymbolQualityReport</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:60](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L60).
-
-Groups a symbol&#x27;s quality scores, issues, gaps, and completeness breakdown.
-
-```csharp
-public sealed class SymbolQualityReport
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:62](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L62) |  |
-| <code>public double OverallScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:63](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L63) |  |
-| <code>public Dictionary&lt;string, double&gt; ScoresByType { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:64](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L64) |  |
-| <code>public List&lt;QualityIssue&gt; Issues { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:65](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L65) |  |
-| <code>public List&lt;QualityDataGap&gt; Gaps { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:66](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L66) |  |
-| <code>public QualityCompletenessReport Completeness { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:67](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L67) |  |
-
-## SymbolQualitySummary
-
-Qualified name: <code>Meridian.Ui.Services.Services.SymbolQualitySummary</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:28](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L28).
-
-Describes a symbol&#x27;s quality score, status, event count, and detected gaps.
-
-```csharp
-public sealed class SymbolQualitySummary
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:30](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L30) |  |
-| <code>public double QualityScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:31](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L31) |  |
-| <code>public string Status { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:32](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L32) |  |
-| <code>public int EventCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:33](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L33) |  |
-| <code>public int GapCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:34](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L34) |  |
-| <code>public DateTime LastUpdate { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:35](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L35) |  |

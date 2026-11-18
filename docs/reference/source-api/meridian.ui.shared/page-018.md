@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecureReportingGrantIssueCommand
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SecureReportingGrantIssueCommand</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:44](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L44).
+
+```csharp
+public sealed record SecureReportingGrantIssueCommand(string RunId, string? RecipientPrincipalId, IReadOnlyList<string>? ArtifactIds = null, int? LifetimeSeconds = null, int? MaxUses = null, ReportingAccessPrincipalKind? RecipientPrincipalKind = null);
+```
+
 ## SecureReportingGrantIssueResult
 
 Qualified name: <code>Meridian.Ui.Shared.Services.SecureReportingGrantIssueResult</code>. Kind: `record`.
@@ -923,21 +933,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;IntercompanyAgreementEvidenceDto&gt; ResolveAsync(string tenantId, string actor, Guid entityId, IntercompanyAgreementEvidenceDto evidence, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/EntityLifecycleExternalReviewEvidenceAuthority.cs:14](../../../../src/Meridian.Ui.Shared/Services/EntityLifecycleExternalReviewEvidenceAuthority.cs#L14) |  |
-
-## WorkstationIntercompanyAgreementEvidenceAuthority
-
-Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationIntercompanyAgreementEvidenceAuthority</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs:78](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs#L78).
-
-Resolves accepted, scoped Evidence Vault documents and verifies their retained bytes.
-
-```csharp
-public sealed class WorkstationIntercompanyAgreementEvidenceAuthority(IHttpContextAccessor accessor, IEvidenceArtifactStore evidenceStore) : IIntercompanyAgreementEvidenceAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyList&lt;IntercompanyAgreementEvidenceDto&gt;&gt; ResolveAsync(IntercompanyAgreementCallContext context, Guid agreementId, Guid proposalId, IReadOnlyList&lt;IntercompanyAgreementEvidenceDto&gt; evidence, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs:81](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs#L81) |  |
