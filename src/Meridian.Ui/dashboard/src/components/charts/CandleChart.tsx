@@ -2,9 +2,11 @@
 // readout with a right-axis price chip, and an optional volume histogram subpane. Up candles use
 // --chart-equity (green, hollow body); down use --chart-drawdown (red, filled). SVG, flex-fills
 // its container — give the wrapper a definite height (see ChartCard).
+import { AXIS_LABEL_STYLE } from "./axis-ticks";
 import { ChartSvg, type ChartA11yProps } from "./chart-a11y";
 import { ChartInteractionOverlay, isChartInteractive } from "./chart-interaction";
 import { niceTicks } from "./ticks";
+import { useChartSize } from "./use-chart-size";
 
 export interface Candle {
   /** X-axis time label, e.g. "10:48". */
@@ -74,8 +76,9 @@ export function CandleChart({
   ariaDescription,
   accessibleData
 }: CandleChartProps) {
-  const W = 960;
-  const H = 540;
+  const [plotRef, size] = useChartSize({ width: 960, height: 540 });
+  const W = size.width;
+  const H = size.height;
   const padL = 48;
   const padT = 14;
   const axisR = 64;
@@ -125,9 +128,10 @@ export function CandleChart({
   const tStep = Math.max(1, Math.round((bars.length || 1) / timeTicks));
   const ch = crosshairIndex != null && bars[crosshairIndex] ? bars[crosshairIndex] : null;
 
-  const axFont = { fontFamily: "var(--font-data, monospace)", fontSize: 11 };
+  const axFont = { fontFamily: AXIS_LABEL_STYLE.fontFamily, fontVariantNumeric: "tabular-nums", fontSize: 12 };
 
   return (
+    <div ref={plotRef} style={{ width: "100%", height: "100%", minHeight: 0 }}>
     <ChartSvg
       viewBox={`0 0 ${W} ${H}`}
       style={{ width: "100%", height: "100%", display: "block" }}
@@ -241,6 +245,7 @@ export function CandleChart({
         </g>
       )}
     </ChartSvg>
+    </div>
   );
 }
 

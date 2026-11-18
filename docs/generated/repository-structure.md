@@ -9035,6 +9035,8 @@ Meridian-main
 │   │   │   │   │   │   ├── TrialBalanceTable.test.tsx
 │   │   │   │   │   │   └── TrialBalanceTable.tsx
 │   │   │   │   │   ├── charts
+│   │   │   │   │   │   ├── axis-ticks.test.ts
+│   │   │   │   │   │   ├── axis-ticks.ts
 │   │   │   │   │   │   ├── CandleChart.tsx
 │   │   │   │   │   │   ├── CategoryBars.tsx
 │   │   │   │   │   │   ├── chart-a11y.tsx
@@ -9060,7 +9062,9 @@ Meridian-main
 │   │   │   │   │   │   ├── SelectionCompare.tsx
 │   │   │   │   │   │   ├── Sparkline.tsx
 │   │   │   │   │   │   ├── StatusTimeline.tsx
-│   │   │   │   │   │   └── ticks.ts
+│   │   │   │   │   │   ├── stretched-chart-labels.tsx
+│   │   │   │   │   │   ├── ticks.ts
+│   │   │   │   │   │   └── use-chart-size.ts
 │   │   │   │   │   ├── data
 │   │   │   │   │   │   ├── add-provider-drawer.tsx
 │   │   │   │   │   │   ├── concrete.ts
@@ -9315,6 +9319,8 @@ Meridian-main
 │   │   │   │   │   │   ├── ui-kit-primitives.test.tsx
 │   │   │   │   │   │   ├── ui-kit-primitives.tsx
 │   │   │   │   │   │   ├── ui-kit-primitives.virtualization.test.tsx
+│   │   │   │   │   │   ├── use-more-below.test.tsx
+│   │   │   │   │   │   ├── use-more-below.ts
 │   │   │   │   │   │   ├── use-operator-triage-inbox.ts
 │   │   │   │   │   │   ├── use-workspace-expansion.ts
 │   │   │   │   │   │   ├── variance-columns.tsx

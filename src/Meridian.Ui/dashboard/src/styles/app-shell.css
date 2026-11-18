@@ -506,6 +506,15 @@ a.workstation-trust-item:focus-visible {
   background: var(--theme-bg-canvas, var(--ws-page-bg, #F2F0EB));
 }
 
+/* Route changes and the skip link move focus to <main> so screen readers land in the workbench.
+   It is a non-interactive landmark, not a control, so it draws no ring around the whole page
+   (UX Phase F); controls inside it keep their own focus-visible rings. */
+#workbench-content:focus,
+#workbench-content:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
 .workbench-scroll {
   /* Keep absolute accessibility text, including off-screen table captions,
      inside this scrollport instead of extending the outer document. */
