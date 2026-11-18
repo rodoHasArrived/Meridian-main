@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FundStructureTenantBackfillException
+
+Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillException</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs:22](../../../../src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs#L22).
+
+```csharp
+public sealed record FundStructureTenantBackfillException(Guid NodeId, string NodeKind, string Reason, IReadOnlyList<string> CandidateTenantIds);
+```
+
 ## FundStructureTenantBackfillReceipt
 
 Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillReceipt</code>. Kind: `record`.
@@ -365,6 +375,27 @@ Source: [src/Meridian.Storage/FundStructure/IIntercompanyAgreementStore.cs:5](..
 public sealed record IntercompanyAgreementStoreState(Guid AgreementId, long AggregateVersion, IReadOnlyList<IntercompanyAgreementProposalDto> Proposals, IReadOnlyList<IntercompanyAgreementRevisionDto> Revisions, IReadOnlyList<IntercompanyAgreementAuditDto> History, IReadOnlyList<IntercompanyAgreementCommandReceiptDto> Receipts);
 ```
 
+## IntercompanyRateFixingStoreRules
+
+Qualified name: <code>Meridian.Storage.FundStructure.IntercompanyRateFixingStoreRules</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/FundStructure/IntercompanyRateFixingStoreRules.cs:7](../../../../src/Meridian.Storage/FundStructure/IntercompanyRateFixingStoreRules.cs#L7).
+
+Append-only checks shared by the file and PostgreSQL fixing stores.
+
+```csharp
+public static class IntercompanyRateFixingStoreRules
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string Tenant(string tenantId) =&gt; …;</code> | [src/Meridian.Storage/FundStructure/IntercompanyRateFixingStoreRules.cs:9](../../../../src/Meridian.Storage/FundStructure/IntercompanyRateFixingStoreRules.cs#L9) |  |
+| <code>public static bool IsIdenticalRetry(IntercompanyRateFixingDto? current, IntercompanyRateFixingDto next, long expectedVersion);</code> | [src/Meridian.Storage/FundStructure/IntercompanyRateFixingStoreRules.cs:17](../../../../src/Meridian.Storage/FundStructure/IntercompanyRateFixingStoreRules.cs#L17) | Null when next is an identical retry of the current version, which is returned unchanged; otherwise next must be exactly one new version that keeps all prior steps. |
+| <code>public static void RequireTenant(string tenant, IntercompanyRateFixingDto fixing);</code> | [src/Meridian.Storage/FundStructure/IntercompanyRateFixingStoreRules.cs:31](../../../../src/Meridian.Storage/FundStructure/IntercompanyRateFixingStoreRules.cs#L31) |  |
+| <code>public static string Serialize(IntercompanyRateFixingDto fixing) =&gt; …;</code> | [src/Meridian.Storage/FundStructure/IntercompanyRateFixingStoreRules.cs:37](../../../../src/Meridian.Storage/FundStructure/IntercompanyRateFixingStoreRules.cs#L37) |  |
+
 ## JsonFileFundStructureStateStore
 
 Qualified name: <code>Meridian.Storage.FundStructure.JsonFileFundStructureStateStore</code>. Kind: `class`.
@@ -545,6 +576,27 @@ Source: [src/Meridian.Storage/FundStructure/PostgresIntercompanyAgreementStore.P
 ```csharp
 public sealed partial class PostgresIntercompanyAgreementStore
 ```
+
+## PostgresIntercompanyRateFixingStore
+
+Qualified name: <code>Meridian.Storage.FundStructure.PostgresIntercompanyRateFixingStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/FundStructure/PostgresIntercompanyRateFixingStore.cs:11](../../../../src/Meridian.Storage/FundStructure/PostgresIntercompanyRateFixingStore.cs#L11).
+
+Tenant-scoped append-only fixing versions (fund-structure migration 009), serialized per fixing.
+
+```csharp
+public sealed class PostgresIntercompanyRateFixingStore : IIntercompanyRateFixingStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PostgresIntercompanyRateFixingStore(FundStructureStoreOptions options, IFundScopeTenantAccessor tenants);</code> | [src/Meridian.Storage/FundStructure/PostgresIntercompanyRateFixingStore.cs:16](../../../../src/Meridian.Storage/FundStructure/PostgresIntercompanyRateFixingStore.cs#L16) |  |
+| <code>public async Task&lt;IntercompanyRateFixingDto?&gt; GetAsync(string tenantId, Guid fixingId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/PostgresIntercompanyRateFixingStore.cs:25](../../../../src/Meridian.Storage/FundStructure/PostgresIntercompanyRateFixingStore.cs#L25) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;IntercompanyRateFixingDto&gt;&gt; ListAsync(string tenantId, string indexReference, DateOnly from, DateOnly to, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/PostgresIntercompanyRateFixingStore.cs:32](../../../../src/Meridian.Storage/FundStructure/PostgresIntercompanyRateFixingStore.cs#L32) |  |
+| <code>public async Task&lt;IntercompanyRateFixingDto&gt; AppendAsync(IntercompanyRateFixingDto next, long expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/PostgresIntercompanyRateFixingStore.cs:54](../../../../src/Meridian.Storage/FundStructure/PostgresIntercompanyRateFixingStore.cs#L54) |  |
 
 ## FileProviderIntegrationManifestStore
 
@@ -1058,49 +1110,4 @@ Approved reference versions bound to a new acquisition or disposal command.
 
 ```csharp
 public sealed record AtomicLotReferenceVersions(long SecurityMasterVersion, long BookPositionVersion);
-```
-
-## AtomicTaxLotJournalCommand
-
-Qualified name: <code>Meridian.Storage.Ledger.AtomicTaxLotJournalCommand</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:498](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L498).
-
-```csharp
-public sealed record AtomicTaxLotJournalCommand(Guid MutationBatchId, Guid LedgerBookId, LedgerJournalEntryWrite Journal, Guid SourceEventId, string IdempotencyKey, string CanonicalFingerprint, long ExpectedPeriodVersion, AtomicTaxLotMutationKind MutationKind, IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence, LedgerTaxLotRecord? AcquisitionLot = null, IReadOnlyList<LedgerTaxLotDisposalSelection>? DisposalSelections = null, Guid? CorrectsMutationBatchId = null, string? ReliefMethod = null, string? PolicyRevision = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] decimal? DisposalSalePrice = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto? Amortization = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto? CorporateAction = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? CapitalReturn = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] OpenLotDirection Direction = OpenLotDirection.Long, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] AtomicLotReferenceVersions? ReferenceVersions = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? FactorPaydown = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static AtomicTaxLotJournalCommand Create(Guid mutationBatchId, Guid ledgerBookId, LedgerJournalEntryWrite journal, Guid sourceEventId, string idempotencyKey, long expectedPeriodVersion, AtomicTaxLotMutationKind mutationKind, IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; retainedEvidence, LedgerTaxLotRecord? acquisitionLot = null, IReadOnlyList&lt;LedgerTaxLotDisposalSelection&gt;? disposalSelections = null, Guid? correctsMutationBatchId = null, string? reliefMethod = null, string? policyRevision = null, decimal? disposalSalePrice = null, Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto? amortization = null, Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto? corporateAction = null, Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? capitalReturn = null, OpenLotDirection direction = OpenLotDirection.Long, AtomicLotReferenceVersions? referenceVersions = null, Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? factorPaydown = null);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:528](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L528) |  |
-| <code>public AtomicTaxLotJournalCommand WithComputedFingerprint() =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:575](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L575) |  |
-
-## AtomicTaxLotJournalFingerprint
-
-Qualified name: <code>Meridian.Storage.Ledger.AtomicTaxLotJournalFingerprint</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/AtomicTaxLotJournalFingerprint.cs:16](../../../../src/Meridian.Storage/Ledger/AtomicTaxLotJournalFingerprint.cs#L16).
-
-Produces the stable identity for an atomic journal/tax-lot command. The supplied fingerprint is deliberately excluded, so AtomicTaxLotJournalCommand.WithComputedFingerprint can never recursively hash an already populated value.
-
-```csharp
-public static class AtomicTaxLotJournalFingerprint
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static string Compute(AtomicTaxLotJournalCommand command);</code> | [src/Meridian.Storage/Ledger/AtomicTaxLotJournalFingerprint.cs:20](../../../../src/Meridian.Storage/Ledger/AtomicTaxLotJournalFingerprint.cs#L20) |  |
-
-## AtomicTaxLotJournalResult
-
-Qualified name: <code>Meridian.Storage.Ledger.AtomicTaxLotJournalResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:606](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L606).
-
-```csharp
-public sealed record AtomicTaxLotJournalResult(Guid MutationBatchId, AtomicTaxLotMutationKind MutationKind, string CanonicalFingerprint, bool IsExactReplay, LedgerJournalEntryRecord Journal, IReadOnlyList<LedgerTaxLotRecord> MutatedLots, IReadOnlyList<LedgerTaxLotMutationRecord> Mutations, IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence, Guid? CorrectsMutationBatchId = null, string? ReliefMethod = null, string? PolicyRevision = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto? CorporateAction = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? CapitalReturn = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? FactorPaydown = null);
 ```

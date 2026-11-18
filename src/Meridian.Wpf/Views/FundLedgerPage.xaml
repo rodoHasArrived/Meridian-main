@@ -3,6 +3,7 @@
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:workstationControls="clr-namespace:Meridian.Wpf.Workstation.Controls"
+      xmlns:controls="clr-namespace:Meridian.Wpf.Controls"
       xmlns:agreementViews="clr-namespace:Meridian.Wpf.Views"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
@@ -518,6 +519,19 @@
                             <TextBlock Text="{Binding SelectedPortfolioMark.ValuationDate, StringFormat='Valuation date: {0}'}" />
                             <TextBlock Text="{Binding SelectedPortfolioMark.PolicyVersion, StringFormat='Policy: {0}'}" />
                         </StackPanel>
+                        <controls:NavTrendPanel DataContext="{Binding NavTrend}"
+                                                Margin="0,16,0,0"
+                                                AutomationProperties.AutomationId="FundLedgerNavTrend" />
+                        <StackPanel Orientation="Horizontal" Margin="0,16,0,8">
+                            <TextBlock Text="Prior date" Style="{StaticResource MetricLabelStyle}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                            <DatePicker SelectedDate="{Binding NavBaselineDate, Mode=TwoWay}"
+                                        Width="160"
+                                        AutomationProperties.Name="NAV comparison prior date"
+                                        AutomationProperties.AutomationId="FundLedgerNavBaselineDate" />
+                            <TextBlock Text="Empty means the end of the previous month." Style="{StaticResource CardDescriptionStyle}" VerticalAlignment="Center" Margin="8,0,0,0" />
+                        </StackPanel>
+                        <controls:PeriodComparisonPanel DataContext="{Binding NavComparison}"
+                                                        AutomationProperties.AutomationId="FundLedgerNavComparison" />
                     </StackPanel>
                 </TabItem>
 
@@ -2079,6 +2093,9 @@
                 </TabItem>
                 <TabItem Header="Interest accrual">
                     <agreementViews:IntercompanyInterestAccrualControl DataContext="{Binding InterestAccrual}" />
+                </TabItem>
+                <TabItem Header="Rate fixings">
+                    <agreementViews:IntercompanyRateFixingsControl DataContext="{Binding RateFixings}" />
                 </TabItem>
                 <TabItem Header="Balance confirmation">
                     <agreementViews:IntercompanyBalanceConfirmationControl DataContext="{Binding BalanceConfirmation}" />

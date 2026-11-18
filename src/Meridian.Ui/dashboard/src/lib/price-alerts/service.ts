@@ -3,6 +3,7 @@ import { useQuotesStream } from "@/hooks/use-quotes-stream";
 import { getLiveQuotesSnapshot } from "@/lib/api";
 import { isAbortError, isApiError } from "@/lib/api-errors";
 import { formatTimestamp } from "@/lib/format";
+import { popUpsAllowed } from "@/lib/notification-preferences";
 import type { QuotesSnapshotItem, QuotesSnapshotResponse } from "@/types";
 import { describeCondition, shouldTrigger } from "./evaluator";
 import {
@@ -83,6 +84,11 @@ export function usePriceAlertsService(options: ServiceOptions = {}): PriceAlerts
   }, [storage]);
 
   const fireNotification = useCallback((title: string, body: string) => {
+    // The operator's pop-up switch and quiet hours hold the system pop-up only; the trigger is still
+    // recorded and shown in the notification center.
+    if (!popUpsAllowed(now())) {
+      return;
+    }
     if (notify) {
       notify(title, body);
       return;
@@ -98,7 +104,7 @@ export function usePriceAlertsService(options: ServiceOptions = {}): PriceAlerts
     } catch {
       // Browser refused notification — ignore.
     }
-  }, [notify]);
+  }, [notify, now]);
 
   const evaluateSnapshot = useCallback((snapshot: QuotesSnapshotResponse) => {
     const current = stateRef.current;

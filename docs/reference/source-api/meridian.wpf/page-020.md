@@ -6,6 +6,214 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkspaceInspectorActionInvokedEventArgs
+
+Qualified name: <code>Meridian.Wpf.Views.WorkspaceInspectorActionInvokedEventArgs</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:17](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L17).
+
+Carries the action identity selected in a workspace inspector.
+
+```csharp
+public sealed class WorkspaceInspectorActionInvokedEventArgs : EventArgs
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WorkspaceInspectorActionInvokedEventArgs(string actionId) =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:19](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L19) |  |
+| <code>public string ActionId { get; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:22](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L22) |  |
+
+## WorkspaceInspectorHostControl
+
+Qualified name: <code>Meridian.Wpf.Views.WorkspaceInspectorHostControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:28](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L28).
+
+Displays inspector selection, loading, empty, and error states and dispatches inspector actions.
+
+```csharp
+public partial class WorkspaceInspectorHostControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly DependencyProperty InspectorStateProperty = DependencyProperty.Register(nameof(InspectorState), typeof(WorkspaceInspectorState), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(WorkspaceInspectorState.Empty, OnInspectorStateChanged));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:30](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L30) |  |
+| <code>public static readonly DependencyProperty HostAutomationIdProperty = DependencyProperty.Register(nameof(HostAutomationId), typeof(string), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(&quot;WorkspaceInspectorHost&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:37](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L37) |  |
+| <code>public static readonly DependencyProperty EmptyAutomationIdProperty = DependencyProperty.Register(nameof(EmptyAutomationId), typeof(string), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(&quot;WorkspaceInspectorEmptyState&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:40](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L40) |  |
+| <code>public static readonly DependencyProperty SelectedAutomationIdProperty = DependencyProperty.Register(nameof(SelectedAutomationId), typeof(string), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(&quot;WorkspaceInspectorSelectedState&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:43](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L43) |  |
+| <code>public static readonly DependencyProperty LoadingAutomationIdProperty = DependencyProperty.Register(nameof(LoadingAutomationId), typeof(string), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(&quot;WorkspaceInspectorLoadingState&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:46](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L46) |  |
+| <code>public static readonly DependencyProperty ErrorAutomationIdProperty = DependencyProperty.Register(nameof(ErrorAutomationId), typeof(string), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(&quot;WorkspaceInspectorErrorState&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:49](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L49) |  |
+| <code>public static readonly DependencyProperty EmptyTitleProperty = DependencyProperty.Register(nameof(EmptyTitle), typeof(string), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(&quot;No row selected&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:52](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L52) |  |
+| <code>public static readonly DependencyProperty EmptyDetailProperty = DependencyProperty.Register(nameof(EmptyDetail), typeof(string), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(&quot;Select an operational row to inspect evidence, actions, and recovery context.&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:55](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L55) |  |
+| <code>public static readonly DependencyProperty SelectedTitleProperty = DependencyProperty.Register(nameof(SelectedTitle), typeof(string), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(&quot;Selection details&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:58](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L58) |  |
+| <code>public static readonly DependencyProperty SelectedDetailProperty = DependencyProperty.Register(nameof(SelectedDetail), typeof(string), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(&quot;Evidence for the selected row is available.&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:61](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L61) |  |
+| <code>public static readonly DependencyProperty SelectedActionDetailProperty = DependencyProperty.Register(nameof(SelectedActionDetail), typeof(string), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(&quot;Available actions are scoped to the selected row.&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:64](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L64) |  |
+| <code>public static readonly DependencyProperty LoadingTitleProperty = DependencyProperty.Register(nameof(LoadingTitle), typeof(string), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(&quot;Loading inspector&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:67](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L67) |  |
+| <code>public static readonly DependencyProperty LoadingDetailProperty = DependencyProperty.Register(nameof(LoadingDetail), typeof(string), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(&quot;Loading selected row evidence.&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:70](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L70) |  |
+| <code>public static readonly DependencyProperty ErrorTitleProperty = DependencyProperty.Register(nameof(ErrorTitle), typeof(string), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(&quot;Inspector unavailable&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:73](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L73) |  |
+| <code>public static readonly DependencyProperty ErrorDetailProperty = DependencyProperty.Register(nameof(ErrorDetail), typeof(string), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(&quot;The selected row detail could not be loaded.&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:76](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L76) |  |
+| <code>public static readonly DependencyProperty SelectedEvidenceTabHeaderProperty = DependencyProperty.Register(nameof(SelectedEvidenceTabHeader), typeof(string), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(&quot;Evidence&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:79](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L79) |  |
+| <code>public static readonly DependencyProperty SelectedActionsTabHeaderProperty = DependencyProperty.Register(nameof(SelectedActionsTabHeader), typeof(string), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(&quot;Actions&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:82](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L82) |  |
+| <code>public static readonly DependencyProperty ErrorActionLabelProperty = DependencyProperty.Register(nameof(ErrorActionLabel), typeof(string), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(string.Empty, OnErrorActionChanged));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:85](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L85) |  |
+| <code>public static readonly DependencyProperty ErrorActionIdProperty = DependencyProperty.Register(nameof(ErrorActionId), typeof(string), typeof(WorkspaceInspectorHostControl), new PropertyMetadata(string.Empty, OnErrorActionChanged));</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:92](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L92) |  |
+| <code>public WorkspaceInspectorHostControl();</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:99](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L99) |  |
+| <code>public event EventHandler&lt;WorkspaceInspectorActionInvokedEventArgs&gt;? InspectorActionInvoked;</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:106](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L106) |  |
+| <code>public WorkspaceInspectorState InspectorState { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:108](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L108) |  |
+| <code>public string HostAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:114](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L114) |  |
+| <code>public string EmptyAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:120](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L120) |  |
+| <code>public string SelectedAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:126](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L126) |  |
+| <code>public string LoadingAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:132](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L132) |  |
+| <code>public string ErrorAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:138](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L138) |  |
+| <code>public string EmptyTitle { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:144](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L144) |  |
+| <code>public string EmptyDetail { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:150](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L150) |  |
+| <code>public string SelectedTitle { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:156](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L156) |  |
+| <code>public string SelectedDetail { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:162](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L162) |  |
+| <code>public string SelectedActionDetail { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:168](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L168) |  |
+| <code>public string LoadingTitle { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:174](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L174) |  |
+| <code>public string LoadingDetail { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:180](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L180) |  |
+| <code>public string ErrorTitle { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:186](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L186) |  |
+| <code>public string ErrorDetail { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:192](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L192) |  |
+| <code>public string SelectedEvidenceTabHeader { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:198](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L198) |  |
+| <code>public string SelectedActionsTabHeader { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:204](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L204) |  |
+| <code>public string ErrorActionLabel { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:210](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L210) |  |
+| <code>public string ErrorActionId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:216](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L216) |  |
+
+## WorkspaceInspectorState
+
+Qualified name: <code>Meridian.Wpf.Views.WorkspaceInspectorState</code>. Kind: `enum`.
+
+Source: [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:6](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L6).
+
+```csharp
+public enum WorkspaceInspectorState
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Empty</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:8](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L8) |  |
+| <code>Selected</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:9](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L9) |  |
+| <code>Loading</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:10](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L10) |  |
+| <code>Error</code> | [src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs:11](../../../../src/Meridian.Wpf/Views/WorkspaceInspectorHostControl.xaml.cs#L11) |  |
+
+## WorkspacePage
+
+Qualified name: <code>Meridian.Wpf.Views.WorkspacePage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:95](../../../../src/Meridian.Wpf/Views/Pages.cs#L95).
+
+```csharp
+public partial class WorkspacePage : Page
+```
+
+Source: [src/Meridian.Wpf/Views/WorkspacePage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/WorkspacePage.xaml.cs#L15).
+
+Workspace management page for creating, editing, activating, and importing/exporting workspace templates with session restore.
+
+```csharp
+public partial class WorkspacePage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WorkspacePage();</code> | [src/Meridian.Wpf/Views/WorkspacePage.xaml.cs:19](../../../../src/Meridian.Wpf/Views/WorkspacePage.xaml.cs#L19) |  |
+
+## WorkspaceShellChromeState
+
+Qualified name: <code>Meridian.Wpf.Views.WorkspaceShellChromeState</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs:10](../../../../src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs#L10).
+
+Exposes inherited shell-host state so legacy pages can compact duplicate chrome when they are rendered inside the shared workspace shell host.
+
+```csharp
+public static class WorkspaceShellChromeState
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly DependencyProperty IsHostedInWorkspaceShellProperty = DependencyProperty.RegisterAttached(&quot;IsHostedInWorkspaceShell&quot;, typeof(bool), typeof(WorkspaceShellChromeState), new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.Inherits));</code> | [src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs:12](../../../../src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs#L12) |  |
+| <code>public static readonly DependencyProperty ShellDensityModeProperty = DependencyProperty.RegisterAttached(&quot;ShellDensityMode&quot;, typeof(ShellDensityMode), typeof(WorkspaceShellChromeState), new FrameworkPropertyMetadata(ShellDensityMode.Standard, FrameworkPropertyMetadataOptions.Inherits, OnShellDensityModeChanged));</code> | [src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs:19](../../../../src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs#L19) |  |
+| <code>public static readonly DependencyProperty IsCompactDensityProperty = DependencyProperty.RegisterAttached(&quot;IsCompactDensity&quot;, typeof(bool), typeof(WorkspaceShellChromeState), new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.Inherits));</code> | [src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs:26](../../../../src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs#L26) |  |
+| <code>public static bool GetIsHostedInWorkspaceShell(DependencyObject element) =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs:33](../../../../src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs#L33) |  |
+| <code>public static void SetIsHostedInWorkspaceShell(DependencyObject element, bool value) =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs:36](../../../../src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs#L36) |  |
+| <code>public static ShellDensityMode GetShellDensityMode(DependencyObject element) =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs:39](../../../../src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs#L39) |  |
+| <code>public static void SetShellDensityMode(DependencyObject element, ShellDensityMode value) =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs:42](../../../../src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs#L42) |  |
+| <code>public static bool GetIsCompactDensity(DependencyObject element) =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs:45](../../../../src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs#L45) |  |
+| <code>public static void SetIsCompactDensity(DependencyObject element, bool value) =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs:48](../../../../src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs#L48) |  |
+
+## WorkspaceShellContextStripControl
+
+Qualified name: <code>Meridian.Wpf.Views.WorkspaceShellContextStripControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs:12](../../../../src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs#L12).
+
+Displays shell context titles and badges in regular or compact form.
+
+```csharp
+public partial class WorkspaceShellContextStripControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly DependencyProperty ShellContextProperty = DependencyProperty.Register(nameof(ShellContext), typeof(WorkspaceShellContext), typeof(WorkspaceShellContextStripControl), new PropertyMetadata(new WorkspaceShellContext(), OnShellContextChanged));</code> | [src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs:17](../../../../src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs#L17) |  |
+| <code>public static readonly DependencyProperty IsCompactProperty = DependencyProperty.Register(nameof(IsCompact), typeof(bool), typeof(WorkspaceShellContextStripControl), new PropertyMetadata(false, OnCompactPresentationChanged));</code> | [src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs:24](../../../../src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs#L24) |  |
+| <code>public WorkspaceShellContextStripControl();</code> | [src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs:31](../../../../src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs#L31) |  |
+| <code>public WorkspaceShellContext ShellContext { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs:37](../../../../src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs#L37) |  |
+| <code>public bool IsCompact { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs:43](../../../../src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs#L43) |  |
+
+## WorkspaceShellPageBase (generic arity 2)
+
+Qualified name: <code>Meridian.Wpf.Views.WorkspaceShellPageBase</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:16](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L16).
+
+Binds derived pages to the workspace shell definition.
+
+```csharp
+public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel>: Page, IPageRefreshTarget where TStateProvider : class, IWorkspaceShellStateProvider where TViewModel : WorkspaceShellViewModelBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ICommand RefreshCommand =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:46](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L46) | The shell Refresh control (toolbar button and F5) reloads the workspace shell and every docked page in place instead of rebuilding the shell by re-navigation. |
+
+## AsyncCommandViewModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Commands.AsyncCommandViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs:9](../../../../src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs#L9).
+
+Adds busy, error, and cancellation presentation to an asynchronous workstation command.
+
+```csharp
+public sealed class AsyncCommandViewModel : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CommandViewModel Command { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs:18](../../../../src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs#L18) |  |
+| <code>public bool IsBusy { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs:24](../../../../src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs#L24) |  |
+| <code>public string BusyMessage { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs:30](../../../../src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs#L30) |  |
+| <code>public string ErrorMessage { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs:36](../../../../src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs#L36) |  |
+| <code>public bool CanCancel { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs:42](../../../../src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs#L42) |  |
+| <code>public IRelayCommand? CancelCommand { get; set; }</code> | [src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs:48](../../../../src/Meridian.Wpf/Workstation/Commands/AsyncCommandViewModel.cs#L48) |  |
+
 ## CommandViewModel
 
 Qualified name: <code>Meridian.Wpf.Workstation.Commands.CommandViewModel</code>. Kind: `class`.
@@ -754,136 +962,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static EvidenceVaultDocumentQueuePresentationModel BuildDocumentQueue(IReadOnlyList&lt;EvidenceVaultDocumentEntryDto&gt; entries, EvidenceManifestDto? manifestSnapshot);</code> | [src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs:51](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs#L51) |  |
 | <code>public static EvidenceVaultManifestSnapshotModel ToManifestSnapshot(EvidenceManifestDto manifest);</code> | [src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs:74](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs#L74) |  |
-
-## EvidenceWorkbenchPacketPresentationModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.EvidenceWorkbenchPacketPresentationModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs:88](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs#L88).
-
-```csharp
-public sealed record EvidenceWorkbenchPacketPresentationModel(string ScoreText, string StatusText, WorkstationReadinessTone ReadinessTone, string Tone, string GeneratedText, string ProofChainSummaryText, string ProofChainCoverageText, IReadOnlyList<EvidenceProofChainLayerRowModel> ProofChainLayers, IReadOnlyList<EvidenceNodeRowModel> Nodes, IReadOnlyList<EvidenceLineageRowModel> LineageRows, IReadOnlyList<string> MissingEvidenceIds, IReadOnlyList<string> StaleEvidenceIds, IReadOnlyList<string> OrphanEvidenceIds, IReadOnlyList<string> SlaBreachMessages, IReadOnlyList<string> Warnings, IReadOnlyList<EvidencePacketActionRowModel> Actions)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool HasProofChainLayers =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs:106](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs#L106) |  |
-
-## EvidenceWorkbenchPresentationMapper
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.EvidenceWorkbenchPresentationMapper</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs:112](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs#L112).
-
-Projects evidence subjects, packets, and request lists into desktop rows and readiness presentation.
-
-```csharp
-public static class EvidenceWorkbenchPresentationMapper
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;EvidenceWorkbenchSubjectRowModel&gt; BuildSubjectRows(IReadOnlyList&lt;EvidenceSubjectDto&gt; subjects);</code> | [src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs:114](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs#L114) |  |
-| <code>public static EvidenceWorkbenchPacketPresentationModel BuildPacket(EvidencePacketDto packet, EvidenceCompletenessDto? validation = null);</code> | [src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs:127](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs#L127) | Projects a shared evidence packet into desktop rows. When validation is provided (a fresh server-side validate result) it replaces the packet&#x27;s retained completeness snapshot, matching the browser workbench behaviour. |
-| <code>public static IReadOnlyList&lt;EvidenceRequestListRowModel&gt; BuildRequestListRows(IReadOnlyList&lt;EvidenceVaultRequestListEntryDto&gt; entries);</code> | [src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs:163](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs#L163) |  |
-| <code>public static WorkstationReadinessTone ToReadinessTone(EvidenceStatusDto status) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs:171](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs#L171) |  |
-| <code>public static string FormatKindText(string? value);</code> | [src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs:181](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs#L181) |  |
-
-## EvidenceWorkbenchSubjectRowModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.EvidenceWorkbenchSubjectRowModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs:8](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs#L8).
-
-```csharp
-public sealed record EvidenceWorkbenchSubjectRowModel(string SubjectKind, string SubjectId, string Label, string Workspace, string SubjectKey, Guid? LedgerBookId = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static EvidenceWorkbenchSubjectRowModel FromDto(EvidenceSubjectDto subject);</code> | [src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs:16](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs#L16) |  |
-
-## EvidenceWorkbenchSummaryFactModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.EvidenceWorkbenchSummaryFactModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs:30](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels.cs#L30).
-
-```csharp
-public sealed record EvidenceWorkbenchSummaryFactModel(string Label, string Value, string Detail);
-```
-
-## InspectorPanelModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.InspectorPanelModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:317](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L317).
-
-Carries selected-record title, supporting detail, badge, and facts for a workstation inspector.
-
-```csharp
-public sealed class InspectorPanelModel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Title { get; init; } = &quot;No selection&quot;;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:319](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L319) |  |
-| <code>public string Subtitle { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:321](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L321) |  |
-| <code>public string Detail { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:323](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L323) |  |
-| <code>public WorkstationBadgeModel? Badge { get; init; }</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:325](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L325) |  |
-| <code>public IReadOnlyList&lt;KeyValueFactModel&gt; Facts { get; init; } = Array.Empty&lt;KeyValueFactModel&gt;();</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:327](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L327) |  |
-
-## KeyValueFactModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.KeyValueFactModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:330](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L330).
-
-```csharp
-public sealed record KeyValueFactModel(string Label, string Value, string Detail = "", string Tone = WorkspaceTone.Neutral);
-```
-
-## OperationsContinuityCloseBlockerPresentation
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.OperationsContinuityCloseBlockerPresentation</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:122](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L122).
-
-```csharp
-public sealed record OperationsContinuityCloseBlockerPresentation(CloseReadinessBlockerDto Blocker)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string OwnerLabel =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:124](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L124) |  |
-| <code>public string RepairInstruction =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:126](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L126) |  |
-
-## OperationsContinuityClosePresentation
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.OperationsContinuityClosePresentation</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:6](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L6).
-
-Displays the selected shared close decision; legacy gate totals cannot establish close readiness.
-
-```csharp
-public sealed record OperationsContinuityClosePresentation(bool IsReady, string Label, string Detail)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;CloseReadinessBlockerDto&gt; Blockers { get; init; } = [];</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:8](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L8) |  |
-| <code>public IReadOnlyList&lt;OperationsContinuityCloseBlockerPresentation&gt; BlockerRows =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:9](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L9) |  |
-| <code>public static OperationsContinuityClosePresentation Build(OperationsContinuityWorkflowDto? workflow, FinancialOperationsCommandCenterDto? commandCenter, CloseReadinessScopeDto? selectedScope);</code> | [src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs:12](../../../../src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs#L12) |  |

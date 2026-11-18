@@ -382,9 +382,40 @@ public static class RiskEndpoints
                 metadata["correlationId"] = $"risk-escalation-{approved.EscalationId}";
 
                 var releaseRequest = approved.Request with { Metadata = metadata };
+
+                // An order parked under typed authority is released under that same authority, so
+                // the OMS rechecks the original account binding and run binding, not the
+                // approver's. The approver's account access was verified above, so the release
+                // also carries the approver's grant resolved now: the OMS judges grant age from
+                // it, and an approval given hours after parking can still release the order.
+                // Orders parked through the untyped path (or before typed authority existed) keep
+                // the untyped release, which live routing refuses.
+                OrderSubmissionAuthority? releaseAuthority = null;
+                if (approved.Authority is { } parkedAuthority)
+                {
+                    try
+                    {
+                        var releaseGrant = approved.Request.FundAccountId is { } releaseAccount
+                            ? new ExecutionAccountGrant(releaseAccount, actor, ExecutionAccountGrantSources.HttpPrincipal, DateTimeOffset.UtcNow)
+                            : null;
+                        releaseAuthority = OrderSubmissionAuthority.ForEscalationRelease(
+                            OrderSubmissionAuthority.FromRetainedRecord(parkedAuthority),
+                            actor,
+                            metadata["correlationId"],
+                            releaseGrant);
+                    }
+                    catch (ArgumentException)
+                    {
+                        // A retained record the factories refuse confers no authority.
+                        releaseAuthority = null;
+                    }
+                }
+
                 try
                 {
-                    releaseResult = await oms.PlaceOrderAsync(releaseRequest, context.RequestAborted).ConfigureAwait(false);
+                    releaseResult = releaseAuthority is null
+                        ? await oms.PlaceOrderAsync(releaseRequest, context.RequestAborted).ConfigureAwait(false)
+                        : await oms.SubmitAsync(new OrderSubmitCommand(releaseRequest, releaseAuthority), context.RequestAborted).ConfigureAwait(false);
                 }
                 finally
                 {

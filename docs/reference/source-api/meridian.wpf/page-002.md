@@ -6,6 +6,68 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## Scope
+
+Qualified name: <code>Meridian.Wpf.Copy.WorkspaceCopyCatalog.Scope</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:27](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L27).
+
+Provides the two shared phrases the desktop shell uses when no scope is selected.
+
+```csharp
+public static class Scope
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string AllAuthorized = &quot;All authorized scopes&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:30](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L30) | Shown where the page still lists everything the operator may see. |
+| <code>public const string NoneSelected = &quot;No scope selected&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:33](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L33) | Shown where the page stays empty or locked until a scope is chosen. |
+
+## Settings
+
+Qualified name: <code>Meridian.Wpf.Copy.WorkspaceCopyCatalog.Settings</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:153](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L153).
+
+Provides titles, descriptions, and scope copy for the settings workspace.
+
+```csharp
+public static class Settings
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string WorkspaceId = WorkstationWorkspaceCatalog.SettingsKey;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:155](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L155) |  |
+| <code>public static readonly WorkspaceDescriptorCopy Descriptor = new (WorkspaceId, WorkstationWorkspaceCatalog.SettingsLabel, WorkstationWorkspaceCatalog.SettingsDesktopDescription, WorkstationWorkspaceCatalog.SettingsDesktopSummary, WorkstationWorkspaceCatalog.SettingsDesktopTileSummary, WorkstationWorkspaceCatalog.SettingsDesktopShellDisplayName);</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:156](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L156) |  |
+| <code>public const string ShellTitle = &quot;Settings Workspace&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:164](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L164) |  |
+| <code>public const string ShellSubtitle = &quot;Pick the setup task you need.&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:165](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L165) |  |
+
+## Strategy
+
+Qualified name: <code>Meridian.Wpf.Copy.WorkspaceCopyCatalog.Strategy</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:113](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L113).
+
+Provides titles, descriptions, and scope copy for the strategy workspace.
+
+```csharp
+public static class Strategy
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string WorkspaceId = WorkstationWorkspaceCatalog.StrategyKey;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:115](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L115) |  |
+| <code>public static readonly WorkspaceDescriptorCopy Descriptor = new (WorkspaceId, WorkstationWorkspaceCatalog.StrategyLabel, WorkstationWorkspaceCatalog.StrategyDesktopDescription, WorkstationWorkspaceCatalog.StrategyDesktopSummary, WorkstationWorkspaceCatalog.StrategyDesktopTileSummary, WorkstationWorkspaceCatalog.StrategyDesktopShellDisplayName);</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:116](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L116) |  |
+| <code>public const string ShellTitle = &quot;Strategy Workspace&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:124](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L124) |  |
+| <code>public const string ShellSubtitle = &quot;Review recent strategy runs and open the one you want to work on.&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:125](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L125) |  |
+| <code>public const string PrimaryScopeLabel = &quot;Strategy&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:126](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L126) |  |
+
 ## Trading
 
 Qualified name: <code>Meridian.Wpf.Copy.WorkspaceCopyCatalog.Trading</code>. Kind: `class`.
@@ -1093,73 +1155,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public MainWindow(MainWindowViewModel viewModel, WpfServices.NavigationService navigationService, WpfServices.KeyboardShortcutService keyboardShortcutService, WpfServices.NotificationService notificationService, WpfServices.FundContextService fundContextService, WpfServices.WorkstationOperatingContextService operatingContextService, DesktopShellCoordinator shellCoordinator, DesktopShellSessionService sessionService, DesktopLaunchRouter launchRouter, FileDropRouter fileDropRouter, IWindowStateStore windowStateStore);</code> | [src/Meridian.Wpf/MainWindow.xaml.cs:59](../../../../src/Meridian.Wpf/MainWindow.xaml.cs#L59) |  |
 | <code>public void ForceStartupWindowRecovery();</code> | [src/Meridian.Wpf/MainWindow.xaml.cs:996](../../../../src/Meridian.Wpf/MainWindow.xaml.cs#L996) |  |
-
-## AccountingSubarea
-
-Qualified name: <code>Meridian.Wpf.Models.AccountingSubarea</code>. Kind: `enum`.
-
-Source: [src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs:49](../../../../src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs#L49).
-
-Explicit accounting and operational-control subareas surfaced inside the Accounting workspace.
-
-```csharp
-public enum AccountingSubarea : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Operations</code> | [src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs:51](../../../../src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs#L51) |  |
-| <code>Accounting</code> | [src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs:52](../../../../src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs#L52) |  |
-| <code>Reconciliation</code> | [src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs:53](../../../../src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs#L53) |  |
-| <code>Reporting</code> | [src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs:54](../../../../src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs#L54) |  |
-| <code>Audit</code> | [src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs:55](../../../../src/Meridian.Wpf/Models/WorkstationOperatingContextModels.cs#L55) |  |
-
-## ActionEntry
-
-Qualified name: <code>Meridian.Wpf.Models.ActionEntry</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Models/ActionEntry.cs:8](../../../../src/Meridian.Wpf/Models/ActionEntry.cs#L8).
-
-Represents a single action (button) in the PageActionBar.
-
-```csharp
-public sealed record ActionEntry(string Label, ICommand Command, string? Icon = null, string? Tooltip = null, bool IsPrimary = false);
-```
-
-## ActiveRunContext
-
-Qualified name: <code>Meridian.Wpf.Models.ActiveRunContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:31](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L31).
-
-Active run context shared by the workstation shell pages.
-
-```csharp
-public sealed class ActiveRunContext
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string RunId { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:33](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L33) |  |
-| <code>public string StrategyName { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:34](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L34) |  |
-| <code>public string ModeLabel { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:35](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L35) |  |
-| <code>public string StatusLabel { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:36](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L36) |  |
-| <code>public string FundScopeLabel { get; set; } = &quot;Global scope&quot;;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:37](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L37) |  |
-| <code>public string? ParentRunId { get; set; }</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:38](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L38) |  |
-| <code>public string PortfolioPreview { get; set; } = &quot;Portfolio preview unavailable.&quot;;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:39](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L39) |  |
-| <code>public string LedgerPreview { get; set; } = &quot;Ledger preview unavailable.&quot;;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:40](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L40) |  |
-| <code>public string RiskSummary { get; set; } = &quot;Risk summary unavailable.&quot;;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:41](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L41) |  |
-| <code>public TradingWorkspaceStatusItem PromotionStatus { get; set; } = new ();</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:42](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L42) |  |
-| <code>public TradingWorkspaceStatusItem AuditStatus { get; set; } = new ();</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:43](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L43) |  |
-| <code>public TradingWorkspaceStatusItem ValidationStatus { get; set; } = new ();</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:44](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L44) |  |
-| <code>public string PromotionStatusLabel =&gt; …;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:45](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L45) |  |
-| <code>public string PromotionStatusDetail =&gt; …;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:46](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L46) |  |
-| <code>public string AuditStatusLabel =&gt; …;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:47](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L47) |  |
-| <code>public string AuditStatusDetail =&gt; …;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:48](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L48) |  |
-| <code>public string ValidationStatusLabel =&gt; …;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:49](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L49) |  |
-| <code>public string ValidationStatusDetail =&gt; …;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:50](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L50) |  |
-| <code>public bool CanPromoteToPaper { get; set; }</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:51](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L51) |  |

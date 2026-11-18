@@ -142,6 +142,8 @@ export function DesignSystemTrustStrip({
                   `mds-status--${item.tone}`
                 )}
                 aria-label={`${item.ariaLabel} ${item.actionLabel}.`}
+                data-trust-strip-item={item.id}
+                data-trust-strip-tone={item.tone}
               >
                 {content}
               </Link>
@@ -154,6 +156,8 @@ export function DesignSystemTrustStrip({
                   `mds-status--${item.tone}`
                 )}
                 aria-label={item.ariaLabel}
+                data-trust-strip-item={item.id}
+                data-trust-strip-tone={item.tone}
               >
                 {content}
               </span>

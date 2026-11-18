@@ -284,7 +284,7 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
         StatusText = ledger.SecurityMissingCount > 0
             ? $"{ledger.JournalEntryCount} journal entries and {ledger.TrialBalance.Count} trial-balance lines loaded. {ledger.SecurityMissingCount} symbol(s) still need Security Master mapping."
             : $"{ledger.JournalEntryCount} journal entries and {ledger.TrialBalance.Count} trial-balance lines loaded.";
-        AsOfText = UtcFormat.FormatUtcTimestamp(ledger.AsOf);
+        AsOfText = UtcFormat.FormatDisplayTimestamp(ledger.AsOf);
         JournalEntriesText = ledger.JournalEntryCount.ToString("N0");
         LedgerEntriesText = ledger.LedgerEntryCount.ToString("N0");
         AssetBalanceText = ledger.AssetBalance.ToString("C2");

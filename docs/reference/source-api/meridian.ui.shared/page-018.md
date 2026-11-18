@@ -6,6 +6,22 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecureReportingDistributionOptions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SecureReportingDistributionOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:317](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L317).
+
+```csharp
+public sealed record SecureReportingDistributionOptions(string PortalPackageBasePath, string GrantExchangeBasePath, string? ExternalAccessBaseUri, TimeSpan DefaultGrantLifetime, TimeSpan MaximumGrantLifetime, int DefaultGrantMaxUses, int MaximumGrantMaxUses, string WorkerId, TimeSpan WorkerPollInterval, IReadOnlySet<string> ExternalGrantTransportIds)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static SecureReportingDistributionOptions Default { get; } = new (&quot;/portal/reporting/secure/packages&quot;, &quot;/portal/reporting/access-grants&quot;, ExternalAccessBaseUri : null, TimeSpan.FromMinutes(30), TimeSpan.FromHours(24), DefaultGrantMaxUses : 1, MaximumGrantMaxUses : 100, WorkerId : Environment.MachineName, WorkerPollInterval : TimeSpan.FromSeconds(5), ExternalGrantTransportIds : new HashSet&lt;string&gt;([&quot;http-relay&quot;], StringComparer.OrdinalIgnoreCase));</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:329](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L329) |  |
+
 ## SecureReportingGrantExchangeCommand
 
 Qualified name: <code>Meridian.Ui.Shared.Services.SecureReportingGrantExchangeCommand</code>. Kind: `record`.
@@ -904,21 +920,3 @@ Request body for creating or updating a provider module configuration. Credentia
 ```csharp
 public sealed record UpsertProviderModuleRequest(string ModuleId, bool Enabled = true, int Priority = 100, Dictionary<string, string?>? CredentialValues = null, Dictionary<string, string?>? Settings = null);
 ```
-
-## WorkstationEntityLifecycleExternalReviewEvidenceAuthority
-
-Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationEntityLifecycleExternalReviewEvidenceAuthority</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/EntityLifecycleExternalReviewEvidenceAuthority.cs:11](../../../../src/Meridian.Ui.Shared/Services/EntityLifecycleExternalReviewEvidenceAuthority.cs#L11).
-
-Resolves the accepted immutable source document supporting an externally reviewed entity fact.
-
-```csharp
-public sealed class WorkstationEntityLifecycleExternalReviewEvidenceAuthority(IHttpContextAccessor accessor, IEvidenceArtifactStore evidenceStore) : IEntityLifecycleExternalReviewEvidenceAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IntercompanyAgreementEvidenceDto&gt; ResolveAsync(string tenantId, string actor, Guid entityId, IntercompanyAgreementEvidenceDto evidence, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/EntityLifecycleExternalReviewEvidenceAuthority.cs:14](../../../../src/Meridian.Ui.Shared/Services/EntityLifecycleExternalReviewEvidenceAuthority.cs#L14) |  |

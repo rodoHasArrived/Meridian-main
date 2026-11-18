@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BackfillCoordinator
+
+Qualified name: <code>Meridian.Ui.Shared.Services.BackfillCoordinator</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:16](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L16).
+
+Read-model façade over the core CoreBackfillCoordinator for UI hosts. The core coordinator owns all execution, provider discovery, and preview/estimation logic; this wrapper only adapts the UI ConfigStore seam and exposes the surface consumed by workstation endpoints.
+
+```csharp
+public sealed class BackfillCoordinator : IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public BackfillCoordinator(ConfigStore store, ProviderRegistry? registry = null, ProviderFactory? factory = null, IProviderCatalog? providerCatalog = null);</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:28](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L28) | Creates a façade that owns a private core coordinator built from the UI config store. |
+| <code>public BackfillCoordinator(CoreBackfillCoordinator core);</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:41](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L41) | Creates a façade over an externally owned core coordinator (typically the composition-root singleton) so UI endpoints and non-UI callers share one run gate. |
+| <code>public IEnumerable&lt;object&gt; DescribeProviders() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:50](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L50) | Gets descriptions of all available backfill providers. |
+| <code>public BackfillResult? TryReadLast() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:55](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L55) | Tries to read the last backfill result. |
+| <code>public IReadOnlyDictionary&lt;string, DateOnly&gt;? TryReadSymbolCheckpoints() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:60](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L60) | Returns the per-symbol checkpoint map, or null when no checkpoints exist. |
+| <code>public IReadOnlyDictionary&lt;string, long&gt;? TryReadSymbolBarCounts() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:65](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L65) | Returns the per-symbol bar-count sidecar, or null when no bar-count data exists. |
+| <code>public Task&lt;BackfillResult&gt; RunAsync(BackfillRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:70](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L70) | Runs a backfill operation for the specified request. |
+| <code>public void ValidateRequest(BackfillRequest request) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:73](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L73) |  |
+| <code>public Task&lt;IReadOnlyDictionary&lt;string, ProviderHealthStatus&gt;&gt; CheckProviderHealthAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:78](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L78) | Gets health status of all providers. |
+| <code>public Task&lt;Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolResolution?&gt; ResolveSymbolAsync(string symbol, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:84](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L84) | Resolve a symbol using OpenFIGI. |
+| <code>public object? GetProgress() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:90](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L90) | Gets backfill progress snapshot from the core coordinator, if available. |
+| <code>public Task&lt;BackfillPreviewResult&gt; PreviewAsync(BackfillRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:96](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L96) | Previews a backfill operation without actually fetching data. Returns information about what would be backfilled. |
+| <code>public void Dispose();</code> | [src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs:99](../../../../src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs#L99) |  |
+
 ## BackfillExecutionContractProjection
 
 Qualified name: <code>Meridian.Ui.Shared.Services.BackfillExecutionContractProjection</code>. Kind: `class`.
@@ -924,31 +954,3 @@ Declared public members:
 | <code>public TimeSpan ResultCacheDuration { get; init; } = DefaultResultCacheDuration;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestOptions.cs:18](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestOptions.cs#L18) | How long a completed run&#x27;s full result stays cached in memory before re-hydration. |
 | <code>public int MaxStrikesPerExpiration { get; init; } = 80;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestOptions.cs:21](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestOptions.cs#L21) | Max strikes per expiration to materialise from the production chain provider. |
 | <code>public string? DataRootOverride { get; init; }</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestOptions.cs:27](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestOptions.cs#L27) | Optional override of the underlying-bar DataRoot for the backtest engine. When null, callers must supply a data root in the request (or the engine falls back to its default). |
-
-## CoveredCallBacktestService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CoveredCall.CoveredCallBacktestService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:28](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L28).
-
-Default implementation of ICoveredCallBacktestService. Runs covered-call backtests in-process behind a bounded channel, persists completed runs through IStrategyRepository, and caches full results for quick re-hydration.
-
-```csharp
-public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IHostedService, IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string StrategyId = &quot;covered-call-overwrite&quot;;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:31](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L31) | Strategy identifier used when persisting StrategyRunEntry. |
-| <code>public CoveredCallBacktestService(Func&lt;BacktestRequest, BacktestEngine&gt; engineFactory, ICoveredCallChainProviderFactory chainFactory, IStrategyRepository runRepository, IOptionsMonitor&lt;CoveredCallBacktestOptions&gt; options, IMemoryCache resultCache, ILoggerFactory loggerFactory, TimeProvider? timeProvider = null, IEvidenceArtifactStore? evidenceArtifactStore = null);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:88](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L88) |  |
-| <code>public Task StartAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:116](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L116) |  |
-| <code>public async Task StopAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:127](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L127) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:159](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L159) |  |
-| <code>public async ValueTask&lt;CoveredCallRunHandle&gt; StartAsync(CoveredCallBacktestRequest request, CoveredCallRunScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:171](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L171) |  |
-| <code>public ValueTask&lt;CoveredCallRunStatusDto?&gt; GetStatusAsync(string runId, CoveredCallRunScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:223](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L223) |  |
-| <code>public async ValueTask&lt;CoveredCallRunResult?&gt; GetResultAsync(string runId, CoveredCallRunScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:244](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L244) |  |
-| <code>public async ValueTask&lt;IReadOnlyList&lt;CoveredCallRunSummary&gt;&gt; ListRunsAsync(CoveredCallRunScope scope, int limit = 50, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:408](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L408) |  |
-| <code>public ValueTask CancelAsync(string runId, CoveredCallRunScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:490](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L490) |  |
-| <code>public async ValueTask&lt;CoveredCallChainPreview&gt; PreviewChainAsync(CoveredCallChainPreviewRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:514](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L514) |  |

@@ -409,7 +409,8 @@ describe("TradingScreen", () => {
     const history = screen.getByRole("region", { name: "Paper session history and execution evidence" });
     // One layout: title, headline figures, the main lists, then secondary sections.
     expect([heading, headline, positions, orders, posture, history].every((element, index, all) => index === 0 || follows(all[index - 1], element))).toBe(true);
-    expect(within(positions).getByText("Live positions")).toBeInTheDocument();
+    expect(within(positions).getByTestId("trading-position-source")).toHaveTextContent(/^Source: (Paper|Live) session/);
+    expect(within(positions).getByRole("link", { name: "Compare with Portfolio holdings" })).toHaveAttribute("href", "/portfolio#compare-sources");
     expect(within(orders).getByRole("heading", { name: "Open orders" })).toBeInTheDocument();
     // Secondary sections are collapsed by default, and no section is a heading with no content.
     expect(posture.querySelector("details")).not.toHaveAttribute("open");
@@ -430,7 +431,7 @@ describe("TradingScreen", () => {
 
   it("renders the position book with wiring state on the positions route", async () => {
     await renderTradingScreen(data, "/trading/positions");
-    expect(screen.getByText("Live positions")).toBeInTheDocument();
+    expect(screen.getByTestId("trading-position-source")).toHaveTextContent(/^Source: (Paper|Live) session/);
     expect(screen.queryByLabelText("Trading headline metrics")).not.toBeInTheDocument();
     expect(screen.queryByText("Open orders")).not.toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Workflow control strip" })).not.toBeInTheDocument();

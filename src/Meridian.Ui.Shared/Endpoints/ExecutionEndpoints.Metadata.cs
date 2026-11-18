@@ -6,6 +6,27 @@ namespace Meridian.Ui.Shared.Endpoints;
 
 public static partial class ExecutionEndpoints
 {
+    /// <summary>
+    /// The account grant for an operator whose account-scoped access the endpoint has just
+    /// verified. Only call after that check succeeds.
+    /// </summary>
+    private static ExecutionAccountGrant HttpPrincipalAccountGrant(Guid fundAccountId, string actor) =>
+        new(fundAccountId, actor, ExecutionAccountGrantSources.HttpPrincipal, DateTimeOffset.UtcNow);
+
+    /// <summary>
+    /// Routes an operator order through typed authority when the request names an account the
+    /// operator was verified for, and through the untyped path otherwise. Accountless orders are
+    /// paper-only in practice: live routing refuses them.
+    /// </summary>
+    private static Task<OrderResult> SubmitOperatorOrderAsync(
+        IOrderManager oms,
+        OrderRequest request,
+        OrderSubmissionAuthority? authority,
+        CancellationToken ct) =>
+        authority is null
+            ? oms.PlaceOrderAsync(request, ct)
+            : oms.SubmitAsync(new OrderSubmitCommand(request, authority), ct);
+
     private static IResult? TryRejectClientControlledExecutionMetadata(
         OrderRequest request,
         JsonSerializerOptions jsonOptions)

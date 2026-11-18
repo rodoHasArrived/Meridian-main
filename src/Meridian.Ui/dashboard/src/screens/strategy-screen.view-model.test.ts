@@ -253,10 +253,11 @@ describe("strategy-screen view model", () => {
     });
   });
 
-  it("keeps run selection capped to the latest two ids and supports deselection", () => {
+  it("selects up to four runs, refuses a fifth without dropping one, and supports deselection", () => {
     expect(toggleRunSelection([], "run-1")).toEqual(["run-1"]);
     expect(toggleRunSelection(["run-1"], "run-2")).toEqual(["run-1", "run-2"]);
-    expect(toggleRunSelection(["run-1", "run-2"], "run-3")).toEqual(["run-2", "run-3"]);
+    expect(toggleRunSelection(["run-1", "run-2"], "run-3")).toEqual(["run-1", "run-2", "run-3"]);
+    expect(toggleRunSelection(["run-1", "run-2", "run-3", "run-4"], "run-5")).toEqual(["run-1", "run-2", "run-3", "run-4"]);
     expect(toggleRunSelection(["run-1", "run-2"], "run-1")).toEqual(["run-2"]);
   });
 
@@ -276,7 +277,7 @@ describe("strategy-screen view model", () => {
     expect(state.canDiff).toBe(true);
     expect(state.compareCommand).toMatchObject({
       label: "Compare 2 runs",
-      ariaLabel: "Compare 2 runs: Mean Reversion FX and Index Momentum",
+      ariaLabel: "Compare 2 runs: Mean Reversion FX, Index Momentum",
       disabled: false,
       disabledReason: null,
       busy: false
@@ -1024,7 +1025,7 @@ describe("strategy-screen view model", () => {
       label: "Compare 2 runs",
       ariaLabel: "Compare 2 runs unavailable",
       disabled: true,
-      disabledReason: "Select exactly two runs before using this command. 0 selected."
+      disabledReason: "Select two to 4 runs before comparing. 0 selected."
     });
     expect(noSelection.diff.disabledReason).toBe("Select exactly two runs before using this command. 0 selected.");
     expect(noSelection.promote.disabledReason).toBe("Select one completed backtest run before promoting to paper. 0 selected.");
@@ -1117,7 +1118,7 @@ describe("strategy-screen view model", () => {
     });
   });
 
-  it("preserves canonical run-pair ordering across toggle churn for compare continuity", () => {
+  it("keeps the selection order across toggles and separates three-run compare from two-run diff", () => {
     let selected = toggleRunSelection([], "run-1");
     selected = toggleRunSelection(selected, "run-2");
     selected = toggleRunSelection(selected, "run-3");
@@ -1133,11 +1134,14 @@ describe("strategy-screen view model", () => {
       actionError: null
     });
 
-    expect(selected).toEqual(["run-2", "run-3"]);
-    expect(state.selectedRuns.map((run) => run.id)).toEqual(["run-2", "run-3"]);
+    // Three runs stay selected in the order chosen: compare takes all three, diff needs exactly two.
+    expect(selected).toEqual(["run-1", "run-2", "run-3"]);
+    expect(state.selectedRuns.map((run) => run.id)).toEqual(["run-1", "run-2", "run-3"]);
     expect(state.canCompare).toBe(true);
-    expect(state.canDiff).toBe(true);
-    expect(state.selectionText).toBe("Index Momentum vs Carry Alpha");
+    expect(state.canDiff).toBe(false);
+    expect(state.compareCommand.label).toBe("Compare 3 runs");
+    expect(state.diffCommand.disabledReason).toBe("Select exactly two runs before using this command. 3 selected.");
+    expect(state.selectionText).toBe("Mean Reversion FX vs Index Momentum vs Carry Alpha");
   });
 
   it("summarizes shared run history across backtest, paper, and engines", () => {

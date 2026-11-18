@@ -217,7 +217,7 @@ public sealed class TradingHoursViewModel : BindableBase
         MarketStatusText = label;
         MarketStatusTextForeground = textColor;
         MarketStatusReasonText = reason;
-        MarketStatusTimeText = $"As of {DateTime.UtcNow:HH:mm} UTC";
+        MarketStatusTimeText = $"As of {Meridian.Ui.Services.FormatHelpers.FormatDisplayTimestamp(DateTimeOffset.UtcNow, "HH:mm")}";
         NextSessionText = FormatNextSessionText(nextSession);
 
         var briefing = BuildSessionBriefing(state, reason, NextSessionText);

@@ -360,7 +360,19 @@ public sealed record WorkstationTradingOrderRow(
     string Quantity,
     string LimitPrice,
     string Status,
-    string SubmittedAt);
+    string SubmittedAt,
+    string? Origin = null);
+
+/// <summary>
+/// Whether the workstation may submit manual orders (tickets and position actions) on the active
+/// routing path, and if not, why. Live manual orders require a reviewed manual-intent authority
+/// contract, which does not exist yet, so the OMS refuses them; the order ticket shows this reason
+/// up front instead of after a refused submission.
+/// </summary>
+public sealed record WorkstationManualOrderEntry(
+    bool Available,
+    string? ReasonCode,
+    string? Reason);
 
 /// <summary>
 /// A single fill row shown in the trading workstation fills table.
@@ -436,7 +448,8 @@ public sealed record WorkstationTradingPayload(
     WorkstationTradingBrokerageState Brokerage,
     TradingOperatorReadinessDto Readiness,
     IReadOnlyList<WorkstationModeComparisonGroup> Comparisons,
-    WorkstationRunDrillInLinks? DrillIn);
+    WorkstationRunDrillInLinks? DrillIn,
+    WorkstationManualOrderEntry? ManualOrderEntry = null);
 
 // ---------------------------------------------------------------------------
 // /api/workstation/accounting and /api/workstation/reporting (legacy alias: /api/workstation/governance)

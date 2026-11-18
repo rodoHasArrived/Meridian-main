@@ -228,7 +228,7 @@ public sealed class StrategyRunPortfolioViewModel : BindableBase
         RealizedPnlText = portfolio.RealizedPnl.ToString("C2");
         UnrealizedPnlText = valuationMark.RecordedValue(portfolio.UnrealizedPnl);
         CommissionsText = portfolio.Commissions.ToString("C2");
-        AsOfText = UtcFormat.FormatUtcTimestamp(portfolio.AsOf);
+        AsOfText = UtcFormat.FormatDisplayTimestamp(portfolio.AsOf);
         SecurityResolvedText = portfolio.SecurityResolvedCount.ToString("N0");
         SecurityMissingText = portfolio.SecurityMissingCount.ToString("N0");
 

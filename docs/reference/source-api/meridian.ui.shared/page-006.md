@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatusEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.StatusEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs#L21).
+
+Extension methods for registering status and health API endpoints. Shared between web dashboard and desktop application hosts. Uses StatusEndpointHandlers for the actual response generation.
+
+```csharp
+public static class StatusEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapStatusEndpoints(this WebApplication app, StatusEndpointHandlers handlers, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:26](../../../../src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs#L26) | Maps all status and health API endpoints. |
+
 ## StorageEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.StorageEndpoints</code>. Kind: `class`.
@@ -226,12 +244,12 @@ Declared public members:
 | <code>public static IServiceCollection AddUiSharedServices(this IServiceCollection services, ApplicationStatusEndpointHandlers statusHandlers, string? configPath = null, IConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:49](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L49) | Registers shared services with a pre-configured StatusEndpointHandlers instance. Use this when the workstation host supplies an existing handler instance. |
 | <code>public static WebApplication MapUiEndpoints(this WebApplication app);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:80](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L80) | Maps all UI API endpoints using default JSON serializer options. |
 | <code>public static JsonSerializerOptions CreateEndpointJsonOptions(bool writeIndented = false) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:94](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L94) | Creates the standard JsonSerializerOptions used by UI API endpoints. Uses camelCase naming and a DefaultJsonTypeInfoResolver so callers can extend the type-info chain without reflection falling back to a null resolver. |
-| <code>public static WebApplication MapUiEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions, JsonSerializerOptions? jsonOptionsIndented = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:122](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L122) | Maps all UI API endpoints with custom JSON serializer options. |
-| <code>public static WebApplication MapUiEndpointsWithStatus(this WebApplication app, ApplicationStatusEndpointHandlers statusHandlers);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:319](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L319) | Maps all UI API endpoints including status endpoints. Use this when StatusEndpointHandlers has been registered in DI. |
-| <code>public const string MutationRateLimitPolicy = &quot;mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:338](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L338) | Rate limiting policy name applied to mutation (POST/PUT/DELETE) endpoints. |
-| <code>public const string DirectLendingMutationRateLimitPolicy = &quot;direct-lending-mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:344](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L344) | Direct-lending command limiter. Kept separate from the general mutation budget so loan servicing writes have an explicit, independently auditable abuse-control boundary. |
-| <code>public const string LoginRateLimitPolicy = &quot;login&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:351](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L351) | Per-IP limiter for the unauthenticated sign-in endpoint. Bounds how quickly one client can guess credentials or churn the bounded failed-attempt table in LoginSessionService. |
-| <code>public static IServiceCollection AddMutationRateLimiter(this IServiceCollection services, bool forceEnable = false, IConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:360](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L360) | Registers a per-IP fixed-window rate limiter for mutation endpoints. Allows 10 requests per minute per IP with a small queue for bursts. Set the MDC_DISABLE_RATE_LIMIT=true environment variable to bypass rate limiting only in explicit development/test hosts outside production, packaged and customer postures. Rejections expose the fixed-window retry delay through Retry-After. |
+| <code>public static WebApplication MapUiEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions, JsonSerializerOptions? jsonOptionsIndented = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:123](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L123) | Maps all UI API endpoints with custom JSON serializer options. |
+| <code>public static WebApplication MapUiEndpointsWithStatus(this WebApplication app, ApplicationStatusEndpointHandlers statusHandlers);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:321](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L321) | Maps all UI API endpoints including status endpoints. Use this when StatusEndpointHandlers has been registered in DI. |
+| <code>public const string MutationRateLimitPolicy = &quot;mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:340](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L340) | Rate limiting policy name applied to mutation (POST/PUT/DELETE) endpoints. |
+| <code>public const string DirectLendingMutationRateLimitPolicy = &quot;direct-lending-mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:346](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L346) | Direct-lending command limiter. Kept separate from the general mutation budget so loan servicing writes have an explicit, independently auditable abuse-control boundary. |
+| <code>public const string LoginRateLimitPolicy = &quot;login&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:353](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L353) | Per-IP limiter for the unauthenticated sign-in endpoint. Bounds how quickly one client can guess credentials or churn the bounded failed-attempt table in LoginSessionService. |
+| <code>public static IServiceCollection AddMutationRateLimiter(this IServiceCollection services, bool forceEnable = false, IConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:362](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L362) | Registers a per-IP fixed-window rate limiter for mutation endpoints. Allows 10 requests per minute per IP with a small queue for bursts. Set the MDC_DISABLE_RATE_LIMIT=true environment variable to bypass rate limiting only in explicit development/test hosts outside production, packaged and customer postures. Rejections expose the fixed-window retry delay through Retry-After. |
 
 ## UpdateExecutionCircuitBreakerRequest
 
@@ -481,6 +499,14 @@ Operator Inbox composition for the workstation API surface: builds the prioritiz
 public static partial class WorkstationEndpoints
 ```
 
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorPreferences.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorPreferences.cs#L17).
+
+The signed-in operator&#x27;s presentation preferences (theme, density, display time zone, page descriptions, browser shortcut overrides), so they follow the operator to another browser or machine. Only the operator themselves can read or replace them; the values are display-only.
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
 Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorScopePreference.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorScopePreference.cs#L16).
 
 The signed-in operator&#x27;s default operating scope (C1). Browser and WPF read it when a session opens with no scope in its link or local storage; only the operator themselves can read or set it.
@@ -681,13 +707,19 @@ Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.TableViews.cs:16]
 public static partial class WorkstationEndpoints
 ```
 
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs#L24).
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs:25](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs#L25).
 
 Trading workspace payload composition for the workstation API surface: builds the live trading payload (positions, orders, fills, risk, brokerage, readiness). When neither the execution layer nor the strategy run read service is registered the builder returns null and the route responds 503 — fabricated fixture data is never served as live. The inline trading route lambda and the shared helpers (GetTradingOperatorReadinessAsync, NormalizeOperatorInboxToken, BuildTradingBrokerageNotes, ResolveLiveMark, ResolveRuntimeRiskDescriptorAsync, BuildModeComparisons, BuildRunDrillInLinks, FormatCurrency/FormatPercent) remain in core and are reached across the partial.
 
 ```csharp
 public static partial class WorkstationEndpoints
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static WorkstationManualOrderEntry? ResolveManualOrderEntry(IExecutionGateway? gateway, BrokerageConfiguration? configuration);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs:302](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs#L302) | Mirrors the OMS&#x27;s routing mode for the active gateway: manual orders are refused live (MANUAL_LIVE_INTENT_CONTRACT_NOT_REVIEWED) and admitted in paper. |
 
 Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationRiskEndpoints.cs:8](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationRiskEndpoints.cs#L8).
 
@@ -1147,101 +1179,3 @@ Declared public members:
 | <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1028](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1028) |  |
 | <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1030](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1030) |  |
 | <code>public Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1034](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1034) |  |
-
-## FileEvidenceArtifactStore
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.FileEvidenceArtifactStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.AccountCashSource.cs:5](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.AccountCashSource.cs#L5).
-
-```csharp
-public sealed partial class FileEvidenceArtifactStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;EvidenceManifestFile?&gt; TryOpenDocumentContentAsync(string vaultId, string documentId, string tenantId, string scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.AccountCashSource.cs:7](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.AccountCashSource.cs#L7) |  |
-
-Source: [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:127](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L127).
-
-Retains evidence content, manifests, document reviews, and exports in file-backed storage.
-
-```csharp
-public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FileEvidenceArtifactStore(string dataRoot, ILogger&lt;FileEvidenceArtifactStore&gt; logger) : this(dataRoot, logger, MaxDocumentVerificationBytesPerRequest);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:178](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L178) |  |
-| <code>public FileEvidenceArtifactStore(string dataRoot, ILogger&lt;FileEvidenceArtifactStore&gt; logger, EvidenceStorageQuotaOptions quotaOptions) : this(dataRoot, logger, MaxDocumentVerificationBytesPerRequest, quotaOptions : quotaOptions);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:183](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L183) |  |
-| <code>public async Task&lt;EvidenceVaultIntakeResponseDto&gt; WriteIntakeArtifactAsync(EvidenceVaultIntakeRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:220](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L220) |  |
-
-Source: [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.DocumentReview.cs:9](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.DocumentReview.cs#L9).
-
-```csharp
-public sealed partial class FileEvidenceArtifactStore
-```
-
-Source: [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.Export.cs:11](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.Export.cs#L11).
-
-```csharp
-public sealed partial class FileEvidenceArtifactStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;EvidencePacketExportResponse&gt; WriteManifestAsync(EvidencePacketDto packet, EvidencePacketExportRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.Export.cs:13](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.Export.cs#L13) |  |
-
-Source: [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.Models.cs:5](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.Models.cs#L5).
-
-```csharp
-public sealed partial class FileEvidenceArtifactStore
-```
-
-Source: [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.PinnedDocument.cs:5](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.PinnedDocument.cs#L5).
-
-```csharp
-public sealed partial class FileEvidenceArtifactStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;bool&gt; VerifyDocumentContentAsync(string vaultId, string documentId, string artifactId, string contentHashSha256, string tenantId, string scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.PinnedDocument.cs:7](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.PinnedDocument.cs#L7) |  |
-
-Source: [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.StorageQuota.cs:10](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.StorageQuota.cs#L10).
-
-```csharp
-public sealed partial class FileEvidenceArtifactStore
-```
-
-Source: [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs:14](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs#L14).
-
-```csharp
-public sealed partial class FileEvidenceArtifactStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;bool&gt; VerifyRetainedContentAsync(string vaultId, string tenantId, string scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs:16](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs#L16) |  |
-| <code>[Obsolete(&quot;Use TryOpenManifestAsync(..., tenantId, scope, ct); Evidence Vault reads require authenticated scope.&quot;)] public Task&lt;EvidenceManifestFile?&gt; TryOpenManifestAsync(string subjectKind, string subjectId, string fileName, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs:47](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs#L47) |  |
-| <code>public async Task&lt;EvidenceManifestFile?&gt; TryOpenManifestAsync(string subjectKind, string subjectId, string fileName, string tenantId, string scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs:54](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs#L54) |  |
-| <code>[Obsolete(&quot;Use TryOpenManifestByVaultIdAsync(vaultId, tenantId, scope, ct); Evidence Vault reads require authenticated scope.&quot;)] public Task&lt;EvidenceManifestFile?&gt; TryOpenManifestByVaultIdAsync(string vaultId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs:83](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs#L83) |  |
-| <code>public async Task&lt;EvidenceManifestFile?&gt; TryOpenManifestByVaultIdAsync(string vaultId, string tenantId, string scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs:88](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs#L88) |  |
-| <code>[Obsolete(&quot;Use TryGetVaultIdentityAsync(vaultId, tenantId, scope, ct); Evidence Vault reads require authenticated scope.&quot;)] public Task&lt;EvidenceVaultIdentityDto?&gt; TryGetVaultIdentityAsync(string vaultId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs:115](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs#L115) |  |
-| <code>public async Task&lt;EvidenceVaultIdentityDto?&gt; TryGetVaultIdentityAsync(string vaultId, string tenantId, string scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs:120](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs#L120) |  |
-| <code>public static string ResolveDataRoot(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs:285](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs#L285) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;EvidenceVaultIdentityDto&gt;&gt; FindByLinkageAsync(EvidenceVaultLookupRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs:304](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs#L304) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;EvidenceVaultRequestListEntryDto&gt;&gt; ListRequestListsAsync(EvidenceVaultRequestListQueryDto query, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs:353](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs#L353) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;EvidenceVaultDocumentEntryDto&gt;&gt; ListDocumentsAsync(EvidenceVaultDocumentQueryDto query, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs:434](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs#L434) |  |
-| <code>[Obsolete(&quot;Use ReviewDocumentAsync(..., tenantId, scope, request, ct); Evidence Vault reviews require authenticated scope.&quot;)] public Task&lt;EvidenceVaultDocumentReviewResponseDto?&gt; ReviewDocumentAsync(string vaultId, string documentId, EvidenceVaultDocumentReviewRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs:788](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs#L788) |  |
-| <code>public async Task&lt;EvidenceVaultDocumentReviewResponseDto?&gt; ReviewDocumentAsync(string vaultId, string documentId, string tenantId, string scope, EvidenceVaultDocumentReviewRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs:795](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs#L795) |  |

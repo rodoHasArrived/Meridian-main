@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyAgreementJournalProjection
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IntercompanyAgreementJournalProjection</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/IntercompanyAgreementJournalProjection.cs:11](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAgreementJournalProjection.cs#L11).
+
+Projects posted line provenance without calculating agreement matches or changing consolidation.
+
+```csharp
+public static class IntercompanyAgreementJournalProjection
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IntercompanyAgreementJournalLinesDto Project(IntercompanyAgreementDetailDto agreement, LedgerBookRecord book, IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, DateOnly asOf, string? cursor = null, int pageSize = 100);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAgreementJournalProjection.cs:13](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAgreementJournalProjection.cs#L13) |  |
+
 ## IntercompanyProposalDeliveryService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IntercompanyProposalDeliveryService</code>. Kind: `class`.
@@ -357,7 +375,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IReportingMigrationStartup</code>. Kind: `interface`.
 
-Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1621](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1621).
+Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1625](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1625).
 
 Completes the existing checksummed reporting migration workflow before services that query the reporting authority are constructed.
 
@@ -369,7 +387,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task EnsureReadyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1623](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1623) |  |
+| <code>Task EnsureReadyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1627](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1627) |  |
 
 ## IReportingPrimaryDocumentRenderer
 
@@ -898,15 +916,3 @@ Declared public members:
 | <code>public bool HasClientGradeRenderer =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs:33](../../../../src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs#L33) | True when a client-grade binary renderer is wired (not the plain-text fallback). |
 | <code>public LedgerClientReportDocumentPackage BuildClientDocumentPackage(LedgerFinancialReportPack reportPack);</code> | [src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs:40](../../../../src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs#L40) | Renders the atomic PDF/XLSX primary-document pair for a governed client package from the exact supplied report pack. Both documents flow through the same composition-root renderer; if either render fails or returns no bytes, no package is returned. |
 | <code>public IReadOnlyList&lt;LedgerReportPackArtifact&gt; BuildClientDeliverables(LedgerFinancialReportPack reportPack, LedgerReportScheduledExport scheduledExport);</code> | [src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs:60](../../../../src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs#L60) | Builds the scheduled-export delivery artifacts (manifest + one artifact per declared format) for reportPack, rendering PDF/XLSX through the wired renderer. |
-
-## LedgerExportEvidenceUnavailableException
-
-Qualified name: <code>Meridian.Ui.Shared.Services.LedgerExportEvidenceUnavailableException</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/BacktestLedgerExportMapper.cs:9](../../../../src/Meridian.Ui.Shared/Services/BacktestLedgerExportMapper.cs#L9).
-
-The journal remains exportable but the requested lot evidence was not retained.
-
-```csharp
-public sealed class LedgerExportEvidenceUnavailableException(string message) : InvalidOperationException(message);
-```

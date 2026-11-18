@@ -20,7 +20,7 @@
 @media (max-width: 1279px) {
   .workspace-workbench-shell--switchable .workspace-workbench-shell-layout--with-inspector:not(.workspace-workbench-shell-layout--with-context) { grid-template-columns: minmax(0, 1fr); }
 }
-@media (max-width: 1199px) {
+@media (max-width: 1279px) {
   .reconciliation-workbench-shell .workspace-workbench-shell-layout--with-inspector { grid-template-columns: minmax(0, 1fr); }
 }
 @media (prefers-reduced-motion: reduce) {

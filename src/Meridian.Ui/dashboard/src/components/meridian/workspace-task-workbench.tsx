@@ -96,7 +96,7 @@ export function WorkspaceTaskWorkbench({
         <header className="workspace-task-heading"><h3>{title}</h3><p>{description}</p></header>
         <div className="workspace-task-toolbar">
           <label htmlFor={searchId}>Search {title.toLowerCase()}<Input id={searchId} type="search" value={search} onChange={(event) => update(`${stateKey}Search`, event.target.value, true)} leadingIcon={<Search className="size-4" />} placeholder="Find work…" /></label>
-          <p role="status">{rows.length} of {items.length} loaded</p>
+          <p role="status">{rows.length} of {items.length} shown</p>
           {search ? <Button type="button" size="sm" variant="ghost" onClick={() => update(`${stateKey}Search`, "", true)}>Clear search</Button> : null}
         </div>
         <DenseDataTable columns={columns} rows={rows} getRowId={(item) => item.id} getRowAriaLabel={(item) => item.title} getRowAriaControls={() => detailId} getRowAriaExpanded={(item) => selected?.id === item.id} selectedRowId={selected?.id} onRowSelect={(item) => update(stateKey, item.id)} emptyText={items.length ? "No work items match this search." : emptyText} ariaLabel={title} caption="Select a row to inspect its context. Enter opens its detail; Escape returns to the list." />

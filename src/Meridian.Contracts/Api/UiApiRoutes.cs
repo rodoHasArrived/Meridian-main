@@ -830,8 +830,14 @@ public static class UiApiRoutes
     /// <summary>Open orders, provider health and open breaks, counted once for every screen (A3).</summary>
     public const string WorkstationCrossScreenCounts = "/api/workstation/cross-screen-counts";
 
+    /// <summary>The fixed label, population and comparison basis of every headline figure (UX Phase A).</summary>
+    public const string WorkstationKpiDefinitions = "/api/workstation/kpi-definitions";
+
     /// <summary>The signed-in operator's default operating scope (C1).</summary>
     public const string WorkstationOperatorScopePreference = "/api/workstation/operator/scope-preference";
+
+    /// <summary>The signed-in operator's presentation preferences (theme, density, time zone, descriptions, shortcuts).</summary>
+    public const string WorkstationOperatorPreferences = "/api/workstation/operator/preferences";
 
     /// <summary>
     /// The entities, funds and fund accounts the calling operator may scope to (P4): read-only, open
@@ -891,6 +897,7 @@ public static class UiApiRoutes
     public const string RunsEquityCurve = "/api/workstation/runs/{runId}/equity-curve";
     public const string RunsFills = "/api/workstation/runs/{runId}/fills";
     public const string RunsAttribution = "/api/workstation/runs/{runId}/attribution";
+    public const string RunsAttributionPeriodComparison = "/api/workstation/runs/{runId}/attribution/period-comparison";
     public const string RunHistory = "/api/workstation/runs/history";
     public const string RunsTimeline = "/api/workstation/runs/timeline";
     public const string RunsLineageTimeline = "/api/workstation/runs/lineage-timeline";
@@ -1184,6 +1191,8 @@ public static class UiApiRoutes
     public const string FundStructureSetupDraftCreate = "/api/fund-structure/setup-drafts/create";
     public const string FundStructureLegalEntityProfile = "/api/fund-structure/entities/{entityId}";
     public const string FundStructureLedgerMappingAssignments = "/api/fund-structure/ledger-mapping-assignments";
+    public const string FundStructureNavComparison = "/api/fund-structure/nav-comparison";
+    public const string FundStructureNavTrend = "/api/fund-structure/nav-trend";
 
     // Fund account brokerage read-side sync endpoints
     public const string FundAccountBrokerageSyncAccounts = "/api/fund-accounts/brokerage-sync/accounts";
@@ -1201,6 +1210,7 @@ public static class UiApiRoutes
     // Portfolio-wide cash ladder and liquidity scenarios
     public const string PortfolioCashLadder = "/api/portfolio/cash-ladder";
     public const string PortfolioCashLadderScenarios = "/api/portfolio/cash-ladder/scenarios";
+    public const string PortfolioCashLadderComparison = "/api/portfolio/cash-ladder/comparison";
 
     // Resilience endpoints
     public const string ResilienceCircuitBreakers = "/api/resilience/circuit-breakers";

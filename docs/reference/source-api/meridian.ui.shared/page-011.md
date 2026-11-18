@@ -6,6 +6,29 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FileAccountingAuditPendingMarkerStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.FileAccountingAuditPendingMarkerStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs:20](../../../../src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs#L20).
+
+File-backed IAccountingAuditPendingMarkerStore: a small sidecar written atomically beside the accounting configuration snapshot.
+
+```csharp
+public sealed class FileAccountingAuditPendingMarkerStore : IAccountingAuditPendingMarkerStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileAccountingAuditPendingMarkerStore(string markerPath);</code> | [src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs:29](../../../../src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs#L29) |  |
+| <code>public string MarkerPath { get; }</code> | [src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs:36](../../../../src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs#L36) | Full path of the marker file. |
+| <code>public static string MarkerPathFor(string snapshotPath);</code> | [src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs:39](../../../../src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs#L39) | The conventional marker path for an accounting configuration snapshot. |
+| <code>public async Task&lt;AccountingAuditPendingMarker?&gt; ReadAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs:45](../../../../src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs#L45) |  |
+| <code>public async Task WriteAsync(AccountingAuditPendingMarker marker, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs:58](../../../../src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs#L58) |  |
+| <code>public async Task ClearAsync(Guid auditEventId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs:75](../../../../src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs#L75) |  |
+
 ## FileAccountingConfigurationStore
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FileAccountingConfigurationStore</code>. Kind: `class`.
@@ -962,7 +985,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static FundLedgerReconciliationSnapshot ProjectReconciliationSnapshot(FundLedgerSnapshot snapshot);</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Ledger.cs:99](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Ledger.cs#L99) |  |
+| <code>public static FundLedgerReconciliationSnapshot ProjectReconciliationSnapshot(FundLedgerSnapshot snapshot);</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Ledger.cs:109](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Ledger.cs#L109) |  |
 
 Source: [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.LiveViews.cs:26](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.LiveViews.cs#L26).
 
@@ -975,6 +998,31 @@ Source: [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Mode
 ```csharp
 public sealed partial class FundOperationsWorkspaceReadService
 ```
+
+Source: [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.NavComparison.cs:6](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.NavComparison.cs#L6).
+
+```csharp
+public sealed partial class FundOperationsWorkspaceReadService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;PeriodComparisonDto&gt; GetNavComparisonAsync(string fundProfileId, DateTimeOffset? asOf, DateTimeOffset? baselineAsOf, string? currency, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.NavComparison.cs:14](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.NavComparison.cs#L14) | Ledger NAV at asOf against NAV at baselineAsOf (default: the end of the calendar month before asOf), in total and by asset class. Both sides are rebuilt from the posted ledger as of their own date through the same NAV attribution the workspace uses, so the prior figure is what the ledger said then, not a stored snapshot. |
+
+Source: [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.NavTrend.cs:7](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.NavTrend.cs#L7).
+
+```csharp
+public sealed partial class FundOperationsWorkspaceReadService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int MaxNavTrendMonths = 24;</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.NavTrend.cs:10](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.NavTrend.cs#L10) | Most month-ends a NAV trend may span. |
+| <code>public async Task&lt;FundNavTrendDto&gt; GetNavTrendAsync(string fundProfileId, int months = 12, DateTimeOffset? asOf = null, string? currency = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.NavTrend.cs:21](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.NavTrend.cs#L21) | Ledger NAV at the end of each of the last months months, ending with NAV at asOf (default now). The ledger is built once, as of the latest date; each point is its NAV attribution as of that point, which reads only entries timestamped on or before it. Months before the ledger&#x27;s first NAV component are left out. |
 
 Source: [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.PortfolioReporting.cs:26](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.PortfolioReporting.cs#L26).
 
@@ -1095,13 +1143,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public GovernanceReportingReleaseAuthorizationVerifier(IReportingGovernanceRepository repository, ReportingReleasedArtifactIntegrityGate artifactIntegrityGate);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs:165](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs#L165) |  |
 | <code>public async Task&lt;ReportingReleaseAuthorizationResult&gt; VerifyAsync(ReportingDeliveryReleaseAuthorization authorization, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs:174](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs#L174) |  |
-
-## GovernanceReportPackArtifactContent
-
-Qualified name: <code>Meridian.Ui.Shared.Services.GovernanceReportPackArtifactContent</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs:36](../../../../src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs#L36).
-
-```csharp
-public sealed record GovernanceReportPackArtifactContent(string ArtifactKind, GovernanceReportArtifactFormatDto Format, string FileName, byte[] Content);
-```

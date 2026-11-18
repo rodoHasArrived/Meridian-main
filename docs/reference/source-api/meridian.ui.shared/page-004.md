@@ -529,6 +529,24 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static void MapIntercompanyOperationsEndpoints(this WebApplication app, JsonSerializerOptions options);</code> | [src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L17) |  |
 
+## IntercompanyRateFixingEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.IntercompanyRateFixingEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/IntercompanyRateFixingEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/IntercompanyRateFixingEndpoints.cs#L16).
+
+Reviewed index fixings for floating-rate intercompany accrual (rule intercompany-accrual-v2). An operator records what a publisher showed; a second person approves it before any accrual can use it. Tenant-scoped.
+
+```csharp
+public static class IntercompanyRateFixingEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapIntercompanyRateFixingEndpoints(this WebApplication app, JsonSerializerOptions endpointOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/IntercompanyRateFixingEndpoints.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/IntercompanyRateFixingEndpoints.cs#L20) |  |
+
 ## IWorkstationTenantContextAccessor
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.IWorkstationTenantContextAccessor</code>. Kind: `interface`.
@@ -1195,21 +1213,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static void MapPackagingEndpoints(this IEndpointRouteBuilder app, string dataRoot);</code> | [src/Meridian.Ui.Shared/Endpoints/PackagingEndpoints.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/PackagingEndpoints.cs#L24) | Maps all packaging-related endpoints. |
-
-## PlaidEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.PlaidEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs#L16).
-
-Maps Plaid linking, account discovery, and synchronization operations to HTTP endpoints.
-
-```csharp
-public static class PlaidEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapPlaidEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs#L18) |  |

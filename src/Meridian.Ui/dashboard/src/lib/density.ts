@@ -2,6 +2,7 @@
 // so both the DensityToggle control and saved-layout restore share one source of
 // truth for the `data-theme-density` scope and the `meridian.workstation.<feature>.vN`
 // storage convention.
+import { notifyOperatorPreferenceChanged } from "@/lib/operator-preference-events";
 import { getLocalStorage } from "@/lib/theme";
 
 export type Density = "compact" | "default" | "spacious";
@@ -28,12 +29,16 @@ export function readStoredDensity(
 export function writeStoredDensity(
   value: Density,
   key: string = DENSITY_STORAGE_KEY,
-  storage: Storage | null = getLocalStorage()
+  storage: Storage | null = getLocalStorage(),
+  announce = true
 ) {
   try {
     storage?.setItem(key, value);
   } catch {
     // Density persistence is best-effort when browser storage is blocked.
+  }
+  if (announce && key === DENSITY_STORAGE_KEY) {
+    notifyOperatorPreferenceChanged();
   }
 }
 

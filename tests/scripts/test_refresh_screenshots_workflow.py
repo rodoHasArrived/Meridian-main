@@ -38,6 +38,11 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         spec.loader.exec_module(generator)
         cls.api_routes_source = generator.render(generator.extract_routes(generator.SOURCE_FILE.read_text(encoding="utf-8")))
         cls.web_workflow = WEB_SCREENSHOT_CAPTURE_WORKFLOW.read_text(encoding="utf-8")
+        install_action = yaml.load(
+            (REPO_ROOT / ".github" / "actions" / "install-playwright-chromium" / "action.yml").read_text(encoding="utf-8"),
+            Loader=yaml.BaseLoader,
+        )
+        cls.install_action_run = install_action["runs"]["steps"][0]["run"]
         cls.desktop_screenshot_workflow = DESKTOP_SCREENSHOT_CAPTURE_WORKFLOW.read_text(encoding="utf-8")
         cls.desktop_workflow_runner = DESKTOP_WORKFLOW_RUNNER_WORKFLOW.read_text(encoding="utf-8")
         cls.run_desktop_workflow_script = RUN_DESKTOP_WORKFLOW_SCRIPT.read_text(encoding="utf-8")
@@ -71,7 +76,7 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertNotIn("continue-on-error: true", self.web_workflow)
         self.assertEqual(
             pull_request.get("if"),
-            "${{ success() && inputs.create_pr && steps.validate_web.outcome == 'success' }}",
+            "${{ success() && (inputs.create_pr || github.event_name == 'schedule') && steps.validate_web.outcome == 'success' }}",
         )
         self.assertEqual(pull_request.get("with", {}).get("branch"), "automation/web-screenshot-capture")
         self.assertEqual(pull_request.get("with", {}).get("base"), "${{ github.event.repository.default_branch }}")
@@ -114,6 +119,7 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
                 self.assertLess(steps.index(install), steps.index(save))
                 self.assertLess(steps.index(save), steps.index(capture), "A route failure must not prevent caching a verified browser install")
                 self.assertNotIn("if", install, "Verify the installed browser even on a cache hit")
+                self.assertEqual(install["uses"], "./.github/actions/install-playwright-chromium")
 
     def test_web_screenshot_jobs_keep_clean_installs_and_use_headless_browser_only(self) -> None:
         workflow = yaml.load(self.web_workflow, Loader=yaml.BaseLoader)
@@ -126,9 +132,10 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
                     self.assertIn(flag, dependencies["run"])
                 self.assertNotIn("--no-audit", dependencies["run"])
                 install = next(step for step in steps if step.get("id") == "install_playwright")
-                self.assertIn("playwright install chromium --only-shell", install["run"])
-                self.assertIn('timeout "$install_timeout_seconds"', install["run"])
-                self.assertIn('attempt=$((attempt + 1))', install["run"])
+                self.assertEqual(install["uses"], "./.github/actions/install-playwright-chromium")
+                self.assertIn("playwright install chromium --only-shell", self.install_action_run)
+                self.assertIn('timeout "$install_timeout_seconds"', self.install_action_run)
+                self.assertIn('attempt=$((attempt + 1))', self.install_action_run)
                 self.assertTrue(any("playwright install-deps chromium" in step.get("run", "") for step in steps))
 
     def test_web_screenshot_jobs_use_bounded_capture_workers(self) -> None:
@@ -145,7 +152,10 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertIn("--surface desktop", self.desktop_screenshot_workflow)
         self.assertIn("--require-fresh", self.desktop_screenshot_workflow)
         self.assertNotIn("continue-on-error: true", self.desktop_screenshot_workflow)
-        self.assertIn("if: ${{ success() && inputs.commit == true }}", self.desktop_screenshot_workflow)
+        self.assertIn(
+            "if: ${{ success() && (inputs.create_pr || github.event_name == 'schedule') }}",
+            self.desktop_screenshot_workflow,
+        )
         self.assertIn("name: desktop-screenshots-complete-${{ github.run_number }}", self.desktop_screenshot_workflow)
 
     def test_desktop_screenshots_keep_one_complete_archive_including_failure_evidence(self) -> None:
@@ -161,7 +171,7 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertEqual(prepare["if"], "${{ always() }}")
         self.assertLess(steps.index(prepare), steps.index(upload))
         for required in (
-            'Copy-ScreenshotSet -SourceRoot "${{ steps.validate_output_dir.outputs.safe_output_dir }}" -Bucket "catalog"',
+            'Copy-ScreenshotSet -SourceRoot $env:CAPTURE_DIR -Bucket "catalog"',
             'Copy-ScreenshotSet -SourceRoot "artifacts/desktop-workflows" -Bucket "workflow-runs"',
             "screenshot-artifact-manifest.json",
         ):
@@ -600,7 +610,10 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         # screen, which gives the browser the direct-lending read surface that previously
         # only the desktop client reached.
         # 82 includes dedicated Factor Paydown and Consolidation child workflows.
-        self.assertEqual(82, len(captures))
+        # 85 after adding 1024px captures of Close Cockpit, Ledger Explorer and Trading
+        # (UX Phase C), which check the narrow layout of the finance grid.
+        # 86 after adding W02N (web-portfolio-nav) for the NAV prior-period comparison (UX Phase E).
+        self.assertEqual(86, len(captures))
         self.assertEqual("/accounting/factor-paydown", captures["W03FP"].get("path"))
         self.assertEqual("/accounting/consolidation", captures["W03CO"].get("path"))
         self.assertNotIn("W05E", captures)
@@ -889,7 +902,7 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         validate = next(step for step in steps if step.get("id") == "validate_web")
         self.assertEqual(stage["if"], publish["if"])
         self.assertIn("steps.validate_web.outcome == 'success'", publish["if"])
-        self.assertIn("success() && inputs.create_pr", publish["if"])
+        self.assertIn("success() && (inputs.create_pr || github.event_name == 'schedule')", publish["if"])
         self.assertNotIn("continue-on-error", publish)
         self.assertLess(steps.index(validate), steps.index(stage))
         self.assertLess(steps.index(stage), steps.index(publish))
@@ -1018,3 +1031,56 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ScreenshotRefreshPublicationTests(unittest.TestCase):
+    """Both refresh workflows publish checked, validated, current catalogs."""
+
+    def load(self, name: str) -> dict:
+        return yaml.load((REPO_ROOT / ".github" / "workflows" / name).read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
+
+    def publish_step(self, workflow: dict) -> dict:
+        for job in workflow["jobs"].values():
+            for step in job["steps"]:
+                if step.get("uses", "").startswith("peter-evans/create-pull-request@"):
+                    return step
+        self.fail("no create-pull-request step")
+
+    def test_refresh_prs_use_a_token_that_triggers_required_checks(self) -> None:
+        for name in ("web-screenshot-capture.yml", "desktop-screenshot-capture.yml"):
+            with self.subTest(workflow=name):
+                step = self.publish_step(self.load(name))
+                self.assertEqual(step["with"]["token"], "${{ secrets.SCREENSHOT_PR_TOKEN || github.token }}")
+                self.assertIn("actions/runs/${{ github.run_id }}", step["with"]["body"])
+
+    def test_refresh_workflows_run_weekly_and_default_to_opening_a_pr(self) -> None:
+        for name in ("web-screenshot-capture.yml", "desktop-screenshot-capture.yml"):
+            with self.subTest(workflow=name):
+                workflow = self.load(name)
+                self.assertEqual(len(workflow["on"]["schedule"]), 1)
+                create_pr = workflow["on"]["workflow_dispatch"]["inputs"]["create_pr"]
+                self.assertEqual((create_pr["type"], create_pr["default"]), ("boolean", "true"))
+                self.assertIn("github.event_name == 'schedule'", self.publish_step(workflow)["if"])
+
+    def test_desktop_captures_are_validated_before_replacing_the_catalog(self) -> None:
+        workflow = self.load("desktop-screenshot-capture.yml")
+        steps = workflow["jobs"]["capture-screenshots"]["steps"]
+        capture = next(step for step in steps if step.get("id") == "capture_desktop")
+        validate = next(step for step in steps if step.get("name") == "Validate desktop screenshot captures")
+        stage = next(step for step in steps if step.get("name") == "Stage validated catalog refresh")
+        self.assertIn("-OutputDir $env:CAPTURE_DIR", capture["run"])
+        self.assertIn('--output-dir "${{ env.CAPTURE_DIR }}"', validate["run"])
+        self.assertNotIn("docs/screenshots", workflow["env"]["CAPTURE_DIR"])
+        self.assertIn("Remove-Item", stage["run"])
+        self.assertLess(steps.index(validate), steps.index(stage))
+        self.assertLess(steps.index(stage), steps.index(self.publish_step(workflow)))
+
+    def test_web_routes_config_is_confined_to_scripts_dev(self) -> None:
+        workflow = self.load("web-screenshot-capture.yml")
+        steps = workflow["jobs"]["capture-web-screenshots"]["steps"]
+        check = next(step for step in steps if step.get("id") == "validate_config")
+        self.assertIn('base_dir = (repo_root / "scripts/dev")', check["run"])
+        self.assertNotIn("${{", check["run"])
+        for step_id in ("capture_web", "validate_web"):
+            step = next(step for step in steps if step.get("id") == step_id)
+            self.assertEqual(step["env"]["ROUTES_CONFIG"], "${{ steps.validate_config.outputs.safe_config }}")

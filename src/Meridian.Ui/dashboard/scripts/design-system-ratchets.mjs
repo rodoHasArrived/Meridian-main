@@ -133,6 +133,19 @@ export const RATCHETS = {
   isoTimestampsInJsx: {
     description: "raw ISO timestamps rendered in screens/ (use formatTimestamp or <TimeText> from @/lib/format)",
     count: countIsoTimestampsInJsx
+  },
+  monospaceCapsLabels: {
+    description: "class strings that set a label in uppercase monospace in screens/ (labels use the body face; font-mono is for figures, IDs and code)",
+    count(source) {
+      let total = 0;
+      for (const match of source.matchAll(STRING_LITERAL)) {
+        const value = match[1] ?? match[2] ?? match[3] ?? "";
+        if (/\bfont-mono\b/.test(value) && /\buppercase\b/.test(value)) {
+          total += 1;
+        }
+      }
+      return total;
+    }
   }
 };
 

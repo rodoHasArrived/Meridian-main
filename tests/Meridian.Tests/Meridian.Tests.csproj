@@ -88,6 +88,7 @@
     <None Include="..\fixtures\recurring-journal\golden\**\*.json" CopyToOutputDirectory="PreserveNewest" Link="fixtures\recurring-journal\golden\%(RecursiveDir)%(Filename)%(Extension)" />
     <None Include="..\fixtures\schedules\golden\**\*.json" CopyToOutputDirectory="PreserveNewest" Link="fixtures\schedules\golden\%(RecursiveDir)%(Filename)%(Extension)" />
     <None Include="..\fixtures\cross-screen-counts\*.json" CopyToOutputDirectory="PreserveNewest" Link="fixtures\cross-screen-counts\%(Filename)%(Extension)" />
+    <None Include="..\fixtures\kpi-definitions\*.json" CopyToOutputDirectory="PreserveNewest" Link="fixtures\kpi-definitions\%(Filename)%(Extension)" />
     <None Include="..\fixtures\security-master\**\*.json" CopyToOutputDirectory="PreserveNewest" Link="fixtures\security-master\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 

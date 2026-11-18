@@ -6,6 +6,138 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ExportPresetsPage
+
+Qualified name: <code>Meridian.Wpf.Views.ExportPresetsPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/ExportPresetsPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/ExportPresetsPage.xaml.cs#L10).
+
+Provides the desktop page to configure reusable export settings.
+
+```csharp
+public partial class ExportPresetsPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ExportPresetsPage();</code> | [src/Meridian.Wpf/Views/ExportPresetsPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/ExportPresetsPage.xaml.cs#L14) |  |
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:40](../../../../src/Meridian.Wpf/Views/Pages.cs#L40).
+
+```csharp
+public partial class ExportPresetsPage : Page
+```
+
+## FactorPaydownControl
+
+Qualified name: <code>Meridian.Wpf.Views.FactorPaydownControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/FactorPaydownControl.xaml.cs:5](../../../../src/Meridian.Wpf/Views/FactorPaydownControl.xaml.cs#L5).
+
+```csharp
+public partial class FactorPaydownControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FactorPaydownControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/FactorPaydownControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/FactorPaydownControl.xaml.cs#L7) |  |
+
+## FinancialRecordExplorerPage
+
+Qualified name: <code>Meridian.Wpf.Views.FinancialRecordExplorerPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/FinancialRecordExplorerPage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/FinancialRecordExplorerPage.xaml.cs#L11).
+
+Provides the desktop page to inspect ledger rows, proof actions, report usage, and audit relationships.
+
+```csharp
+public partial class FinancialRecordExplorerPage : Page, IWorkspaceShellPageContextAware
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FinancialRecordExplorerPage() : this(new FinancialRecordExplorerViewModel(ApiClientService.Instance));</code> | [src/Meridian.Wpf/Views/FinancialRecordExplorerPage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/FinancialRecordExplorerPage.xaml.cs#L15) |  |
+| <code>public FinancialRecordExplorerPage(FinancialRecordExplorerViewModel viewModel);</code> | [src/Meridian.Wpf/Views/FinancialRecordExplorerPage.xaml.cs:20](../../../../src/Meridian.Wpf/Views/FinancialRecordExplorerPage.xaml.cs#L20) |  |
+| <code>public void ApplyWorkspaceShellPageTag(string pageTag) =&gt; …;</code> | [src/Meridian.Wpf/Views/FinancialRecordExplorerPage.xaml.cs:27](../../../../src/Meridian.Wpf/Views/FinancialRecordExplorerPage.xaml.cs#L27) |  |
+
+## FloatingPageWindow
+
+Qualified name: <code>Meridian.Wpf.Views.FloatingPageWindow</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/FloatingPageWindow.xaml.cs:11](../../../../src/Meridian.Wpf/Views/FloatingPageWindow.xaml.cs#L11).
+
+A generic floating window that hosts any registered Meridian page. Used when a page is dragged to the &quot;Float Window&quot; drop zone in the split pane. All visual chrome lives here; no business logic.
+
+```csharp
+public partial class FloatingPageWindow : Window
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FloatingPageWindow(string pageTitle, FrameworkElement pageContent);</code> | [src/Meridian.Wpf/Views/FloatingPageWindow.xaml.cs:13](../../../../src/Meridian.Wpf/Views/FloatingPageWindow.xaml.cs#L13) |  |
+
+## FundAccountsPage
+
+Qualified name: <code>Meridian.Wpf.Views.FundAccountsPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/FundAccountsPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/FundAccountsPage.xaml.cs#L10).
+
+Provides the desktop page to inspect account balances, routing, and reconciliation readiness.
+
+```csharp
+public partial class FundAccountsPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FundAccountsPage(FundAccountsViewModel viewModel);</code> | [src/Meridian.Wpf/Views/FundAccountsPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/FundAccountsPage.xaml.cs#L14) |  |
+
+## FundLedgerPage
+
+Qualified name: <code>Meridian.Wpf.Views.FundLedgerPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/FundLedgerPage.xaml.cs:13](../../../../src/Meridian.Wpf/Views/FundLedgerPage.xaml.cs#L13).
+
+Provides the desktop page to review journal, account, and accounting readiness in one view.
+
+```csharp
+public partial class FundLedgerPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FundLedgerPage(FundLedgerViewModel viewModel);</code> | [src/Meridian.Wpf/Views/FundLedgerPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/FundLedgerPage.xaml.cs#L17) |  |
+
+## FundProfileSelectionPage
+
+Qualified name: <code>Meridian.Wpf.Views.FundProfileSelectionPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/FundProfileSelectionPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/FundProfileSelectionPage.xaml.cs#L10).
+
+Hosts operating-context and fund-profile selection before entering the desktop workstation.
+
+```csharp
+public partial class FundProfileSelectionPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FundProfileSelectionPage(FundProfileSelectionViewModel viewModel);</code> | [src/Meridian.Wpf/Views/FundProfileSelectionPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/FundProfileSelectionPage.xaml.cs#L14) |  |
+
 ## FundStructureSetupPage
 
 Qualified name: <code>Meridian.Wpf.Views.FundStructureSetupPage</code>. Kind: `class`.
@@ -192,6 +324,22 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public IntercompanyInterestAccrualControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/IntercompanyInterestAccrualControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/IntercompanyInterestAccrualControl.xaml.cs#L7) |  |
+
+## IntercompanyRateFixingsControl
+
+Qualified name: <code>Meridian.Wpf.Views.IntercompanyRateFixingsControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/IntercompanyRateFixingsControl.xaml.cs:5](../../../../src/Meridian.Wpf/Views/IntercompanyRateFixingsControl.xaml.cs#L5).
+
+```csharp
+public partial class IntercompanyRateFixingsControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyRateFixingsControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/IntercompanyRateFixingsControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/IntercompanyRateFixingsControl.xaml.cs#L7) |  |
 
 ## IssueDisplayItem
 
@@ -889,191 +1037,3 @@ Declared public members:
 | <code>public string Summary { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:195](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L195) |  |
 | <code>public string SizeText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:196](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L196) |  |
 | <code>public string TimeText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:197](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L197) |  |
-
-## LegalHoldItem
-
-Qualified name: <code>Meridian.Wpf.Views.RetentionAssurancePage.LegalHoldItem</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:179](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L179).
-
-Presents a legal hold&#x27;s identity, reason, covered symbols, and creation date.
-
-```csharp
-public sealed class LegalHoldItem
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Id { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:181](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L181) |  |
-| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:182](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L182) |  |
-| <code>public string Reason { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:183](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L183) |  |
-| <code>public string SymbolsText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:184](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L184) |  |
-| <code>public string CreatedText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:185](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L185) |  |
-
-## RunCashFlowPage
-
-Qualified name: <code>Meridian.Wpf.Views.RunCashFlowPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:72](../../../../src/Meridian.Wpf/Views/Pages.cs#L72).
-
-```csharp
-public partial class RunCashFlowPage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/RunCashFlowPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/RunCashFlowPage.xaml.cs#L12).
-
-Provides the desktop page to review simulated cash, financing, and funding impacts.
-
-```csharp
-public partial class RunCashFlowPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public RunCashFlowPage() : this(ResolveRequired&lt;StrategyRunWorkspaceService&gt;(), ResolveRequired&lt;WpfNavigationService&gt;(), ResolveOptional&lt;StrategyRunContinuityService&gt;());</code> | [src/Meridian.Wpf/Views/RunCashFlowPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/RunCashFlowPage.xaml.cs#L14) |  |
-| <code>public RunCashFlowPage(StrategyRunWorkspaceService workspaceService, WpfNavigationService navigationService, StrategyRunContinuityService? continuityService = null);</code> | [src/Meridian.Wpf/Views/RunCashFlowPage.xaml.cs:22](../../../../src/Meridian.Wpf/Views/RunCashFlowPage.xaml.cs#L22) |  |
-
-## RunDetailPage
-
-Qualified name: <code>Meridian.Wpf.Views.RunDetailPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:69](../../../../src/Meridian.Wpf/Views/Pages.cs#L69).
-
-```csharp
-public partial class RunDetailPage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/RunDetailPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/RunDetailPage.xaml.cs#L10).
-
-Provides the desktop page to review diagnostics and execution details for a selected run.
-
-```csharp
-public partial class RunDetailPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public RunDetailPage();</code> | [src/Meridian.Wpf/Views/RunDetailPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/RunDetailPage.xaml.cs#L12) |  |
-
-## RunLedgerPage
-
-Qualified name: <code>Meridian.Wpf.Views.RunLedgerPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:71](../../../../src/Meridian.Wpf/Views/Pages.cs#L71).
-
-```csharp
-public partial class RunLedgerPage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/RunLedgerPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/RunLedgerPage.xaml.cs#L10).
-
-Provides the desktop page to review run postings and execution-linked cash movement.
-
-```csharp
-public partial class RunLedgerPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public RunLedgerPage();</code> | [src/Meridian.Wpf/Views/RunLedgerPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/RunLedgerPage.xaml.cs#L12) |  |
-
-## RunMatPage
-
-Qualified name: <code>Meridian.Wpf.Views.RunMatPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:52](../../../../src/Meridian.Wpf/Views/Pages.cs#L52).
-
-```csharp
-public partial class RunMatPage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/RunMatPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/RunMatPage.xaml.cs#L10).
-
-Strategy workspace surface for editing and executing RunMat scripts.
-
-```csharp
-public partial class RunMatPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public RunMatPage(RunMatViewModel viewModel);</code> | [src/Meridian.Wpf/Views/RunMatPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/RunMatPage.xaml.cs#L14) |  |
-
-## RunPortfolioPage
-
-Qualified name: <code>Meridian.Wpf.Views.RunPortfolioPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:70](../../../../src/Meridian.Wpf/Views/Pages.cs#L70).
-
-```csharp
-public partial class RunPortfolioPage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/RunPortfolioPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/RunPortfolioPage.xaml.cs#L10).
-
-Provides the desktop page to review holdings, exposures, and weights for the selected run.
-
-```csharp
-public partial class RunPortfolioPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public RunPortfolioPage();</code> | [src/Meridian.Wpf/Views/RunPortfolioPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/RunPortfolioPage.xaml.cs#L12) |  |
-
-## RunRiskPage
-
-Qualified name: <code>Meridian.Wpf.Views.RunRiskPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:73](../../../../src/Meridian.Wpf/Views/Pages.cs#L73).
-
-```csharp
-public partial class RunRiskPage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/RunRiskPage.xaml.cs:8](../../../../src/Meridian.Wpf/Views/RunRiskPage.xaml.cs#L8).
-
-Hosts risk details for the selected strategy run.
-
-```csharp
-public partial class RunRiskPage
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public RunRiskPage(RunRiskViewModel viewModel);</code> | [src/Meridian.Wpf/Views/RunRiskPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/RunRiskPage.xaml.cs#L12) |  |
-
-## SaveWatchlistDialog
-
-Qualified name: <code>Meridian.Wpf.Views.SaveWatchlistDialog</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs:11](../../../../src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs#L11).
-
-Dialog for saving or updating a watchlist. Replaces the former imperative SaveWatchlistDialog Window class that was embedded in SymbolsPage.xaml.cs.
-
-```csharp
-public partial class SaveWatchlistDialog : Window
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string WatchlistName =&gt; …;</code> | [src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs:14](../../../../src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs#L14) | Gets the watchlist name typed by the user. |
-| <code>public bool SaveAsNew =&gt; …;</code> | [src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs:17](../../../../src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs#L17) | Gets whether the user chose to create a new watchlist. |
-| <code>public string? SelectedWatchlistId =&gt; …;</code> | [src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs:20](../../../../src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs#L20) | Gets the selected existing watchlist name (null when SaveAsNew is true). |
-| <code>public SaveWatchlistDialog(IEnumerable&lt;string&gt; existingWatchlists);</code> | [src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs:22](../../../../src/Meridian.Wpf/Views/SaveWatchlistDialog.xaml.cs#L22) |  |

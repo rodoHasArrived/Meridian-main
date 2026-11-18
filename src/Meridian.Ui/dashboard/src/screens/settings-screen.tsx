@@ -20,6 +20,7 @@ import { buildProfileFieldValueState, createProfileBackedSecurityState, isWriteS
 import type { ProviderOpenApiImportState } from "./settings-provider-integration";
 import { createProviderOpenApiImportState, providerRuntimeStateKey } from "./settings-provider-integration";
 import { SettingsAccessPostureSection, SettingsAppearanceSection } from "@/screens/settings-screen.profile-sections";
+import { SettingsNotificationsSection } from "@/screens/settings-screen.notification-preferences";
 import { SettingsAlpacaSection, SettingsRobinhoodSection } from "@/screens/settings-screen.brokerage-sections";
 import { SettingsDiagnosticsSection } from "@/screens/settings-screen.diagnostics-section";
 import { SettingsBackendCapabilitySection, SettingsRuntimeCapabilitiesSection } from "@/screens/settings-screen.capability-sections";
@@ -696,6 +697,10 @@ function SettingsScreenContent({
 
       {showPreferencesSection ? (
       <SettingsAppearanceSection />
+      ) : null}
+
+      {showPreferencesSection ? (
+      <SettingsNotificationsSection />
       ) : null}
 
       {showAccessSection ? (

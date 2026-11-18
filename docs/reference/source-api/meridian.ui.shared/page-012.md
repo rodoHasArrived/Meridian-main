@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## GovernanceReportPackArtifactContent
+
+Qualified name: <code>Meridian.Ui.Shared.Services.GovernanceReportPackArtifactContent</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs:36](../../../../src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs#L36).
+
+```csharp
+public sealed record GovernanceReportPackArtifactContent(string ArtifactKind, GovernanceReportArtifactFormatDto Format, string FileName, byte[] Content);
+```
+
 ## GovernedReportingRestatementCertificationInputProvider
 
 Qualified name: <code>Meridian.Ui.Shared.Services.GovernedReportingRestatementCertificationInputProvider</code>. Kind: `class`.
@@ -939,30 +949,12 @@ Source: [src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs:15](
 Resolves approved terms, profile revisions and posted principal into a source-side accrual draft. It never approves or posts: the draft enters the source book&#x27;s ordinary review, and the counterpart is produced by the existing proposal pipeline only after the source journal commits.
 
 ```csharp
-public sealed class IntercompanyAccrualDraftService(IntercompanyAccountingArrangementService arrangements, ILedgerJournalStore journals, IIntercompanyAccountBindingStore bindings, IAccountingConfigurationService configuration, IManualJournalEntryDraftStore drafts, ManualJournalEntryWorkbenchService workbench, IIntercompanyAccrualPreviewService calculator, IConsolidationFxAuthority? fx = null, TimeProvider? time = null)
+public sealed class IntercompanyAccrualDraftService(IntercompanyAccountingArrangementService arrangements, ILedgerJournalStore journals, IIntercompanyAccountBindingStore bindings, IAccountingConfigurationService configuration, IManualJournalEntryDraftStore drafts, ManualJournalEntryWorkbenchService workbench, IIntercompanyAccrualPreviewService calculator, IConsolidationFxAuthority? fx = null, TimeProvider? time = null, Meridian.Application.FundStructure.IntercompanyRateFixingService? fixings = null)
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;IntercompanyAccrualProposalDto&gt; PreviewAsync(string tenantId, string? companyId, string actor, IntercompanyAccrualRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs:23](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs#L23) | Read-only: computes the amount, its evidence and the draft that would be retained. |
-| <code>public async Task&lt;ManualJournalEntryDraftDto&gt; CreateDraftAsync(string tenantId, string? companyId, string actor, CreateIntercompanyAccrualDraftRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs:131](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs#L131) | Retains the previewed computation as a draft in the source book&#x27;s review queue. A changed input since the preview is refused. An unreviewed draft of the same window is recomputed in place; one already submitted, approved or posted is never overwritten. |
-
-## IntercompanyAgreementJournalProjection
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IntercompanyAgreementJournalProjection</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/IntercompanyAgreementJournalProjection.cs:11](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAgreementJournalProjection.cs#L11).
-
-Projects posted line provenance without calculating agreement matches or changing consolidation.
-
-```csharp
-public static class IntercompanyAgreementJournalProjection
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IntercompanyAgreementJournalLinesDto Project(IntercompanyAgreementDetailDto agreement, LedgerBookRecord book, IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, DateOnly asOf, string? cursor = null, int pageSize = 100);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAgreementJournalProjection.cs:13](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAgreementJournalProjection.cs#L13) |  |
+| <code>public async Task&lt;IntercompanyAccrualProposalDto&gt; PreviewAsync(string tenantId, string? companyId, string actor, IntercompanyAccrualRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs:24](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs#L24) | Read-only: computes the amount, its evidence and the draft that would be retained. |
+| <code>public async Task&lt;ManualJournalEntryDraftDto&gt; CreateDraftAsync(string tenantId, string? companyId, string actor, CreateIntercompanyAccrualDraftRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs:136](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs#L136) | Retains the previewed computation as a draft in the source book&#x27;s review queue. A changed input since the preview is refused. An unreviewed draft of the same window is recomputed in place; one already submitted, approved or posted is never overwritten. |

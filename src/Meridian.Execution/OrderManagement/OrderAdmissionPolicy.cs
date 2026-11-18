@@ -18,7 +18,7 @@ internal sealed class OrderAdmissionPolicy
     private readonly ExecutionMode _executionMode;
     private readonly ISecurityMasterGate? _securityMasterGate;
     private readonly ExecutionOperatorControlService? _operatorControls;
-    private readonly ILiveOrderReadinessGate? _liveReadinessGate;
+    private readonly OrderAuthorityResolver _authority;
     private readonly IPortfolioState? _portfolioState;
     private readonly ILogger _logger;
     private readonly IOrderSessionPolicy? _sessionPolicy;
@@ -37,7 +37,9 @@ internal sealed class OrderAdmissionPolicy
         IOrderSessionPolicy? sessionPolicy = null,
         IOrderMarketReferenceSource? marketReferences = null,
         IOrderInstrumentCoverageSource? instrumentCoverage = null,
-        TimeProvider? clock = null)
+        TimeProvider? clock = null,
+        IStrategyRunAuthoritySource? runAuthority = null,
+        OrderAuthorityOptions? authorityOptions = null)
     {
         ArgumentNullException.ThrowIfNull(gateway);
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -48,12 +50,13 @@ internal sealed class OrderAdmissionPolicy
             : BrokerageOrderPlacementGate.ResolveExecutionMode(configuration, gateway.GatewayId);
         _securityMasterGate = securityMasterGate;
         _operatorControls = operatorControls;
-        _liveReadinessGate = liveReadinessGate;
         _portfolioState = portfolioState;
         _sessionPolicy = sessionPolicy;
         _marketReferences = marketReferences;
         _instrumentCoverage = instrumentCoverage;
         _clock = clock ?? TimeProvider.System;
+        _authority = new OrderAuthorityResolver(
+            _executionMode, liveReadinessGate, runAuthority, authorityOptions, _clock, securityMasterGate);
     }
 
     /// <summary>
@@ -61,9 +64,12 @@ internal sealed class OrderAdmissionPolicy
     /// request snapshots metadata and legs once for risk and routing; paper control evaluation
     /// retains the existing original-request override behavior.
     /// </summary>
-    internal PreparedOrderAdmission Prepare(OrderRequest request, string orderId)
+    internal PreparedOrderAdmission Prepare(OrderRequest request, string orderId, OrderSubmissionAuthority? authority = null)
     {
         ArgumentNullException.ThrowIfNull(request);
+        // Legacy callers carry identity in metadata; typed callers have already stamped the same
+        // keys from their authority, so the reads below agree with it either way.
+        authority ??= OrderSubmissionAuthority.Unattributed(request.Metadata);
         request = request.ClientOrderId is null ? request with { ClientOrderId = orderId } : request;
         if (_portfolioState is PaperTradingPortfolio { UsesCanonicalAccounting: true } canonical && request.FundAccountId is null)
             request = request with { FundAccountId = Guid.Parse(canonical.PrimaryAccountId) };
@@ -82,7 +88,7 @@ internal sealed class OrderAdmissionPolicy
         var safeRequest = SanitizeAndSnapshotRequest(request, orderId);
         var controlRequest = _executionMode is ExecutionMode.Live ? safeRequest : request;
         return new PreparedOrderAdmission(
-            orderId, request, safeRequest, controlRequest, brokerName, actor, correlationId, runId, sessionId);
+            orderId, request, safeRequest, controlRequest, brokerName, actor, correlationId, runId, sessionId, authority);
     }
 
     /// <summary>
@@ -153,20 +159,12 @@ internal sealed class OrderAdmissionPolicy
                 new OrderAdmissionRefusal(placementGate.RejectReason, "execution placement gate"));
         }
 
-        LiveOrderReadinessDecision? readiness = null;
-        if (_executionMode is ExecutionMode.Live)
-        {
-            readiness = await EvaluateLiveOrderReadinessAsync(prepared, ct, observationOnly).ConfigureAwait(false);
-            if (!readiness.IsApproved)
-            {
-                return new OrderAdmissionDecision(riskRequest, usesFaceValue, null, readiness,
-                    new OrderAdmissionRefusal(
-                        readiness.Reason ?? "Live order readiness gate rejected the order.",
-                        "live order readiness gate",
-                        "LIVE_ORDER_READINESS_REJECTED",
-                        OrderAuditMetadata.BuildLiveOrderReadinessRejectedAuditMetadata(readiness)));
-            }
-        }
+        // Order authority sits where the live readiness gate always ran; for legacy (unattributed)
+        // orders it is exactly that gate, so the refusal order of the other gates is unchanged.
+        var authority = await _authority.EvaluatePreflightAsync(prepared, ct, observationOnly).ConfigureAwait(false);
+        var readiness = authority.Readiness;
+        if (!authority.IsApproved)
+            return new OrderAdmissionDecision(riskRequest, usesFaceValue, null, readiness, authority.Refusal);
 
         var controlDecision = _operatorControls?.EvaluateOrder(prepared.ControlRequest, _portfolioState, prepared.RunId, observationOnly);
         if (controlDecision is { IsApproved: false })
@@ -194,6 +192,13 @@ internal sealed class OrderAdmissionPolicy
     /// </summary>
     internal ExecutionControlDecision? EvaluateDispatchControls(PreparedOrderAdmission prepared) =>
         _operatorControls?.EvaluateOrder(prepared.ControlRequest, _portfolioState, prepared.RunId);
+
+    /// <summary>
+    /// Re-checks typed order authority after risk validation and before the order becomes
+    /// visible; see <see cref="OrderAuthorityResolver.EvaluateDispatchAsync"/>.
+    /// </summary>
+    internal Task<OrderAdmissionRefusal?> EvaluateDispatchAuthorityAsync(PreparedOrderAdmission prepared, CancellationToken ct) =>
+        _authority.EvaluateDispatchAsync(prepared, ct);
 
     internal static OrderAdmissionRefusal ControlRefusal(ExecutionControlDecision decision, string source) =>
         new(decision.RejectReason, source, decision.RejectCode ?? "OPERATOR_CONTROL_REJECTED",
@@ -259,53 +264,6 @@ internal sealed class OrderAdmissionPolicy
             : null;
     }
 
-    private async Task<LiveOrderReadinessDecision> EvaluateLiveOrderReadinessAsync(
-        PreparedOrderAdmission prepared,
-        CancellationToken ct,
-        bool observationOnly = false)
-    {
-        if (string.IsNullOrWhiteSpace(prepared.RunId))
-        {
-            return LiveOrderReadinessDecision.Rejected(
-                "Live order placement requires runId metadata for a W7-approved live run.");
-        }
-
-        if (_liveReadinessGate is null)
-        {
-            return LiveOrderReadinessDecision.Rejected(
-                "Live order placement requires a live order readiness gate before broker routing.");
-        }
-
-        var request = prepared.SafeRequest;
-        var readinessRequest = new LiveOrderReadinessRequest(
-            RunId: prepared.RunId.Trim(),
-            BrokerName: prepared.BrokerName,
-            Symbol: request.Symbol,
-            Side: request.Side,
-            OrderType: request.Type,
-            Quantity: request.Quantity,
-            StrategyId: request.StrategyId,
-            Actor: prepared.Actor,
-            CorrelationId: prepared.CorrelationId,
-            FundAccountId: request.FundAccountId);
-        var decision = observationOnly
-            ? (_liveReadinessGate as ILiveOrderReadinessPreview)?.Observe(readinessRequest)
-                ?? LiveOrderReadinessDecision.Rejected("Live readiness is unassessed: refresh the account's readiness evidence before previewing.")
-            : await _liveReadinessGate.EvaluateAsync(readinessRequest, ct).ConfigureAwait(false);
-
-        if (!decision.IsApproved)
-        {
-            return string.IsNullOrWhiteSpace(decision.Reason)
-                ? decision with { Reason = "Live order readiness gate rejected the order." }
-                : decision;
-        }
-
-        return string.IsNullOrWhiteSpace(decision.EvidenceReference)
-            ? LiveOrderReadinessDecision.Rejected(
-                "Live order readiness gate approved the order without a retained evidence reference.")
-            : decision with { EvidenceReference = decision.EvidenceReference.Trim() };
-    }
-
     private OrderRequest SanitizeAndSnapshotRequest(OrderRequest request, string orderId)
     {
         var safeRequest = ExecutionOrderMetadataPolicy.RemoveServerOwnedRoutingKeys(request);
@@ -367,7 +325,8 @@ internal sealed record PreparedOrderAdmission(
     string? Actor,
     string? CorrelationId,
     string? RunId,
-    string? SessionId);
+    string? SessionId,
+    OrderSubmissionAuthority Authority);
 
 internal sealed record OrderAdmissionDecision(
     OrderRequest RiskRequest,

@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PostedPeriodComparisonService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PostedPeriodComparisonService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs:11](../../../../src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs#L11).
+
+Source-backed comparisons of posted accounting periods under retained fund ownership.
+
+```csharp
+public sealed class PostedPeriodComparisonService(ILedgerJournalStore journals, ILedgerBookService books, IFundProfileTenancyRegistry tenancy)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;PostedPeriodComparisonDto&gt; GetAsync(string tenantId, string companyId, Guid bookId, Guid currentPeriodId, Guid? baselinePeriodId, DateTimeOffset asOf, LedgerDimensionSetDto? dimensions, Func&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;, IReadOnlyList&lt;LedgerJournalEntryDto&gt;&gt; project, CancellationToken ct = default, AccountingBasisKindDto? accountingBasis = null);</code> | [src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs:14](../../../../src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs#L14) |  |
+| <code>public static (PostedPeriodComparisonRangeDto Current, PostedPeriodComparisonRangeDto? Baseline, string? Reason) SelectWindows(LedgerAccountingPeriod current, LedgerAccountingPeriod baseline, DateTimeOffset asOf);</code> | [src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs:139](../../../../src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs#L139) |  |
+| <code>public static IReadOnlyList&lt;PostedPeriodComparisonLineDto&gt; CompareLines(IReadOnlyList&lt;LedgerJournalEntryDto&gt; current, IReadOnlyList&lt;LedgerJournalEntryDto&gt; baseline);</code> | [src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs:169](../../../../src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs#L169) |  |
+
 ## PostedStrategyRunLedgerSource
 
 Qualified name: <code>Meridian.Ui.Shared.Services.PostedStrategyRunLedgerSource</code>. Kind: `class`.
@@ -824,24 +844,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public ReportingArtifactVaultAccessDeniedException(string message) : base(message);</code> | [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:66](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L66) |  |
-
-## ReportingArtifactVaultService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingArtifactVaultService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:76](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L76).
-
-Connects generated package bytes to tenant-scoped immutable blob storage and authoritative scope metadata. Every successful read is integrity checked and durably audited before bytes are returned; audit or integrity failures therefore fail closed.
-
-```csharp
-public sealed class ReportingArtifactVaultService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingArtifactVaultService(IReportingArtifactStore artifactStore, IReportingArtifactCatalog catalog, IReportingArtifactAuditStore auditStore, TimeProvider? timeProvider = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:83](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L83) |  |
-| <code>public async Task&lt;ReportingArtifactRetentionReceipt&gt; RetainPackageAsync(ReportingArtifactPackageRetentionRequest request, ReportingAuthorityScope authority, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:95](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L95) |  |
-| <code>public async Task&lt;ReportingRetainedArtifactPackage&gt; GetPackageForReleaseAsync(string packageId, ReportingArtifactAccessContext context, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:215](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L215) |  |
-| <code>public async Task&lt;ReportingArtifactDownload&gt; ReadForDownloadAsync(string packageId, string artifactId, ReportingArtifactAccessContext context, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:256](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L256) |  |

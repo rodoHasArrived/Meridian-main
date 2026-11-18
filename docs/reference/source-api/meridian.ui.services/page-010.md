@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderPoliciesResult
+
+Qualified name: <code>Meridian.Ui.Services.ProviderPoliciesResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/ProviderOperationsResults.cs:28](../../../../src/Meridian.Ui.Services/Services/ProviderOperationsResults.cs#L28).
+
+Result envelope for provider-operations policy queries.
+
+```csharp
+public sealed class ProviderPoliciesResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderOperationsResults.cs:30](../../../../src/Meridian.Ui.Services/Services/ProviderOperationsResults.cs#L30) |  |
+| <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderOperationsResults.cs:31](../../../../src/Meridian.Ui.Services/Services/ProviderOperationsResults.cs#L31) |  |
+| <code>public List&lt;ProviderPolicyDto&gt; Policies { get; set; } = [];</code> | [src/Meridian.Ui.Services/Services/ProviderOperationsResults.cs:32](../../../../src/Meridian.Ui.Services/Services/ProviderOperationsResults.cs#L32) |  |
+
 ## ProviderPresetApplyResult
 
 Qualified name: <code>Meridian.Ui.Services.ProviderPresetApplyResult</code>. Kind: `class`.
@@ -394,6 +414,29 @@ Declared public members:
 | <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:642](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L642) |  |
 | <code>public string Overall { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:643](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L643) |  |
 | <code>public List&lt;QuickCheckItem&gt; Checks { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:644](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L644) |  |
+
+## QuietHours
+
+Qualified name: <code>Meridian.Ui.Services.QuietHours</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/QuietHours.cs:12](../../../../src/Meridian.Ui.Services/Services/QuietHours.cs#L12).
+
+Quiet-hours arithmetic shared by the desktop notification service and its settings screen. Times are wall-clock HH:mm values in the operator&#x27;s display time zone. A window whose start is later than its end runs past midnight; the end minute is not quiet; an equal start and end is an empty window, so it never silences anything.
+
+```csharp
+public static class QuietHours
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ClockFormat = &quot;hh\\:mm&quot;;</code> | [src/Meridian.Ui.Services/Services/QuietHours.cs:14](../../../../src/Meridian.Ui.Services/Services/QuietHours.cs#L14) |  |
+| <code>public static TimeSpan DefaultStart { get; } = new (22, 0, 0);</code> | [src/Meridian.Ui.Services/Services/QuietHours.cs:17](../../../../src/Meridian.Ui.Services/Services/QuietHours.cs#L17) | The default quiet window, 22:00 to 07:00. |
+| <code>public static TimeSpan DefaultEnd { get; } = new (7, 0, 0);</code> | [src/Meridian.Ui.Services/Services/QuietHours.cs:19](../../../../src/Meridian.Ui.Services/Services/QuietHours.cs#L19) |  |
+| <code>public static bool IsActive(DateTimeOffset nowUtc, TimeZoneInfo zone, TimeSpan start, TimeSpan end);</code> | [src/Meridian.Ui.Services/Services/QuietHours.cs:22](../../../../src/Meridian.Ui.Services/Services/QuietHours.cs#L22) | True when nowUtc, read in zone, falls inside the window. |
+| <code>public static bool TryParseClock(string? text, out TimeSpan time);</code> | [src/Meridian.Ui.Services/Services/QuietHours.cs:38](../../../../src/Meridian.Ui.Services/Services/QuietHours.cs#L38) | Reads a 24-hour HH:mm time such as 22:00. |
+| <code>public static string FormatClock(TimeSpan time) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/QuietHours.cs:55](../../../../src/Meridian.Ui.Services/Services/QuietHours.cs#L55) | Writes a time of day as HH:mm. |
 
 ## QuoteEvent
 
@@ -1065,49 +1108,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public List&lt;StorageRetentionPolicy&gt;? Policies { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:260](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L260) |  |
 | <code>public StorageRetentionPolicy? DefaultPolicy { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:261](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L261) |  |
-
-## RetentionPoliciesResult
-
-Qualified name: <code>Meridian.Ui.Services.RetentionPoliciesResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:247](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L247).
-
-Result of getting retention policies.
-
-```csharp
-public sealed class RetentionPoliciesResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:249](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L249) |  |
-| <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:250](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L250) |  |
-| <code>public List&lt;StorageRetentionPolicy&gt; Policies { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:251](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L251) |  |
-| <code>public StorageRetentionPolicy? DefaultPolicy { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:252](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L252) |  |
-
-## RetentionPolicy
-
-Qualified name: <code>Meridian.Ui.Services.RetentionPolicy</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:38](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L38).
-
-Retention policy definition.
-
-```csharp
-public sealed class RetentionPolicy
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int TickDataDays { get; set; } = 30;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:40](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L40) |  |
-| <code>public int BarDataDays { get; set; } = 365;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:41](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L41) |  |
-| <code>public int QuoteDataDays { get; set; } = 30;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:42](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L42) |  |
-| <code>public int DepthDataDays { get; set; } = 7;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:43](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L43) |  |
-| <code>public int DeletedFilesPerRun { get; set; } = 100;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:44](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L44) |  |
-| <code>public bool CompressBeforeDelete { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:45](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L45) |  |
-| <code>public bool ArchiveToCloud { get; set; }</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:46](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L46) |  |
-| <code>public string? CloudArchiveDestination { get; set; }</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:47](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L47) |  |
