@@ -6,6 +6,90 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.SecurityMasterEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CashDividendAttestation.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CashDividendAttestation.cs#L13).
+
+```csharp
+public static partial class SecurityMasterEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CashFlowPreview.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CashFlowPreview.cs#L14).
+
+```csharp
+public static partial class SecurityMasterEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionCalendar.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionCalendar.cs#L13).
+
+```csharp
+public static partial class SecurityMasterEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs#L14).
+
+```csharp
+public static partial class SecurityMasterEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs#L22).
+
+Endpoints for Security Master command/query workflows.
+
+```csharp
+public static partial class SecurityMasterEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapSecurityMasterEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs#L24) |  |
+
+Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs#L13).
+
+```csharp
+public static partial class SecurityMasterEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.ObservedFixings.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.ObservedFixings.cs#L17).
+
+```csharp
+public static partial class SecurityMasterEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcCollateral.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcCollateral.cs#L13).
+
+```csharp
+public static partial class SecurityMasterEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcContracts.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcContracts.cs#L12).
+
+```csharp
+public static partial class SecurityMasterEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Rates.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Rates.cs#L13).
+
+```csharp
+public static partial class SecurityMasterEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.RegistryProjections.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.RegistryProjections.cs#L14).
+
+```csharp
+public static partial class SecurityMasterEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.WriteRefusals.cs:7](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.WriteRefusals.cs#L7).
+
+```csharp
+public static partial class SecurityMasterEndpoints
+```
+
 ## StatusEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.StatusEndpoints</code>. Kind: `class`.
@@ -244,12 +328,12 @@ Declared public members:
 | <code>public static IServiceCollection AddUiSharedServices(this IServiceCollection services, ApplicationStatusEndpointHandlers statusHandlers, string? configPath = null, IConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:49](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L49) | Registers shared services with a pre-configured StatusEndpointHandlers instance. Use this when the workstation host supplies an existing handler instance. |
 | <code>public static WebApplication MapUiEndpoints(this WebApplication app);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:80](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L80) | Maps all UI API endpoints using default JSON serializer options. |
 | <code>public static JsonSerializerOptions CreateEndpointJsonOptions(bool writeIndented = false) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:94](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L94) | Creates the standard JsonSerializerOptions used by UI API endpoints. Uses camelCase naming and a DefaultJsonTypeInfoResolver so callers can extend the type-info chain without reflection falling back to a null resolver. |
-| <code>public static WebApplication MapUiEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions, JsonSerializerOptions? jsonOptionsIndented = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:123](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L123) | Maps all UI API endpoints with custom JSON serializer options. |
-| <code>public static WebApplication MapUiEndpointsWithStatus(this WebApplication app, ApplicationStatusEndpointHandlers statusHandlers);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:321](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L321) | Maps all UI API endpoints including status endpoints. Use this when StatusEndpointHandlers has been registered in DI. |
-| <code>public const string MutationRateLimitPolicy = &quot;mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:340](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L340) | Rate limiting policy name applied to mutation (POST/PUT/DELETE) endpoints. |
-| <code>public const string DirectLendingMutationRateLimitPolicy = &quot;direct-lending-mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:346](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L346) | Direct-lending command limiter. Kept separate from the general mutation budget so loan servicing writes have an explicit, independently auditable abuse-control boundary. |
-| <code>public const string LoginRateLimitPolicy = &quot;login&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:353](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L353) | Per-IP limiter for the unauthenticated sign-in endpoint. Bounds how quickly one client can guess credentials or churn the bounded failed-attempt table in LoginSessionService. |
-| <code>public static IServiceCollection AddMutationRateLimiter(this IServiceCollection services, bool forceEnable = false, IConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:362](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L362) | Registers a per-IP fixed-window rate limiter for mutation endpoints. Allows 10 requests per minute per IP with a small queue for bursts. Set the MDC_DISABLE_RATE_LIMIT=true environment variable to bypass rate limiting only in explicit development/test hosts outside production, packaged and customer postures. Rejections expose the fixed-window retry delay through Retry-After. |
+| <code>public static WebApplication MapUiEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions, JsonSerializerOptions? jsonOptionsIndented = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:125](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L125) | Maps all UI API endpoints with custom JSON serializer options. |
+| <code>public static WebApplication MapUiEndpointsWithStatus(this WebApplication app, ApplicationStatusEndpointHandlers statusHandlers);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:324](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L324) | Maps all UI API endpoints including status endpoints. Use this when StatusEndpointHandlers has been registered in DI. |
+| <code>public const string MutationRateLimitPolicy = &quot;mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:343](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L343) | Rate limiting policy name applied to mutation (POST/PUT/DELETE) endpoints. |
+| <code>public const string DirectLendingMutationRateLimitPolicy = &quot;direct-lending-mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:349](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L349) | Direct-lending command limiter. Kept separate from the general mutation budget so loan servicing writes have an explicit, independently auditable abuse-control boundary. |
+| <code>public const string LoginRateLimitPolicy = &quot;login&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:356](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L356) | Per-IP limiter for the unauthenticated sign-in endpoint. Bounds how quickly one client can guess credentials or churn the bounded failed-attempt table in LoginSessionService. |
+| <code>public static IServiceCollection AddMutationRateLimiter(this IServiceCollection services, bool forceEnable = false, IConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:365](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L365) | Registers a per-IP fixed-window rate limiter for mutation endpoints. Allows 10 requests per minute per IP with a small queue for bursts. Set the MDC_DISABLE_RATE_LIMIT=true environment variable to bypass rate limiting only in explicit development/test hosts outside production, packaged and customer postures. Rejections expose the fixed-window retry delay through Retry-After. |
 
 ## UpdateExecutionCircuitBreakerRequest
 
@@ -1159,23 +1243,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static IServiceCollection AddEvidenceArtifactStorage(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceWorkflowServiceCollectionExtensions.cs:22](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceWorkflowServiceCollectionExtensions.cs#L22) | Registers the shared evidence store and host-configured storage limits for browser and desktop hosts. |
 | <code>public static IServiceCollection AddEvidenceWorkflowFabric(this IServiceCollection services, bool isProductionComposition = false);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceWorkflowServiceCollectionExtensions.cs:86](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceWorkflowServiceCollectionExtensions.cs#L86) |  |
-
-## ExportEvidenceContributor
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.ExportEvidenceContributor</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1026](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1026).
-
-Adds analysis-export evidence for portfolio reporting review.
-
-```csharp
-public sealed class ExportEvidenceContributor : IEvidenceContributor
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1028](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1028) |  |
-| <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1030](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1030) |  |
-| <code>public Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1034](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1034) |  |

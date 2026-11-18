@@ -2741,6 +2741,50 @@ W12-ICAGREE-001: accepted; health green; evidence complete. Accepted by the repo
 - `SRC-STORAGE`
 - `SRC-UI-SHARED`
 
+## W12-ICCOMPOUND-001 - Periodic compounding of governed intercompany interest on posted accruals
+| Field | Value |
+| --- | --- |
+| Wave | W12 |
+| Status | in_progress |
+| Health | yellow |
+| Priority | medium |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-11-17 |
+
+### Current Summary
+
+W12-ICCOMPOUND-001: in_progress; health yellow; evidence in_progress. Rule intercompany-accrual-v3 compounds at each schedule period start on posted accrued interest, once every earlier day is posted; facts are pinned and re-checked. No capitalisation journal. Daily and mismatched compounding stay open.
+
+### Status References
+
+- Decisions: DEC-IC-COMPOUND-001
+- PR references (not inferred acceptance): none recorded
+- Evidence: [src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs](../../../src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs)
+- Evidence: [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs](../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs)
+- Evidence: [tests/Meridian.FundStructure.Tests/IntercompanyCompoundingAccrualPreviewTests.cs](../../../tests/Meridian.FundStructure.Tests/IntercompanyCompoundingAccrualPreviewTests.cs)
+- Evidence: [tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyCompoundingSourceTests.cs](../../../tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyCompoundingSourceTests.cs)
+- Evidence: [tests/Meridian.Tests/Ui/IntercompanyAccrualDraftServiceTests.Compounding.cs](../../../tests/Meridian.Tests/Ui/IntercompanyAccrualDraftServiceTests.Compounding.cs)
+
+
+### Exit Criteria
+
+- A loan compounding at its schedule frequency accrues each period on posted principal plus the accrued interest posted on its loan-interest profile at the period start, net of settlements and reversals.
+- A window is refused unless posted, unreversed accruals cover every earlier day, and one request stays inside one period.
+- The accrued-interest balance, posted windows and first principal date are retained as evidence and re-read before review or posting.
+- Simple loans still compute under intercompany-accrual-v1 with unchanged evidence and draft identity.
+- Browser and WPF accrual previews show each slice's compounded interest as exact decimal strings.
+
+### Source Modules
+
+- `SRC-CONTRACTS`
+- `SRC-APP`
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-UI-SHARED`
+- `SRC-UI-SERVICES`
+- `SRC-WPF`
+- `SRC-UI-DASHBOARD`
+
 ## W12-ICCONFIRM-001 - Reciprocal intercompany balance confirmation, advisory
 | Field | Value |
 | --- | --- |
@@ -2787,6 +2831,54 @@ W12-ICCONFIRM-001: in_progress; health yellow; evidence in_progress. Per-period 
 - `SRC-CONTRACTS`
 - `SRC-DESIGN-FINANCIAL-OPERATIONS`
 - `SRC-STORAGE`
+- `SRC-UI-SHARED`
+- `SRC-UI-SERVICES`
+- `SRC-WPF`
+- `SRC-UI-DASHBOARD`
+
+## W12-ICFEE-001 - Governed fixed intercompany management fees from declared terms
+| Field | Value |
+| --- | --- |
+| Wave | W12 |
+| Status | in_progress |
+| Health | yellow |
+| Priority | high |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-11-17 |
+
+### Current Summary
+
+W12-ICFEE-001: in_progress; health yellow; evidence in_progress. Rule intercompany-fee-v1 charges a declared fixed management fee per period or per year as a reviewed source draft with a proposed counterpart; direction comes from declared roles. Percentage and loan fees stay open.
+
+### Status References
+
+- Decisions: DEC-IC-FEE-001
+- PR references (not inferred acceptance): none recorded
+- Evidence: [src/Meridian.Application/FundStructure/IntercompanyFeeAccrualPreviewService.cs](../../../src/Meridian.Application/FundStructure/IntercompanyFeeAccrualPreviewService.cs)
+- Evidence: [src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs](../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs)
+- Evidence: [src/Meridian.Ui.Shared/Services/IntercompanyFeeAccrualDraftService.cs](../../../src/Meridian.Ui.Shared/Services/IntercompanyFeeAccrualDraftService.cs)
+- Evidence: [tests/Meridian.FundStructure.Tests/IntercompanyFeeAccrualPreviewServiceTests.cs](../../../tests/Meridian.FundStructure.Tests/IntercompanyFeeAccrualPreviewServiceTests.cs)
+- Evidence: [tests/Meridian.Tests/Ui/IntercompanyFeeAccrualDraftServiceTests.cs](../../../tests/Meridian.Tests/Ui/IntercompanyFeeAccrualDraftServiceTests.cs)
+- Evidence: [tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilderTests.cs](../../../tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilderTests.cs)
+- Evidence: [src/Meridian.Wpf/Views/IntercompanyManagementFeeControl.xaml](../../../src/Meridian.Wpf/Views/IntercompanyManagementFeeControl.xaml)
+- Evidence: [tests/Meridian.Ui.Tests/Services/IntercompanyManagementFeeWorkspaceTests.cs](../../../tests/Meridian.Ui.Tests/Services/IntercompanyManagementFeeWorkspaceTests.cs)
+
+
+### Exit Criteria
+
+- Fixed management-fee terms declare a per-period or per-annum basis (per annum with a day count); retained revisions without one keep their review hashes and calculate no fee.
+- Each day is charged under the approved ManagementFee profile revision applicable on that day; per-period fees prorate by covered days, per-annum fees by the declared day count, rounded once.
+- The service provider books receivable against fee revenue and the recipient fee expense against payable, from the declared roles; the operator never chooses a direction.
+- Fee evidence is pinned on the draft and posted journal; edited lines, overlapping posted fees and a retired or re-pinned revision stop the draft before review or posting.
+- The counterpart is delivered by the existing proposal pipeline after the source posts; nothing posts automatically.
+- Browser and WPF surfaces declare the basis, preview and draft a fee over the same routes and show exact decimal strings.
+
+### Source Modules
+
+- `SRC-CONTRACTS`
+- `SRC-APP`
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
 - `SRC-UI-SHARED`
 - `SRC-UI-SERVICES`
 - `SRC-WPF`
@@ -2936,6 +3028,52 @@ W12-ICPAIR-001: accepted; health green; evidence complete. Accepted by the repos
 - `SRC-DESIGN-FINANCIAL-OPERATIONS`
 - `SRC-STORAGE`
 - `SRC-UI-SHARED`
+- `SRC-UI-DASHBOARD`
+
+## W12-ICSCHEDULE-001 - Opt-in, reviewed intercompany accrual schedules
+| Field | Value |
+| --- | --- |
+| Wave | W12 |
+| Status | in_progress |
+| Health | yellow |
+| Priority | medium |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-11-17 |
+
+### Current Summary
+
+W12-ICSCHEDULE-001: in_progress; health yellow; evidence in_progress. Maker-checker schedules per book and loan-interest profile; a background runner drafts each completed period after approval through the ordinary path and never posts or overwrites a draft. Fee schedules follow fee drafting on main.
+
+### Status References
+
+- Decisions: DEC-IC-SCHEDULE-001
+- PR references (not inferred acceptance): none recorded
+- Evidence: [src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleService.cs](../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleService.cs)
+- Evidence: [src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleRunner.cs](../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleRunner.cs)
+- Evidence: [src/Meridian.Storage/Ledger/Migrations/V_ledger_076__intercompany_accrual_schedules.sql](../../../src/Meridian.Storage/Ledger/Migrations/V_ledger_076__intercompany_accrual_schedules.sql)
+- Evidence: [tests/Meridian.Tests/Storage/IntercompanyAccrualScheduleStoreTests.cs](../../../tests/Meridian.Tests/Storage/IntercompanyAccrualScheduleStoreTests.cs)
+- Evidence: [tests/Meridian.Tests/Ui/IntercompanyAccrualScheduleServiceTests.cs](../../../tests/Meridian.Tests/Ui/IntercompanyAccrualScheduleServiceTests.cs)
+- Evidence: [tests/Meridian.Tests/Ui/IntercompanyAccrualScheduleEndpointTests.cs](../../../tests/Meridian.Tests/Ui/IntercompanyAccrualScheduleEndpointTests.cs)
+
+
+### Exit Criteria
+
+- A schedule names one book, one approved loan-interest profile and its principal profile, and becomes active only when someone other than its proposer approves it; it can be rejected or disabled with a reason.
+- Schedule versions are retained append-only and tenant-scoped on durable storage; at most one proposed or active schedule exists per book and profile.
+- A run drafts each completed period ending on or after approval through the operator's preview-then-draft path, records the schedule as preparer, and never posts.
+- A period with an existing draft is skipped, never recomputed; a refused period is reported with its reason and retried on the next run.
+- Browser and WPF surfaces propose, review, preview due periods and run active schedules over the same routes.
+
+### Source Modules
+
+- `SRC-CONTRACTS`
+- `SRC-APP`
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-STORAGE`
+- `SRC-UI-SHARED`
+- `SRC-UI-SERVICES`
+- `SRC-WPF`
 - `SRC-UI-DASHBOARD`
 
 ## W12-YEND-001 - Fiscal year-end close and opening-balance roll-forward

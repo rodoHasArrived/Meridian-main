@@ -461,6 +461,24 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static void MapIntercompanyAccountingArrangementEndpoints(this IEndpointRouteBuilder app);</code> | [src/Meridian.Ui.Shared/Endpoints/IntercompanyAccountingArrangementEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAccountingArrangementEndpoints.cs#L19) |  |
 
+## IntercompanyAccrualScheduleEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.IntercompanyAccrualScheduleEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/IntercompanyAccrualScheduleEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAccrualScheduleEndpoints.cs#L15).
+
+Opt-in, reviewed intercompany accrual schedules. Every route is scoped to a book the caller&#x27;s tenant and company own; a run drafts only, through the ordinary preview-then-draft path.
+
+```csharp
+public static class IntercompanyAccrualScheduleEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapIntercompanyAccrualScheduleEndpoints(this WebApplication app, JsonSerializerOptions options);</code> | [src/Meridian.Ui.Shared/Endpoints/IntercompanyAccrualScheduleEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAccrualScheduleEndpoints.cs#L19) |  |
+
 ## IntercompanyAgreementEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.IntercompanyAgreementEndpoints</code>. Kind: `class`.
@@ -1189,21 +1207,3 @@ Request model for package creation.
 ```csharp
 public sealed record PackageRequest(string? Name, string? Description, string? OutputDirectory, string[]? Symbols, string[]? EventTypes, DateTime? StartDate, DateTime? EndDate, string? Format, string? CompressionLevel, bool? IncludeQualityReport, bool? IncludeDataDictionary, bool? IncludeLoaderScripts, bool? VerifyChecksums, string[]? Tags, Dictionary<string, string>? CustomMetadata);
 ```
-
-## PackagingEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.PackagingEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/PackagingEndpoints.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/PackagingEndpoints.cs#L13).
-
-HTTP API endpoints for the Portable Data Packager.
-
-```csharp
-public static class PackagingEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapPackagingEndpoints(this IEndpointRouteBuilder app, string dataRoot);</code> | [src/Meridian.Ui.Shared/Endpoints/PackagingEndpoints.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/PackagingEndpoints.cs#L24) | Maps all packaging-related endpoints. |

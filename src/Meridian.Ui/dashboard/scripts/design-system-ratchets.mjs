@@ -25,6 +25,9 @@
 // `design-system-ratchets.test.ts` fails when a file exceeds its baseline, when a file not in
 // the baseline gains an occurrence, or when a file drops below its baseline (lock the progress
 // in by rerunning with --write). Usage:
+//   - rawSelects: a hand-styled native `<select>` instead of `Select` from
+//     `@/components/ui/select`, which owns the border, chevron, focus ring and error state.
+//
 //   node scripts/design-system-ratchets.mjs            # report
 //   node scripts/design-system-ratchets.mjs --write    # record reductions only; never allow growth
 import fs from "node:fs";
@@ -88,6 +91,8 @@ export function isAdHocBadgeClass(value) {
     && /\bpx-/.test(value);
 }
 
+const RAW_SELECT = /<select\b/g;
+
 export const RATCHETS = {
   adHocStatusBadges: {
     description: "hand-styled status chips in screens/ (use StatusBadge from @/design-system/status)",
@@ -145,6 +150,12 @@ export const RATCHETS = {
         }
       }
       return total;
+    }
+  },
+  rawSelects: {
+    description: "hand-styled native <select> elements in screens/ (use Select from @/components/ui/select)",
+    count(source) {
+      return [...source.matchAll(RAW_SELECT)].length;
     }
   }
 };

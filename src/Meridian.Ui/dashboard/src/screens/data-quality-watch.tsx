@@ -258,7 +258,7 @@ export function DataQualityWatch() {
 function Stat({ label, value, tone }: { label: string; value: string; tone?: QualityTone }) {
   return (
     <div className="flex min-w-0 items-baseline gap-2">
-      <dt className={cn("whitespace-nowrap text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.08em]")}>{label}</dt>
+      <dt className={cn("whitespace-nowrap text-muted-foreground", usesTrackedCaps(label) && "type-label--caps")}>{label}</dt>
       <dd className={cn("whitespace-nowrap font-mono text-sm font-semibold", toneClass(tone ?? "default"))}>{value}</dd>
     </div>
   );

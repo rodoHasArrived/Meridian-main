@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   bulkAssignOperatorTriage, commandOperatorTriage, getOperatorTriageInbox, isActiveTriageSnooze,
-  type OperatorTriageAction, type OperatorTriageBulkAssignment, type OperatorTriageCommand,
+  type OperatorTriageAction, type OperatorTriageBulkCommand, type OperatorTriageCommand,
   type OperatorTriageCommandResult, type OperatorTriageInbox, type OperatorTriageItem
 } from "@/lib/operator-inbox-triage";
 
 export interface PendingTriageCommand {
   itemId?: string;
-  command: OperatorTriageCommand | OperatorTriageBulkAssignment;
+  command: OperatorTriageCommand | OperatorTriageBulkCommand;
 }
 
 export type OperatorTriageCapability = "canAssign" | "canAcknowledge" | "canSnooze" | "canUnsnooze";
@@ -36,6 +36,8 @@ function isEachAction(action: OperatorTriageDialogAction | null): action is Oper
   return action === "BulkAcknowledge" || action === "BulkSnooze";
 }
 export type OperatorTriageVisibility = "active" | "all" | "snoozed";
+/** Whose items the inbox shows: everyone's, the signed-in operator's, or nobody's yet. */
+export type OperatorTriageOwnerFilter = "all" | "mine" | "unassigned";
 
 /** The shared inbox searchable text; Today's merged grid reuses it for inbox rows. */
 export function triageSearchText(item: OperatorTriageItem): string {
@@ -57,7 +59,11 @@ export function useOperatorTriageInbox({ fundAccountId, refreshKey = false }: {
   const [notice, setNotice] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [checkedIds, setCheckedIds] = useState<string[]>([]);
-  const [mineOnly, setMineOnly] = useState(false);
+  const [owner, setOwnerState] = useState<OperatorTriageOwnerFilter>("all");
+  const setOwner = (value: string) => setOwnerState(value === "mine" || value === "unassigned" ? value : "all");
+  // Kept for callers and saved views that predate the owner switch.
+  const mineOnly = owner === "mine";
+  const setMineOnly = (value: boolean) => setOwnerState(value ? "mine" : "all");
   const [visibility, setVisibilityState] = useState<OperatorTriageVisibility>("active");
   const [search, setSearch] = useState("");
   const [action, setAction] = useState<OperatorTriageDialogAction | null>(null);
@@ -116,7 +122,7 @@ export function useOperatorTriageInbox({ fundAccountId, refreshKey = false }: {
       }
       actor.current = result.actorId;
       const pending = uncertainRef.current;
-      const pendingIds = pending ? pending.itemId ? [pending.itemId] : (pending.command as OperatorTriageBulkAssignment).items.map((item) => item.workItemId) : [];
+      const pendingIds = pending ? pending.itemId ? [pending.itemId] : (pending.command as OperatorTriageBulkCommand).items.map((item) => item.workItemId) : [];
       const retainedPending = pending && pendingIds.every((id, index) => {
         const commandId = pending.itemId ? pending.command.commandId : `${pending.command.commandId}:${index}`;
         return result.items.some((item) => item.workItemId === id && item.activity.some((entry) => entry.commandId === commandId));
@@ -149,7 +155,7 @@ export function useOperatorTriageInbox({ fundAccountId, refreshKey = false }: {
   /** Inbox rows after the inbox-owned filters (My items, visibility, search). */
   const rows = (inbox?.items ?? []).filter((item) => {
     const snoozed = isActiveTriageSnooze(item);
-    return (!mineOnly || item.ownerId === inbox?.actorId)
+    return (owner === "all" || (owner === "mine" ? item.ownerId === inbox?.actorId : !item.ownerId))
       && (visibility === "all" || (visibility === "snoozed" ? snoozed : !snoozed))
       && (!search.trim() || triageSearchText(item).toLowerCase().includes(search.trim().toLowerCase()));
   });
@@ -200,7 +206,7 @@ export function useOperatorTriageInbox({ fundAccountId, refreshKey = false }: {
     try {
       const results: OperatorTriageCommandResult[] = pending.itemId
         ? [await commandOperatorTriage(pending.itemId, pending.command as OperatorTriageCommand, { signal })]
-        : (await bulkAssignOperatorTriage(pending.command as OperatorTriageBulkAssignment, { signal })).results;
+        : (await bulkAssignOperatorTriage(pending.command as OperatorTriageBulkCommand, { signal })).results;
       if (signal.aborted || current !== commandInvocation.current) return;
       if (!Array.isArray(results) || results.some((result) => !["Applied", "Conflict", "Rejected", "NotFound", "Unavailable", "Forbidden"].includes(result.status))) {
         throw new Error("The command response could not be verified.");
@@ -285,9 +291,10 @@ export function useOperatorTriageInbox({ fundAccountId, refreshKey = false }: {
     } else if (action === "BulkAssign") {
       void execute({ command: { ...common, action: "Assign", assigneeId: assignee.trim(), items: inbox.items.filter((item) => checkedIds.includes(item.workItemId)).map((item) => ({ workItemId: item.workItemId, expectedVersion: item.version, expectedSourceVersion: item.sourceVersion })) } });
     } else if (actionTarget) {
-      void execute({ itemId: actionTarget.workItemId, command: { ...common, action, expectedVersion: actionTarget.version, expectedSourceVersion: actionTarget.sourceVersion, ...(action === "Assign" ? { assigneeId: assignee.trim() } : {}), ...(action === "Snooze" ? { snoozedUntil: new Date(snoozeDate).toISOString() } : {}) } });
+      void execute({ itemId: actionTarget.workItemId, command: { ...common, action: action as OperatorTriageAction, expectedVersion: actionTarget.version, expectedSourceVersion: actionTarget.sourceVersion, ...(action === "Assign" ? { assigneeId: assignee.trim() } : {}), ...(action === "Snooze" ? { snoozedUntil: new Date(snoozeDate).toISOString() } : {}) } });
     }
   };
+  /** Whether every checked item allows a bulk action, for the selection bar's enabled state. */
   /** Re-sends the unconfirmed command with its original command ID (idempotent replay). */
   const retryUncertain = () => { if (uncertain) void execute(uncertain); };
 
@@ -295,7 +302,7 @@ export function useOperatorTriageInbox({ fundAccountId, refreshKey = false }: {
     inbox, loading, error, notice, busy, uncertain, reload, retryUncertain,
     rows, selectedId, setSelectedId, selected,
     checkedIds, toggleChecked, clearChecked: () => setCheckedIds([]),
-    mineOnly, setMineOnly, visibility, setVisibility, search, setSearch,
+    owner, setOwner, mineOnly, setMineOnly, visibility, setVisibility, search, setSearch,
     actionsAvailable, capability,
     action, actionTarget, openAction, closeAction,
     bulkEligibility, confirmedIds, toggleConfirmed, bulkResults, clearBulkResults: () => setBulkResults(null),

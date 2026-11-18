@@ -1,4 +1,5 @@
 import { InfoNote } from "@/components/ui/info-note";
+import { Select } from "@/components/ui/select";
 import { RunAttributionPeriodComparison } from "@/screens/portfolio-screen.attribution-comparison";
 import { PageHeading } from "@/components/ui/page-heading";
 import { DetailFields, DetailPane } from "@/components/meridian/detail-pane";
@@ -760,15 +761,15 @@ function PortfolioScreenContent({
       {showOverview ? (
         <div className="flex flex-wrap items-center gap-3">
           <label htmlFor="portfolio-position-source" className="text-xs font-medium text-muted-foreground">Position source</label>
-          <select
+          <Select
             id="portfolio-position-source"
-            className="min-h-9 max-w-full rounded-sm border border-border bg-background px-3 py-1.5 text-sm text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+            className="max-w-full"
             value={positionSource}
             onChange={(event) => setPositionSource(event.target.value as "live" | "retained")}
           >
             <option value="live">Live holdings · all accounts</option>
             <option value="retained">{retainedSourceLabel}</option>
-          </select>
+          </Select>
         </div>
       ) : null}
       <StatStrip

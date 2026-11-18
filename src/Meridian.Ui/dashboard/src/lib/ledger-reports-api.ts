@@ -1,4 +1,4 @@
-import { apiGetJson } from "@/lib/api";
+import { apiGetJson, type ApiRequestOptions } from "@/lib/api";
 import { UI_API_ROUTES } from "@/lib/ui-api-routes.generated";
 import {
   WORKSTATION_API_ENDPOINTS,
@@ -90,4 +90,13 @@ export function getLedgerPeriodAccountRunningBalance(
   query: LedgerAccountRunningBalanceQuery
 ) {
   return apiGetJson<LedgerAccountRunningBalance>(ledgerPeriodAccountRunningBalanceEndpoint(periodId, query));
+}
+
+/**
+ * Journal entries one ledger book posted from a fill or an order, matched on the identifiers the
+ * postings recorded. Exactly one of fillId or orderId.
+ */
+export function getExecutionJournalEntries(ledgerBookId: string, source: { fillId: string } | { orderId: string }, options: ApiRequestOptions = {}) {
+  const params = new URLSearchParams("fillId" in source ? { fillId: source.fillId } : { orderId: source.orderId });
+  return apiGetJson<LedgerPostedJournalEntry[]>(`/api/ledger/books/${encodeURIComponent(ledgerBookId)}/execution-journal-entries?${params}`, { ...options, allowDevelopmentFallback: false });
 }

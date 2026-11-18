@@ -1,3 +1,4 @@
+import { CloseBoard } from "@/components/meridian/close-board";
 import { BookCheck, Landmark, Network, RefreshCcw, Search, ShieldCheck, WalletCards } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -825,6 +826,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
               resolveDialog.open(breakId, "Dismissed");
             }}
           />
+          {closeReportPackage.closeBoard ? <CloseBoard board={closeReportPackage.closeBoard} /> : null}
           <PrepareNextPeriodPanel initialWorkflowId={closeWorkflow?.workflowId} />
           {closeWorkflow ? <CloseChecklistHistoryChart workflowId={closeWorkflow.workflowId} workflowVersion={closeWorkflow.version} /> : null}
           <TechnicalDetails label="System details" className="panel-surface">
@@ -1149,7 +1151,6 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
           </div>
 
 
-
           <Card className="panel-surface">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
@@ -1410,7 +1411,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
           <CardContent className="grid gap-4">
             <div className="min-w-0">
               <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs">
-                <span className={cn("font-medium text-muted-foreground", usesTrackedCaps(reporting.listLabel) && "uppercase tracking-[0.14em]")}>{reporting.listLabel}</span>
+                <span className={cn("font-medium text-muted-foreground", usesTrackedCaps(reporting.listLabel) && "type-label--caps")}>{reporting.listLabel}</span>
                 <span className="font-mono text-muted-foreground">{reporting.visibleCountLabel}</span>
               </div>
               <div role="list" aria-label={reporting.listLabel} className="space-y-2">
@@ -1595,7 +1596,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
               {securityMaster.pageView.metrics.map((metric) => (
                 <div key={metric.id} className="rounded-lg border border-border/60 bg-secondary/25 p-4">
-                  <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(metric.label) && "uppercase tracking-[0.14em]")}>{metric.label}</div>
+                  <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(metric.label) && "type-label--caps")}>{metric.label}</div>
                   <div
                     className={cn(
                       "mt-2 min-w-0 break-words font-mono text-lg font-semibold tabular-nums",
@@ -1911,7 +1912,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
                         ]}
                       />
                       <div>
-                        <div className={cn("mb-2 text-xs font-semibold text-muted-foreground", usesTrackedCaps(identity.identifiersTitle) && "uppercase tracking-[0.14em]")}>{identity.identifiersTitle}</div>
+                        <div className={cn("mb-2 text-xs font-semibold text-muted-foreground", usesTrackedCaps(identity.identifiersTitle) && "type-label--caps")}>{identity.identifiersTitle}</div>
                         {identity.identifiers.length === 0 ? (
                           <p role="status" className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3 text-sm text-muted-foreground">
                             {identity.identifierEmptyText}
@@ -1930,7 +1931,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
                       </div>
 
                       <div>
-                        <div className={cn("mb-2 text-xs font-semibold text-muted-foreground", usesTrackedCaps(identity.aliasesTitle) && "uppercase tracking-[0.14em]")}>{identity.aliasesTitle}</div>
+                        <div className={cn("mb-2 text-xs font-semibold text-muted-foreground", usesTrackedCaps(identity.aliasesTitle) && "type-label--caps")}>{identity.aliasesTitle}</div>
                         {identity.aliases.length === 0 ? (
                           <p role="status" className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3 text-sm text-muted-foreground">
                             {identity.aliasEmptyText}
