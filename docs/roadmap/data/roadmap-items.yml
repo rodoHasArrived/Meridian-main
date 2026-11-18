@@ -3702,7 +3702,7 @@ items:
       - type: source
         path: src/Meridian.Ui.Shared/Services/IntercompanyAccrualScheduleRunner.cs
       - type: source
-        path: src/Meridian.Storage/Ledger/Migrations/V_ledger_075__intercompany_accrual_schedules.sql
+        path: src/Meridian.Storage/Ledger/Migrations/V_ledger_076__intercompany_accrual_schedules.sql
       - type: test
         path: tests/Meridian.Tests/Storage/IntercompanyAccrualScheduleStoreTests.cs
       - type: test

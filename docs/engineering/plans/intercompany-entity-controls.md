@@ -212,7 +212,7 @@ Daily compounding and compounding that differs from the schedule frequency remai
 | Piece | Decision and boundary | Verification |
 | --- | --- | --- |
 | Schedule | Book, loan-interest profile and principal profile; maker-checker; reject or disable with a reason; one open schedule per book and profile. | `IntercompanyAccrualScheduleRulesTests`, `IntercompanyAccrualScheduleServiceTests` |
-| Storage | Append-only versions in ledger migration `075` or an atomic file store. | `IntercompanyAccrualScheduleStoreTests` (file and PostgreSQL) |
+| Storage | Append-only versions in ledger migration `076` or an atomic file store. | `IntercompanyAccrualScheduleStoreTests` (file and PostgreSQL) |
 | Runs | Completed periods ending on or after approval; drafts through the operator path; existing drafts skipped; refusals reported; 24 periods per run. | `IntercompanyAccrualScheduleServiceTests` |
 | Runner | Every six hours after a one-minute start-up delay; disabled schedules ignored; one failure never stops the rest. | `IntercompanyAccrualScheduleServiceTests` |
 | Routes and surfaces | `/api/ledger/intercompany/accrual-schedules`, due preview and run now; browser and WPF tabs. | `IntercompanyAccrualScheduleEndpointTests`, workspace and browser tests |

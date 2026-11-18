@@ -192,7 +192,7 @@ Qualified name: <code>Meridian.Storage.Ledger.PostgresIntercompanyAccrualSchedul
 
 Source: [src/Meridian.Storage/Ledger/PostgresIntercompanyAccrualScheduleStore.cs:10](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyAccrualScheduleStore.cs#L10).
 
-Append-only accrual-schedule versions (ledger migration 075), serialized per schedule.
+Append-only accrual-schedule versions (ledger migration 076), serialized per schedule.
 
 ```csharp
 public sealed class PostgresIntercompanyAccrualScheduleStore : IIntercompanyAccrualScheduleStore

@@ -6,7 +6,7 @@ using NpgsqlTypes;
 
 namespace Meridian.Storage.Ledger;
 
-/// <summary>Append-only accrual-schedule versions (ledger migration 075), serialized per schedule.</summary>
+/// <summary>Append-only accrual-schedule versions (ledger migration 076), serialized per schedule.</summary>
 public sealed class PostgresIntercompanyAccrualScheduleStore : IIntercompanyAccrualScheduleStore
 {
     private readonly LedgerJournalStoreOptions _options;
