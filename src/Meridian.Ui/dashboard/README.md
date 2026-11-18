@@ -603,6 +603,25 @@ Workflow features (UX Phase E):
   comparison, and securities exposure (long, short, gross) when the ledger holds any, each with a
   data table. Reporting P&L slices tagged `no-prior` show "—" for Prior and Change.
 
+Rendering (UX Phase F):
+- The SVG charts measure their box with `useChartSize` (`components/charts/use-chart-size.ts`) and
+  draw at that size, so axis text is never stretched. `components/charts/axis-ticks.ts` spaces time
+  ticks at least 72px and value ticks at least 24px apart (`fitValueTicks`), reads ISO dates as
+  "Aug '25" (or "Aug 5" within about two months), and sets axis text in the body face with tabular
+  figures. `EquityCurve` puts its value axis on the left.
+- `historical-chart.tsx` keeps its stretched plot but draws its labels in an HTML layer
+  (`components/charts/stretched-chart-labels.tsx`).
+- Evidence charts with fewer than `CHART_MIN_CATEGORIES` (3) categories show the figures and a
+  sentence instead of bars.
+- The workbench inspector shows a fade and a "More below" button, and sets `data-more-below`, while
+  it has content beneath its visible area (`components/meridian/use-more-below.ts`). Route focus on
+  `#workbench-content` draws no frame around the page.
+- `formatRelativeTime` keeps hours to 48h and days to 60d, then reads "since May 8, 2026"; Live
+  quotes and the provider capability matrix use it. Reconciliation case dates go through
+  `formatAccountingDate`. NAV's prior date and the journal-entry date use `DatePicker`.
+- The screenshot harness adds `detail-rail-clipped` (a detail panel hides content with neither its
+  own scroll nor the cue) and `chart-label-overlap` (two labels in one chart overlap).
+
 The holdings table, the headline figures and the holding detail panel read one model,
 `lib/holdings-model.ts`, so they cannot disagree. Values the source supplies are shown
 unchanged. When the source omits them, the model derives two row figures and says so:
@@ -1650,8 +1669,8 @@ Strategy equity-path comparison is composed by `strategy-screen.equity-paths.tsx
 exports. The chart set remains separate from Compare, Diff and Promote selection.
 
 The SVG charts in `src/components/charts/` (`CandleChart`, `EquityCurve`, `DrawdownChart`,
-`Histogram`, `DepthChart`) render through the shared `ChartSvg` frame in `chart-a11y.tsx` and
-accept three optional props:
+`Histogram`, `DepthChart`) render through the shared `ChartSvg` frame in `chart-a11y.tsx`, draw at
+their measured size (`useChartSize`) so text is not stretched, and accept three optional props:
 
 - `ariaLabel` names the graphic. Each chart defaults to a generic type label, so screens should
   pass a specific one (run, symbol, or study) and must not wrap the chart in their own
