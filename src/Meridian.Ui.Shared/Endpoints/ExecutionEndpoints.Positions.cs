@@ -226,7 +226,10 @@ public static partial class ExecutionEndpoints
             Metadata = metadata
         };
 
-        var result = await oms.PlaceOrderAsync(orderRequest, context.RequestAborted).ConfigureAwait(false);
+        var positionAuthority = fundAccountId is { } grantedAccount
+            ? OrderSubmissionAuthority.ForPositionAction(actor, HttpPrincipalAccountGrant(grantedAccount, actor), actionId)
+            : null;
+        var result = await SubmitOperatorOrderAsync(oms, orderRequest, positionAuthority, context.RequestAborted).ConfigureAwait(false);
 
         // A parked order is not a rejection here either. Reporting one as Rejected invites
         // the operator to retry, and every retry mints a fresh ClientOrderId — so a single

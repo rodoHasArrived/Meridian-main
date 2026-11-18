@@ -28,7 +28,12 @@ public sealed class ExecutionOrderMetadataPolicyTests
         "live_readiness_evidence_reference",
         "livePromotionAuditReference",
         "live_promotion_audit_reference",
-        "riskSubmitter");
+        "riskSubmitter",
+        "runId",
+        "run_id",
+        "sessionId",
+        "session_id",
+        "orderOrigin");
 
     [Fact]
     public void ContainsClientRejectedServerOwnedKey_NullMetadata_ReturnsFalse()
@@ -181,6 +186,25 @@ public sealed class ExecutionOrderMetadataPolicyTests
 
         sanitized.Should().BeSameAs(request);
         sanitized.Metadata.Should().ContainKey("asset_class");
+    }
+
+    [Fact]
+    public void RemoveServerOwnedRoutingKeys_PreservesServerStampedRunAndSessionIdentity()
+    {
+        // Run and session keys are rejected at the client boundary, but the OMS's own sanitization
+        // must keep them: LiveStrategyRunSession stamps "runId" server-side, and the live readiness
+        // gate binds the order to the promoted run through it. Stripping it here would refuse every
+        // live strategy order.
+        var request = CreateOrderRequest(new Dictionary<string, string>
+        {
+            ["runId"] = "run-live-001",
+            ["sessionId"] = "paper-session-1"
+        });
+
+        var sanitized = ExecutionOrderMetadataPolicy.RemoveServerOwnedRoutingKeys(request);
+
+        sanitized.Should().BeSameAs(request);
+        sanitized.Metadata.Should().ContainKeys("runId", "sessionId");
     }
 
     private static OrderRequest CreateOrderRequest(IReadOnlyDictionary<string, string>? metadata) => new()

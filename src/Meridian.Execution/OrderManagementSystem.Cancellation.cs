@@ -14,10 +14,15 @@ public sealed partial class OrderManagementSystem
         return await CancelOrderCoreAsync(orderId, ct).ConfigureAwait(false);
     }
 
+    /// <param name="authority">
+    /// The authority the cancellation runs under, recorded on its journal and audit evidence. Only
+    /// the kill-switch sweep supplies one today; a cancellation is never refused on authority.
+    /// </param>
     private async Task<OrderResult> CancelOrderCoreAsync(
         string orderId,
         CancellationToken ct,
-        string? gatewayOrderId = null)
+        string? gatewayOrderId = null,
+        OrderSubmissionAuthority? authority = null)
     {
         if (!_orders.TryGetValue(orderId, out var state))
         {
@@ -28,14 +33,15 @@ public sealed partial class OrderManagementSystem
                 state: null,
                 report: null,
                 message: "Order not found",
-                ct: ct).ConfigureAwait(false);
+                ct: ct,
+                authority: authority).ConfigureAwait(false);
 
             return new OrderResult { Success = false, OrderId = orderId, ErrorMessage = "Order not found" };
         }
 
         // A parked order has no broker order to cancel: withdraw the escalation and
         // complete the cancellation locally instead of failing at the gateway.
-        if (await TryCancelParkedOrderAsync(orderId, ct).ConfigureAwait(false) is { } parkedCancellation)
+        if (await TryCancelParkedOrderAsync(orderId, ct, authority).ConfigureAwait(false) is { } parkedCancellation)
         {
             return parkedCancellation;
         }
@@ -46,7 +52,7 @@ public sealed partial class OrderManagementSystem
             ? new OrderCancellationIdentifier(orderId, OrderCancellationIdentifierKind.ClientOrderId)
             : new OrderCancellationIdentifier(gatewayOrderId, OrderCancellationIdentifierKind.BrokerOrderId);
         await RecordCancellationEvidenceAsync(orderId,
-            () => RecordJournalOperationAsync(state, "CancelIntent", ct), ct).ConfigureAwait(false);
+            () => RecordJournalOperationAsync(state, "CancelIntent", ct, authority: authority), ct).ConfigureAwait(false);
         string? unresolvedCandidate;
         ExecutionReport report;
         try
@@ -61,7 +67,8 @@ public sealed partial class OrderManagementSystem
         {
             await RecordCancellationEvidenceAsync(orderId,
                 () => RecordJournalOperationAsync(state, "CancelOutcomeUnconfirmed", CancellationToken.None,
-                    detail: "Cancellation acknowledgement unavailable. Reconcile the retained broker identity before retrying.")).ConfigureAwait(false);
+                    detail: "Cancellation acknowledgement unavailable. Reconcile the retained broker identity before retrying.",
+                    authority: authority)).ConfigureAwait(false);
             throw;
         }
         if (unresolvedCandidate is not null
@@ -118,7 +125,8 @@ public sealed partial class OrderManagementSystem
                 state: observedState,
                 report: report,
                 message: report.RejectReason ?? "Cancel request failed",
-                ct: ct).ConfigureAwait(false);
+                ct: ct,
+                authority: authority).ConfigureAwait(false);
 
             return new OrderResult
             {
@@ -142,7 +150,8 @@ public sealed partial class OrderManagementSystem
             state: updated,
             report: report,
             message: report.RejectReason,
-            ct: ct).ConfigureAwait(false);
+            ct: ct,
+            authority: authority).ConfigureAwait(false);
 
         return new OrderResult
         {

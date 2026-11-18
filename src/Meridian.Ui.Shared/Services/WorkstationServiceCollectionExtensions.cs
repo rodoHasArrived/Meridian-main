@@ -35,6 +35,7 @@ using Meridian.DataIntegration.AccountingSystem.QuickBooks;
 using Meridian.DataIntegration.Credentials;
 using Meridian.Documents;
 using Meridian.Domain.Collectors;
+using Meridian.Execution.OrderManagement;
 using Meridian.Execution.Services;
 using Meridian.FinancialOperations.AccountingClose;
 using Meridian.FinancialOperations.AccountingSystem;
@@ -267,6 +268,8 @@ public static class WorkstationServiceCollectionExtensions
             new JsonlPromotionRecordStore(
                 sp.GetRequiredService<PromotionRecordStoreOptions>(),
                 sp.GetRequiredService<ILogger<JsonlPromotionRecordStore>>()));
+        // Read-only run/promotion authority for typed strategy-run orders in the OMS.
+        services.TryAddSingleton<IStrategyRunAuthoritySource, StrategyRunAuthoritySource>();
         services.TryAddSingleton<StrategyDesignStoreOptions>(sp =>
             new StrategyDesignStoreOptions(Path.Combine(ResolveConfigDataRoot(sp), "strategies", "designer")));
         services.TryAddSingleton<IStrategyDesignRepository>(sp =>
