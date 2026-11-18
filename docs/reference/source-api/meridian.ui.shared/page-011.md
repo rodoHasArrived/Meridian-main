@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EvidenceVaultAccountingProductionCertificationEvidenceAuthority
+
+Qualified name: <code>Meridian.Ui.Shared.Services.EvidenceVaultAccountingProductionCertificationEvidenceAuthority</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs:69](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs#L69).
+
+Resolves only hash-verified, tenant/company-scoped Evidence Vault manifests. Supported lanes are taken from reviewer-confirmed document fields, not from client-provided certification artifacts.
+
+```csharp
+public sealed class EvidenceVaultAccountingProductionCertificationEvidenceAuthority(IEvidenceArtifactStore evidenceStore) : IAccountingProductionCertificationEvidenceAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string WorkflowLanesField = &quot;accounting.certification.workflow-lanes&quot;;</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs:72](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs#L72) |  |
+| <code>public const string DimensionalLanesField = &quot;accounting.certification.dimensional-lanes&quot;;</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs:73](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs#L73) |  |
+| <code>public const string TenantAdministrationLanesField = &quot;accounting.certification.tenant-administration-lanes&quot;;</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs:74](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs#L74) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;AccountingCertificationEvidenceSource&gt;&gt; ResolveAsync(AccountingCertificationEvidenceResolutionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs:76](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs#L76) |  |
+
 ## ExecutionWebhookWorker
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ExecutionWebhookWorker</code>. Kind: `class`.
@@ -1014,23 +1035,3 @@ Declared public members:
 | <code>public bool ReadsClosingState =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:30](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L30) |  |
 | <code>public IReadOnlyList&lt;string&gt; RequiredInputs =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:34](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L34) |  |
 | <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:36](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L36) |  |
-
-## FundAccountCloseReadinessService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FundAccountCloseReadinessService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/FundAccountCloseReadinessService.cs:14](../../../../src/Meridian.Ui.Shared/Services/FundAccountCloseReadinessService.cs#L14).
-
-Builds an account-scoped controller readiness score from provider, ledger, Security Master, reconciliation, and approval/casework evidence.
-
-```csharp
-public sealed class FundAccountCloseReadinessService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FundAccountCloseReadinessService(IAccountQueryService accounts, ILogger&lt;FundAccountCloseReadinessService&gt; logger, ProviderLedgerReconciliationService? providerLedgerReconciliation = null, IReconciliationBreakQueueRepository? breakQueueRepository = null);</code> | [src/Meridian.Ui.Shared/Services/FundAccountCloseReadinessService.cs:28](../../../../src/Meridian.Ui.Shared/Services/FundAccountCloseReadinessService.cs#L28) |  |
-| <code>[Obsolete(&quot;Authoritative close readiness requires an authenticated tenant and company scope. &quot; + &quot;Use GetAsync(Guid, ReconciliationBreakQueueScope, CancellationToken).&quot;)] public Task&lt;FundAccountCloseReadinessDto?&gt; GetAsync(Guid accountId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FundAccountCloseReadinessService.cs:43](../../../../src/Meridian.Ui.Shared/Services/FundAccountCloseReadinessService.cs#L43) |  |
-| <code>public async Task&lt;FundAccountCloseReadinessDto?&gt; GetAsync(Guid accountId, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FundAccountCloseReadinessService.cs:54](../../../../src/Meridian.Ui.Shared/Services/FundAccountCloseReadinessService.cs#L54) |  |

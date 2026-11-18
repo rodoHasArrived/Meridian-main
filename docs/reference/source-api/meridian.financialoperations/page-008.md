@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IStatementRunWorkflowFaultInjector
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IStatementRunWorkflowFaultInjector</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRunWorkflowService.cs:1370](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRunWorkflowService.cs#L1370).
+
+Exposes statement workflow fault points for controlled recovery testing.
+
+```csharp
+public interface IStatementRunWorkflowFaultInjector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task OnPointAsync(StatementRunWorkflowFaultPoint point, string runId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRunWorkflowService.cs:1372](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRunWorkflowService.cs#L1372) |  |
+
 ## IStatementRunWorkflowService
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IStatementRunWorkflowService</code>. Kind: `interface`.
@@ -527,6 +545,27 @@ Lookup key for resolving a single security from the Security Master.
 public sealed record SecurityLookupKey(SecurityIdentifierKind IdentifierKind, string IdentifierValue, string? Provider = null);
 ```
 
+## StatementAccruedInterestReconciliation
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementAccruedInterestReconciliation</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs:526](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs#L526).
+
+Typed break codes and policy for reconciling custodian-stated accrued interest on a matched position against Meridian&#x27;s booked accrued interest receivable.
+
+```csharp
+public static class StatementAccruedInterestReconciliation
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string VarianceBreakCode = &quot;POSITION_ACCRUED_INTEREST_VARIANCE&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs:529](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs#L529) | Booked and custodian accrued interest differ beyond tolerance. |
+| <code>public const string UnavailableBreakCode = &quot;POSITION_ACCRUED_INTEREST_UNAVAILABLE&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs:532](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs#L532) | The custodian states accrued interest but no comparable internal figure exists. |
+| <code>public const string RuleId = &quot;statement-position-accrued-interest-v1&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs:534](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs#L534) |  |
+| <code>public const decimal MinimumTolerance = 0.01m;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs:537](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRunMatcher.cs#L537) | One minor unit: accrued interest is a rounded cash amount, so sub-cent drift is noise. |
+
 ## StatementBreakClassificationRequest
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementBreakClassificationRequest</code>. Kind: `record`.
@@ -788,7 +827,7 @@ public sealed record StatementMatchingRequest(IReadOnlyList<NormalizedStatementP
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementMatchingResult</code>. Kind: `record`.
 
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:985](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L985).
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:993](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L993).
 
 ```csharp
 public sealed record StatementMatchingResult(IReadOnlyList<StatementMatchResult> Results);
@@ -810,40 +849,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public StatementToleranceProfile? Rules { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:881](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L881) | Complete policy, evaluated in declared order after exact matches. |
 | <code>public static StatementMatchingToleranceProfile FromProfile(StatementToleranceProfile profile) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:883](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L883) |  |
-
-## StatementMatchKind
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementMatchKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1035](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1035).
-
-```csharp
-public enum StatementMatchKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Position</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1037](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1037) |  |
-| <code>Cash</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1038](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1038) |  |
-| <code>Transaction</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1039](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1039) |  |
-
-## StatementMatchResult
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementMatchResult</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:987](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L987).
-
-```csharp
-public sealed record StatementMatchResult(StatementMatchKind Kind, StatementMatchTier MatchTier, decimal Confidence, IReadOnlyList<string> RuleIds, string? BrokerEvidenceReference, string? InternalEvidenceReference, StatementMatchVariance Variance, StatementMatchTolerance Tolerance, string Explanation)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt;? BrokerEvidenceReferences { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1002](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1002) | Every broker-side member of a many-to-one split group. Null for pair and unmatched results, whose only broker member is BrokerEvidenceReference. |
-| <code>public IReadOnlyList&lt;string&gt;? InternalEvidenceReferences { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1008](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1008) | Every internal-side member of a one-to-many split group. Null for pair and unmatched results, whose only internal member is InternalEvidenceReference. |
-| <code>public IReadOnlyList&lt;string&gt; AllBrokerEvidenceReferences =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1011](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1011) | All broker-side evidence members, whether the result is a pair or a split group. |
-| <code>public IReadOnlyList&lt;string&gt; AllInternalEvidenceReferences =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1015](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1015) | All internal-side evidence members, whether the result is a pair or a split group. |

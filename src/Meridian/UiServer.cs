@@ -432,7 +432,9 @@ public sealed class UiServer : IAsyncDisposable
                         sp.GetService<ISecurityMasterQueryService>(),
                         sp.GetRequiredService<Meridian.Execution.Adapters.PaperTradingGatewayOptions>(),
                         sp.GetService<Meridian.Execution.Adapters.LiveMarketDataCache>(),
-                        sp.GetRequiredService<Meridian.Execution.PaperMatching.PaperTradingCostOptions>()));
+                        sp.GetRequiredService<Meridian.Execution.PaperMatching.PaperTradingCostOptions>(),
+                        sp.GetService<ISecurityMasterQueryService>(),
+                        sp.GetService<Meridian.Contracts.FixedIncome.IBondAnalyticsService>()));
                 // Resting limit/stop orders re-evaluate when the market event tap records
                 // fresh data for their symbol (W9-PAPER-003 matching loop).
                 builder.Services.AddSingleton<Meridian.Execution.Interfaces.IPaperFillEvaluationTrigger>(sp =>

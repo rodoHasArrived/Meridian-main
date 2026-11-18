@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FundAccountCloseReadinessService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.FundAccountCloseReadinessService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/FundAccountCloseReadinessService.cs:14](../../../../src/Meridian.Ui.Shared/Services/FundAccountCloseReadinessService.cs#L14).
+
+Builds an account-scoped controller readiness score from provider, ledger, Security Master, reconciliation, and approval/casework evidence.
+
+```csharp
+public sealed class FundAccountCloseReadinessService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FundAccountCloseReadinessService(IAccountQueryService accounts, ILogger&lt;FundAccountCloseReadinessService&gt; logger, ProviderLedgerReconciliationService? providerLedgerReconciliation = null, IReconciliationBreakQueueRepository? breakQueueRepository = null);</code> | [src/Meridian.Ui.Shared/Services/FundAccountCloseReadinessService.cs:28](../../../../src/Meridian.Ui.Shared/Services/FundAccountCloseReadinessService.cs#L28) |  |
+| <code>[Obsolete(&quot;Authoritative close readiness requires an authenticated tenant and company scope. &quot; + &quot;Use GetAsync(Guid, ReconciliationBreakQueueScope, CancellationToken).&quot;)] public Task&lt;FundAccountCloseReadinessDto?&gt; GetAsync(Guid accountId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FundAccountCloseReadinessService.cs:43](../../../../src/Meridian.Ui.Shared/Services/FundAccountCloseReadinessService.cs#L43) |  |
+| <code>public async Task&lt;FundAccountCloseReadinessDto?&gt; GetAsync(Guid accountId, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FundAccountCloseReadinessService.cs:54](../../../../src/Meridian.Ui.Shared/Services/FundAccountCloseReadinessService.cs#L54) |  |
+
 ## FundExpenseAccrualCalculation
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FundExpenseAccrualCalculation</code>. Kind: `class`.
@@ -1032,24 +1052,3 @@ Declared public members:
 | <code>public Task&lt;AutomatedJournalScheduleWorkItem?&gt; GetAsync(string scheduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:179](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L179) |  |
 | <code>public Task&lt;AutomatedJournalScheduleWorkItem&gt; SaveAsync(AutomatedJournalScheduleWorkItem workItem, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:192](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L192) |  |
 | <code>public async Task&lt;AutomatedJournalScheduleStatusDto&gt; GetStatusAsync(string? fundProfileId, Guid? ledgerBookId, string? periodId, CancellationToken ct = default, string? tenantId = null, string? companyId = null, string? entityId = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:232](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L232) |  |
-
-## InMemoryDailyValuationPortfolioSource
-
-Qualified name: <code>Meridian.Ui.Shared.Services.InMemoryDailyValuationPortfolioSource</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:85](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L85).
-
-In-memory schedule source used for deterministic scheduling tests and composition.
-
-```csharp
-public sealed class InMemoryDailyValuationPortfolioSource : IDailyValuationPortfolioSource, IDailyValuationScheduleStatusSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;IReadOnlyList&lt;DailyValuationScheduleWorkItem&gt;&gt; ListAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:93](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L93) |  |
-| <code>public Task&lt;DailyValuationScheduleWorkItem?&gt; GetAsync(string scheduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:106](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L106) |  |
-| <code>public Task&lt;DailyValuationScheduleWorkItem&gt; SaveAsync(DailyValuationScheduleWorkItem workItem, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:117](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L117) |  |
-| <code>public async Task&lt;DailyValuationScheduleStatusDto&gt; GetStatusAsync(string? fundProfileId, Guid? ledgerBookId, string? periodId, CancellationToken ct = default, string? entityId = null, string? tenantId = null, string? companyId = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:136](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L136) |  |

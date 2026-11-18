@@ -4003,6 +4003,8 @@ function buildLedgerLineRows(
 
   const debit = line.balance >= 0 ? line.balance : 0;
   const credit = line.balance < 0 ? Math.abs(line.balance) : 0;
+  const isCredit = line.balance < 0;
+  const sideLabel = isCredit ? `Credit ${formatPrefixedCurrency(credit)}` : `Debit ${formatPrefixedCurrency(debit)}`;
   const evidenceLabel = sourceEventIds.length > 0
     ? "Source evidence"
     : "No source event linked";
@@ -4014,13 +4016,13 @@ function buildLedgerLineRows(
     rowId: `${line.rowId}-journal-${index}`,
     journalEntryId,
     description: `${line.accountLabel} ${line.accountTypeLabel.toLocaleLowerCase()} activity`,
-    debitLabel: formatPrefixedCurrency(debit),
-    creditLabel: formatPrefixedCurrency(credit),
+    debitLabel: isCredit ? "" : formatPrefixedCurrency(debit),
+    creditLabel: isCredit ? formatPrefixedCurrency(credit) : "",
     balanceLabel: line.balanceLabel,
     evidenceLabel,
     evidenceHref,
     approvalHref,
-    ariaLabel: `${line.accountLabel} journal ${journalEntryId}. Debit ${formatPrefixedCurrency(debit)}. Credit ${formatPrefixedCurrency(credit)}. Balance ${line.balanceLabel}. ${evidenceLabel}.`
+    ariaLabel: `${line.accountLabel} journal ${journalEntryId}. ${sideLabel}. Balance ${line.balanceLabel}. ${evidenceLabel}.`
   }));
 }
 

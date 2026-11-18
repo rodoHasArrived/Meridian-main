@@ -971,6 +971,25 @@ Declared public members:
 | <code>public TimeSpan ValidatedCancelAllInFlightSettleTimeout =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystemOptions.cs:64](../../../../src/Meridian.Execution/OrderManagementSystemOptions.cs#L64) |  |
 | <code>public TimeSpan ValidatedExecutionSubscriberDrainTimeout =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystemOptions.cs:70](../../../../src/Meridian.Execution/OrderManagementSystemOptions.cs#L70) |  |
 
+## PaperBondSettlement
+
+Qualified name: <code>Meridian.Execution.PaperBondSettlement</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/PaperBondSettlement.cs:8](../../../../src/Meridian.Execution/PaperBondSettlement.cs#L8).
+
+Settlement-date convention for paper bond fills: regular-way T+1 on weekdays, the US corporate and Treasury convention. Exchange holidays are not modelled; a fill before a holiday settles on the next weekday. Accrued interest is measured to this date.
+
+```csharp
+public static class PaperBondSettlement
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int SettlementLagBusinessDays = 1;</code> | [src/Meridian.Execution/PaperBondSettlement.cs:10](../../../../src/Meridian.Execution/PaperBondSettlement.cs#L10) |  |
+| <code>public static DateOnly SettlementDate(DateOnly tradeDate);</code> | [src/Meridian.Execution/PaperBondSettlement.cs:12](../../../../src/Meridian.Execution/PaperBondSettlement.cs#L12) |  |
+
 ## PaperExecutionContext
 
 Qualified name: <code>Meridian.Execution.PaperExecutionContext</code>. Kind: `class`.
@@ -1143,23 +1162,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public const string MatchingModelVersion = &quot;paper-match/1&quot;;</code> | [src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs:69](../../../../src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs#L69) | Version identifier for this matching policy, recorded on paper sessions and cited by promotion evidence. |
 | <code>public static PaperMatchResult Evaluate(OrderSide side, OrderType type, decimal? limitPrice, decimal? stopPrice, bool stopAlreadyTriggered, in PaperMarketObservation observation);</code> | [src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs:83](../../../../src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs#L83) | Evaluates one order against the current observation. |
-
-## PaperTradingCostModel
-
-Qualified name: <code>Meridian.Execution.PaperMatching.PaperTradingCostModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs:30](../../../../src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs#L30).
-
-Computes commission, fee, slippage, and spread costs for paper fills from PaperTradingCostOptions. This is the documented cost policy (CostModelVersion) shared by both paper gateways and recorded on paper sessions for promotion evidence.
-
-```csharp
-public sealed class PaperTradingCostModel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string CostModelVersion = &quot;paper-cost/1&quot;;</code> | [src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs:36](../../../../src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs#L36) | Version identifier for this cost policy, recorded on paper sessions and cited by promotion evidence. |
-| <code>public PaperTradingCostModel(PaperTradingCostOptions? options = null);</code> | [src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs:41](../../../../src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs#L41) | Creates a cost model over the given options (defaults when omitted). |
-| <code>public PaperFillCostBreakdown Compute(decimal quantity, decimal fillPrice, decimal? midPrice, decimal contractMultiplier = 1m);</code> | [src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs:61](../../../../src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs#L61) | Computes the cost breakdown for one fill. |

@@ -185,7 +185,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonIgnore] public decimal RealizedPnl =&gt; …;</code> | [src/Meridian.Ledger/TradeFillAccountingEvidence.cs:22](../../../../src/Meridian.Ledger/TradeFillAccountingEvidence.cs#L22) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public decimal AccruedInterest { get; init; }</code> | [src/Meridian.Ledger/TradeFillAccountingEvidence.cs:27](../../../../src/Meridian.Ledger/TradeFillAccountingEvidence.cs#L27) | Bond accrued interest that changed hands on this fill, always nonnegative: paid on a purchase, received on a sale. Zero for fills without an accrual (and on every historical record, which omits it). |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public decimal AccruedInterestRelieved { get; init; }</code> | [src/Meridian.Ledger/TradeFillAccountingEvidence.cs:35](../../../../src/Meridian.Ledger/TradeFillAccountingEvidence.cs#L35) | On a sale, the purchased accrued interest receivable relieved for the face sold; the rest of AccruedInterest is coupon income earned while held (negative if the receivable exceeds what was received). Zero on purchases. |
+| <code>[JsonIgnore] public decimal RealizedPnl =&gt; …;</code> | [src/Meridian.Ledger/TradeFillAccountingEvidence.cs:38](../../../../src/Meridian.Ledger/TradeFillAccountingEvidence.cs#L38) |  |
 
 ## UnitTransaction
 

@@ -1,0 +1,2 @@
+account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency,feesCommission,externalTransactionId,activityCategory,activitySubtype,providerActivityCode,relatedTransactionId,orderId,description,marketValue,accruedInterest
+EXT-1,MER45-2031,100000,99.25,0,position,2026-05-31,,USD,,,,,,,,Fixed 4.50% semiannual 30/360 maturing 2031-09-15; last coupon 2026-03-15,99250.00,937.50

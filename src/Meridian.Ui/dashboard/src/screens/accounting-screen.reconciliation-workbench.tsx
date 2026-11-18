@@ -33,6 +33,7 @@ import { ReconciliationCaseDiscussion } from "./accounting-screen.case-discussio
 import { BreakLifecyclePanel, type BreakLifecycleServices } from "./accounting-screen.reconciliation-lifecycle";
 import { BreakAuditTimeline, type BreakAuditLoader } from "./accounting-screen.reconciliation-audit-timeline";
 import { cn } from "@/lib/utils";
+import { useScreenPaletteActions } from "@/components/meridian/command-palette.actions";
 import { ReconciliationBulkTriageBar, useReconciliationBulkTriage, type BulkTriageServices } from "./reconciliation-bulk-triage-bar";
 import { sourceObservationLabel, sourceObservationAge } from "./reconciliation-source-observation";
 import { StatementRunDetailTabs } from "./accounting-screen.statement-run-detail";
@@ -156,6 +157,15 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
     services: bulkServices
   });
   const { isSelected: isBulkSelected, toggle: toggleBulkSelected } = triage;
+  useScreenPaletteActions("reconciliation", [{
+    id: "reconciliation.assign-selected",
+    verbLabel: "Assign selected breaks to me",
+    description: "Checks the selected breaks and shows the assignment preview before anything changes.",
+    keywords: ["reconciliation", "break", "assign"],
+    disabled: triage.selectedIds.length === 0,
+    disabledReason: triage.selectedIds.length === 0 ? "Select one or more breaks first." : null,
+    run: () => triage.start("assign")
+  }]);
   // Since your last visit (C3): rows detected or updated after the operator's previous visit.
   const sinceLastVisit = useSinceLastVisit(BREAK_QUEUE_VISIT_SURFACE, visitServices);
   const visitBaseline = sinceLastVisit.baseline;

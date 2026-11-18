@@ -317,6 +317,29 @@ Declared public members:
 | --- | --- | --- |
 | <code>public async Task&lt;IReadOnlyList&lt;string&gt;&gt; ProjectAsync(BondMonitoringSnapshotDto captured, string actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BondCollectionCaseworkProjection.cs:21](../../../../src/Meridian.Ui.Shared/Services/BondCollectionCaseworkProjection.cs#L21) |  |
 
+## BondCouponIncomeCalculation
+
+Qualified name: <code>Meridian.Ui.Shared.Services.BondCouponIncomeCalculation</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/BondCouponIncomeCalculation.cs:25](../../../../src/Meridian.Ui.Shared/Services/BondCouponIncomeCalculation.cs#L25).
+
+Recurring coupon income for one governed bond tax lot (W10-JRNL-001, W10-BOND-001). Each occurrence runs the existing IBondCouponRecognitionService (and, when the template asks for it, IBondIncomePreparationService for premium/discount income) through the governed accounting-event spine. The resulting candidate waits in accounting review; this calculation never approves or posts, and it returns no manual-journal draft because the spine candidate is the posting vehicle. Inputs: accountId, taxLotRecordId, optional includeAmortization (true/false).
+
+```csharp
+public sealed class BondCouponIncomeCalculation(IBondCouponRecognitionService? coupons = null, IAssetAccountingEventSpineService? spine = null, BondWorkspaceSnapshotStore? snapshots = null, IBondCouponRecognitionStore? receipts = null, IBondIncomeService? income = null, IBondIncomePreparationService? incomePreparation = null, ILogger<BondCouponIncomeCalculation>? logger = null) : IRecurringJournalCalculation
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string CalculationKind = &quot;bond-coupon-income&quot;;</code> | [src/Meridian.Ui.Shared/Services/BondCouponIncomeCalculation.cs:34](../../../../src/Meridian.Ui.Shared/Services/BondCouponIncomeCalculation.cs#L34) |  |
+| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BondCouponIncomeCalculation.cs:39](../../../../src/Meridian.Ui.Shared/Services/BondCouponIncomeCalculation.cs#L39) |  |
+| <code>public bool DependsOnPostedHistory =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BondCouponIncomeCalculation.cs:43](../../../../src/Meridian.Ui.Shared/Services/BondCouponIncomeCalculation.cs#L43) |  |
+| <code>public bool ReadsClosingState =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BondCouponIncomeCalculation.cs:45](../../../../src/Meridian.Ui.Shared/Services/BondCouponIncomeCalculation.cs#L45) |  |
+| <code>public IReadOnlyList&lt;string&gt; RequiredInputs =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BondCouponIncomeCalculation.cs:47](../../../../src/Meridian.Ui.Shared/Services/BondCouponIncomeCalculation.cs#L47) |  |
+| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/BondCouponIncomeCalculation.cs:49](../../../../src/Meridian.Ui.Shared/Services/BondCouponIncomeCalculation.cs#L49) |  |
+
 ## BondExerciseNoticeReadService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.BondExerciseNoticeReadService</code>. Kind: `class`.
@@ -948,21 +971,3 @@ Declared public members:
 | <code>public string GetDataRoot(Meridian.Core.Config.AppConfig? cfg = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:82](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L82) |  |
 | <code>public string GetStatusPath(Meridian.Core.Config.AppConfig? cfg = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:85](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L85) |  |
 | <code>public string GetBackfillStatusPath(Meridian.Core.Config.AppConfig? cfg = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:88](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L88) |  |
-
-## ConfigStoreExtensions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ConfigStoreExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ConfigStore.cs:98](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L98).
-
-Configures the core ConfigStore default path resolver for web dashboard hosting.
-
-```csharp
-public static class ConfigStoreExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void UseWebDefaultPath();</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:100](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L100) |  |

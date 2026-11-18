@@ -851,7 +851,7 @@ public sealed partial class RecurringJournalCalculationTests : IDisposable
         IFixedAssetRegister? assets = null, string bondCurrency = "USD",
         Func<DateOnly, IReadOnlyList<LedgerTaxLot>>? lotsOn = null, string assetClass = "Bond",
         IReadOnlyList<FaceValueAccrualHolding>? accrualHoldings = null, Exception? accrualReadFailure = null,
-        ISecurityMasterQueryService? securities = null)
+        ISecurityMasterQueryService? securities = null, IReadOnlyList<IRecurringJournalCalculation>? extraCalculations = null)
     {
         var configuration = new InMemoryAccountingConfigurationStore();
         await configuration.SaveAsync(new AccountingConfigurationWorkspaceDto(Fund, Book,
@@ -912,7 +912,8 @@ public sealed partial class RecurringJournalCalculationTests : IDisposable
             new FixedIncomeAccrualCalculation(inputs,
                 new SecurityMasterAmortizationLedgerBridge(cashFlowService, NullLogger<SecurityMasterAmortizationLedgerBridge>.Instance),
                 cashFlowService, securities ?? Securities(bondCurrency, assetClass)),
-            new FxRevaluationCalculation(inputs, rates ?? Rates([]))
+            new FxRevaluationCalculation(inputs, rates ?? Rates([])),
+            .. extraCalculations ?? []
         ]);
         return new(runner, drafts, workbench, inputs, posted);
     }

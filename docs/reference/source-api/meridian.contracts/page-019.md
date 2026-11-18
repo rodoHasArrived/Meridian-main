@@ -628,14 +628,20 @@ Source: [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:13](../../../..
 Serialisation-friendly snapshot of a single position for persistence. Used by IPositionSnapshotStore — deliberately flat so that the storage layer has no dependency on Meridian.Execution types.
 
 ```csharp
-public sealed record PositionRecord(string Symbol, decimal Quantity, decimal CostBasis, decimal UnrealisedPnl, decimal RealisedPnl);
+public sealed record PositionRecord(string Symbol, decimal Quantity, decimal CostBasis, decimal UnrealisedPnl, decimal RealisedPnl)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? AccruedInterest { get; init; }</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:26](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L26) | Accrued interest receivable on the holding at snapshot time (absolute, in the account&#x27;s base currency) for coupon-bearing positions whose source reports it; null otherwise. Omitted from serialized snapshots when null so retained records are unchanged. |
 
 ## PositionSnapshotConflictException
 
 Qualified name: <code>Meridian.Contracts.Domain.PositionSnapshotConflictException</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:83](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L83).
+Source: [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:92](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L92).
 
 Raised when a position-snapshot partition already contains a different payload at the same logical timestamp. Callers must fail closed rather than selecting a winner by append order.
 
@@ -647,16 +653,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public PositionSnapshotConflictException(string runId, string accountId, DateTimeOffset asOf) : base($&quot;Position snapshot scope &#x27;{runId.Trim()}&#124;{accountId.Trim()}&#x27; contains a different &quot; + $&quot;payload at the same source timestamp {asOf.ToUniversalTime():O}.&quot;);</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:85](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L85) |  |
-| <code>public string RunId { get; }</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:95](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L95) |  |
-| <code>public string AccountId { get; }</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:97](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L97) |  |
-| <code>public DateTimeOffset AsOf { get; }</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:99](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L99) |  |
+| <code>public PositionSnapshotConflictException(string runId, string accountId, DateTimeOffset asOf) : base($&quot;Position snapshot scope &#x27;{runId.Trim()}&#124;{accountId.Trim()}&#x27; contains a different &quot; + $&quot;payload at the same source timestamp {asOf.ToUniversalTime():O}.&quot;);</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:94](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L94) |  |
+| <code>public string RunId { get; }</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:104](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L104) |  |
+| <code>public string AccountId { get; }</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:106](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L106) |  |
+| <code>public DateTimeOffset AsOf { get; }</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:108](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L108) |  |
 
 ## PositionSnapshotEquivalence
 
 Qualified name: <code>Meridian.Contracts.Domain.PositionSnapshotEquivalence</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:106](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L106).
+Source: [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:115](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L115).
 
 Defines the canonical equivalence used by snapshot stores and their callers. Position order and symbol casing do not change the payload; owner, balance, P&amp;L, and position-value differences do.
 
@@ -668,13 +674,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static bool AreEquivalent(AccountSnapshotRecord left, AccountSnapshotRecord right);</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:108](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L108) |  |
+| <code>public static bool AreEquivalent(AccountSnapshotRecord left, AccountSnapshotRecord right);</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:117](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L117) |  |
 
 ## PositionSnapshotOwnerScope
 
 Qualified name: <code>Meridian.Contracts.Domain.PositionSnapshotOwnerScope</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:60](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L60).
+Source: [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:69](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L69).
 
 Immutable accounting-owner scope used to retrieve a position snapshot without crossing a tenant, company, fund, ledger-book, or entity boundary.
 
@@ -686,7 +692,7 @@ public sealed record PositionSnapshotOwnerScope(string TenantId, string CompanyI
 
 Qualified name: <code>Meridian.Contracts.Domain.PositionSnapshotSaveOutcome</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:70](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L70).
+Source: [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:79](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L79).
 
 Result of an atomic position-snapshot conditional append.
 
@@ -698,8 +704,8 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Appended = 0</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:73](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L73) | The proposed snapshot was durably appended. |
-| <code>EquivalentAlreadyExists = 1</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:76](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L76) | An equivalent snapshot already occupied the logical timestamp. |
+| <code>Appended = 0</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:82](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L82) | The proposed snapshot was durably appended. |
+| <code>EquivalentAlreadyExists = 1</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:85](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L85) | An equivalent snapshot already occupied the logical timestamp. |
 
 ## ProviderId
 

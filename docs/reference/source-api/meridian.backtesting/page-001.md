@@ -463,7 +463,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Backtesting.Portfolio.FixedCommissionModel</code>. Kind: `class`.
 
-Source: [src/Meridian.Backtesting/Portfolio/ICommissionModel.cs:10](../../../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs#L10).
+Source: [src/Meridian.Backtesting/Portfolio/ICommissionModel.cs:12](../../../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs#L12).
 
 Fixed commission per order regardless of size.
 
@@ -475,13 +475,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal Calculate(string symbol, long quantity, decimal fillPrice) =&gt; …;</code> | [src/Meridian.Backtesting/Portfolio/ICommissionModel.cs:12](../../../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs#L12) |  |
+| <code>public decimal Calculate(string symbol, long quantity, decimal fillPrice) =&gt; …;</code> | [src/Meridian.Backtesting/Portfolio/ICommissionModel.cs:14](../../../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs#L14) |  |
 
 ## ICommissionModel
 
 Qualified name: <code>Meridian.Backtesting.Portfolio.ICommissionModel</code>. Kind: `interface`.
 
-Source: [src/Meridian.Backtesting/Portfolio/ICommissionModel.cs:4](../../../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs#L4).
+Source: [src/Meridian.Backtesting/Portfolio/ICommissionModel.cs:6](../../../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs#L6).
 
 Computes total brokerage commission for the executed portion of one order.
 
@@ -493,13 +493,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>decimal Calculate(string symbol, long quantity, decimal fillPrice);</code> | [src/Meridian.Backtesting/Portfolio/ICommissionModel.cs:6](../../../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs#L6) |  |
+| <code>decimal Calculate(string symbol, long quantity, decimal fillPrice);</code> | [src/Meridian.Backtesting/Portfolio/ICommissionModel.cs:8](../../../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs#L8) |  |
 
 ## PercentageCommissionModel
 
 Qualified name: <code>Meridian.Backtesting.Portfolio.PercentageCommissionModel</code>. Kind: `class`.
 
-Source: [src/Meridian.Backtesting/Portfolio/ICommissionModel.cs:29](../../../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs#L29).
+Source: [src/Meridian.Backtesting/Portfolio/ICommissionModel.cs:31](../../../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs#L31).
 
 Percentage-of-notional commission model.
 
@@ -511,13 +511,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal Calculate(string symbol, long quantity, decimal fillPrice);</code> | [src/Meridian.Backtesting/Portfolio/ICommissionModel.cs:33](../../../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs#L33) |  |
+| <code>public decimal Calculate(string symbol, long quantity, decimal fillPrice);</code> | [src/Meridian.Backtesting/Portfolio/ICommissionModel.cs:35](../../../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs#L35) |  |
 
 ## PerShareCommissionModel
 
 Qualified name: <code>Meridian.Backtesting.Portfolio.PerShareCommissionModel</code>. Kind: `class`.
 
-Source: [src/Meridian.Backtesting/Portfolio/ICommissionModel.cs:16](../../../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs#L16).
+Source: [src/Meridian.Backtesting/Portfolio/ICommissionModel.cs:18](../../../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs#L18).
 
 Per-share commission with optional minimum and maximum.
 
@@ -529,7 +529,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal Calculate(string symbol, long quantity, decimal fillPrice);</code> | [src/Meridian.Backtesting/Portfolio/ICommissionModel.cs:21](../../../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs#L21) |  |
+| <code>public decimal Calculate(string symbol, long quantity, decimal fillPrice);</code> | [src/Meridian.Backtesting/Portfolio/ICommissionModel.cs:23](../../../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs#L23) |  |
 
 ## SecurityMasterAssetEventSource
 
