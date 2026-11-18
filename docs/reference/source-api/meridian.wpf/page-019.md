@@ -6,6 +6,54 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RunPortfolioPage
+
+Qualified name: <code>Meridian.Wpf.Views.RunPortfolioPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:70](../../../../src/Meridian.Wpf/Views/Pages.cs#L70).
+
+```csharp
+public partial class RunPortfolioPage : Page
+```
+
+Source: [src/Meridian.Wpf/Views/RunPortfolioPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/RunPortfolioPage.xaml.cs#L10).
+
+Provides the desktop page to review holdings, exposures, and weights for the selected run.
+
+```csharp
+public partial class RunPortfolioPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public RunPortfolioPage();</code> | [src/Meridian.Wpf/Views/RunPortfolioPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/RunPortfolioPage.xaml.cs#L12) |  |
+
+## RunRiskPage
+
+Qualified name: <code>Meridian.Wpf.Views.RunRiskPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:73](../../../../src/Meridian.Wpf/Views/Pages.cs#L73).
+
+```csharp
+public partial class RunRiskPage : Page
+```
+
+Source: [src/Meridian.Wpf/Views/RunRiskPage.xaml.cs:8](../../../../src/Meridian.Wpf/Views/RunRiskPage.xaml.cs#L8).
+
+Hosts risk details for the selected strategy run.
+
+```csharp
+public partial class RunRiskPage
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public RunRiskPage(RunRiskViewModel viewModel);</code> | [src/Meridian.Wpf/Views/RunRiskPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/RunRiskPage.xaml.cs#L12) |  |
+
 ## SaveWatchlistDialog
 
 Qualified name: <code>Meridian.Wpf.Views.SaveWatchlistDialog</code>. Kind: `class`.
@@ -1085,43 +1133,3 @@ Declared public members:
 | <code>public static void SetShellDensityMode(DependencyObject element, ShellDensityMode value) =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs:42](../../../../src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs#L42) |  |
 | <code>public static bool GetIsCompactDensity(DependencyObject element) =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs:45](../../../../src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs#L45) |  |
 | <code>public static void SetIsCompactDensity(DependencyObject element, bool value) =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs:48](../../../../src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs#L48) |  |
-
-## WorkspaceShellContextStripControl
-
-Qualified name: <code>Meridian.Wpf.Views.WorkspaceShellContextStripControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs:12](../../../../src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs#L12).
-
-Displays shell context titles and badges in regular or compact form.
-
-```csharp
-public partial class WorkspaceShellContextStripControl : UserControl
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly DependencyProperty ShellContextProperty = DependencyProperty.Register(nameof(ShellContext), typeof(WorkspaceShellContext), typeof(WorkspaceShellContextStripControl), new PropertyMetadata(new WorkspaceShellContext(), OnShellContextChanged));</code> | [src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs:17](../../../../src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs#L17) |  |
-| <code>public static readonly DependencyProperty IsCompactProperty = DependencyProperty.Register(nameof(IsCompact), typeof(bool), typeof(WorkspaceShellContextStripControl), new PropertyMetadata(false, OnCompactPresentationChanged));</code> | [src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs:24](../../../../src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs#L24) |  |
-| <code>public WorkspaceShellContextStripControl();</code> | [src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs:31](../../../../src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs#L31) |  |
-| <code>public WorkspaceShellContext ShellContext { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs:37](../../../../src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs#L37) |  |
-| <code>public bool IsCompact { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs:43](../../../../src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs#L43) |  |
-
-## WorkspaceShellPageBase (generic arity 2)
-
-Qualified name: <code>Meridian.Wpf.Views.WorkspaceShellPageBase</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:16](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L16).
-
-Binds derived pages to the workspace shell definition.
-
-```csharp
-public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel>: Page, IPageRefreshTarget where TStateProvider : class, IWorkspaceShellStateProvider where TViewModel : WorkspaceShellViewModelBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ICommand RefreshCommand =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:46](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L46) | The shell Refresh control (toolbar button and F5) reloads the workspace shell and every docked page in place instead of rebuilding the shell by re-navigation. |

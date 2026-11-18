@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## Durations
+
+Qualified name: <code>Meridian.Wpf.Services.InfoBarService.Durations</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/InfoBarService.cs:35](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L35).
+
+Defines default notification display durations by severity, including persistent critical alerts.
+
+```csharp
+public static class Durations
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int Info = InfoBarConstants.InfoDurationMs;</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:37](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L37) |  |
+| <code>public const int Success = InfoBarConstants.SuccessDurationMs;</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:38](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L38) |  |
+| <code>public const int Warning = InfoBarConstants.WarningDurationMs;</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:39](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L39) |  |
+| <code>public const int Error = InfoBarConstants.ErrorDurationMs;</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:40](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L40) |  |
+| <code>public const int Critical = InfoBarConstants.CriticalDurationMs;</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:41](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L41) |  |
+
 ## InfoBarSeverity
 
 Qualified name: <code>Meridian.Wpf.Services.InfoBarSeverity</code>. Kind: `enum`.
@@ -1050,26 +1072,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public PortfolioWorkspaceShellStateProvider(FundContextService fundContextService, WorkstationOperatingContextService? operatingContextService) : base(operatingContextService);</code> | [src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs:133](../../../../src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs#L133) |  |
 | <code>public override WorkspaceShellDefinition Definition =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs:141](../../../../src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs#L141) |  |
-
-## QuantScriptExecutionHistoryService
-
-Qualified name: <code>Meridian.Wpf.Services.QuantScriptExecutionHistoryService</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs:27](../../../../src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs#L27).
-
-Records QuantScript executions in strategy-run history and exports retained execution records.
-
-```csharp
-public sealed class QuantScriptExecutionHistoryService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public QuantScriptExecutionHistoryService(ConfigService configService, StrategyRunWorkspaceService strategyRunWorkspaceService, ILogger&lt;QuantScriptExecutionHistoryService&gt; logger);</code> | [src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs:33](../../../../src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs#L33) |  |
-| <code>public static string BuildQuantScriptStrategyId(string documentTitle) =&gt; …;</code> | [src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs:43](../../../../src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs#L43) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;QuantScriptExecutionRecord&gt;&gt; GetHistoryAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs:46](../../../../src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs#L46) |  |
-| <code>public async Task&lt;QuantScriptExecutionRecord&gt; RecordExecutionAsync(QuantScriptExecutionRecordRequest request, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs:79](../../../../src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs#L79) |  |
-| <code>public async Task&lt;string&gt; ExportExecutionRecordAsync(QuantScriptExecutionRecord record, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs:136](../../../../src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs#L136) |  |
-| <code>public static string ConvertValueToString(object? value);</code> | [src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs:161](../../../../src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs#L161) |  |

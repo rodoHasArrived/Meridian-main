@@ -165,7 +165,7 @@ public sealed partial class AccountingConfigureViewModel
             ? $"Tenant {AccountingWorkbenchPresentation.FormatReadinessScope(profile.TenantId)}; company {AccountingWorkbenchPresentation.FormatReadinessScope(profile.CompanyId)}; fund {profile.FundProfileId}; ledger book {profile.LedgerBookId:D}."
             : $"Tenant {AccountingWorkbenchPresentation.FormatReadinessScope(profile.TenantId)}; company {AccountingWorkbenchPresentation.FormatReadinessScope(profile.CompanyId)}; fund {profile.FundProfileId}; fund-level scope.";
         ProductionCertificationProfileUpdatedText =
-            $"Last retained by {profile.UpdatedBy} at {UtcFormat.FormatUtcTimestamp(profile.UpdatedAtUtc)}.";
+            $"Last retained by {profile.UpdatedBy} at {UtcFormat.FormatDisplayTimestamp(profile.UpdatedAtUtc)}.";
         ProductionCertificationProfileStatusText = statusText;
         NotifyProductionCertificationSaveStateChanged();
     }
@@ -350,7 +350,7 @@ public sealed partial class AccountingConfigureViewModel
         ProductionReadinessStatusText = $"{readiness.Status} | {readiness.Score}/100";
         ProductionReadinessScoreText = $"{readiness.Score}/100";
         ProductionReadinessDetailText =
-            $"{readiness.Components.Count} component(s), {readiness.CriticalIssueCount} critical issue(s), {readiness.WarningIssueCount} warning issue(s); generated {UtcFormat.FormatUtcTimestamp(readiness.GeneratedAtUtc)}.";
+            $"{readiness.Components.Count} component(s), {readiness.CriticalIssueCount} critical issue(s), {readiness.WarningIssueCount} warning issue(s); generated {UtcFormat.FormatDisplayTimestamp(readiness.GeneratedAtUtc)}.";
         ProductionReadinessLedgerBookText = readiness.LedgerBookRollout is null
             ? "Ledger-book rollout assessment is unavailable."
             : $"{readiness.LedgerBookRollout.BookCount} book(s), {readiness.LedgerBookRollout.OpenPeriodCount} open period(s), {readiness.LedgerBookRollout.CriticalIssueCount} critical rollout issue(s); {readiness.LedgerBookWorkflows?.CompletedControlCount ?? 0}/{readiness.LedgerBookWorkflows?.RequiredControlCount ?? 10} workflow control(s).";
@@ -403,7 +403,7 @@ public sealed partial class AccountingConfigureViewModel
             .Select(artifact => new AccountingWorkbenchRow(
                 AccountingWorkbenchPresentation.FormatMigrationArtifactKind(artifact.Kind),
                 artifact.Status.ToString(),
-                $"{AccountingWorkbenchPresentation.FormatMigrationArtifactScope(artifact)}; {artifact.MigratedRecordCount:N0} record(s), {artifact.IssueCount:N0} issue(s); started {UtcFormat.FormatUtcTimestamp(artifact.StartedAtUtc)}{(artifact.CompletedAtUtc.HasValue ? $", completed {UtcFormat.FormatUtcTimestamp(artifact.CompletedAtUtc.Value)}" : string.Empty)}.",
+                $"{AccountingWorkbenchPresentation.FormatMigrationArtifactScope(artifact)}; {artifact.MigratedRecordCount:N0} record(s), {artifact.IssueCount:N0} issue(s); started {UtcFormat.FormatDisplayTimestamp(artifact.StartedAtUtc)}{(artifact.CompletedAtUtc.HasValue ? $", completed {UtcFormat.FormatDisplayTimestamp(artifact.CompletedAtUtc.Value)}" : string.Empty)}.",
                 artifact.EvidenceReferences.Count > 0
                     ? string.Join("; ", artifact.EvidenceReferences)
                     : AccountingWorkbenchPresentation.FormatLedgerDimensionSet(artifact.Dimensions),

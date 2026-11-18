@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TooltipService
+
+Qualified name: <code>Meridian.Wpf.Services.TooltipService</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/TooltipService.cs:14](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L14).
+
+Service for managing contextual tooltips, onboarding tips, and feature discovery. Tracks which tips have been shown to avoid repetition. Uses file-based storage for dismissed tips persistence. Delegates content to the shared TooltipContent in Ui.Services.
+
+```csharp
+public sealed class TooltipService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static TooltipService Instance =&gt; …;</code> | [src/Meridian.Wpf/Services/TooltipService.cs:22](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L22) |  |
+| <code>public FeatureHelp GetFeatureHelp(string featureKey) =&gt; …;</code> | [src/Meridian.Wpf/Services/TooltipService.cs:29](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L29) |  |
+| <code>public bool ShouldShowTip(string tipKey);</code> | [src/Meridian.Wpf/Services/TooltipService.cs:31](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L31) |  |
+| <code>public void DismissTip(string tipKey);</code> | [src/Meridian.Wpf/Services/TooltipService.cs:41](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L41) |  |
+| <code>public void ResetAllTips();</code> | [src/Meridian.Wpf/Services/TooltipService.cs:47](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L47) |  |
+| <code>public IReadOnlyList&lt;OnboardingTip&gt; GetOnboardingTips(string pageKey) =&gt; …;</code> | [src/Meridian.Wpf/Services/TooltipService.cs:54](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L54) |  |
+| <code>public string GetTooltipContent(string featureKey) =&gt; …;</code> | [src/Meridian.Wpf/Services/TooltipService.cs:60](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L60) | Gets formatted tooltip text for a feature (title + description + tips). Can be used to populate WPF ToolTip content on controls. |
+
 ## TradingSafetyCommandService
 
 Qualified name: <code>Meridian.Wpf.Services.TradingSafetyCommandService</code>. Kind: `class`.
@@ -823,6 +847,36 @@ Declared public members:
 | <code>public WorkstationStrategyBriefingApiClient(ApiClientService apiClient);</code> | [src/Meridian.Wpf/Services/WorkstationStrategyBriefingService.cs:24](../../../../src/Meridian.Wpf/Services/WorkstationStrategyBriefingService.cs#L24) |  |
 | <code>public async Task&lt;StrategyBriefingDto?&gt; GetBriefingAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkstationStrategyBriefingService.cs:29](../../../../src/Meridian.Wpf/Services/WorkstationStrategyBriefingService.cs#L29) |  |
 
+## WpfDesktopPreferenceSurface
+
+Qualified name: <code>Meridian.Wpf.Services.WpfDesktopPreferenceSurface</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:15](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L15).
+
+The desktop shell&#x27;s theme, density, keyboard shortcut overrides and notification settings as DesktopOperatorPreferenceSync reads and writes them. Theme and shortcut changes touch UI state, so values applied from the host are marshalled onto the UI thread; the sync may call in from a background continuation. Host shortcut overrides are also written to the local desktop preferences, which stay the cache used when the host cannot be reached.
+
+```csharp
+public sealed class WpfDesktopPreferenceSurface : IDesktopPreferenceSurface, IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WpfDesktopPreferenceSurface(ThemeService themeService, SettingsConfigurationService settings, KeyboardShortcutService shortcuts, NotificationServiceBase notifications);</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:24](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L24) |  |
+| <code>public AppTheme Theme =&gt; …;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:41](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L41) |  |
+| <code>public ShellDensityMode Density =&gt; …;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:43](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L43) |  |
+| <code>public event EventHandler? PreferenceChanged;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:45](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L45) |  |
+| <code>public IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; ShortcutOverrides =&gt; …;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:47](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L47) |  |
+| <code>public event EventHandler? ShortcutOverridesChanged;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:49](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L49) |  |
+| <code>public NotificationSettings Notifications =&gt; …;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:51](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L51) |  |
+| <code>public event EventHandler? NotificationsChanged;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:53](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L53) |  |
+| <code>public void ApplyNotifications(NotificationSettings settings);</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:57](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L57) |  |
+| <code>public void ApplyTheme(AppTheme theme) =&gt; …;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:65](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L65) |  |
+| <code>public void ApplyDensity(ShellDensityMode density) =&gt; …;</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:67](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L67) |  |
+| <code>public void ApplyShortcutOverrides(IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; overrides);</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:71](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L71) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs:114](../../../../src/Meridian.Wpf/Services/WpfDesktopPreferenceSurface.cs#L114) |  |
+
 ## WpfRemoteWorkstationClient
 
 Qualified name: <code>Meridian.Wpf.Services.WpfRemoteWorkstationClient</code>. Kind: `class`.
@@ -1103,52 +1157,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public PageContentFactory(NavigationService navigationService);</code> | [src/Meridian.Wpf/Shell/Services/PageContentFactory.cs:14](../../../../src/Meridian.Wpf/Shell/Services/PageContentFactory.cs#L14) |  |
 | <code>public FrameworkElement CreateContent(string pageTag, object? parameter = null, WorkspaceChromePresentationMode presentationMode = WorkspaceChromePresentationMode.Docked) =&gt; …;</code> | [src/Meridian.Wpf/Shell/Services/PageContentFactory.cs:19](../../../../src/Meridian.Wpf/Shell/Services/PageContentFactory.cs#L19) |  |
-
-## ShellNavigationCoordinator
-
-Qualified name: <code>Meridian.Wpf.Shell.Services.ShellNavigationCoordinator</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:13](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L13).
-
-Resolves navigation routes and coordinates page creation and pane drop behavior.
-
-```csharp
-public sealed class ShellNavigationCoordinator : IShellNavigationCoordinator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ShellNavigationCoordinator(INavigationService navigationService, IShellRouteRegistry routeRegistry, IPageContentFactory pageContentFactory);</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:18](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L18) |  |
-| <code>public IShellRouteRegistry RouteRegistry { get; }</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:28](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L28) |  |
-| <code>public ShellRoute? ResolveRoute(string? pageTag) =&gt; …;</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:30](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L30) |  |
-| <code>public bool IsRouteRegistered(string? pageTag) =&gt; …;</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:32](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L32) |  |
-| <code>public bool NavigateToRoute(string pageTag, object? parameter = null);</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:34](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L34) |  |
-| <code>public PaneDropResult ApplyPaneDrop(PaneHostViewModel paneHost, string? pageTag, int targetPaneIndex, PaneDropAction action = PaneDropAction.Replace);</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:40](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L40) |  |
-| <code>public IReadOnlyList&lt;PaneContentState&gt; GetVisiblePaneContentStates(PaneHostViewModel paneHost);</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:66](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L66) |  |
-| <code>public FrameworkElement CreatePaneContent(PaneContentState state);</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:72](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L72) |  |
-| <code>public void InitializeNavigationFrame(Frame frame);</code> | [src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs:78](../../../../src/Meridian.Wpf/Shell/Services/ShellNavigationCoordinator.cs#L78) |  |
-
-## ShellPageRegistryBuilder
-
-Qualified name: <code>Meridian.Wpf.Shell.Services.ShellPageRegistryBuilder</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:10](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L10).
-
-Combines feature-module page and workspace declarations into a desktop shell registry.
-
-```csharp
-public sealed class ShellPageRegistryBuilder
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ShellPageRegistryBuilder Contribute(IEnumerable&lt;ShellPageDescriptor&gt; pages);</code> | [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:15](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L15) |  |
-| <code>public ShellPageRegistryBuilder ContributeCapability(WorkspaceCapabilityDescriptor capability);</code> | [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:23](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L23) |  |
-| <code>public IShellPageRegistry Build();</code> | [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:31](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L31) |  |
-| <code>public static IShellPageRegistry BuildDefault();</code> | [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:87](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L87) |  |
-| <code>public static ShellPageDescriptor Page&lt;TPage&gt;(string pageTag, string title, string subtitle, string workspaceId, string sectionLabel, string glyph, int order, ShellNavigationVisibilityTier visibilityTier, IReadOnlyList&lt;string&gt;? searchKeywords = null, IReadOnlyList&lt;string&gt;? relatedPageTags = null, IReadOnlyList&lt;string&gt;? aliases = null, bool hideFromDefaultPalette = false) where TPage : class;</code> | [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:115](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L115) |  |
-| <code>public static WorkspacePaneDefinition Pane(string pageTag, PaneDropAction action, WorkspacePaneParameterBinding parameterBinding = WorkspacePaneParameterBinding.None, bool openWithoutBoundParameter = false, string? fallbackPageTag = null, PaneDropAction? fallbackAction = null) =&gt; …;</code> | [src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs:146](../../../../src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs#L146) |  |

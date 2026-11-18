@@ -70,6 +70,48 @@ public partial class App : System.Windows.Application
     private ApiClientService? _apiClientService;
     private readonly CancellationTokenSource _startupCancellation = new();
     private bool _desktopActivated;
+    private DesktopOperatorPreferenceSync? _operatorPreferenceSync;
+    private WpfServices.WpfDesktopPreferenceSurface? _operatorPreferenceSurface;
+
+    /// <summary>
+    /// Applies the operator's host theme, density, desktop shortcut overrides and notification settings and saves desktop
+    /// changes back. A host that cannot be read leaves the desktop local for this run; nothing here
+    /// blocks startup.
+    /// </summary>
+    private void StartOperatorPreferenceSync(CancellationToken ct)
+    {
+        var apiClient = _apiClientService ?? ApiClientService.Instance;
+        _operatorPreferenceSurface = new WpfServices.WpfDesktopPreferenceSurface(
+            WpfServices.ThemeService.Instance,
+            SettingsConfigurationService.Instance,
+            WpfServices.KeyboardShortcutService.Instance,
+            WpfServices.NotificationService.Instance);
+        _operatorPreferenceSync = new DesktopOperatorPreferenceSync(
+            new OperatorPreferencesApiClient(apiClient),
+            _operatorPreferenceSurface);
+        _ = RunOperatorPreferenceSyncAsync(_operatorPreferenceSync, ct);
+    }
+
+    private static async Task RunOperatorPreferenceSyncAsync(DesktopOperatorPreferenceSync sync, CancellationToken ct)
+    {
+        try
+        {
+            await sync.StartAsync(ct).ConfigureAwait(false);
+            WpfServices.LoggingService.Instance.LogInfo(
+                "Operator preference sync started",
+                ("syncing", sync.IsSyncing ? "true" : "false"));
+        }
+        catch (OperationCanceledException)
+        {
+            // Startup was cancelled.
+        }
+        catch (Exception ex)
+        {
+            WpfServices.LoggingService.Instance.LogWarning(
+                "Operator preference sync could not start; theme and density stay local for this run.",
+                ("error", ex.GetType().Name));
+        }
+    }
 
     /// <summary>
     /// Gets the service provider for dependency injection.
@@ -696,6 +738,14 @@ public partial class App : System.Windows.Application
             {
                 WpfServices.ThemeService.Instance.Initialize(mainWindow);
 
+                // The operator's theme and density come from the same host preferences the browser
+                // workstation uses, and desktop changes are saved back there. Fixture runs have no
+                // host session, so they stay local.
+                if (!_isFixtureMode)
+                {
+                    StartOperatorPreferenceSync(ct);
+                }
+
                 // Initialize system tray integration
                 var systemTrayService = Services.GetRequiredService<WpfServices.ISystemTrayService>();
                 systemTrayService.Initialize(mainWindow);
@@ -969,6 +1019,10 @@ public partial class App : System.Windows.Application
         if (_desktopActivated)
             SafeOnExitAsync().GetAwaiter().GetResult();
         StopHostSafely();
+        _operatorPreferenceSync?.Dispose();
+        _operatorPreferenceSync = null;
+        _operatorPreferenceSurface?.Dispose();
+        _operatorPreferenceSurface = null;
         _apiClientService?.Dispose();
         _apiClientService = null;
         WpfServices.SingleInstanceService.Instance.Dispose();

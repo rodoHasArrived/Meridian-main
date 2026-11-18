@@ -833,6 +833,9 @@ public static class UiApiRoutes
     /// <summary>The signed-in operator's default operating scope (C1).</summary>
     public const string WorkstationOperatorScopePreference = "/api/workstation/operator/scope-preference";
 
+    /// <summary>The signed-in operator's presentation preferences (theme, density, time zone, descriptions, shortcuts).</summary>
+    public const string WorkstationOperatorPreferences = "/api/workstation/operator/preferences";
+
     /// <summary>
     /// The entities, funds and fund accounts the calling operator may scope to (P4): read-only, open
     /// to any authenticated workstation operator, filtered to the caller's own scoped grants.

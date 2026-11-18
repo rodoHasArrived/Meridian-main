@@ -6,6 +6,53 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyCounterpartRepricingRow
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyCounterpartRepricingRow</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:453](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L453).
+
+One counterpart line before and after explicit repricing; amounts are the server&#x27;s exact decimals.
+
+```csharp
+public sealed class IntercompanyCounterpartRepricingRow(ManualJournalEntryLineDto? before, ManualJournalEntryLineDto? after)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Account =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:455](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L455) |  |
+| <code>public string Side =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:456](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L456) |  |
+| <code>public string CurrentAmount =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:457](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L457) |  |
+| <code>public string ProposedAmount =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:458](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L458) |  |
+| <code>public string OriginalEvidence =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:459](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L459) |  |
+
+## IntercompanyCounterpartSourceLineRow
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyCounterpartSourceLineRow</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:427](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L427).
+
+The retained line carries its transaction currency; the functional currency belongs to the source book.
+
+```csharp
+public sealed class IntercompanyCounterpartSourceLineRow(IntercompanyProposalSourceLineDto line, string functionalCurrency)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string AccountName =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:429](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L429) |  |
+| <code>public string AccountType =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:430](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L430) |  |
+| <code>public string TransactionCurrency =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:431](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L431) |  |
+| <code>public string FunctionalCurrency =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:432](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L432) |  |
+| <code>public string TransactionDebit =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:433](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L433) |  |
+| <code>public string TransactionCredit =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:434](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L434) |  |
+| <code>public string FunctionalDebit =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:435](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L435) |  |
+| <code>public string FunctionalCredit =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:436](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L436) |  |
+
 ## IntercompanyInterestAccrualLineRow
 
 Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyInterestAccrualLineRow</code>. Kind: `class`.
@@ -1251,6 +1298,58 @@ Declared public members:
 | <code>public DateTime LastChecked { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:21](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L21) |  |
 | <code>public List&lt;SymbolQualitySummary&gt; SymbolSummaries { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:22](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L22) |  |
 
+## DesktopOperatorPreferenceMapping
+
+Qualified name: <code>Meridian.Ui.Services.Services.DesktopOperatorPreferenceMapping</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:18](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L18).
+
+Maps the shared operator preference vocabulary (OperatorPreferenceVocabulary) to the desktop shell&#x27;s own types. The browser has three densities and the desktop shell two, so default and spacious both show as ShellDensityMode.Standard, and a desktop save never narrows an operator&#x27;s browser spacious to default.
+
+```csharp
+public static class DesktopOperatorPreferenceMapping
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static AppTheme? ToAppTheme(string? appearance) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:21](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L21) | The desktop theme for a host appearance, or null for a value the desktop does not know. |
+| <code>public static string ToAppearance(AppTheme theme) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:29](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L29) |  |
+| <code>public static ShellDensityMode? ToShellDensity(string? density) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:37](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L37) | The desktop density for a host density, or null for a value the desktop does not know. |
+| <code>public static string ToHostDensity(ShellDensityMode density, string? currentHostDensity) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:48](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L48) | The host density to save for a desktop density. ShellDensityMode.Standard keeps a stored default or spacious, because both already show as Standard on the desktop. |
+| <code>public static IReadOnlyDictionary&lt;string, OperatorDesktopShortcutDto&gt; ToHostShortcuts(IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; overrides);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:57](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L57) | The host form of the desktop&#x27;s shortcut overrides, sorted by action id. |
+| <code>public static IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; ToDesktopShortcuts(IReadOnlyDictionary&lt;string, OperatorDesktopShortcutDto&gt; host);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:74](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L74) | The desktop form of the host&#x27;s desktop shortcut overrides. |
+| <code>public static bool SameShortcuts(IReadOnlyDictionary&lt;string, OperatorDesktopShortcutDto&gt;? left, IReadOnlyDictionary&lt;string, OperatorDesktopShortcutDto&gt;? right);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:91](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L91) | True when two desktop shortcut override sets hold the same entries. |
+| <code>public static NotificationSettings ToNotificationSettings(OperatorNotificationPreferencesDto host, NotificationSettings current);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:109](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L109) | The desktop notification settings for a host notification set: each value the host holds, otherwise the default (pop-ups on, every type on, quiet hours off from 22:00 to 07:00). A quiet-hours time that does not read as HH:mm keeps its default. The sound choice is desktop-only and kept. |
+| <code>public static OperatorNotificationPreferencesDto ToHostNotifications(NotificationSettings settings);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:129](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L129) | The host form of the desktop notification settings, with every value written out. |
+| <code>public static bool TryResolveTimeZone(string? ianaZone, out TimeZoneInfo zone);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:148](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L148) | Resolves an IANA display time zone with this machine&#x27;s time zone data. False for a missing or unknown zone, in which case the desktop keeps showing times as it does today. |
+
+## DesktopOperatorPreferenceSync
+
+Qualified name: <code>Meridian.Ui.Services.Services.DesktopOperatorPreferenceSync</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:267](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L267).
+
+Keeps the desktop shell&#x27;s theme, density and keyboard shortcut overrides in step with the operator&#x27;s host preferences, the same set the browser workstation syncs (OperatorPreferencesDto). On start, the values the host holds are applied. Theme and density are not saved back: the desktop does not persist its theme, so its startup theme is a default, not an operator choice. Desktop shortcut overrides (OperatorPreferenceValuesDto.DesktopKeyBindings) held by the host replace this desktop&#x27;s, including an empty set (every default). When the host has none yet, this desktop&#x27;s own overrides are saved up, so the first desktop to sync seeds them. When the operator changes the theme or density here, the latest host set is re-read and saved with only the appearance and density replaced; a shortcut change likewise replaces only the desktop shortcut overrides. Browser-only values (time zone, page descriptions, browser shortcut overrides, a spacious density) are kept. Notification choices and quiet hours (OperatorPreferenceValuesDto.Notifications) held by the host replace this desktop&#x27;s at start; a desktop change saves only that set. When the host cannot be read at start (no session, an older host, offline), the desktop stays local for the run and saves nothing. A failed save keeps the local change. The display time zone is applied to Meridian.Ui.Services.DisplayTimeZone, which desktop timestamps are formatted in; it is read at start and again whenever the desktop saves.
+
+```csharp
+public sealed class DesktopOperatorPreferenceSync : IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DesktopOperatorPreferenceSync(IOperatorPreferencesApi api, IDesktopPreferenceSurface surface, Action&lt;TimeZoneInfo?&gt;? applyDisplayTimeZone = null);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:280](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L280) |  |
+| <code>public TimeZoneInfo? DisplayTimeZone { get; private set; }</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:291](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L291) | The operator&#x27;s display time zone from the host, when it resolves on this machine (else null, meaning UTC). |
+| <code>public bool IsSyncing =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:294](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L294) | True once the host was read and local changes are being saved. |
+| <code>public async Task StartAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:297](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L297) | Reads the host set, applies it, and starts saving operator changes. Safe to call once. |
+| <code>public Task SaveLocalChangeAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:410](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L410) | Saves the current desktop theme and density into the operator&#x27;s host set, keeping every other stored value. Exposed for tests; the sync calls it after each operator change. |
+| <code>public Task SaveShortcutOverridesAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:423](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L423) | Saves this desktop&#x27;s shortcut overrides into the operator&#x27;s host set, keeping every other stored value. Exposed for tests; the sync calls it after each shortcut change. |
+| <code>public Task SaveNotificationsAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:435](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L435) | Saves this desktop&#x27;s notification settings into the operator&#x27;s host set, keeping every other stored value. Exposed for tests; the sync calls it after each notification change. |
+| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:492](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L492) |  |
+
 ## DesktopShellPreferences
 
 Qualified name: <code>Meridian.Ui.Services.Services.DesktopShellPreferences</code>. Kind: `record`.
@@ -1337,105 +1436,3 @@ Declared public members:
 | <code>public async Task RecordPresetUsageAsync(string presetId, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:267](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L267) | Records that a preset was used for an export. |
 | <code>public async Task&lt;string&gt; ExportPresetsAsync(string[] presetIds, string destinationPath, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:281](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L281) | Exports presets to a JSON file for sharing. |
 | <code>public async Task&lt;int&gt; ImportPresetsAsync(string filePath, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:301](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L301) | Imports presets from a JSON file. |
-
-## FeatureHelp
-
-Qualified name: <code>Meridian.Ui.Services.Services.FeatureHelp</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/TooltipContent.cs:7](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L7).
-
-Contextual help information for a feature. Shared across desktop platforms.
-
-```csharp
-public sealed class FeatureHelp
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Title { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:9](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L9) |  |
-| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:10](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L10) |  |
-| <code>public string[]? Tips { get; set; }</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:11](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L11) |  |
-| <code>public string? LearnMoreUrl { get; set; }</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:12](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L12) |  |
-| <code>public Dictionary&lt;string, string&gt;? KeyboardShortcuts { get; set; }</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:13](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L13) |  |
-
-## FixtureDataService
-
-Qualified name: <code>Meridian.Ui.Services.Services.FixtureDataService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/FixtureDataService.cs:9](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L9).
-
-Provides canned fixture data for UI development without backend dependency. Enables offline development and deterministic testing scenarios.
-
-```csharp
-public sealed class FixtureDataService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static FixtureDataService Instance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:12](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L12) |  |
-| <code>public FixtureScenario ActiveScenario =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:26](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L26) | Gets the currently active fixture scenario. |
-| <code>public void SetScenario(FixtureScenario scenario);</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:29](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L29) | Sets the active fixture scenario. |
-| <code>public static string GetScenarioLabel(FixtureScenario scenario) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:35](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L35) | Returns a human-readable label for the given scenario. |
-| <code>public StatusResponse GetMockStatusResponse() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:48](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L48) | Gets a mock status response showing a running system. |
-| <code>public StatusResponse GetMockDisconnectedStatus() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:79](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L79) | Gets a mock status response showing a disconnected system. |
-| <code>public TradeDataResponse GetMockTradeData(string symbol) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:91](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L91) | Gets mock trade data for a given symbol. |
-| <code>public QuoteDataResponse GetMockQuoteData(string symbol);</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:105](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L105) | Gets mock quote data for a given symbol. |
-| <code>public BackfillHealthResponse GetMockBackfillHealth() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:128](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L128) | Gets a mock backfill health response showing healthy providers. |
-| <code>public string[] GetMockSymbols() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:160](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L160) | Gets a collection of mock symbols for testing. |
-| <code>public TradesResponse GetMockTradesResponse(string symbol, int count = 10);</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:169](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L169) | Gets mock trades response with multiple trades. |
-| <code>public async Task SimulateNetworkDelayAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:199](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L199) | Simulates network delay for realistic fixture behavior. |
-
-## FixtureModeDetector
-
-Qualified name: <code>Meridian.Ui.Services.Services.FixtureModeDetector</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:23](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L23).
-
-Detects and tracks whether the application is running in fixture/offline mode. Provides a centralized check so UI pages can distinguish intentional demo data from backend-unreachable offline state.
-
-```csharp
-public sealed class FixtureModeDetector
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static FixtureModeDetector Instance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:26](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L26) |  |
-| <code>public bool IsFixtureMode =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:54](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L54) | Gets whether the application is explicitly running in fixture mode. |
-| <code>public bool IsOfflineMode =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:59](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L59) | Gets whether the application is in offline mode (backend unreachable). |
-| <code>public bool IsBackendReachable =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:64](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L64) | Gets whether the backend is currently reachable. |
-| <code>public string? ServerDataProvenanceToken =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:71](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L71) | Non-real data provenance reported by the connected backend (for example seeded when the host is serving a seeded demo workspace), or null when the backend serves real data or has not reported yet. |
-| <code>public bool IsNonLiveMode =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:77](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L77) | Gets whether any non-live mode is active (fixture, offline, or a backend that reports simulated/seeded/sample data). |
-| <code>public FixtureModeKind ModeKind =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:82](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L82) | Gets the normalized non-live mode kind for UI tone selection. |
-| <code>public string ModeLabel =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:92](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L92) | Gets a human-readable mode label for display in the UI banner. |
-| <code>public string BannerColor =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:105](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L105) | Gets the banner background color suggestion. Fixture mode: blue informational, Offline: red. |
-| <code>public void SetFixtureMode(bool enabled);</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:110](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L110) | Sets explicit fixture mode state. |
-| <code>public void ReportServerDataProvenance(string? nonRealProvenanceToken);</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:123](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L123) | Records the data provenance the connected backend reports for the records it serves. Pass a non-real provenance token (simulated, seeded, sample) to surface the persistent shell banner, or null when the backend serves real data. W9-TRUTH-001: a workstation attached to a seeded demo workspace must keep labeling it. |
-| <code>public void UpdateBackendReachability(bool isReachable);</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:144](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L144) | Updates backend reachability state. Automatically triggers offline mode when backend is unreachable. |
-| <code>public string ScenarioLabel =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:159](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L159) | Gets the currently active fixture scenario label for display in the UI. |
-| <code>public FixtureScenario ActiveScenario =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:164](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L164) | Gets the currently active fixture scenario. |
-| <code>public FixtureScenario CycleScenario();</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:171](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L171) | Cycles to the next scenario in the FixtureScenario sequence. No-op when fixture mode is off. |
-| <code>public event EventHandler? ModeChanged;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:189](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L189) | Event raised when fixture/offline mode changes. UI pages should subscribe to this to update their visual state. |
-
-## FixtureModeKind
-
-Qualified name: <code>Meridian.Ui.Services.Services.FixtureModeKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:5](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L5).
-
-```csharp
-public enum FixtureModeKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Live</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:7](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L7) |  |
-| <code>Fixture</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:8](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L8) |  |
-| <code>Offline</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:9](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L9) |  |

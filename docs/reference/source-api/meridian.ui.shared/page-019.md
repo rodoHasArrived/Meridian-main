@@ -278,6 +278,27 @@ Declared public members:
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;WorkflowDefinitionDto&gt; GetWorkflowDefinitions() =&gt; …;</code> | [src/Meridian.Ui.Shared/Workflows/BuiltInWorkflowDefinitionProvider.cs:11](../../../../src/Meridian.Ui.Shared/Workflows/BuiltInWorkflowDefinitionProvider.cs#L11) |  |
 
+## FileOperatorPreferenceStore
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.FileOperatorPreferenceStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:27](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L27).
+
+JSON-backed store under Meridian&#x27;s data root, keyed by tenant, company and user so one operator&#x27;s preferences never reach another. Writes replace the operator&#x27;s whole set through the snapshot store&#x27;s atomic replace, like the default operating scope. The one exception is OperatorPreferenceValuesDto.DesktopKeyBindings: the desktop owns it, so a save that leaves it null keeps the stored set and a browser save never clears it. Values are validated here so a client cannot store arbitrary text; clients still decode defensively because older hosts or other clients may hold values they do not recognise.
+
+```csharp
+public sealed partial class FileOperatorPreferenceStore : JsonFileSnapshotStore<OperatorPreferenceSnapshot>, IOperatorPreferenceStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileOperatorPreferenceStore(string dataRoot, ILogger&lt;FileOperatorPreferenceStore&gt; logger, TimeProvider? timeProvider = null) : base(ResolveSnapshotPath(dataRoot), OperatorPreferenceJsonContext.Default.OperatorPreferenceSnapshot);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:46](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L46) |  |
+| <code>public Task&lt;OperatorPreferencesDto&gt; GetAsync(string operatorKey, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:56](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L56) |  |
+| <code>public async Task&lt;OperatorPreferencesDto&gt; SetAsync(string operatorKey, OperatorPreferenceValuesDto? preferences, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:68](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L68) |  |
+| <code>public static OperatorPreferenceValuesDto? Normalize(OperatorPreferenceValuesDto? preferences);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:114](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L114) | Validates and trims each value and returns null when nothing is set. Throws ArgumentException naming the field for a value outside its allowed set or shape. |
+
 ## FileOperatorScopePreferenceStore
 
 Qualified name: <code>Meridian.Ui.Shared.Workflows.FileOperatorScopePreferenceStore</code>. Kind: `class`.
@@ -339,6 +360,25 @@ Declared public members:
 | <code>public FileWorkflowPresetStore(string dataRoot, ILogger&lt;FileWorkflowPresetStore&gt; logger) : base(ResolveSnapshotPath(dataRoot), WorkflowPresetJsonContext.Default.WorkflowPresetSnapshot);</code> | [src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs:22](../../../../src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs#L22) |  |
 | <code>public Task&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; LoadAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs:28](../../../../src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs#L28) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; UpdateAsync(Func&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;, IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; update, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs:31](../../../../src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs#L31) |  |
+
+## IOperatorPreferenceStore
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.IOperatorPreferenceStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:11](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L11).
+
+Durable per-operator presentation preferences (theme, density, time zone, descriptions, shortcuts, notifications).
+
+```csharp
+public interface IOperatorPreferenceStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;OperatorPreferencesDto&gt; GetAsync(string operatorKey, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:13](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L13) |  |
+| <code>Task&lt;OperatorPreferencesDto&gt; SetAsync(string operatorKey, OperatorPreferenceValuesDto? preferences, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:15](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L15) |  |
 
 ## IOperatorScopePreferenceStore
 
@@ -437,6 +477,26 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; LoadAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowPresetStore.cs:10](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowPresetStore.cs#L10) |  |
 | <code>Task&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; UpdateAsync(Func&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;, IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; update, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowPresetStore.cs:12](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowPresetStore.cs#L12) |  |
+
+## OperatorPreferenceRecord
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.OperatorPreferenceRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:350](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L350).
+
+```csharp
+public sealed record OperatorPreferenceRecord(string OperatorKey, OperatorPreferenceValuesDto Preferences, DateTimeOffset UpdatedAt);
+```
+
+## OperatorPreferenceSnapshot
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.OperatorPreferenceSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:352](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L352).
+
+```csharp
+public sealed record OperatorPreferenceSnapshot(int Version, IReadOnlyList<OperatorPreferenceRecord> Operators);
+```
 
 ## OperatorScopePreferenceRecord
 

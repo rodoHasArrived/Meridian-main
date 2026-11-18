@@ -6,6 +6,157 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TokenRefreshEventArgs
+
+Qualified name: <code>Meridian.Ui.Services.TokenRefreshEventArgs</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:435](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L435).
+
+Event args for successful token refresh.
+
+```csharp
+public sealed class TokenRefreshEventArgs : EventArgs
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string ProviderId { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:437](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L437) |  |
+| <code>public DateTime RefreshedAt { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:438](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L438) |  |
+| <code>public TokenRefreshEventArgs(string providerId, DateTime refreshedAt);</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:440](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L440) |  |
+
+## TokenRefreshFailedEventArgs
+
+Qualified name: <code>Meridian.Ui.Services.TokenRefreshFailedEventArgs</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:450](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L450).
+
+Event args for failed token refresh.
+
+```csharp
+public sealed class TokenRefreshFailedEventArgs : EventArgs
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string ProviderId { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:452](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L452) |  |
+| <code>public string ErrorMessage { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:453](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L453) |  |
+| <code>public TokenRefreshFailedEventArgs(string providerId, string errorMessage);</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:455](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L455) |  |
+
+## TooltipPlacement
+
+Qualified name: <code>Meridian.Ui.Services.TooltipPlacement</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:507](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L507).
+
+Tooltip placement relative to the target element.
+
+```csharp
+public enum TooltipPlacement : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Top</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:509](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L509) |  |
+| <code>Bottom</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:510](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L510) |  |
+| <code>Left</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:511](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L511) |  |
+| <code>Right</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:512](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L512) |  |
+| <code>Center</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:513](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L513) |  |
+
+## TourCategory
+
+Qualified name: <code>Meridian.Ui.Services.TourCategory</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:496](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L496).
+
+Tour category for organization.
+
+```csharp
+public enum TourCategory : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>GettingStarted</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:498](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L498) |  |
+| <code>DataManagement</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:499](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L499) |  |
+| <code>Monitoring</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:500](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L500) |  |
+| <code>Advanced</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:501](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L501) |  |
+
+## TourCompletedEventArgs
+
+Qualified name: <code>Meridian.Ui.Services.TourCompletedEventArgs</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:558](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L558).
+
+Event args for tour completion.
+
+```csharp
+public sealed class TourCompletedEventArgs : EventArgs
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string TourId { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:560](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L560) |  |
+| <code>public int StepsCompleted { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:561](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L561) |  |
+| <code>public TimeSpan Duration { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:562](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L562) |  |
+
+## TourDefinition
+
+Qualified name: <code>Meridian.Ui.Services.TourDefinition</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:472](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L472).
+
+A tour definition with steps.
+
+```csharp
+public sealed class TourDefinition
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Id { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:474](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L474) |  |
+| <code>public string Title { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:475](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L475) |  |
+| <code>public string Description { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:476](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L476) |  |
+| <code>public TourCategory Category { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:477](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L477) |  |
+| <code>public string? TriggerPage { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:478](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L478) |  |
+| <code>public List&lt;TourStep&gt; Steps { get; init; } = new ();</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:479](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L479) |  |
+
+## TourInfo
+
+Qualified name: <code>Meridian.Ui.Services.TourInfo</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:530](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L530).
+
+Tour information for listing.
+
+```csharp
+public sealed class TourInfo
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Id { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:532](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L532) |  |
+| <code>public string Title { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:533](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L533) |  |
+| <code>public string Description { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:534](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L534) |  |
+| <code>public int StepCount { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:535](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L535) |  |
+| <code>public bool IsCompleted { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:536](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L536) |  |
+| <code>public bool IsDismissed { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:537](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L537) |  |
+| <code>public TourCategory Category { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:538](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L538) |  |
+| <code>public int EstimatedDurationMinutes { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:539](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L539) |  |
+
 ## TourSession
 
 Qualified name: <code>Meridian.Ui.Services.TourSession</code>. Kind: `class`.

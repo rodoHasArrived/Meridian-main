@@ -6,6 +6,67 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StorageOptimizationViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.StorageOptimizationViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:17](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L17).
+
+Coordinates storage analytics, optimization analysis, and tier and symbol breakdown presentation.
+
+```csharp
+public sealed class StorageOptimizationViewModel : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StorageOptimizationViewModel() : this((forceRefresh, ct) =&gt; StorageAnalyticsService.Instance.GetAnalyticsAsync(forceRefresh, ct), ct =&gt; StorageAnalyticsService.Instance.GetDriveInfoAsync(ct), async ct =&gt;{ var config = await WpfConfigService.Instance.LoadConfigAsync(); ct.ThrowIfCancellationRequested(); return WpfConfigService.Instance.ResolveDataRoot(config); }, (basePath, options, ct) =&gt; UiStorageOptimizationAdvisorService.Instance.AnalyzeStorageAsync(basePath, options, ct : ct), ct =&gt; UiStorageOptimizationAdvisorService.Instance.GetTierStatisticsAsync(ct));</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:55](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L55) |  |
+| <code>public IAsyncRelayCommand RefreshAnalyticsCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:94](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L94) |  |
+| <code>public IAsyncRelayCommand RunAnalysisCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:96](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L96) |  |
+| <code>public IAsyncRelayCommand ViewTierStatisticsCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:98](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L98) |  |
+| <code>public ObservableCollection&lt;StorageOptimizationSymbolRow&gt; SymbolBreakdownRows { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:100](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L100) |  |
+| <code>public string OverviewStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:102](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L102) |  |
+| <code>public string OverviewStatusTone { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:108](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L108) |  |
+| <code>public bool IsAnalyticsLoading { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:114](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L114) |  |
+| <code>public bool CanRefreshAnalytics =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:127](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L127) |  |
+| <code>public string TotalSizeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:129](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L129) |  |
+| <code>public string TotalFilesText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:135](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L135) |  |
+| <code>public string DailyGrowthText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:141](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L141) |  |
+| <code>public string DaysUntilFullText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:147](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L147) |  |
+| <code>public string TradeSizeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:153](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L153) |  |
+| <code>public string TradeFilesText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:159](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L159) |  |
+| <code>public string DepthSizeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:165](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L165) |  |
+| <code>public string DepthFilesText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:171](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L171) |  |
+| <code>public string HistoricalSizeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:177](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L177) |  |
+| <code>public string HistoricalFilesText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:183](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L183) |  |
+| <code>public string SymbolBreakdownStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:189](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L189) |  |
+| <code>public string SymbolBreakdownTone { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:195](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L195) |  |
+| <code>public bool HasSymbolBreakdown =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:201](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L201) |  |
+| <code>public bool IsSymbolBreakdownEmpty =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:203](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L203) |  |
+| <code>public string DriveNameText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:205](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L205) |  |
+| <code>public string FreeSpaceText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:211](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L211) |  |
+| <code>public string UsedPercentText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:217](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L217) |  |
+| <code>public double DriveUsedPercent { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:223](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L223) |  |
+| <code>public string DriveUsageTone { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:229](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L229) |  |
+| <code>public bool IsOptimizationActionRunning { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:235](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L235) |  |
+| <code>public bool CanRunOptimizationActions =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:249](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L249) |  |
+| <code>public string AnalysisResultText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:251](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L251) |  |
+| <code>public bool HasAnalysisResult =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:263](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L263) |  |
+| <code>public string AnalysisResultTone { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:265](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L265) |  |
+| <code>public Task LoadAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs:271](../../../../src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs#L271) |  |
+
+## StoragePosture
+
+Qualified name: <code>Meridian.Wpf.ViewModels.StoragePosture</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/ViewModels/StorageViewModel.cs:406](../../../../src/Meridian.Wpf/ViewModels/StorageViewModel.cs#L406).
+
+```csharp
+public sealed record StoragePosture(string Title, string Detail, string GrowthText, string CapacityHorizonText, string LastScanText);
+```
+
 ## StorageViewModel
 
 Qualified name: <code>Meridian.Wpf.ViewModels.StorageViewModel</code>. Kind: `class`.
@@ -1515,60 +1576,3 @@ Declared public members:
 | <code>public async Task&lt;string&gt; GetExportJsonAsync(string workspaceId);</code> | [src/Meridian.Wpf/ViewModels/WorkspacePageViewModel.cs:244](../../../../src/Meridian.Wpf/ViewModels/WorkspacePageViewModel.cs#L244) |  |
 | <code>public Task ImportFromJsonAsync(string? json) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkspacePageViewModel.cs:271](../../../../src/Meridian.Wpf/ViewModels/WorkspacePageViewModel.cs#L271) |  |
 | <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/WorkspacePageViewModel.cs:274](../../../../src/Meridian.Wpf/ViewModels/WorkspacePageViewModel.cs#L274) |  |
-
-## WorkspaceShellViewModelBase
-
-Qualified name: <code>Meridian.Wpf.ViewModels.WorkspaceShellViewModelBase</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:20](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L20).
-
-Provides workspace definition, attention ribbon, and command-group state for shell view models.
-
-```csharp
-public abstract class WorkspaceShellViewModelBase : WorkspaceViewModelBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public event EventHandler&lt;string&gt;? AttentionPrimaryActionRequested;</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:33](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L33) |  |
-| <code>public WorkspaceShellDefinition WorkspaceDefinition { get; }</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:35](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L35) |  |
-| <code>public WorkspaceAttentionRibbonViewModel AttentionRibbon { get; protected set; }</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:37](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L37) |  |
-| <code>public WorkspaceCommandGroup CommandGroup { get; set; }</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:43](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L43) |  |
-
-## WorkstationScopeOptionsViewModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.WorkstationScopeOptionsViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:13](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L13).
-
-Desktop scope picker backed by the shared GET /api/workstation/scope-options seam: the entities, funds and fund accounts the operator may scope to, with a chosen entity narrowing the funds and a chosen entity or fund narrowing the accounts, by the same rule the browser workstation&#x27;s scope picker applies (WorkstationScopeOptionsNarrowing).
-
-```csharp
-public sealed class WorkstationScopeOptionsViewModel : BindableBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WorkstationScopeOptionsViewModel(IWorkstationScopeOptionsApiClient client);</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:35](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L35) |  |
-| <code>public ReadOnlyObservableCollection&lt;WorkstationScopeEntityOptionDto&gt; Entities { get; }</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:47](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L47) |  |
-| <code>public ReadOnlyObservableCollection&lt;WorkstationScopeFundOptionDto&gt; Funds { get; }</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:49](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L49) |  |
-| <code>public ReadOnlyObservableCollection&lt;WorkstationScopeAccountOptionDto&gt; Accounts { get; }</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:51](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L51) |  |
-| <code>public IAsyncRelayCommand ReloadCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:53](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L53) |  |
-| <code>public IRelayCommand ClearSelectionCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:55](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L55) |  |
-| <code>public WorkstationScopeOptionsSource Source { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:58](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L58) | Where the current lists came from. |
-| <code>public bool IsAvailable =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:71](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L71) | True when lists loaded (from the seam or the 404 fallback) and narrowing applies. |
-| <code>public bool IsLoading { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:73](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L73) |  |
-| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:86](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L86) | Why the lists look the way they do: loaded counts, fallback source, or failure reason. |
-| <code>public string NarrowingText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:93](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L93) | How the chosen entity/fund narrowed the lists, including accounts left out; empty when nothing is narrowed. |
-| <code>public WorkstationScopeEntityOptionDto? SelectedEntity { get; set; }</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:99](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L99) |  |
-| <code>public WorkstationScopeFundOptionDto? SelectedFund { get; set; }</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:119](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L119) |  |
-| <code>public WorkstationScopeAccountOptionDto? SelectedAccount { get; set; }</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:133](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L133) |  |
-| <code>public bool HasSelection =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:147](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L147) |  |
-| <code>public string? SelectedScopeContextKey =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:154](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L154) | The narrowest pick as an operating-context key (account, else fund, else entity), in the WorkstationOperatingContext.CreateContextKey form the desktop context catalog uses; null when nothing is picked. |
-| <code>public string? SelectedScopeDisplayName =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:164](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L164) | Display name of the narrowest pick, for status messages; null when nothing is picked. |
-| <code>public Task InitializeAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:168](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L168) | Loads the options once; later calls are no-ops until ReloadCommand runs. |
-| <code>public async Task LoadAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs:172](../../../../src/Meridian.Wpf/ViewModels/WorkstationScopeOptionsViewModel.cs#L172) | Loads (or reloads) the options from the shared seam and re-applies the current picks. |

@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## Strategy
+
+Qualified name: <code>Meridian.Wpf.Copy.WorkspaceCopyCatalog.Strategy</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:113](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L113).
+
+Provides titles, descriptions, and scope copy for the strategy workspace.
+
+```csharp
+public static class Strategy
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string WorkspaceId = WorkstationWorkspaceCatalog.StrategyKey;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:115](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L115) |  |
+| <code>public static readonly WorkspaceDescriptorCopy Descriptor = new (WorkspaceId, WorkstationWorkspaceCatalog.StrategyLabel, WorkstationWorkspaceCatalog.StrategyDesktopDescription, WorkstationWorkspaceCatalog.StrategyDesktopSummary, WorkstationWorkspaceCatalog.StrategyDesktopTileSummary, WorkstationWorkspaceCatalog.StrategyDesktopShellDisplayName);</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:116](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L116) |  |
+| <code>public const string ShellTitle = &quot;Strategy Workspace&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:124](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L124) |  |
+| <code>public const string ShellSubtitle = &quot;Review recent strategy runs and open the one you want to work on.&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:125](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L125) |  |
+| <code>public const string PrimaryScopeLabel = &quot;Strategy&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:126](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L126) |  |
+
 ## Trading
 
 Qualified name: <code>Meridian.Wpf.Copy.WorkspaceCopyCatalog.Trading</code>. Kind: `class`.
@@ -1127,39 +1149,3 @@ Represents a single action (button) in the PageActionBar.
 ```csharp
 public sealed record ActionEntry(string Label, ICommand Command, string? Icon = null, string? Tooltip = null, bool IsPrimary = false);
 ```
-
-## ActiveRunContext
-
-Qualified name: <code>Meridian.Wpf.Models.ActiveRunContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:31](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L31).
-
-Active run context shared by the workstation shell pages.
-
-```csharp
-public sealed class ActiveRunContext
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string RunId { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:33](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L33) |  |
-| <code>public string StrategyName { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:34](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L34) |  |
-| <code>public string ModeLabel { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:35](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L35) |  |
-| <code>public string StatusLabel { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:36](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L36) |  |
-| <code>public string FundScopeLabel { get; set; } = &quot;Global scope&quot;;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:37](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L37) |  |
-| <code>public string? ParentRunId { get; set; }</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:38](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L38) |  |
-| <code>public string PortfolioPreview { get; set; } = &quot;Portfolio preview unavailable.&quot;;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:39](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L39) |  |
-| <code>public string LedgerPreview { get; set; } = &quot;Ledger preview unavailable.&quot;;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:40](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L40) |  |
-| <code>public string RiskSummary { get; set; } = &quot;Risk summary unavailable.&quot;;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:41](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L41) |  |
-| <code>public TradingWorkspaceStatusItem PromotionStatus { get; set; } = new ();</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:42](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L42) |  |
-| <code>public TradingWorkspaceStatusItem AuditStatus { get; set; } = new ();</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:43](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L43) |  |
-| <code>public TradingWorkspaceStatusItem ValidationStatus { get; set; } = new ();</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:44](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L44) |  |
-| <code>public string PromotionStatusLabel =&gt; …;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:45](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L45) |  |
-| <code>public string PromotionStatusDetail =&gt; …;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:46](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L46) |  |
-| <code>public string AuditStatusLabel =&gt; …;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:47](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L47) |  |
-| <code>public string AuditStatusDetail =&gt; …;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:48](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L48) |  |
-| <code>public string ValidationStatusLabel =&gt; …;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:49](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L49) |  |
-| <code>public string ValidationStatusDetail =&gt; …;</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:50](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L50) |  |
-| <code>public bool CanPromoteToPaper { get; set; }</code> | [src/Meridian.Wpf/Models/WorkspaceShellModels.cs:51](../../../../src/Meridian.Wpf/Models/WorkspaceShellModels.cs#L51) |  |
