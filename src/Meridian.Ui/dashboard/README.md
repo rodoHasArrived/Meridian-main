@@ -42,9 +42,18 @@ Focused coverage: `data-screen.symbol-mapping-editor.test.tsx` and existing cano
 The Data provider workspace includes an on-demand streaming failover editor. It reads authoritative
 saved settings, distinguishes unavailable runtime state, and refreshes the active provider after a
 committed switch/reset. Settings and rule create/edit/delete use shared guarded API saves and show
-pending host restart; relaxed rule thresholds require an audited reason. Focused coverage lives in
+what the host reported (`describeConfigurationApply` over `changeImpact.lastApply`): "Applied live",
+"Provider routing updated live" or "Pending host restart" with per-setting reasons; without host
+evidence the banner stays "Pending host restart". Relaxed rule thresholds require an audited reason. Focused coverage lives in
 `data-screen.failover.test.tsx` and the shared `FailoverEndpointTests`.
 Deleting a rule also requires an explicit operator reason and retains the removed protection snapshot.
+
+Data-quality watch includes an on-demand Cross-provider tolerances panel
+(`data-quality-watch.cross-provider-policy.tsx`, API in `lib/api/cross-provider-tolerance.api.ts`):
+bounded tolerances, volume mode, asset-class overrides, a required reason when loosening, audit
+history and a preview of what the draft would have flagged over the last 30 days for one symbol,
+with its provider-call cost shown first. Focused coverage:
+`data-quality-watch.cross-provider-policy.test.tsx`.
 
 ## Fixed-income workflow access
 
@@ -3420,6 +3429,16 @@ npm --prefix src/Meridian.Ui/dashboard run test
 npm --prefix src/Meridian.Ui/dashboard run build
 npm --prefix src/Meridian.Ui/dashboard run smoke:workstation
 ```
+
+`smoke:workstation` also audits six task routes (Today, Accounting reconciliation, exceptions and
+ledger, Portfolio NAV, Trading) with axe at WCAG 2.0–2.2 A/AA, and focuses each control in the
+reconciliation inspector to check nothing covers it (SC 2.4.11 Focus Not Obscured). Serious and
+critical axe findings fail unless `scripts/smoke-workstation-axe-baseline.json` lists them as
+`route:rule`; that baseline only shrinks (`npm run smoke:workstation -- --write-axe-baseline` locks
+in a removal and refuses any addition). `--skip-a11y` skips both checks. Set
+`CHROMIUM_EXECUTABLE_PATH` or `MERIDIAN_CHROMIUM_PATH` to use a system Chromium. The helpers are
+covered by `scripts/smoke-workstation-a11y.test.mjs` (`npm run test:tooling`). The smoke is not
+part of `scripts/ci.sh`.
 
 Linting is a correctness-only ESLint flat-config baseline (`eslint.config.mjs`): typescript-eslint
 recommended, react-hooks rules, and a local kebab-case filename rule with grandfathered

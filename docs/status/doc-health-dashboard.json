@@ -1,11 +1,11 @@
 {
-  "total_files": 1283,
+  "total_files": 1289,
   "orphaned_count": 396,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 303,
   "health_score": 85,
-  "signal_digest": "sha256:73ef428c7207c9455ca1cb2b02350dedd5f5fc62bc0e1bcc2c624fb17d5f7e75",
+  "signal_digest": "sha256:de0f249790425638c193d85cc8af22febbcf3e47773bb13a0987278712616fff",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -4028,6 +4028,13 @@
       "stale": false
     },
     {
+      "path": "docs/reference/source-api/meridian.application/page-013.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/reference/source-api/meridian.audit/page-001.md",
       "has_heading": true,
       "todo_count": 0,
@@ -4609,6 +4616,13 @@
       "stale": false
     },
     {
+      "path": "docs/reference/source-api/meridian.contracts/page-079.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/reference/source-api/meridian.core/page-001.md",
       "has_heading": true,
       "todo_count": 0,
@@ -4638,6 +4652,13 @@
     },
     {
       "path": "docs/reference/source-api/meridian.core/page-005.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.core/page-006.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5485,6 +5506,13 @@
     },
     {
       "path": "docs/reference/source-api/meridian.ui.shared/page-019.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.shared/page-020.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

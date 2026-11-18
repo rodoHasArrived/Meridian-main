@@ -141,8 +141,8 @@ public sealed class FailoverEndpointTests : IDisposable, IClassFixture<EndpointT
     {
         var payload = new
         {
-            PrimaryProviderId = "test-provider-1",
-            BackupProviderIds = new[] { "test-provider-2" },
+            PrimaryProviderId = "test-alpaca",
+            BackupProviderIds = new[] { "test-backup" },
             FailoverThreshold = 5,
             RecoveryThreshold = 10,
             DataQualityThreshold = 80,
@@ -174,6 +174,25 @@ public sealed class FailoverEndpointTests : IDisposable, IClassFixture<EndpointT
             response,
             "https://meridian.io/errors/validation",
             "Validation Failed");
+    }
+
+    [Fact]
+    public async Task CreateFailoverRule_WithUnconfiguredProviderId_ReturnsBadRequestAndSavesNothing()
+    {
+        var payload = new
+        {
+            Id = "misidentified-backup",
+            PrimaryProviderId = "test-alpaca",
+            BackupProviderIds = new[] { "polygon-typo" }
+        };
+        var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+
+        var response = await _client.PostAsync("/api/failover/rules", content);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        (await response.Content.ReadAsStringAsync()).Should().Contain("polygon-typo");
+        var store = _fixture.Services.GetRequiredService<UiConfigStore>();
+        store.Load().DataSources!.FailoverRules.Should().NotContain(rule => rule.Id == "misidentified-backup");
     }
 
     [Fact]
@@ -213,8 +232,8 @@ public sealed class FailoverEndpointTests : IDisposable, IClassFixture<EndpointT
         // First create a rule
         var payload = new
         {
-            PrimaryProviderId = "del-primary",
-            BackupProviderIds = new[] { "del-backup" },
+            PrimaryProviderId = "test-alpaca",
+            BackupProviderIds = new[] { "test-backup" },
             FailoverThreshold = 3
         };
         var createResponse = await _client.PostAsync("/api/failover/rules",

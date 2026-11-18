@@ -116,7 +116,8 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
         ILogger? log = null,
         BackfillProgressTracker? progressTracker = null,
         IReadOnlyDictionary<string, ProviderValidationProfile>? validationProfiles = null,
-        ProviderRateLimitHistory? rateLimitHistory = null)
+        ProviderRateLimitHistory? rateLimitHistory = null,
+        Func<CrossProviderTolerancePolicy>? crossValidationPolicy = null)
     {
         // Fabricated bars are a last resort even when their numeric priority is lower.
         _providers = providers
@@ -153,7 +154,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
             failureBackoffDuration ?? TimeSpan.FromMinutes(5));
 
         // Best-effort cross-provider validation (only invoked when enabled).
-        _validator = new CrossProviderValidator(_providers, ResolveSymbolForProviderAsync, _log);
+        _validator = new CrossProviderValidator(_providers, ResolveSymbolForProviderAsync, _log, crossValidationPolicy);
     }
 
     private ProviderValidationProfile ResolveValidationProfile(string provider) =>

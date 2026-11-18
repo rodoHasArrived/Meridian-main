@@ -45,6 +45,16 @@ The current runtime cannot rebuild providers in process, so pending provider rec
 `RequiresRestart=true`; clients must not imply that a connection retry applies new provider options.
 Later live saves retain outstanding restart/reconnect changes; reverting a field to its host baseline
 clears that field's pending state. The journal stores value hashes rather than configuration values.
+After a durable save, `ConfigStore` offers the changed paths to `IConfigurationRuntimeApplier`s attached
+to that file (`ConfigurationRuntimeAppliers`, process-wide because desktop mode hosts the UI server and
+collector in separate containers). Applied paths stop being pending; deferred paths stay
+`RestartHost` with a reason in `ConfigurationChangeStatus.LastApply`; applier failures never fail
+the save. `ProviderConfigReconciler` (attached by `CollectorModeRunner` when streaming failover runs)
+applies failover rule thresholds, backup order among providers with a live client, the health-check
+interval and source enable/disable live, and reports settings the runtime does not read as
+`NoRuntimeEffect`. `CrossProviderPolicyApplier` applies `DataQuality.CrossProvider` tolerances to the
+running `CrossProviderComparisonService`. The collector also publishes its coordinator to
+`StreamingFailoverRegistry.Process` and honours `Sources[*].Enabled = false` at startup.
 `SaveAsync` now also refuses to overwrite a malformed existing authoritative document.
 
 Provider routing rejects disabled connections and policy-gated fallbacks consistently across direct
