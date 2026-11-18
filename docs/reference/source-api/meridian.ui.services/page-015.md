@@ -6,6 +6,53 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolCheckpoint
+
+Qualified name: <code>Meridian.Ui.Services.SymbolCheckpoint</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs:476](../../../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs#L476).
+
+Per-symbol checkpoint within a backfill job.
+
+```csharp
+public sealed class SymbolCheckpoint
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;symbol&quot;)] public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs:479](../../../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs#L479) |  |
+| <code>[JsonPropertyName(&quot;status&quot;)] public SymbolCheckpointStatus Status { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs:482](../../../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs#L482) |  |
+| <code>[JsonPropertyName(&quot;barsDownloaded&quot;)] public int BarsDownloaded { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs:485](../../../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs#L485) |  |
+| <code>[JsonPropertyName(&quot;lastProcessedDate&quot;)] public string? LastProcessedDate { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs:488](../../../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs#L488) |  |
+| <code>[JsonPropertyName(&quot;errorMessage&quot;)] public string? ErrorMessage { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs:491](../../../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs#L491) |  |
+| <code>[JsonPropertyName(&quot;retryCount&quot;)] public int RetryCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs:494](../../../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs#L494) |  |
+| <code>[JsonPropertyName(&quot;lastUpdated&quot;)] public DateTime? LastUpdated { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs:497](../../../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs#L497) |  |
+| <code>[JsonPropertyName(&quot;completedAt&quot;)] public DateTime? CompletedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs:500](../../../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs#L500) |  |
+
+## SymbolCheckpointStatus
+
+Qualified name: <code>Meridian.Ui.Services.SymbolCheckpointStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs:520](../../../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs#L520).
+
+Per-symbol checkpoint status.
+
+```csharp
+public enum SymbolCheckpointStatus : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Pending</code> | [src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs:522](../../../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs#L522) |  |
+| <code>Downloading</code> | [src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs:523](../../../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs#L523) |  |
+| <code>Completed</code> | [src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs:524](../../../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs#L524) |  |
+| <code>Failed</code> | [src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs:525](../../../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs#L525) |  |
+| <code>Skipped</code> | [src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs:526](../../../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs#L526) |  |
+
 ## SymbolCompleteness
 
 Qualified name: <code>Meridian.Ui.Services.SymbolCompleteness</code>. Kind: `class`.
@@ -1157,46 +1204,3 @@ Declared public members:
 | <code>public double PercentageOfTotal { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1531](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1531) |  |
 | <code>public DateTime? OldestFile { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1532](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1532) |  |
 | <code>public DateTime? NewestFile { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1533](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1533) |  |
-
-## TierUsage
-
-Qualified name: <code>Meridian.Ui.Services.TierUsage</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:232](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L232).
-
-Usage statistics for a single storage tier.
-
-```csharp
-public sealed class TierUsage
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string TierName { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:234](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L234) |  |
-| <code>public long SizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:235](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L235) |  |
-| <code>public long FileCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:236](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L236) |  |
-| <code>public double PercentOfTotal { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:237](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L237) |  |
-| <code>public DateOnly? OldestData { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:238](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L238) |  |
-| <code>public DateOnly? NewestData { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:239](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L239) |  |
-
-## TierUsageResponse
-
-Qualified name: <code>Meridian.Ui.Services.TierUsageResponse</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:222](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L222).
-
-HTTP response payload for tier usage.
-
-```csharp
-public sealed class TierUsageResponse
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public List&lt;TierUsage&gt;? TierUsage { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:224](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L224) |  |
-| <code>public long TotalSizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:225](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L225) |  |
-| <code>public long TotalFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:226](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L226) |  |

@@ -94,8 +94,44 @@ unstructured or compounding; when a floating revision declares no fixing lag or 
 approved fixing; when the calendar is missing; when a posted, unreversed
 accrual already covers part of the window; or when the source book has no single open period
 containing the posting date. A cross-currency loan converts through the governed FX authority or is
-unavailable. Fees are not calculated: a fixed fee has no declared amount period and a percentage fee
-has no measured base in terms schema v1.
+unavailable. Fees follow their own rule, described next.
+
+## Governed fixed management fees
+
+A fixed management fee is calculated under rule `intercompany-fee-v1`
+([ADR-029](../adr/029-governed-intercompany-fixed-management-fees.md)) once its terms declare what the amount
+covers: `PerPeriod` (each schedule period) or `PerAnnum` (one year, with a declared day count). Without that
+declaration, or for a percentage fee, nothing is calculated, because a percentage fee has no measured base.
+
+An operator requests the fee from an approved `ManagementFee` accounting profile in the browser ("Accrue fee")
+or from the WPF Management fee tab, choosing only the book and the window. Each day is charged under the
+approved profile revision applicable on that day. A per-period fee earns covered days over the period's days,
+so a whole period earns exactly the declared amount; a per-annum fee earns the declared day-count fraction of
+a year. Slices are summed unrounded and rounded once.
+
+Direction comes from the agreement's declared roles. The service provider's book debits its fee receivable
+and credits fee revenue; the recipient's book debits fee expense and credits its fee payable. The fee becomes
+a draft in the source book's ordinary review, pinned to its evidence like an interest accrual, and its
+counterpart is proposed to the other entity only after it posts. Nothing posts automatically, a window already
+covered by a posted, unreversed fee of the profile is refused, and a draft whose profile or legal revision has
+since been retired or re-pinned cannot be submitted, approved or posted.
+
+### Floating rates and reviewed fixings
+
+A floating loan declares its index, its spread in basis points and a fixing lag of 0 to 10 business
+days. For each schedule period, the rate is the approved fixing of that index observed the lag before
+the period's accrual start on the schedule calendar, plus the spread, and it holds for the whole
+period. Exactly that date's approved value is used; a missing value refuses the whole window and no
+nearby, latest or carried-forward rate is used. In-arrears and averaged conventions, floors, caps and
+compounding are not calculated.
+
+Fixings are tenant-scoped reference data at `/api/ledger/intercompany/rate-fixings`, managed in the
+browser's Rate fixings tab and the WPF Rate fixings tab. An operator with ledger management records
+what the publisher showed, with a source and justification; someone else approves it before any
+accrual reads it. A correction is a new proposed value and replaces the approved value only once it is
+approved; a rejection needs a reason and leaves the approved value in force. Every step is retained
+append-only. Each floating slice of an accrual pins the fixing it used, and a draft whose pinned
+fixing has since been corrected cannot be submitted, approved or posted until it is recomputed.
 
 ### Floating rates and reviewed fixings
 

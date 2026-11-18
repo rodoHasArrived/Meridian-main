@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IFileDistributionTransport
+
+Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.IFileDistributionTransport</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:344](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L344).
+
+Transport seam that actually dispatches a distributed file to one recipient. A production transport retrieves the deliverable from FileDistributionRequest.ContentLocation, verifies it against FileDistributionRequest.ContentSha256, and dispatches it over the recipient&#x27;s channel. The middle-office service records Delivered only when the transport reports success, so a real (SFTP/email/portal) transport injected in production yields honest delivery evidence.
+
+```csharp
+public interface IFileDistributionTransport
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>FileDeliveryOutcome Deliver(DistributionRecipient recipient, FileDistributionRequest request);</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:346](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L346) |  |
+
 ## LoopbackFileDistributionTransport
 
 Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.LoopbackFileDistributionTransport</code>. Kind: `class`.
@@ -1139,23 +1157,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public OperationsCloseChecklistSnapshotDto? CloseChecklistSnapshot { get; init; }</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:93](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L93) |  |
-
-## OperationsWorkflowAuditHashing
-
-Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.OperationsWorkflowAuditHashing</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowAuditHashing.cs:12](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowAuditHashing.cs#L12).
-
-Creates audit hashes and validates operations workflow timelines and hash chains.
-
-```csharp
-public static class OperationsWorkflowAuditHashing
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static OperationsWorkflowAuditDto Create(OperationsWorkflowAuditDraft draft, string? previousHash, DateTimeOffset occurredAtUtc);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowAuditHashing.cs:14](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowAuditHashing.cs#L14) |  |
-| <code>public static bool TryValidateTimeline(IReadOnlyList&lt;OperationsTimelineEntryDto&gt; timeline, out string blockerCode, out string message) =&gt; …;</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowAuditHashing.cs:75](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowAuditHashing.cs#L75) |  |
-| <code>public static bool TryValidateChain(IReadOnlyList&lt;OperationsWorkflowAuditDto&gt; timeline, out string blockerCode, out string message);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowAuditHashing.cs:101](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowAuditHashing.cs#L101) |  |

@@ -40,7 +40,8 @@ public static partial class IntercompanyAgreementRules
             Fail("Unsupported structured agreement terms schema version.");
         if ((terms.RateBasis is { } basis && !Enum.IsDefined(basis)) ||
             (terms.DayCount is { } dayCount && !Enum.IsDefined(dayCount)) ||
-            (terms.Compounding is { } compounding && !Enum.IsDefined(compounding)))
+            (terms.Compounding is { } compounding && !Enum.IsDefined(compounding)) ||
+            (terms.FixedFeeBasis is { } feeBasis && !Enum.IsDefined(feeBasis)))
             Fail("Unknown rate basis, day count or compounding declaration.");
         if (terms.Schedule is { } schedule && (!Enum.IsDefined(schedule.Frequency) ||
             !Enum.IsDefined(schedule.BusinessDayConvention) || schedule.SettlementBusinessDays is < 0 or > 3660))
@@ -90,10 +91,17 @@ public static partial class IntercompanyAgreementRules
                 Fail("Loan terms cannot contain fee or allocation fields.");
             return;
         }
-        if (HasLoanFields(terms) || draft.Terms?.FixedAnnualRate is not null)
+        // A per-annum fixed fee declares the day count that measures its year; every other loan field stays refused.
+        var perAnnumFee = draft.AgreementType == IntercompanyAgreementTypeDto.ManagementFee
+            && terms.FixedFeeBasis == IntercompanyFixedFeeBasisDto.PerAnnum;
+        if (HasLoanFields(perAnnumFee ? terms with { DayCount = null } : terms) || draft.Terms?.FixedAnnualRate is not null)
             Fail("Loan rate fields are not supported for this agreement type.");
         if (draft.AgreementType == IntercompanyAgreementTypeDto.ManagementFee)
         {
+            if (terms.FixedFeeBasis is not null && terms.FixedFeeAmount is null)
+                Fail("A fixed-fee basis applies only to a fixed management fee amount.");
+            if (perAnnumFee && terms.DayCount is null)
+                Fail("A per-annum fixed fee declares the day count that measures its year.");
             if ((terms.FixedFeeAmount is null) == (terms.AnnualFeeRate is null) || terms.FixedFeeAmount < 0 || terms.AnnualFeeRate is < 0 or > 1m)
                 Fail("Management fees require one nonnegative fixed amount or annual decimal rate between 0 and 1.");
             if (terms.AnnualFeeRate is not null && string.IsNullOrWhiteSpace(terms.CalculationBaseReference))
@@ -124,6 +132,6 @@ public static partial class IntercompanyAgreementRules
     /// <summary>Upper bound on a declared in-advance fixing lag.</summary>
     public const int MaximumFixingLagBusinessDays = 10;
     private static bool HasFeeFields(IntercompanyStructuredTermsDto terms) => terms.FixedFeeAmount is not null ||
-        terms.AnnualFeeRate is not null || terms.CalculationBaseReference is not null;
+        terms.AnnualFeeRate is not null || terms.CalculationBaseReference is not null || terms.FixedFeeBasis is not null;
     private static bool HasAllocationFields(IntercompanyStructuredTermsDto terms) => terms.Allocations is not null || terms.AllocationDriverReference is not null;
 }

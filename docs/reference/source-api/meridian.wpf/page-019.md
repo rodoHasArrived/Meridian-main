@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AuditReportItem
+
+Qualified name: <code>Meridian.Wpf.Views.RetentionAssurancePage.AuditReportItem</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:191](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L191).
+
+Presents a retention audit report&#x27;s outcome, summary, retained size, and timestamp.
+
+```csharp
+public sealed class AuditReportItem
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string StatusText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:193](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L193) |  |
+| <code>public Brush StatusColor { get; set; } = Brushes.Gray;</code> | [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:194](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L194) |  |
+| <code>public string Summary { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:195](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L195) |  |
+| <code>public string SizeText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:196](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L196) |  |
+| <code>public string TimeText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:197](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L197) |  |
+
 ## LegalHoldItem
 
 Qualified name: <code>Meridian.Wpf.Views.RetentionAssurancePage.LegalHoldItem</code>. Kind: `class`.
@@ -1081,29 +1103,3 @@ Declared public members:
 | <code>public string BodyAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs:61](../../../../src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs#L61) |  |
 | <code>public string TitleText { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs:67](../../../../src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs#L67) |  |
 | <code>public string SubtitleText { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs:73](../../../../src/Meridian.Wpf/Views/WorkspaceDialogChromeControl.xaml.cs#L73) |  |
-
-## WorkspaceEvidenceStripControl
-
-Qualified name: <code>Meridian.Wpf.Views.WorkspaceEvidenceStripControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs:9](../../../../src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs#L9).
-
-Hosts workflow evidence summaries and primary and secondary actions.
-
-```csharp
-public partial class WorkspaceEvidenceStripControl : UserControl
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly DependencyProperty StripAutomationIdProperty = DependencyProperty.Register(nameof(StripAutomationId), typeof(string), typeof(WorkspaceEvidenceStripControl), new PropertyMetadata(&quot;WorkspaceEvidenceStrip&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs:11](../../../../src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs#L11) |  |
-| <code>public static readonly DependencyProperty WorkflowSummaryStripAutomationIdProperty = DependencyProperty.Register(nameof(WorkflowSummaryStripAutomationId), typeof(string), typeof(WorkspaceEvidenceStripControl), new PropertyMetadata(&quot;WorkflowSummaryStrip&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs:14](../../../../src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs#L14) |  |
-| <code>public static readonly DependencyProperty PrimaryActionButtonAutomationIdProperty = DependencyProperty.Register(nameof(PrimaryActionButtonAutomationId), typeof(string), typeof(WorkspaceEvidenceStripControl), new PropertyMetadata(&quot;PrimaryWorkflowActionButton&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs:17](../../../../src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs#L17) |  |
-| <code>public static readonly DependencyProperty SecondaryToggleButtonAutomationIdProperty = DependencyProperty.Register(nameof(SecondaryToggleButtonAutomationId), typeof(string), typeof(WorkspaceEvidenceStripControl), new PropertyMetadata(&quot;SecondaryWorkflowToggleButton&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs:20](../../../../src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs#L20) |  |
-| <code>public WorkspaceEvidenceStripControl();</code> | [src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs:23](../../../../src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs#L23) |  |
-| <code>public string StripAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs:28](../../../../src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs#L28) |  |
-| <code>public string WorkflowSummaryStripAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs:34](../../../../src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs#L34) |  |
-| <code>public string PrimaryActionButtonAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs:40](../../../../src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs#L40) |  |
-| <code>public string SecondaryToggleButtonAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs:46](../../../../src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs#L46) |  |

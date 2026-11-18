@@ -6,6 +6,49 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TierUsage
+
+Qualified name: <code>Meridian.Ui.Services.TierUsage</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:232](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L232).
+
+Usage statistics for a single storage tier.
+
+```csharp
+public sealed class TierUsage
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string TierName { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:234](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L234) |  |
+| <code>public long SizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:235](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L235) |  |
+| <code>public long FileCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:236](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L236) |  |
+| <code>public double PercentOfTotal { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:237](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L237) |  |
+| <code>public DateOnly? OldestData { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:238](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L238) |  |
+| <code>public DateOnly? NewestData { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:239](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L239) |  |
+
+## TierUsageResponse
+
+Qualified name: <code>Meridian.Ui.Services.TierUsageResponse</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:222](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L222).
+
+HTTP response payload for tier usage.
+
+```csharp
+public sealed class TierUsageResponse
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public List&lt;TierUsage&gt;? TierUsage { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:224](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L224) |  |
+| <code>public long TotalSizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:225](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L225) |  |
+| <code>public long TotalFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:226](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L226) |  |
+
 ## TierUsageResult
 
 Qualified name: <code>Meridian.Ui.Services.TierUsageResult</code>. Kind: `class`.

@@ -1415,6 +1415,7 @@ Meridian-main
 │   │   ├── 026-stored-curves-and-valuation-seam.md
 │   │   ├── 027-single-economic-model-consolidation.md
 │   │   ├── 028-governed-intercompany-interest-accrual.md
+│   │   ├── 029-governed-intercompany-fixed-management-fees.md
 │   │   ├── _template.md
 │   │   └── README.md
 │   ├── ai
@@ -1888,6 +1889,7 @@ Meridian-main
 │   │   │   │   ├── fund-governance-contracts-page-01.md
 │   │   │   │   ├── fund-governance-contracts-page-02.md
 │   │   │   │   ├── fund-governance-contracts-page-03.md
+│   │   │   │   ├── fund-governance-contracts-page-04.md
 │   │   │   │   ├── fund-governance-contracts.md
 │   │   │   │   ├── identity-access-contracts.md
 │   │   │   │   ├── ledger-contracts-page-01.md
@@ -1919,6 +1921,7 @@ Meridian-main
 │   │   │   │   ├── contracts-fund-governance-contracts-page-01.mmd
 │   │   │   │   ├── contracts-fund-governance-contracts-page-02.mmd
 │   │   │   │   ├── contracts-fund-governance-contracts-page-03.mmd
+│   │   │   │   ├── contracts-fund-governance-contracts-page-04.mmd
 │   │   │   │   ├── contracts-identity-access-contracts.mmd
 │   │   │   │   ├── contracts-ledger-contracts-page-01.mmd
 │   │   │   │   ├── contracts-ledger-contracts-page-02.mmd
@@ -5321,6 +5324,7 @@ Meridian-main
 │   │   │   ├── IntercompanyAgreementService.Reads.cs
 │   │   │   ├── IntercompanyAgreementTimeline.cs
 │   │   │   ├── IntercompanyExternalReviewValidation.cs
+│   │   │   ├── IntercompanyFeeAccrualPreviewService.cs
 │   │   │   ├── IntercompanyRateFixingRules.cs
 │   │   │   ├── IntercompanyRateFixingService.cs
 │   │   │   ├── IntercompanyStructuredTermsPreviewService.cs
@@ -6016,6 +6020,7 @@ Meridian-main
 │   │   │   ├── IntercompanyAgreementDtos.cs
 │   │   │   ├── IntercompanyAgreementJournalLineDtos.cs
 │   │   │   ├── IntercompanyExternalReviewDtos.cs
+│   │   │   ├── IntercompanyFeeAccrualDtos.cs
 │   │   │   ├── IntercompanyRateFixingDtos.cs
 │   │   │   ├── IntercompanyStructuredTermsDtos.cs
 │   │   │   ├── IntercompanyStructuredTermsJsonContext.cs
@@ -6058,6 +6063,7 @@ Meridian-main
 │   │   │   ├── IntercompanyAccrualEvidenceDtos.cs
 │   │   │   ├── IntercompanyBalanceConfirmationDtos.cs
 │   │   │   ├── IntercompanyBalanceScheduleDtos.cs
+│   │   │   ├── IntercompanyFeeAccrualEvidenceDtos.cs
 │   │   │   ├── IntercompanyObligationMonitorDtos.cs
 │   │   │   ├── IntercompanyProposalDtos.cs
 │   │   │   ├── LedgerAccountingArrangementDimensions.cs
@@ -6907,6 +6913,7 @@ Meridian-main
 │   │   │   ├── IntercompanyBalanceConfirmationService.cs
 │   │   │   ├── IntercompanyBalanceScheduleService.cs
 │   │   │   ├── IntercompanyCounterpartReversalBuilder.cs
+│   │   │   ├── IntercompanyFeeAccrualSourceBuilder.cs
 │   │   │   ├── IntercompanyJournalFamily.cs
 │   │   │   ├── IntercompanyLedgerPostingAuthority.cs
 │   │   │   ├── IntercompanyObligationMonitorService.cs
@@ -10001,6 +10008,8 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.entity-interest-accrual.test.tsx
 │   │   │   │   │   ├── accounting-screen.entity-interest-accrual.tsx
 │   │   │   │   │   ├── accounting-screen.entity-legacy-coverage.tsx
+│   │   │   │   │   ├── accounting-screen.entity-management-fee.test.tsx
+│   │   │   │   │   ├── accounting-screen.entity-management-fee.tsx
 │   │   │   │   │   ├── accounting-screen.entity-obligations.test.tsx
 │   │   │   │   │   ├── accounting-screen.entity-obligations.tsx
 │   │   │   │   │   ├── accounting-screen.entity-operations.shared.tsx
@@ -10568,6 +10577,7 @@ Meridian-main
 │   │   │   │   │   ├── instrument-accounting.ts
 │   │   │   │   │   ├── intercompany-agreements.ts
 │   │   │   │   │   ├── intercompany-confirmations.ts
+│   │   │   │   │   ├── intercompany-fees.ts
 │   │   │   │   │   ├── intercompany-obligations.ts
 │   │   │   │   │   ├── intercompany-rate-fixings.ts
 │   │   │   │   │   ├── jest-axe.d.ts
@@ -10689,6 +10699,7 @@ Meridian-main
 │   │   │   │   ├── IntercompanyBalanceConfirmationWorkspace.cs
 │   │   │   │   ├── IntercompanyCounterpartQueueWorkspace.cs
 │   │   │   │   ├── IntercompanyInterestAccrualWorkspace.cs
+│   │   │   │   ├── IntercompanyManagementFeeWorkspace.cs
 │   │   │   │   ├── IntercompanyRateFixingWorkspace.cs
 │   │   │   │   ├── OnboardingShadowWorkspace.cs
 │   │   │   │   ├── PostedLedgerProjection.cs
@@ -10699,6 +10710,7 @@ Meridian-main
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.Choices.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.Confirmations.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.cs
+│   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.Fees.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.LegacyCoverage.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.Obligations.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.Proposals.cs
@@ -11276,6 +11288,7 @@ Meridian-main
 │   │   │   ├── IntercompanyAccrualDraftService.cs
 │   │   │   ├── IntercompanyAgreementAuthorities.cs
 │   │   │   ├── IntercompanyAgreementJournalProjection.cs
+│   │   │   ├── IntercompanyFeeAccrualDraftService.cs
 │   │   │   ├── IntercompanyP1P2ServiceRegistration.cs
 │   │   │   ├── IntercompanyProposalDeliveryService.cs
 │   │   │   ├── InvestmentAccountingTransactionLabService.cs
@@ -12210,6 +12223,8 @@ Meridian-main
 │   │   │   ├── IntercompanyCounterpartProposalsControl.xaml.cs
 │   │   │   ├── IntercompanyInterestAccrualControl.xaml
 │   │   │   ├── IntercompanyInterestAccrualControl.xaml.cs
+│   │   │   ├── IntercompanyManagementFeeControl.xaml
+│   │   │   ├── IntercompanyManagementFeeControl.xaml.cs
 │   │   │   ├── IntercompanyRateFixingsControl.xaml
 │   │   │   ├── IntercompanyRateFixingsControl.xaml.cs
 │   │   │   ├── KeyboardShortcutsPage.xaml
@@ -12722,6 +12737,7 @@ Meridian-main
 │   │   ├── IntercompanyAgreementServiceTests.cs
 │   │   ├── IntercompanyAgreementServiceTests.ExternalReview.cs
 │   │   ├── IntercompanyAgreementServiceTests.Lifecycle.cs
+│   │   ├── IntercompanyFeeAccrualPreviewServiceTests.cs
 │   │   ├── IntercompanyFloatingAccrualPreviewTests.cs
 │   │   ├── IntercompanyRateFixingServiceTests.cs
 │   │   ├── IntercompanyStructuredDecimalTests.cs
@@ -13478,6 +13494,7 @@ Meridian-main
 │   │   │   │   ├── IntercompanyBalanceConfirmationServiceTests.cs
 │   │   │   │   ├── IntercompanyBalanceScheduleTests.cs
 │   │   │   │   ├── IntercompanyCounterpartReversalBuilderTests.cs
+│   │   │   │   ├── IntercompanyFeeAccrualSourceBuilderTests.cs
 │   │   │   │   ├── IntercompanyObligationExpiryChronologyTests.cs
 │   │   │   │   ├── IntercompanyObligationMonitorServiceTests.cs
 │   │   │   │   └── IntercompanyProposalDraftBuilderTests.cs
@@ -14831,6 +14848,7 @@ Meridian-main
 │   │   │   ├── AccountingConfigurationServiceTests.ConsolidationChartRecovery.cs
 │   │   │   ├── AccountingConfigurationServiceTests.cs
 │   │   │   ├── AccountingConfigurationServiceTests.IntercompanyAccrual.cs
+│   │   │   ├── AccountingConfigurationServiceTests.IntercompanyFee.cs
 │   │   │   ├── AccountingConfigurationServiceTests.ManualAuditRecovery.cs
 │   │   │   ├── AccountingConfigurationServiceTests.ManualRecoveryArchive.cs
 │   │   │   ├── AccountingConfigurationServiceTests.ManualRecoveryScope.cs
@@ -14954,6 +14972,7 @@ Meridian-main
 │   │   │   ├── IntercompanyBalanceConfirmationEndpointTests.cs
 │   │   │   ├── IntercompanyCloseAdvisoryAuthorizationTests.cs
 │   │   │   ├── IntercompanyCloseAdvisoryMembershipTests.cs
+│   │   │   ├── IntercompanyFeeAccrualDraftServiceTests.cs
 │   │   │   ├── IntercompanyObligationEndpointTests.cs
 │   │   │   ├── IntercompanyProposalBreakAgingTests.cs
 │   │   │   ├── IntercompanyProposalDeliveryRetryTests.cs
@@ -15323,6 +15342,7 @@ Meridian-main
 │   │   │   ├── IntercompanyBookChoiceTests.cs
 │   │   │   ├── IntercompanyCounterpartQueueWorkspaceTests.cs
 │   │   │   ├── IntercompanyInterestAccrualWorkspaceTests.cs
+│   │   │   ├── IntercompanyManagementFeeWorkspaceTests.cs
 │   │   │   ├── IntercompanyRateFixingWorkspaceTests.cs
 │   │   │   ├── LeanIntegrationServiceTests.cs
 │   │   │   ├── LiveDataServiceTests.cs
@@ -15642,6 +15662,7 @@ Meridian-main
 │   │   │   ├── IntercompanyNativeControlSmokeTests.cs
 │   │   │   ├── IntercompanyNativeControlSmokeTests.Fixtures.cs
 │   │   │   ├── IntercompanyNativeControlSmokeTests.InterestAccrual.cs
+│   │   │   ├── IntercompanyNativeControlSmokeTests.ManagementFee.cs
 │   │   │   ├── IntercompanyNativeControlSmokeTests.RateFixings.cs
 │   │   │   ├── LifecycleControlPageSmokeTests.cs
 │   │   │   ├── MainPageLaunchNavigationTests.cs

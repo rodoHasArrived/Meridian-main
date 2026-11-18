@@ -30,6 +30,10 @@ through trusted workbench intake. It never submits, approves or posts. The workb
 accrual evidence against client saves, blocks review when lines no longer match it, refuses a draft
 whose window a posted accrual already covers, and carries the evidence onto the posted journal.
 
+`IntercompanyFeeAccrualDraftService` backs `/api/ledger/intercompany/fees/preview` and `/drafts`; the journal
+workbench refuses an overlapping posted fee and rechecks fee authority before review or posting. See
+[governed fixed management fees](../../docs/domain/intercompany-agreements.md#governed-fixed-management-fees).
+
 `IntercompanyAccrualDraftService` resolves the approved fixings of each declared floating index before
 computing. `IntercompanyRateFixingEndpoints` serves `/api/ledger/intercompany/rate-fixings` (list,
 propose and `/{id}/decisions`) with exact-decimal strings; mutations need tenant scope and ledger

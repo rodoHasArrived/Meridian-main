@@ -20,6 +20,10 @@ record external legal review while ordinary independent review remains available
 revisions retain the same separate audit facts. See
 [terms and review boundaries](../../docs/domain/intercompany-agreements.md).
 
+`IntercompanyFeeAccrualPreviewService` is the pure calculator for fixed management fees under rule
+`intercompany-fee-v1`: per-period fees prorate by covered days, per-annum fees by the declared day count.
+See [governed fixed management fees](../../docs/domain/intercompany-agreements.md#governed-fixed-management-fees).
+
 `IntercompanyAccrualPreviewService` computes floating slices under rule `intercompany-accrual-v2` from
 the approved fixing of each period plus the spread, and refuses a window with a missing fixing.
 `IntercompanyRateFixingRules` and `IntercompanyRateFixingService` own maker-checker fixing history;

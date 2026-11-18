@@ -18,6 +18,8 @@ export const entityOperationEndpoints = {
   breaks: (bookId: string) => `/api/ledger/intercompany/breaks?sourceBookId=${encodeURIComponent(bookId)}`,
   accrualPreview: "/api/ledger/intercompany/accruals/preview",
   accrualDrafts: "/api/ledger/intercompany/accruals/drafts",
+  feePreview: "/api/ledger/intercompany/fees/preview",
+  feeDrafts: "/api/ledger/intercompany/fees/drafts",
   rateFixings: "/api/ledger/intercompany/rate-fixings",
   rateFixingRange: (indexReference: string, from: string, to: string) => `/api/ledger/intercompany/rate-fixings?${new URLSearchParams({ indexReference, from, to })}`,
   rateFixingDecisions: (fixingId: string) => `/api/ledger/intercompany/rate-fixings/${encodeURIComponent(fixingId)}/decisions`,

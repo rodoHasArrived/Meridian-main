@@ -53,6 +53,29 @@ Declared public members:
 | <code>public string FunctionalDebit =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:435](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L435) |  |
 | <code>public string FunctionalCredit =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:436](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L436) |  |
 
+## IntercompanyFeeSliceRow
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyFeeSliceRow</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs:292](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs#L292).
+
+One homogeneous fee slice; every figure is the server&#x27;s exact decimal.
+
+```csharp
+public sealed class IntercompanyFeeSliceRow(IntercompanyFeeAccrualSliceDto slice)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Days =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs:294](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs#L294) |  |
+| <code>public string Period =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs:295](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs#L295) |  |
+| <code>public string DeclaredFee =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs:296](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs#L296) |  |
+| <code>public string Fraction =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs:297](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs#L297) |  |
+| <code>public string UnroundedAmount =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs:299](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs#L299) |  |
+| <code>public string Authority =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs:300](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs#L300) |  |
+
 ## IntercompanyInterestAccrualLineRow
 
 Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyInterestAccrualLineRow</code>. Kind: `class`.
@@ -151,6 +174,47 @@ Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgr
 ```csharp
 public sealed record IntercompanyLegacyCoverageCandidate(Guid LedgerBookId, Guid JournalEntryId, Guid EntryId, string SourceLineDigest, string AccountName, string AccountType, decimal Debit, decimal Credit, DateOnly EffectiveDate);
 ```
+
+## IntercompanyManagementFeeWorkspace
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyManagementFeeWorkspace</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs:17](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs#L17).
+
+Desktop presentation state for requesting a governed fixed management-fee accrual (rule intercompany-fee-v1). The operator chooses the book, the approved management-fee profile and the window; the fee, its basis, the direction and the amount come from the shared intercompany API, and a draft is bound to the evidence digest of the preview the operator saw. Nothing is calculated here.
+
+```csharp
+public sealed partial class IntercompanyManagementFeeWorkspace : ObservableObject, IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyManagementFeeWorkspace(IWorkstationIntercompanyAgreementApiClient client);</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs:32](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs#L32) |  |
+| <code>public ObservableCollection&lt;IntercompanyChoice&gt; BookChoices { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs:41](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs#L41) | Books the signed-in account can see; choosing one sets SourceBook. |
+| <code>public ObservableCollection&lt;IntercompanyChoice&gt; FeeProfileChoices { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs:43](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs#L43) | Approved ManagementFee profiles that map the chosen book today. |
+| <code>public ObservableCollection&lt;IntercompanyFeeSliceRow&gt; Slices { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs:44](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs#L44) |  |
+| <code>public ObservableCollection&lt;IntercompanyInterestAccrualLineRow&gt; Lines { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs:45](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs#L45) |  |
+| <code>public ObservableCollection&lt;string&gt; Refusals { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs:46](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs#L46) |  |
+| <code>public IAsyncRelayCommand LoadChoicesCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs:47](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs#L47) |  |
+| <code>public IAsyncRelayCommand PreviewCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs:48](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs#L48) |  |
+| <code>public IAsyncRelayCommand CreateDraftCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs:49](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs#L49) |  |
+| <code>public Task ProfileChoicesLoad { get; private set; } = Task.CompletedTask;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs:51](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs#L51) | The latest profile read for the chosen book; completed when no read is outstanding. |
+| <code>public string ChoicesStatus { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs:52](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs#L52) |  |
+| <code>public bool IsBusy { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs:53](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs#L53) |  |
+| <code>public bool CanManageLedger { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs:54](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs#L54) |  |
+| <code>public string PermissionNote =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs:55](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs#L55) |  |
+| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs:58](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs#L58) |  |
+| <code>public string Summary { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs:60](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs#L60) | The previewed amount, direction and journal date, or the reason no amount is shown. |
+| <code>public string Evidence { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs:61](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs#L61) |  |
+| <code>public string DraftStatus { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs:62](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs#L62) |  |
+| <code>public string SourceBook { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs:63](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs#L63) |  |
+| <code>public string FeeProfile { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs:72](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs#L72) |  |
+| <code>public string AccrualFrom { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs:74](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs#L74) | First charged day (yyyy-MM-dd). |
+| <code>public string AccrualTo { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs:76](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs#L76) | First day not charged (yyyy-MM-dd); the journal is dated the day before. |
+| <code>public void ResetSession();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs:243](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs#L243) | Clear prior-session evidence and invalidate every outstanding response on account changes. |
+| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs:266](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyManagementFeeWorkspace.cs#L266) |  |
 
 ## IntercompanyOperationCapabilities
 
@@ -332,6 +396,19 @@ Declared public members:
 | <code>Task&lt;ApiResponse&lt;IntercompanyAgreementDetailDto&gt;&gt; GetAsync(Guid agreementId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs:11](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs#L11) |  |
 | <code>Task&lt;ApiResponse&lt;IntercompanyAgreementJournalLinesDto&gt;&gt; GetJournalLinesAsync(Guid agreementId, Guid ledgerBookId, DateOnly asOf, string? cursor = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs:12](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs#L12) |  |
 | <code>Task&lt;ApiResponse&lt;IntercompanyAgreementCommandResultDto&gt;&gt; ExecuteAsync(string action, IntercompanyAgreementCommandDto command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs:13](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs#L13) |  |
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Fees.cs:7](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Fees.cs#L7).
+
+```csharp
+public partial interface IWorkstationIntercompanyAgreementApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ApiResponse&lt;IntercompanyFeeAccrualProposalDto&gt;&gt; PreviewFeeAccrualAsync(IntercompanyFeeAccrualRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Fees.cs:10](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Fees.cs#L10) | Read-only fixed management-fee computation over the operator&#x27;s selection; the server resolves every input. |
+| <code>Task&lt;ApiResponse&lt;ManualJournalEntryDraftDto&gt;&gt; CreateFeeAccrualDraftAsync(CreateIntercompanyFeeAccrualDraftRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Fees.cs:13](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Fees.cs#L13) | Retains the previewed fee as a source-book review draft. It never approves or posts. |
 
 Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.LegacyCoverage.cs:10](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.LegacyCoverage.cs#L10).
 
@@ -695,6 +772,19 @@ Declared public members:
 | <code>public async Task&lt;ApiResponse&lt;IntercompanyAgreementDetailDto&gt;&gt; GetAsync(Guid agreementId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs:36](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs#L36) |  |
 | <code>public async Task&lt;ApiResponse&lt;IntercompanyAgreementJournalLinesDto&gt;&gt; GetJournalLinesAsync(Guid agreementId, Guid ledgerBookId, DateOnly asOf, string? cursor = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs:44](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs#L44) |  |
 | <code>public async Task&lt;ApiResponse&lt;IntercompanyAgreementCommandResultDto&gt;&gt; ExecuteAsync(string action, IntercompanyAgreementCommandDto command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs:53](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs#L53) |  |
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Fees.cs:17](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Fees.cs#L17).
+
+```csharp
+public sealed partial class WorkstationIntercompanyAgreementApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;ApiResponse&lt;IntercompanyFeeAccrualProposalDto&gt;&gt; PreviewFeeAccrualAsync(IntercompanyFeeAccrualRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Fees.cs:22](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Fees.cs#L22) |  |
+| <code>public async Task&lt;ApiResponse&lt;ManualJournalEntryDraftDto&gt;&gt; CreateFeeAccrualDraftAsync(CreateIntercompanyFeeAccrualDraftRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Fees.cs:40](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Fees.cs#L40) |  |
 
 Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.LegacyCoverage.cs:24](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.LegacyCoverage.cs#L24).
 
@@ -1364,56 +1454,3 @@ Declared public members:
 | <code>public async Task&lt;QualityCheckResult?&gt; RunQualityCheckAsync(string path, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:281](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L281) |  |
 | <code>public async Task&lt;List&lt;DataGapInfo&gt;&gt; GetDataGapsAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:284](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L284) |  |
 | <code>public async Task&lt;IntegrityVerificationResult&gt; VerifySymbolIntegrityAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:303](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L303) |  |
-
-## DataQualitySummary
-
-Qualified name: <code>Meridian.Ui.Services.Services.DataQualitySummary</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:12](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L12).
-
-Summarizes file health, alerts, and per-symbol quality at the last check.
-
-```csharp
-public sealed class DataQualitySummary
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public double OverallScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:14](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L14) |  |
-| <code>public int TotalFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:15](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L15) |  |
-| <code>public int HealthyFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:16](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L16) |  |
-| <code>public int WarningFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:17](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L17) |  |
-| <code>public int CriticalFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:18](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L18) |  |
-| <code>public int ActiveAlerts { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:19](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L19) |  |
-| <code>public int UnacknowledgedAlerts { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:20](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L20) |  |
-| <code>public DateTime LastChecked { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:21](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L21) |  |
-| <code>public List&lt;SymbolQualitySummary&gt; SymbolSummaries { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:22](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L22) |  |
-
-## DesktopOperatorPreferenceMapping
-
-Qualified name: <code>Meridian.Ui.Services.Services.DesktopOperatorPreferenceMapping</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:18](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L18).
-
-Maps the shared operator preference vocabulary (OperatorPreferenceVocabulary) to the desktop shell&#x27;s own types. The browser has three densities and the desktop shell two, so default and spacious both show as ShellDensityMode.Standard, and a desktop save never narrows an operator&#x27;s browser spacious to default.
-
-```csharp
-public static class DesktopOperatorPreferenceMapping
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static AppTheme? ToAppTheme(string? appearance) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:21](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L21) | The desktop theme for a host appearance, or null for a value the desktop does not know. |
-| <code>public static string ToAppearance(AppTheme theme) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:29](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L29) |  |
-| <code>public static ShellDensityMode? ToShellDensity(string? density) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:37](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L37) | The desktop density for a host density, or null for a value the desktop does not know. |
-| <code>public static string ToHostDensity(ShellDensityMode density, string? currentHostDensity) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:48](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L48) | The host density to save for a desktop density. ShellDensityMode.Standard keeps a stored default or spacious, because both already show as Standard on the desktop. |
-| <code>public static IReadOnlyDictionary&lt;string, OperatorDesktopShortcutDto&gt; ToHostShortcuts(IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; overrides);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:57](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L57) | The host form of the desktop&#x27;s shortcut overrides, sorted by action id. |
-| <code>public static IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; ToDesktopShortcuts(IReadOnlyDictionary&lt;string, OperatorDesktopShortcutDto&gt; host);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:74](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L74) | The desktop form of the host&#x27;s desktop shortcut overrides. |
-| <code>public static bool SameShortcuts(IReadOnlyDictionary&lt;string, OperatorDesktopShortcutDto&gt;? left, IReadOnlyDictionary&lt;string, OperatorDesktopShortcutDto&gt;? right);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:91](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L91) | True when two desktop shortcut override sets hold the same entries. |
-| <code>public static NotificationSettings ToNotificationSettings(OperatorNotificationPreferencesDto host, NotificationSettings current);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:109](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L109) | The desktop notification settings for a host notification set: each value the host holds, otherwise the default (pop-ups on, every type on, quiet hours off from 22:00 to 07:00). A quiet-hours time that does not read as HH:mm keeps its default. The sound choice is desktop-only and kept. |
-| <code>public static OperatorNotificationPreferencesDto ToHostNotifications(NotificationSettings settings);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:129](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L129) | The host form of the desktop notification settings, with every value written out. |
-| <code>public static bool TryResolveTimeZone(string? ianaZone, out TimeZoneInfo zone);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:148](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L148) | Resolves an IANA display time zone with this machine&#x27;s time zone data. False for a missing or unknown zone, in which case the desktop keeps showing times as it does today. |

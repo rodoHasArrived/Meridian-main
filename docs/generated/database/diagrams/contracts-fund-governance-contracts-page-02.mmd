@@ -297,6 +297,8 @@ classDiagram
     }
     class Meridian_Contracts_FundStructure_IIntercompanyAccrualPreviewService["IIntercompanyAccrualPreviewService"] {
     }
+    class Meridian_Contracts_FundStructure_IIntercompanyFeeAccrualPreviewService["IIntercompanyFeeAccrualPreviewService"] {
+    }
     class Meridian_Contracts_FundStructure_IIntercompanyRateFixingStore["IIntercompanyRateFixingStore"] {
     }
     class Meridian_Contracts_FundStructure_IIntercompanyStructuredTermsPreviewService["IIntercompanyStructuredTermsPreviewService"] {
@@ -585,14 +587,6 @@ classDiagram
     }
     class Meridian_Contracts_FundStructure_IntercompanyAgreementReviewIntegrity["IntercompanyAgreementReviewIntegrity"] {
     }
-    class Meridian_Contracts_FundStructure_IntercompanyAgreementReviewPayloadDto["IntercompanyAgreementReviewPayloadDto"] {
-        +Guid AgreementId
-        +int? BaseAgreementVersion
-        +IntercompanyAgreementDraftDto Draft
-        +int? PredecessorAgreementVersion
-        +Guid ProposalId
-        +string? Rationale
-    }
     Meridian_Contracts_FundStructure_FundStructureGraphDto --> Meridian_Contracts_FundStructure_FundStructureNodeDto
     Meridian_Contracts_FundStructure_FundStructureNodeDto --> Meridian_Contracts_FundStructure_FundStructureNodeKindDto
     Meridian_Contracts_FundStructure_FundStructureQuery --> Meridian_Contracts_FundStructure_FundStructureNodeKindDto
@@ -650,4 +644,3 @@ classDiagram
     Meridian_Contracts_FundStructure_IntercompanyAgreementProposalDto --> Meridian_Contracts_FundStructure_IntercompanyAgreementActionDto
     Meridian_Contracts_FundStructure_IntercompanyAgreementProposalDto --> Meridian_Contracts_FundStructure_IntercompanyAgreementDraftDto
     Meridian_Contracts_FundStructure_IntercompanyAgreementProposalDto --> Meridian_Contracts_FundStructure_IntercompanyAgreementProposalStateDto
-    Meridian_Contracts_FundStructure_IntercompanyAgreementReviewPayloadDto --> Meridian_Contracts_FundStructure_IntercompanyAgreementDraftDto

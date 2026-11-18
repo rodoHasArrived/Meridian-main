@@ -6,6 +6,66 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EndpointDefinitionDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.EndpointDefinitionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:188](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L188).
+
+```csharp
+public sealed record EndpointDefinitionDto(string EndpointKey, ProviderCapabilityKindDto Capability, ProviderIntegrationHttpMethodDto Method, string Path, IReadOnlyDictionary<string, string> Headers, IReadOnlyDictionary<string, string> Query, string? RequestBodyTemplate, EndpointDependencyDto? DependsOn, EndpointPaginationDto Pagination, EndpointResponseShapeDto Response);
+```
+
+## EndpointDependencyDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.EndpointDependencyDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:171](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L171).
+
+```csharp
+public sealed record EndpointDependencyDto(string EndpointKey, string OutputPath, string ParameterName);
+```
+
+## EndpointPaginationDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.EndpointPaginationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:176](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L176).
+
+```csharp
+public sealed record EndpointPaginationDto(ProviderIntegrationPaginationTypeDto Type, string? CursorPath, string? CursorParam, string? NextUrlPath, int? PageSize);
+```
+
+## EndpointResponseShapeDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.EndpointResponseShapeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:183](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L183).
+
+```csharp
+public sealed record EndpointResponseShapeDto(string RecordsPath, string? SchemaFingerprint, IReadOnlyList<string> RequiredPaths);
+```
+
+## FieldMappingDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.FieldMappingDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:204](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L204).
+
+```csharp
+public sealed record FieldMappingDto(ProviderCapabilityKindDto Capability, string SourcePath, string TargetField, TransformRuleDto? Transform, bool Required, ProviderMappingConfidenceDto Confidence, string? DefaultValue, string? ConstantValue);
+```
+
+## IntegrationStagingRecordDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.IntegrationStagingRecordDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:411](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L411).
+
+```csharp
+public sealed record IntegrationStagingRecordDto(string StagingRecordId, string SyncRunId, string ConnectionId, ProviderCapabilityKindDto Capability, string RawPayloadId, string? SourceRecordId, string DedupeKey, JsonElement MappedRecord, IReadOnlyList<ValidationIssueDto> ValidationWarnings, ProviderIntegrationProcessingStatusDto Status, DateTimeOffset CreatedAt);
+```
+
 ## IntegrationTypeDto
 
 Qualified name: <code>Meridian.Contracts.Integrations.IntegrationTypeDto</code>. Kind: `enum`.
@@ -684,71 +744,4 @@ Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:354
 
 ```csharp
 public sealed record ProviderIntegrationQuarantineReviewDto(string ConnectionId, IReadOnlyList<string> SyncRunIds, IReadOnlyList<QuarantinedRecordDto> Records, IReadOnlyList<ProviderIntegrationQuarantineIssueGroupDto> IssueGroups, IReadOnlyList<ProviderIntegrationQuarantineDecisionDto> Decisions, int TotalQuarantinedRecords, int CriticalIssueCount, int WarningIssueCount, int PendingReviewRecordCount, int DecisionedRecordCount, int ReplayRequestedRecordCount, int IgnoredRecordCount, int CashPositionCandidateCount);
-```
-
-## ProviderIntegrationReconciliationHandoffHistoryDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationReconciliationHandoffHistoryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:540](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L540).
-
-```csharp
-public sealed record ProviderIntegrationReconciliationHandoffHistoryDto(string ConnectionId, IReadOnlyList<ProviderIntegrationReconciliationHandoffRecordDto> Records, int TotalRecords, int HandoffCount, DateTimeOffset? LastRequestedAt);
-```
-
-## ProviderIntegrationReconciliationHandoffRecordDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationReconciliationHandoffRecordDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:502](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L502).
-
-```csharp
-public sealed record ProviderIntegrationReconciliationHandoffRecordDto(string HandoffId, string ConnectionId, string SyncRunId, string StagingRecordId, ProviderCapabilityKindDto Capability, string PromotionTarget, string RequestedBy, DateTimeOffset RequestedAt, string ApprovalEvidenceId, string? Note, string? ProviderAccountId, string? InternalAccountId, string? InternalSecurityId, string? SecurityRoute, IReadOnlyList<ValidationIssueDto> Issues);
-```
-
-## ProviderIntegrationReconciliationHandoffRequestDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationReconciliationHandoffRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:519](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L519).
-
-```csharp
-public sealed record ProviderIntegrationReconciliationHandoffRequestDto(string ConnectionId, IReadOnlyList<string> StagingRecordIds, string RequestedBy, DateTimeOffset RequestedAt, string ApprovalEvidenceId, string? Note, int? RecentRunLimit);
-```
-
-## ProviderIntegrationReconciliationHandoffResultDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationReconciliationHandoffResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:528](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L528).
-
-```csharp
-public sealed record ProviderIntegrationReconciliationHandoffResultDto(bool Accepted, string? HandoffId, string ConnectionId, string PromotionTarget, IReadOnlyList<ProviderIntegrationReconciliationHandoffRecordDto> Records, int AcceptedRecordCount, int RejectedRecordCount, int DuplicateRecordCount, IReadOnlyList<ValidationIssueDto> Issues, string? Message);
-```
-
-## ProviderIntegrationReplayModeDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationReplayModeDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationManifestIdentity.cs:15](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationManifestIdentity.cs#L15).
-
-```csharp
-public enum ProviderIntegrationReplayModeDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Original</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationManifestIdentity.cs:17](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationManifestIdentity.cs#L17) |  |
-| <code>Remediation</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationManifestIdentity.cs:18](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationManifestIdentity.cs#L18) |  |
-
-## ProviderIntegrationRestDryRunRequestDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationRestDryRunRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:688](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L688).
-
-```csharp
-public sealed record ProviderIntegrationRestDryRunRequestDto(string SyncRunId, string ManifestId, string ConnectionId, ProviderCapabilityKindDto Capability, string EndpointKey, IReadOnlyDictionary<string, string> PathParameters, IReadOnlyDictionary<string, string> QueryParameters, string RequestedBy, DateTimeOffset RequestedAt, int MaxPages);
 ```

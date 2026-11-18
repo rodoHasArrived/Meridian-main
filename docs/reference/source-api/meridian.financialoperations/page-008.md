@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IStatementToleranceProfileProvider
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IStatementToleranceProfileProvider</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementToleranceProfiles.cs:66](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementToleranceProfiles.cs#L66).
+
+Resolves the tolerance profile used by statement matching.
+
+```csharp
+public interface IStatementToleranceProfileProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ValueTask&lt;StatementToleranceProfile&gt; GetProfileAsync(string profileId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementToleranceProfiles.cs:68](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementToleranceProfiles.cs#L68) |  |
+
 ## IStatementValidationIssueRepository
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IStatementValidationIssueRepository</code>. Kind: `interface`.
@@ -817,22 +835,3 @@ Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.c
 ```csharp
 public sealed record StatementMatchResultArtifact(string RunId, string ImportId, IReadOnlyList<ReconciliationMatchLink> Matches, IReadOnlyList<StatementBreakRecord> Breaks, IReadOnlyList<StatementCaseLink> CaseLinks);
 ```
-
-## StatementMatchTier
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementMatchTier</code>. Kind: `enum`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1042](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1042).
-
-```csharp
-public enum StatementMatchTier
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Exact</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1044](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1044) |  |
-| <code>Tolerance</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1045](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1045) |  |
-| <code>Candidate</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1046](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1046) |  |
-| <code>Unmatched</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1047](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1047) |  |

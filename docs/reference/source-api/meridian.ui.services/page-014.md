@@ -6,6 +6,61 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SettingsConfigurationService
+
+Qualified name: <code>Meridian.Ui.Services.Services.SettingsConfigurationService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:20](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L20).
+
+Provides settings configuration capabilities including storage path preview generation, provider catalog data, and configuration profile management.
+
+```csharp
+public sealed class SettingsConfigurationService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static SettingsConfigurationService Instance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:31](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L31) | Gets the singleton instance. |
+| <code>public event EventHandler&lt;DesktopShellPreferences&gt;? DesktopShellPreferencesChanged;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:33](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L33) |  |
+| <code>public string GenerateStoragePreview(string rootPath, string namingConvention, string datePartition, string compression, IReadOnlyList&lt;string&gt; symbols);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:50](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L50) | Generates a file tree preview showing what the storage directory structure would look like based on the given naming convention and symbols. |
+| <code>public IReadOnlyList&lt;ProviderCatalogEntry&gt; GetProviderCatalog();</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:87](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L87) | Gets metadata about all available data providers for display in a catalog. |
+| <code>public IReadOnlyList&lt;ProviderCredentialStatus&gt; GetProviderCredentialStatuses();</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:97](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L97) | Gets legacy environment diagnostics. Operator workflows use the asynchronous server status method. |
+| <code>public async Task&lt;ProviderCredentialStateDto&gt; SaveProviderCredentialsAsync(string providerId, IReadOnlyDictionary&lt;string, string?&gt; fields, string? connectionId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:147](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L147) | Saves credential fields through the authenticated service and returns the persisted state. ProviderCredentialStateDto.Partial means the fields were saved but required fields are still missing; callers present that as incomplete rather than as a failed save. |
+| <code>public async Task RemoveProviderCredentialsAsync(string providerId, string? connectionId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:164](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L164) | Removes credentials through the authenticated service. |
+| <code>public async Task&lt;bool&gt; VerifyProviderCredentialsAsync(string providerId, string? connectionId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:177](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L177) | Requests verification from the authenticated credential service. |
+| <code>public async Task&lt;IReadOnlyList&lt;ProviderConnectionDto&gt;&gt; GetOwnedCredentialConnectionsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:207](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L207) | Lists uniquely identified connections with complete retained credential ownership. |
+| <code>public async Task&lt;IReadOnlyList&lt;ProviderCredentialStatus&gt;&gt; GetProviderCredentialStatusesAsync(CancellationToken ct = default, string? connectionId = null, bool providerWideOnly = false);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:225](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L225) | Reads server-owned credential status without treating local environment values as authority. By default provider rows include the authenticated tenant&#x27;s own connection credentials; providerWideOnly reads only the provider-wide records, for flows that write them. |
+| <code>public DesktopShellPreferences GetDesktopShellPreferences();</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:302](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L302) | Gets the persisted desktop shell preferences, migrating any legacy compact-mode payloads on first load. |
+| <code>public ShellDensityMode GetShellDensityMode() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:314](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L314) | Gets the current workstation shell density mode. |
+| <code>public void SetShellDensityMode(ShellDensityMode densityMode);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:319](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L319) | Persists a new workstation shell density mode and raises a change event for live shell surfaces. |
+| <code>public IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; GetShortcutOverrides() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:347](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L347) | Gets the operator&#x27;s persisted desktop keyboard shortcut overrides, keyed by action id. |
+| <code>public void SetShortcutOverrides(IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; overrides);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:354](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L354) | Replaces the persisted desktop keyboard shortcut overrides. An empty set restores every shortcut to its default binding. Density and other shell preferences are preserved. |
+| <code>public IReadOnlyList&lt;ConfigProfile&gt; GetProfiles() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:458](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L458) | Gets all configuration profiles (built-in + custom). |
+| <code>public ConfigProfile CreateProfile(string name, string description);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:461](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L461) | Creates a new custom configuration profile. |
+| <code>public bool RemoveProfile(string profileId);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:470](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L470) | Removes a custom profile (built-in profiles cannot be removed). |
+| <code>public string EstimateDailyStorageSize(int symbolCount, bool trades, bool quotes, bool depth);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:481](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L481) | Estimates daily storage size based on symbol count and data types. |
+
+## ShellDensityMode
+
+Qualified name: <code>Meridian.Ui.Services.Services.ShellDensityMode</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:9](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L9).
+
+Shared shell density modes for the desktop workstation chrome.
+
+```csharp
+public enum ShellDensityMode : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Standard = 0</code> | [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:11](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L11) |  |
+| <code>Compact = 1</code> | [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:12](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L12) |  |
+
 ## SimpleStatus
 
 Qualified name: <code>Meridian.Ui.Services.Services.SimpleStatus</code>. Kind: `class`.
@@ -1133,50 +1188,3 @@ Declared public members:
 | <code>public long TotalFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:625](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L625) |  |
 | <code>public long TotalSizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:626](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L626) |  |
 | <code>public List&lt;ArchiveFileInfo&gt; Files { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/SymbolManagementService.cs:627](../../../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs#L627) |  |
-
-## SymbolCheckpoint
-
-Qualified name: <code>Meridian.Ui.Services.SymbolCheckpoint</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs:476](../../../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs#L476).
-
-Per-symbol checkpoint within a backfill job.
-
-```csharp
-public sealed class SymbolCheckpoint
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;symbol&quot;)] public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs:479](../../../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs#L479) |  |
-| <code>[JsonPropertyName(&quot;status&quot;)] public SymbolCheckpointStatus Status { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs:482](../../../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs#L482) |  |
-| <code>[JsonPropertyName(&quot;barsDownloaded&quot;)] public int BarsDownloaded { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs:485](../../../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs#L485) |  |
-| <code>[JsonPropertyName(&quot;lastProcessedDate&quot;)] public string? LastProcessedDate { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs:488](../../../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs#L488) |  |
-| <code>[JsonPropertyName(&quot;errorMessage&quot;)] public string? ErrorMessage { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs:491](../../../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs#L491) |  |
-| <code>[JsonPropertyName(&quot;retryCount&quot;)] public int RetryCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs:494](../../../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs#L494) |  |
-| <code>[JsonPropertyName(&quot;lastUpdated&quot;)] public DateTime? LastUpdated { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs:497](../../../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs#L497) |  |
-| <code>[JsonPropertyName(&quot;completedAt&quot;)] public DateTime? CompletedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs:500](../../../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs#L500) |  |
-
-## SymbolCheckpointStatus
-
-Qualified name: <code>Meridian.Ui.Services.SymbolCheckpointStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs:520](../../../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs#L520).
-
-Per-symbol checkpoint status.
-
-```csharp
-public enum SymbolCheckpointStatus : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Pending</code> | [src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs:522](../../../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs#L522) |  |
-| <code>Downloading</code> | [src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs:523](../../../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs#L523) |  |
-| <code>Completed</code> | [src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs:524](../../../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs#L524) |  |
-| <code>Failed</code> | [src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs:525](../../../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs#L525) |  |
-| <code>Skipped</code> | [src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs:526](../../../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs#L526) |  |

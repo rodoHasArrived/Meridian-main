@@ -6,6 +6,31 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## NullSecurityMasterService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.NullSecurityMasterService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:107](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L107).
+
+Rejects security mutations when the Security Master service is unavailable.
+
+```csharp
+public sealed class NullSecurityMasterService : Meridian.Contracts.SecurityMaster.ISecurityMasterService, Meridian.Contracts.SecurityMaster.ISecurityMasterAmender, IGovernedPublicationAmender
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;SecurityDetailDto&gt; CreateAsync(CreateSecurityRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:114](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L114) |  |
+| <code>public Task&lt;SecurityDetailDto&gt; AmendTermsAsync(AmendSecurityTermsRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:117](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L117) |  |
+| <code>public Task&lt;SecurityDetailDto&gt; AmendApprovedRevisionAsync(AmendSecurityTermsRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:120](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L120) |  |
+| <code>public Task&lt;SecurityDetailDto&gt; AmendPreferredEquityTermsAsync(Guid securityId, AmendPreferredEquityTermsRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:123](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L123) |  |
+| <code>public Task&lt;SecurityDetailDto&gt; AmendConvertibleEquityTermsAsync(Guid securityId, AmendConvertibleEquityTermsRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:126](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L126) |  |
+| <code>public Task&lt;SecurityDetailDto&gt; AmendTermBlockAsync(Guid securityId, string blockKey, AmendSecurityTermBlockRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:129](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L129) |  |
+| <code>public Task DeactivateAsync(DeactivateSecurityRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:132](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L132) |  |
+| <code>public Task&lt;SecurityAliasDto&gt; UpsertAliasAsync(UpsertSecurityAliasRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:137](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L137) |  |
+
 ## NullSecurityMasterStructuredCreditReclassificationService
 
 Qualified name: <code>Meridian.Application.SecurityMaster.NullSecurityMasterStructuredCreditReclassificationService</code>. Kind: `class`.
@@ -945,22 +970,3 @@ Source: [src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadin
 ```csharp
 public sealed record SecurityMasterOperationalReadinessRequest(string? FundAccountId = null, string? Entity = null, string? AssetClass = null, SecurityMasterOperationalEvidenceSnapshot? EvidenceSnapshot = null);
 ```
-
-## SecurityMasterOperationalReadinessService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterOperationalReadinessService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs:47](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs#L47).
-
-Evaluates Security Master coverage for multi-asset operational readiness views.
-
-```csharp
-public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterOperationalReadinessService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterOperationalReadinessService(AssetClassValidatorRegistry? assetClassValidators = null, ISecurityAssetProfileCatalog? assetProfileCatalog = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs:59](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs#L59) |  |
-| <code>public Task&lt;MultiAssetCoverageSummaryDto&gt; GetReadinessAsync(SecurityMasterOperationalReadinessRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs:67](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs#L67) |  |

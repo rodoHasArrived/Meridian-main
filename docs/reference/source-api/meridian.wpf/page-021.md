@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EvidenceVaultPresentationMapper
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.EvidenceVaultPresentationMapper</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs:49](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs#L49).
+
+Projects evidence-vault documents and manifest snapshots into desktop queue and readiness presentation.
+
+```csharp
+public static class EvidenceVaultPresentationMapper
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static EvidenceVaultDocumentQueuePresentationModel BuildDocumentQueue(IReadOnlyList&lt;EvidenceVaultDocumentEntryDto&gt; entries, EvidenceManifestDto? manifestSnapshot);</code> | [src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs:51](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs#L51) |  |
+| <code>public static EvidenceVaultManifestSnapshotModel ToManifestSnapshot(EvidenceManifestDto manifest);</code> | [src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs:74](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs#L74) |  |
+
 ## EvidenceWorkbenchPacketPresentationModel
 
 Qualified name: <code>Meridian.Wpf.Workstation.Models.EvidenceWorkbenchPacketPresentationModel</code>. Kind: `record`.
@@ -736,26 +755,3 @@ Provides a content surface for trust-status presentation.
 ```csharp
 public sealed class TrustBadgeControl : ContentControl
 ```
-
-## WorkspaceHostControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Primitives.WorkspaceHostControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:42](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L42).
-
-Hosts workspace content with separate context, toolbar, and detail content slots.
-
-```csharp
-public sealed class WorkspaceHostControl : ContentControl
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly DependencyProperty ContextContentProperty = DependencyProperty.Register(nameof(ContextContent), typeof(object), typeof(WorkspaceHostControl));</code> | [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:44](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L44) |  |
-| <code>public static readonly DependencyProperty ToolbarContentProperty = DependencyProperty.Register(nameof(ToolbarContent), typeof(object), typeof(WorkspaceHostControl));</code> | [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:47](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L47) |  |
-| <code>public static readonly DependencyProperty DetailContentProperty = DependencyProperty.Register(nameof(DetailContent), typeof(object), typeof(WorkspaceHostControl));</code> | [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:50](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L50) |  |
-| <code>public object? ContextContent { get; set; }</code> | [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:53](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L53) |  |
-| <code>public object? ToolbarContent { get; set; }</code> | [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:59](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L59) |  |
-| <code>public object? DetailContent { get; set; }</code> | [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:65](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L65) |  |
