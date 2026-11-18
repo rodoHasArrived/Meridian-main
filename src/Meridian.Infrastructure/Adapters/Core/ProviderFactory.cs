@@ -428,7 +428,8 @@ public sealed partial class ProviderFactory
             enableSymbolResolution ? _symbolResolver : null,
             enableCrossValidation: false,
             log: _log,
-            validationProfiles: _config.Backfill?.ValidationProfiles);
+            validationProfiles: _config.Backfill?.ValidationProfiles,
+            crossValidationPolicy: () => CrossProviderTolerancePolicy.FromConfig(_config));
     }
 
     /// <summary>

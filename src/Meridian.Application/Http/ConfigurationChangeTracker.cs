@@ -23,20 +23,54 @@ internal sealed class ConfigurationChangeTracker
         get { lock (_gate) return _status; }
     }
 
-    internal void Record(AppConfig previous, AppConfig next)
+    internal void Record(AppConfig previous, AppConfig next, IReadOnlyList<ConfigurationApplyEntry>? applied = null)
     {
         var before = Fingerprints(previous);
         var after = Fingerprints(next);
+        var appliedByPath = applied?
+            .GroupBy(entry => entry.Path, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.Last(), StringComparer.Ordinal);
         lock (_gate)
         {
             _baseline ??= before;
-            var changes = Diff(before, after);
+            var changes = Diff(before, after)
+                .Select(change => appliedByPath?.TryGetValue(change.Path, out var entry) == true
+                    ? change with { Impact = ImpactAfterApply(change.Impact, entry.Kind) }
+                    : change)
+                .ToList();
+            if (appliedByPath is not null)
+            {
+                // A confirmed runtime apply is the host's new baseline for that path, so it is not pending.
+                foreach (var (path, entry) in appliedByPath)
+                {
+                    if (entry.Kind == ConfigurationApplyKind.Deferred)
+                        continue;
+                    if (after.TryGetValue(path, out var hash))
+                        _baseline[path] = hash;
+                    else
+                        _baseline.Remove(path);
+                }
+            }
+
             // Live changes have no pending activation. Reverting to the host baseline clears pending state.
             var pending = Diff(_baseline, after).Where(change => change.Impact != ConfigurationChangeImpact.Live).ToArray();
+            var summary = applied is { Count: > 0 } ? new ConfigurationApplySummary(applied, DateTimeOffset.UtcNow) : null;
             _status = new(changes.Count == 0 ? ConfigurationChangeImpact.Live : changes.Max(change => change.Impact),
-                changes, pending, DateTimeOffset.UtcNow);
+                changes, pending, DateTimeOffset.UtcNow, LastApply: summary);
         }
     }
+
+    /// <summary>Flattened setting paths whose values differ; values themselves are never retained.</summary>
+    internal static IReadOnlyList<string> ChangedPaths(AppConfig previous, AppConfig next)
+        => Diff(Fingerprints(previous), Fingerprints(next)).Select(change => change.Path).ToArray();
+
+    private static ConfigurationChangeImpact ImpactAfterApply(ConfigurationChangeImpact impact, ConfigurationApplyKind kind)
+        => kind switch
+        {
+            ConfigurationApplyKind.AppliedLive or ConfigurationApplyKind.NoRuntimeEffect => ConfigurationChangeImpact.Live,
+            ConfigurationApplyKind.ProviderReconfigured => ConfigurationChangeImpact.ReconnectProvider,
+            _ => impact
+        };
 
     internal static ConfigurationChangeImpact Classify(string path)
     {

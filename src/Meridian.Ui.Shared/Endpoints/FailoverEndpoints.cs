@@ -218,6 +218,10 @@ public static class FailoverEndpoints
                     var dataSources = cfg.DataSources ?? new DataSourcesConfig();
                     var rules = (dataSources.FailoverRules ?? Array.Empty<FailoverRuleConfig>()).ToList();
 
+                    if (FailoverRuleReferences.FindUnknownProvider(dataSources, rule) is { } unknownProvider)
+                        return (cfg, ApiProblemDetails.Validation(context, "providerIds",
+                            $"'{unknownProvider}' is not a configured data source ID. Failover rules must reference existing sources."));
+
                     var idx = rules.FindIndex(r => string.Equals(r.Id, id, StringComparison.OrdinalIgnoreCase));
                     var audit = dataSources.FailoverRuleAudit ?? [];
                     if (idx >= 0)

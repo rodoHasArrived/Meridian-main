@@ -42,9 +42,18 @@ Focused coverage: `data-screen.symbol-mapping-editor.test.tsx` and existing cano
 The Data provider workspace includes an on-demand streaming failover editor. It reads authoritative
 saved settings, distinguishes unavailable runtime state, and refreshes the active provider after a
 committed switch/reset. Settings and rule create/edit/delete use shared guarded API saves and show
-pending host restart; relaxed rule thresholds require an audited reason. Focused coverage lives in
+what the host reported (`describeConfigurationApply` over `changeImpact.lastApply`): "Applied live",
+"Provider routing updated live" or "Pending host restart" with per-setting reasons; without host
+evidence the banner stays "Pending host restart". Relaxed rule thresholds require an audited reason. Focused coverage lives in
 `data-screen.failover.test.tsx` and the shared `FailoverEndpointTests`.
 Deleting a rule also requires an explicit operator reason and retains the removed protection snapshot.
+
+Data-quality watch includes an on-demand Cross-provider tolerances panel
+(`data-quality-watch.cross-provider-policy.tsx`, API in `lib/api/cross-provider-tolerance.api.ts`):
+bounded tolerances, volume mode, asset-class overrides, a required reason when loosening, audit
+history and a preview of what the draft would have flagged over the last 30 days for one symbol,
+with its provider-call cost shown first. Focused coverage:
+`data-quality-watch.cross-provider-policy.test.tsx`.
 
 ## Fixed-income workflow access
 
