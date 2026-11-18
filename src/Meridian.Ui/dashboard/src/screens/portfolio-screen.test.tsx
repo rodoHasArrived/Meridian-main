@@ -1559,7 +1559,9 @@ describe("PortfolioScreen", () => {
     // card's max-drawdown readout) cannot satisfy them.
     const distribution = await screen.findByRole("img", { name: "Daily return distribution for Mean Reversion" });
     expect(distribution).toHaveAccessibleDescription(/daily returns\. Mean \+0\.38%, best \+2\.00%, worst -0\.80%/);
-    const distributionCard = distribution.closest("div")!.parentElement!;
+    // The card is the nearest ancestor that carries the card title; chart markup depth may change.
+    let distributionCard = distribution.parentElement!;
+    while (!within(distributionCard).queryByText("Daily return distribution")) distributionCard = distributionCard.parentElement!;
     expect(within(distributionCard).getByText("Daily return distribution")).toBeDefined();
     expect(within(distributionCard).getByText("+0.38%")).toBeDefined();
     expect(within(distributionCard).getByText("+2.00%")).toBeDefined();
