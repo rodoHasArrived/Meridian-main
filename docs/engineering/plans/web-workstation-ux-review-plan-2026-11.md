@@ -1087,3 +1087,12 @@ only; they do not reuse the 2026-11-10 numbering.
   from the shared figure definitions; Live quotes change, day range, sparklines and stale dimming;
   NAV headline with presets and a fund picker; a "Since you last looked" panel with at least four
   kinds of change.
+
+## Quick wins delivered (2026-11-18)
+
+- **Blank, not zero:** the manual journal editor leaves the off-side amount input blank, and posted-ledger lines leave the not-applicable debit or credit cell blank. Their aria labels name only the populated side.
+- **Palette screen actions:** a new `useScreenPaletteActions` hook (`components/meridian/command-palette.actions.ts`) registers palette actions that hand off to existing screen commands:
+  - Today: bulk Acknowledge and bulk Snooze. Both open the existing confirm dialogs.
+  - Reconciliation: assign selected breaks to me, which runs the existing dry run.
+  - Approvals: refresh. Approval decisions are not registered.
+  - Reporting: refresh live portfolio views.

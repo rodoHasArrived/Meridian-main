@@ -605,6 +605,13 @@ Navigation and overviews (UX Phase D):
 - The command palette lists pinned and recent pages first (`lib/recent-pages.ts`). They are kept
   in this browser's storage as a per-viewer convenience; every read and write is guarded.
   "Pin {page}" and "Unpin {page}" are palette actions.
+- Screens add their own palette actions while mounted through `useScreenPaletteActions`
+  (`components/meridian/command-palette.actions.ts`). Today offers bulk Acknowledge and Snooze,
+  Reconciliation offers "Assign selected breaks to me", Approvals and Reporting offer refresh.
+  Each action opens the screen's existing confirmation or dry run; approval decisions are never
+  registered.
+- Journal and ledger cells that do not apply (the other side of a single-sided line) are blank,
+  not `0` or `$0.00`.
 - Close Calendar opens on a month grid (`components/meridian/month-calendar.tsx`); its list is the
   "List view" alternative. Items due before today and not ready read as overdue.
 - Charts carry a table alternative marked `data-chart-table`. Close Cockpit's task progress and

@@ -3,6 +3,7 @@
 import { RefreshCcw, UserCheck } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
+import { useScreenPaletteActions } from "@/components/meridian/command-palette.actions";
 import { ApprovalCollaborationPanel } from "@/components/meridian/approval-collaboration-panel";
 import { focusDenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { DetailRail } from "@/components/meridian/detail-rail";
@@ -60,6 +61,17 @@ export function AccountingApprovalsWorkstream() {
       setLoading(false);
     }
   };
+
+  useScreenPaletteActions("approvals", [{
+    id: "approvals.refresh",
+    verbLabel: "Refresh approval workflows",
+    description: "Reloads the approval queue. Decisions stay on the approval screen.",
+    keywords: ["approvals", "refresh", "reload"],
+    disabled: loading,
+    disabledReason: loading ? "The approval queue is already loading." : null,
+    run: () => refreshWorkflows()
+  }]);
+
 
   useEffect(() => {
     void refreshWorkflows();

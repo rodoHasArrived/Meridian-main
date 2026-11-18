@@ -3860,6 +3860,15 @@ describe("AccountingScreen", () => {
     expect(screen.queryByText("Enter a valid amount.")).not.toBeInTheDocument();
   });
 
+  it("leaves the side a journal line is not on blank instead of 0", async () => {
+    vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce(manualJournalWorkbench);
+
+    await renderAccountingScreen(data, "/accounting/journal-entries?fundProfileId=fund-alpha&ledgerBookId=book-alpha");
+
+    expect(screen.getByLabelText("Credit amount for line line-debit")).toHaveValue(null);
+    expect(screen.getByLabelText("Debit amount for line line-credit")).toHaveValue(null);
+  });
+
   it("supports keyboard line navigation, insertion, and duplication", async () => {
     vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce(manualJournalWorkbench);
 
