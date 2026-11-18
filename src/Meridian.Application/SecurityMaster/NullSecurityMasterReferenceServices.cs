@@ -133,6 +133,16 @@ public sealed class NullSecurityMasterStructuredCreditReclassificationService : 
 }
 
 /// <summary>
+/// Rejects classification drift reports when Security Master is unavailable.
+/// </summary>
+public sealed class NullSecurityMasterClassificationDriftReportService : ISecurityMasterClassificationDriftReportService
+{
+    public Task<SecurityClassificationDriftReportDto> BuildReportAsync(CancellationToken ct = default)
+        => throw new InvalidOperationException(
+            "Security Master is not configured. Set MERIDIAN_SECURITY_MASTER_CONNECTION_STRING to enable the classification drift report.");
+}
+
+/// <summary>
 /// Rejects CustomAsset profile promotion reports when Security Master is unavailable.
 /// </summary>
 public sealed class NullSecurityMasterProfilePromotionService : ISecurityMasterProfilePromotionService

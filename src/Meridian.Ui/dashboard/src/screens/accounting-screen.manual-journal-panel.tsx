@@ -964,7 +964,7 @@ export function ManualJournalEntryWorkbenchPanel({ view, search }: { view: Manua
                             aria-describedby="manual-je-keyboard-hint"
                             className="text-right font-mono"
                             type="number"
-                            value={amountDrafts[`${line.lineId}:Debit`] ?? (isDebit ? line.amount : 0)}
+                            value={amountDrafts[`${line.lineId}:Debit`] ?? (isDebit ? line.amount : "")}
                             aria-invalid={`${line.lineId}:Debit` in amountDrafts || undefined}
                             onChange={(event) => handleAmountChange(line.lineId, "Debit", event.target)}
                             onBlur={(event) => handleAmountBlur(line.lineId, "Debit", event.target)}
@@ -982,7 +982,7 @@ export function ManualJournalEntryWorkbenchPanel({ view, search }: { view: Manua
                             aria-describedby={`${line.lineId}:Credit` in amountDrafts ? `manual-je-keyboard-hint manual-je-credit-error-${line.lineId}` : "manual-je-keyboard-hint"}
                             className="text-right font-mono"
                             type="number"
-                            value={amountDrafts[`${line.lineId}:Credit`] ?? (isDebit ? 0 : line.amount)}
+                            value={amountDrafts[`${line.lineId}:Credit`] ?? (isDebit ? "" : line.amount)}
                             aria-invalid={`${line.lineId}:Credit` in amountDrafts || undefined}
                             onChange={(event) => handleAmountChange(line.lineId, "Credit", event.target)}
                             onBlur={(event) => handleAmountBlur(line.lineId, "Credit", event.target)}

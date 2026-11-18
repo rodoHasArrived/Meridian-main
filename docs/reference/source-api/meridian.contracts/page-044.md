@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AssetClassDepthRouteKind
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.AssetClassDepthRouteKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs:358](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs#L358).
+
+```csharp
+public enum AssetClassDepthRouteKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Provider</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs:360](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs#L360) |  |
+| <code>Ledger</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs:361](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs#L361) |  |
+| <code>Close</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs:362](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs#L362) |  |
+| <code>AssetProfiles</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs:363](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs#L363) |  |
+
 ## AssetClassDepthTargetSpec
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.AssetClassDepthTargetSpec</code>. Kind: `record`.
@@ -20,7 +39,7 @@ public sealed record AssetClassDepthTargetSpec(string KeySuffix, string TargetTy
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.AssetOperationsCapabilitySet</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1534](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1534).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1564](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1564).
 
 Groups the operational capabilities supported by different asset profiles.
 
@@ -32,10 +51,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static readonly IReadOnlyList&lt;string&gt; IdentityOnly = [&quot;Identity&quot;, &quot;TermsHistory&quot;, &quot;Evidence&quot;, &quot;Readiness&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1536](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1536) |  |
-| <code>public static readonly IReadOnlyList&lt;string&gt; FixedIncome = [&quot;Identity&quot;, &quot;TermsHistory&quot;, &quot;LifecycleState&quot;, &quot;ProjectedCashFlows&quot;, &quot;ActualActivity&quot;, &quot;Reconciliation&quot;, &quot;LedgerProjection&quot;, &quot;Evidence&quot;, &quot;WorkflowAudit&quot;, &quot;Readiness&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1544](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1544) |  |
-| <code>public static readonly IReadOnlyList&lt;string&gt; DirectLending = [&quot;Identity&quot;, &quot;TermsHistory&quot;, &quot;LifecycleState&quot;, &quot;ProjectedCashFlows&quot;, &quot;ActualActivity&quot;, &quot;Reconciliation&quot;, &quot;LedgerProjection&quot;, &quot;Evidence&quot;, &quot;WorkflowAudit&quot;, &quot;Readiness&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1558](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1558) |  |
-| <code>public static readonly IReadOnlyList&lt;string&gt; AlternativeAssetOperations = [&quot;Identity&quot;, &quot;TermsHistory&quot;, &quot;LifecycleState&quot;, &quot;ProjectedCashFlows&quot;, &quot;ActualActivity&quot;, &quot;Reconciliation&quot;, &quot;LedgerProjection&quot;, &quot;Evidence&quot;, &quot;WorkflowAudit&quot;, &quot;Readiness&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1572](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1572) |  |
+| <code>public static readonly IReadOnlyList&lt;string&gt; IdentityOnly = [&quot;Identity&quot;, &quot;TermsHistory&quot;, &quot;Evidence&quot;, &quot;Readiness&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1566](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1566) |  |
+| <code>public static readonly IReadOnlyList&lt;string&gt; FixedIncome = [&quot;Identity&quot;, &quot;TermsHistory&quot;, &quot;LifecycleState&quot;, &quot;ProjectedCashFlows&quot;, &quot;ActualActivity&quot;, &quot;Reconciliation&quot;, &quot;LedgerProjection&quot;, &quot;Evidence&quot;, &quot;WorkflowAudit&quot;, &quot;Readiness&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1574](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1574) |  |
+| <code>public static readonly IReadOnlyList&lt;string&gt; DirectLending = [&quot;Identity&quot;, &quot;TermsHistory&quot;, &quot;LifecycleState&quot;, &quot;ProjectedCashFlows&quot;, &quot;ActualActivity&quot;, &quot;Reconciliation&quot;, &quot;LedgerProjection&quot;, &quot;Evidence&quot;, &quot;WorkflowAudit&quot;, &quot;Readiness&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1588](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1588) |  |
+| <code>public static readonly IReadOnlyList&lt;string&gt; AlternativeAssetOperations = [&quot;Identity&quot;, &quot;TermsHistory&quot;, &quot;LifecycleState&quot;, &quot;ProjectedCashFlows&quot;, &quot;ActualActivity&quot;, &quot;Reconciliation&quot;, &quot;LedgerProjection&quot;, &quot;Evidence&quot;, &quot;WorkflowAudit&quot;, &quot;Readiness&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1602](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1602) |  |
 
 ## AssetPackAccountingRules
 
@@ -382,11 +401,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static IReadOnlySet&lt;string&gt; KnownCaseNames { get; } = new HashSet&lt;string&gt;(StringComparer.Ordinal) { &quot;Equity&quot;, &quot;FixedIncome&quot;, &quot;Fund&quot;, &quot;CashEquivalent&quot;, &quot;Financing&quot;, &quot;Derivative&quot;, &quot;PrivateCredit&quot;, &quot;Other&quot;, &quot;Sovereign&quot;, &quot;CorporateDebt&quot;, &quot;BankProduct&quot;, &quot;CommonEquity&quot;, &quot;PreferredEquity&quot;, &quot;PartnershipEquity&quot;, &quot;MoneyMarket&quot;, &quot;RepurchaseAgreement&quot;, &quot;StructuredCash&quot;, &quot;SecuritizedCredit&quot;, &quot;ListedDerivative&quot;, &quot;PrivateLoan&quot;, &quot;TreasuryBill&quot;, &quot;TreasuryNote&quot;, &quot;TreasuryBond&quot;, &quot;Tips&quot;, &quot;TreasuryFrn&quot;, &quot;CommercialPaper&quot;, &quot;CertificateOfDeposit&quot;, &quot;TimeDeposit&quot;, &quot;DemandDeposit&quot;, &quot;MoneyMarketFund&quot;, &quot;Repo&quot;, &quot;CashSweep&quot;, &quot;CorporateBond&quot;, &quot;MunicipalBond&quot;, &quot;CommonShare&quot;, &quot;PreferredShare&quot;, &quot;Adr&quot;, &quot;MlpUnit&quot;, &quot;LimitedPartnershipInterest&quot;, &quot;ReitShare&quot;, &quot;OptionContract&quot;, &quot;FutureContract&quot;, &quot;SwapContract&quot;, &quot;DirectLoan&quot;, &quot;StructuredCredit&quot;, &quot;PrivateCompanyEquity&quot;, &quot;RealEstateHolding&quot;, &quot;CommitmentGuarantee&quot;, };</code> | [src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs#L36) | The nullary case names of the F# AssetClass, AssetFamily and SecuritySubType unions, which is what the retired writer rendered inside Some(…). A test pins this set to the F# unions by reflection. |
-| <code>public static string? Normalize(string? value);</code> | [src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs:56](../../../../src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs#L56) | Returns the canonical label for a stored classification label, decoding legacy F# option/union renderings. null, whitespace and a legacy option None read as null; anything else that is not a legacy rendering is returned trimmed. |
-| <code>public static bool IsAmbiguousFreeText(string? value) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs:106](../../../../src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs#L106) | True when value is free text the decoder would change, because it looks like a retired rendering. New writes refuse such text so stored labels stay unambiguous. |
-| <code>public static string NormalizeRequired(string value) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs:114](../../../../src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs#L114) | Normalizes a label for a non-optional field (asset class, sub-type), keeping the stored value when the decoder would produce no label rather than turning a required field null. |
-| <code>public static SecurityEconomicDefinitionRecord NormalizeLabels(SecurityEconomicDefinitionRecord record);</code> | [src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs:122](../../../../src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs#L122) | Returns a read-side copy of record whose asset-class, family and sub-type labels are canonical. The record&#x27;s classification JSON and every other field are kept as stored; the original instance is returned when no label changes. |
+| <code>public static IReadOnlySet&lt;string&gt; KnownCaseNames { get; } = new HashSet&lt;string&gt;(StringComparer.Ordinal) { &quot;Equity&quot;, &quot;FixedIncome&quot;, &quot;Fund&quot;, &quot;CashEquivalent&quot;, &quot;Financing&quot;, &quot;Derivative&quot;, &quot;PrivateCredit&quot;, &quot;Other&quot;, &quot;Sovereign&quot;, &quot;CorporateDebt&quot;, &quot;BankProduct&quot;, &quot;CommonEquity&quot;, &quot;PreferredEquity&quot;, &quot;PartnershipEquity&quot;, &quot;MoneyMarket&quot;, &quot;RepurchaseAgreement&quot;, &quot;StructuredCash&quot;, &quot;SecuritizedCredit&quot;, &quot;ListedDerivative&quot;, &quot;OtcDerivative&quot;, &quot;ForeignExchange&quot;, &quot;PooledFund&quot;, &quot;PrivateLoan&quot;, &quot;TreasuryBill&quot;, &quot;TreasuryNote&quot;, &quot;TreasuryBond&quot;, &quot;Tips&quot;, &quot;TreasuryFrn&quot;, &quot;CommercialPaper&quot;, &quot;CertificateOfDeposit&quot;, &quot;TimeDeposit&quot;, &quot;DemandDeposit&quot;, &quot;MoneyMarketFund&quot;, &quot;Repo&quot;, &quot;CashSweep&quot;, &quot;CorporateBond&quot;, &quot;MunicipalBond&quot;, &quot;CommonShare&quot;, &quot;PreferredShare&quot;, &quot;Adr&quot;, &quot;MlpUnit&quot;, &quot;LimitedPartnershipInterest&quot;, &quot;ReitShare&quot;, &quot;OptionContract&quot;, &quot;FutureContract&quot;, &quot;SwapContract&quot;, &quot;DirectLoan&quot;, &quot;StructuredCredit&quot;, &quot;PrivateCompanyEquity&quot;, &quot;RealEstateHolding&quot;, &quot;CommitmentGuarantee&quot;, };</code> | [src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs#L36) | The nullary case names of the F# AssetClass, AssetFamily and SecuritySubType unions, which is what the retired writer rendered inside Some(…). A test pins this set to the F# unions by reflection. |
+| <code>public static string? Normalize(string? value);</code> | [src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs:57](../../../../src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs#L57) | Returns the canonical label for a stored classification label, decoding legacy F# option/union renderings. null, whitespace and a legacy option None read as null; anything else that is not a legacy rendering is returned trimmed. |
+| <code>public static bool IsAmbiguousFreeText(string? value) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs:107](../../../../src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs#L107) | True when value is free text the decoder would change, because it looks like a retired rendering. New writes refuse such text so stored labels stay unambiguous. |
+| <code>public static string NormalizeRequired(string value) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs:115](../../../../src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs#L115) | Normalizes a label for a non-optional field (asset class, sub-type), keeping the stored value when the decoder would produce no label rather than turning a required field null. |
+| <code>public static SecurityEconomicDefinitionRecord NormalizeLabels(SecurityEconomicDefinitionRecord record);</code> | [src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs:123](../../../../src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs#L123) | Returns a read-side copy of record whose asset-class, family and sub-type labels are canonical. The record&#x27;s classification JSON and every other field are kept as stored; the original instance is returned when no label changes. |
 
 ## CommitmentLot
 
@@ -669,44 +688,3 @@ Immutable provider observation retained with a processing-case read. The case ow
 ```csharp
 public sealed record CorporateActionCaseSourceSnapshotDto(CorporateActionDto ProposedAction, CorporateActionProviderEventIdentityDto ProviderIdentity, CorporateActionSourceDisplayMetadataDto? DisplayMetadata);
 ```
-
-## CorporateActionCaseStates
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCaseStates</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:33](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L33).
-
-Durable operational lifecycle; it never replaces the source-event lifecycle.
-
-```csharp
-public static class CorporateActionCaseStates
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Detected = &quot;Detected&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:35](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L35) |  |
-| <code>public const string NeedsTerms = &quot;NeedsTerms&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L36) |  |
-| <code>public const string Disputed = &quot;Disputed&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:37](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L37) |  |
-| <code>public const string TermsConfirmed = &quot;TermsConfirmed&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:38](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L38) |  |
-| <code>public const string ElectionPending = &quot;ElectionPending&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L39) |  |
-| <code>public const string ElectionSubmitted = &quot;ElectionSubmitted&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:40](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L40) |  |
-| <code>public const string AllocationPending = &quot;AllocationPending&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L41) |  |
-| <code>public const string AccountingReview = &quot;AccountingReview&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L42) |  |
-| <code>public const string ReadyForApproval = &quot;ReadyForApproval&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:43](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L43) |  |
-| <code>public const string Approved = &quot;Approved&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L44) |  |
-| <code>public const string PreparerAttested = &quot;PreparerAttested&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:45](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L45) |  |
-| <code>public const string Scheduled = &quot;Scheduled&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:46](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L46) |  |
-| <code>public const string Posted = &quot;Posted&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:47](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L47) |  |
-| <code>public const string Reconciled = &quot;Reconciled&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L48) |  |
-| <code>public const string Reported = &quot;Reported&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L49) |  |
-| <code>public const string Closed = &quot;Closed&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L50) |  |
-| <code>public const string Blocked = &quot;Blocked&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:51](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L51) |  |
-| <code>public const string Cancelled = &quot;Cancelled&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:52](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L52) |  |
-| <code>public const string Superseded = &quot;Superseded&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:53](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L53) |  |
-| <code>public const string RestatementRequired = &quot;RestatementRequired&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:54](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L54) |  |
-| <code>public static bool IsKnown(string? state) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L64) |  |
-| <code>public static bool RequiresDownstreamAuthority(string? state) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L70) | States owned by downstream accounting/posting/reporting controls. The generic case command may prepare a case through ReadyForApproval but cannot grant one of these outcomes. |
-| <code>public static bool IsContentFrozen(string? state) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:78](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L78) | Case content is frozen once it is an approval candidate or has entered a governed downstream/terminal state. A governed transition back to AccountingReview or RestatementRequired is required before evidence, conflicts, or options may change. |
-| <code>public static bool PresupposesConfirmedTerms(string? state) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:83](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L83) | States whose validity depends on confirmed, undisputed source terms. |

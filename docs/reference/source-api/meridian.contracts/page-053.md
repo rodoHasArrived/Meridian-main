@@ -6,6 +6,84 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterClosePricesJsonContext
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterClosePricesJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePricesJsonContext.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePricesJsonContext.cs#L14).
+
+Provides source-generated JSON metadata for retained close price snapshots and their approval evidence.
+
+```csharp
+public sealed partial class SecurityMasterClosePricesJsonContext : JsonSerializerContext;
+```
+
+## SecurityMasterConflict
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterConflict</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:45](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L45).
+
+A field-level or identifier-level conflict detected between providers for the same security.
+
+```csharp
+public sealed record SecurityMasterConflict(Guid ConflictId, Guid SecurityId, string ConflictKind, string FieldPath, string ProviderA, string ValueA, string ProviderB, string ValueB, DateTimeOffset DetectedAt, string Status)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? ResolvedWinnerSource { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L58) | The source the resolver chose as the winner; set atomically when the conflict resolves. |
+| <code>public string? ResolvedBy { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:61](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L61) | The actor who resolved the conflict; set atomically when the conflict resolves. |
+| <code>public string? ResolvedReason { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L64) | The resolver-supplied reason; set atomically when the conflict resolves. |
+| <code>public DateTimeOffset? ResolvedAt { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:67](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L67) | When the conflict was resolved; set atomically when the conflict resolves. |
+
+## SecurityMasterConflictFieldCategories
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterConflictFieldCategories</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs#L36).
+
+Classifies a SecurityMasterConflict by the declared names in its field path, not by substrings of the path text. Each dot-separated path segment is compared whole (case-insensitive, underscores ignored) with the names below, so a field such as ProfileFields.transferRestrictions no longer reads as an identifier because it contains &quot;ric&quot;, and ProfileFields.slotCount no longer reads as a trading parameter because it contains &quot;lot&quot;. Identifier names come from SecurityIdentifierKind (the kinds conflict detection writes as Identifiers.{Kind}) and trading-parameter names from TradingParametersDto (the fields the workbench reads under TradingParameters.). A field outside these declared names has no category and takes the default review route.
+
+```csharp
+public static class SecurityMasterConflictFieldCategories
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyDictionary&lt;string, SecurityMasterConflictFieldCategory&gt; DeclaredNames =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs#L42) | The declared segment names and the category each one carries. |
+| <code>public static SecurityMasterConflictFieldCategory For(SecurityMasterConflict conflict);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs#L44) |  |
+| <code>public static SecurityMasterConflictFieldCategory For(string? fieldPath, string? conflictKind);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs#L50) |  |
+
+## SecurityMasterConflictFieldCategory
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterConflictFieldCategory</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs#L9).
+
+What a Security Master conflict&#x27;s field touches, used to route the conflict for review. A conflict can touch more than one category (a currency is both Currency and Classification).
+
+```csharp
+public enum SecurityMasterConflictFieldCategory
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>None = 0</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs#L11) |  |
+| <code>Identifier = 1&lt;&lt;0</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs#L12) |  |
+| <code>Lifecycle = 1&lt;&lt;1</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs#L13) |  |
+| <code>TradingParameter = 1&lt;&lt;2</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs#L14) |  |
+| <code>CorporateAction = 1&lt;&lt;3</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs#L15) |  |
+| <code>Classification = 1&lt;&lt;4</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs#L16) |  |
+| <code>Currency = 1&lt;&lt;5</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs#L17) |  |
+| <code>Display = 1&lt;&lt;6</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs#L18) |  |
+
 ## SecurityMasterConflictKinds
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterConflictKinds</code>. Kind: `class`.
@@ -776,80 +854,3 @@ Raw observation and the explicit construction assumption retained with each immu
 ```csharp
 public sealed record SecurityRatePointEvidenceDto(SecurityRateObservationDto Observation, SecurityRateConstructionMethod ConstructionMethod, string MethodDescription, string ReviewedBy);
 ```
-
-## SecurityRateUnit
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityRateUnit</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L10).
-
-```csharp
-public enum SecurityRateUnit
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Fraction</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L10) |  |
-| <code>Percent</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L10) |  |
-| <code>BasisPoints</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L10) |  |
-| <code>IndexLevel</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L10) |  |
-
-## SecurityRawPriceDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityRawPriceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L26).
-
-A dated source observation retained without overwriting earlier prices.
-
-```csharp
-public sealed record SecurityRawPriceDto(string SourceId, decimal Price, DateTimeOffset PriceAsOf, SecurityPriceUnit Unit)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public SecurityPriceQuotationEvidence? Quotation { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L29) |  |
-
-## SecurityRecordProvenance
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityRecordProvenance</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L26).
-
-Typed record-level provenance read from the Security Master provenance document — who supplied the record, when it was true, and who applied it.
-
-```csharp
-public sealed record SecurityRecordProvenance(string SourceSystem, string? SourceRecordId, DateTimeOffset? AsOf, string? UpdatedBy, string? Reason)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityFieldProvenance ForField(string fieldPath, decimal? confidence = null) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:37](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L37) | Projects this record-level provenance onto one field — the per-field (vendor, asOf, confidence) attribution consumed by field-conflict assessment and display. |
-
-## SecurityRecordRateUnit
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityRecordRateUnit</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityRecordRateUnit.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRecordRateUnit.cs#L10).
-
-The optional, governed scalar rate-unit declaration for classes without schedule anchors. Historical payloads do not acquire a declaration from stray keys or an upgrade. Setting the field is an explicit amendment; absence never creates a field default or infers one from value.
-
-```csharp
-public static class SecurityRecordRateUnit
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string FieldKey = &quot;rateUnit&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRecordRateUnit.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRecordRateUnit.cs#L12) |  |
-| <code>public static RateUnit? Read(string assetClass, JsonElement terms);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRecordRateUnit.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRecordRateUnit.cs#L15) | The record&#x27;s explicit unit, or null when the record declares none. |
-| <code>public static RateUnit? ReadEconomic(JsonElement economics);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRecordRateUnit.cs:31](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRecordRateUnit.cs#L31) | Reads the canonical economic module when no retained flat document is available. |
-| <code>public static RateUnit? Parse(string? token) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRecordRateUnit.cs:43](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRecordRateUnit.cs#L43) |  |
-| <code>public static string? ReadToken(string assetClass, JsonElement terms, bool writeMode = false);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRecordRateUnit.cs:53](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRecordRateUnit.cs#L53) | Reads verbatim for codec replay, gated by the stored terms version. |

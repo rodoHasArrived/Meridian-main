@@ -6,6 +6,86 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EvidenceVaultIdentityDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.EvidenceVaultIdentityDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:404](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L404).
+
+```csharp
+public sealed record EvidenceVaultIdentityDto(string VaultId, string SubjectKind, string SubjectId, string ManifestPath, string ManifestRoute, DateTimeOffset RetainedAt, string ContentHashSha256, int SchemaVersion, string StorageKind)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? TenantId { get; init; }</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:415](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L415) |  |
+| <code>public string? Scope { get; init; }</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:416](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L416) |  |
+| <code>public IReadOnlyList&lt;EvidenceVaultArtifactDto&gt; Artifacts { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:417](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L417) |  |
+| <code>public IReadOnlyList&lt;EvidenceRequestListDto&gt; RequestLists { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:418](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L418) |  |
+| <code>public IReadOnlyList&lt;EvidenceSupportRequestDto&gt; SupportRequests { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:419](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L419) |  |
+| <code>public IReadOnlyList&lt;EvidenceDocumentDto&gt; Documents { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:420](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L420) |  |
+| <code>public EvidenceManifestDto? ManifestSnapshot { get; init; }</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:421](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L421) |  |
+
+## EvidenceVaultIntakeRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.EvidenceVaultIntakeRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:556](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L556).
+
+```csharp
+public sealed record EvidenceVaultIntakeRequestDto(string SubjectKind, string SubjectId, string IntakeChannel, string FileName, string? ContentBase64 = null, string? ContentType = null, string? SourceSystem = null, string? SourceReference = null, string? ReceivedBy = null, string? ExpectedContentHashSha256 = null, IReadOnlyList<EvidenceArtifactExtractionFieldDto>? ExtractedFields = null, EvidenceSubjectLinkageDto? Linkage = null, EvidenceLifecycleMetadataDto? Lifecycle = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public EvidenceDocumentClassificationDto Classification { get; init; } = EvidenceDocumentClassificationDto.Unknown;</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:571](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L571) |  |
+| <code>public string? Actor { get; init; }</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:572](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L572) |  |
+| <code>public string? TenantId { get; init; }</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:573](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L573) |  |
+| <code>public string? Scope { get; init; }</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:574](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L574) |  |
+| <code>public EvidenceExtractionStatusDto? ExtractionStatus { get; init; }</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:575](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L575) |  |
+| <code>public EvidenceDocumentIntakeChannelDto? IntakeChannelKind { get; init; }</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:576](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L576) |  |
+| <code>public string? ExtractorId { get; init; }</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:577](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L577) |  |
+| <code>public EvidenceDocumentReviewStateDto? ReviewerState { get; init; }</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:578](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L578) |  |
+| <code>public IReadOnlyList&lt;EvidenceDocumentLinkDto&gt; ObjectLinks { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:579](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L579) |  |
+| <code>public EvidenceDocumentIntakeSourceDto? IntakeSource { get; init; }</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:580](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L580) |  |
+
+## EvidenceVaultIntakeResponseDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.EvidenceVaultIntakeResponseDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:583](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L583).
+
+```csharp
+public sealed record EvidenceVaultIntakeResponseDto(string IntakeId, string SubjectKind, string SubjectId, string IntakeChannel, string FileName, string RelativePath, string ContentHashSha256, long SizeBytes, DateTimeOffset CapturedAt, EvidenceArtifactCaptureDto Capture, IReadOnlyList<EvidenceArtifactExtractionFieldDto> ExtractedFields, EvidenceVaultIdentityDto VaultIdentity)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public EvidenceDocumentDto? Document { get; init; }</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:597](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L597) |  |
+
+## EvidenceVaultLookupRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.EvidenceVaultLookupRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:616](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L616).
+
+```csharp
+public sealed record EvidenceVaultLookupRequestDto(string? EvidenceSubject, string? RunId, string? PeriodId, string? ReportPackId, string? ReconciliationCaseId, string? AccountingRecordId = null, string? ReportPackDeliveryAttemptId = null, string? ReportPackDeliveryPackageId = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? TenantId { get; init; }</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:626](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L626) |  |
+| <code>public string? Scope { get; init; }</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:627](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L627) |  |
+
 ## EvidenceVaultReference
 
 Qualified name: <code>Meridian.Contracts.Workstation.EvidenceVaultReference</code>. Kind: `class`.
@@ -558,60 +638,4 @@ Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:577](../../../.
 
 ```csharp
 public sealed record FundAccountCloseReadinessBlockerDto(string Code, string Category, string Severity, string Message, string? RouteHint = null, string? EvidenceLink = null);
-```
-
-## FundAccountCloseReadinessComponentDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundAccountCloseReadinessComponentDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:563](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L563).
-
-```csharp
-public sealed record FundAccountCloseReadinessComponentDto(string Key, string Label, FundAccountCloseReadinessStatusDto Status, int Score, int Weight, string Severity, string Reason, string? RouteHint = null, string? EvidenceLink = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string BlockingReason =&gt; …;</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:574](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L574) |  |
-
-## FundAccountCloseReadinessDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundAccountCloseReadinessDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:591](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L591).
-
-```csharp
-public sealed record FundAccountCloseReadinessDto(Guid AccountId, DateTimeOffset EvaluatedAtUtc, FundAccountCloseReadinessStatusDto Status, bool IsReadyToClose, int Score, DateTimeOffset? LatestProviderSyncedAt, DateOnly? LatestLedgerAsOfDate, Guid? LatestReconciliationRunId, IReadOnlyList<FundAccountCloseReadinessComponentDto> Components, IReadOnlyList<FundAccountCloseReadinessBlockerDto> Blockers, IReadOnlyList<FundAccountCloseReadinessActionDto> NextActions);
-```
-
-## FundAccountCloseReadinessStatusDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundAccountCloseReadinessStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:556](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L556).
-
-```csharp
-public enum FundAccountCloseReadinessStatusDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Ready = 0</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:558](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L558) |  |
-| <code>ReviewRequired = 1</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:559](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L559) |  |
-| <code>Blocked = 2</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:560](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L560) |  |
-
-## FundAccountSummary
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundAccountSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:73](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L73).
-
-Account-first row used by Accounting banking and account tabs.
-
-```csharp
-public sealed record FundAccountSummary(Guid AccountId, AccountTypeDto AccountType, string AccountCode, string DisplayName, string BaseCurrency, string? Institution, bool IsActive, decimal CashBalance, decimal SecuritiesMarketValue, decimal NetAssetValue, DateOnly? LastSnapshotDate, int ReconciliationRuns, int OpenBreaks, string? PortfolioId, string? LedgerReference, string? BankName, string? AccountNumberMasked, Guid? EntityId = null, Guid? SleeveId = null, Guid? VehicleId = null, string? StrategyId = null, string? RunId = null, string StructureLabel = "Unassigned", string WorkflowLabel = "Manual");
 ```

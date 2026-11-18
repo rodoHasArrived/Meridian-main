@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FundStructureSetupPreviewLinkDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureSetupPreviewLinkDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs:112](../../../../src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs#L112).
+
+```csharp
+public sealed record FundStructureSetupPreviewLinkDto(FundStructureSetupNodeAlias Parent, FundStructureSetupNodeAlias Child, OwnershipRelationshipTypeDto RelationshipType, decimal? OwnershipPercent, bool IsPrimary, string? Notes);
+```
+
 ## FundStructureSetupResultDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureSetupResultDto</code>. Kind: `record`.
@@ -716,21 +726,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public bool CanCreateProposal { get; init; }</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:78](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L78) |  |
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public bool CanAttestExternalReview { get; init; }</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:80](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L80) |  |
-
-## IntercompanyAgreementCommandDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementCommandDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:36](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L36).
-
-Actor and tenant are deliberately absent: authenticated service context supplies both.
-
-```csharp
-public sealed record IntercompanyAgreementCommandDto(Guid CommandId, Guid AgreementId, long ExpectedAggregateVersion, Guid ProposalId, IntercompanyAgreementDraftDto? Draft = null, string? Rationale = null, string? SubmittedHash = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IntercompanyExternalReviewDto? ExternalReview { get; init; }</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:41](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L41) |  |

@@ -6,6 +6,31 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ThreeWayReconciliationOptions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayReconciliationOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:14](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L14).
+
+```csharp
+public sealed class ThreeWayReconciliationOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string SectionKey = &quot;Reconciliation:ThreeWay&quot;;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:16](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L16) |  |
+| <code>public const string SupportedBasisConvention = &quot;GrossTradeValueFeesExpensed&quot;;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:17](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L17) |  |
+| <code>public string RootDirectory { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:18](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L18) |  |
+| <code>public TimeSpan MaximumSourceAge { get; set; } = TimeSpan.FromMinutes(30);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:19](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L19) |  |
+| <code>public TimeSpan MaximumSourceDrift { get; set; } = TimeSpan.FromMinutes(5);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:20](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L20) |  |
+| <code>public string BrokerCostBasisConvention { get; set; } = &quot;Unknown&quot;;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:22](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L22) |  |
+| <code>public string CashAccountPath { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:23](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L23) |  |
+| <code>public string FeeExpenseAccountPath { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:24](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L24) |  |
+| <code>public TimeOnly DailyRunAfterUtc { get; set; } = new (0, 15);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:25](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L25) |  |
+| <code>public IReadOnlyList&lt;ThreeWayReconciliationSchedule&gt; Schedules { get; set; } = [];</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:26](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L26) |  |
+
 ## ThreeWayReconciliationSchedule
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayReconciliationSchedule</code>. Kind: `record`.
@@ -343,7 +368,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:90](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L90) |  |
-| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1591](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1591) |  |
+| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1601](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1601) |  |
 
 ## WorkstationWorkflowReadScope
 
@@ -917,22 +942,3 @@ Declared public members:
 | <code>public const string DataOpenQueueOverview = &quot;workflow.data.open-queue-overview&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:56](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L56) |  |
 | <code>public const string DataReviewSecurityMaster = &quot;workflow.data.review-security-master&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:57](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L57) |  |
 | <code>public const string SettingsOpen = &quot;workflow.settings.open&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:59](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L59) |  |
-
-## WorkflowLibraryService
-
-Qualified name: <code>Meridian.Ui.Shared.Workflows.WorkflowLibraryService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Workflows/WorkflowLibraryService.cs:8](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowLibraryService.cs#L8).
-
-Builds the shared workflow library payload exposed to hosts and desktop UI.
-
-```csharp
-public sealed class WorkflowLibraryService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WorkflowLibraryService(IWorkflowActionCatalog catalog);</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowLibraryService.cs:12](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowLibraryService.cs#L12) |  |
-| <code>public WorkflowLibraryDto GetLibrary() =&gt; …;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowLibraryService.cs:17](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowLibraryService.cs#L17) |  |

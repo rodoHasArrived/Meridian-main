@@ -847,10 +847,56 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IRetaine
             }
         }
 
+        if (evidence.AccruedInterest != 0m || evidence.AccruedInterestRelieved != 0m)
+            journals.Add(BuildAccruedInterestJournal(evt, securityGate, evidence, accountId));
+
         var charges = evt.Commission + evidence.Fees + evidence.SlippageCost;
         if (charges > 0m)
             journals.Add(BuildCommissionJournal(evt, securityGate, charges));
         return journals;
+    }
+
+    /// <summary>
+    /// Posts the bond accrued interest a face-value fill settled on top of its clean
+    /// consideration: a purchase debits Accrued Interest Receivable; a sale relieves the
+    /// purchased receivable and books the rest as coupon income earned while held.
+    /// </summary>
+    private JournalEntry BuildAccruedInterestJournal(
+        TradeExecutedEvent evt,
+        LedgerPostingSecurityGateResult securityGate,
+        TradeFillAccountingEvidence evidence,
+        string? accountId)
+    {
+        if (!evt.UsesFaceValuePercentageOfPar || evidence.SettlesVariationMargin
+            || evidence.AccruedInterest <= 0m || evidence.AccruedInterestRelieved < 0m
+            || (evt.Side == Sdk.OrderSide.Buy && evidence.AccruedInterestRelieved != 0m))
+            throw new InvalidDataException($"Fill '{evt.FillId:D}' has inconsistent bond accrued-interest evidence.");
+
+        const string activityType = "trade-accrued-interest";
+        var cashAccount = _chartOfAccounts.Resolve(LedgerAccountRole.Cash, accountId);
+        var receivable = LedgerAccounts.AccruedInterestReceivable(evt.Symbol, accountId);
+        var lines = new List<(LedgerAccount Account, decimal Debit, decimal Credit)>();
+        if (evt.Side == Sdk.OrderSide.Buy)
+        {
+            lines.Add((receivable, evidence.AccruedInterest, 0m));
+            lines.Add((cashAccount, 0m, evidence.AccruedInterest));
+        }
+        else
+        {
+            var income = evidence.AccruedInterest - evidence.AccruedInterestRelieved;
+            var couponIncome = _chartOfAccounts.Resolve(LedgerAccountRole.CouponIncome, accountId);
+            lines.Add((cashAccount, evidence.AccruedInterest, 0m));
+            if (evidence.AccruedInterestRelieved > 0m)
+                lines.Add((receivable, 0m, evidence.AccruedInterestRelieved));
+            if (income > 0m)
+                lines.Add((couponIncome, 0m, income));
+            else if (income < 0m)
+                lines.Add((couponIncome, -income, 0m));
+        }
+
+        return CreateJournal(evt, securityGate, activityType,
+            CreateDeterministicGuid(evt.FillId, activityType, "journal"),
+            FormattableString.Invariant($"Accrued interest on {evt.Side} {evt.FilledQuantity} {evt.Symbol}"), lines);
     }
 
     private static void ValidateLegExecutionValue(TradeExecutedEvent evt, SecurityTradePosting leg)

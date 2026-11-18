@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PrepareFactorPaydownRequestDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.PrepareFactorPaydownRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/FactorPaydownPreparationDtos.cs:8](../../../../src/Meridian.Contracts/Ledger/FactorPaydownPreparationDtos.cs#L8).
+
+Operator assertions for a paydown; scope authority, lots and amounts are resolved by the server.
+
+```csharp
+public sealed record PrepareFactorPaydownRequestDto(Guid LedgerBookId, Guid SecurityId, Guid BookPositionId, Guid PeriodId, long ExpectedPeriodVersion, AccountingBasisKindDto AccountingBasis, string FundProfileId, DateOnly EffectiveDate, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)] decimal PriorFactor, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)] decimal NewFactor, string SourceDomain, string SourceEntityId, string SourceContentHash, DateTimeOffset OccurredAtUtc, IReadOnlyList<RetainedEvidenceIdentityDto> FactorEvidence, string CashAccountPath, string CarryingAccountPath, string RealizedGainAccountPath, string RealizedLossAccountPath, Guid? CorrelationId = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public bool ScheduledPrincipal { get; init; }</code> | [src/Meridian.Contracts/Ledger/FactorPaydownPreparationDtos.cs:32](../../../../src/Meridian.Contracts/Ledger/FactorPaydownPreparationDtos.cs#L32) | Opt-in governed US GAAP contractual repayment; legacy disposal treatment remains the default. |
+
 ## PreviewClosePreparationRequestDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.PreviewClosePreparationRequestDto</code>. Kind: `record`.
@@ -693,19 +711,3 @@ Source: [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:58](../../../
 ```csharp
 public sealed record RetryIntercompanyProposalRequest(Guid RequestId, string Reason);
 ```
-
-## ReviewCloseEvidenceRequestDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.ReviewCloseEvidenceRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:384](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L384).
-
-```csharp
-public sealed record ReviewCloseEvidenceRequestDto(Guid WorkflowId, string IssueCode, string? TargetId, string Actor, string Notes, IReadOnlyList<string>? EvidenceLinks = null, string? CorrelationId = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:394](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L394) |  |

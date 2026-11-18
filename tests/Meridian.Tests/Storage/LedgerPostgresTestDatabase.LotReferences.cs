@@ -40,7 +40,8 @@ internal sealed partial class LedgerPostgresTestDatabase
     // Explicit fixture setup, never called by a posting wrapper. Commands must state the versions
     // they reviewed, and later fixture drift is not silently repaired before exercising the store.
     public async Task<LotReferenceAuthority> SeedLotReferenceAuthorityAsync(
-        Guid bookId, Guid securityId, Guid positionId, string currency = "USD", string positionSide = BookPositionSides.Long, string? financialAccountId = null)
+        Guid bookId, Guid securityId, Guid positionId, string currency = "USD", string positionSide = BookPositionSides.Long, string? financialAccountId = null,
+        string assetClass = "Equity")
     {
         if (_lotSecurities is null)
         {
@@ -58,7 +59,7 @@ internal sealed partial class LedgerPostgresTestDatabase
         var json = JsonSerializer.SerializeToElement(new { });
         var at = DateTimeOffset.Parse("2020-01-01T00:00:00Z");
         var date = new DateOnly(2020, 1, 1);
-        var security = new SecurityProjectionRecord(securityId, "Equity", SecurityStatusDto.Active,
+        var security = new SecurityProjectionRecord(securityId, assetClass, SecurityStatusDto.Active,
             "Reference fixture", currency, "ISIN", securityId.ToString("N"), json, SecurityTermsEnvelope.StampDeclaredFormat(json), json, 1, at, null, [], []);
         await _lotSecurities.UpsertProjectionAsync(security);
         var eventId = Guid.NewGuid();

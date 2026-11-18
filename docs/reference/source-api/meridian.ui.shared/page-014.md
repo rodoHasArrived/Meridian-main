@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IStatementCaseworkCommitFaultInjector
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IStatementCaseworkCommitFaultInjector</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:1285](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L1285).
+
+Provides fault-injection callbacks at retained statement casework commit boundaries.
+
+```csharp
+public interface IStatementCaseworkCommitFaultInjector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task OnPointAsync(StatementCaseworkCommitFaultPoint point, string commandId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:1287](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L1287) |  |
+
 ## IStatementReconciliationCaseworkHandoffService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IStatementReconciliationCaseworkHandoffService</code>. Kind: `interface`.
@@ -1005,13 +1023,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public LedgerAccountingSourceKind SourceKind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:308](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L308) |  |
 | <code>public async Task&lt;LedgerAccountingSourcePopulation&gt; ReadAsync(LedgerAccountingCompletenessQuery query, LedgerAccountingPeriod period, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:310](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L310) |  |
-
-## PaymentInstruction
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PaymentInstruction</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:27](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L27).
-
-```csharp
-public sealed record PaymentInstruction(string InstructionId, string AccountId, string Counterparty, string Currency, decimal Amount, DateOnly ValueDate, string Purpose, string Status);
-```

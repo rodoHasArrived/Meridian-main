@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FiscalYearCloseSnapshotRead
+
+Qualified name: <code>Meridian.Ui.Shared.Services.FiscalYearCloseSnapshotRead</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/FiscalYearClosePlanBuilder.cs:15](../../../../src/Meridian.Ui.Shared/Services/FiscalYearClosePlanBuilder.cs#L15).
+
+The retained close snapshot read for one constituent period. IntegrityFailed is set when the store refused to serve retained bytes that no longer match their hash or scope.
+
+```csharp
+public sealed record FiscalYearCloseSnapshotRead(LedgerPeriodCloseSnapshot? Snapshot, bool IntegrityFailed = false);
+```
+
 ## FixedAssetDepreciationCalculation
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FixedAssetDepreciationCalculation</code>. Kind: `class`.
@@ -1035,22 +1047,3 @@ Declared public members:
 | <code>public Task&lt;IReadOnlyList&lt;AccountingMigrationRunWorkerPlanDto&gt;&gt; ListAsync(string? fundProfileId = null, Guid? ledgerBookId = null, AccountingMigrationRunKindDto? kind = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs:43](../../../../src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs#L43) |  |
 | <code>public Task&lt;AccountingMigrationRunWorkerPlanDto?&gt; GetAsync(string planId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs:62](../../../../src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs#L62) |  |
 | <code>public Task&lt;AccountingMigrationRunWorkerPlanDto&gt; UpsertAsync(AccountingMigrationRunWorkerPlanDto plan, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs:74](../../../../src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs#L74) |  |
-
-## InMemoryAccountingProductionCertificationProfileStore
-
-Qualified name: <code>Meridian.Ui.Shared.Services.InMemoryAccountingProductionCertificationProfileStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs:31](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs#L31).
-
-Stores accounting production certification profiles in process memory.
-
-```csharp
-public sealed class InMemoryAccountingProductionCertificationProfileStore : IAccountingProductionCertificationProfileStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;AccountingProductionCertificationProfileDto?&gt; GetAsync(string? tenantId, string? companyId, string? fundProfileId, Guid? ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs:35](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs#L35) |  |
-| <code>public Task&lt;AccountingProductionCertificationProfileDto&gt; UpsertAsync(AccountingProductionCertificationProfileUpsertRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs:47](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs#L47) |  |

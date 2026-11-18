@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionEvidenceMutationResultDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionEvidenceMutationResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:718](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L718).
+
+```csharp
+public sealed record CorporateActionEvidenceMutationResultDto(CorporateActionProcessingCaseDto Case, CorporateActionEvidenceDto Evidence, bool Replayed);
+```
+
 ## CorporateActionField
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionField</code>. Kind: `enum`.
@@ -936,14 +946,4 @@ One unadjusted notional coupon period, &#91;Start, End), that an Actual/Actual (
 
 ```csharp
 public readonly record struct DayCountReferencePeriod(DateOnly Start, DateOnly End);
-```
-
-## DeactivateSecurityRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.DeactivateSecurityRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs:43](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs#L43).
-
-```csharp
-public sealed record DeactivateSecurityRequest(Guid SecurityId, long ExpectedVersion, DateTimeOffset EffectiveTo, string SourceSystem, string UpdatedBy, string? SourceRecordId, string? Reason);
 ```

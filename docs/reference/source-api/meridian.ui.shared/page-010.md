@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ConfigStoreExtensions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ConfigStoreExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ConfigStore.cs:98](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L98).
+
+Configures the core ConfigStore default path resolver for web dashboard hosting.
+
+```csharp
+public static class ConfigStoreExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void UseWebDefaultPath();</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:100](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L100) |  |
+
 ## ConfiguredReportingHttpRelayClient
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ConfiguredReportingHttpRelayClient</code>. Kind: `class`.
@@ -913,24 +931,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public async Task&lt;bool&gt; IsUsdEquityAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/EquityOrderSessionPolicy.cs:14](../../../../src/Meridian.Ui.Shared/Services/EquityOrderSessionPolicy.cs#L14) |  |
 | <code>public async Task&lt;OrderCheck&gt; EvaluateAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/EquityOrderSessionPolicy.cs:23](../../../../src/Meridian.Ui.Shared/Services/EquityOrderSessionPolicy.cs#L23) |  |
-
-## EvidenceVaultAccountingProductionCertificationEvidenceAuthority
-
-Qualified name: <code>Meridian.Ui.Shared.Services.EvidenceVaultAccountingProductionCertificationEvidenceAuthority</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs:69](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs#L69).
-
-Resolves only hash-verified, tenant/company-scoped Evidence Vault manifests. Supported lanes are taken from reviewer-confirmed document fields, not from client-provided certification artifacts.
-
-```csharp
-public sealed class EvidenceVaultAccountingProductionCertificationEvidenceAuthority(IEvidenceArtifactStore evidenceStore) : IAccountingProductionCertificationEvidenceAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string WorkflowLanesField = &quot;accounting.certification.workflow-lanes&quot;;</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs:72](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs#L72) |  |
-| <code>public const string DimensionalLanesField = &quot;accounting.certification.dimensional-lanes&quot;;</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs:73](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs#L73) |  |
-| <code>public const string TenantAdministrationLanesField = &quot;accounting.certification.tenant-administration-lanes&quot;;</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs:74](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs#L74) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;AccountingCertificationEvidenceSource&gt;&gt; ResolveAsync(AccountingCertificationEvidenceResolutionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs:76](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs#L76) |  |

@@ -39,7 +39,8 @@ public static class ClassificationLabelReader
         "Equity", "FixedIncome", "Fund", "CashEquivalent", "Financing", "Derivative", "PrivateCredit", "Other",
         // AssetFamily
         "Sovereign", "CorporateDebt", "BankProduct", "CommonEquity", "PreferredEquity", "PartnershipEquity",
-        "MoneyMarket", "RepurchaseAgreement", "StructuredCash", "SecuritizedCredit", "ListedDerivative", "PrivateLoan",
+        "MoneyMarket", "RepurchaseAgreement", "StructuredCash", "SecuritizedCredit", "ListedDerivative", "OtcDerivative",
+        "ForeignExchange", "PooledFund", "PrivateLoan",
         // SecuritySubType
         "TreasuryBill", "TreasuryNote", "TreasuryBond", "Tips", "TreasuryFrn", "CommercialPaper", "CertificateOfDeposit",
         "TimeDeposit", "DemandDeposit", "MoneyMarketFund", "Repo", "CashSweep", "CorporateBond", "MunicipalBond",

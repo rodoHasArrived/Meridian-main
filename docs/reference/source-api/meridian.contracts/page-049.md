@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OtcCreditEventData
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCreditEventData</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:38](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L38).
+
+An externally determined credit trigger. Recording it does not invent an auction price or settle the contract.
+
+```csharp
+public sealed record OtcCreditEventData([property : JsonRequired] OtcCreditEventKind CreditEvent, [property : JsonRequired] string ReferenceEntity, [property : JsonRequired] string DeterminationReference) : OtcContractLifecycleData;
+```
+
+## OtcCreditEventKind
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCreditEventKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L13).
+
+The contractual credit trigger determined by the external evidence.
+
+```csharp
+public enum OtcCreditEventKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Bankruptcy</code> | [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L15) |  |
+| <code>FailureToPay</code> | [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L15) |  |
+| <code>Restructuring</code> | [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L15) |  |
+| <code>ObligationAcceleration</code> | [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L15) |  |
+| <code>ObligationDefault</code> | [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L15) |  |
+| <code>RepudiationMoratorium</code> | [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L16) |  |
+| <code>GovernmentalIntervention</code> | [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L16) |  |
+
 ## OtcCreditSupportSideDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCreditSupportSideDto</code>. Kind: `record`.
@@ -777,34 +813,4 @@ Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContract
 
 ```csharp
 public sealed record RecordCorporateActionSourceProposalRequestDto(CorporateActionDto ProposedAction, CorporateActionProviderEventIdentityDto ProviderIdentity, string Actor, Guid? ProposalId = null, Guid? SupersedesProposalId = null, string? Reason = null, string? CorrelationId = null, string? ClaimedEconomicFingerprint = null, CorporateActionSourceDisplayMetadataDto? DisplayMetadata = null);
-```
-
-## RecordRawPriceRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.RecordRawPriceRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:116](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L116).
-
-Request to record a raw price from a single source for golden copy evaluation.
-
-```csharp
-public sealed record RecordRawPriceRequest(Guid SecurityId, string SourceId, decimal Price, DateTimeOffset PriceAsOf, string RecordedBy, SecurityPriceUnit Unit = SecurityPriceUnit.Unspecified)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public SecurityPriceQuotationEvidence? Quotation { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:125](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L125) |  |
-
-## RedemptionCorporateActionTerms
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.RedemptionCorporateActionTerms</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:186](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L186).
-
-Principal redeemed at a price (call, maturity, put).
-
-```csharp
-public sealed record RedemptionCorporateActionTerms(string EventType, decimal? PricePercentOfPar, decimal? CashPerUnit, bool? IsPartial, bool? IsMakeWhole) : CorporateActionTerms(EventType);
 ```

@@ -1588,7 +1588,9 @@ describe("accounting-screen view model", () => {
       expect.objectContaining({
         journalEntryId: "je-cash-1",
         debitLabel: "$120,500",
-        creditLabel: "$0",
+        // The credit side is not applicable to a debit-balance line, so it is blank rather than $0.
+        creditLabel: "",
+        ariaLabel: "Cash journal je-cash-1. Debit $120,500. Balance $120,500. Source evidence.",
         evidenceLabel: "Source evidence",
         evidenceHref: "/accounting/audit?sourceEventId=evt-cash-1",
         approvalHref: "/accounting/approvals?approvalId=approval-cash-1"

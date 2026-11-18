@@ -6,6 +6,62 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TextPrimitives
+
+Qualified name: <code>Meridian.Contracts.Text.TextPrimitives</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Text/TextPrimitives.cs:33](../../../../src/Meridian.Contracts/Text/TextPrimitives.cs#L33).
+
+The shared home for the trivial string helpers that were previously redeclared as private static in hundreds of files.
+
+```csharp
+public static class TextPrimitives
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string? NormalizeOptional(string? value) =&gt; …;</code> | [src/Meridian.Contracts/Text/TextPrimitives.cs:43](../../../../src/Meridian.Contracts/Text/TextPrimitives.cs#L43) | Returns value trimmed, or null when it is null, empty, or entirely white space. |
+| <code>public static string RequireText(string? value, [CallerArgumentExpression(nameof(value))] string? paramName = null);</code> | [src/Meridian.Contracts/Text/TextPrimitives.cs:58](../../../../src/Meridian.Contracts/Text/TextPrimitives.cs#L58) | Returns value trimmed, throwing when it is null, empty, or entirely white space. |
+| <code>public static string? FirstNonBlank(params string?[] values);</code> | [src/Meridian.Contracts/Text/TextPrimitives.cs:74](../../../../src/Meridian.Contracts/Text/TextPrimitives.cs#L74) | Returns the first entry of values that is not null, empty, or entirely white space, trimmed; or null when every entry is blank. |
+
+## MmfDetailDto
+
+Qualified name: <code>Meridian.Contracts.Treasury.MmfDetailDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:25](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L25).
+
+Full reference record for a money market fund, including canonical identity, sweep eligibility, weighted-average maturity, and liquidity-fee metadata.
+
+```csharp
+public sealed record MmfDetailDto(Guid SecurityId, string DisplayName, string Currency, string? FundFamily, bool IsSweepEligible, int? WeightedAverageMaturityDays, bool HasLiquidityFee, string Status, long Version, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo);
+```
+
+## MmfFundFamilyDto
+
+Qualified name: <code>Meridian.Contracts.Treasury.MmfFundFamilyDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:63](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L63).
+
+Fund-family grouping projection. Normalised family name is upper-case; members are the canonical security IDs of all active MMFs sharing that family lineage.
+
+```csharp
+public sealed record MmfFundFamilyDto(string NormalizedFamilyName, IReadOnlyList<Guid> MemberSecurityIds, int MemberCount, DateTimeOffset AsOf);
+```
+
+## MmfLiquidityDto
+
+Qualified name: <code>Meridian.Contracts.Treasury.MmfLiquidityDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:41](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L41).
+
+Liquidity projection for a money market fund derived from WAM and operational state.
+
+```csharp
+public sealed record MmfLiquidityDto(Guid SecurityId, MmfLiquidityState State, int? WeightedAverageMaturityDays, DateTimeOffset AsOf);
+```
+
 ## MmfLiquidityState
 
 Qualified name: <code>Meridian.Contracts.Treasury.MmfLiquidityState</code>. Kind: `enum`.
@@ -605,46 +661,4 @@ Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:
 
 ```csharp
 public sealed record BulkResolveSecurityMasterConflictsRequest(IReadOnlyList<Guid> ConflictIds, string ResolvedBy, string? Reason, string? FundProfileId);
-```
-
-## BulkResolveSecurityMasterConflictsResult
-
-Qualified name: <code>Meridian.Contracts.Workstation.BulkResolveSecurityMasterConflictsResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:641](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L641).
-
-```csharp
-public sealed record BulkResolveSecurityMasterConflictsResult(int Requested, int Eligible, int Resolved, int Skipped, IReadOnlyList<Guid> ResolvedConflictIds, IReadOnlyDictionary<Guid, string> SkippedReasons);
-```
-
-## CanonicalizationAssuranceDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.CanonicalizationAssuranceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:110](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L110).
-
-```csharp
-public sealed record CanonicalizationAssuranceDto(bool Enabled, long Version, long EventsTotal, long SuccessTotal, long SoftFailTotal, long HardFailTotal, double MatchRatePercent, IReadOnlyList<CanonicalizationProviderSummaryDto> Providers);
-```
-
-## CanonicalizationProviderSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.CanonicalizationProviderSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:120](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L120).
-
-```csharp
-public sealed record CanonicalizationProviderSummaryDto(string Provider, long Total, long Success, long SoftFail, long HardFail, double MatchRatePercent);
-```
-
-## CaptureOnboardingComparisonRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.CaptureOnboardingComparisonRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:27](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L27).
-
-Only source identities are accepted from clients; amounts and readiness come from services.
-
-```csharp
-public sealed record CaptureOnboardingComparisonRequestDto(int ExpectedVersion, DateOnly AsOfDate, string ProviderId, string ImportId, string MappingProfileId, string MappingVersion, string? Notes = null);
 ```

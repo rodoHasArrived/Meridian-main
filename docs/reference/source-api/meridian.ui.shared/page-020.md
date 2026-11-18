@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkflowLibraryService
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.WorkflowLibraryService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/WorkflowLibraryService.cs:8](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowLibraryService.cs#L8).
+
+Builds the shared workflow library payload exposed to hosts and desktop UI.
+
+```csharp
+public sealed class WorkflowLibraryService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WorkflowLibraryService(IWorkflowActionCatalog catalog);</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowLibraryService.cs:12](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowLibraryService.cs#L12) |  |
+| <code>public WorkflowLibraryDto GetLibrary() =&gt; …;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowLibraryService.cs:17](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowLibraryService.cs#L17) |  |
+
 ## WorkflowPresetMutationResult
 
 Qualified name: <code>Meridian.Ui.Shared.Workflows.WorkflowPresetMutationResult</code>. Kind: `record`.

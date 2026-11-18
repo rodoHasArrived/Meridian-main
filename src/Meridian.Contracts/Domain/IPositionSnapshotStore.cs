@@ -15,7 +15,16 @@ public sealed record PositionRecord(
     decimal Quantity,
     decimal CostBasis,
     decimal UnrealisedPnl,
-    decimal RealisedPnl);
+    decimal RealisedPnl)
+{
+    /// <summary>
+    /// Accrued interest receivable on the holding at snapshot time (absolute, in the account's
+    /// base currency) for coupon-bearing positions whose source reports it; null otherwise.
+    /// Omitted from serialized snapshots when null so retained records are unchanged.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? AccruedInterest { get; init; }
+}
 
 /// <summary>
 /// Serialisation-friendly per-account portfolio snapshot persisted by

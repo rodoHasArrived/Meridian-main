@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CreateIntercompanyAccrualDraftRequest
+
+Qualified name: <code>Meridian.Contracts.Ledger.CreateIntercompanyAccrualDraftRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs:13](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs#L13).
+
+The digest proves the operator is drafting exactly the computation they previewed.
+
+```csharp
+public sealed record CreateIntercompanyAccrualDraftRequest(IntercompanyAccrualRequestDto Accrual, string ExpectedEvidenceDigest);
+```
+
 ## CreateIntercompanyFeeAccrualDraftRequest
 
 Qualified name: <code>Meridian.Contracts.Ledger.CreateIntercompanyFeeAccrualDraftRequest</code>. Kind: `record`.
@@ -833,23 +845,3 @@ Source: [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:73](../../../.
 ```csharp
 public partial class IntercompanyAccountContractsJsonContext : JsonSerializerContext;
 ```
-
-## IntercompanyAccountRoleDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAccountRoleDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:6](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L6).
-
-```csharp
-public enum IntercompanyAccountRoleDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Receivable = 0</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:8](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L8) |  |
-| <code>Payable = 1</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:9](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L9) |  |
-| <code>Revenue = 2</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:10](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L10) |  |
-| <code>Expense = 3</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:11](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L11) |  |
-| <code>TranslationReserve = 4</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:12](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L12) |  |

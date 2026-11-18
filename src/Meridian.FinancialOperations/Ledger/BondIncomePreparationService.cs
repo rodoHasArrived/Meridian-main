@@ -8,10 +8,17 @@ using Meridian.Storage.Ledger;
 
 namespace Meridian.FinancialOperations.Ledger;
 
+/// <summary>Prepares adopted bond carrying-value income through the governed event/draft path.</summary>
+public interface IBondIncomePreparationService
+{
+    Task<BondIncomePreviewDto> PrepareAsync(BondIncomePreparationRequestDto request,
+        string tenantId, string companyId, string actor, DateTimeOffset preparedAtUtc, CancellationToken ct = default);
+}
+
 /// <summary>Retains the reviewed calculation source, then uses the existing governed event/draft path.</summary>
 public sealed class BondIncomePreparationService(IBondIncomeService income, ILedgerJournalStore ledger,
     IInstrumentPositionProjectionStore positions, IAccountingPolicyService policies,
-    IAssetAccountingEventSpineService spine, IBondIncomePreparationEvidenceStore evidence)
+    IAssetAccountingEventSpineService spine, IBondIncomePreparationEvidenceStore evidence) : IBondIncomePreparationService
 {
     public async Task<BondIncomePreviewDto> PrepareAsync(BondIncomePreparationRequestDto request,
         string tenantId, string companyId, string actor, DateTimeOffset preparedAtUtc, CancellationToken ct = default)

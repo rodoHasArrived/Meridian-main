@@ -92,9 +92,11 @@ responsibilities, without reconstructing carrying value from rounded quotes or r
 
 The native engine resolves lot denomination from each available Security Master definition
 before replay. Fund definitions retain `Units` and equities retain `Shares`, both with multiplier
-1. Definitions requiring face, notional, commitment, currency, or contract pricing are refused
-until a compatible pricing model exists; replay cannot silently apply equity calculations to
-them. Legacy runs without a resolved security definition explicitly retain the symbol-only
+1. Bond definitions carry `FaceValue` lots with multiplier 1: quantity is face and prices stay a
+percentage of par, so cash, market value and P&L divide by 100 once (100,000 face at 101.25 moves
+$101,250). Backtests do not model accrued interest. Definitions requiring notional, commitment,
+currency, or contract pricing, or a face multiplier other than 1, are refused until a compatible
+pricing model exists; replay cannot silently apply equity calculations to them. Legacy runs without a resolved security definition explicitly retain the symbol-only
 equity assumption. Lot snapshots require explicit units and positive multipliers.
 
 Long sales and short covers use Ledger's `LotBasisRelief` allocator over the shared decimal

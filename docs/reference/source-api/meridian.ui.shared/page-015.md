@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PaymentInstruction
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PaymentInstruction</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:27](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L27).
+
+```csharp
+public sealed record PaymentInstruction(string InstructionId, string AccountId, string Counterparty, string Currency, decimal Amount, DateOnly ValueDate, string Purpose, string Status);
+```
+
 ## PerformanceFeeAccrualCalculation
 
 Qualified name: <code>Meridian.Ui.Shared.Services.PerformanceFeeAccrualCalculation</code>. Kind: `class`.
@@ -891,21 +901,3 @@ Declared public members:
 | <code>public string RequireInput(string name) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:44](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L44) |  |
 | <code>public string? OptionalInput(string name) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:49](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L49) |  |
 | <code>public int RequireYearBasisDays();</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:53](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L53) | An explicit day-count year basis; the accrual refuses to guess one. |
-
-## RecurringJournalCalculationResult
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalCalculationResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:66](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L66).
-
-The outcome of a posting calculation: a balanced draft for human approval, or a recorded reason why this occurrence has nothing to post.
-
-```csharp
-public sealed record RecurringJournalCalculationResult(AutomatedJournalDraft? Draft, string Summary)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static RecurringJournalCalculationResult NothingDue(string reason) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:68](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L68) |  |

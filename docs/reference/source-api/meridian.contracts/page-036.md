@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyAccountRoleDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAccountRoleDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:6](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L6).
+
+```csharp
+public enum IntercompanyAccountRoleDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Receivable = 0</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:8](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L8) |  |
+| <code>Payable = 1</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:9](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L9) |  |
+| <code>Revenue = 2</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:10](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L10) |  |
+| <code>Expense = 3</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:11](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L11) |  |
+| <code>TranslationReserve = 4</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:12](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L12) |  |
+
 ## IntercompanyAccrualCompoundingEvidenceDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAccrualCompoundingEvidenceDto</code>. Kind: `record`.
@@ -714,14 +734,4 @@ Source: [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:59](../../../
 
 ```csharp
 public sealed record IntercompanyRefreshPreviewDto(ManualJournalEntryDraftDto Draft, string Fingerprint, ManualJournalEntryDraftDto? CurrentDraft = null);
-```
-
-## InvestorCapitalStatementDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.InvestorCapitalStatementDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:808](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L808).
-
-```csharp
-public sealed record InvestorCapitalStatementDto(string StatementId, string FundProfileId, Guid? LedgerBookId, string CapitalAccountId, string? InvestorId, string PeriodId, LedgerDimensionSetDto Dimensions, decimal BeginningCapital, decimal Contributions, decimal Distributions, decimal RealizedGainLoss, decimal EndingCapital, string Currency, AccountingCertificationStateDto CertificationState, IReadOnlyList<string> EvidenceLinks);
 ```

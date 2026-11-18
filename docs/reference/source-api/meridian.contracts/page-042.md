@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PipelineStatistics
+
+Qualified name: <code>Meridian.Contracts.Pipeline.PipelineStatistics</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Contracts/Pipeline/PipelineStatistics.cs:8](../../../../src/Meridian.Contracts/Pipeline/PipelineStatistics.cs#L8).
+
+Snapshot of pipeline performance statistics.
+
+```csharp
+public readonly record struct PipelineStatistics(long PublishedCount, long DroppedCount, long ConsumedCount, int CurrentQueueSize, long PeakQueueSize, int QueueCapacity, double QueueUtilization, double AverageProcessingTimeUs, TimeSpan TimeSinceLastFlush, DateTimeOffset Timestamp, long RecoveredCount = 0, long RejectedCount = 0, long DeduplicatedCount = 0, bool IsWalEnabled = false, bool IsValidationEnabled = false, bool IsDeduplicationEnabled = false, BoundedChannelFullMode QueueFullMode = BoundedChannelFullMode.Wait, bool HighWaterMarkWarned = false, int ConsumerCount = 1, int ActiveConsumers = 0, int FaultedConsumers = 0, long ConsumerIterationFailures = 0, DateTimeOffset? LastConsumerFaultAtUtc = null);
+```
+
 ## RetryEnvelope
 
 Qualified name: <code>Meridian.Contracts.Pipeline.RetryEnvelope</code>. Kind: `class`.
@@ -616,34 +628,3 @@ Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:9](..
 ```csharp
 public sealed record PrivateCapitalVehicle(string Name, string Strategy, int? VintageYear, long Version);
 ```
-
-## IReconciliationApiService
-
-Qualified name: <code>Meridian.Contracts.Reconciliation.IReconciliationApiService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:22](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L22).
-
-Defines scope-authorized statement import, reconciliation-run, and casework API operations.
-
-```csharp
-public interface IReconciliationApiService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;StatementImportSummaryDto&gt;&gt; ListImportsAsync(ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:24](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L24) |  |
-| <code>Task&lt;IReadOnlyList&lt;StatementRunSummaryDto&gt;&gt; ListStatementRunsAsync(ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:28](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L28) |  |
-| <code>Task&lt;StatementRunDto?&gt; CreateStatementRunAsync(StatementRunCreateDto request, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:32](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L32) |  |
-| <code>Task&lt;bool&gt; OwnsStatementRunAsync(string runId, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:37](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L37) |  |
-| <code>Task&lt;ReconciliationFundAccountAuthorization?&gt; GetAuthorizedFundAccountAsync(Guid fundAccountId, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:47](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L47) | Resolves an exact fund-account owner for a tenant/company-scoped mutation. The default is deliberately unavailable so compatibility implementations cannot authorize a workflow by accident. |
-| <code>Task&lt;StatementReconciliationRunAuthorization?&gt; GetStatementRunAuthorizationAsync(string runId, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:57](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L57) | Resolves the immutable fund, ledger-book, accounting-period, and as-of authority retained on a statement run. The default is deliberately unavailable. |
-| <code>Task&lt;StatementRunDto?&gt; GetStatementRunAsync(string runId, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:63](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L63) |  |
-| <code>Task&lt;StatementRunValidationDto?&gt; GetStatementRunValidationAsync(string runId, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:68](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L68) |  |
-| <code>Task&lt;IReadOnlyList&lt;StatementRunBreakDto&gt;?&gt; ListStatementRunBreaksAsync(string runId, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:73](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L73) |  |
-| <code>Task&lt;StatementRunDto?&gt; ReconcileStatementRunAsync(string runId, StatementRunReconcileRequestDto request, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:78](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L78) |  |
-| <code>Task&lt;IReadOnlyList&lt;StatementRunExceptionDto&gt;&gt; ListOpenExceptionsAsync(ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:84](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L84) |  |
-| <code>Task&lt;IReadOnlyList&lt;StatementBreakDto&gt;&gt; ListOpenStatementBreaksAsync(ReconciliationBreakQueueScope accessScope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:88](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L88) |  |
-| <code>Task&lt;IReadOnlyList&lt;ReconciliationCaseSummaryDto&gt;&gt; ListOpenCasesAsync(ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:93](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L93) |  |
-| <code>Task&lt;IReadOnlyList&lt;ReconciliationQueueAccountStatusDto&gt;&gt; ListQueueStatusAsync(ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:97](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L97) |  |

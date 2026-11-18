@@ -58,6 +58,11 @@ public sealed partial class PostgresLedgerJournalStore
             throw new LedgerValidationException("Acquisition/disposal reference authority must match the complete authoritative ledger-book and period scope.");
         if (command.AcquisitionLot?.Acquisition is { } acquisition && security.Currency != acquisition.AcquisitionCurrency)
             throw new LedgerValidationException("Acquisition reference authority currency must match the retained acquisition currency.");
+        if (command.AcquisitionLot?.Acquisition is { } basisAcquisition
+            && !LotQuantityBasisRules.Permits(security.AssetClass, basisAcquisition.QuantityBasis))
+            throw new LedgerValidationException(
+                $"Acquisition quantity basis {basisAcquisition.QuantityBasis} is not valid for Security Master asset class "
+                + $"'{security.AssetClass}': only face-value classes are booked by face.");
         if (command.AcquisitionLot?.Acquisition?.BondIncome is { } adoptedIncome)
         {
             try

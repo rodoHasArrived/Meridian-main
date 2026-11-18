@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## InvestorCapitalStatementDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.InvestorCapitalStatementDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:808](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L808).
+
+```csharp
+public sealed record InvestorCapitalStatementDto(string StatementId, string FundProfileId, Guid? LedgerBookId, string CapitalAccountId, string? InvestorId, string PeriodId, LedgerDimensionSetDto Dimensions, decimal BeginningCapital, decimal Contributions, decimal Distributions, decimal RealizedGainLoss, decimal EndingCapital, string Currency, AccountingCertificationStateDto CertificationState, IReadOnlyList<string> EvidenceLinks);
+```
+
 ## IPrivateCapitalFundEventCommandCenterService
 
 Qualified name: <code>Meridian.Contracts.Ledger.IPrivateCapitalFundEventCommandCenterService</code>. Kind: `interface`.
@@ -699,14 +709,4 @@ Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:279](../../../../src/Me
 
 ```csharp
 public sealed record LedgerPeriodQuery(Guid? LedgerBookId = null, string? FundProfileId = null, Guid? FundStructureNodeId = null, LedgerPeriodStatusDto? Status = null, bool OpenOnly = false, AccountingBasisKindDto? AccountingBasis = null);
-```
-
-## LedgerPeriodReopenResultDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.LedgerPeriodReopenResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:531](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L531).
-
-```csharp
-public sealed record LedgerPeriodReopenResultDto(LedgerPeriodDto Period, string PriorStatus, string ReopenedBy, DateTimeOffset ReopenedAtUtc, string ApprovalReference, IReadOnlyList<string> EvidenceLinks);
 ```

@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RecurringJournalCalculationResult
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalCalculationResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:66](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L66).
+
+The outcome of a posting calculation: a balanced draft for human approval, or a recorded reason why this occurrence has nothing to post.
+
+```csharp
+public sealed record RecurringJournalCalculationResult(AutomatedJournalDraft? Draft, string Summary)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static RecurringJournalCalculationResult NothingDue(string reason) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:68](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L68) |  |
+
 ## RecurringJournalPeriodAuthority
 
 Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalPeriodAuthority</code>. Kind: `class`.
@@ -53,7 +71,7 @@ Declared public members:
 | <code>public bool SupportsCalculation(string kind) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:24](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L24) | Whether a calculated template of this kind can be run by this host. |
 | <code>public IReadOnlyList&lt;string&gt; MissingCalculationInputs(JournalTemplateCalculation calculation) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:27](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L27) | The inputs a calculated template of this kind must state and does not. |
 | <code>public async Task&lt;IReadOnlyList&lt;AutomatedJournalScheduledRunResult&gt;&gt; RunDueAsync(DateTimeOffset now, string? tenant = null, string? company = null, bool scopeSpecified = false, CancellationToken ct = default, string? scheduleId = null, RecurringJournalScope? exactScope = null, int? expectedScheduleVersion = null);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:32](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L32) |  |
-| <code>public async Task&lt;RecurringJournalQueueDto&gt; GetQueueAsync(string fundProfileId, Guid ledgerBookId, string entityId, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:339](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L339) |  |
+| <code>public async Task&lt;RecurringJournalQueueDto&gt; GetQueueAsync(string fundProfileId, Guid ledgerBookId, string entityId, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:360](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L360) |  |
 
 ## RecurringJournalSubjectAuthority
 
@@ -794,22 +812,3 @@ A healthy evidence store had no receipt for the exact certified source cut. This
 ```csharp
 public class ReportingReconciliationReadinessException : ReportingAuthoritativeSourceUnavailableException
 ```
-
-## ReportingReleasedArtifactIntegrityGate
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingReleasedArtifactIntegrityGate</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs:239](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs#L239).
-
-Re-reads every immutable artifact immediately before queueing and again immediately before a claimed delivery is sent. A governance receipt alone is therefore insufficient when retained bytes or catalog metadata are missing, corrupt, or no longer match the released manifest.
-
-```csharp
-public sealed class ReportingReleasedArtifactIntegrityGate
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingReleasedArtifactIntegrityGate(IReportingArtifactCatalog catalog, IReportingArtifactStore artifactStore);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs:244](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs#L244) |  |
-| <code>public async Task&lt;ReportingReleaseAuthorizationResult&gt; VerifyAsync(ReportingDeliveryReleaseAuthorization authorization, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs:252](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs#L252) |  |

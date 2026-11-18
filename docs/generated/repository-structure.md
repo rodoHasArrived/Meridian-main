@@ -5507,6 +5507,7 @@ Meridian-main
 │   │   │   ├── SecurityAssetTermsFieldSnapshot.cs
 │   │   │   ├── SecurityCashFlowReceiptJsonContext.cs
 │   │   │   ├── SecurityCashFlowScheduleRowCodec.cs
+│   │   │   ├── SecurityClassificationTaxonomy.cs
 │   │   │   ├── SecurityDayCountWriteGuard.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.BondWorkflow.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.CapitalHomes.cs
@@ -5523,6 +5524,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterCashFlowService.DeclaredBondLeg.cs
 │   │   │   ├── SecurityMasterCashFlowService.DeclaredConventions.cs
 │   │   │   ├── SecurityMasterCashFlowService.FactorAccrual.cs
+│   │   │   ├── SecurityMasterClassificationDriftReportService.cs
 │   │   │   ├── SecurityMasterConcurrencyException.cs
 │   │   │   ├── SecurityMasterConflictAuthorityPolicy.cs
 │   │   │   ├── SecurityMasterConflictDetection.cs
@@ -5768,6 +5770,7 @@ Meridian-main
 │   │   │       ├── BondIncomeScheduledPrincipal.cs
 │   │   │       ├── BondIncomeTerminalCoupon.cs
 │   │   │       ├── BondIncomeZeroCouponMath.cs
+│   │   │       ├── LotQuantityBasisRules.cs
 │   │   │       ├── OpenLotAmortization.cs
 │   │   │       ├── OpenLotAmortizationContinuation.cs
 │   │   │       ├── OpenLotBackfillDtos.cs
@@ -6252,6 +6255,7 @@ Meridian-main
 │   │   │   ├── SecurityListingIdentity.cs
 │   │   │   ├── SecurityLotModel.cs
 │   │   │   ├── SecurityMasterCashFlow.cs
+│   │   │   ├── SecurityMasterClassificationDrift.cs
 │   │   │   ├── SecurityMasterClosePrices.cs
 │   │   │   ├── SecurityMasterClosePricesJsonContext.cs
 │   │   │   ├── SecurityMasterConflictFieldCategories.cs
@@ -6774,6 +6778,7 @@ Meridian-main
 │   │   │   ├── OrderManagementHostedService.cs
 │   │   │   ├── OrderPreviewService.cs
 │   │   │   ├── PaperLedgerIntegrityBreak.cs
+│   │   │   ├── PaperPosition.cs
 │   │   │   ├── PaperSessionOptions.cs
 │   │   │   ├── PaperSessionPersistenceService.AccountingMutations.cs
 │   │   │   ├── PaperSessionPersistenceService.cs
@@ -6819,6 +6824,7 @@ Meridian-main
 │   │   ├── OrderManagementSystem.UntrackedFills.cs
 │   │   ├── OrderManagementSystemFactory.cs
 │   │   ├── OrderManagementSystemOptions.cs
+│   │   ├── PaperBondSettlement.cs
 │   │   ├── PaperExecutionContext.cs
 │   │   ├── PaperTradingGateway.cs
 │   │   ├── README.md
@@ -11062,6 +11068,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterEndpoints.OtcCollateral.cs
 │   │   │   ├── SecurityMasterEndpoints.OtcContracts.cs
 │   │   │   ├── SecurityMasterEndpoints.Rates.cs
+│   │   │   ├── SecurityMasterEndpoints.Reclassification.cs
 │   │   │   ├── SecurityMasterEndpoints.RegistryProjections.cs
 │   │   │   ├── SecurityMasterEndpoints.WriteRefusals.cs
 │   │   │   ├── StatusEndpoints.cs
@@ -11240,6 +11247,7 @@ Meridian-main
 │   │   │   ├── BacktestLedgerExportMapper.cs
 │   │   │   ├── BankFeedTransportService.cs
 │   │   │   ├── BondCollectionCaseworkProjection.cs
+│   │   │   ├── BondCouponIncomeCalculation.cs
 │   │   │   ├── BondExerciseNoticeReadService.cs
 │   │   │   ├── BondPerformanceSourceVerifier.cs
 │   │   │   ├── BondPerformanceTransactionSource.cs
@@ -12642,6 +12650,7 @@ Meridian-main
 │   │   ├── SecurityMasterBacktestAssetEventSourceTests.cs
 │   │   ├── SharedTradePostingParityTests.cs
 │   │   ├── SimulatedPortfolioCacheTests.cs
+│   │   ├── SimulatedPortfolioFaceValueTests.cs
 │   │   ├── SimulatedPortfolioTests.cs
 │   │   ├── StageTelemetryTests.cs
 │   │   ├── TcaReporterTests.cs
@@ -12858,6 +12867,8 @@ Meridian-main
 │   │   ├── Meridian.Storage.Tests.csproj
 │   │   └── StorageCoreTestSources.props
 │   ├── Meridian.Tests
+│   │   ├── Accounting
+│   │   │   └── LotQuantityBasisRulesTests.cs
 │   │   ├── Application
 │   │   │   ├── Accounting
 │   │   │   │   ├── DailyMarkToMarketServiceTests.cs
@@ -13399,6 +13410,7 @@ Meridian-main
 │   │   │   │   ├── AllocationEngineTests.cs
 │   │   │   │   ├── DerivativePositionTests.cs
 │   │   │   │   ├── EventDrivenDecouplingTests.AccountingEvidence.cs
+│   │   │   │   ├── EventDrivenDecouplingTests.BondAccruedInterest.cs
 │   │   │   │   ├── EventDrivenDecouplingTests.BuyToCover.cs
 │   │   │   │   ├── EventDrivenDecouplingTests.CashFlow.cs
 │   │   │   │   ├── EventDrivenDecouplingTests.CompletedEvidenceReplay.cs
@@ -13477,6 +13489,7 @@ Meridian-main
 │   │   │   ├── OrderRiskSizingPolicyTests.cs
 │   │   │   ├── OrderStateTableTests.cs
 │   │   │   ├── OrderSubmissionAuthorityTests.cs
+│   │   │   ├── PaperBondAccruedInterestTests.cs
 │   │   │   ├── PaperExecutionGatewayLotSizeTests.cs
 │   │   │   ├── PaperFillEnvelopeRegressionTests.cs
 │   │   │   ├── PaperFinancingPostingTests.cs
@@ -13488,6 +13501,7 @@ Meridian-main
 │   │   │   ├── PaperGatewayTickSizeBoundaryTests.cs
 │   │   │   ├── PaperLedgerIntegrityTests.cs
 │   │   │   ├── PaperLotConventionTests.cs
+│   │   │   ├── PaperLotUnitCatalogAgreementTests.cs
 │   │   │   ├── PaperObservationFreshnessTests.cs
 │   │   │   ├── PaperOrderMatchingPolicyTests.cs
 │   │   │   ├── PaperPositionUnitizedLotTests.cs
@@ -14125,6 +14139,7 @@ Meridian-main
 │   │   │   │   ├── StatementOpeningBalanceRoleTests.cs
 │   │   │   │   └── StructuredStatementAmountTests.cs
 │   │   │   ├── Fixtures
+│   │   │   │   ├── custodian-bond-accrued-interest.csv
 │   │   │   │   ├── statement-clean-reconciles.csv
 │   │   │   │   ├── statement-invalid-blockers.csv
 │   │   │   │   └── statement-unresolved-breaks.csv
@@ -14150,6 +14165,7 @@ Meridian-main
 │   │   │   ├── StatementRunMatcherGroupTests.cs
 │   │   │   ├── StatementRunMatchingServiceTests.cs
 │   │   │   ├── StatementRunRecoveryTests.cs
+│   │   │   ├── StatementRunWorkflowServiceTests.BondAccruedInterest.cs
 │   │   │   ├── StatementRunWorkflowServiceTests.cs
 │   │   │   └── StatementRunWorkflowServiceTests.MatchingPolicy.cs
 │   │   ├── ReferenceData
@@ -14324,6 +14340,7 @@ Meridian-main
 │   │   │   ├── SecurityAssetClassAliasMappingTests.cs
 │   │   │   ├── SecurityAssetClassBehaviorFactsTests.cs
 │   │   │   ├── SecurityAssetClassCatalogTests.cs
+│   │   │   ├── SecurityAssetClassFactParityTests.cs
 │   │   │   ├── SecurityAssetClassOperationalWiringTests.cs
 │   │   │   ├── SecurityAssetClassParityGuardTests.cs
 │   │   │   ├── SecurityAssetClassRegistryCoverageTests.cs
@@ -14387,6 +14404,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterAssetClassSupportTests.cs
 │   │   │   ├── SecurityMasterCanonicalSymbolSeedFallbackTests.cs
 │   │   │   ├── SecurityMasterCanonicalSymbolSeedReconciliationTests.cs
+│   │   │   ├── SecurityMasterClassificationDriftReportServiceTests.cs
 │   │   │   ├── SecurityMasterClassificationTextGuardTests.cs
 │   │   │   ├── SecurityMasterClosePriceServiceTests.cs
 │   │   │   ├── SecurityMasterConflictServiceTests.cs
@@ -15146,6 +15164,7 @@ Meridian-main
 │   │   │   ├── ReconciliationApiServiceTests.cs
 │   │   │   ├── ReconciliationBreakQueueProjectionTests.cs
 │   │   │   ├── ReconciliationLegacyBulkActionTests.cs
+│   │   │   ├── RecurringJournalCalculationTests.BondCouponIncome.cs
 │   │   │   ├── RecurringJournalCalculationTests.cs
 │   │   │   ├── RecurringJournalCalculationTests.EvidencePins.cs
 │   │   │   ├── RecurringJournalCalculationTests.FactoredAccrual.cs
@@ -15186,6 +15205,7 @@ Meridian-main
 │   │   │   ├── RiskRuleRuntimePriceCollarConfigTests.cs
 │   │   │   ├── SecureReportingDistributionEndpointTests.cs
 │   │   │   ├── SecurityMasterAliasEndpointsTests.cs
+│   │   │   ├── SecurityMasterClassificationDriftEndpointsTests.cs
 │   │   │   ├── SecurityMasterConvertibleEquityEndpointsTests.cs
 │   │   │   ├── SecurityMasterCurveEndpointsTests.cs
 │   │   │   ├── SecurityMasterExceptionCaseworkServiceTests.cs

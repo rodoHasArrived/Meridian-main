@@ -1232,6 +1232,9 @@ let ``SecurityClassification.familyName returns canonical string for each AssetF
             AssetFamily.MoneyMarket,         "MoneyMarket"
             AssetFamily.RepurchaseAgreement, "RepurchaseAgreement"
             AssetFamily.ListedDerivative,    "ListedDerivative"
+            AssetFamily.OtcDerivative,       "OtcDerivative"
+            AssetFamily.ForeignExchange,     "ForeignExchange"
+            AssetFamily.PooledFund,          "PooledFund"
             AssetFamily.PrivateLoan,         "PrivateLoan"
             AssetFamily.OtherFamily "Crypto","Crypto"
         ]

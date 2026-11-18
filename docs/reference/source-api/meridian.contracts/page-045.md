@@ -6,6 +6,47 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionCaseStates
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCaseStates</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:33](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L33).
+
+Durable operational lifecycle; it never replaces the source-event lifecycle.
+
+```csharp
+public static class CorporateActionCaseStates
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Detected = &quot;Detected&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:35](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L35) |  |
+| <code>public const string NeedsTerms = &quot;NeedsTerms&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L36) |  |
+| <code>public const string Disputed = &quot;Disputed&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:37](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L37) |  |
+| <code>public const string TermsConfirmed = &quot;TermsConfirmed&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:38](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L38) |  |
+| <code>public const string ElectionPending = &quot;ElectionPending&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L39) |  |
+| <code>public const string ElectionSubmitted = &quot;ElectionSubmitted&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:40](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L40) |  |
+| <code>public const string AllocationPending = &quot;AllocationPending&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L41) |  |
+| <code>public const string AccountingReview = &quot;AccountingReview&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L42) |  |
+| <code>public const string ReadyForApproval = &quot;ReadyForApproval&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:43](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L43) |  |
+| <code>public const string Approved = &quot;Approved&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L44) |  |
+| <code>public const string PreparerAttested = &quot;PreparerAttested&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:45](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L45) |  |
+| <code>public const string Scheduled = &quot;Scheduled&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:46](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L46) |  |
+| <code>public const string Posted = &quot;Posted&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:47](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L47) |  |
+| <code>public const string Reconciled = &quot;Reconciled&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L48) |  |
+| <code>public const string Reported = &quot;Reported&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L49) |  |
+| <code>public const string Closed = &quot;Closed&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L50) |  |
+| <code>public const string Blocked = &quot;Blocked&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:51](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L51) |  |
+| <code>public const string Cancelled = &quot;Cancelled&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:52](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L52) |  |
+| <code>public const string Superseded = &quot;Superseded&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:53](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L53) |  |
+| <code>public const string RestatementRequired = &quot;RestatementRequired&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:54](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L54) |  |
+| <code>public static bool IsKnown(string? state) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L64) |  |
+| <code>public static bool RequiresDownstreamAuthority(string? state) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L70) | States owned by downstream accounting/posting/reporting controls. The generic case command may prepare a case through ReadyForApproval but cannot grant one of these outcomes. |
+| <code>public static bool IsContentFrozen(string? state) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:78](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L78) | Case content is frozen once it is an approval candidate or has entered a governed downstream/terminal state. A governed transition back to AccountingReview or RestatementRequired is required before evidence, conflicts, or options may change. |
+| <code>public static bool PresupposesConfirmedTerms(string? state) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:83](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L83) | States whose validity depends on confirmed, undisputed source terms. |
+
 ## CorporateActionCaseTransitionAuthorityDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCaseTransitionAuthorityDto</code>. Kind: `record`.
@@ -726,13 +767,3 @@ Declared public members:
 | <code>public const string OperatorAnalysis = &quot;OperatorAnalysis&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:243](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L243) |  |
 | <code>public static bool IsKnown(string? kind) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:245](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L245) |  |
 | <code>public static bool IsTrustedReference(string? reference);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:249](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L249) |  |
-
-## CorporateActionEvidenceMutationResultDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionEvidenceMutationResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:718](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L718).
-
-```csharp
-public sealed record CorporateActionEvidenceMutationResultDto(CorporateActionProcessingCaseDto Case, CorporateActionEvidenceDto Evidence, bool Replayed);
-```

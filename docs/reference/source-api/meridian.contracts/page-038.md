@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerPeriodReopenResultDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.LedgerPeriodReopenResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:531](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L531).
+
+```csharp
+public sealed record LedgerPeriodReopenResultDto(LedgerPeriodDto Period, string PriorStatus, string ReopenedBy, DateTimeOffset ReopenedAtUtc, string ApprovalReference, IReadOnlyList<string> EvidenceLinks);
+```
+
 ## LedgerPeriodSignoffStatusDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.LedgerPeriodSignoffStatusDto</code>. Kind: `enum`.
@@ -781,21 +791,3 @@ Source: [src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs:67](../
 ```csharp
 public sealed record PreparedClosePlanResultDto(Guid WorkflowId, Guid TemplateId, int TemplateVersion, Guid SourceWorkflowId, Guid TargetLedgerBookId, Guid TargetPeriodId, DateTimeOffset CreatedAtUtc, string CreatedBy, bool WasAlreadyCreated, ClosePeriodPlanDto Plan, IReadOnlyList<ClosePreparationHistoryDto> History);
 ```
-
-## PrepareFactorPaydownRequestDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.PrepareFactorPaydownRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/FactorPaydownPreparationDtos.cs:8](../../../../src/Meridian.Contracts/Ledger/FactorPaydownPreparationDtos.cs#L8).
-
-Operator assertions for a paydown; scope authority, lots and amounts are resolved by the server.
-
-```csharp
-public sealed record PrepareFactorPaydownRequestDto(Guid LedgerBookId, Guid SecurityId, Guid BookPositionId, Guid PeriodId, long ExpectedPeriodVersion, AccountingBasisKindDto AccountingBasis, string FundProfileId, DateOnly EffectiveDate, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)] decimal PriorFactor, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)] decimal NewFactor, string SourceDomain, string SourceEntityId, string SourceContentHash, DateTimeOffset OccurredAtUtc, IReadOnlyList<RetainedEvidenceIdentityDto> FactorEvidence, string CashAccountPath, string CarryingAccountPath, string RealizedGainAccountPath, string RealizedLossAccountPath, Guid? CorrelationId = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public bool ScheduledPrincipal { get; init; }</code> | [src/Meridian.Contracts/Ledger/FactorPaydownPreparationDtos.cs:32](../../../../src/Meridian.Contracts/Ledger/FactorPaydownPreparationDtos.cs#L32) | Opt-in governed US GAAP contractual repayment; legacy disposal treatment remains the default. |

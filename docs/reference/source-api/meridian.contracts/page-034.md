@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ClosePostingGateStateDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.ClosePostingGateStateDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:573](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L573).
+
+```csharp
+public enum ClosePostingGateStateDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unavailable = 0</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:575](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L575) |  |
+| <code>NotRequired = 1</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:576](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L576) |  |
+| <code>Required = 2</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:577](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L577) |  |
+| <code>DraftQueued = 3</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:578](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L578) |  |
+| <code>Submitted = 4</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:579](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L579) |  |
+| <code>Approved = 5</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:580](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L580) |  |
+| <code>Posted = 6</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:581](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L581) |  |
+| <code>ReversalQueued = 7</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:582](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L582) |  |
+| <code>Blocked = 8</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:583](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L583) |  |
+
 ## ClosePreparationCalendarDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.ClosePreparationCalendarDto</code>. Kind: `record`.
@@ -655,16 +679,4 @@ Rechecks the reviewed preview before retaining a governed draft; never approves 
 
 ```csharp
 public sealed record CreateFactorPaydownDraftRequestDto(PrepareFactorPaydownRequestDto Request, string ExpectedPreparationFingerprint, string Description);
-```
-
-## CreateIntercompanyAccrualDraftRequest
-
-Qualified name: <code>Meridian.Contracts.Ledger.CreateIntercompanyAccrualDraftRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs:13](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs#L13).
-
-The digest proves the operator is drafting exactly the computation they previewed.
-
-```csharp
-public sealed record CreateIntercompanyAccrualDraftRequest(IntercompanyAccrualRequestDto Accrual, string ExpectedEvidenceDigest);
 ```

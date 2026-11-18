@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## InMemoryAccountingProductionCertificationProfileStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.InMemoryAccountingProductionCertificationProfileStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs:31](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs#L31).
+
+Stores accounting production certification profiles in process memory.
+
+```csharp
+public sealed class InMemoryAccountingProductionCertificationProfileStore : IAccountingProductionCertificationProfileStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;AccountingProductionCertificationProfileDto?&gt; GetAsync(string? tenantId, string? companyId, string? fundProfileId, Guid? ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs:35](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs#L35) |  |
+| <code>public Task&lt;AccountingProductionCertificationProfileDto&gt; UpsertAsync(AccountingProductionCertificationProfileUpsertRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs:47](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs#L47) |  |
+
 ## InMemoryAccountingTenantAdministrationProfileStore
 
 Qualified name: <code>Meridian.Ui.Shared.Services.InMemoryAccountingTenantAdministrationProfileStore</code>. Kind: `class`.
@@ -639,7 +658,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IReportingMigrationStartup</code>. Kind: `interface`.
 
-Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1647](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1647).
+Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1657](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1657).
 
 Completes the existing checksummed reporting migration workflow before services that query the reporting authority are constructed.
 
@@ -651,7 +670,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task EnsureReadyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1649](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1649) |  |
+| <code>Task EnsureReadyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1659](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1659) |  |
 
 ## IReportingPrimaryDocumentRenderer
 
@@ -945,21 +964,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>IReadOnlyList&lt;ReportTemplateGovernanceRecordDto&gt; Load();</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:100](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L100) |  |
 | <code>void Save(IReadOnlyList&lt;ReportTemplateGovernanceRecordDto&gt; records);</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:101](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L101) |  |
-
-## IStatementCaseworkCommitFaultInjector
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IStatementCaseworkCommitFaultInjector</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:1285](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L1285).
-
-Provides fault-injection callbacks at retained statement casework commit boundaries.
-
-```csharp
-public interface IStatementCaseworkCommitFaultInjector
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task OnPointAsync(StatementCaseworkCommitFaultPoint point, string commandId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:1287](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L1287) |  |

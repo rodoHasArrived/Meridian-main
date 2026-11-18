@@ -1713,7 +1713,12 @@ review. CertificateOfDeposit and StructuredCredit rows that declare a schedule a
 Bond rows are. Passport conflict panels and conflict severity are routed by
 `SecurityMasterConflictRouting` and `SecurityMasterConflictFieldCategories` (whole path segments,
 declared kinds, and the term keys the record's asset class declares), not by substrings; the
-classification fallback shows a descriptor label only where it is a domain label. For a Bond that declares a call or put schedule, the snapshot's schedule
+classification fallback shows a descriptor label only where it is a domain label. In the change
+history, a classification difference that only brings an older version's asset class and family in
+line with the current taxonomy is listed as "Taxonomy revision", not "Classification"
+(`SecurityClassificationTaxonomy`). `POST /api/security-master/classification-drift/report`
+(`AdminMaintenance`) lists active securities whose retained classification differs from the
+current taxonomy; it is mapped only when a real drift-report service is registered. For a Bond that declares a call or put schedule, the snapshot's schedule
 book takes its `Call`, `Put`, `CallNoticeDeadline` and `PutNoticeDeadline` rows and the next lifecycle
 date from the declared outcome the asset-operations obligation timeline uses
 (`AssetObligationProjectionService.ResolveDeclaredExerciseAsync`), not from the economic
