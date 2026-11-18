@@ -5,11 +5,13 @@
       xmlns:behaviors="clr-namespace:Meridian.Wpf.Behaviors"
       xmlns:scottplot="clr-namespace:ScottPlot.WPF;assembly=ScottPlot.WPF"
       xmlns:workstation="clr-namespace:Meridian.Wpf.Workstation.Controls"
+      xmlns:controls="clr-namespace:Meridian.Wpf.Controls"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
       AutomationProperties.Name="Portfolio Risk Analytics">
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24,16,24,32">
         <Grid MaxWidth="1260">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -349,6 +351,11 @@
                     </Border>
                 </StackPanel>
             </Grid>
+
+            <controls:PeriodComparisonPanel Grid.Row="4"
+                                            Margin="0,18,0,0"
+                                            DataContext="{Binding AttributionComparison}"
+                                            AutomationProperties.AutomationId="RunRiskAttributionPeriodComparison" />
         </Grid>
     </ScrollViewer>
 </Page>

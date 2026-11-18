@@ -583,6 +583,14 @@ Operator Inbox composition for the workstation API surface: builds the prioritiz
 public static partial class WorkstationEndpoints
 ```
 
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorPreferences.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorPreferences.cs#L17).
+
+The signed-in operator&#x27;s presentation preferences (theme, density, display time zone, page descriptions, browser shortcut overrides), so they follow the operator to another browser or machine. Only the operator themselves can read or replace them; the values are display-only.
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
 Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorScopePreference.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorScopePreference.cs#L16).
 
 The signed-in operator&#x27;s default operating scope (C1). Browser and WPF read it when a session opens with no scope in its link or local storage; only the operator themselves can read or set it.
@@ -783,13 +791,19 @@ Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.TableViews.cs:16]
 public static partial class WorkstationEndpoints
 ```
 
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs#L24).
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs:25](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs#L25).
 
 Trading workspace payload composition for the workstation API surface: builds the live trading payload (positions, orders, fills, risk, brokerage, readiness). When neither the execution layer nor the strategy run read service is registered the builder returns null and the route responds 503 — fabricated fixture data is never served as live. The inline trading route lambda and the shared helpers (GetTradingOperatorReadinessAsync, NormalizeOperatorInboxToken, BuildTradingBrokerageNotes, ResolveLiveMark, ResolveRuntimeRiskDescriptorAsync, BuildModeComparisons, BuildRunDrillInLinks, FormatCurrency/FormatPercent) remain in core and are reached across the partial.
 
 ```csharp
 public static partial class WorkstationEndpoints
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static WorkstationManualOrderEntry? ResolveManualOrderEntry(IExecutionGateway? gateway, BrokerageConfiguration? configuration);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs:302](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs#L302) | Mirrors the OMS&#x27;s routing mode for the active gateway: manual orders are refused live (MANUAL_LIVE_INTENT_CONTRACT_NOT_REVIEWED) and admitted in paper. |
 
 Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationRiskEndpoints.cs:8](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationRiskEndpoints.cs#L8).
 

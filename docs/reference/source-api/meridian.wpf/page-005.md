@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterChecklistItem
+
+Qualified name: <code>Meridian.Wpf.Models.SecurityMasterChecklistItem</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Models/SecurityMasterPresentationModels.cs:12](../../../../src/Meridian.Wpf/Models/SecurityMasterPresentationModels.cs#L12).
+
+```csharp
+public sealed record SecurityMasterChecklistItem(string Label, string Owner, string Status);
+```
+
+## SecurityMasterEvidenceItem
+
+Qualified name: <code>Meridian.Wpf.Models.SecurityMasterEvidenceItem</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Models/SecurityMasterPresentationModels.cs:17](../../../../src/Meridian.Wpf/Models/SecurityMasterPresentationModels.cs#L17).
+
+```csharp
+public sealed record SecurityMasterEvidenceItem(string Title, string Detail, string Destination);
+```
+
+## SecurityMasterPresentationField
+
+Qualified name: <code>Meridian.Wpf.Models.SecurityMasterPresentationField</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Models/SecurityMasterPresentationModels.cs:3](../../../../src/Meridian.Wpf/Models/SecurityMasterPresentationModels.cs#L3).
+
+```csharp
+public sealed record SecurityMasterPresentationField(string Label, string Value);
+```
+
 ## SecurityMasterPrintSectionItem
 
 Qualified name: <code>Meridian.Wpf.Models.SecurityMasterPrintSectionItem</code>. Kind: `record`.
@@ -963,69 +993,3 @@ Declared public members:
 | <code>public string Value { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:86](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L86) |  |
 | <code>public string Glyph { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:88](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L88) |  |
 | <code>public string Tone { get; init; } = WorkspaceTone.Neutral;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:90](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L90) |  |
-
-## WorkspaceShellContext
-
-Qualified name: <code>Meridian.Wpf.Models.WorkspaceShellContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:26](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L26).
-
-Carries the workspace title, subtitle, and context badges displayed by the shell.
-
-```csharp
-public sealed class WorkspaceShellContext
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string WorkspaceTitle { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:28](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L28) |  |
-| <code>public string WorkspaceSubtitle { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:30](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L30) |  |
-| <code>public IReadOnlyList&lt;WorkspaceShellBadge&gt; Badges { get; init; } = Array.Empty&lt;WorkspaceShellBadge&gt;();</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:32](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L32) |  |
-
-## WorkspaceShellContextInput
-
-Qualified name: <code>Meridian.Wpf.Models.WorkspaceShellContextInput</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:96](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L96).
-
-Collects scope, freshness, review, and attention values used to build shell context badges.
-
-```csharp
-public sealed class WorkspaceShellContextInput
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string WorkspaceTitle { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:98](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L98) |  |
-| <code>public string WorkspaceSubtitle { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:100](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L100) |  |
-| <code>public string PrimaryScopeLabel { get; init; } = &quot;Context&quot;;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:102](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L102) |  |
-| <code>public string PrimaryScopeValue { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:104](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L104) |  |
-| <code>public string AsOfValue { get; init; } = &quot;—&quot;;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:106](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L106) |  |
-| <code>public string FreshnessValue { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:108](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L108) |  |
-| <code>public string ReviewStateLabel { get; init; } = &quot;Review&quot;;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:110](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L110) |  |
-| <code>public string ReviewStateValue { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:112](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L112) |  |
-| <code>public string ReviewStateTone { get; init; } = WorkspaceTone.Neutral;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:114](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L114) |  |
-| <code>public string CriticalLabel { get; init; } = &quot;Attention&quot;;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:116](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L116) |  |
-| <code>public string CriticalValue { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:118](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L118) |  |
-| <code>public string CriticalTone { get; init; } = WorkspaceTone.Info;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:120](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L120) |  |
-| <code>public IReadOnlyList&lt;WorkspaceShellBadge&gt; AdditionalBadges { get; init; } = Array.Empty&lt;WorkspaceShellBadge&gt;();</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:122](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L122) |  |
-
-## WorkspaceShellContextStripContribution
-
-Qualified name: <code>Meridian.Wpf.Models.WorkspaceShellContextStripContribution</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:63](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L63).
-
-```csharp
-public sealed record WorkspaceShellContextStripContribution(string WorkspaceId, WorkspaceShellContext Context, int Order = 0) : IWorkspaceShellSlotContribution
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WorkspaceShellSlot Slot =&gt; …;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:68](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L68) |  |

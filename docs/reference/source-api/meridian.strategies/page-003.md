@@ -641,6 +641,25 @@ Declared public members:
 | --- | --- | --- |
 | <code>public ReconciliationPortfolioInput? Adapt(StrategyRunDetail detail);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:106](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L106) |  |
 
+## StrategyRunAuthoritySource
+
+Qualified name: <code>Meridian.Strategies.Services.StrategyRunAuthoritySource</code>. Kind: `class`.
+
+Source: [src/Meridian.Strategies/Services/StrategyRunAuthoritySource.cs:23](../../../../src/Meridian.Strategies/Services/StrategyRunAuthoritySource.cs#L23).
+
+Supplies the OMS with retained strategy-run authority: the run record and the approved live promotion that targets it. Read-only; it never creates or repairs runs or promotions.
+
+```csharp
+public sealed class StrategyRunAuthoritySource : IStrategyRunAuthoritySource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StrategyRunAuthoritySource(IStrategyRepository runs, IPromotionRecordStore promotions);</code> | [src/Meridian.Strategies/Services/StrategyRunAuthoritySource.cs:29](../../../../src/Meridian.Strategies/Services/StrategyRunAuthoritySource.cs#L29) |  |
+| <code>public async Task&lt;StrategyRunAuthoritySnapshot?&gt; GetAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/StrategyRunAuthoritySource.cs:36](../../../../src/Meridian.Strategies/Services/StrategyRunAuthoritySource.cs#L36) |  |
+
 ## StrategyRunContinuityService
 
 Qualified name: <code>Meridian.Strategies.Services.StrategyRunContinuityService</code>. Kind: `class`.
@@ -676,6 +695,19 @@ public sealed record StrategyRunReadScope(string? TenantId, string? CompanyId);
 ## StrategyRunReadService
 
 Qualified name: <code>Meridian.Strategies.Services.StrategyRunReadService</code>. Kind: `class`.
+
+Source: [src/Meridian.Strategies/Services/StrategyRunReadService.AttributionComparison.cs:8](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.AttributionComparison.cs#L8).
+
+```csharp
+public sealed partial class StrategyRunReadService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;PeriodComparisonDto?&gt; GetAttributionPeriodComparisonAsync(string runId, DateOnly? periodEnd, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.AttributionComparison.cs:17](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.AttributionComparison.cs#L17) | Per-symbol P&amp;L for one calendar month of a run against the month before (UX Phase E). The month is the one containing periodEnd (default: the run&#x27;s last recorded day). Period P&amp;L is the change in each symbol&#x27;s cumulative realized plus unrealized P&amp;L between month ends, read from the run&#x27;s daily portfolio snapshots, with commissions and financing as their own lines; the total is the change in run equity. Returns null when the run does not exist. |
+| <code>public Task&lt;PeriodComparisonDto?&gt; GetAttributionPeriodComparisonAsync(string runId, DateOnly? periodEnd, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.AttributionComparison.cs:20](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.AttributionComparison.cs#L20) |  |
 
 Source: [src/Meridian.Strategies/Services/StrategyRunReadService.cs:17](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L17).
 
@@ -772,25 +804,3 @@ Declared public members:
 | <code>public static WeekdayReconciliationSlaCalendarResolver Instance { get; } = new ();</code> | [src/Meridian.Strategies/Services/IReconciliationSlaCalendarResolver.cs:17](../../../../src/Meridian.Strategies/Services/IReconciliationSlaCalendarResolver.cs#L17) |  |
 | <code>public IReconciliationSlaCalendar Resolve(ReconciliationSlaPolicy policy);</code> | [src/Meridian.Strategies/Services/IReconciliationSlaCalendarResolver.cs:18](../../../../src/Meridian.Strategies/Services/IReconciliationSlaCalendarResolver.cs#L18) |  |
 | <code>public bool IsBusinessDay(DateOnly date) =&gt; …;</code> | [src/Meridian.Strategies/Services/IReconciliationSlaCalendarResolver.cs:24](../../../../src/Meridian.Strategies/Services/IReconciliationSlaCalendarResolver.cs#L24) |  |
-
-## JsonlPromotionRecordStore
-
-Qualified name: <code>Meridian.Strategies.Storage.JsonlPromotionRecordStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Strategies/Storage/JsonlPromotionRecordStore.cs:29](../../../../src/Meridian.Strategies/Storage/JsonlPromotionRecordStore.cs#L29).
-
-Append-only JSONL promotion-history store.
-
-```csharp
-public sealed class JsonlPromotionRecordStore : IPromotionRecordStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public JsonlPromotionRecordStore(PromotionRecordStoreOptions? options, ILogger&lt;JsonlPromotionRecordStore&gt; logger);</code> | [src/Meridian.Strategies/Storage/JsonlPromotionRecordStore.cs:37](../../../../src/Meridian.Strategies/Storage/JsonlPromotionRecordStore.cs#L37) |  |
-| <code>public JsonlPromotionRecordStore(string baseDirectory, ILogger&lt;JsonlPromotionRecordStore&gt; logger) : this(new PromotionRecordStoreOptions(baseDirectory), logger);</code> | [src/Meridian.Strategies/Storage/JsonlPromotionRecordStore.cs:45](../../../../src/Meridian.Strategies/Storage/JsonlPromotionRecordStore.cs#L45) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;StrategyPromotionRecord&gt;&gt; LoadAllAsync(CancellationToken ct = default);</code> | [src/Meridian.Strategies/Storage/JsonlPromotionRecordStore.cs:53](../../../../src/Meridian.Strategies/Storage/JsonlPromotionRecordStore.cs#L53) |  |
-| <code>public async Task&lt;PromotionDecisionReservation&gt; ReserveFirstDecisionAsync(StrategyPromotionRecord record, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Storage/JsonlPromotionRecordStore.cs:60](../../../../src/Meridian.Strategies/Storage/JsonlPromotionRecordStore.cs#L60) |  |
-| <code>public async Task AppendAsync(StrategyPromotionRecord record, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Storage/JsonlPromotionRecordStore.cs:143](../../../../src/Meridian.Strategies/Storage/JsonlPromotionRecordStore.cs#L143) |  |

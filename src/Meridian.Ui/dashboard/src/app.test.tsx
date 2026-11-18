@@ -7,7 +7,8 @@ import { App } from "@/app";
 import { captureLayoutState, upsertUserLayout } from "@/lib/saved-layouts";
 import { useWorkstationData } from "@/hooks/use-workstation-data";
 import { apiGetJson } from "@/lib/api";
-import { getOperatorScopePreference } from "@/lib/api/operator-workstation.api";
+import { getOperatorPreferences, getOperatorScopePreference } from "@/lib/api/operator-workstation.api";
+import { getDisplayTimeZone, reloadDisplayTimeZone } from "@/lib/display-time-zone";
 import { OPERATOR_TRIAGE_ENDPOINT, type OperatorTriageInbox } from "@/lib/operator-inbox-triage";
 import { OPERATING_CONTEXT_STORAGE_KEY } from "@/lib/operating-scope/persistence";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
@@ -39,6 +40,9 @@ vi.mock("@/lib/api/operator-workstation.api", () => ({
   getCrossScreenCounts: vi.fn().mockResolvedValue(null),
   getOperatorScopePreference: vi.fn().mockResolvedValue({ defaultScope: null, updatedAt: null }),
   saveOperatorScopePreference: vi.fn().mockResolvedValue({ defaultScope: null, updatedAt: null }),
+  // Presentation preferences stay browser-only unless a test loads them from the host.
+  getOperatorPreferences: vi.fn().mockRejectedValue(new Error("offline")),
+  saveOperatorPreferences: vi.fn().mockRejectedValue(new Error("offline")),
   recordOperatorSurfaceVisit: vi.fn().mockRejectedValue(new Error("offline")),
   getOperatorSurfaceVisit: vi.fn().mockRejectedValue(new Error("offline"))
 }));
@@ -529,6 +533,48 @@ describe("App", () => {
     window.localStorage.removeItem(OPERATING_CONTEXT_STORAGE_KEY);
   });
 
+  it("loads the signed-in operator's host preferences and applies them to this browser", async () => {
+    window.localStorage.removeItem("meridian.workstation.display-time-zone.v1");
+    reloadDisplayTimeZone();
+    vi.mocked(getOperatorPreferences).mockResolvedValue({
+      preferences: { appearance: "dark", density: "compact", displayTimeZone: "Europe/London", pageDescriptionsHidden: false, keyBindings: null },
+      updatedAt: "2026-11-17T09:00:00Z"
+    });
+    mockWorkstationData({
+      loading: false,
+      usingDevelopmentFixtures: false,
+      session: { displayName: "Ops Desk", role: "Operator", environment: "paper", activeWorkspace: "trading", commandCount: 7 }
+    });
+
+    renderWithRouter(<App />, { initialEntries: ["/trading"] });
+
+    await waitFor(() => expect(getDisplayTimeZone()).toBe("Europe/London"));
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+    expect(document.body.getAttribute("data-theme-density")).toBe("compact");
+
+    vi.mocked(getOperatorPreferences).mockReset().mockRejectedValue(new Error("offline"));
+    window.localStorage.removeItem("meridian.workstation.display-time-zone.v1");
+    window.localStorage.removeItem("meridian.workstation.appearance.v1");
+    window.localStorage.removeItem("meridian.workstation.density.v1");
+    reloadDisplayTimeZone();
+    document.documentElement.removeAttribute("data-theme");
+    document.body.removeAttribute("data-theme-density");
+  });
+
+  it("does not read host preferences for a fixture session", async () => {
+    vi.mocked(getOperatorPreferences).mockClear();
+    mockWorkstationData({
+      loading: false,
+      usingDevelopmentFixtures: true,
+      session: { displayName: "Ops Desk", role: "Operator", environment: "paper", activeWorkspace: "trading", commandCount: 7 }
+    });
+
+    renderWithRouter(<App />, { initialEntries: ["/trading"] });
+    await screen.findByRole("main");
+
+    expect(getOperatorPreferences).not.toHaveBeenCalled();
+  });
+
   it("keeps an operator's explicit empty scope when the default loads late (C1)", async () => {
     window.localStorage.removeItem(OPERATING_CONTEXT_STORAGE_KEY);
     let release!: () => void;
@@ -579,6 +625,10 @@ describe("App", () => {
 
     expect(document.querySelector('[data-design-system-component="Masthead"]')).toHaveClass("mds-masthead");
     expect(trigger).toHaveClass("mds-masthead__search");
+    // The hazard stripe is scoped to a LIVE session with non-real data; the masthead says which
+    // environment it is in so the stripe stays off for paper and demo sessions.
+    expect(document.querySelector('[data-design-system-component="Masthead"]')).toHaveAttribute("data-environment");
+    expect(document.querySelector('[data-design-system-component="Masthead"]')).not.toHaveAttribute("data-environment", "live");
     expect(screen.queryByRole("dialog", { name: "Open workstation command" })).not.toBeInTheDocument();
     expect(trigger).toHaveAttribute("aria-controls", "command-palette-dialog");
     expect(trigger).toHaveAttribute("aria-expanded", "false");
@@ -638,7 +688,9 @@ describe("App", () => {
     const confidence = screen.getByRole("region", { name: "Daily control tower confidence" });
     // Scope is stated once, in the header bar; Today no longer repeats it.
     expect(within(confidence).queryByText("Scope")).not.toBeInTheDocument();
-    expect(within(confidence).getByText("Selected evidence")).toBeInTheDocument();
+    // The selected item's evidence time is in its detail rail; the queue says why it is ranked there.
+    expect(within(confidence).queryByText("Selected evidence")).not.toBeInTheDocument();
+    expect(screen.getByTestId("today-rank-reason")).toHaveTextContent(/^Why ranked here: Ranked \d+ of \d+\. Sorted by severity/);
     expect(within(screen.getByRole("region", { name: "Priority decision" })).getByRole("region", { name: "Workstation status" })).toHaveAttribute("data-status-tone", "blocked");
     expect(screen.getByTestId("today-attention-count")).toHaveTextContent(/^\d+ needs? attention · blocked \+ action, excluding snoozed/);
     const trust = screen.getByRole("region", { name: "Workstation build, environment, provenance, and provider health" });

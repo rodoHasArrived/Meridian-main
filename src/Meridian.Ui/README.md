@@ -46,6 +46,12 @@ rates ingestion, provider identity-review evidence and shared chart accessibilit
 preserve exact decimal text from fixed-income responses; calculation and review authority remains
 in the shared services. See the dashboard README for these workflows and rebuild validation.
 
+The served keyboard help sheet lets an operator rebind the workstation-global shortcuts (command
+palette, keyboard help) for that browser, with conflict, reserved-key and bare-letter checks. The
+overrides, with appearance, density, display time zone and the page-descriptions setting, are kept
+per operator on the host (`/api/workstation/operator/preferences`) and cached in browser storage, so
+they follow the operator to another browser. Rebuild the dashboard to serve it.
+
 The host-served bundle includes the Security Master bond analytics model selector and floating v3
 metrics, projected payments, fixing provenance and typed refusal states. Rebuild it from `dashboard/`
 after source changes; the shared analytics endpoint remains the calculation authority.
@@ -112,6 +118,8 @@ The host-served bundle carries the design-system consolidation. It includes one 
 component; one formatting module (year-bearing UTC timestamps; accounting negatives in
 parentheses); and one table system with sorting, sticky headers, operator density and column
 visibility on positions, orders, the ledger, breaks, the execution blotter and report families.
+Working orders show their origin, and the order ticket states when manual live orders are
+unavailable and why an order-authority refusal happened (see the dashboard README).
 It also adds a three-tier type scale with sentence-case labels past two words and prose in the
 body face. Ratchets in `dashboard/scripts/design-system-ratchets.mjs`, and the sub-12px
 typography floor check in `dashboard/scripts/check-typography-floor.mjs` (run by `npm run lint`),
@@ -339,6 +347,49 @@ See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
 ```bash
 npm --prefix src/Meridian.Ui/dashboard run build
 ```
+
+The host-served bundle carries UX Phase A (figures and status): every registered headline figure
+states the population it counts; Data, Today and Settings show one shared provider-health count;
+Trading and Portfolio position tables name their source; and the status bar starts from the
+masthead pill's provenance and provider checks, so it never says "up to date" over a stale source.
+The new shared contract is `/api/workstation/kpi-definitions` (see `src/Meridian.Ui.Shared/README.md`).
+
+It also carries UX Phase B (main task first, quieter states). Journal Entry opens on the editor,
+with journal automation below it and one notice for a shared failure. The Today queue shows one line
+per item, grows with the page, and says why each item is ranked where it is. A value missing on
+every row is said once. Live quotes starts from the watchlist. No shared contract changed.
+
+It also carries UX Phase C (accounting grid and visual system):
+- Ledger Explorer groups postings under their journal with a totals row and plain amounts.
+- Accounting dates print without invented times.
+- Labels use the body face, and one status word has one colour.
+- Disclosures share one chevron.
+- The masthead stripe is reserved for LIVE sessions.
+- Inspectors no longer stretch rows, and media queries use four tiers.
+
+No shared contract changed.
+
+It also carries UX Phase D (navigation and overviews):
+- Accounting shows one sidebar row per group and a secondary menu of the group's pages.
+- The command palette offers pinned and recent pages.
+- Close Calendar opens on a month grid.
+- Charts have table alternatives.
+- The capability matrix shows provider freshness.
+- Strategy has a run leaderboard.
+
+No shared contract changed.
+
+It also carries UX Phase E (workflow features):
+- Due dates read as urgency ("Overdue 3 days"), and overdue work sorts first on Today.
+- "New since you last looked" markers on Today, Approvals and Reporting triage.
+- Bulk Acknowledge and Snooze on Today, confirmed per item.
+- Tables export visible columns as shown, as CSV or XLSX, with totals.
+- Strategy compares up to four runs with overlaid equity and drawdown.
+- Prior-period variance on the trial balance comparison, a new Portfolio NAV page, run attribution
+  and the cash ladder.
+
+The new shared contract is `PeriodComparisonDto` with three read endpoints (see
+`src/Meridian.Ui.Shared/README.md`).
 
 ## Change rules
 

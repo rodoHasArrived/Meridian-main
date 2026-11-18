@@ -18,6 +18,7 @@ export * from "./types/ledger-tax-results";
 export * from "./types/lifecycle";
 export * from "./types/mark-freshness";
 export * from "./types/operator-scope-preference";
+export * from "./types/operator-preferences";
 export * from "./types/operator-surface-visit";
 export * from "./types/preparer-attestation-evidence";
 export * from "./types/market-data";

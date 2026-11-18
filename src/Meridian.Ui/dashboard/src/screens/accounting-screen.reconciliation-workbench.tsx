@@ -1,4 +1,5 @@
 import { useMemo, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode, type UIEvent } from "react";
+import { SinceLastVisitBadge } from "@/components/meridian/since-last-visit-badge";
 import { Link, useLocation } from "react-router-dom";
 import { ThreeWayAccountingPanel } from "./accounting-screen.three-way";
 import { Landmark, Network, RefreshCcw } from "lucide-react";
@@ -26,7 +27,6 @@ import {
   describeSinceLastVisit,
   summarizeSinceLastVisit,
   useSinceLastVisit,
-  type SinceLastVisitMark,
   type SurfaceVisitServices
 } from "@/lib/since-last-visit";
 import { ReconciliationCaseDiscussion } from "./accounting-screen.case-discussion";
@@ -668,15 +668,6 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
         </DialogContent>
       </Dialog>
     </section>
-  );
-}
-
-function SinceLastVisitBadge({ mark }: { mark: SinceLastVisitMark }) {
-  return (
-    <Badge variant="outline" className="shrink-0">
-      {mark === "new" ? "New" : "Updated"}
-      <span className="sr-only"> since your last visit</span>
-    </Badge>
   );
 }
 

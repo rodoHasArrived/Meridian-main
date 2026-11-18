@@ -6,6 +6,40 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategyRunReviewPacketDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunReviewPacketDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:388](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L388).
+
+```csharp
+public sealed record StrategyRunReviewPacketDto(string RunId, DateTimeOffset GeneratedAt, StrategyRunDetail Run, StrategyRunContinuityDetail? Continuity, RunFillSummary? Fills, RunAttributionSummary? Attribution, WorkstationBrokerageSyncStatusDto? BrokerageSync, IReadOnlyList<OperatorWorkItemDto> WorkItems, IReadOnlyList<string> Warnings);
+```
+
+## StrategyRunStatus
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:35](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L35).
+
+Normalized status used by workstation surfaces across backtest, paper, and live runs.
+
+```csharp
+public enum StrategyRunStatus : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Pending</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:37](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L37) |  |
+| <code>Running</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:38](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L38) |  |
+| <code>Paused</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:39](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L39) |  |
+| <code>Completed</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:40](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L40) |  |
+| <code>Failed</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:41](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L41) |  |
+| <code>Cancelled</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:42](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L42) |  |
+| <code>Stopped</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:43](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L43) |  |
+
 ## StrategyRunSummary
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunSummary</code>. Kind: `record`.
@@ -599,24 +633,4 @@ Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:191]
 
 ```csharp
 public sealed record TradingReplayReadinessDto(string SessionId, string ReplaySource, bool IsConsistent, int ComparedFillCount, int ComparedOrderCount, int ComparedLedgerEntryCount, DateTimeOffset VerifiedAt, DateTimeOffset? LastPersistedFillAt, DateTimeOffset? LastPersistedOrderUpdateAt, string? VerificationAuditId, IReadOnlyList<string> MismatchReasons, string DriftStatus, string RequiredNextAction);
-```
-
-## TradingReportPackReadinessDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.TradingReportPackReadinessDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:324](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L324).
-
-```csharp
-public sealed record TradingReportPackReadinessDto(TradingAcceptanceGateStatusDto Status, string Detail, string? FundProfileId, Guid? ReportId, DateTimeOffset? GeneratedAt, IReadOnlyList<string> RelatedRunIds, int ArtifactCount, int WarningCount, string? ManifestPath);
-```
-
-## TradingTrustGateContractReadinessDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.TradingTrustGateContractReadinessDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:282](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L282).
-
-```csharp
-public sealed record TradingTrustGateContractReadinessDto(string ContractId, string DocumentPath, string Status, IReadOnlyList<string> RequiredPayloadFields, IReadOnlyList<string> RequiredReasonCodes, IReadOnlyList<string> RequiredMetrics, bool? FpFnReviewRequired, IReadOnlyList<string> MissingRequirements);
 ```

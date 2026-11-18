@@ -2,6 +2,7 @@ using System.Globalization;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Collectors;
 using Meridian.Execution.Models;
+using Meridian.Execution.OrderManagement;
 using Meridian.Execution.Sdk;
 using Meridian.Risk;
 using Meridian.Strategies.Services;
@@ -151,7 +152,8 @@ public static partial class WorkstationEndpoints
                 Quantity: order.Quantity.ToString(CultureInfo.InvariantCulture),
                 LimitPrice: order.LimitPrice.HasValue ? order.LimitPrice.Value.ToString("F2", CultureInfo.InvariantCulture) : "—",
                 Status: order.Status.ToString(),
-                SubmittedAt: order.CreatedAt.ToString("HH:mm:ss", CultureInfo.InvariantCulture) + " UTC")).ToArray();
+                SubmittedAt: order.CreatedAt.ToString("HH:mm:ss", CultureInfo.InvariantCulture) + " UTC",
+                Origin: order.Origin?.ToString())).ToArray();
         }
         else
         {
@@ -287,7 +289,32 @@ public static partial class WorkstationEndpoints
                 Notes: [BuildTradingBrokerageNotes(run, portfolio is not null, brokerageConfiguration)]),
             Readiness: readiness,
             Comparisons: run is null ? Array.Empty<WorkstationModeComparisonGroup>() : BuildModeComparisons([run]),
-            DrillIn: run is null ? null : BuildRunDrillInLinks(run));
+            DrillIn: run is null ? null : BuildRunDrillInLinks(run),
+            ManualOrderEntry: oms is null
+                ? null
+                : ResolveManualOrderEntry(context.RequestServices.GetService<IExecutionGateway>(), brokerageConfiguration));
+    }
+
+    /// <summary>
+    /// Mirrors the OMS's routing mode for the active gateway: manual orders are refused live
+    /// (<c>MANUAL_LIVE_INTENT_CONTRACT_NOT_REVIEWED</c>) and admitted in paper.
+    /// </summary>
+    public static WorkstationManualOrderEntry? ResolveManualOrderEntry(
+        IExecutionGateway? gateway,
+        BrokerageConfiguration? configuration)
+    {
+        if (gateway is null)
+            return null;
+
+        var mode = gateway is IExecutionGatewayModeProvider modeProvider
+            ? modeProvider.ExecutionMode
+            : BrokerageOrderPlacementGate.ResolveExecutionMode(configuration, gateway.GatewayId);
+        return mode == Meridian.Execution.Sdk.ExecutionMode.Live
+            ? new WorkstationManualOrderEntry(
+                Available: false,
+                ReasonCode: OrderAuthorityReasonCodes.ManualLiveIntentContractNotReviewed,
+                Reason: "Manual live orders are not available: they need a reviewed manual-intent authority contract, which is not yet defined. Live orders route only from promoted strategy runs.")
+            : new WorkstationManualOrderEntry(Available: true, ReasonCode: null, Reason: null);
     }
 
 }

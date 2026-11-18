@@ -1,11 +1,11 @@
 {
-  "total_files": 1282,
+  "total_files": 1281,
   "orphaned_count": 396,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 303,
   "health_score": 85,
-  "signal_digest": "sha256:87765070ad92571d9d3731365af896f7fa26d41b7ac989c53f239289a24b97a6",
+  "signal_digest": "sha256:7fd70c4c1a9f4693442e64ee81ed0bc52164e3b69eb1a06425177686fb3eef51",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -1249,13 +1249,6 @@
       "stale": false
     },
     {
-      "path": "docs/adr/031-intercompany-accrual-schedules.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
       "path": "docs/adr/_template.md",
       "has_heading": true,
       "todo_count": 4,
@@ -2411,6 +2404,13 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/blueprints/governed-order-command-boundary-blueprint.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/blueprints/intercompany-agreement-registry.md",
       "has_heading": true,
       "todo_count": 0,
@@ -2463,6 +2463,13 @@
       "path": "docs/engineering/blueprints/security-master-passport-workbench.md",
       "has_heading": true,
       "todo_count": 1,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/blueprints/strategy-artifact-identity-blueprint.md",
+      "has_heading": true,
+      "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
@@ -2867,13 +2874,6 @@
     },
     {
       "path": "docs/generated/database/contracts/ledger-contracts-page-06.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/generated/database/contracts/ledger-contracts-page-07.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5198,13 +5198,6 @@
     },
     {
       "path": "docs/reference/source-api/meridian.storage/page-015.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/reference/source-api/meridian.storage/page-016.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

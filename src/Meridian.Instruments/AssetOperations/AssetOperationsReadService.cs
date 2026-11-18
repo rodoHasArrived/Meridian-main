@@ -50,6 +50,9 @@ public sealed class AssetOperationsReadService : IAssetOperationsQueryService
     public Task<AssetOperationsDetailDto?> GetOperationsAsync(Guid securityId, CancellationToken ct = default)
         => GetOperationsAsOfAsync(securityId, new BondCalculationContext(_clock.GetUtcNow()), ct);
 
+    /// <inheritdoc />
+    public bool SupportsTermsAsOf => true;
+
     /// <summary>Projects the same retained economic inputs at an explicit cutoff, without clock-dependent flow identity.</summary>
     public async Task<AssetOperationsDetailDto?> GetOperationsAsOfAsync(
         Guid securityId, BondCalculationContext context, CancellationToken ct = default)

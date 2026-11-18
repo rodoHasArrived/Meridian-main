@@ -2,7 +2,7 @@
 
 # `asset-operations-contracts` data objects - page 2 of 2
 
-Objects 81-137 of 137. References crossing pages remain available in the dependency manifest.
+Objects 81-138 of 138. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -126,6 +126,8 @@ classDiagram
     class Meridian_Contracts_AssetOperations_ICorporateActionRuleProfile["ICorporateActionRuleProfile"] {
     }
     class Meridian_Contracts_AssetOperations_IPortfolioCapitalScheduleProvider["IPortfolioCapitalScheduleProvider"] {
+    }
+    class Meridian_Contracts_AssetOperations_IPortfolioCashBalanceHistoryProvider["IPortfolioCashBalanceHistoryProvider"] {
     }
     class Meridian_Contracts_AssetOperations_IPortfolioCashBalanceProvider["IPortfolioCashBalanceProvider"] {
     }

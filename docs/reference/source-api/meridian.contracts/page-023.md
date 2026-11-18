@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BondMonitoringMarketHoldingDto
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondMonitoringMarketHoldingDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs:25](../../../../src/Meridian.Contracts/FixedIncome/BondMonitoringDtos.cs#L25).
+
+Accepted holding factors; distinct conflicting values remain explicit.
+
+```csharp
+public sealed record BondMonitoringMarketHoldingDto(Guid SecurityId, IReadOnlyList<decimal> PrincipalFactors);
+```
+
 ## BondMonitoringMarketWatchDto
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondMonitoringMarketWatchDto</code>. Kind: `record`.
@@ -675,15 +687,3 @@ Declared public members:
 | <code>[JsonIgnore] public string EffectiveFunctionalCurrency =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs:66](../../../../src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs#L66) | The functional currency every journal line&#x27;s debit and credit are stated in. |
 | <code>[JsonIgnore] public decimal EffectiveFxRateToFunctional =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs:70](../../../../src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs#L70) | The FX multiplier each line carries: the retained settlement rate, or one for a same-currency settlement. |
 | <code>public decimal ToFunctional(decimal transactionAmount) =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs:73](../../../../src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs#L73) | A transaction-currency amount translated once to the functional currency at the settlement rate, rounded to its minor units. |
-
-## BondSettlementConsiderationRequest
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondSettlementConsiderationRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs:8](../../../../src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs#L8).
-
-Prepares a held-bond settlement; fees are separately expensed, never capitalized implicitly.
-
-```csharp
-public sealed record BondSettlementConsiderationRequest(BondAnalyticsRequest Analytics, decimal OriginalFace, decimal BookedFactor, decimal Fees, decimal ObservedDirtyCash, string SourceEvidenceId, string CashAccountId, string AccruedInterestAccountId, string? FeesAccountId = null, string? FunctionalCurrency = null, decimal? SettlementFxRateToFunctional = null);
-```

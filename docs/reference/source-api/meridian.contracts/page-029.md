@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerGroupSummaryDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.LedgerGroupSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:412](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L412).
+
+```csharp
+public sealed record LedgerGroupSummaryDto(LedgerGroupId LedgerGroupId, string DisplayName, IReadOnlyList<Guid> AccountIds, IReadOnlyList<Guid> InvestmentPortfolioIds, IReadOnlyList<Guid> ClientIds, IReadOnlyList<Guid> FundIds, IReadOnlyList<Guid> SleeveIds, IReadOnlyList<Guid> VehicleIds, FundStructureSharedDataAccessDto? SharedDataAccess = null);
+```
+
 ## LedgerMappingAccountDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.LedgerMappingAccountDto</code>. Kind: `record`.
@@ -692,14 +702,4 @@ Source: [src/Meridian.Contracts/FxSpot/FxSpotReferenceDtos.cs:12](../../../../sr
 
 ```csharp
 public sealed record FxSpotPairsForCurrencyDto(string Currency, IReadOnlyList<FxSpotReferenceDto> Pairs);
-```
-
-## FxSpotReferenceDto
-
-Qualified name: <code>Meridian.Contracts.FxSpot.FxSpotReferenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FxSpot/FxSpotReferenceDtos.cs:3](../../../../src/Meridian.Contracts/FxSpot/FxSpotReferenceDtos.cs#L3).
-
-```csharp
-public sealed record FxSpotReferenceDto(Guid SecurityId, string DisplayName, string BaseCurrency, string QuoteCurrency, string PairCode, string PrimaryIdentifier, long Version);
 ```

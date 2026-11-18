@@ -33,7 +33,7 @@ import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/comp
 import { denseTableVirtualization } from "@/lib/dense-table-virtualization";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import { getLiveOrderbook, getLiveQuote, getLiveQuotesSnapshot, getLiveTrades, submitOrder } from "@/lib/api";
+import { getLiveOrderbook, getLiveQuote, getLiveQuotesSnapshot, getLiveTrades, getSymbols, submitOrder } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import {
   computeIntradayMetrics,
@@ -59,7 +59,7 @@ export { computeIntradayMetrics };
 export function LiveQuotesScreen() {
   const [searchParams, setSearchParams] = useSearchParams();
   const vm = useLiveQuotesScreenViewModel(
-    { getLiveQuote, getLiveTrades, getLiveOrderbook, getLiveQuotesSnapshot, submitOrder },
+    { getLiveQuote, getLiveTrades, getLiveOrderbook, getLiveQuotesSnapshot, submitOrder, getWatchlistSymbols: getSymbols },
     {
       routeSymbol: searchParams.get("symbol") ?? "",
       routeSymbols: searchParams.get("symbols") ?? undefined,
@@ -87,7 +87,6 @@ export function LiveQuotesScreen() {
           {workspaceVm.title}
         </span>
       }
-      scope="Data"
       description={`${workspaceVm.description} Refreshes every ${vm.pollIntervalSecondsLabel}s unless paused.`}
     >
       <Card>
@@ -200,10 +199,12 @@ export function LiveQuotesScreen() {
             {marketVm.stale ? <DesignSystemStatus status="stale">Stale</DesignSystemStatus> : null}
             <FreshnessChip
               {...freshnessInputFromLifecycle(vm.requestStatus.market, LIVE_QUOTES_FRESHNESS_BUDGET_MS, "Market panels")}
+              showLabel
             />
             <FreshnessChip
               {...freshnessInputFromLifecycle(vm.requestStatus.snapshot, LIVE_QUOTES_FRESHNESS_BUDGET_MS, "Quote matrix")}
               live={vm.quoteStreamHealthy}
+              showLabel
             />
             {activeSymbol ? <span>Selected {activeSymbol}; last update {marketVm.lastUpdateLabel}</span> : null}
           </div>

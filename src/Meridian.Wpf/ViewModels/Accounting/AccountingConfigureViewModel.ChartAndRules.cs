@@ -313,7 +313,7 @@ public sealed partial class AccountingConfigureViewModel
             new(
                 "Regression suite",
                 $"{result.PassedCount}/{result.TotalCount} passed",
-                $"Executed by {result.Actor} at {result.ExecutedAtUtc:yyyy-MM-dd HH:mm:ss} UTC.",
+                $"Executed by {result.Actor} at {Meridian.Ui.Services.FormatHelpers.FormatDisplayTimestamp(result.ExecutedAtUtc, "yyyy-MM-dd HH:mm:ss")}.",
                 result.FailedCount == 0
                     ? "All saved rule tests passed."
                     : $"{result.FailedCount} saved rule test(s) failed and block promotion or activation.",

@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FundStructureSetupVehicleDraftDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureSetupVehicleDraftDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs:59](../../../../src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs#L59).
+
+```csharp
+public sealed record FundStructureSetupVehicleDraftDto(Guid? VehicleId, string Code, string Name, string BaseCurrency, string? Description = null);
+```
+
 ## FundStructureSharedDataAccessDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto</code>. Kind: `record`.
@@ -724,19 +734,3 @@ Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:124](
 ```csharp
 public sealed class IntercompanyAgreementConflictException(string message) : IntercompanyAgreementValidationException(message);
 ```
-
-## IntercompanyAgreementDetailDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementDetailDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:83](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L83).
-
-```csharp
-public sealed record IntercompanyAgreementDetailDto(Guid AgreementId, long AggregateVersion, string Code, string Name, Guid PartyOneId, string PartyOneRole, Guid PartyTwoId, string PartyTwoRole, IntercompanyAgreementTypeDto AgreementType, string Currency, DateOnly AsOf, IntercompanyAgreementStatusDto EffectiveStatus, int? LatestApprovedVersion, IntercompanyAgreementRevisionDto? ApplicableRevision, IReadOnlyList<IntercompanyAgreementProposalDto> Proposals, IReadOnlyList<IntercompanyAgreementRevisionDto> Revisions, IReadOnlyList<IntercompanyAgreementAuditDto> History, IntercompanyAgreementCapabilitiesDto Capabilities)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;string&gt;? MigrationWarnings { get; init; }</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:95](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L95) |  |

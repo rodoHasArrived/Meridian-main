@@ -360,7 +360,7 @@ describe("StrategyScreen", () => {
     const disabledCompare = screen.getByRole("button", { name: /compare 2 runs unavailable/i });
     const disabledDiff = screen.getByRole("button", { name: /diff 2 runs unavailable/i });
     expect(disabledCompare).toBeDisabled();
-    expect(disabledCompare).toHaveAttribute("title", "Select exactly two runs before using this command. 0 selected.");
+    expect(disabledCompare).toHaveAttribute("title", "Select two to 4 runs before comparing. 0 selected.");
     expect(disabledDiff).toBeDisabled();
     expect(disabledDiff).toHaveAttribute("title", "Select exactly two runs before using this command. 0 selected.");
     expect(screen.getByText("No runs selected")).toBeInTheDocument();
@@ -369,9 +369,49 @@ describe("StrategyScreen", () => {
     await user.click(checkboxes[0]);
     await user.click(checkboxes[1]);
 
-    expect(screen.getByRole("button", { name: /compare 2 runs: mean reversion fx and index momentum/i })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /compare 2 runs: mean reversion fx, index momentum/i })).toBeEnabled();
     expect(screen.getByRole("button", { name: /diff 2 runs: mean reversion fx and index momentum/i })).toBeEnabled();
     expect(screen.getByText("Mean Reversion FX vs Index Momentum")).toBeInTheDocument();
+  });
+
+  it("compares up to four runs with overlaid curves and refuses a fifth with a message", async () => {
+    const fiveRuns: StrategyWorkspaceResponse = {
+      ...twoRuns,
+      runs: [1, 2, 3, 4, 5].map((index) => ({ ...twoRuns.runs[0]!, id: `run-${index}`, strategyName: `Strategy ${index}`, sharpe: `${index}` }))
+    };
+    vi.spyOn(api, "compareRuns").mockResolvedValue([]);
+    const equity = (runId: string, values: number[]) => ({
+      runId, initialEquity: values[0]!, finalEquity: values.at(-1)!, maxDrawdown: 0, maxDrawdownPercent: 0, maxDrawdownRecoveryDays: 0, sharpeRatio: 0, sortinoRatio: 0,
+      points: values.map((totalEquity, day) => ({ date: `2026-01-0${day + 1}T00:00:00Z`, totalEquity, cash: 0, dailyReturn: 0, drawdownFromPeak: 0, drawdownFromPeakPercent: 0 }))
+    });
+    vi.spyOn(api, "getRunEquityCurve").mockImplementation(async (runId: string) => {
+      if (runId === "run-3") throw new Error("Curve not retained");
+      return equity(runId, [100, 110, 105]);
+    });
+
+    const user = userEvent.setup();
+    renderWithRouter(<StrategyScreen data={fiveRuns} />);
+    const checkbox = (name: string) => screen.getByRole("checkbox", { name: new RegExp(`^(Select|Remove) ${name} for compare and diff$`) });
+    for (const index of [1, 2, 3, 4]) await user.click(checkbox(`Strategy ${index}`));
+    await user.click(checkbox("Strategy 5"));
+
+    const tray = screen.getByRole("region", { name: "Runs selected for comparison" });
+    expect(tray).toHaveTextContent("4 of 4 selected");
+    expect(within(tray).getByRole("status")).toHaveTextContent("Compare holds 4 runs. Remove one from the selection to add Strategy 5.");
+    expect(within(tray).queryByText("Strategy 5")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /diff 2 runs unavailable/i })).toBeDisabled();
+
+    await user.click(screen.getByRole("button", { name: /^compare 4 runs: strategy 1, strategy 2, strategy 3, strategy 4$/i }));
+    expect(api.compareRuns).toHaveBeenCalledWith(["run-1", "run-2", "run-3", "run-4"]);
+    const curves = await screen.findByRole("region", { name: "Compared run curves" });
+    expect(curves).toHaveAttribute("data-chart-table", "strategy-run-overlay");
+    expect(curves).toHaveTextContent("Not drawn: Strategy 3: equity curve unavailable.");
+    expect(within(curves).getByRole("img", { name: "Equity of the compared runs, rebased to 100" })).toBeInTheDocument();
+    expect(within(curves).getByRole("img", { name: "Drawdown of the compared runs, percent from peak" })).toBeInTheDocument();
+
+    await user.click(within(tray).getByRole("button", { name: "Remove Strategy 1 from the comparison" }));
+    expect(tray).toHaveTextContent("3 of 4 selected");
+    expect(screen.queryByRole("region", { name: "Compared run curves" })).not.toBeInTheDocument();
   });
 
   it("calls compareRuns API and renders a comparison table cell", async () => {

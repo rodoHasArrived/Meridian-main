@@ -651,6 +651,27 @@ Declared public members:
 | <code>public long TotalEventsProcessed { get; set; }</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:541](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L541) |  |
 | <code>public TimeSpan Uptime { get; set; }</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:542](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L542) |  |
 
+## DisplayTimeZone
+
+Qualified name: <code>Meridian.Ui.Services.DisplayTimeZone</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/DisplayTimeZone.cs:13](../../../../src/Meridian.Ui.Services/Services/DisplayTimeZone.cs#L13).
+
+The time zone desktop timestamps are shown in: the operator&#x27;s display time zone from their host preferences (the same setting as the browser workstation&#x27;s Settings &gt; Preferences &gt; Appearance), or UTC when none is set or this machine cannot resolve it. Read by FormatHelpers.FormatDisplayTimestamp(DateTimeOffset, string). Display only: it never changes stored, audit or ledger values.
+
+```csharp
+public static class DisplayTimeZone
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static TimeZoneInfo Current =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DisplayTimeZone.cs:18](../../../../src/Meridian.Ui.Services/Services/DisplayTimeZone.cs#L18) | The zone timestamps are shown in; UTC by default. |
+| <code>public static event EventHandler? Changed;</code> | [src/Meridian.Ui.Services/Services/DisplayTimeZone.cs:21](../../../../src/Meridian.Ui.Services/Services/DisplayTimeZone.cs#L21) | Raised after Current changes, so open screens can reformat. |
+| <code>public static void Set(TimeZoneInfo? zone);</code> | [src/Meridian.Ui.Services/Services/DisplayTimeZone.cs:24](../../../../src/Meridian.Ui.Services/Services/DisplayTimeZone.cs#L24) | Sets the display zone; null restores UTC. Raises Changed when it differs. |
+| <code>public static bool IsUtc(TimeZoneInfo zone) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DisplayTimeZone.cs:38](../../../../src/Meridian.Ui.Services/Services/DisplayTimeZone.cs#L38) | True for UTC itself and its aliases (such as &quot;Etc/UTC&quot;), not for zones that merely sit at +00:00 for part of the year, such as Europe/London. |
+
 ## DriveStorageInfo
 
 Qualified name: <code>Meridian.Ui.Services.DriveStorageInfo</code>. Kind: `class`.
@@ -1116,28 +1137,3 @@ Declared public members:
 | <code>public static ExportDateRange Yesterday =&gt; …;</code> | [src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs:838](../../../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs#L838) |  |
 | <code>public static ExportDateRange LastWeek =&gt; …;</code> | [src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs:839](../../../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs#L839) |  |
 | <code>public static ExportDateRange LastMonth =&gt; …;</code> | [src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs:840](../../../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs#L840) |  |
-
-## ExportEstimate
-
-Qualified name: <code>Meridian.Ui.Services.ExportEstimate</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs:1159](../../../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs#L1159).
-
-Export size and duration estimate.
-
-```csharp
-public sealed class ExportEstimate
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public long TotalRecords { get; set; }</code> | [src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs:1161](../../../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs#L1161) |  |
-| <code>public long AvailableRecords { get; set; }</code> | [src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs:1162](../../../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs#L1162) |  |
-| <code>public double CompletenessPercent { get; set; }</code> | [src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs:1163](../../../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs#L1163) |  |
-| <code>public long EstimatedSizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs:1164](../../../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs#L1164) |  |
-| <code>public int EstimatedDurationSeconds { get; set; }</code> | [src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs:1165](../../../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs#L1165) |  |
-| <code>public List&lt;string&gt; Warnings { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs:1166](../../../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs#L1166) |  |
-| <code>public string EstimatedSizeFormatted =&gt; …;</code> | [src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs:1168](../../../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs#L1168) |  |
-| <code>public string EstimatedDurationFormatted =&gt; …;</code> | [src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs:1169](../../../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs#L1169) |  |

@@ -10,6 +10,15 @@ import {
   captureRouteWithRetries,
   checkHoldingsTotals,
   checkKpiConsistency,
+  checkKpiLabelConsistency,
+  findStatusContradictions,
+  isPositionsTableLabel,
+  findRepeatedUnavailableLines,
+  describePrimaryTaskPosition,
+  describeFailureNotices,
+  describeNavRowBudget,
+  checkSeverityLabelConsistency,
+  loadKpiDefinitions,
   collectKpiSnapshots,
   collectAllowedContentIssueKinds,
   createCaptureApiTracker,
@@ -979,4 +988,119 @@ test("content check flags the article 'a' before a vowel sound", () => {
   const issues = findCaptureContentIssues("Ops Desk has a Operator session. Add a entry or a Admin. Class A income, a user, a one-time code, a European fund, an owner, data access.");
   assert.deepEqual(issues.filter((issue) => issue.kind === "article-before-vowel").map((issue) => issue.excerpt),
     ["a Operator", "a entry", "a Admin"]);
+});
+
+test("the status bar may not say up to date while the masthead or the page needs review", () => {
+  assert.deepEqual(findStatusContradictions({ statusBar: "Sync up to date", pageFreshness: null, shellFreshness: null }), []);
+  assert.deepEqual(findStatusContradictions({ statusBar: "Sync connected Freshness Providers 1 of 4 healthy", pageFreshness: "Stale", shellFreshness: "Providers 1 of 4 healthy" }), []);
+  assert.deepEqual(
+    findStatusContradictions({ statusBar: "Sync up to date", pageFreshness: null, shellFreshness: "Providers 1 of 4 healthy" }),
+    ['status bar "Sync up to date" vs masthead "Providers 1 of 4 healthy"']
+  );
+  assert.equal(findStatusContradictions({ statusBar: "Sync up to date", pageFreshness: "Stale", shellFreshness: "Providers" }).length, 2);
+});
+
+test("a positions table that does not name its source is reported", () => {
+  assert.deepEqual(
+    findCaptureContentIssues("Trading", { unsourcedPositionTables: ["Session positions evidence", "Session positions evidence"] }),
+    [{ kind: "position-source-missing", excerpt: "Session positions evidence" }]
+  );
+  assert.deepEqual(findCaptureContentIssues("Trading", { unsourcedPositionTables: [] }), []);
+});
+
+test("figures sharing a label and population must agree across ids and routes", async () => {
+  const definitions = await loadKpiDefinitions();
+  assert.ok(definitions.some((definition) => definition.id === "system.providers-online"), "shared KPI catalog loads");
+  const kpi = (id, value, population = "Providers in use") => ({ id, value, display: value, population });
+  const capture = (route, kpis, scenario = null) => ({ status: "passed", route, scenario, kpis });
+
+  const conflicting = checkKpiLabelConsistency([
+    capture("/", [kpi("system.providers-online", "1 of 4 providers")]),
+    capture("/data", [kpi("data.providers-healthy", "0 of 3 providers")])
+  ], definitions);
+  assert.equal(conflicting.conflicts.length, 1);
+  assert.equal(conflicting.conflicts[0].group, "Providers healthy · Providers in use");
+
+  // The same value, a different dataset, or a different rendered population is not a conflict.
+  assert.equal(checkKpiLabelConsistency([
+    capture("/", [kpi("system.providers-online", "1 of 4 providers")]),
+    capture("/data", [kpi("data.providers-healthy", "1 of 4 providers")]),
+    capture("/data", [kpi("data.providers-healthy", "0 of 3 providers")], "stale"),
+    capture("/settings", [kpi("data.providers-healthy", "0 of 3 providers", "Providers visible to you")])
+  ], definitions).conflicts.length, 0);
+});
+
+test("only tables named as positions books must name their source", () => {
+  assert.equal(isPositionsTableLabel("Execution blotter positions"), true);
+  assert.equal(isPositionsTableLabel("Alpaca paper current positions"), true);
+  assert.equal(isPositionsTableLabel("Alpaca paper brokerage accounts"), false);
+  assert.equal(isPositionsTableLabel("Retained account margin position contributions"), false);
+  assert.equal(isPositionsTableLabel(null), false);
+});
+
+test("a repeated unavailable line is reported once with its count; two repeats pass", () => {
+  const text = "Ledger\nEntity name unavailable\nEntity name unavailable\nEntity name unavailable\nAge unavailable\nAge unavailable";
+  assert.deepEqual(findRepeatedUnavailableLines(text), ["Entity name unavailable ×3"]);
+  assert.deepEqual(findCaptureContentIssues(text).filter((issue) => issue.kind === "repeated-unavailable"),
+    [{ kind: "repeated-unavailable", excerpt: "Entity name unavailable ×3" }]);
+  assert.deepEqual(findRepeatedUnavailableLines("Basis\nNo data"), []);
+});
+
+test("a declared primary task must start within its limit", () => {
+  const task = { selector: "[aria-label=\"Today queue\"]", maxTop: 600 };
+  assert.equal(describePrimaryTaskPosition(task, 423), null);
+  assert.equal(describePrimaryTaskPosition(task, 1012.4), "[aria-label=\"Today queue\"] starts at 1012px (limit 600px)");
+  assert.equal(describePrimaryTaskPosition(task, null), "[aria-label=\"Today queue\"] not found");
+  assert.equal(describePrimaryTaskPosition(undefined, 2000), null);
+  assert.deepEqual(findCaptureContentIssues("Today", { primaryTaskIssues: ["x starts at 900px (limit 600px)"] }),
+    [{ kind: "primary-task-below-fold", excerpt: "x starts at 900px (limit 600px)" }]);
+});
+
+test("one backend failure shows at most the declared number of notices and Retry buttons", () => {
+  assert.deepEqual(describeFailureNotices(1, { alerts: 1, retries: 1 }), []);
+  assert.deepEqual(describeFailureNotices(1, { alerts: 2, retries: 3 }), ["2 alerts (limit 1)", "3 Retry buttons (limit 1)"]);
+  assert.deepEqual(describeFailureNotices(undefined, { alerts: 9, retries: 9 }), []);
+  assert.deepEqual(findCaptureContentIssues("Journal", { failureNoticeIssues: ["2 alerts (limit 1)"] }),
+    [{ kind: "single-failure-notice", excerpt: "2 alerts (limit 1)" }]);
+});
+
+test("one status label renders with one severity across routes", () => {
+  const capture = (route, severityBadges, scenario = null) => ({ status: "passed", route, scenario, severityBadges });
+  const conflicting = checkSeverityLabelConsistency([
+    capture("/", [{ label: "Review", severity: "review" }]),
+    capture("/settings", [{ label: "review", severity: "blocked" }, { label: "Blocked", severity: "blocked" }])
+  ]);
+  assert.equal(conflicting.conflicts.length, 1);
+  assert.equal(conflicting.conflicts[0].label, "review");
+  assert.equal(checkSeverityLabelConsistency([
+    capture("/", [{ label: "Review", severity: "review" }]),
+    capture("/settings", [{ label: "Review", severity: "review" }]),
+    capture("/settings", [{ label: "Review", severity: "action" }], "stale")
+  ]).conflicts.length, 0);
+});
+
+test("wrapped figures, uncued overflow and monospace prose are reported", () => {
+  assert.deepEqual(
+    findCaptureContentIssues("Close", { wrappedDetailValues: ["Jan 1, 2026"], uncuedOverflowTables: ["Positions"], monospaceProse: ["Select a row to inspect"] }),
+    [
+      { kind: "detail-value-wraps", excerpt: "Jan 1, 2026" },
+      { kind: "table-overflow-without-cue", excerpt: "Positions" },
+      { kind: "monospace-prose", excerpt: "Select a row to inspect" }
+    ]
+  );
+});
+
+test("an expanded workspace stays within the sidebar row budget", () => {
+  assert.deepEqual(describeNavRowBudget(7, 5), []);
+  assert.deepEqual(describeNavRowBudget(7, 22), ["22 sidebar sub-rows (limit 7)"]);
+  assert.deepEqual(describeNavRowBudget(undefined, 22), []);
+  assert.deepEqual(findCaptureContentIssues("Accounting", { navRowIssues: ["22 sidebar sub-rows (limit 7)"] }),
+    [{ kind: "nav-row-budget", excerpt: "22 sidebar sub-rows (limit 7)" }]);
+});
+
+test("a chart without a table alternative is reported", () => {
+  assert.deepEqual(findCaptureContentIssues("Data", { chartsWithoutTables: ["Provider evidence age", ""] }), [
+    { kind: "chart-without-table", excerpt: "Provider evidence age" },
+    { kind: "chart-without-table", excerpt: "(unlabelled chart)" }
+  ]);
 });

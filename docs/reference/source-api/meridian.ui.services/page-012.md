@@ -6,53 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## IntercompanyCounterpartQueueWorkspace
-
-Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyCounterpartQueueWorkspace</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:14](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L14).
-
-Desktop presentation state for counterpart delivery records and booking breaks. Every record, permission and amount comes from the shared intercompany API; nothing is calculated or retained here.
-
-```csharp
-public sealed partial class IntercompanyCounterpartQueueWorkspace : ObservableObject, IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IntercompanyCounterpartQueueWorkspace(IWorkstationIntercompanyAgreementApiClient client);</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:36](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L36) |  |
-| <code>public ObservableCollection&lt;IntercompanyChoice&gt; BookChoices { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:50](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L50) | Books the signed-in account can see; choosing one sets SourceBook. |
-| <code>public ObservableCollection&lt;IntercompanyChoice&gt; TargetBookChoices { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:52](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L52) | Books owned by the selected proposal&#x27;s counterparty entity; choosing one sets TargetBook. |
-| <code>public IAsyncRelayCommand LoadChoicesCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:53](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L53) |  |
-| <code>public string ChoicesStatus { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:55](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L55) | What the book lists hold, or why one is empty. |
-| <code>public ObservableCollection&lt;IntercompanyCounterpartProposalRow&gt; Proposals { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:57](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L57) |  |
-| <code>public ObservableCollection&lt;IntercompanyCounterpartBreakRow&gt; Breaks { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:58](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L58) |  |
-| <code>public ObservableCollection&lt;IntercompanyCounterpartRepricingRow&gt; RepricingRows { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:59](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L59) |  |
-| <code>public IAsyncRelayCommand LoadCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:60](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L60) |  |
-| <code>public IAsyncRelayCommand RetryCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:61](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L61) |  |
-| <code>public IAsyncRelayCommand LinkCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:62](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L62) |  |
-| <code>public IAsyncRelayCommand PreviewRepricingCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:63](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L63) |  |
-| <code>public IAsyncRelayCommand ApplyRepricingCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:64](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L64) |  |
-| <code>public bool IsBusy { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:65](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L65) |  |
-| <code>public bool CanManageLedger { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:67](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L67) | The server&#x27;s answer for the signed-in account. Target-book authority is still checked per command. |
-| <code>public string PermissionNote =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:68](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L68) |  |
-| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:71](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L71) |  |
-| <code>public string BreakStatus { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:72](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L72) |  |
-| <code>public string RepricingStatus { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:73](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L73) |  |
-| <code>public string SourceBook { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:74](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L74) |  |
-| <code>public string AsOf { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:75](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L75) |  |
-| <code>public string RetryReason { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:76](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L76) |  |
-| <code>public string TargetBook { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:77](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L77) |  |
-| <code>public string TargetJournal { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:78](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L78) |  |
-| <code>public string LinkReason { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:79](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L79) |  |
-| <code>public string RepricingReason { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:80](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L80) |  |
-| <code>public IntercompanyCounterpartProposalRow? SelectedProposal { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:81](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L81) |  |
-| <code>public string SelectedGuidance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:95](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L95) |  |
-| <code>public void ResetSession();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:334](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L334) | Clear prior-session evidence and invalidate every outstanding response on account changes. |
-| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:351](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L351) |  |
-
 ## IntercompanyCounterpartRepricingRow
 
 Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyCounterpartRepricingRow</code>. Kind: `class`.
@@ -401,22 +354,6 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;ApiResponse&lt;IntercompanyAccrualProposalDto&gt;&gt; PreviewInterestAccrualAsync(IntercompanyAccrualRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Accruals.cs:10](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Accruals.cs#L10) | Read-only computation over the operator&#x27;s selection; the server resolves every economic input. |
 | <code>Task&lt;ApiResponse&lt;ManualJournalEntryDraftDto&gt;&gt; CreateInterestAccrualDraftAsync(CreateIntercompanyAccrualDraftRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Accruals.cs:13](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Accruals.cs#L13) | Retains the previewed computation as a source-book review draft. It never approves or posts. |
-
-Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.AccrualSchedules.cs:7](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.AccrualSchedules.cs#L7).
-
-```csharp
-public partial interface IWorkstationIntercompanyAgreementApiClient
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;ApiResponse&lt;IntercompanyAccrualScheduleDto[]&gt;&gt; GetAccrualSchedulesAsync(Guid bookId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.AccrualSchedules.cs:10](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.AccrualSchedules.cs#L10) | Retained accrual schedules of one book, read from the same route the browser workstation uses. |
-| <code>Task&lt;ApiResponse&lt;IntercompanyAccrualScheduleDto&gt;&gt; ProposeAccrualScheduleAsync(ProposeIntercompanyAccrualScheduleRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.AccrualSchedules.cs:13](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.AccrualSchedules.cs#L13) | Proposes a schedule for review. It drafts nothing until another operator approves it. |
-| <code>Task&lt;ApiResponse&lt;IntercompanyAccrualScheduleDto&gt;&gt; DecideAccrualScheduleAsync(Guid scheduleId, Guid bookId, DecideIntercompanyAccrualScheduleRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.AccrualSchedules.cs:16](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.AccrualSchedules.cs#L16) | Approves, rejects or disables exactly the schedule version the reviewer saw. |
-| <code>Task&lt;ApiResponse&lt;IntercompanyAccrualScheduleRunDto&gt;&gt; GetAccrualScheduleDueAsync(Guid scheduleId, Guid bookId, DateOnly asOf, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.AccrualSchedules.cs:19](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.AccrualSchedules.cs#L19) | Dry run: the completed periods a run would draft as of a date. Nothing is created. |
-| <code>Task&lt;ApiResponse&lt;IntercompanyAccrualScheduleRunDto&gt;&gt; RunAccrualScheduleAsync(Guid scheduleId, Guid bookId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.AccrualSchedules.cs:22](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.AccrualSchedules.cs#L22) | Runs an active schedule now. It drafts for ordinary review only; nothing is approved or posted. |
 
 Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Choices.cs:7](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Choices.cs#L7).
 
@@ -795,22 +732,6 @@ Declared public members:
 | --- | --- | --- |
 | <code>public async Task&lt;ApiResponse&lt;IntercompanyAccrualProposalDto&gt;&gt; PreviewInterestAccrualAsync(IntercompanyAccrualRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Accruals.cs:22](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Accruals.cs#L22) |  |
 | <code>public async Task&lt;ApiResponse&lt;ManualJournalEntryDraftDto&gt;&gt; CreateInterestAccrualDraftAsync(CreateIntercompanyAccrualDraftRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Accruals.cs:41](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Accruals.cs#L41) |  |
-
-Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.AccrualSchedules.cs:26](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.AccrualSchedules.cs#L26).
-
-```csharp
-public sealed partial class WorkstationIntercompanyAgreementApiClient
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;ApiResponse&lt;IntercompanyAccrualScheduleDto[]&gt;&gt; GetAccrualSchedulesAsync(Guid bookId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.AccrualSchedules.cs:30](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.AccrualSchedules.cs#L30) |  |
-| <code>public async Task&lt;ApiResponse&lt;IntercompanyAccrualScheduleDto&gt;&gt; ProposeAccrualScheduleAsync(ProposeIntercompanyAccrualScheduleRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.AccrualSchedules.cs:42](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.AccrualSchedules.cs#L42) |  |
-| <code>public async Task&lt;ApiResponse&lt;IntercompanyAccrualScheduleDto&gt;&gt; DecideAccrualScheduleAsync(Guid scheduleId, Guid bookId, DecideIntercompanyAccrualScheduleRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.AccrualSchedules.cs:52](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.AccrualSchedules.cs#L52) |  |
-| <code>public async Task&lt;ApiResponse&lt;IntercompanyAccrualScheduleRunDto&gt;&gt; GetAccrualScheduleDueAsync(Guid scheduleId, Guid bookId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.AccrualSchedules.cs:61](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.AccrualSchedules.cs#L61) |  |
-| <code>public async Task&lt;ApiResponse&lt;IntercompanyAccrualScheduleRunDto&gt;&gt; RunAccrualScheduleAsync(Guid scheduleId, Guid bookId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.AccrualSchedules.cs:69](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.AccrualSchedules.cs#L69) |  |
 
 Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Choices.cs:17](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Choices.cs#L17).
 
@@ -1218,6 +1139,99 @@ Represents an ARGB color value.
 public readonly record struct ArgbColor(byte A, byte R, byte G, byte B);
 ```
 
+## IPeriodComparisonApiClient
+
+Qualified name: <code>Meridian.Ui.Services.Services.Comparisons.IPeriodComparisonApiClient</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs:9](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs#L9).
+
+Reads the shared prior-period comparisons that the desktop does not compose in process.
+
+```csharp
+public interface IPeriodComparisonApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ApiResponse&lt;PeriodComparisonDto&gt;&gt; GetCashLadderComparisonAsync(DateOnly? baselineAsOf = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs:12](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs#L12) | The portfolio cash ladder today against the ladder rebuilt as of baselineAsOf (default: the end of last month). |
+
+## PeriodComparisonApiClient
+
+Qualified name: <code>Meridian.Ui.Services.Services.Comparisons.PeriodComparisonApiClient</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs:20](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs#L20).
+
+HTTP client for UiApiRoutes.PortfolioCashLadderComparison. The cash ladder service needs host-composed holdings and cash providers, so the desktop reads it over the API; a host without them answers 501, which PeriodComparisonProjection.DescribeFailure{T} explains.
+
+```csharp
+public sealed class PeriodComparisonApiClient : IPeriodComparisonApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PeriodComparisonApiClient(ApiClientService apiClient);</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs:24](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs#L24) |  |
+| <code>public Task&lt;ApiResponse&lt;PeriodComparisonDto&gt;&gt; GetCashLadderComparisonAsync(DateOnly? baselineAsOf = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs:30](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs#L30) |  |
+| <code>public static string BuildCashLadderComparisonRoute(DateOnly? baselineAsOf) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs:34](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs#L34) | The comparison route, with the prior date when one is given. |
+
+## PeriodComparisonProjection
+
+Qualified name: <code>Meridian.Ui.Services.Services.Comparisons.PeriodComparisonProjection</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:58](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L58).
+
+Presentation projection for PeriodComparisonDto, shared by the desktop NAV, run attribution and cash ladder comparisons (UX Phase E parity). Lives here rather than in the desktop assembly so it runs in tests on any platform. It mirrors the browser&#x27;s period-comparison-panel.tsx: amounts to two places with negatives in parentheses, counts as whole numbers, the server&#x27;s percent (never recomputed) to two places, &quot;Not comparable · prior zero&quot; for a zero prior, and the Portfolio materiality threshold from lib/reporting-materiality.ts on amount lines.
+
+```csharp
+public static class PeriodComparisonProjection
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const decimal PortfolioMaterialAbsoluteVariance = 250_000m;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:61](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L61) | The Portfolio policy&#x27;s absolute-variance threshold in lib/reporting-materiality.ts. |
+| <code>public const string NotComparablePriorZero = &quot;Not comparable · prior zero&quot;;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:64](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L64) | Shown in place of a percent when the prior is zero. |
+| <code>public static readonly IReadOnlyCollection&lt;string&gt; CashLadderCountKeys = [&quot;breaches&quot;];</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:67](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L67) | Lines of the cash ladder comparison that are counts, not amounts. |
+| <code>public static PeriodComparisonView Project(PeriodComparisonDto? comparison, decimal? materialThreshold = PortfolioMaterialAbsoluteVariance, IReadOnlyCollection&lt;string&gt;? countKeys = null);</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:70](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L70) | Formats a comparison. A null comparison reads as still loading. |
+| <code>public static string FormatAmount(decimal value);</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:113](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L113) | Two places, thousands separated, negatives in parentheses. |
+| <code>public static string FormatCount(decimal value) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:120](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L120) | A whole number, negative with a minus sign. |
+| <code>public static string FormatPercent(decimal? percent) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:124](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L124) | The server&#x27;s percent to two places, or the not-comparable text when there is none. |
+| <code>public static string DescribeFailure&lt;T&gt;(ApiResponse&lt;T&gt; response) where T : class;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:130](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L130) | What to tell the operator when a comparison request fails. |
+
+## PeriodComparisonRow
+
+Qualified name: <code>Meridian.Ui.Services.Services.Comparisons.PeriodComparisonRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:17](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L17).
+
+One line of a prior-period comparison, formatted for display.
+
+```csharp
+public sealed record PeriodComparisonRow(string Key, string Label, string Current, string Prior, string Change, string ChangePercent, bool IsTotal, bool IsMaterial, bool IsPriorZero)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string MaterialLabel =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:29](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L29) | &quot;Material&quot; when the change is past the threshold, otherwise empty. |
+
+## PeriodComparisonView
+
+Qualified name: <code>Meridian.Ui.Services.Services.Comparisons.PeriodComparisonView</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:39](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L39).
+
+A prior-period comparison ready to show: a heading, why it is empty if it is, rows and notes.
+
+```csharp
+public sealed record PeriodComparisonView(bool IsReady, string Heading, string Windows, string? Message, IReadOnlyList<PeriodComparisonRow> Rows, IReadOnlyList<string> Notes);
+```
+
 ## ConfigProfile
 
 Qualified name: <code>Meridian.Ui.Services.Services.ConfigProfile</code>. Kind: `record`.
@@ -1441,84 +1455,3 @@ Declared public members:
 | <code>public async Task&lt;QualityCheckResult?&gt; RunQualityCheckAsync(string path, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:281](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L281) |  |
 | <code>public async Task&lt;List&lt;DataGapInfo&gt;&gt; GetDataGapsAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:284](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L284) |  |
 | <code>public async Task&lt;IntegrityVerificationResult&gt; VerifySymbolIntegrityAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:303](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L303) |  |
-
-## DataQualitySummary
-
-Qualified name: <code>Meridian.Ui.Services.Services.DataQualitySummary</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:12](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L12).
-
-Summarizes file health, alerts, and per-symbol quality at the last check.
-
-```csharp
-public sealed class DataQualitySummary
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public double OverallScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:14](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L14) |  |
-| <code>public int TotalFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:15](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L15) |  |
-| <code>public int HealthyFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:16](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L16) |  |
-| <code>public int WarningFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:17](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L17) |  |
-| <code>public int CriticalFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:18](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L18) |  |
-| <code>public int ActiveAlerts { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:19](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L19) |  |
-| <code>public int UnacknowledgedAlerts { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:20](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L20) |  |
-| <code>public DateTime LastChecked { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:21](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L21) |  |
-| <code>public List&lt;SymbolQualitySummary&gt; SymbolSummaries { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:22](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L22) |  |
-
-## DesktopShellPreferences
-
-Qualified name: <code>Meridian.Ui.Services.Services.DesktopShellPreferences</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:29](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L29).
-
-Persisted desktop shell preferences consumed by the WPF workstation shell.
-
-```csharp
-public sealed record DesktopShellPreferences(ShellDensityMode ShellDensityMode)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static DesktopShellPreferences Default { get; } = new (ShellDensityMode.Standard);</code> | [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:35](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L35) |  |
-| <code>public IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; ShortcutOverrides { get; init; } = NoShortcutOverrides;</code> | [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:40](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L40) | The operator&#x27;s shortcut overrides; empty when every shortcut uses its default binding. |
-
-## DesktopShortcutOverride
-
-Qualified name: <code>Meridian.Ui.Services.Services.DesktopShortcutOverride</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:21](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L21).
-
-A persisted operator change to one default desktop keyboard shortcut, keyed by action id. Keys and modifiers are stored as their WPF enum names (for example F10 and Control, Shift) so this contract stays free of WPF types; a null member means &quot;keep the default&quot; for that part of the binding.
-
-```csharp
-public sealed record DesktopShortcutOverride(string? Key = null, string? Modifiers = null, bool? IsEnabled = null);
-```
-
-## ErrorDetailsModel
-
-Qualified name: <code>Meridian.Ui.Services.Services.ErrorDetailsModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:51](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L51).
-
-Contains detailed error information for user display. Shared across desktop platforms.
-
-```csharp
-public sealed class ErrorDetailsModel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Title { get; set; } = &quot;Error&quot;;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:53](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L53) |  |
-| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:54](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L54) |  |
-| <code>public string? Context { get; set; }</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:55](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L55) |  |
-| <code>public string? Remedy { get; set; }</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:56](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L56) |  |
-| <code>public InfoBarSeverityLevel Severity { get; set; } = InfoBarSeverityLevel.Error;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:57](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L57) |  |
-| <code>public string GetFormattedMessage();</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:62](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L62) | Gets the full formatted message including context and remedy. |
-| <code>public static ErrorDetailsModel CreateFromException(Exception ex, string operation);</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:75](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L75) | Creates a user-friendly error message with context and remedies from an exception. |

@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AppendIntercompanyAccountBindingRequest
+
+Qualified name: <code>Meridian.Contracts.Ledger.AppendIntercompanyAccountBindingRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:41](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L41).
+
+The server resolves account facts from the chart and stamps authenticated audit scope.
+
+```csharp
+public sealed record AppendIntercompanyAccountBindingRequest(Guid BindingId, Guid RevisionId, Guid LedgerBookId, string ChartAccountNodeId, DateOnly EffectiveFrom, DateOnly? EffectiveTo, IReadOnlyList<string> HistoricalNames, string Reason, Guid? ExpectedPreviousRevisionId = null, bool IsArchived = false);
+```
+
 ## AppendLegacyIntercompanyAttributionRequest
 
 Qualified name: <code>Meridian.Contracts.Ledger.AppendLegacyIntercompanyAttributionRequest</code>. Kind: `record`.
@@ -698,16 +710,4 @@ Source: [src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs:51](../
 
 ```csharp
 public sealed record ClosePreparationIssueDto(string Code, string Message, bool IsBlocking, string? TaskId = null);
-```
-
-## ClosePreparationOwnerMappingDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.ClosePreparationOwnerMappingDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs:44](../../../../src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs#L44).
-
-Explicit owner assignment for this preparation; it does not certify directory membership.
-
-```csharp
-public sealed record ClosePreparationOwnerMappingDto(string SourceOwner, string TargetOwner);
 ```

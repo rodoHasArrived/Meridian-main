@@ -6,6 +6,52 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RetentionPoliciesResult
+
+Qualified name: <code>Meridian.Ui.Services.RetentionPoliciesResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:247](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L247).
+
+Result of getting retention policies.
+
+```csharp
+public sealed class RetentionPoliciesResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:249](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L249) |  |
+| <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:250](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L250) |  |
+| <code>public List&lt;StorageRetentionPolicy&gt; Policies { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:251](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L251) |  |
+| <code>public StorageRetentionPolicy? DefaultPolicy { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:252](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L252) |  |
+
+## RetentionPolicy
+
+Qualified name: <code>Meridian.Ui.Services.RetentionPolicy</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:38](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L38).
+
+Retention policy definition.
+
+```csharp
+public sealed class RetentionPolicy
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int TickDataDays { get; set; } = 30;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:40](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L40) |  |
+| <code>public int BarDataDays { get; set; } = 365;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:41](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L41) |  |
+| <code>public int QuoteDataDays { get; set; } = 30;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:42](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L42) |  |
+| <code>public int DepthDataDays { get; set; } = 7;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:43](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L43) |  |
+| <code>public int DeletedFilesPerRun { get; set; } = 100;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:44](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L44) |  |
+| <code>public bool CompressBeforeDelete { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:45](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L45) |  |
+| <code>public bool ArchiveToCloud { get; set; }</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:46](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L46) |  |
+| <code>public string? CloudArchiveDestination { get; set; }</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:47](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L47) |  |
+
 ## RetentionValidationResult
 
 Qualified name: <code>Meridian.Ui.Services.RetentionValidationResult</code>. Kind: `class`.
@@ -877,104 +923,6 @@ Declared public members:
 | <code>SourceLinkedAuditLine? GetAuditLine(string ledgerId, Guid journalEntryId);</code> | [src/Meridian.Ui.Services/Services/Accounting/AccountingProjectionQueryService.cs:15](../../../../src/Meridian.Ui.Services/Services/Accounting/AccountingProjectionQueryService.cs#L15) |  |
 | <code>AccountingCloseProjection GetCloseProjection(string ledgerId, DateOnly period, CloseEvidence evidence, LedgerDimensionSetDto? dimensions = null);</code> | [src/Meridian.Ui.Services/Services/Accounting/AccountingProjectionQueryService.cs:16](../../../../src/Meridian.Ui.Services/Services/Accounting/AccountingProjectionQueryService.cs#L16) |  |
 
-## IntercompanyAccrualScheduleRow
-
-Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyAccrualScheduleRow</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:453](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L453).
-
-One retained schedule version, exactly as the server returned it.
-
-```csharp
-public sealed class IntercompanyAccrualScheduleRow(IntercompanyAccrualScheduleDto schedule, string profile, string principal)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IntercompanyAccrualScheduleDto Schedule { get; } = schedule;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:455](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L455) |  |
-| <code>public Guid ScheduleId =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:456](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L456) |  |
-| <code>public Guid LedgerBookId =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:457](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L457) |  |
-| <code>public long Version =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:458](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L458) |  |
-| <code>public IntercompanyAccrualScheduleStatusDto Status =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:459](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L459) |  |
-| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:460](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L460) |  |
-| <code>public string Profile =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:461](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L461) |  |
-| <code>public string Principal =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:462](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L462) |  |
-| <code>public string ActiveFrom =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:463](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L463) |  |
-| <code>public string ProposedBy =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:464](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L464) |  |
-| <code>public string History =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:465](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L465) |  |
-
-## IntercompanyAccrualScheduleWindowRow
-
-Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyAccrualScheduleWindowRow</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:471](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L471).
-
-One completed schedule period and what a run did, or would do, with it.
-
-```csharp
-public sealed class IntercompanyAccrualScheduleWindowRow(IntercompanyAccrualScheduleWindowDto window)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IntercompanyAccrualScheduleWindowDto Window { get; } = window;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:473](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L473) |  |
-| <code>public string Period =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:474](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L474) |  |
-| <code>public string Outcome =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:475](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L475) |  |
-| <code>public string Draft =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:480](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L480) |  |
-| <code>public string Reason =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:481](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L481) |  |
-
-## IntercompanyAccrualScheduleWorkspace
-
-Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyAccrualScheduleWorkspace</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:16](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L16).
-
-Desktop presentation state for opt-in, reviewed intercompany accrual schedules. A schedule only drafts governed loan-interest accruals for ordinary journal review; nothing posts from here. Every schedule, period, outcome and permission comes from the shared intercompany API, and the server enforces that a proposer cannot approve.
-
-```csharp
-public sealed partial class IntercompanyAccrualScheduleWorkspace : ObservableObject, IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IntercompanyAccrualScheduleWorkspace(IWorkstationIntercompanyAgreementApiClient client);</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:32](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L32) |  |
-| <code>public ObservableCollection&lt;IntercompanyChoice&gt; BookChoices { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:51](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L51) | Books the signed-in account can see; choosing one sets SourceBook and lists its schedules. |
-| <code>public ObservableCollection&lt;IntercompanyChoice&gt; InterestProfileChoices { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:53](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L53) | Approved LoanInterest profiles that map the chosen book today (ledger managers only). |
-| <code>public ObservableCollection&lt;IntercompanyChoice&gt; PrincipalProfileChoices { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:55](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L55) | Approved Loan profiles of the same legal agreement as the chosen interest profile. |
-| <code>public ObservableCollection&lt;IntercompanyAccrualScheduleRow&gt; Schedules { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:56](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L56) |  |
-| <code>public ObservableCollection&lt;IntercompanyAccrualScheduleWindowRow&gt; Windows { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:57](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L57) |  |
-| <code>public IAsyncRelayCommand LoadChoicesCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:58](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L58) |  |
-| <code>public IAsyncRelayCommand LoadCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:59](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L59) |  |
-| <code>public IAsyncRelayCommand ProposeCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:60](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L60) |  |
-| <code>public IAsyncRelayCommand ApproveCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:61](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L61) |  |
-| <code>public IAsyncRelayCommand RejectCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:62](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L62) |  |
-| <code>public IAsyncRelayCommand DisableCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:63](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L63) |  |
-| <code>public IAsyncRelayCommand PreviewDueCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:64](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L64) |  |
-| <code>public IAsyncRelayCommand RunCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:65](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L65) |  |
-| <code>public Task BookLoad { get; private set; } = Task.CompletedTask;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:67](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L67) | The latest read for the chosen book; completed when no read is outstanding. |
-| <code>public bool IsBusy { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:69](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L69) |  |
-| <code>public bool CanManageLedger { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:71](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L71) | The server&#x27;s answer for the signed-in account. Book authority and maker-checker are still checked per command. |
-| <code>public string PermissionNote =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:72](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L72) |  |
-| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:75](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L75) |  |
-| <code>public string ChoicesStatus { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:77](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L77) | What the selection lists hold, or why one is empty. |
-| <code>public string WindowStatus { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:79](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L79) | What the period list shows: a dry run, an executed run, or nothing. |
-| <code>public string SourceBook { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:80](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L80) |  |
-| <code>public string InterestProfile { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:95](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L95) |  |
-| <code>public string PrincipalProfile { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:106](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L106) |  |
-| <code>public string ProposeReason { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:107](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L107) |  |
-| <code>public string DecisionReason { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:109](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L109) | Required to reject or disable; an approval carries no reason. |
-| <code>public IntercompanyAccrualScheduleRow? SelectedSchedule { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:110](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L110) |  |
-| <code>public string History =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:125](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L125) | The selected schedule&#x27;s retained steps, oldest first. |
-| <code>public string SelectedGuidance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:126](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L126) |  |
-| <code>public void ResetSession();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:404](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L404) | Clear prior-session schedules and invalidate every outstanding response on account changes. |
-| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs:421](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAccrualScheduleWorkspace.cs#L421) |  |
-
 ## IntercompanyAgreementWorkspace
 
 Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyAgreementWorkspace</code>. Kind: `class`.
@@ -1324,3 +1272,50 @@ Declared public members:
 | <code>public string Target =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:404](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L404) |  |
 | <code>public IReadOnlyList&lt;IntercompanyCounterpartSourceLineRow&gt; Lines { get; } = [..(proposal.Source.Lines??[]).Select(x =&gt; new IntercompanyCounterpartSourceLineRow(x, proposal.Source.SourceFunctionalCurrency))];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:406](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L406) |  |
 | <code>public string Provenance { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:407](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L407) |  |
+
+## IntercompanyCounterpartQueueWorkspace
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyCounterpartQueueWorkspace</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:14](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L14).
+
+Desktop presentation state for counterpart delivery records and booking breaks. Every record, permission and amount comes from the shared intercompany API; nothing is calculated or retained here.
+
+```csharp
+public sealed partial class IntercompanyCounterpartQueueWorkspace : ObservableObject, IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyCounterpartQueueWorkspace(IWorkstationIntercompanyAgreementApiClient client);</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:36](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L36) |  |
+| <code>public ObservableCollection&lt;IntercompanyChoice&gt; BookChoices { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:50](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L50) | Books the signed-in account can see; choosing one sets SourceBook. |
+| <code>public ObservableCollection&lt;IntercompanyChoice&gt; TargetBookChoices { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:52](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L52) | Books owned by the selected proposal&#x27;s counterparty entity; choosing one sets TargetBook. |
+| <code>public IAsyncRelayCommand LoadChoicesCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:53](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L53) |  |
+| <code>public string ChoicesStatus { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:55](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L55) | What the book lists hold, or why one is empty. |
+| <code>public ObservableCollection&lt;IntercompanyCounterpartProposalRow&gt; Proposals { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:57](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L57) |  |
+| <code>public ObservableCollection&lt;IntercompanyCounterpartBreakRow&gt; Breaks { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:58](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L58) |  |
+| <code>public ObservableCollection&lt;IntercompanyCounterpartRepricingRow&gt; RepricingRows { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:59](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L59) |  |
+| <code>public IAsyncRelayCommand LoadCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:60](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L60) |  |
+| <code>public IAsyncRelayCommand RetryCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:61](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L61) |  |
+| <code>public IAsyncRelayCommand LinkCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:62](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L62) |  |
+| <code>public IAsyncRelayCommand PreviewRepricingCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:63](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L63) |  |
+| <code>public IAsyncRelayCommand ApplyRepricingCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:64](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L64) |  |
+| <code>public bool IsBusy { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:65](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L65) |  |
+| <code>public bool CanManageLedger { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:67](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L67) | The server&#x27;s answer for the signed-in account. Target-book authority is still checked per command. |
+| <code>public string PermissionNote =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:68](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L68) |  |
+| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:71](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L71) |  |
+| <code>public string BreakStatus { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:72](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L72) |  |
+| <code>public string RepricingStatus { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:73](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L73) |  |
+| <code>public string SourceBook { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:74](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L74) |  |
+| <code>public string AsOf { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:75](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L75) |  |
+| <code>public string RetryReason { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:76](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L76) |  |
+| <code>public string TargetBook { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:77](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L77) |  |
+| <code>public string TargetJournal { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:78](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L78) |  |
+| <code>public string LinkReason { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:79](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L79) |  |
+| <code>public string RepricingReason { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:80](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L80) |  |
+| <code>public IntercompanyCounterpartProposalRow? SelectedProposal { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:81](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L81) |  |
+| <code>public string SelectedGuidance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:95](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L95) |  |
+| <code>public void ResetSession();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:334](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L334) | Clear prior-session evidence and invalidate every outstanding response on account changes. |
+| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs:351](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs#L351) |  |

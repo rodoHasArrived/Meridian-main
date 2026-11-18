@@ -275,7 +275,6 @@ export function TrialBalanceScreen() {
             />
           </FormRow>
           <div className="flex flex-wrap gap-2">
-            <Button type="button" size="sm" variant="outline" disabled disabledReason="Prior-period comparison requires a retained comparison run.">Compare prior period</Button>
             <Button type="button" size="sm" variant="outline" disabled disabledReason="Exports are generated through Report Preview and Validation.">Export</Button>
             <Button asChild size="sm" variant="outline">
               <Link to={WORKSTATION_ROUTE_CATALOG.reportingPreviewValidation}>Jump to report preview</Link>

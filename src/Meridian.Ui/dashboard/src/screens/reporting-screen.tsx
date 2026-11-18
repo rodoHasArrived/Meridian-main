@@ -1179,8 +1179,10 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                       <ReportingCutMetric label="Realized" value={formatReportingMoney(slice.realizedPnl, slice.currency)} />
                       <ReportingCutMetric label="Unrealized" value={formatReportingMoney(slice.unrealizedPnl, slice.currency)} />
                       <ReportingCutMetric label="P&L" value={formatReportingMoney(slice.totalPnl, slice.currency)} />
-                      <ReportingCutMetric label="Prior" value={formatReportingMoney(slice.priorTotalPnl, slice.currency)} />
-                      <ReportingCutMetric label="Change" value={formatReportingMoney(slice.pnlChange, slice.currency)} />
+                      {/* With no prior published period the server sends 0 and tags the slice "no-prior";
+                          a dash says there is nothing to compare with, not a prior of $0. */}
+                      <ReportingCutMetric label="Prior" value={slice.tags?.includes("no-prior") ? "—" : formatReportingMoney(slice.priorTotalPnl, slice.currency)} />
+                      <ReportingCutMetric label="Change" value={slice.tags?.includes("no-prior") ? "—" : formatReportingMoney(slice.pnlChange, slice.currency)} />
                       <ReportingCutMetric label="Sources" value={formatCount(slice.sourceCount)} />
                     </dl>
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">{slice.readinessSummary}</p>

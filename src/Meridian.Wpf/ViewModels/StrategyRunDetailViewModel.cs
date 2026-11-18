@@ -236,13 +236,13 @@ public sealed class StrategyRunDetailViewModel : BindableBase
     private void ApplyDetail(StrategyRunDetail detail)
     {
         Title = $"{detail.Summary.StrategyName} ({detail.Summary.RunId[..Math.Min(8, detail.Summary.RunId.Length)]})";
-        StatusText = $"{detail.Summary.Status} {detail.Summary.Mode} run recorded at {UtcFormat.FormatUtcTimestamp(detail.Summary.StartedAt)}.";
+        StatusText = $"{detail.Summary.Status} {detail.Summary.Mode} run recorded at {UtcFormat.FormatDisplayTimestamp(detail.Summary.StartedAt)}.";
         RunActionStateTitle = "Run drill-ins ready";
         RunActionStateDetail = $"Open portfolio, ledger, risk, or cash-flow review for run {detail.Summary.RunId}.";
         ModeText = detail.Summary.Mode.ToString();
         EngineText = detail.Summary.Engine.ToString();
-        StartedAtText = UtcFormat.FormatUtcTimestamp(detail.Summary.StartedAt);
-        CompletedAtText = UtcFormat.FormatUtcTimestamp(detail.Summary.CompletedAt, "In progress");
+        StartedAtText = UtcFormat.FormatDisplayTimestamp(detail.Summary.StartedAt);
+        CompletedAtText = UtcFormat.FormatDisplayTimestamp(detail.Summary.CompletedAt, "In progress");
         NetPnlText = FormatCurrency(detail.Summary.NetPnl);
         ReturnText = FormatPercent(detail.Summary.TotalReturn);
         EquityText = FormatCurrency(detail.Summary.FinalEquity);
@@ -351,8 +351,8 @@ public sealed class StrategyRunDetailViewModel : BindableBase
             Badge = new WorkstationBadgeModel("Status", statusValue, "\uE8A5", ToneForStatus(statusValue)),
             Facts =
             [
-                new("Started", UtcFormat.FormatUtcTimestamp(detail.Summary.StartedAt)),
-                new("Completed", UtcFormat.FormatUtcTimestamp(detail.Summary.CompletedAt, "In progress")),
+                new("Started", UtcFormat.FormatDisplayTimestamp(detail.Summary.StartedAt)),
+                new("Completed", UtcFormat.FormatDisplayTimestamp(detail.Summary.CompletedAt, "In progress")),
                 new("Return", FormatPercent(detail.Summary.TotalReturn)),
                 new("Fills", detail.Summary.FillCount.ToString("N0")),
                 new("Portfolio", detail.Summary.PortfolioId ?? "Not linked"),

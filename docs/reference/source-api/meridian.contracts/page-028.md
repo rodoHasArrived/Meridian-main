@@ -6,6 +6,22 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyAgreementDetailDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementDetailDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:83](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L83).
+
+```csharp
+public sealed record IntercompanyAgreementDetailDto(Guid AgreementId, long AggregateVersion, string Code, string Name, Guid PartyOneId, string PartyOneRole, Guid PartyTwoId, string PartyTwoRole, IntercompanyAgreementTypeDto AgreementType, string Currency, DateOnly AsOf, IntercompanyAgreementStatusDto EffectiveStatus, int? LatestApprovedVersion, IntercompanyAgreementRevisionDto? ApplicableRevision, IReadOnlyList<IntercompanyAgreementProposalDto> Proposals, IReadOnlyList<IntercompanyAgreementRevisionDto> Revisions, IReadOnlyList<IntercompanyAgreementAuditDto> History, IntercompanyAgreementCapabilitiesDto Capabilities)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;string&gt;? MigrationWarnings { get; init; }</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:95](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L95) |  |
+
 ## IntercompanyAgreementDraftDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementDraftDto</code>. Kind: `record`.
@@ -686,13 +702,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public override LedgerGroupId Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options);</code> | [src/Meridian.Contracts/FundStructure/LedgerGroupId.cs:95](../../../../src/Meridian.Contracts/FundStructure/LedgerGroupId.cs#L95) |  |
 | <code>public override void Write(Utf8JsonWriter writer, LedgerGroupId value, JsonSerializerOptions options);</code> | [src/Meridian.Contracts/FundStructure/LedgerGroupId.cs:120](../../../../src/Meridian.Contracts/FundStructure/LedgerGroupId.cs#L120) |  |
-
-## LedgerGroupSummaryDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.LedgerGroupSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:412](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L412).
-
-```csharp
-public sealed record LedgerGroupSummaryDto(LedgerGroupId LedgerGroupId, string DisplayName, IReadOnlyList<Guid> AccountIds, IReadOnlyList<Guid> InvestmentPortfolioIds, IReadOnlyList<Guid> ClientIds, IReadOnlyList<Guid> FundIds, IReadOnlyList<Guid> SleeveIds, IReadOnlyList<Guid> VehicleIds, FundStructureSharedDataAccessDto? SharedDataAccess = null);
-```

@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountingBasisKindDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.AccountingBasisKindDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:8](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L8).
+
+```csharp
+public enum AccountingBasisKindDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Primary = 0</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:10](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L10) |  |
+| <code>Gaap = 1</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:11](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L11) |  |
+| <code>Cash = 2</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:12](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L12) |  |
+| <code>Tax = 3</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:13](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L13) |  |
+| <code>Statutory = 4</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:14](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L14) |  |
+
 ## AccountingBasisProjectionItemDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.AccountingBasisProjectionItemDto</code>. Kind: `record`.
@@ -738,16 +758,4 @@ Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:390](../..
 
 ```csharp
 public sealed record AllocationRuleDto(string AllocationRuleId, AllocationRuleBasisDto Basis, decimal Weight, LedgerDimensionSetDto? TargetDimensions = null, string? FormulaId = null, string? Description = null);
-```
-
-## AppendIntercompanyAccountBindingRequest
-
-Qualified name: <code>Meridian.Contracts.Ledger.AppendIntercompanyAccountBindingRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:41](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L41).
-
-The server resolves account facts from the chart and stamps authenticated audit scope.
-
-```csharp
-public sealed record AppendIntercompanyAccountBindingRequest(Guid BindingId, Guid RevisionId, Guid LedgerBookId, string ChartAccountNodeId, DateOnly EffectiveFrom, DateOnly? EffectiveTo, IReadOnlyList<string> HistoricalNames, string Reason, Guid? ExpectedPreviousRevisionId = null, bool IsArchived = false);
 ```

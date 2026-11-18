@@ -1,4 +1,5 @@
 import { compactTimestampLabel } from "@/lib/format";
+import { DueChip } from "@/components/meridian/due-chip";
 import { IntercompanyCloseAdvisories } from "./accounting-screen.intercompany-close-advisories";
 import { AlertCircle, BookCheck, CheckCircle2, Landmark, LockKeyhole, Network, Paperclip, RefreshCcw, ShieldCheck, Table2, UserCheck, WalletCards, X } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -964,7 +965,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                           </div>
                           <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
                             <span>{task.taskId}</span>
-                            <span>Owner: {task.ownerLabel}; Due: {task.dueDateLabel}</span>
+                            <span className="inline-flex flex-wrap items-center gap-1">Owner: {task.ownerLabel}; <DueChip dueAt={task.dueDate} done={task.dueDone} fallback={`Due: ${task.dueDateLabel}`} /></span>
                             <span>{task.dependencyLabel}; {task.signOffLabel}</span>
                           </div>
                         </button>
@@ -1090,7 +1091,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                             </div>
                             <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
                               <span>{dependency.taskId}</span>
-                              <span>Owner: {dependency.ownerLabel}; Due: {dependency.dueDateLabel}</span>
+                              <span className="inline-flex flex-wrap items-center gap-1">Owner: {dependency.ownerLabel}; <DueChip dueAt={dependency.dueDate} done={dependency.dueDone} fallback={`Due: ${dependency.dueDateLabel}`} /></span>
                             </div>
                           </button>
                         </div>
@@ -1146,7 +1147,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                       <Badge variant={statusBadgeVariant(milestone.statusTone)}>{milestone.statusLabel}</Badge>
                     </div>
                     <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
-                      <span>Due: {milestone.dueDateLabel}</span>
+                      <span><DueChip dueAt={milestone.dueDate} done={milestone.dueDone} fallback={`Due: ${milestone.dueDateLabel}`} /></span>
                       <span>Owner: {milestone.ownerLabel}</span>
                       <span>{milestone.dependencyLabel}; {milestone.signOffLabel}</span>
                       <span>{milestone.evidenceLabel}; {milestone.lockedLabel}</span>
@@ -1173,7 +1174,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
                       </div>
                       <div className="mt-2 grid gap-2 text-xs text-muted-foreground md:grid-cols-2 xl:grid-cols-4">
                         <span>Owner: {task.ownerLabel}</span>
-                        <span>Due: {task.dueDateLabel}</span>
+                        <span><DueChip dueAt={task.dueDate} done={task.dueDone} fallback={`Due: ${task.dueDateLabel}`} /></span>
                         <span>{task.dependencyLabel}</span>
                         <span>{task.signOffLabel}</span>
                       </div>
