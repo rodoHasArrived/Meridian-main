@@ -183,7 +183,7 @@ public sealed class BacktestEngine(
         }
 
         // 3. Set up portfolio, fill models, context
-        var commissionModel = BuildCommissionModel(request);
+        var commissionModel = FaceValueQuotedCommissionModel.Wrap(BuildCommissionModel(request), lotConventions);
         var ledger = new BacktestLedger();
         var startTimestamp = new DateTimeOffset(request.From.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
         var accounts = request.ResolveAccounts();
@@ -1335,10 +1335,11 @@ public sealed class BacktestEngine(
         return (missing, inactive, ResolveLotConventions(definitions));
     }
 
-    // Native replay currently values a position as quantity * unit price. Resolve definitions
-    // before replay and refuse conventions requiring par or contract pricing, rather than opening
-    // a share lot and silently applying share economics. Symbol-only runs retain their explicit
-    // legacy equity assumption; known fund definitions carry their own Units denomination.
+    // Native replay values a position as quantity * unit price, or quantity * percent-of-par / 100
+    // for face-value (bond) lots. Resolve definitions before replay and refuse conventions requiring
+    // contract pricing, rather than opening a share lot and silently applying share economics.
+    // Symbol-only runs retain their explicit legacy equity assumption; known fund definitions carry
+    // their own Units denomination and known bonds carry FaceValue.
     internal static IReadOnlyDictionary<string, (SecurityLotUnitKind UnitKind, decimal Multiplier)> ResolveLotConventions(
         IReadOnlyDictionary<string, SecurityDetailDto> definitions)
     {
@@ -1346,7 +1347,7 @@ public sealed class BacktestEngine(
         foreach (var (symbol, security) in definitions)
         {
             var convention = LotQuantity.UnitFor(security.AssetClass, security.AssetSpecificTerms);
-            if (convention.UnitKind is not (SecurityLotUnitKind.Shares or SecurityLotUnitKind.Units)
+            if (convention.UnitKind is not (SecurityLotUnitKind.Shares or SecurityLotUnitKind.Units or SecurityLotUnitKind.FaceValue)
                 || convention.Multiplier != 1m)
             {
                 throw new NotSupportedException($"Native backtesting cannot price '{symbol}' ({security.AssetClass}) with lot unit {convention.UnitKind} and multiplier {convention.Multiplier}. A compatible asset pricing model is required.");

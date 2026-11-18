@@ -303,7 +303,10 @@ public sealed class AccountingPositionSnapshotCaptureService : IAccountingPositi
                 position.Quantity,
                 position.AverageEntryPrice,
                 position.UnrealizedPnl,
-                RealisedPnl: 0m));
+                RealisedPnl: 0m)
+            {
+                AccruedInterest = position.AccruedInterest
+            });
         }
 
         return positions

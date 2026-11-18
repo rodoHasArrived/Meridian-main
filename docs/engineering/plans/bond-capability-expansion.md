@@ -376,3 +376,20 @@ Extend existing retained comparisons across these candidates with payment and va
 for changed terms, curves, fixings, factors and assumptions, with all components reconciling to the
 aggregate difference. Reinvestment ladders, liability matching and lot-aware replacement previews
 can then consume the same retained scenarios and scoped holdings.
+
+## Fixed-coupon lifecycle seam closure (2026-11-18)
+
+One fixed-coupon bond class now passes through paper trading, coupon income, custodian
+reconciliation and native backtesting without a manual hand-off between stages. This is bounded
+implementation evidence for W10-BOND-001 and W10-LOT-002; it changes no roadmap status or
+acceptance.
+
+| Stage | Change | Remaining limits |
+| --- | --- | --- |
+| Paper execution | The hosted `Meridian.Execution.PaperTradingGateway` prices accrued interest per 100 face through `IBondAnalyticsService` at the fill's clean price and a T+1 weekday settlement date (`PaperBondSettlement`), stamping `ExecutionReport.AccruedInterestPer100` and `SettlementDate`. The paper book pays purchased interest into Accrued Interest Receivable (outside cost basis); a sale relieves the receivable pro rata and books the remainder as coupon income. `LedgerPostingConsumer` posts a `trade-accrued-interest` journal from the accounting evidence. | An analytics refusal settles the fill clean and logs the blocker codes. Short-side bond fills stay clean. Holidays are not modelled in T+1. Pre-trade buying power still measures clean notional. |
+| Coupon income | The `bond-coupon-income` recurring-journal calculation runs `IBondCouponRecognitionService` (and optionally `IBondIncomePreparationService`) through the accounting-event spine; candidates wait in accounting review. An occurrence is blocked while the same ledger scope still schedules `fixed-income-accrual`, so a coupon is not recognized twice. | Accrual only: coupon cash clearing stays on the operator endpoint. A rejected prior occurrence keeps the next one blocked until an operator intervenes. |
+| Reconciliation | `custodian-bond-accrued-interest.csv` fixture; canonical statement CSVs accept optional `marketValue` and `accruedInterest`; statement runs raise `POSITION_ACCRUED_INTEREST_VARIANCE` or `POSITION_ACCRUED_INTEREST_UNAVAILABLE`. Position snapshots retain brokerage-reported accrued interest so the internal book supplies it. | Connector imports (IB Flex, OFX) and the `canonical-csv-v1` mapping-profile importer do not yet carry accrued interest. |
+| Backtesting | Native backtests accept `FaceValue` lots with multiplier 1 at percent-of-par economics; Contracts and non-unit multipliers still refuse. | No accrued interest in backtests; `Position.NotionalValue` and post-simulation TCA notional remain quantity × price. |
+
+The instrument detail page reuses the existing bond analytics, settlement and workflow panels; it
+does not yet surface paper-fill accrued interest or reconciliation accrued-interest breaks.

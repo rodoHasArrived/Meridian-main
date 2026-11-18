@@ -949,6 +949,14 @@ public sealed record InternalPortfolioPosition(
     /// <summary>Unit price in the same currency as the monetary amount, when explicitly available.</summary>
     public decimal? Price { get; init; }
 
+    /// <summary>
+    /// Meridian's accrued interest receivable for the holding (absolute, in the run's base currency),
+    /// when the internal book carries one. Null means the book states no accrued interest; a
+    /// custodian row that states accrued interest against such a holding is a break, not a match.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? AccruedInterest { get; init; }
+
     string IStatementMatchItem.MatchId => PositionId;
 }
 
