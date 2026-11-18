@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FxSpotReferenceDto
+
+Qualified name: <code>Meridian.Contracts.FxSpot.FxSpotReferenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FxSpot/FxSpotReferenceDtos.cs:3](../../../../src/Meridian.Contracts/FxSpot/FxSpotReferenceDtos.cs#L3).
+
+```csharp
+public sealed record FxSpotReferenceDto(Guid SecurityId, string DisplayName, string BaseCurrency, string QuoteCurrency, string PairCode, string PrimaryIdentifier, long Version);
+```
+
 ## EndpointDefinitionDto
 
 Qualified name: <code>Meridian.Contracts.Integrations.EndpointDefinitionDto</code>. Kind: `record`.
@@ -734,14 +744,4 @@ Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:378
 
 ```csharp
 public sealed record ProviderIntegrationQuarantineResolutionResultDto(bool Resolved, QuarantinedRecordDto Record, ProviderIntegrationQuarantineDecisionDto Decision, string? Message);
-```
-
-## ProviderIntegrationQuarantineReviewDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationQuarantineReviewDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:354](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L354).
-
-```csharp
-public sealed record ProviderIntegrationQuarantineReviewDto(string ConnectionId, IReadOnlyList<string> SyncRunIds, IReadOnlyList<QuarantinedRecordDto> Records, IReadOnlyList<ProviderIntegrationQuarantineIssueGroupDto> IssueGroups, IReadOnlyList<ProviderIntegrationQuarantineDecisionDto> Decisions, int TotalQuarantinedRecords, int CriticalIssueCount, int WarningIssueCount, int PendingReviewRecordCount, int DecisionedRecordCount, int ReplayRequestedRecordCount, int IgnoredRecordCount, int CashPositionCandidateCount);
 ```

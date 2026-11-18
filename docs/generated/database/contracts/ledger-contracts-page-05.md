@@ -2,11 +2,19 @@
 
 # `ledger-contracts` data objects - page 5 of 6
 
-Objects 321-400 of 475. References crossing pages remain available in the dependency manifest.
+Objects 321-400 of 476. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_JournalEntryTemplateLineDto["JournalEntryTemplateLineDto"] {
+        +string AccountPath
+        +decimal Amount
+        +string Currency
+        +string? Description
+        +string LineId
+        +AccountingTemplateLineSideDto Side
+    }
     class Meridian_Contracts_Ledger_LateAdjustmentRequestDto["LateAdjustmentRequestDto"] {
         +decimal Amount
         +ManualJournalEntryStatusDto ApprovalState
@@ -659,19 +667,6 @@ classDiagram
         +string? TenantId
     }
     class Meridian_Contracts_Ledger_PostedComparisonMeasureDto["PostedComparisonMeasureDto"] {
-    }
-    class Meridian_Contracts_Ledger_PostedLedgerJournalEntryResultDto["PostedLedgerJournalEntryResultDto"] {
-        +AccountingBasisKindDto AccountingBasis
-        +Guid AggregateId
-        +Guid? CommandId
-        +Guid? CorrelationId
-        +long? GlobalSequence
-        +string? IdempotencyKey
-        +Guid JournalEntryId
-        +Guid LedgerBookId
-        +Guid PeriodId
-        +DateTimeOffset? PostedAtUtc
-        +Guid? SourceEventId
     }
     Meridian_Contracts_Ledger_LateAdjustmentRequestDto --> Meridian_Contracts_Ledger_ManualJournalEntryStatusDto
     Meridian_Contracts_Ledger_LateAdjustmentRequestDto --> Meridian_Contracts_Ledger_MaterialityPolicyDto

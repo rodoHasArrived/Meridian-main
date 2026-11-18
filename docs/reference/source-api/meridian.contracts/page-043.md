@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingGovernanceReleaseDto
+
+Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceReleaseDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:116](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L116).
+
+```csharp
+public sealed record ReportingGovernanceReleaseDto(ReportingGovernanceAuthorityDto Authority, DateTimeOffset ReleasedAtUtc, string ManifestId, string ManifestHash, IReadOnlyList<ReportingGovernanceArtifactDto> Artifacts, IReadOnlyList<string> EvidenceIds);
+```
+
+## ReportingGovernanceRestatementApprovalDto
+
+Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceRestatementApprovalDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:198](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L198).
+
+```csharp
+public sealed record ReportingGovernanceRestatementApprovalDto(ReportingGovernanceRestatementDto Request, GovernedReportingRunDto DraftRun);
+```
+
 ## ReportingGovernanceRestatementApprovalRequestDto
 
 Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceRestatementApprovalRequestDto</code>. Kind: `record`.
@@ -680,24 +700,4 @@ One selected USD book for the bounded economic attestation policy.
 
 ```csharp
 public sealed record CashDividendAttestationDeclarationDto(Guid DeclarationId, long Revision, string TenantId, string CompanyId, Guid LedgerBookId, bool Enabled, string PrincipalId, string PolicyVersion, string PolicyHash, string ChangedBy, DateTimeOffset RecordedAtUtc, string Reason, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] CashDividendAccountRoleBindingDto? AccountRoleBinding = null);
-```
-
-## CashDividendAttestationDeclarationResultDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CashDividendAttestationDeclarationResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CashDividendAttestationDeclarationContracts.cs:43](../../../../src/Meridian.Contracts/SecurityMaster/CashDividendAttestationDeclarationContracts.cs#L43).
-
-```csharp
-public sealed record CashDividendAttestationDeclarationResultDto(CashDividendAttestationDeclarationDto Declaration, bool Replayed);
-```
-
-## CashDividendAttestationDeclarationStateDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CashDividendAttestationDeclarationStateDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CashDividendAttestationDeclarationContracts.cs:47](../../../../src/Meridian.Contracts/SecurityMaster/CashDividendAttestationDeclarationContracts.cs#L47).
-
-```csharp
-public sealed record CashDividendAttestationDeclarationStateDto(string TenantId, string CompanyId, bool PolicyEnabled, string PolicyVersion, string PolicyHash, CashDividendAttestationDeclarationDto? Declaration, IReadOnlyList<CashDividendAttestationDeclarationDto> History);
 ```

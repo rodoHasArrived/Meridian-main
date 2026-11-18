@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CashDividendAttestationDeclarationResultDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CashDividendAttestationDeclarationResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CashDividendAttestationDeclarationContracts.cs:43](../../../../src/Meridian.Contracts/SecurityMaster/CashDividendAttestationDeclarationContracts.cs#L43).
+
+```csharp
+public sealed record CashDividendAttestationDeclarationResultDto(CashDividendAttestationDeclarationDto Declaration, bool Replayed);
+```
+
+## CashDividendAttestationDeclarationStateDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CashDividendAttestationDeclarationStateDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CashDividendAttestationDeclarationContracts.cs:47](../../../../src/Meridian.Contracts/SecurityMaster/CashDividendAttestationDeclarationContracts.cs#L47).
+
+```csharp
+public sealed record CashDividendAttestationDeclarationStateDto(string TenantId, string CompanyId, bool PolicyEnabled, string PolicyVersion, string PolicyHash, CashDividendAttestationDeclarationDto? Declaration, IReadOnlyList<CashDividendAttestationDeclarationDto> History);
+```
+
 ## CashDividendDeclarationAuthorityDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CashDividendDeclarationAuthorityDto</code>. Kind: `record`.
@@ -699,34 +719,3 @@ Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContract
 ```csharp
 public sealed record CorporateActionConflictMutationResultDto(CorporateActionProcessingCaseDto Case, CorporateActionConflictDto Conflict, bool Replayed);
 ```
-
-## CorporateActionConflictResolutionResultDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionConflictResolutionResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:728](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L728).
-
-```csharp
-public sealed record CorporateActionConflictResolutionResultDto(CorporateActionProcessingCaseDto Case, CorporateActionConflictDto Conflict, bool Replayed);
-```
-
-## CorporateActionConflictStates
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionConflictStates</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:265](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L265).
-
-Defines and recognizes the lifecycle states of a corporate action source conflict.
-
-```csharp
-public static class CorporateActionConflictStates
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Open = &quot;Open&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:267](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L267) |  |
-| <code>public const string Resolved = &quot;Resolved&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:268](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L268) |  |
-| <code>public const string Waived = &quot;Waived&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:269](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L269) |  |
-| <code>public static bool IsKnown(string? state) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:271](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L271) |  |

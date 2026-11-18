@@ -33,6 +33,10 @@ the reviewed fixing record, its propose and decide requests and `IIntercompanyRa
 slices gain a null-omitted `Fixing` pin, and `IntercompanyAccrualRules` adds `intercompany-accrual-v2`.
 See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
 
+`IntercompanyAccrualRules` adds rule `intercompany-accrual-v3` for periodic compounding: slices carry a
+null-omitted `CompoundedInterest`, and accrual evidence retains `IntercompanyAccrualCompoundingEvidenceDto`.
+See [periodic compounding](../../docs/domain/intercompany-agreements.md#periodic-compounding).
+
 Governed loan-interest accrual contracts (ADR-028) carry the computation input, slices and preview
 under rule `intercompany-accrual-v1`, plus the retained `IntercompanyAccrualEvidenceDto` and its
 guard. `ManualJournalEntryDraftDto` gains null-omitted `IntercompanyAccrualEvidenceJson` and digest

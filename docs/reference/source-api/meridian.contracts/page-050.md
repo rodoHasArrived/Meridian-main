@@ -6,6 +6,54 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ScheduleRoll
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleRoll</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:33](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L33).
+
+The roll convention of a schedule grid: where in its month each month-based grid date falls. default(ScheduleRoll) is AnchorDay.
+
+```csharp
+public readonly record struct ScheduleRoll
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ScheduleRoll AnchorDay { get; } = default;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L42) | Keep the raw grid date as it is. |
+| <code>public static ScheduleRoll EndOfMonth { get; } = new (ScheduleRollKind.EndOfMonth, 0);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:45](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L45) | Roll each grid date to the last day of its month. |
+| <code>public static ScheduleRoll Imm { get; } = new (ScheduleRollKind.Imm, 0);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L48) | Roll each grid date to the third Wednesday of its month. |
+| <code>public static ScheduleRoll FixedDay(int dayOfMonth);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:52](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L52) | Roll each grid date to dayOfMonth, clamped to the month&#x27;s length. |
+| <code>public static ScheduleRoll ForAnchor(DateOnly anchor, bool endOfMonthRule) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L64) | The roll a schedule anchored on anchor implies: EndOfMonth when endOfMonthRule is set and the anchor is a month end, otherwise FixedDay(int) of the anchor&#x27;s day. |
+| <code>public ScheduleRollKind Kind { get; }</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L70) | The roll rule. |
+| <code>public int DayOfMonth { get; }</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:73](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L73) | The fixed day of month for ScheduleRollKind.FixedDay; 0 otherwise. |
+| <code>public DateOnly Apply(DateOnly rawGridDate);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:76](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L76) | Places rawGridDate within its month according to the rule. |
+| <code>public bool Matches(DateOnly date) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:89](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L89) | Whether date already satisfies the rule. |
+| <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:92](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L92) | The rule in shorthand, for example FixedDay(15) or EndOfMonth. |
+
+## ScheduleRollKind
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleRollKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L8).
+
+The rule that places each month-based grid date within its month.
+
+```csharp
+public enum ScheduleRollKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>AnchorDay</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L11) | Keep the anchor&#x27;s day of month, clamped to shorter months (DateOnly.AddMonths semantics). |
+| <code>FixedDay</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L14) | A fixed day of month (1 to 31), clamped to shorter months. |
+| <code>EndOfMonth</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L17) | The last day of the month. |
+| <code>Imm</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs#L20) | The third Wednesday of the month (IMM dates). |
+
 ## ScheduleSpec
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleSpec</code>. Kind: `record`.
@@ -945,48 +993,3 @@ Wire form of one term field with its UI hint, for schema-driven forms.
 ```csharp
 public sealed record SecurityAssetTermFieldDefinitionDto(string Key, string FieldPath, string Label, string Type, SecurityAssetTermEditorKind Editor, string Group, int Order, bool Required, bool ScalarEditable, IReadOnlyList<string> Choices, IReadOnlyList<string> Aliases, SecurityAssetTermRole Role = SecurityAssetTermRole.Economic);
 ```
-
-## SecurityAssetTermFieldType
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetTermFieldType</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L11).
-
-The JSON value shape a Security Master asset-specific-term field takes in the flat (AssetSpecificTermsSchema.Legacy) payload. This is the codec-level type, distinct from the operator-facing SecurityAssetProfileFieldTypeDto used by custom profiles.
-
-```csharp
-public enum SecurityAssetTermFieldType
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>String</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L14) | A JSON string. |
-| <code>Decimal</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L17) | A JSON number read as decimal. |
-| <code>Integer</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L20) | A JSON number read as int. |
-| <code>Boolean</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L23) | A JSON boolean. |
-| <code>Date</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L26) | A JSON string parsed as a System.DateOnly (or an ISO timestamp). |
-| <code>Guid</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L29) | A JSON string parsed as a System.Guid. |
-| <code>Array</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:32](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L32) | A JSON array. |
-| <code>Object</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:35](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L35) | A nested JSON object. |
-
-## SecurityAssetTermFormModel
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetTermFormModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermFormModel.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermFormModel.cs#L10).
-
-Client-side form rules for schema-driven term editors, shared by the desktop workstation and mirrored by the browser&#x27;s passport editor. The governed field-edit validator on the server stays authoritative; these rules only stop obviously invalid input before it is staged.
-
-```csharp
-public static class SecurityAssetTermFormModel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;SecurityAssetTermFieldDefinitionDto&gt; PickableFields(SecurityAssetClassDefinitionDto? definition) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermFormModel.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermFormModel.cs#L13) | The scalar-editable fields an operator can pick, in registry order. |
-| <code>public static IReadOnlyList&lt;string&gt; ValueChoices(SecurityAssetTermFieldDefinitionDto? field) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermFormModel.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermFormModel.cs#L19) | The closed set of values a field offers as a choice list, or empty for free input. |
-| <code>public static string? Validate(SecurityAssetTermFieldDefinitionDto? field, string? value);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermFormModel.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermFormModel.cs#L28) | A validation message for value, or null when it may be staged. |

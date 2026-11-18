@@ -6,6 +6,37 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionConflictResolutionResultDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionConflictResolutionResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:728](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L728).
+
+```csharp
+public sealed record CorporateActionConflictResolutionResultDto(CorporateActionProcessingCaseDto Case, CorporateActionConflictDto Conflict, bool Replayed);
+```
+
+## CorporateActionConflictStates
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionConflictStates</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:265](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L265).
+
+Defines and recognizes the lifecycle states of a corporate action source conflict.
+
+```csharp
+public static class CorporateActionConflictStates
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Open = &quot;Open&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:267](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L267) |  |
+| <code>public const string Resolved = &quot;Resolved&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:268](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L268) |  |
+| <code>public const string Waived = &quot;Waived&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:269](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L269) |  |
+| <code>public static bool IsKnown(string? state) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:271](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L271) |  |
+
 ## CorporateActionDeadlineEvidenceDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDeadlineEvidenceDto</code>. Kind: `record`.
@@ -853,40 +884,3 @@ Enum declarations:
 | --- | --- | --- |
 | <code>ReviewOnly = 0</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L13) |  |
 | <code>AcceptanceEligible = 1</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L14) |  |
-
-## CorporateActionRestatementEvaluationStates
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionRestatementEvaluationStates</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs#L50).
-
-Defines the evaluation outcomes used when assessing corporate action restatements.
-
-```csharp
-public static class CorporateActionRestatementEvaluationStates
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Evaluated = &quot;Evaluated&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs:52](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs#L52) |  |
-| <code>public const string PendingPeriodValidation = &quot;PendingPeriodValidation&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs:53](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs#L53) |  |
-
-## CorporateActionScopeMismatchException
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionScopeMismatchException</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:941](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L941).
-
-Signals that corporate action data does not match the requested operating scope.
-
-```csharp
-public sealed class CorporateActionScopeMismatchException : CorporateActionOperationException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CorporateActionScopeMismatchException(string message) : base(CorporateActionProblemCodes.ScopeMismatch, message);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:943](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L943) |  |

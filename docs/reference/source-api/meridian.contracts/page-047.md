@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ExchangeCorporateActionTerms
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ExchangeCorporateActionTerms</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:169](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L169).
+
+Held units exchanged for a successor security, optionally with cash (merger, conversion, exchange).
+
+```csharp
+public sealed record ExchangeCorporateActionTerms(string EventType, Guid? SuccessorSecurityId, decimal? ExchangeRatio, decimal? CashPerUnit, bool? IsVoluntary) : CorporateActionTerms(EventType);
+```
+
+## FaceValueAccrualHolding
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.FaceValueAccrualHolding</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/FaceValueAccrualHolding.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueAccrualHolding.cs#L13).
+
+A retained lot&#x27;s entitlement for one accounting date. OpenShare reflects closing disposals, while AccrualFactor is the factor before that date&#x27;s principal paydown: interest accrues through the paydown date before principal is reduced. Lot retains the acquisition facts and the factor held at that day&#x27;s close. This read projection must never be persisted as a replacement lot of record.
+
+```csharp
+public sealed record FaceValueAccrualHolding(DateOnly Date, FaceValueLot Lot, decimal OpenShare, decimal AccrualFactor, Guid? TaxLotRecordId = null, long? Version = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] BondAmortizationMethod? AmortizationMethod = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal AccrualFace =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueAccrualHolding.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueAccrualHolding.cs#L24) | Face entitled to the date&#x27;s interest, with the factor and open share applied once. |
+
 ## FaceValueLot
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.FaceValueLot</code>. Kind: `record`.
@@ -963,43 +993,3 @@ Declared public members:
 | <code>public static (SecurityLotUnitKind UnitKind, decimal Multiplier) UnitFor(string? assetClass, JsonElement? assetSpecificTerms = null);</code> | [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:78](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L78) | The lot unit and multiplier an asset class&#x27;s lots carry, read from the asset-class registry: the class&#x27;s SecurityAssetClassDescriptor.LotUnit and, when it declares a SecurityAssetClassDescriptor.LotMultiplierTermKey, that term&#x27;s positive value from assetSpecificTerms. Unknown classes and missing or invalid contract multipliers are rejected. |
 | <code>public static LotQuantity For(string? assetClass, decimal amount, JsonElement? assetSpecificTerms = null);</code> | [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:86](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L86) | A quantity of amount for an asset class, unitized from the registry. |
 | <code>public static bool TryFor(string? assetClass, decimal amount, JsonElement? assetSpecificTerms, out LotQuantity quantity, [System.Diagnostics.CodeAnalysis.NotNullWhen(false)] out string? error);</code> | [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:97](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L97) | For without the exception: false, with the reason, when the class is not registered or its contract multiplier term is missing or not positive. Callers that report a skipped posting rather than fail (journal producers, ledger bridges) use this form. |
-
-## MultiAssetCoverageSpecification
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.MultiAssetCoverageSpecification</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs:346](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs#L346).
-
-```csharp
-public sealed record MultiAssetCoverageSpecification(string AssetClass, string DisplayName, string Summary, IReadOnlyList<string> RequiredIdentifiers, IReadOnlyList<string> EconomicTerms, IReadOnlyList<string> ProviderFeeds, string LedgerClassification, IReadOnlyList<string> ReconciliationSignals, bool HardBlocker, bool RequiresOperationalProfileReview = false);
-```
-
-## NotionalLot
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.NotionalLot</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L11).
-
-Canonical open lot for notional-denominated OTC derivatives (interest rate swaps, credit default swaps, swaptions, caps and floors), whose SecurityAssetClassDescriptor.LotUnit is SecurityLotUnitKind.Notional. The lot&#x27;s size is the notional the contract&#x27;s payments are computed on, not a count of anything owned, so it has no shares, face or units and amortizes by replacing the notional rather than by relieving quantity. Any upfront payment exchanged at inception is the only cost the lot carries.
-
-```csharp
-public sealed record NotionalLot : IUnitizedLot
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public NotionalLot(string lotId, Guid securityId, DateOnly effectiveDate, decimal originalNotional, decimal? currentNotional = null, decimal upfrontPayment = 0m);</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L13) |  |
-| <code>public string LotId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L42) |  |
-| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:52](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L52) | Security Master identity the contract&#x27;s terms (legs, index, fixed rate, maturity) resolve from. |
-| <code>public DateOnly EffectiveDate { get; }</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:55](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L55) | Date the contract became effective and the notional started accruing. |
-| <code>public decimal OriginalNotional { get; }</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L58) | Notional at inception, in the contract currency. |
-| <code>public decimal CurrentNotional { get; }</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:61](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L61) | Notional outstanding after any amortization, in the contract currency. |
-| <code>public decimal UpfrontPayment { get; }</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L64) | Upfront payment made at inception, in the contract currency; zero for a par swap. |
-| <code>public decimal AmortizationFactor =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:67](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L67) | The share of the original notional still outstanding, the notional analogue of a pool factor. |
-| <code>public decimal AmortizedNotional =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L70) | Notional the lot has amortized away since inception. |
-| <code>public decimal CostBasis =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:73](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L73) | The lot&#x27;s cost basis: a notional lot&#x27;s only cost is the upfront payment. |
-| <code>public bool IsFullyAmortized =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:76](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L76) | True once the notional has fully amortized and the contract no longer accrues. |
-| <code>public NotionalLot WithNotional(decimal currentNotional) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:79](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L79) | The same lot with its notional replaced by currentNotional, the way an amortization schedule steps it. |
-| <code>public NotionalLot Amortize(decimal amount);</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:86](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L86) | Reduces the notional outstanding by amount. A reduction larger than the notional outstanding is refused rather than silently floored. |

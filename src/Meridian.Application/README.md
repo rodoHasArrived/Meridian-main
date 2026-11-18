@@ -30,6 +30,10 @@ the approved fixing of each period plus the spread, and refuses a window with a 
 `IntercompanyEntityServiceRegistration` composes its PostgreSQL or file store. See
 [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
 
+`IntercompanyAccrualPreviewService` compounds at each schedule period start on posted accrued interest under
+rule `intercompany-accrual-v3`, refusing uncovered earlier days and multi-period windows. See
+[periodic compounding](../../docs/domain/intercompany-agreements.md#periodic-compounding).
+
 Structured decimal normalization preserves representable declarations when canonical formatting
 uses an exponent. Retrying an externally reviewed lifecycle append repairs an interrupted local
 profile projection from the latest retained revision while holding the history read lease.

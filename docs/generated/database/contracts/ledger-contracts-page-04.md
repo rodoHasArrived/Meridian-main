@@ -2,7 +2,7 @@
 
 # `ledger-contracts` data objects - page 4 of 6
 
-Objects 241-320 of 475. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 476. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -130,9 +130,16 @@ classDiagram
     }
     class Meridian_Contracts_Ledger_IntercompanyAccountRoleDto["IntercompanyAccountRoleDto"] {
     }
+    class Meridian_Contracts_Ledger_IntercompanyAccrualCompoundingEvidenceDto["IntercompanyAccrualCompoundingEvidenceDto"] {
+        +IntercompanyAccrualPrincipalEvidenceDto? AccruedInterest
+        +DateOnly BalanceFrom
+        +DateOnly FirstPrincipalDate
+        +IReadOnlyList~IntercompanyAccrualWindowDto~ PostedWindows
+    }
     class Meridian_Contracts_Ledger_IntercompanyAccrualEvidenceDto["IntercompanyAccrualEvidenceDto"] {
         +Guid AccountingArrangementId
         +Guid AgreementId
+        +IntercompanyAccrualCompoundingEvidenceDto? Compounding
         +IntercompanyAccrualPreviewDto Computation
         +Guid CounterpartyEntityId
         +Guid DraftId
@@ -142,7 +149,6 @@ classDiagram
         +string MonetaryAccountNodeId
         +string OperatingAccountNodeId
         +string PostingAgreementPayloadHash
-        +int PostingAgreementVersion
     }
     class Meridian_Contracts_Ledger_IntercompanyAccrualEvidenceGuard["IntercompanyAccrualEvidenceGuard"] {
     }
@@ -486,17 +492,11 @@ classDiagram
         +string TemplateId
         +string Version
     }
-    class Meridian_Contracts_Ledger_JournalEntryTemplateLineDto["JournalEntryTemplateLineDto"] {
-        +string AccountPath
-        +decimal Amount
-        +string Currency
-        +string? Description
-        +string LineId
-        +AccountingTemplateLineSideDto Side
-    }
     Meridian_Contracts_Ledger_ExternalGlExportPackageManifestDto --> Meridian_Contracts_Ledger_ExternalGlExportReconciliationSafeguardStateDto
     Meridian_Contracts_Ledger_IntercompanyAccountBindingDto --> Meridian_Contracts_Ledger_IntercompanyAccountRoleDto
+    Meridian_Contracts_Ledger_IntercompanyAccrualCompoundingEvidenceDto --> Meridian_Contracts_Ledger_IntercompanyAccrualPrincipalEvidenceDto
     Meridian_Contracts_Ledger_IntercompanyAccrualEvidenceDto --> Meridian_Contracts_Ledger_IntercompanyAccountRoleDto
+    Meridian_Contracts_Ledger_IntercompanyAccrualEvidenceDto --> Meridian_Contracts_Ledger_IntercompanyAccrualCompoundingEvidenceDto
     Meridian_Contracts_Ledger_IntercompanyAccrualEvidenceDto --> Meridian_Contracts_Ledger_IntercompanyAccrualPrincipalEvidenceDto
     Meridian_Contracts_Ledger_IntercompanyAccrualPrincipalEvidenceDto --> Meridian_Contracts_Ledger_IntercompanyAccountRoleDto
     Meridian_Contracts_Ledger_IntercompanyAccrualPrincipalEvidenceDto --> Meridian_Contracts_Ledger_IntercompanyAccrualPrincipalMovementDto
@@ -525,5 +525,4 @@ classDiagram
     Meridian_Contracts_Ledger_JournalEntryLifecycleActionRequestDto --> Meridian_Contracts_Ledger_JournalEntryLifecycleActionDto
     Meridian_Contracts_Ledger_JournalEntryLifecycleActionResultDto --> Meridian_Contracts_Ledger_JournalEntryLifecycleTransitionDto
     Meridian_Contracts_Ledger_JournalEntryLifecycleTransitionDto --> Meridian_Contracts_Ledger_JournalEntryLifecycleActionDto
-    Meridian_Contracts_Ledger_JournalEntryTemplateDto --> Meridian_Contracts_Ledger_JournalEntryTemplateLineDto
 ```

@@ -2,11 +2,13 @@
 
 # `fund-governance-contracts` data objects - page 3 of 4
 
-Objects 161-240 of 245. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 246. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% fund-governance-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_FundStructure_IntercompanyAgreementReviewIntegrity["IntercompanyAgreementReviewIntegrity"] {
+    }
     class Meridian_Contracts_FundStructure_IntercompanyAgreementReviewPayloadDto["IntercompanyAgreementReviewPayloadDto"] {
         +Guid AgreementId
         +int? BaseAgreementVersion
@@ -579,10 +581,6 @@ classDiagram
     }
     class Meridian_Contracts_FundStructure_UpdateBankAccountDetailsRequest["UpdateBankAccountDetailsRequest"] {
         +BankAccountDetailsDto Details
-        +string UpdatedBy
-    }
-    class Meridian_Contracts_FundStructure_UpdateCustodianAccountDetailsRequest["UpdateCustodianAccountDetailsRequest"] {
-        +CustodianAccountDetailsDto Details
         +string UpdatedBy
     }
     Meridian_Contracts_FundStructure_IntercompanyAgreementRevisionDto --> Meridian_Contracts_FundStructure_IntercompanyExternalReviewAttestationDto

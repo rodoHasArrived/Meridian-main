@@ -138,7 +138,8 @@ public sealed class IntercompanyAccrualPreviewServiceTests
 
     [Theory]
     [InlineData("floating", "without a fixing lag")]
-    [InlineData("compounding", "simple interest")]
+    [InlineData("compounding", "only at each schedule period start")]
+    [InlineData("floating-compounding", "simple interest only")]
     [InlineData("unstructured", "unstructured terms")]
     [InlineData("terminated", "unterminated loan")]
     [InlineData("fee", "unterminated loan")]
@@ -149,7 +150,8 @@ public sealed class IntercompanyAccrualPreviewServiceTests
         var draft = variant switch
         {
             "floating" => loan.Terms with { Terms = new() { StructuredTerms = structured with { RateBasis = IntercompanyRateBasisDto.Floating, FixedAnnualRate = null, FloatingIndexReference = "SOFR", SpreadBps = 150m } } },
-            "compounding" => loan.Terms with { Terms = new() { StructuredTerms = structured with { Compounding = IntercompanyCompoundingDto.Monthly } } },
+            "compounding" => loan.Terms with { Terms = new() { StructuredTerms = structured with { Compounding = IntercompanyCompoundingDto.Quarterly } } },
+            "floating-compounding" => loan.Terms with { Terms = new() { StructuredTerms = structured with { RateBasis = IntercompanyRateBasisDto.Floating, FixedAnnualRate = null, FloatingIndexReference = "SOFR", SpreadBps = 150m, FixingLagBusinessDays = 2, Compounding = IntercompanyCompoundingDto.Monthly } } },
             "unstructured" => loan.Terms with { Terms = new(RateDescription: "Five percent, monthly") },
             "fee" => loan.Terms with { AgreementType = IntercompanyAgreementTypeDto.ManagementFee },
             _ => loan.Terms
@@ -162,6 +164,23 @@ public sealed class IntercompanyAccrualPreviewServiceTests
         Assert.Equal(IntercompanyAccrualRules.StatusUnavailable, preview.Status);
         Assert.Null(preview.Amount);
         Assert.Contains(expected, Assert.Single(preview.Diagnostics));
+    }
+
+    [Fact]
+    public void WindowMixingCompoundingAndFloatingVersions_IsRefusedRatherThanLabelledWithOneRule()
+    {
+        var loan = Loan();
+        var structured = loan.Terms.Terms!.StructuredTerms!;
+        var compounding = loan with { Terms = loan.Terms with { Terms = new() { StructuredTerms = structured with { Compounding = IntercompanyCompoundingDto.Monthly } } } };
+        var floating = loan with { Terms = loan.Terms with { Terms = new() { StructuredTerms = structured with { RateBasis = IntercompanyRateBasisDto.Floating, FixedAnnualRate = null, FloatingIndexReference = "SOFR", SpreadBps = 150m, FixingLagBusinessDays = 2 } } } };
+
+        var preview = Preview(new(2026, 1, 1), new(2026, 2, 1),
+            [Authority(new(2026, 1, 1), new(2026, 1, 16), compounding), Authority(new(2026, 1, 16), new(2026, 2, 1), floating)],
+            [Principal(new(2026, 1, 1), new(2026, 2, 1), 1_000_000m)]);
+
+        Assert.Equal(IntercompanyAccrualRules.StatusUnavailable, preview.Status);
+        Assert.Null(preview.Amount);
+        Assert.Contains("mixes floating-rate and compounding", Assert.Single(preview.Diagnostics));
     }
 
     [Fact]

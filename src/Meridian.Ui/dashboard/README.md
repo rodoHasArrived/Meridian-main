@@ -244,6 +244,9 @@ advisory confirmation summary, pins current balances and confirms, disputes or r
 book's side; focused coverage is `accounting-screen.entity-confirmations.test.tsx`. See
 [reciprocal balance confirmation](../../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
 
+The interest accrual preview shows a Compounded interest column for rule `intercompany-accrual-v3`; see
+[periodic compounding](../../../docs/domain/intercompany-agreements.md#periodic-compounding).
+
 Settings provider runtime evidence and integration setup components are owned by
 `settings-provider-integration.tsx`; the Settings screen composes them without changing routes
 or mutation authority. Presentational Settings sections live beside the screen:

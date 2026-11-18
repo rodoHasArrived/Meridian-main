@@ -6,6 +6,40 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategyEnginePromotionTarget
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEnginePromotionTarget</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:92](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L92).
+
+Promotion target used by Strategy Engine handoffs.
+
+```csharp
+public enum StrategyEnginePromotionTarget : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Review</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:94](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L94) |  |
+| <code>Replay</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:95](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L95) |  |
+| <code>Paper</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:96](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L96) |  |
+| <code>ReportPack</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:97](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L97) |  |
+| <code>EvidenceWorkbench</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:98](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L98) |  |
+| <code>TradingReadiness</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:99](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L99) |  |
+| <code>LiveDisabled</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:100](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L100) |  |
+
+## StrategyEngineRunEvidence
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineRunEvidence</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:193](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L193).
+
+```csharp
+public sealed record StrategyEngineRunEvidence(string EvidenceId, string StrategyId, string StrategyVersion, string InputHash, string? OutputHash, string DataSource, DateTimeOffset CapturedAt, IReadOnlyList<string> DataSourceReferences, IReadOnlyList<string> Warnings, string ReviewRoute, string EvidenceRoute, string? ReportPackRoute = null);
+```
+
 ## StrategyEngineRunMode
 
 Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineRunMode</code>. Kind: `enum`.
@@ -742,42 +776,4 @@ Result contract for cross-object audit trail search.
 
 ```csharp
 public sealed record AuditTrailExplorerResultDto(DateTimeOffset AsOf, int TotalMatched, int Returned, IReadOnlyList<AuditTrailTimelineEntryDto> Entries, AuditTrailSourceAvailabilityDto? SourceAvailability = null, IReadOnlyList<AuditTrailSourceStatusDto>? Sources = null, string? CoverageNote = null, string? OrderIdentityStatus = null);
-```
-
-## AuditTrailObjectKindDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AuditTrailObjectKindDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:79](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L79).
-
-Stable object-kind vocabulary for audit explorer rows.
-
-```csharp
-public enum AuditTrailObjectKindDto : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Audit</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:81](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L81) |  |
-| <code>Order</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:82](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L82) |  |
-| <code>ExecutionControl</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:83](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L83) |  |
-| <code>OperatorAction</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:84](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L84) |  |
-| <code>Promotion</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:85](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L85) |  |
-| <code>Run</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:86](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L86) |  |
-| <code>Reconciliation</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:87](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L87) |  |
-| <code>Report</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:88](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L88) |  |
-| <code>Evidence</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:89](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L89) |  |
-
-## AuditTrailSourceAvailabilityDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AuditTrailSourceAvailabilityDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:68](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L68).
-
-Distinguishes an empty retained trail from a source that is not configured.
-
-```csharp
-public sealed record AuditTrailSourceAvailabilityDto(bool ExecutionAudit, bool OperationsContinuity);
 ```

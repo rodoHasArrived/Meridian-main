@@ -1416,6 +1416,7 @@ Meridian-main
 │   │   ├── 027-single-economic-model-consolidation.md
 │   │   ├── 028-governed-intercompany-interest-accrual.md
 │   │   ├── 029-governed-intercompany-fixed-management-fees.md
+│   │   ├── 030-intercompany-interest-compounding.md
 │   │   ├── _template.md
 │   │   └── README.md
 │   ├── ai
@@ -12737,6 +12738,7 @@ Meridian-main
 │   │   ├── IntercompanyAgreementServiceTests.cs
 │   │   ├── IntercompanyAgreementServiceTests.ExternalReview.cs
 │   │   ├── IntercompanyAgreementServiceTests.Lifecycle.cs
+│   │   ├── IntercompanyCompoundingAccrualPreviewTests.cs
 │   │   ├── IntercompanyFeeAccrualPreviewServiceTests.cs
 │   │   ├── IntercompanyFloatingAccrualPreviewTests.cs
 │   │   ├── IntercompanyRateFixingServiceTests.cs
@@ -13493,6 +13495,7 @@ Meridian-main
 │   │   │   │   ├── IntercompanyBalanceConfirmationRulesTests.cs
 │   │   │   │   ├── IntercompanyBalanceConfirmationServiceTests.cs
 │   │   │   │   ├── IntercompanyBalanceScheduleTests.cs
+│   │   │   │   ├── IntercompanyCompoundingSourceTests.cs
 │   │   │   │   ├── IntercompanyCounterpartReversalBuilderTests.cs
 │   │   │   │   ├── IntercompanyFeeAccrualSourceBuilderTests.cs
 │   │   │   │   ├── IntercompanyObligationExpiryChronologyTests.cs
@@ -14962,6 +14965,7 @@ Meridian-main
 │   │   │   ├── FundProfileScopeEndpointFilterTests.cs
 │   │   │   ├── FundStructureEndpointAuthorizationTests.cs
 │   │   │   ├── InMemoryFundStructureTenancyGuardTests.cs
+│   │   │   ├── IntercompanyAccrualDraftServiceTests.Compounding.cs
 │   │   │   ├── IntercompanyAccrualDraftServiceTests.cs
 │   │   │   ├── IntercompanyAccrualDraftServiceTests.Floating.cs
 │   │   │   ├── IntercompanyAgreementAuthorityTests.cs
@@ -15340,6 +15344,7 @@ Meridian-main
 │   │   │   ├── IntercompanyAgreementWorkspaceTests.Structured.cs
 │   │   │   ├── IntercompanyBalanceConfirmationWorkspaceTests.cs
 │   │   │   ├── IntercompanyBookChoiceTests.cs
+│   │   │   ├── IntercompanyCompoundingSliceRowTests.cs
 │   │   │   ├── IntercompanyCounterpartQueueWorkspaceTests.cs
 │   │   │   ├── IntercompanyInterestAccrualWorkspaceTests.cs
 │   │   │   ├── IntercompanyManagementFeeWorkspaceTests.cs

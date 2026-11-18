@@ -2,7 +2,7 @@
 
 # `fund-governance-contracts` data objects - page 1 of 4
 
-Objects 1-80 of 245. References crossing pages remain available in the dependency manifest.
+Objects 1-80 of 246. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram

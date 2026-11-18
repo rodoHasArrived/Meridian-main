@@ -44,6 +44,9 @@ record, propose and `/{id}/actions`) with exact-decimal strings; mutations need 
 scope plus ledger management. Confirmation findings join the close advisory as warnings only. See
 [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
 
+`IntercompanyAccrualDraftService` resolves posted accrued interest for compounding loans; the journal workbench
+re-reads those facts before review or posting. See [periodic compounding](../../docs/domain/intercompany-agreements.md#periodic-compounding).
+
 Account/group close advisories require canonical exact-scope membership and retained evidence;
 the book node ID is not substituted for a legal-entity ID. Missing membership yields unknown.
 

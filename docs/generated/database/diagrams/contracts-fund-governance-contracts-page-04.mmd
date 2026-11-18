@@ -1,5 +1,9 @@
 classDiagram
     %% fund-governance-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_FundStructure_UpdateCustodianAccountDetailsRequest["UpdateCustodianAccountDetailsRequest"] {
+        +CustodianAccountDetailsDto Details
+        +string UpdatedBy
+    }
     class Meridian_Contracts_FundStructure_UpdateLegalEntityProfileRequest["UpdateLegalEntityProfileRequest"] {
         +string? BaseCurrency
         +IReadOnlyList~BeneficialOwnerSummaryDto~? BeneficialOwners
