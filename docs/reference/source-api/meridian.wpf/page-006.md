@@ -6,6 +6,22 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkspaceShellContextStripContribution
+
+Qualified name: <code>Meridian.Wpf.Models.WorkspaceShellContextStripContribution</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:63](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L63).
+
+```csharp
+public sealed record WorkspaceShellContextStripContribution(string WorkspaceId, WorkspaceShellContext Context, int Order = 0) : IWorkspaceShellSlotContribution
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WorkspaceShellSlot Slot =&gt; …;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:68](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L68) |  |
+
 ## WorkspaceShellDefinition
 
 Qualified name: <code>Meridian.Wpf.Models.WorkspaceShellDefinition</code>. Kind: `record`.
@@ -1134,38 +1150,3 @@ Declared public members:
 | <code>public string AutomationName =&gt; …;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1186](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1186) |  |
 | <code>public static IReadOnlyList&lt;DataIntegrationWorkflowStep&gt; LoadingSteps() =&gt; …;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1188](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1188) |  |
 | <code>public static IReadOnlyList&lt;DataIntegrationWorkflowStep&gt; ErrorSteps() =&gt; …;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1246](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1246) |  |
-
-## DataWorkspaceData
-
-Qualified name: <code>Meridian.Wpf.Services.DataWorkspaceData</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1015](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1015).
-
-Collects environment, scope, provider, notification, and operational data used to build the data workspace.
-
-```csharp
-public sealed class DataWorkspaceData
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FixtureModeKind EnvironmentMode { get; init; } = FixtureModeKind.Live;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1017](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1017) |  |
-| <code>public string ScopeLabel { get; init; } = &quot;Provider and storage posture&quot;;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1018](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1018) |  |
-| <code>public string ScopeSummary { get; init; } = &quot;Provider posture, backfill priority, storage follow-up, and export delivery stay in one fixed shell.&quot;;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1019](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1019) |  |
-| <code>public DateTimeOffset RetrievedAt { get; init; } = DateTimeOffset.Now;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1020](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1020) |  |
-| <code>public int UnreadAlerts { get; init; }</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1021](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1021) |  |
-| <code>public IReadOnlyList&lt;NotificationHistoryItemModel&gt; Notifications { get; init; } = Array.Empty&lt;NotificationHistoryItemModel&gt;();</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1022](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1022) |  |
-| <code>public IReadOnlyList&lt;ProviderInfoModel&gt; Providers { get; init; } = Array.Empty&lt;ProviderInfoModel&gt;();</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1023](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1023) |  |
-| <code>public StatusProviderInfoModel? ProviderStatus { get; init; }</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1024](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1024) |  |
-| <code>public BackfillHealthResponse? BackfillHealth { get; init; }</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1025](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1025) |  |
-| <code>public BackfillResultDto? LastBackfillStatus { get; init; }</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1026](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1026) |  |
-| <code>public IReadOnlyList&lt;BackfillExecution&gt; BackfillExecutions { get; init; } = Array.Empty&lt;BackfillExecution&gt;();</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1027](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1027) |  |
-| <code>public IReadOnlyList&lt;BackfillCheckpoint&gt; ResumableJobs { get; init; } = Array.Empty&lt;BackfillCheckpoint&gt;();</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1028](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1028) |  |
-| <code>public IReadOnlyList&lt;BackfillSchedule&gt; BackfillSchedules { get; init; } = Array.Empty&lt;BackfillSchedule&gt;();</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1029](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1029) |  |
-| <code>public StorageStatsSummary? StorageStats { get; init; }</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1030](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1030) |  |
-| <code>public StorageHealthReport? StorageHealth { get; init; }</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1031](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1031) |  |
-| <code>public CollectionSession? ActiveSession { get; init; }</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1032](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1032) |  |
-| <code>public IReadOnlyList&lt;CollectionSession&gt; Sessions { get; init; } = Array.Empty&lt;CollectionSession&gt;();</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1033](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1033) |  |
-| <code>public IReadOnlyList&lt;ExportJob&gt; ExportJobs { get; init; } = Array.Empty&lt;ExportJob&gt;();</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1034](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1034) |  |

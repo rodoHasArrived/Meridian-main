@@ -2172,7 +2172,8 @@ Meridian-main
 │   │   │   │   ├── page-074.md
 │   │   │   │   ├── page-075.md
 │   │   │   │   ├── page-076.md
-│   │   │   │   └── page-077.md
+│   │   │   │   ├── page-077.md
+│   │   │   │   └── page-078.md
 │   │   │   ├── meridian.core
 │   │   │   │   ├── page-001.md
 │   │   │   │   ├── page-002.md
@@ -6322,6 +6323,7 @@ Meridian-main
 │   │   │   ├── OperationsApprovalCollaborationDtos.cs
 │   │   │   ├── OperationsCloseChecklistHistoryDtos.cs
 │   │   │   ├── OperationsContinuityDtos.cs
+│   │   │   ├── OperatorPreferencesDtos.cs
 │   │   │   ├── OperatorScopePreferenceDtos.cs
 │   │   │   ├── OperatorSurfaceVisitDtos.cs
 │   │   │   ├── OperatorTriageDtos.cs
@@ -9734,9 +9736,14 @@ Meridian-main
 │   │   │   │   │   ├── metric-history.ts
 │   │   │   │   │   ├── metric-trust.test.ts
 │   │   │   │   │   ├── metric-trust.ts
+│   │   │   │   │   ├── notification-preferences.test.ts
+│   │   │   │   │   ├── notification-preferences.ts
 │   │   │   │   │   ├── onboarding.ts
 │   │   │   │   │   ├── operator-inbox-triage.test.ts
 │   │   │   │   │   ├── operator-inbox-triage.ts
+│   │   │   │   │   ├── operator-preference-events.ts
+│   │   │   │   │   ├── operator-preferences-sync.test.ts
+│   │   │   │   │   ├── operator-preferences-sync.ts
 │   │   │   │   │   ├── page-trust-context.test.tsx
 │   │   │   │   │   ├── page-trust-context.tsx
 │   │   │   │   │   ├── plaid-link.ts
@@ -10319,6 +10326,8 @@ Meridian-main
 │   │   │   │   │   ├── settings-screen.diagnostics-section.tsx
 │   │   │   │   │   ├── settings-screen.execution-alerts.test.tsx
 │   │   │   │   │   ├── settings-screen.execution-alerts.tsx
+│   │   │   │   │   ├── settings-screen.notification-preferences.test.tsx
+│   │   │   │   │   ├── settings-screen.notification-preferences.tsx
 │   │   │   │   │   ├── settings-screen.operations-control.ts
 │   │   │   │   │   ├── settings-screen.operations-form-options.ts
 │   │   │   │   │   ├── settings-screen.operations-section.tsx
@@ -10503,6 +10512,7 @@ Meridian-main
 │   │   │   │   │   ├── mark-freshness.ts
 │   │   │   │   │   ├── market-data.ts
 │   │   │   │   │   ├── number-passport-reference.ts
+│   │   │   │   │   ├── operator-preferences.ts
 │   │   │   │   │   ├── operator-scope-preference.ts
 │   │   │   │   │   ├── operator-surface-visit.ts
 │   │   │   │   │   ├── option-visualization.types.ts
@@ -10677,8 +10687,10 @@ Meridian-main
 │   │   │   ├── DataQualityServiceBase.cs
 │   │   │   ├── DataSamplingService.cs
 │   │   │   ├── DesktopJsonOptions.cs
+│   │   │   ├── DesktopOperatorPreferences.cs
 │   │   │   ├── DesktopShellPreferences.cs
 │   │   │   ├── DiagnosticsService.cs
+│   │   │   ├── DisplayTimeZone.cs
 │   │   │   ├── ErrorHandlingService.cs
 │   │   │   ├── ErrorMessages.cs
 │   │   │   ├── EventReplayService.cs
@@ -10712,6 +10724,7 @@ Meridian-main
 │   │   │   ├── ProviderManagementService.cs
 │   │   │   ├── ProviderOperationsResults.cs
 │   │   │   ├── QualityArchiveStore.cs
+│   │   │   ├── QuietHours.cs
 │   │   │   ├── RetentionAssuranceModels.cs
 │   │   │   ├── ScheduledMaintenanceService.cs
 │   │   │   ├── ScheduleManagerService.cs
@@ -10959,6 +10972,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpoints.LedgerExport.cs
 │   │   │   ├── WorkstationEndpoints.OperationsRegistration.cs
 │   │   │   ├── WorkstationEndpoints.OperatorInbox.cs
+│   │   │   ├── WorkstationEndpoints.OperatorPreferences.cs
 │   │   │   ├── WorkstationEndpoints.OperatorScopePreference.cs
 │   │   │   ├── WorkstationEndpoints.OperatorSurfaceVisits.cs
 │   │   │   ├── WorkstationEndpoints.OperatorTriage.cs
@@ -11390,6 +11404,7 @@ Meridian-main
 │   │   │   └── StreamTopic.cs
 │   │   ├── Workflows
 │   │   │   ├── BuiltInWorkflowDefinitionProvider.cs
+│   │   │   ├── FileOperatorPreferenceStore.cs
 │   │   │   ├── FileOperatorScopePreferenceStore.cs
 │   │   │   ├── FileOperatorSurfaceVisitStore.cs
 │   │   │   ├── FileWorkflowPresetStore.cs
@@ -11548,6 +11563,7 @@ Meridian-main
 │   │   │   ├── BoolToStringConverter.cs
 │   │   │   ├── BoolToVisibilityConverter.cs
 │   │   │   ├── ConsoleEntryKindToBrushConverter.cs
+│   │   │   ├── DisplayTimestampConverter.cs
 │   │   │   ├── IntToVisibilityConverter.cs
 │   │   │   ├── InvertBoolConverter.cs
 │   │   │   ├── NullToCollapsedConverter.cs
@@ -11773,6 +11789,7 @@ Meridian-main
 │   │   │   ├── WorkstationSecurityMasterApiClient.CashDividends.cs
 │   │   │   ├── WorkstationSecurityMasterApiClient.cs
 │   │   │   ├── WorkstationStrategyBriefingService.cs
+│   │   │   ├── WpfDesktopPreferenceSurface.cs
 │   │   │   ├── WpfRemoteWorkstationClient.cs
 │   │   │   └── WpfShellServiceCollectionExtensions.cs
 │   │   ├── Shell
@@ -11972,6 +11989,7 @@ Meridian-main
 │   │   │   ├── ServiceManagerViewModel.cs
 │   │   │   ├── SettingsViewModel.AssetProfiles.cs
 │   │   │   ├── SettingsViewModel.cs
+│   │   │   ├── SettingsViewModel.Notifications.cs
 │   │   │   ├── SettingsViewModel.OperationsControl.cs
 │   │   │   ├── SetupWizardViewModel.cs
 │   │   │   ├── SplitPaneViewModel.cs
@@ -15080,6 +15098,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpointsTests.OpenLotBackfill.cs
 │   │   │   ├── WorkstationEndpointsTests.OperationsContinuity.cs
 │   │   │   ├── WorkstationEndpointsTests.OperatorInbox.cs
+│   │   │   ├── WorkstationEndpointsTests.OperatorPreferences.cs
 │   │   │   ├── WorkstationEndpointsTests.OperatorScopePreference.cs
 │   │   │   ├── WorkstationEndpointsTests.OperatorSurfaceVisits.cs
 │   │   │   ├── WorkstationEndpointsTests.PeriodAdjustmentSchedule.cs
@@ -15174,7 +15193,9 @@ Meridian-main
 │   │   │   ├── DataQualityRefreshCoordinatorTests.cs
 │   │   │   ├── DataQualityServiceBaseTests.cs
 │   │   │   ├── DataSamplingServiceTests.cs
+│   │   │   ├── DesktopOperatorPreferenceSyncTests.cs
 │   │   │   ├── DiagnosticsServiceTests.cs
+│   │   │   ├── DisplayTimestampTests.cs
 │   │   │   ├── ErrorHandlingServiceTests.cs
 │   │   │   ├── EventReplayServiceTests.cs
 │   │   │   ├── FixtureDataServiceTests.cs
@@ -15203,6 +15224,7 @@ Meridian-main
 │   │   │   ├── PostedLedgerProjectionTests.cs
 │   │   │   ├── ProviderHealthServiceTests.cs
 │   │   │   ├── ProviderManagementServiceTests.cs
+│   │   │   ├── QuietHoursTests.cs
 │   │   │   ├── ScheduledMaintenanceServiceTests.cs
 │   │   │   ├── ScheduleManagerServiceTests.cs
 │   │   │   ├── SchemaServiceTests.cs
@@ -15231,6 +15253,8 @@ Meridian-main
 │   │   ├── Meridian.Ui.Tests.csproj
 │   │   └── README.md
 │   ├── Meridian.Wpf.Tests
+│   │   ├── Converters
+│   │   │   └── DisplayTimestampConverterTests.cs
 │   │   ├── Copy
 │   │   │   └── WorkspaceCopyCatalogTests.cs
 │   │   ├── Features
@@ -15340,7 +15364,8 @@ Meridian-main
 │   │   │   ├── WorkstationReconciliationApiClientTests.cs
 │   │   │   ├── WorkstationRecurringJournalQueueClientTests.cs
 │   │   │   ├── WorkstationScopeOptionsApiClientTests.cs
-│   │   │   └── WorkstationWorkflowSummaryServiceTests.cs
+│   │   │   ├── WorkstationWorkflowSummaryServiceTests.cs
+│   │   │   └── WpfDesktopPreferenceSurfaceTests.cs
 │   │   ├── Shell
 │   │   │   ├── PageContentFactoryTests.cs
 │   │   │   ├── PaneHostViewModelTests.cs
@@ -15448,6 +15473,7 @@ Meridian-main
 │   │   │   ├── SecurityPassportEditorViewModelTests.cs
 │   │   │   ├── ServiceManagerViewModelTests.cs
 │   │   │   ├── SettingsViewModelAssetProfileTests.cs
+│   │   │   ├── SettingsViewModelNotificationTests.cs
 │   │   │   ├── SettingsViewModelOperationsControlTests.cs
 │   │   │   ├── SettingsViewModelTests.cs
 │   │   │   ├── SetupWizardViewModelTests.cs

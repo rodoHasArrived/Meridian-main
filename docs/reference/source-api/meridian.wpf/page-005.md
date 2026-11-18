@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterPresentationField
+
+Qualified name: <code>Meridian.Wpf.Models.SecurityMasterPresentationField</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Models/SecurityMasterPresentationModels.cs:3](../../../../src/Meridian.Wpf/Models/SecurityMasterPresentationModels.cs#L3).
+
+```csharp
+public sealed record SecurityMasterPresentationField(string Label, string Value);
+```
+
 ## SecurityMasterPrintSectionItem
 
 Qualified name: <code>Meridian.Wpf.Models.SecurityMasterPrintSectionItem</code>. Kind: `record`.
@@ -1013,19 +1023,3 @@ Declared public members:
 | <code>public string CriticalValue { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:118](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L118) |  |
 | <code>public string CriticalTone { get; init; } = WorkspaceTone.Info;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:120](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L120) |  |
 | <code>public IReadOnlyList&lt;WorkspaceShellBadge&gt; AdditionalBadges { get; init; } = Array.Empty&lt;WorkspaceShellBadge&gt;();</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:122](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L122) |  |
-
-## WorkspaceShellContextStripContribution
-
-Qualified name: <code>Meridian.Wpf.Models.WorkspaceShellContextStripContribution</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:63](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L63).
-
-```csharp
-public sealed record WorkspaceShellContextStripContribution(string WorkspaceId, WorkspaceShellContext Context, int Order = 0) : IWorkspaceShellSlotContribution
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WorkspaceShellSlot Slot =&gt; …;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:68](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L68) |  |

@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## KeyValueFactGridControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Tables.KeyValueFactGridControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:37](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L37).
+
+Displays read-only key-value facts using virtualized rows and columns.
+
+```csharp
+public sealed class KeyValueFactGridControl : DataGrid
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public KeyValueFactGridControl();</code> | [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:39](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L39) |  |
+
+## SearchFilterBarControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Tables.SearchFilterBarControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:30](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L30).
+
+Provides a content surface for table search and filter controls.
+
+```csharp
+public sealed class SearchFilterBarControl : ContentControl
+```
+
 ## AuditTimelineEntry
 
 Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.AuditTimelineEntry</code>. Kind: `class`.
