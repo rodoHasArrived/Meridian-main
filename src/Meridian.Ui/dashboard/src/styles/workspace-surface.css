@@ -206,7 +206,7 @@ body {
   color: var(--mds-workspace-text, var(--ws-text));
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 1279px) {
   .data-management-frame,
   .workspace-table-inspector-layout {
     grid-template-columns: minmax(0, 1fr);
@@ -221,7 +221,7 @@ body {
   }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 640px) {
   .workspace-metric-strip {
     grid-template-columns: minmax(0, 1fr);
   }

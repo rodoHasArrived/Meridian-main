@@ -6,6 +6,82 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PendingOperationsQueueService
+
+Qualified name: <code>Meridian.Wpf.Services.PendingOperationsQueueService</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:100](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L100).
+
+Service for managing a durable queue of pending operations: mutations that failed while the backend was unreachable are enqueued here, persisted to local storage via AtomicFileWriter so they survive shutdown and crashes, and replayed through their registered handlers on startup and on reconnect. Implements singleton pattern for application-wide operation queue management.
+
+```csharp
+public sealed class PendingOperationsQueueService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static PendingOperationsQueueService Instance =&gt; …;</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:130](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L130) | Gets the singleton instance of the PendingOperationsQueueService. |
+| <code>public bool IsInitialized =&gt; …;</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:135](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L135) | Gets whether the service has been initialized. |
+| <code>public int PendingCount =&gt; …;</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:140](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L140) | Gets the number of pending operations in the queue. |
+| <code>public int QuarantinedCount =&gt; …;</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:146](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L146) | Gets the number of payload-free quarantine records retained for operations that cannot be replayed safely. |
+| <code>public static string GetDefaultFilePath();</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:156](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L156) | Resolves the durable queue file below the shared Meridian local-application-data root. |
+| <code>public async Task InitializeAsync();</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:177](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L177) | Initializes the pending operations queue service, restoring any operations that were persisted by a previous session (clean shutdown or crash). |
+| <code>public async Task ShutdownAsync();</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:202](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L202) | Shuts down the pending operations queue service, persisting any still-pending operations to disk so they can be replayed by the next session before releasing the in-memory queue. Later persistence attempts (for example an enqueue-scheduled snapshot that loses the race with shutdown) are suppressed so they cannot overwrite the final snapshot with the cleared queue. |
+| <code>public void RegisterHandler(string operationType, Func&lt;object?, Task&gt; handler);</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:225](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L225) | Registers a handler for a specific operation type. |
+| <code>public void UnregisterHandler(string operationType);</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:236](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L236) | Removes a handler for a specific operation type. |
+| <code>public void Enqueue(PendingOperation operation);</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:246](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L246) | Enqueues an operation for processing and schedules a snapshot of the queue to durable storage, so an enqueued operation survives a crash before the next clean shutdown. |
+| <code>public void Enqueue(string operationType, object? payload = null);</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:258](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L258) | Enqueues an operation for processing. |
+| <code>public PendingOperation? Dequeue();</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:271](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L271) | Dequeues the next operation for processing. |
+| <code>public PendingOperation? Peek();</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:280](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L280) | Peeks at the next operation without removing it. |
+| <code>public IReadOnlyList&lt;PendingOperation&gt; GetAll();</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:293](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L293) | Gets a snapshot of all pending operations. |
+| <code>public IReadOnlyList&lt;PendingOperationQuarantineRecord&gt; GetQuarantinedOperations();</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:302](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L302) | Gets a stable audit snapshot of operations moved out of the replay queue. Quarantine records contain metadata only and never expose the original operation payload. |
+| <code>public async Task ProcessAllAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:320](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L320) | Processes all pending operations by dequeuing and executing their registered handlers. Operations that fail and have retries remaining are re-enqueued. Operations with no registered handler are kept in the queue so a handler registered later (or by the next session) can still process them. Explicitly retired authentication-sensitive operation types are moved to payload-free quarantine before handler lookup. The surviving queue and quarantine audit are persisted afterwards. |
+| <code>public async Task PersistAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:370](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L370) | Writes the current queue contents to durable storage using an atomic replace, so a crash mid-write can never corrupt the previously persisted queue. |
+
+## PortfolioWorkspaceShellStateProvider
+
+Qualified name: <code>Meridian.Wpf.Services.PortfolioWorkspaceShellStateProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs:129](../../../../src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs#L129).
+
+Supplies the portfolio workspace definition and shell state.
+
+```csharp
+public sealed class PortfolioWorkspaceShellStateProvider : WorkspaceShellStateProviderBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PortfolioWorkspaceShellStateProvider(FundContextService fundContextService, WorkstationOperatingContextService? operatingContextService) : base(operatingContextService);</code> | [src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs:133](../../../../src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs#L133) |  |
+| <code>public override WorkspaceShellDefinition Definition =&gt; …;</code> | [src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs:141](../../../../src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs#L141) |  |
+
+## QuantScriptExecutionHistoryService
+
+Qualified name: <code>Meridian.Wpf.Services.QuantScriptExecutionHistoryService</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs:27](../../../../src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs#L27).
+
+Records QuantScript executions in strategy-run history and exports retained execution records.
+
+```csharp
+public sealed class QuantScriptExecutionHistoryService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public QuantScriptExecutionHistoryService(ConfigService configService, StrategyRunWorkspaceService strategyRunWorkspaceService, ILogger&lt;QuantScriptExecutionHistoryService&gt; logger);</code> | [src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs:33](../../../../src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs#L33) |  |
+| <code>public static string BuildQuantScriptStrategyId(string documentTitle) =&gt; …;</code> | [src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs:43](../../../../src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs#L43) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;QuantScriptExecutionRecord&gt;&gt; GetHistoryAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs:46](../../../../src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs#L46) |  |
+| <code>public async Task&lt;QuantScriptExecutionRecord&gt; RecordExecutionAsync(QuantScriptExecutionRecordRequest request, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs:79](../../../../src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs#L79) |  |
+| <code>public async Task&lt;string&gt; ExportExecutionRecordAsync(QuantScriptExecutionRecord record, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs:136](../../../../src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs#L136) |  |
+| <code>public static string ConvertValueToString(object? value);</code> | [src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs:161](../../../../src/Meridian.Wpf/Services/QuantScriptExecutionHistoryService.cs#L161) |  |
+
 ## QuantScriptExecutionRecordRequest
 
 Qualified name: <code>Meridian.Wpf.Services.QuantScriptExecutionRecordRequest</code>. Kind: `record`.
@@ -979,72 +1055,3 @@ Declared public members:
 | <code>public static void Open();</code> | [src/Meridian.Wpf/Services/TickerStripService.cs:26](../../../../src/Meridian.Wpf/Services/TickerStripService.cs#L26) | Opens and shows the ticker strip (no-op if already visible). |
 | <code>public static void Close();</code> | [src/Meridian.Wpf/Services/TickerStripService.cs:41](../../../../src/Meridian.Wpf/Services/TickerStripService.cs#L41) | Closes the ticker strip (no-op if already closed). |
 | <code>public static bool IsOpen =&gt; …;</code> | [src/Meridian.Wpf/Services/TickerStripService.cs:48](../../../../src/Meridian.Wpf/Services/TickerStripService.cs#L48) | Returns true while the strip window is open. |
-
-## TickerUpdateMessage
-
-Qualified name: <code>Meridian.Wpf.Services.TickerUpdateMessage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/MessagingService.cs:294](../../../../src/Meridian.Wpf/Services/MessagingService.cs#L294).
-
-Message payload for a live price tick, published by any component that receives quote/trade data. Subscribers (e.g. TickerStripViewModel) can consume this instead of polling the HTTP API.
-
-```csharp
-public sealed class TickerUpdateMessage
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Services/MessagingService.cs:296](../../../../src/Meridian.Wpf/Services/MessagingService.cs#L296) |  |
-| <code>public decimal Bid { get; set; }</code> | [src/Meridian.Wpf/Services/MessagingService.cs:297](../../../../src/Meridian.Wpf/Services/MessagingService.cs#L297) |  |
-| <code>public decimal Ask { get; set; }</code> | [src/Meridian.Wpf/Services/MessagingService.cs:298](../../../../src/Meridian.Wpf/Services/MessagingService.cs#L298) |  |
-| <code>public decimal Last { get; set; }</code> | [src/Meridian.Wpf/Services/MessagingService.cs:299](../../../../src/Meridian.Wpf/Services/MessagingService.cs#L299) |  |
-| <code>public bool Uptick { get; set; }</code> | [src/Meridian.Wpf/Services/MessagingService.cs:300](../../../../src/Meridian.Wpf/Services/MessagingService.cs#L300) |  |
-
-## ToastNotificationService
-
-Qualified name: <code>Meridian.Wpf.Services.ToastNotificationService</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/ToastNotificationService.cs:21](../../../../src/Meridian.Wpf/Services/ToastNotificationService.cs#L21).
-
-Delivers Windows balloon-tip notifications via NotifyIcon. The project targets net9.0-windows (no explicit Windows version suffix), so the WinRT Windows.UI.Notifications API is unavailable without adding Microsoft.Windows.SDK.Contracts or bumping the TFM to net9.0-windows10.0.17763.0. This service provides a functionally equivalent experience through the system-tray balloon-tip channel. Limitation: Balloon tips do NOT persist in the Windows Action Center; they appear for ≈5 s and are then silently dismissed. For true Action Center persistence, change TargetFramework to net9.0-windows10.0.17763.0 and use Windows.UI.Notifications.ToastNotificationManager.
-
-```csharp
-public sealed class ToastNotificationService : IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ToastNotificationService Instance =&gt; …;</code> | [src/Meridian.Wpf/Services/ToastNotificationService.cs:39](../../../../src/Meridian.Wpf/Services/ToastNotificationService.cs#L39) | Gets the singleton instance. |
-| <code>public static void SetAppUserModelId() =&gt; …;</code> | [src/Meridian.Wpf/Services/ToastNotificationService.cs:58](../../../../src/Meridian.Wpf/Services/ToastNotificationService.cs#L58) | Registers the AppUserModelID with Windows so that toast activations, JumpList entries, and taskbar pins all share the same identity. Must be called before any window is shown. |
-| <code>public void ShowBackfillComplete(int symbolCount, long barsWritten, TimeSpan duration);</code> | [src/Meridian.Wpf/Services/ToastNotificationService.cs:67](../../../../src/Meridian.Wpf/Services/ToastNotificationService.cs#L67) | Shows a &quot;Backfill Complete&quot; balloon notification. |
-| <code>public void ShowProviderDisconnected(string providerName);</code> | [src/Meridian.Wpf/Services/ToastNotificationService.cs:81](../../../../src/Meridian.Wpf/Services/ToastNotificationService.cs#L81) | Shows a &quot;Provider Disconnected&quot; balloon notification. |
-| <code>public void ShowDataQualityAlert(string symbol, double score);</code> | [src/Meridian.Wpf/Services/ToastNotificationService.cs:96](../../../../src/Meridian.Wpf/Services/ToastNotificationService.cs#L96) | Shows a &quot;Data Quality Alert&quot; balloon notification when a quality score drops below the warning threshold. |
-| <code>public void Dispose();</code> | [src/Meridian.Wpf/Services/ToastNotificationService.cs:153](../../../../src/Meridian.Wpf/Services/ToastNotificationService.cs#L153) |  |
-
-## TooltipService
-
-Qualified name: <code>Meridian.Wpf.Services.TooltipService</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/TooltipService.cs:14](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L14).
-
-Service for managing contextual tooltips, onboarding tips, and feature discovery. Tracks which tips have been shown to avoid repetition. Uses file-based storage for dismissed tips persistence. Delegates content to the shared TooltipContent in Ui.Services.
-
-```csharp
-public sealed class TooltipService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static TooltipService Instance =&gt; …;</code> | [src/Meridian.Wpf/Services/TooltipService.cs:22](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L22) |  |
-| <code>public FeatureHelp GetFeatureHelp(string featureKey) =&gt; …;</code> | [src/Meridian.Wpf/Services/TooltipService.cs:29](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L29) |  |
-| <code>public bool ShouldShowTip(string tipKey);</code> | [src/Meridian.Wpf/Services/TooltipService.cs:31](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L31) |  |
-| <code>public void DismissTip(string tipKey);</code> | [src/Meridian.Wpf/Services/TooltipService.cs:41](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L41) |  |
-| <code>public void ResetAllTips();</code> | [src/Meridian.Wpf/Services/TooltipService.cs:47](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L47) |  |
-| <code>public IReadOnlyList&lt;OnboardingTip&gt; GetOnboardingTips(string pageKey) =&gt; …;</code> | [src/Meridian.Wpf/Services/TooltipService.cs:54](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L54) |  |
-| <code>public string GetTooltipContent(string featureKey) =&gt; …;</code> | [src/Meridian.Wpf/Services/TooltipService.cs:60](../../../../src/Meridian.Wpf/Services/TooltipService.cs#L60) | Gets formatted tooltip text for a feature (title + description + tips). Can be used to populate WPF ToolTip content on controls. |

@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-17
 ---
 
 # src/Meridian.Ui/dashboard
@@ -221,6 +221,20 @@ commands explain their existing blockers. Controlled-close receipt navigation re
 response's journal, book, profile and version even when the next request is edited; incomplete
 receipt identities provide no journal link. Active FX edits retain their as-of scope until save or
 explicit cancel, and pending saves retain the mounted editor.
+Floating-rate loan interest (rule `intercompany-accrual-v2`) uses the entity view's Rate fixings
+tab: operators load an index and inclusive date range, propose an exact decimal fraction with its
+source and justification, and a different person approves or rejects (with a reason) the exact
+pending value; read-only operators only inspect values and history. Only approved fixings set
+accrual rates; a missing fixing is never inferred and nothing is fetched from a market feed. The
+accrual preview's Fixing column shows each slice's index, fixing date, index rate and spread as exact
+text (`Fixed` otherwise), and structured Floating loan terms declare a whole-number fixing lag in
+business days before each period start. Focused coverage: `accounting-screen.entity-rate-fixings.test.tsx`,
+`accounting-screen.entity-interest-accrual.test.tsx` and `intercompany-agreement-editor.test.tsx`.
+
+The Balance confirmation tab (`accounting-screen.entity-confirmations.tsx`) loads one book's
+advisory confirmation summary, pins current balances and confirms, disputes or resolves only this
+book's side; focused coverage is `accounting-screen.entity-confirmations.test.tsx`. See
+[reciprocal balance confirmation](../../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
 
 Settings provider runtime evidence and integration setup components are owned by
 `settings-provider-integration.tsx`; the Settings screen composes them without changing routes
@@ -258,6 +272,12 @@ and checklist presentation live in `trading-screen.promotion-evidence.ts`; the e
 entrypoint retains its public exports, React gate state and command transport. Payloads, evidence-token
 rules and approval semantics are unchanged. Three fixed-number formatting allowances follow their
 unchanged checklist declarations; the original aggregate allowance of six remains unchanged.
+
+Order authority presentation lives in `trading-screen.order-authority.ts`: working-order Origin
+labels, ticket text for an `OrderResult.authorityDecision` refusal (checkpoint and reason code), and
+the manual-entry verdict. When `TradingWorkspaceResponse.manualOrderEntry.available` is false (a live
+routing path), the order ticket shows the server's reason up front and disables submission; the
+browser never decides live availability itself.
 
 Strategy overview composition lives in `strategy-overview-hub.tsx`; equity-path comparison state,
 load results and presentation live in `strategy-screen.equity-paths.view-model.ts` and
@@ -518,6 +538,71 @@ Portfolio defaults to Live holdings. The source selector reveals retained run re
 with their own market-value and record-count definitions; exposure and market value
 are distinct measures. Compare position sources is a collapsed disclosure.
 
+Every registered figure also has a fixed population and comparison basis (`KPI_DEFINITIONS`),
+mirrored by the shared catalog at `/api/workstation/kpi-definitions`. A strip states one shared
+population once ("Covers: …") and mixed populations under each figure, and publishes it as
+`data-kpi-population`. Provider health on Today, Data and Settings is the shared cross-screen count;
+Data counts its own cards only when the shared count is withheld ("Providers visible to you").
+Position tables name their source through `lib/position-source.ts` (`data-position-source`), and
+Compare position sources lists symbols that differ between live holdings and the Trading session.
+The status bar's Freshness starts from `resolveShellFreshness` (masthead provenance and provider
+items); a page can make it worse but never clear it.
+
+A value missing on every row is said once. A `TableWorkbenchColumn` with `hideWhenEmpty` is left
+out when no loaded row has a value, and its `emptyNote` is shown once in the toolbar. A single
+missing value is "—" with its reason on hover. Panels that read one backend report their load
+status (`lib/combined-load-state.ts`), so a shared failure shows one notice with one Retry. Journal
+Entry uses this for accrual schedules and recurring journals, below the editor.
+
+Accounting grids follow general-ledger conventions:
+- `DenseDataTable`/`TableWorkbench` accept `footerCells` for a sticky totals row keyed by column.
+- Accounting dates go through `formatAccountingDate`, so date-only or midnight-UTC values print
+  without a time.
+- `AccountingValue` keeps figures on one line in the data face.
+
+`StatusBadge` takes its colour from a status-word label (`badgeSeverity`).
+
+Labels use the body face, and the `monospaceCapsLabels` ratchet stops new uppercase-monospace
+labels.
+
+Media queries use the breakpoint tiers documented at the end of `styles/index.css` and checked by
+`styles/breakpoints.test.ts`.
+
+Navigation and overviews (UX Phase D):
+- Expanding Accounting in the sidebar adds one row per group (`railSubItems`). The group's pages
+  appear as a secondary menu under the page header (`components/meridian/workspace-section-nav.tsx`,
+  built by `buildAccountingSectionNav`), carrying the same fund, book, period and status query.
+- The command palette lists pinned and recent pages first (`lib/recent-pages.ts`). They are kept
+  in this browser's storage as a per-viewer convenience; every read and write is guarded.
+  "Pin {page}" and "Unpin {page}" are palette actions.
+- Close Calendar opens on a month grid (`components/meridian/month-calendar.tsx`); its list is the
+  "List view" alternative. Items due before today and not ready read as overdue.
+- Charts carry a table alternative marked `data-chart-table`. Close Cockpit's task progress and
+  Reconciliation's break aging are shown open. Provider evidence age picks one unit (hours, days or
+  months) and lists every provider in use, untimed ones as "No timestamp".
+- The provider capability matrix has a Freshness column (Current, Stale or No evidence, with the
+  age), joined by provider id from the provider rows (`buildCapabilityFreshnessIndex`).
+- The Strategy overview has a run leaderboard: top 5 runs by Sharpe, then unranked runs.
+
+Workflow features (UX Phase E):
+- `lib/due-urgency.ts` and `components/meridian/due-chip.tsx` turn a due date into urgency in UTC
+  calendar days. Today ranks overdue items first and says so in "Why ranked here".
+- `lib/since-last-visit.ts` serves "new since you last looked" for `today-queue`, `approvals` and
+  `reporting-triage` as well as the break queue; `SinceLastVisitBadge` is shared.
+- The triage inbox offers bulk Acknowledge and Snooze: one command per confirmed item, with per-item
+  results (`use-operator-triage-inbox.ts`).
+- `TableWorkbench` exports as shown (`exportDisplay`, `exportNumberFormat`, `footerExport`) through
+  `lib/table-export.ts`; XLSX uses `write-excel-file`, imported only on export.
+- Strategy comparison lives in `screens/strategy-screen.comparison*.ts(x)`: up to four runs, a
+  tray, and overlaid curves.
+- `lib/variance.ts` is the exact-decimal variance rule (matching `PeriodChange` on the server);
+  `components/meridian/variance-columns.tsx` adds Prior, Variance and Variance % with materiality
+  flags; `components/meridian/period-comparison-panel.tsx` renders any `PeriodComparisonDto`
+  (NAV at `/portfolio/nav`, run attribution, cash ladder) from `lib/api/period-comparison.api.ts`.
+- `components/meridian/nav-trend-chart.tsx` draws ledger NAV at the last 12 month-ends above the NAV
+  comparison, and securities exposure (long, short, gross) when the ledger holds any, each with a
+  data table. Reporting P&L slices tagged `no-prior` show "—" for Prior and Change.
+
 The holdings table, the headline figures and the holding detail panel read one model,
 `lib/holdings-model.ts`, so they cannot disagree. Values the source supplies are shown
 unchanged. When the source omits them, the model derives two row figures and says so:
@@ -622,6 +707,45 @@ information icon instead; there is no per-section "Hide" link and a description 
 collapses after it has been seen once. The icon opens with Enter/Space; Escape closes it and
 returns focus. Storage failures leave help usable. The setting does not change financial data
 or authorization and does not synchronize between browsers.
+
+Workstation-global shortcuts (`lib/keymap.ts`: command palette `Mod+K`, keyboard help `?`) can be
+rebound from the keyboard help sheet. Each row offers Change, which captures the next chord through
+a window capture-phase listener that stops it reaching the shell's global handler (Esc cancels
+instead of closing the sheet), and Reset when overridden; "Reset all to defaults" clears every
+override. `setKeyBindingOverride` refuses, with a reason shown in a polite status line, a combo in
+use by another global binding (named), Esc/Tab/Enter/Space, browser-owned `Mod+W/T/N/Q/R/L`, and
+bare letters, digits and named keys other than F1–F24 (punctuation such as `?` may stay bare).
+Overrides persist per browser under `meridian.workstation.keymap.v1`, follow other tabs through
+`storage` events, and are decoded defensively: malformed, unknown, default-valued or refused
+entries are ignored, while a stored swap of the two bindings is kept. `getGlobalKeyBinding`
+returns the effective combo, so the shell and command palette honor overrides without other
+changes. Overrides follow the signed-in operator to other browsers through the host preferences
+below; they do not reach the WPF desktop.
+
+Operator presentation preferences follow the operator across browsers and machines
+(`lib/operator-preferences-sync.ts`, started from `app.tsx` once a non-fixture session is known):
+appearance, density, display time zone, the page-descriptions setting and the shortcut overrides are
+read from `GET /api/workstation/operator/preferences`. A value the host holds wins and is written to
+this browser's store without announcing a change; a value the host lacks keeps this browser's value,
+and the merged set is saved back, so the first signed-in visit migrates existing local choices.
+Afterwards every operator change saves the whole set (`PUT`, debounced 500 ms). Each preference
+writer announces changes through `lib/operator-preference-events.ts`; the theme and density toggles
+re-read their store when host values are applied. Host values the browser cannot use (an unknown
+appearance or density, a zone missing from its Intl data, refused shortcut combos) are ignored. Once
+the host holds a record, missing shortcut overrides mean "none", so a reset in one browser reaches
+the others. A failed read (no session, an older host, offline) leaves preferences browser-only for
+the visit and saves nothing; a failed save keeps the local value and retries with the next change.
+Last write wins across browsers. Fixture sessions stay browser-only. The values are display-only.
+Settings > Preferences > Notifications (`screens/settings-screen.notification-preferences.tsx`, store
+`lib/notification-preferences.ts`) holds the pop-up switch, five notification types (connection,
+errors, backfill, data gaps, storage), quiet hours as 24-hour `HH:mm` times in the display time zone
+(a window ending earlier than it starts runs past midnight; the end minute is not quiet; equal times
+never hold anything), and a test button that says when pop-ups are off or held. The set syncs with
+the other preferences. In the browser the switch and quiet hours hold price-alert system pop-ups
+(`popUpsAllowed`); triggers still reach the notification center and alert history. The five types
+govern the desktop app's toasts.
+The host set also carries the WPF desktop's shortcut overrides (`desktopKeyBindings`); the browser
+never applies or sends them, and the host keeps them when a browser save leaves them out.
 
 Every workspace overview opens with `PageHeading` (`components/ui/page-heading.tsx`): the page
 name, then an optional one-line purpose on its own line, then page actions. Write the purpose as
@@ -818,6 +942,7 @@ scopes), `workspace-nav.test.tsx`, and `layout-switcher.test.tsx`.
 Shared contract change (additive): `OperatingScopeValuesDto` (the operator's default scope) gained
 optional `EntityId` and `FundId` members, appended last, so the server keeps entity and fund in a
 saved default; the dashboard mirror is `types/operator-scope-preference.ts`. No endpoint was added.
+The operator presentation preferences mirror `OperatorPreferencesDto` in `types/operator-preferences.ts`.
 
 React, React DOM, and their type packages are upgraded together. Runtime support uses the floating
 Node major in `.nvmrc` and the minimum declared in this dashboard's `engines.node`; both prerequisite

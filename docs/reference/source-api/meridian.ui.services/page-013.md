@@ -6,6 +6,367 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DesktopOperatorPreferenceSync
+
+Qualified name: <code>Meridian.Ui.Services.Services.DesktopOperatorPreferenceSync</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:267](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L267).
+
+Keeps the desktop shell&#x27;s theme, density and keyboard shortcut overrides in step with the operator&#x27;s host preferences, the same set the browser workstation syncs (OperatorPreferencesDto). On start, the values the host holds are applied. Theme and density are not saved back: the desktop does not persist its theme, so its startup theme is a default, not an operator choice. Desktop shortcut overrides (OperatorPreferenceValuesDto.DesktopKeyBindings) held by the host replace this desktop&#x27;s, including an empty set (every default). When the host has none yet, this desktop&#x27;s own overrides are saved up, so the first desktop to sync seeds them. When the operator changes the theme or density here, the latest host set is re-read and saved with only the appearance and density replaced; a shortcut change likewise replaces only the desktop shortcut overrides. Browser-only values (time zone, page descriptions, browser shortcut overrides, a spacious density) are kept. Notification choices and quiet hours (OperatorPreferenceValuesDto.Notifications) held by the host replace this desktop&#x27;s at start; a desktop change saves only that set. When the host cannot be read at start (no session, an older host, offline), the desktop stays local for the run and saves nothing. A failed save keeps the local change. The display time zone is applied to Meridian.Ui.Services.DisplayTimeZone, which desktop timestamps are formatted in; it is read at start and again whenever the desktop saves.
+
+```csharp
+public sealed class DesktopOperatorPreferenceSync : IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DesktopOperatorPreferenceSync(IOperatorPreferencesApi api, IDesktopPreferenceSurface surface, Action&lt;TimeZoneInfo?&gt;? applyDisplayTimeZone = null);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:280](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L280) |  |
+| <code>public TimeZoneInfo? DisplayTimeZone { get; private set; }</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:291](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L291) | The operator&#x27;s display time zone from the host, when it resolves on this machine (else null, meaning UTC). |
+| <code>public bool IsSyncing =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:294](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L294) | True once the host was read and local changes are being saved. |
+| <code>public async Task StartAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:297](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L297) | Reads the host set, applies it, and starts saving operator changes. Safe to call once. |
+| <code>public Task SaveLocalChangeAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:410](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L410) | Saves the current desktop theme and density into the operator&#x27;s host set, keeping every other stored value. Exposed for tests; the sync calls it after each operator change. |
+| <code>public Task SaveShortcutOverridesAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:423](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L423) | Saves this desktop&#x27;s shortcut overrides into the operator&#x27;s host set, keeping every other stored value. Exposed for tests; the sync calls it after each shortcut change. |
+| <code>public Task SaveNotificationsAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:435](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L435) | Saves this desktop&#x27;s notification settings into the operator&#x27;s host set, keeping every other stored value. Exposed for tests; the sync calls it after each notification change. |
+| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:492](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L492) |  |
+
+## DesktopShellPreferences
+
+Qualified name: <code>Meridian.Ui.Services.Services.DesktopShellPreferences</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:29](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L29).
+
+Persisted desktop shell preferences consumed by the WPF workstation shell.
+
+```csharp
+public sealed record DesktopShellPreferences(ShellDensityMode ShellDensityMode)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static DesktopShellPreferences Default { get; } = new (ShellDensityMode.Standard);</code> | [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:35](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L35) |  |
+| <code>public IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; ShortcutOverrides { get; init; } = NoShortcutOverrides;</code> | [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:40](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L40) | The operator&#x27;s shortcut overrides; empty when every shortcut uses its default binding. |
+
+## DesktopShortcutOverride
+
+Qualified name: <code>Meridian.Ui.Services.Services.DesktopShortcutOverride</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:21](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L21).
+
+A persisted operator change to one default desktop keyboard shortcut, keyed by action id. Keys and modifiers are stored as their WPF enum names (for example F10 and Control, Shift) so this contract stays free of WPF types; a null member means &quot;keep the default&quot; for that part of the binding.
+
+```csharp
+public sealed record DesktopShortcutOverride(string? Key = null, string? Modifiers = null, bool? IsEnabled = null);
+```
+
+## ErrorDetailsModel
+
+Qualified name: <code>Meridian.Ui.Services.Services.ErrorDetailsModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:51](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L51).
+
+Contains detailed error information for user display. Shared across desktop platforms.
+
+```csharp
+public sealed class ErrorDetailsModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Title { get; set; } = &quot;Error&quot;;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:53](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L53) |  |
+| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:54](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L54) |  |
+| <code>public string? Context { get; set; }</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:55](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L55) |  |
+| <code>public string? Remedy { get; set; }</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:56](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L56) |  |
+| <code>public InfoBarSeverityLevel Severity { get; set; } = InfoBarSeverityLevel.Error;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:57](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L57) |  |
+| <code>public string GetFormattedMessage();</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:62](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L62) | Gets the full formatted message including context and remedy. |
+| <code>public static ErrorDetailsModel CreateFromException(Exception ex, string operation);</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:75](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L75) | Creates a user-friendly error message with context and remedies from an exception. |
+
+## ExportPresetServiceBase
+
+Qualified name: <code>Meridian.Ui.Services.Services.ExportPresetServiceBase</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:11](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L11).
+
+Export preset management service with file-based storage. File path is injected via constructor rather than requiring platform-specific overrides.
+
+```csharp
+public class ExportPresetServiceBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public event EventHandler? PresetsChanged;</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:22](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L22) | Event raised when presets are modified. |
+| <code>public event EventHandler&lt;Exception&gt;? SaveFailed;</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:28](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L28) | Event raised when a save operation fails. |
+| <code>public IReadOnlyList&lt;ExportPreset&gt; Presets =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:33](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L33) | Gets all available export presets. |
+| <code>public async Task InitializeAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:52](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L52) | Initializes the service and loads presets. |
+| <code>public async Task LoadPresetsAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:64](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L64) | Loads presets from storage. |
+| <code>public async Task&lt;bool&gt; SavePresetsAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:107](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L107) | Saves presets to storage. |
+| <code>public async Task&lt;ExportPreset&gt; CreatePresetAsync(string name, string? description = null, ExportPresetFormat format = ExportPresetFormat.Parquet, string? destination = null, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:133](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L133) | Creates a new export preset. |
+| <code>public async Task&lt;bool&gt; UpdatePresetAsync(ExportPreset preset, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:164](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L164) | Updates an existing preset. |
+| <code>public async Task&lt;bool&gt; DeletePresetAsync(string presetId, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:185](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L185) | Deletes a preset by ID. |
+| <code>public ExportPreset? GetPreset(string presetId) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:207](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L207) | Gets a preset by ID. |
+| <code>public ExportPreset? GetPresetByName(string name) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:213](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L213) | Gets a preset by name. |
+| <code>public async Task&lt;ExportPreset&gt; DuplicatePresetAsync(string presetId, string newName, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:219](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L219) | Duplicates an existing preset with a new name. |
+| <code>public async Task RecordPresetUsageAsync(string presetId, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:267](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L267) | Records that a preset was used for an export. |
+| <code>public async Task&lt;string&gt; ExportPresetsAsync(string[] presetIds, string destinationPath, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:281](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L281) | Exports presets to a JSON file for sharing. |
+| <code>public async Task&lt;int&gt; ImportPresetsAsync(string filePath, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs:301](../../../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs#L301) | Imports presets from a JSON file. |
+
+## FeatureHelp
+
+Qualified name: <code>Meridian.Ui.Services.Services.FeatureHelp</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/TooltipContent.cs:7](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L7).
+
+Contextual help information for a feature. Shared across desktop platforms.
+
+```csharp
+public sealed class FeatureHelp
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Title { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:9](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L9) |  |
+| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:10](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L10) |  |
+| <code>public string[]? Tips { get; set; }</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:11](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L11) |  |
+| <code>public string? LearnMoreUrl { get; set; }</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:12](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L12) |  |
+| <code>public Dictionary&lt;string, string&gt;? KeyboardShortcuts { get; set; }</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:13](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L13) |  |
+
+## FixtureDataService
+
+Qualified name: <code>Meridian.Ui.Services.Services.FixtureDataService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/FixtureDataService.cs:9](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L9).
+
+Provides canned fixture data for UI development without backend dependency. Enables offline development and deterministic testing scenarios.
+
+```csharp
+public sealed class FixtureDataService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static FixtureDataService Instance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:12](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L12) |  |
+| <code>public FixtureScenario ActiveScenario =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:26](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L26) | Gets the currently active fixture scenario. |
+| <code>public void SetScenario(FixtureScenario scenario);</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:29](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L29) | Sets the active fixture scenario. |
+| <code>public static string GetScenarioLabel(FixtureScenario scenario) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:35](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L35) | Returns a human-readable label for the given scenario. |
+| <code>public StatusResponse GetMockStatusResponse() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:48](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L48) | Gets a mock status response showing a running system. |
+| <code>public StatusResponse GetMockDisconnectedStatus() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:79](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L79) | Gets a mock status response showing a disconnected system. |
+| <code>public TradeDataResponse GetMockTradeData(string symbol) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:91](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L91) | Gets mock trade data for a given symbol. |
+| <code>public QuoteDataResponse GetMockQuoteData(string symbol);</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:105](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L105) | Gets mock quote data for a given symbol. |
+| <code>public BackfillHealthResponse GetMockBackfillHealth() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:128](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L128) | Gets a mock backfill health response showing healthy providers. |
+| <code>public string[] GetMockSymbols() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:160](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L160) | Gets a collection of mock symbols for testing. |
+| <code>public TradesResponse GetMockTradesResponse(string symbol, int count = 10);</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:169](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L169) | Gets mock trades response with multiple trades. |
+| <code>public async Task SimulateNetworkDelayAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/FixtureDataService.cs:199](../../../../src/Meridian.Ui.Services/Services/FixtureDataService.cs#L199) | Simulates network delay for realistic fixture behavior. |
+
+## FixtureModeDetector
+
+Qualified name: <code>Meridian.Ui.Services.Services.FixtureModeDetector</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:23](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L23).
+
+Detects and tracks whether the application is running in fixture/offline mode. Provides a centralized check so UI pages can distinguish intentional demo data from backend-unreachable offline state.
+
+```csharp
+public sealed class FixtureModeDetector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static FixtureModeDetector Instance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:26](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L26) |  |
+| <code>public bool IsFixtureMode =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:54](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L54) | Gets whether the application is explicitly running in fixture mode. |
+| <code>public bool IsOfflineMode =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:59](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L59) | Gets whether the application is in offline mode (backend unreachable). |
+| <code>public bool IsBackendReachable =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:64](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L64) | Gets whether the backend is currently reachable. |
+| <code>public string? ServerDataProvenanceToken =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:71](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L71) | Non-real data provenance reported by the connected backend (for example seeded when the host is serving a seeded demo workspace), or null when the backend serves real data or has not reported yet. |
+| <code>public bool IsNonLiveMode =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:77](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L77) | Gets whether any non-live mode is active (fixture, offline, or a backend that reports simulated/seeded/sample data). |
+| <code>public FixtureModeKind ModeKind =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:82](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L82) | Gets the normalized non-live mode kind for UI tone selection. |
+| <code>public string ModeLabel =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:92](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L92) | Gets a human-readable mode label for display in the UI banner. |
+| <code>public string BannerColor =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:105](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L105) | Gets the banner background color suggestion. Fixture mode: blue informational, Offline: red. |
+| <code>public void SetFixtureMode(bool enabled);</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:110](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L110) | Sets explicit fixture mode state. |
+| <code>public void ReportServerDataProvenance(string? nonRealProvenanceToken);</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:123](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L123) | Records the data provenance the connected backend reports for the records it serves. Pass a non-real provenance token (simulated, seeded, sample) to surface the persistent shell banner, or null when the backend serves real data. W9-TRUTH-001: a workstation attached to a seeded demo workspace must keep labeling it. |
+| <code>public void UpdateBackendReachability(bool isReachable);</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:144](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L144) | Updates backend reachability state. Automatically triggers offline mode when backend is unreachable. |
+| <code>public string ScenarioLabel =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:159](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L159) | Gets the currently active fixture scenario label for display in the UI. |
+| <code>public FixtureScenario ActiveScenario =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:164](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L164) | Gets the currently active fixture scenario. |
+| <code>public FixtureScenario CycleScenario();</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:171](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L171) | Cycles to the next scenario in the FixtureScenario sequence. No-op when fixture mode is off. |
+| <code>public event EventHandler? ModeChanged;</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:189](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L189) | Event raised when fixture/offline mode changes. UI pages should subscribe to this to update their visual state. |
+
+## FixtureModeKind
+
+Qualified name: <code>Meridian.Ui.Services.Services.FixtureModeKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:5](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L5).
+
+```csharp
+public enum FixtureModeKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Live</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:7](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L7) |  |
+| <code>Fixture</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:8](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L8) |  |
+| <code>Offline</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:9](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L9) |  |
+
+## FixtureScenario
+
+Qualified name: <code>Meridian.Ui.Services.Services.FixtureScenario</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ui.Services/Services/FixtureScenario.cs:9](../../../../src/Meridian.Ui.Services/Services/FixtureScenario.cs#L9).
+
+Named fixture scenarios for UI development and debugging. Each scenario corresponds to a distinct system state that can be activated at runtime without restarting the application, enabling rapid iteration over all visual states in a single session.
+
+```csharp
+public enum FixtureScenario
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Connected</code> | [src/Meridian.Ui.Services/Services/FixtureScenario.cs:15](../../../../src/Meridian.Ui.Services/Services/FixtureScenario.cs#L15) | System fully connected with healthy metrics — the happy-path state. Providers are active, throughput is nominal, no errors. |
+| <code>Disconnected</code> | [src/Meridian.Ui.Services/Services/FixtureScenario.cs:21](../../../../src/Meridian.Ui.Services/Services/FixtureScenario.cs#L21) | System disconnected from all providers. Useful for testing empty-state / reconnection UI paths. |
+| <code>Degraded</code> | [src/Meridian.Ui.Services/Services/FixtureScenario.cs:27](../../../../src/Meridian.Ui.Services/Services/FixtureScenario.cs#L27) | System partially connected with degraded metrics. Some providers are unavailable or rate-limited; throughput is reduced. |
+| <code>Error</code> | [src/Meridian.Ui.Services/Services/FixtureScenario.cs:33](../../../../src/Meridian.Ui.Services/Services/FixtureScenario.cs#L33) | System in error state — provider errors, high drop rate, low throughput. Useful for testing error banners, alerts, and recovery UI flows. |
+| <code>Loading</code> | [src/Meridian.Ui.Services/Services/FixtureScenario.cs:39](../../../../src/Meridian.Ui.Services/Services/FixtureScenario.cs#L39) | System is initializing or loading — connections pending, data not yet available. Useful for testing skeleton/loading states and progress indicators. |
+
+## FormValidationRules
+
+Qualified name: <code>Meridian.Ui.Services.Services.FormValidationRules</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/FormValidationRules.cs:9](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L9).
+
+Shared validation rules for form validation across desktop applications. Extracted from FormValidationService implementations to eliminate duplicate validation logic.
+
+```csharp
+public static class FormValidationRules
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ValidationResult ValidateRequired(string? value, string fieldName = &quot;This field&quot;);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:17](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L17) | Validates that a field is not empty. |
+| <code>public static ValidationResult ValidateSymbol(string? value);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:30](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L30) | Validates a stock symbol format. Symbols must be 1-10 characters, start with a letter, and contain only letters, numbers, dots, dashes, and slashes. |
+| <code>public static ValidationResult ValidateSymbolList(string? value, int maxSymbols = 100);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:52](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L52) | Validates a comma-separated list of symbols. |
+| <code>public static ValidationResult ValidateDateRange(DateTimeOffset? fromDate, DateTimeOffset? toDate);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:83](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L83) | Validates a date range for data collection or backfill. |
+| <code>public static ValidationResult ValidateDateRange(string? dateStr);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:104](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L104) | Validates a date string in ISO format (YYYY-MM-DD). |
+| <code>public static ValidationResult ValidateApiKey(string? value);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:121](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L121) | Validates an API key format. |
+| <code>public static ValidationResult ValidateUrl(string? value, string fieldName = &quot;URL&quot;);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:138](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L138) | Validates a URL format. |
+| <code>public static ValidationResult ValidatePort(int? value);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:154](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L154) | Validates a network port number. |
+| <code>public static ValidationResult ValidateFilePath(string? value);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:170](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L170) | Validates a file path format. |
+| <code>public static ValidationResult ValidateNumericRange(double? value, double min, double max, string fieldName = &quot;Value&quot;);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:193](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L193) | Validates that a numeric value is within a specified range. |
+
+## IDesktopPreferenceSurface
+
+Qualified name: <code>Meridian.Ui.Services.Services.IDesktopPreferenceSurface</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:211](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L211).
+
+The desktop preferences the host sync reads and writes: the shell theme, density, keyboard shortcut overrides and notification settings. Implemented by the WPF shell over its theme, desktop shell preference, keyboard shortcut and notification services.
+
+```csharp
+public interface IDesktopPreferenceSurface
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>AppTheme Theme { get; }</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:213](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L213) |  |
+| <code>ShellDensityMode Density { get; }</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:215](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L215) |  |
+| <code>void ApplyTheme(AppTheme theme);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:217](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L217) |  |
+| <code>void ApplyDensity(ShellDensityMode density);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:219](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L219) |  |
+| <code>event EventHandler? PreferenceChanged;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:222](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L222) | Raised after the operator changes the theme or density on this desktop. |
+| <code>IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; ShortcutOverrides { get; }</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:225](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L225) | The shortcut overrides in effect on this desktop: each shortcut&#x27;s difference from its default. |
+| <code>void ApplyShortcutOverrides(IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; overrides);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:231](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L231) | Replaces this desktop&#x27;s shortcut overrides (empty restores every default) and keeps them in the local desktop preferences, so they still apply when the host cannot be reached. |
+| <code>event EventHandler? ShortcutOverridesChanged;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:234](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L234) | Raised after the operator rebinds, disables or resets a shortcut on this desktop. |
+| <code>NotificationSettings Notifications { get; }</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:237](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L237) | The notification settings in effect on this desktop. |
+| <code>void ApplyNotifications(NotificationSettings settings);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:240](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L240) | Replaces this desktop&#x27;s notification settings. |
+| <code>event EventHandler? NotificationsChanged;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:243](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L243) | Raised after the notification settings change on this desktop. |
+
+## InfoBarConstants
+
+Qualified name: <code>Meridian.Ui.Services.Services.InfoBarConstants</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:19](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L19).
+
+Duration configuration for different severity levels. Shared across InfoBarService implementations.
+
+```csharp
+public static class InfoBarConstants
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int InfoDurationMs = 4000;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:22](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L22) | Informational messages - 4 seconds (user acknowledgment optional). |
+| <code>public const int SuccessDurationMs = 3000;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:25](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L25) | Success messages - 3 seconds (quick confirmation). |
+| <code>public const int WarningDurationMs = 6000;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:28](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L28) | Warning messages - 6 seconds (user should notice). |
+| <code>public const int ErrorDurationMs = 10000;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:31](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L31) | Error messages - 10 seconds (requires attention). |
+| <code>public const int CriticalDurationMs = 0;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:34](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L34) | Critical errors - no auto-dismiss (manual close required). |
+| <code>public static int GetDurationForSeverity(InfoBarSeverityLevel severity) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:37](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L37) | Gets the recommended duration for a severity level. |
+
+## InfoBarSeverityLevel
+
+Qualified name: <code>Meridian.Ui.Services.Services.InfoBarSeverityLevel</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:7](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L7).
+
+Platform-agnostic severity levels for info bar notifications. Shared across desktop platforms.
+
+```csharp
+public enum InfoBarSeverityLevel : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Informational</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:9](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L9) |  |
+| <code>Success</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:10](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L10) |  |
+| <code>Warning</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:11](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L11) |  |
+| <code>Error</code> | [src/Meridian.Ui.Services/Services/InfoBarConstants.cs:12](../../../../src/Meridian.Ui.Services/Services/InfoBarConstants.cs#L12) |  |
+
+## OmsIntegrationApiHandler
+
+Qualified name: <code>Meridian.Ui.Services.Services.Integrations.OmsIntegrationApiHandler</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:12](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L12).
+
+Handles OMS/EMS ingestion with bounded in-memory deduplication, diagnostics, signing keys, and audit history.
+
+```csharp
+public sealed class OmsIntegrationApiHandler : IOmsIntegrationApiHandler
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public OmsIntegrationApiHandler(TimeProvider? timeProvider = null);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:26](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L26) |  |
+| <code>public OmsIngestionResult Ingest(OmsInboundMessage message, OmsRequestSignatureInput? signature = null);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:32](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L32) |  |
+| <code>public IReadOnlyCollection&lt;OmsInboundMessage&gt; Snapshot() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:68](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L68) |  |
+| <code>public IReadOnlyCollection&lt;OmsAdapterDiagnostics&gt; AdapterDiagnostics();</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:70](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L70) |  |
+| <code>public OmsSyncConflictResult ResolveSyncConflict(OmsSyncRequest request, OmsRequestSignatureInput? signature = null);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:112](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L112) |  |
+| <code>public IReadOnlyCollection&lt;OmsIntegrationAuditEntry&gt; AuditTrail(int take = 200) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:136](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L136) |  |
+| <code>public OmsRequestSignatureResult VerifyRequestSignature(OmsRequestSignatureInput signature);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:139](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L139) |  |
+| <code>public OmsKeyRotationResult RotateSigningKey(OmsKeyRotationRequest request);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:161](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L161) |  |
+| <code>public static string ComputeSignature(byte[] key, string timestampUtc, string canonicalPayload);</code> | [src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs:234](../../../../src/Meridian.Ui.Services/Services/Integrations/OmsIntegrationApiHandler.cs#L234) |  |
+
 ## OmsIntegrationServiceCollectionExtensions
 
 Qualified name: <code>Meridian.Ui.Services.Services.Integrations.OmsIntegrationServiceCollectionExtensions</code>. Kind: `class`.
@@ -45,6 +406,25 @@ Declared public members:
 | <code>public List&lt;string&gt; Issues { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:209](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L209) |  |
 | <code>public List&lt;string&gt; Recommendations { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:210](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L210) |  |
 | <code>public DateTime CheckedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:211](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L211) |  |
+
+## IOperatorPreferencesApi
+
+Qualified name: <code>Meridian.Ui.Services.Services.IOperatorPreferencesApi</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:167](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L167).
+
+Reads and replaces the signed-in operator&#x27;s presentation preferences on the host.
+
+```csharp
+public interface IOperatorPreferencesApi
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;OperatorPreferencesDto?&gt; GetAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:170](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L170) | The stored set, or null when the host could not be read (no session, older host, offline). |
+| <code>Task&lt;OperatorPreferencesDto?&gt; SaveAsync(OperatorPreferenceValuesDto preferences, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:173](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L173) | Replaces the stored set. Returns the saved set, or null when the save failed. |
 
 ## IQualityArchiveStore
 
@@ -187,7 +567,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.Services.NotificationEventArgs</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:42](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L42).
+Source: [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:47](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L47).
 
 Event args for notification received.
 
@@ -199,17 +579,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string Title { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:44](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L44) |  |
-| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:45](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L45) |  |
-| <code>public NotificationType Type { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:46](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L46) |  |
-| <code>public string Tag { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:47](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L47) |  |
-| <code>public int DurationMs { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:48](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L48) |  |
+| <code>public string Title { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:49](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L49) |  |
+| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:50](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L50) |  |
+| <code>public NotificationType Type { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:51](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L51) |  |
+| <code>public string Tag { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:52](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L52) |  |
+| <code>public int DurationMs { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:53](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L53) |  |
 
 ## NotificationHistoryItem
 
 Qualified name: <code>Meridian.Ui.Services.Services.NotificationHistoryItem</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:29](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L29).
+Source: [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:34](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L34).
 
 Notification history item.
 
@@ -221,18 +601,18 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string Title { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:31](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L31) |  |
-| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:32](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L32) |  |
-| <code>public NotificationType Type { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:33](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L33) |  |
-| <code>public DateTime Timestamp { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:34](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L34) |  |
-| <code>public string Tag { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:35](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L35) |  |
-| <code>public bool IsRead { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:36](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L36) |  |
+| <code>public string Title { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:36](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L36) |  |
+| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:37](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L37) |  |
+| <code>public NotificationType Type { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:38](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L38) |  |
+| <code>public DateTime Timestamp { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:39](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L39) |  |
+| <code>public string Tag { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:40](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L40) |  |
+| <code>public bool IsRead { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:41](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L41) |  |
 
 ## NotificationServiceBase
 
 Qualified name: <code>Meridian.Ui.Services.Services.NotificationServiceBase</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:57](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L57).
+Source: [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:62](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L62).
 
 Abstract base class for notification management shared between platforms. Provides smart suppression (deduplication + rate limiting), history tracking, settings management, and domain-specific notification methods. Part of Phase 2 service extraction.
 
@@ -244,34 +624,36 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public event EventHandler&lt;NotificationEventArgs&gt;? NotificationReceived;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:72](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L72) |  |
-| <code>public void ShowNotification(string title, string message, NotificationType type = NotificationType.Info, int durationMs = 5000);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:74](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L74) |  |
-| <code>public Task NotifyErrorAsync(string title, string message, Exception? exception = null);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:149](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L149) |  |
-| <code>public void NotifySuccess(string title, string message) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:161](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L161) |  |
-| <code>public void NotifyWarning(string title, string message);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:164](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L164) |  |
-| <code>public Task NotifyWarningAsync(string title, string message);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:171](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L171) |  |
-| <code>public Task NotifyAsync(string title, string message, NotificationType type = NotificationType.Info);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:177](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L177) |  |
-| <code>public void NotifyInfo(string title, string message) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:183](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L183) |  |
-| <code>public Task NotifyConnectionStatusAsync(bool connected, string providerName, string? details = null);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:186](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L186) |  |
-| <code>public Task NotifyBackfillCompleteAsync(bool success, int symbolCount, int barsWritten, TimeSpan duration);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:207](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L207) |  |
-| <code>public Task NotifyScheduledJobAsync(string jobName, bool started, bool success = true);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:223](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L223) |  |
-| <code>public Task NotifyDataGapAsync(string symbol, DateTime gapStart, DateTime gapEnd, int missingBars);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:238](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L238) |  |
-| <code>public Task NotifyStorageWarningAsync(double usedPercent, long freeSpaceBytes);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:252](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L252) |  |
-| <code>public void SendTestNotification() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:268](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L268) |  |
-| <code>public void UpdateSettings(NotificationSettings settings) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:271](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L271) |  |
-| <code>public NotificationSettings GetSettings() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:274](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L274) |  |
-| <code>public IReadOnlyList&lt;NotificationHistoryItem&gt; GetHistory();</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:276](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L276) |  |
-| <code>public void ClearHistory();</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:282](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L282) |  |
-| <code>public void MarkAsRead(int index);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:293](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L293) |  |
-| <code>public int GetUnreadCount();</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:302](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L302) |  |
+| <code>public event EventHandler&lt;NotificationEventArgs&gt;? NotificationReceived;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:89](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L89) |  |
+| <code>public event EventHandler? SettingsChanged;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:92](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L92) | Raised after UpdateSettings replaces the settings. |
+| <code>public void ShowNotification(string title, string message, NotificationType type = NotificationType.Info, int durationMs = 5000);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:94](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L94) |  |
+| <code>public Task NotifyErrorAsync(string title, string message, Exception? exception = null);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:169](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L169) |  |
+| <code>public void NotifySuccess(string title, string message) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:181](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L181) |  |
+| <code>public void NotifyWarning(string title, string message);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:184](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L184) |  |
+| <code>public Task NotifyWarningAsync(string title, string message);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:191](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L191) |  |
+| <code>public Task NotifyAsync(string title, string message, NotificationType type = NotificationType.Info);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:197](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L197) |  |
+| <code>public void NotifyInfo(string title, string message) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:203](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L203) |  |
+| <code>public Task NotifyConnectionStatusAsync(bool connected, string providerName, string? details = null);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:206](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L206) |  |
+| <code>public Task NotifyBackfillCompleteAsync(bool success, int symbolCount, int barsWritten, TimeSpan duration);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:227](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L227) |  |
+| <code>public Task NotifyScheduledJobAsync(string jobName, bool started, bool success = true);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:243](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L243) |  |
+| <code>public Task NotifyDataGapAsync(string symbol, DateTime gapStart, DateTime gapEnd, int missingBars);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:258](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L258) |  |
+| <code>public Task NotifyStorageWarningAsync(double usedPercent, long freeSpaceBytes);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:272](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L272) |  |
+| <code>public void SendTestNotification() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:288](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L288) |  |
+| <code>public void UpdateSettings(NotificationSettings settings);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:291](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L291) |  |
+| <code>public NotificationSettings GetSettings() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:297](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L297) |  |
+| <code>public IReadOnlyList&lt;NotificationHistoryItem&gt; GetHistory();</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:299](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L299) |  |
+| <code>public void ClearHistory();</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:305](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L305) |  |
+| <code>public void MarkAsRead(int index);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:316](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L316) |  |
+| <code>public int GetUnreadCount();</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:325](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L325) |  |
+| <code>public bool IsQuietHoursNow { get; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:340](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L340) | True while quiet hours hold pop-ups: enabled, and the current time in the operator&#x27;s display time zone falls inside the window. |
 
 ## NotificationSettings
 
 Qualified name: <code>Meridian.Ui.Services.Services.NotificationSettings</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:12](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L12).
+Source: [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:14](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L14).
 
-Notification settings.
+Notification settings. On the desktop these come from the operator&#x27;s host preferences (OperatorNotificationPreferencesDto); quiet hours are read in the operator&#x27;s display time zone (DisplayTimeZone).
 
 ```csharp
 public sealed class NotificationSettings
@@ -281,16 +663,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool Enabled { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:14](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L14) |  |
-| <code>public bool NotifyConnectionStatus { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:15](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L15) |  |
-| <code>public bool NotifyErrors { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:16](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L16) |  |
-| <code>public bool NotifyBackfillComplete { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:17](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L17) |  |
-| <code>public bool NotifyDataGaps { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:18](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L18) |  |
-| <code>public bool NotifyStorageWarnings { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:19](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L19) |  |
-| <code>public string SoundType { get; set; } = &quot;Default&quot;;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:20](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L20) |  |
-| <code>public bool QuietHoursEnabled { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:21](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L21) |  |
-| <code>public TimeSpan QuietHoursStart { get; set; } = new TimeSpan(22, 0, 0);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:22](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L22) |  |
-| <code>public TimeSpan QuietHoursEnd { get; set; } = new TimeSpan(7, 0, 0);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:23](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L23) |  |
+| <code>public bool Enabled { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:16](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L16) |  |
+| <code>public bool NotifyConnectionStatus { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:17](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L17) |  |
+| <code>public bool NotifyErrors { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:18](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L18) |  |
+| <code>public bool NotifyBackfillComplete { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:19](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L19) |  |
+| <code>public bool NotifyDataGaps { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:20](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L20) |  |
+| <code>public bool NotifyStorageWarnings { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:21](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L21) |  |
+| <code>public string SoundType { get; set; } = &quot;Default&quot;;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:22](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L22) |  |
+| <code>public bool QuietHoursEnabled { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:23](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L23) |  |
+| <code>public TimeSpan QuietHoursStart { get; set; } = new TimeSpan(22, 0, 0);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:24](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L24) |  |
+| <code>public TimeSpan QuietHoursEnd { get; set; } = new TimeSpan(7, 0, 0);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:25](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L25) |  |
+| <code>public NotificationSettings Copy() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:28](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L28) | An independent copy, so a change can be built without touching the settings in use. |
 
 ## OnboardingTip
 
@@ -313,6 +696,26 @@ Declared public members:
 | <code>public string Content { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:24](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L24) |  |
 | <code>public string TargetElement { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:25](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L25) |  |
 | <code>public int Order { get; set; }</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:26](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L26) |  |
+
+## OperatorPreferencesApiClient
+
+Qualified name: <code>Meridian.Ui.Services.Services.OperatorPreferencesApiClient</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:177](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L177).
+
+Desktop client for UiApiRoutes.WorkstationOperatorPreferences.
+
+```csharp
+public sealed class OperatorPreferencesApiClient : IOperatorPreferencesApi
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public OperatorPreferencesApiClient(ApiClientService apiClient);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:181](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L181) |  |
+| <code>public async Task&lt;OperatorPreferencesDto?&gt; GetAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:186](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L186) |  |
+| <code>public async Task&lt;OperatorPreferencesDto?&gt; SaveAsync(OperatorPreferenceValuesDto preferences, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:194](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L194) |  |
 
 ## PeriodicRefreshScheduler
 
@@ -721,411 +1124,3 @@ Enum declarations:
 | --- | --- | --- |
 | <code>Standard = 0</code> | [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:11](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L11) |  |
 | <code>Compact = 1</code> | [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:12](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L12) |  |
-
-## SimpleStatus
-
-Qualified name: <code>Meridian.Ui.Services.Services.SimpleStatus</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:14](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L14).
-
-Simplified status for display in the desktop UI. Includes provenance and staleness tracking (P0: explicit staleness + source provenance).
-
-```csharp
-public sealed class SimpleStatus
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public long Published { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:16](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L16) |  |
-| <code>public long Dropped { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:17](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L17) |  |
-| <code>public long Integrity { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:18](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L18) |  |
-| <code>public long Historical { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:19](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L19) |  |
-| <code>public StatusProviderInfo? Provider { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:20](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L20) |  |
-| <code>public DateTime? RetrievedAtUtc { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:25](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L25) | UTC timestamp when this status snapshot was retrieved from the backend. |
-| <code>public string? SourceProvider { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:31](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L31) | Name of the data source provider that produced these metrics. Null if sourced from fixture/offline data. |
-| <code>public bool IsStale { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:36](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L36) | Whether this status data is considered stale (backend reported stale or too old). |
-| <code>public double AgeSeconds { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:41](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L41) | Age of the data in seconds since last backend update. |
-| <code>public string DataProvenance { get; set; } = &quot;unknown&quot;;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:47](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L47) | Data provenance: &quot;live&quot;, &quot;cached&quot;, &quot;fixture&quot;, or &quot;offline&quot;. Indicates the origin of the data being displayed. |
-
-## SourceRanking
-
-Qualified name: <code>Meridian.Ui.Services.Services.SourceRanking</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:133](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L133).
-
-Ranks a source using its quality score, latency, and completeness.
-
-```csharp
-public sealed class SourceRanking
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Source { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:135](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L135) |  |
-| <code>public string Provider { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:136](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L136) |  |
-| <code>public double QualityScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:137](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L137) |  |
-| <code>public double Latency { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:138](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L138) |  |
-| <code>public double Completeness { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:139](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L139) |  |
-| <code>public int Rank { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:140](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L140) |  |
-
-## StatusChangedEventArgs
-
-Qualified name: <code>Meridian.Ui.Services.Services.StatusChangedEventArgs</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:89](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L89).
-
-Event arguments for status change events.
-
-```csharp
-public sealed class StatusChangedEventArgs : EventArgs
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string PreviousStatus { get; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:91](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L91) |  |
-| <code>public string NewStatus { get; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:92](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L92) |  |
-| <code>public DateTime Timestamp { get; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:93](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L93) |  |
-| <code>public StatusChangedEventArgs(string previousStatus, string newStatus);</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:95](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L95) |  |
-
-## StatusProviderInfo
-
-Qualified name: <code>Meridian.Ui.Services.Services.StatusProviderInfo</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:53](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L53).
-
-Provider status information.
-
-```csharp
-public sealed class StatusProviderInfo
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? ActiveProvider { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:55](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L55) |  |
-| <code>public bool IsConnected { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:56](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L56) |  |
-| <code>public int ConnectionCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:57](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L57) |  |
-| <code>public DateTimeOffset? LastHeartbeat { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:58](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L58) |  |
-| <code>public string? LifecycleState { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:59](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L59) |  |
-| <code>public string? WebSocketState { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:60](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L60) |  |
-| <code>public bool? IsReconnecting { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:61](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L61) |  |
-| <code>public DateTimeOffset? LastHeartbeatReceivedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:62](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L62) |  |
-| <code>public DateTimeOffset? LastMessageReceivedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:63](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L63) |  |
-| <code>public DateTimeOffset? LastReconnectAttemptAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:64](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L64) |  |
-| <code>public int? ReconnectAttempts { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:65](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L65) |  |
-| <code>public string? LastFailureKind { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:66](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L66) |  |
-| <code>public IReadOnlyList&lt;string&gt; AvailableProviders { get; set; } = new List&lt;string&gt;();</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:67](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L67) |  |
-| <code>public string DisplayStatus =&gt; …;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:69](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L69) |  |
-
-## StatusServiceBase
-
-Qualified name: <code>Meridian.Ui.Services.Services.StatusServiceBase</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:158](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L158).
-
-Abstract base class for status management shared between platforms. Provides shared status tracking, live monitoring loop, and API polling logic. Platform-specific HTTP client and logging are delegated to derived classes. Part of Phase 2 service extraction.
-
-```csharp
-public abstract class StatusServiceBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string BaseUrl { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:172](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L172) |  |
-| <code>public string CurrentStatus { get; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:178](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L178) |  |
-| <code>public DateTime? LastSuccessfulUpdate =&gt; …;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:187](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L187) |  |
-| <code>public bool IsBackendReachable =&gt; …;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:188](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L188) |  |
-| <code>public double? SecondsSinceLastUpdate =&gt; …;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:190](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L190) |  |
-| <code>public bool IsDataStale =&gt; …;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:195](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L195) |  |
-| <code>public bool IsMonitoring =&gt; …;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:198](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L198) |  |
-| <code>public event EventHandler&lt;StatusChangedEventArgs&gt;? StatusChanged;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:200](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L200) |  |
-| <code>public event EventHandler&lt;LiveStatusEventArgs&gt;? LiveStatusReceived;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:201](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L201) |  |
-| <code>public event EventHandler&lt;bool&gt;? BackendReachabilityChanged;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:202](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L202) |  |
-| <code>public void StartLiveMonitoring(int intervalSeconds = 2);</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:214](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L214) |  |
-| <code>public void StopLiveMonitoring();</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:221](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L221) |  |
-| <code>public async Task&lt;SimpleStatus?&gt; GetStatusAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:334](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L334) |  |
-| <code>public async Task&lt;StatusProviderInfo?&gt; GetProviderStatusAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:386](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L386) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ProviderInfo&gt;&gt; GetAvailableProvidersAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:427](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L427) |  |
-| <code>public void UpdateStatus(string status);</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:447](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L447) |  |
-| <code>public void SetBusy(string operation) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:465](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L465) |  |
-| <code>public void SetReady() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:466](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L466) |  |
-| <code>public void SetError(string errorMessage) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:467](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L467) |  |
-| <code>public void SetConnectionStatus(bool isConnected, string? providerName = null);</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:469](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L469) |  |
-
-## SymbolQualityReport
-
-Qualified name: <code>Meridian.Ui.Services.Services.SymbolQualityReport</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:60](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L60).
-
-Groups a symbol&#x27;s quality scores, issues, gaps, and completeness breakdown.
-
-```csharp
-public sealed class SymbolQualityReport
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:62](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L62) |  |
-| <code>public double OverallScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:63](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L63) |  |
-| <code>public Dictionary&lt;string, double&gt; ScoresByType { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:64](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L64) |  |
-| <code>public List&lt;QualityIssue&gt; Issues { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:65](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L65) |  |
-| <code>public List&lt;QualityDataGap&gt; Gaps { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:66](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L66) |  |
-| <code>public QualityCompletenessReport Completeness { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:67](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L67) |  |
-
-## SymbolQualitySummary
-
-Qualified name: <code>Meridian.Ui.Services.Services.SymbolQualitySummary</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:28](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L28).
-
-Describes a symbol&#x27;s quality score, status, event count, and detected gaps.
-
-```csharp
-public sealed class SymbolQualitySummary
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:30](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L30) |  |
-| <code>public double QualityScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:31](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L31) |  |
-| <code>public string Status { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:32](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L32) |  |
-| <code>public int EventCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:33](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L33) |  |
-| <code>public int GapCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:34](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L34) |  |
-| <code>public DateTime LastUpdate { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:35](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L35) |  |
-
-## ThemeServiceBase
-
-Qualified name: <code>Meridian.Ui.Services.Services.ThemeServiceBase</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/ThemeServiceBase.cs:11](../../../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs#L11).
-
-Abstract base class for theme management shared across desktop applications. Provides shared theme state management, toggle logic, and delegates platform-specific theme application and event raising to derived classes. Part of Phase 6C.2 service deduplication (ROADMAP item 6C.2).
-
-```csharp
-public abstract class ThemeServiceBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public AppTheme CurrentTheme =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ThemeServiceBase.cs:16](../../../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs#L16) | Gets the current application theme. |
-| <code>public void SetTheme(AppTheme theme);</code> | [src/Meridian.Ui.Services/Services/ThemeServiceBase.cs:30](../../../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs#L30) | Sets the application theme to the specified value. No-ops if the theme is already set to the requested value. |
-| <code>public void ToggleTheme();</code> | [src/Meridian.Ui.Services/Services/ThemeServiceBase.cs:46](../../../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs#L46) | Toggles between light and dark themes. |
-| <code>public virtual AppTheme GetSystemTheme() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ThemeServiceBase.cs:57](../../../../src/Meridian.Ui.Services/Services/ThemeServiceBase.cs#L57) | Gets the system theme preference. |
-
-## TooltipContent
-
-Qualified name: <code>Meridian.Ui.Services.Services.TooltipContent</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/TooltipContent.cs:33](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L33).
-
-Provides shared feature help content and onboarding tips data. This is the single source of truth for all tooltip content used across desktop platforms.
-
-```csharp
-public static class TooltipContent
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static FeatureHelp GetFeatureHelp(string featureKey);</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:38](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L38) | Gets contextual help for a feature by key. |
-| <code>public static IReadOnlyList&lt;OnboardingTip&gt; GetOnboardingTips(string pageKey);</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:51](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L51) | Gets onboarding tips for a page by key. |
-| <code>public static string GetTooltipText(string featureKey);</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:59](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L59) | Gets formatted tooltip text for a feature (description + tips). |
-| <code>public static readonly Dictionary&lt;string, FeatureHelp&gt; FeatureHelpContent = new () {[&quot;dashboard&quot;]= new FeatureHelp { Title = &quot;Dashboard&quot;, Description = &quot;The Dashboard provides a real-time overview of your market data collection. Monitor connection status, event throughput, data quality, and active symbol subscriptions at a glance.&quot;, Tips = new[] { &quot;Use keyboard shortcut Ctrl+D to quickly navigate here&quot;, &quot;The sparklines show trends over the last 30 seconds&quot;, &quot;Click on any metric card to see detailed analysis&quot; }, KeyboardShortcuts = new Dictionary&lt;string, string&gt;{[&quot;Ctrl+S&quot;]= &quot;Start collector&quot;, [&quot;Ctrl+Shift+S&quot;]= &quot;Stop collector&quot;, [&quot;F5&quot;]= &quot;Refresh data&quot; } }, [&quot;backfill&quot;]= new FeatureHelp { Title = &quot;Historical Backfill&quot;, Description = &quot;Download historical market data from various providers. Use this to fill gaps in your data or bootstrap a new symbol with historical bars.&quot;, Tips = new[] { &quot;Use &#x27;composite&#x27; provider to automatically try multiple sources&quot;, &quot;Drag and drop symbols to prioritize download order&quot;, &quot;Schedule recurring backfills for automatic gap filling&quot; }, KeyboardShortcuts = new Dictionary&lt;string, string&gt;{[&quot;Ctrl+B&quot;]= &quot;Navigate to Backfill&quot;, [&quot;Ctrl+Enter&quot;]= &quot;Start backfill&quot;, [&quot;Escape&quot;]= &quot;Cancel backfill&quot; } }, [&quot;symbols&quot;]= new FeatureHelp { Title = &quot;Symbol Management&quot;, Description = &quot;Manage your symbol subscriptions. Add new symbols, configure subscription types (trades, depth, quotes), and set exchange mappings.&quot;, Tips = new[] { &quot;Enter multiple symbols separated by commas&quot;, &quot;Use the Index Subscription page to add market indices&quot;, &quot;Import from CSV files using Portfolio Import&quot; } }, [&quot;provider&quot;]= new FeatureHelp { Title = &quot;Data Provider Configuration&quot;, Description = &quot;Configure your active data provider and connection settings. Each provider has different capabilities and rate limits.&quot;, Tips = new[] { &quot;Store API keys in environment variables for security&quot;, &quot;Use Multi-Source for automatic failover between providers&quot;, &quot;Check provider health status before starting collection&quot; } }, [&quot;storage&quot;]= new FeatureHelp { Title = &quot;Storage Management&quot;, Description = &quot;Monitor storage usage, configure retention policies, and manage data archival. Keep your data organized and disk space optimized.&quot;, Tips = new[] { &quot;Use Archive Health to verify data integrity&quot;, &quot;Configure automatic cleanup with retention policies&quot;, &quot;Export data to Parquet for efficient analysis&quot; } }, [&quot;dataquality&quot;]= new FeatureHelp { Title = &quot;Data Quality Monitoring&quot;, Description = &quot;Monitor the quality of your collected data. Track gaps, anomalies, and integrity issues to ensure reliable data for analysis.&quot;, Tips = new[] { &quot;Quality scores below 95% may indicate issues&quot;, &quot;Set up alerts for automatic gap detection&quot;, &quot;Use the integrity check to verify file consistency&quot; } }, [&quot;leanintegration&quot;]= new FeatureHelp { Title = &quot;QuantConnect Lean Integration&quot;, Description = &quot;Run backtests using QuantConnect&#x27;s Lean Engine with your collected data. Test trading strategies against historical market data.&quot;, Tips = new[] { &quot;Ensure your data covers the backtest date range&quot;, &quot;Configure Lean paths in the integration settings&quot;, &quot;Results are exported to the configured output folder&quot; } } };</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:69](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L69) |  |
-| <code>public static readonly Dictionary&lt;string, OnboardingTip[]&gt; OnboardingTipsContent = new () {[&quot;Dashboard&quot;]= new[] { new OnboardingTip { Id = &quot;dashboard_welcome&quot;, Title = &quot;Welcome to Meridian&quot;, Content = &quot;This dashboard shows your real-time data collection status. Start by configuring a data provider.&quot;, TargetElement = &quot;CollectorStatusBadge&quot;, Order = 1 }, new OnboardingTip { Id = &quot;dashboard_metrics&quot;, Title = &quot;Monitoring Metrics&quot;, Content = &quot;These cards show key metrics: events published, dropped, integrity issues, and historical bars.&quot;, TargetElement = &quot;MetricsGrid&quot;, Order = 2 }, new OnboardingTip { Id = &quot;dashboard_quickadd&quot;, Title = &quot;Quick Add Symbol&quot;, Content = &quot;Quickly add a symbol to your subscription list. Type a symbol like AAPL or SPY and press Enter.&quot;, TargetElement = &quot;QuickAddSymbolBox&quot;, Order = 3 } }, [&quot;Backfill&quot;]= new[] { new OnboardingTip { Id = &quot;backfill_provider&quot;, Title = &quot;Choose a Provider&quot;, Content = &quot;Select a historical data provider. &#x27;composite&#x27; will try multiple providers automatically.&quot;, TargetElement = &quot;ProviderCombo&quot;, Order = 1 }, new OnboardingTip { Id = &quot;backfill_daterange&quot;, Title = &quot;Select Date Range&quot;, Content = &quot;Use the preset buttons (30d, 90d, YTD) or pick custom dates. Longer ranges take more time.&quot;, TargetElement = &quot;DatePresetPanel&quot;, Order = 2 } }, [&quot;Provider&quot;]= new[] { new OnboardingTip { Id = &quot;provider_apikey&quot;, Title = &quot;API Keys&quot;, Content = &quot;Enter your API credentials. For security, consider using environment variables instead of storing keys directly.&quot;, TargetElement = &quot;ApiKeyInput&quot;, Order = 1 } } };</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:164](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L164) |  |
-
-## TrendDataPoint
-
-Qualified name: <code>Meridian.Ui.Services.Services.TrendDataPoint</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:158](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L158).
-
-Records a timestamped quality score with event and alert counts.
-
-```csharp
-public sealed class TrendDataPoint
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DateTime Timestamp { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:160](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L160) |  |
-| <code>public double Score { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:161](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L161) |  |
-| <code>public int EventCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:162](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L162) |  |
-| <code>public int AlertCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:163](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L163) |  |
-
-## ValidationExtensions
-
-Qualified name: <code>Meridian.Ui.Services.Services.ValidationExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/FormValidationRules.cs:251](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L251).
-
-Extension methods for working with multiple validation results.
-
-```csharp
-public static class ValidationExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ValidationResult Combine(params ValidationResult[] results);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:258](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L258) | Combines multiple validation results, returning the first error or warning found. |
-
-## ValidationResult
-
-Qualified name: <code>Meridian.Ui.Services.Services.ValidationResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/FormValidationRules.cs:206](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L206).
-
-Represents the result of a validation operation.
-
-```csharp
-public sealed class ValidationResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsValid { get; private init; }</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:211](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L211) | Gets whether the validation passed. |
-| <code>public bool IsWarning { get; private init; }</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:216](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L216) | Gets whether this is a warning (valid but with advisory message). |
-| <code>public string Message { get; private init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:221](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L221) | Gets the validation message (empty for success, descriptive for errors/warnings). |
-| <code>public static ValidationResult Success() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:228](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L228) | Creates a successful validation result. |
-| <code>public static ValidationResult Error(string message) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:234](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L234) | Creates a failed validation result with an error message. |
-| <code>public static ValidationResult Warning(string message) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:240](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L240) | Creates a warning validation result (valid but with advisory message). |
-| <code>public static implicit operator bool(ValidationResult result) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:245](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L245) | Implicit conversion to bool for convenient checking. |
-
-## ServiceUrlChangedEventArgs
-
-Qualified name: <code>Meridian.Ui.Services.ServiceUrlChangedEventArgs</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/ApiClientService.cs:791](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L791).
-
-Event args for service URL changes.
-
-```csharp
-public sealed class ServiceUrlChangedEventArgs : EventArgs
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string OldUrl { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:793](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L793) |  |
-| <code>public string NewUrl { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:794](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L794) |  |
-
-## SessionState
-
-Qualified name: <code>Meridian.Ui.Services.SessionState</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:112](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L112).
-
-Session state for restore.
-
-```csharp
-public sealed class SessionState
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ActivePageTag { get; set; } = &quot;Dashboard&quot;;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:114](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L114) |  |
-| <code>public List&lt;WorkspacePage&gt; OpenPages { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:115](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L115) |  |
-| <code>public List&lt;string&gt; RecentPages { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:116](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L116) |  |
-| <code>public Dictionary&lt;string, WidgetPosition&gt; WidgetLayout { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:117](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L117) |  |
-| <code>public Dictionary&lt;string, string&gt; ActiveFilters { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:118](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L118) |  |
-| <code>public Dictionary&lt;string, string&gt; WorkspaceContext { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:119](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L119) |  |
-| <code>public WindowBounds? WindowBounds { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:120](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L120) |  |
-| <code>public DateTime SavedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:121](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L121) |  |
-| <code>public string? ActiveWorkspaceId { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:122](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L122) |  |
-| <code>public WorkstationLayoutState? WorkstationLayout { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:123](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L123) |  |
-| <code>public WorkspaceSummaryStats? CachedSummaryStats { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:126](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L126) |  |
-
-## SetupPreset
-
-Qualified name: <code>Meridian.Ui.Services.SetupPreset</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/SetupWizardService.cs:736](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L736).
-
-Setup preset for quick configuration.
-
-```csharp
-public sealed class SetupPreset
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Id { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:738](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L738) |  |
-| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:739](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L739) |  |
-| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:740](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L740) |  |
-| <code>public string Icon { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:741](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L741) |  |
-| <code>public string[] RecommendedProviders { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:742](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L742) |  |
-| <code>public string[] DefaultSymbols { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:743](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L743) |  |
-| <code>public bool SubscribeTrades { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:744](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L744) |  |
-| <code>public bool SubscribeDepth { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:745](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L745) |  |
-| <code>public bool SubscribeQuotes { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:746](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L746) |  |
-| <code>public int DepthLevels { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:747](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L747) |  |
-| <code>public bool EnableBackfill { get; set; }</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:748](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L748) |  |
-| <code>public string StorageTier { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:749](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L749) |  |
-
-## SetupWizardService
-
-Qualified name: <code>Meridian.Ui.Services.SetupWizardService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/SetupWizardService.cs:13](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L13).
-
-Service for guided setup wizard with preflight connectivity checks. Validates provider credentials and connectivity before enabling services.
-
-```csharp
-public sealed class SetupWizardService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SetupWizardService(ConnectivityProbeOptions? probeOptions = null, ApiClientService? apiClient = null);</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:21](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L21) |  |
-| <code>public async Task&lt;PreflightCheckResult&gt; RunPreflightChecksAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:36](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L36) | Performs preflight checks for all configured providers. |
-| <code>public async Task&lt;ProviderTestResult&gt; TestProviderConnectivityAsync(string provider, Dictionary&lt;string, string&gt; credentials, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:58](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L58) | Tests connectivity to a specific provider. |
-| <code>public IReadOnlyList&lt;SetupPreset&gt; GetSetupPresets();</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:511](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L511) | Gets available setup presets for quick configuration. |
-| <code>public async Task ApplyPresetAsync(SetupPreset preset, string provider, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:611](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L611) | Applies a setup preset to the configuration. |
-| <code>public async Task SaveCredentialsAsync(string provider, Dictionary&lt;string, string&gt; credentials, CancellationToken ct = default, string? connectionId = null);</code> | [src/Meridian.Ui.Services/Services/SetupWizardService.cs:638](../../../../src/Meridian.Ui.Services/Services/SetupWizardService.cs#L638) | Saves provider credentials securely. |
-
-## ShowConfigResponse
-
-Qualified name: <code>Meridian.Ui.Services.ShowConfigResponse</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:680](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L680).
-
-Carries API configuration sections for diagnostic display.
-
-```csharp
-public sealed class ShowConfigResponse
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public List&lt;ConfigSection&gt;? Sections { get; set; }</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:682](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L682) |  |

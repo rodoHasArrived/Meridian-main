@@ -2846,7 +2846,7 @@ export function buildSettingsScreenViewModel(
           value: providerHealth ? formatProviderHealth(providerHealth) : "—",
           tone: !providerHealth ? "muted" : providerHealth.total > 0 && providerHealth.healthy === providerHealth.total ? "success" : "warning"
         },
-        { label: "Active runs", value: String(overview.activeRuns), tone: "default" },
+        { label: "Active runs", value: resolveKpi("system.active-runs", { overview }).value, tone: "default" },
         { label: "Open positions", value: resolveKpi("portfolio.open-positions", { portfolio: payload.portfolio }).value, tone: "default" },
         { label: "Symbols monitored", value: String(overview.symbolsMonitored), tone: "default" },
         { label: "Active backfills", value: String(overview.activeBackfills), tone: "muted" },

@@ -291,6 +291,11 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<Meridian.FinancialOperations.Onboarding.IOnboardingWorkspaceStore>(sp =>
                 new Meridian.FinancialOperations.Onboarding.PostgresOnboardingWorkspaceStore(
                     sp.GetRequiredService<LedgerJournalStoreOptions>()));
+            // Recurring journal schedules and occurrence claims share one lease across processes and hosts
+            // through the ledger database, instead of the workstation's single-filesystem-root file store.
+            services.AddSingleton<Meridian.FinancialOperations.FundAdministration.IRecurringJournalStore>(sp =>
+                new Meridian.FinancialOperations.FundAdministration.PostgresRecurringJournalStore(
+                    sp.GetRequiredService<LedgerJournalStoreOptions>()));
             services.AddSingleton<ILedgerBookService>(sp =>
                 new PostgresLedgerBookService(
                     sp.GetRequiredService<ILedgerJournalStore>(),

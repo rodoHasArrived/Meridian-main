@@ -1500,6 +1500,34 @@ public sealed class RobinhoodBrokerageGatewayTests : IDisposable
     }
 
     [Fact]
+    public async Task GetPositionsAsync_EquityRequestFails_FailsAndStillConsumesTheInFlightOptionsRequest()
+    {
+        var optionsRequested = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var handler = new RecordingHttpHandler((request, _) =>
+        {
+            if (request.RequestUri?.AbsolutePath == "/options/positions/")
+            {
+                optionsRequested.TrySetResult();
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = BuildJson(new { results = Array.Empty<object>() })
+                });
+            }
+
+            return Task.FromResult(request.RequestUri?.AbsolutePath == "/positions/"
+                ? new HttpResponseMessage(HttpStatusCode.InternalServerError) { Content = new StringContent("down") }
+                : new HttpResponseMessage(HttpStatusCode.NotFound) { Content = new StringContent("unexpected") });
+        });
+        var sut = CreateSut(handler);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        var read = () => sut.GetPositionsAsync(cts.Token);
+
+        await read.Should().ThrowAsync<HttpRequestException>();
+        await optionsRequested.Task.WaitAsync(TimeSpan.FromSeconds(5));
+    }
+
+    [Fact]
     public async Task GetPositionsAsync_NoEquityResults_StillReturnsOptionPositions()
     {
         var handler = new RecordingHttpHandler((request, _) => Task.FromResult(request.RequestUri?.AbsolutePath switch

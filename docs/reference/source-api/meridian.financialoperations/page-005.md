@@ -6,6 +6,83 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationsWorkflowChecklistSnapshots
+
+Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.OperationsWorkflowChecklistSnapshots</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowChecklistSnapshots.cs:5](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowChecklistSnapshots.cs#L5).
+
+```csharp
+public static class OperationsWorkflowChecklistSnapshots
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static OperationsWorkflowAuditDraft ForCommit(OperationsWorkflowAuditDraft draft, OperationsContinuityWorkflow workflow);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowChecklistSnapshots.cs:8](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowChecklistSnapshots.cs#L8) | Called only at a boundary committing this exact workflow state and audit together. |
+| <code>public static void Validate(OperationsCloseChecklistSnapshotDto snapshot);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowChecklistSnapshots.cs:20](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowChecklistSnapshots.cs#L20) |  |
+
+## PostgresOperationsContinuityStore
+
+Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.PostgresOperationsContinuityStore</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs:17](../../../../src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs#L17).
+
+Persists operations workflows and audit evidence in PostgreSQL with transactional commit support.
+
+```csharp
+public sealed class PostgresOperationsContinuityStore : IOperationsContinuityRepository, IOperationsWorkflowAuditStore, IOperationsContinuityWorkflowStartCommitStore, IOperationsContinuityTransactionalCommitStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PostgresOperationsContinuityStore(LedgerJournalStoreOptions options, ITransactionalLedgerJournalStore ledgerJournalStore, IOperationsStatusDerivationService statusDerivation, IFundScopeTenantAccessor? tenantAccessor = null, TenantScopeEnforcementOptions? tenantScope = null);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs:38](../../../../src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs#L38) |  |
+| <code>public async Task SaveAsync(OperationsContinuityWorkflow workflow, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs:65](../../../../src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs#L65) |  |
+| <code>public async Task&lt;OperationsContinuityWorkflow?&gt; GetAsync(Guid workflowId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs:78](../../../../src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs#L78) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;OperationsContinuityWorkflow&gt;&gt; ListAsync(Guid? fundAccountId = null, string? periodId = null, OperationsWorkflowStatusDto? status = null, CancellationToken ct = default, Guid? ledgerBookId = null);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs:106](../../../../src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs#L106) |  |
+| <code>public async Task&lt;OperationsWorkflowAuditDto&gt; AppendAsync(OperationsWorkflowAuditDraft draft, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs:173](../../../../src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs#L173) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;OperationsWorkflowAuditDto&gt;&gt; GetTimelineAsync(Guid workflowId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs:189](../../../../src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs#L189) |  |
+| <code>public async Task&lt;OperationsContinuityTransactionalCommitResult&gt; CommitWorkflowStartAsync(OperationsContinuityWorkflow workflow, OperationsWorkflowAuditDraft auditDraft, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs:227](../../../../src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs#L227) |  |
+| <code>public async Task&lt;OperationsContinuityTransactionalCommitResult&gt; CommitWorkflowTransitionAsync(OperationsContinuityWorkflow workflow, OperationsWorkflowAuditDraft auditDraft, bool persistWorkflowState, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs:251](../../../../src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs#L251) |  |
+| <code>public async Task&lt;OperationsContinuityTransactionalCommitResult&gt; CommitLedgerPostingAsync(OperationsContinuityWorkflow workflow, OperationsWorkflowAuditDraft auditDraft, LedgerJournalEntryWrite journalEntry, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs:281](../../../../src/Meridian.FinancialOperations/OperationsContinuity/PostgresOperationsContinuityStore.cs#L281) |  |
+
+## AutomatedJournalCapitalAccountReconciliationScope
+
+Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.AutomatedJournalCapitalAccountReconciliationScope</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs:18](../../../../src/Meridian.FinancialOperations/PrivateCapital/LedgerCapitalAccountReconciliationResolver.cs#L18).
+
+Exact server-owned scope used to resolve the capital-account tie-out that supports one fee-accrual execution. The evaluation timestamp is the actual execution/review time, not the schedule&#x27;s original due timestamp.
+
+```csharp
+public sealed record AutomatedJournalCapitalAccountReconciliationScope(string TenantId, string CompanyId, string FundProfileId, Guid LedgerBookId, string EntityId, string PeriodId, string Currency, DateTimeOffset EvaluatedAtUtc);
+```
+
+## CommitmentRollForwardCalculator
+
+Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.CommitmentRollForwardCalculator</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs:12](../../../../src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs#L12).
+
+Folds posted private-capital activity against an investor commitment into the uncalled-commitment roll-forward, enforcing the invariant net-called + uncalled + expired = total on every step. Pure and deterministic: the same events always produce the same steps.
+
+```csharp
+public static class CommitmentRollForwardCalculator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string InvariantBreachIssueCode = &quot;private-capital.commitment-invariant-breach&quot;;</code> | [src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs:14](../../../../src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs#L14) |  |
+| <code>public const string OverCallIssueCode = &quot;private-capital.commitment-over-call&quot;;</code> | [src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs:15](../../../../src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs#L15) |  |
+| <code>public const string OverExpiryIssueCode = &quot;private-capital.commitment-over-expiry&quot;;</code> | [src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs:16](../../../../src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs#L16) |  |
+| <code>public static CommitmentRollForward Build(InvestorCommitment commitment, IReadOnlyList&lt;CommitmentActivityEvent&gt; events, IReadOnlyList&lt;CommitmentExpiryEvent&gt;? expiryEvents = null);</code> | [src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs:21](../../../../src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs#L21) | Builds the roll-forward for one commitment from dated activity and governed expiry events. |
+| <code>public static CommitmentRollForward BuildFromFundEvents(InvestorCommitment commitment, IReadOnlyList&lt;PrivateCapitalFundEventDto&gt; fundEvents, Func&lt;PrivateCapitalFundEventDto, DistributionRecallability&gt;? recallabilityClassifier = null, IReadOnlyList&lt;CommitmentExpiryEvent&gt;? expiryEvents = null, bool includeUnposted = false);</code> | [src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs:159](../../../../src/Meridian.FinancialOperations/PrivateCapital/CommitmentRollForwardCalculator.cs#L159) | Adapts the private-capital fund-event projection for one commitment. Events are matched by capital account (and investor when both sides declare one) in the commitment currency; recallability is read from the supplied classifier because the projection does not carry it structurally (it rides journal metadata tags). |
+
 ## DefaultInterestCalculator
 
 Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.DefaultInterestCalculator</code>. Kind: `class`.
@@ -797,78 +874,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;ReadOnlyMemory&lt;byte&gt;&gt; FetchStatementAsync(string token, string queryId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexWebServiceClient.cs:38](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexWebServiceClient.cs#L38) |  |
-
-## IIbFlexWebServiceClient
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.IbFlex.IIbFlexWebServiceClient</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexWebServiceClient.cs:11](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexWebServiceClient.cs#L11).
-
-Fetches Interactive Brokers Flex statement payloads for the configured query request.
-
-```csharp
-public interface IIbFlexWebServiceClient
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;ReadOnlyMemory&lt;byte&gt;&gt; FetchStatementAsync(string token, string queryId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexWebServiceClient.cs:13](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/IbFlex/IbFlexWebServiceClient.cs#L13) |  |
-
-## IFetchingStatementConnector
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.IFetchingStatementConnector</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:232](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L232).
-
-A connector that can pull statements from a remote source. Fetch yields a retained document that IStatementConnector.ParseAsync then consumes, keeping a single parse path and raw evidence for every import regardless of origin. A connector must not silently ignore StatementFetchRequest.UntilExclusive.
-
-```csharp
-public interface IFetchingStatementConnector : IStatementConnector
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;StatementSourceDocument&gt; FetchAsync(StatementFetchRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:234](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L234) |  |
-
-## IStatementConnector
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.IStatementConnector</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:195](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L195).
-
-Parses a source statement document into normalized statement entities and parse issues.
-
-```csharp
-public interface IStatementConnector
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>StatementConnectorDescriptor Descriptor { get; }</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:197](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L197) |  |
-| <code>bool CanHandle(StatementSourceDocument document);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:200](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L200) | Extension and content sniffing; used for connector auto-detection. |
-| <code>Task&lt;StatementParseResult&gt; ParseAsync(StatementSourceDocument document, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:202](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L202) |  |
-
-## IStatementFetchIngestionAuthority
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.IStatementFetchIngestionAuthority</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs:50](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs#L50).
-
-Compatibility seam used by the connector scheduler to reauthorize retained account ownership before provider access and then enter the existing statement reconciliation report workflow. Implementations must not commit through a parallel import path.
-
-```csharp
-public interface IStatementFetchIngestionAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;StatementAccountingScope&gt; AuthorizeAsync(StatementFetchAuthorizationCommand command, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs:52](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs#L52) |  |
-| <code>Task&lt;StatementImportCommitResultDto&gt; IngestAsync(StatementFetchIngestionCommand command, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs:56](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs#L56) |  |

@@ -129,6 +129,45 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_AttributionPeriodComparisonRoute_ShouldReturnAComparison()
+    {
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services), currentUserPermissions: UserPermission.ViewStrategies);
+        await app.Services.GetRequiredService<IStrategyRepository>().RecordRunAsync(StrategyRunDrillInTests_BuildRunWithAttribution("drillattr-period-1"));
+        var client = app.GetTestClient();
+
+        var response = await client.GetAsync("/api/workstation/runs/drillattr-period-1/attribution/period-comparison");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var doc = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+        // The fixture run retains summary results only, so the comparison says why it is unavailable.
+        doc.RootElement.GetProperty("status").GetString().Should().Be("Unavailable");
+        doc.RootElement.GetProperty("reason").GetString().Should().Contain("summary results only");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_AttributionPeriodComparisonRoute_RejectsBadInputAndUnknownRuns()
+    {
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services), currentUserPermissions: UserPermission.ViewStrategies);
+        await app.Services.GetRequiredService<IStrategyRepository>().RecordRunAsync(StrategyRunDrillInTests_BuildRunWithAttribution("drillattr-period-2"));
+        var client = app.GetTestClient();
+
+        (await client.GetAsync("/api/workstation/runs/drillattr-period-2/attribution/period-comparison?periodEnd=11-2026"))
+            .StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        (await client.GetAsync("/api/workstation/runs/no-such-run/attribution/period-comparison"))
+            .StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_AttributionPeriodComparisonRoute_WithoutStrategyPermission_IsForbidden()
+    {
+        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services), currentUserPermissions: UserPermission.ModifySecurityMaster);
+
+        var response = await app.GetTestClient().GetAsync("/api/workstation/runs/any-run/attribution/period-comparison");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_LedgerTrialBalanceRoute_ShouldReturnAllLines()
     {
         await using var app = await CreateAppAsync(services => RegisterRunReadServices(services), currentUserPermissions: UserPermission.ViewStrategies);

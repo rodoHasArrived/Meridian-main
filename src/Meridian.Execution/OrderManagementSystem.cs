@@ -51,6 +51,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
     // exposure. Without it, concurrent submissions each evaluate against the same
     // pre-order book and can collectively breach a ceiling none of them breaches alone.
     private readonly SemaphoreSlim _preTradeReservationGate = new(1, 1);
+    private readonly RiskEscalationQueueService? _escalationQueue;
     // Canonical immediate fills reserve cash and units until the portfolio has actually applied
     // the gateway acknowledgement, rather than merely until the order becomes visible.
     private readonly SemaphoreSlim _canonicalSubmissionGate = new(1, 1);
@@ -97,7 +98,9 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
         IOrderSessionPolicy? sessionPolicy = null,
         ExecutionJournal? journal = null,
         IOrderMarketReferenceSource? marketReferences = null,
-        IOrderInstrumentCoverageSource? instrumentCoverage = null)
+        IOrderInstrumentCoverageSource? instrumentCoverage = null,
+        IStrategyRunAuthoritySource? strategyRunAuthority = null,
+        OrderAuthorityOptions? authorityOptions = null)
     {
         _gateway = gateway ?? throw new ArgumentNullException(nameof(gateway));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -109,6 +112,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
 
         _auditTrail = auditTrail;
         _approvalReservations = new OrderApprovalReservations(escalationQueue, logger);
+        _escalationQueue = escalationQueue;
         _portfolioState = portfolioState;
         _sessionPersistence = sessionPersistence;
         _recoveryJournal = new BrokerageOrderRecoveryJournal(recoveryStore);
@@ -134,7 +138,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
         }
         _admissionPolicy = new OrderAdmissionPolicy(
             gateway, logger, brokerageConfiguration, securityMasterGate,
-            operatorControls, liveOrderReadinessGate, portfolioState, sessionPolicy, marketReferences, instrumentCoverage);
+            operatorControls, liveOrderReadinessGate, portfolioState, sessionPolicy, marketReferences, instrumentCoverage,
+            runAuthority: strategyRunAuthority, authorityOptions: authorityOptions);
         _executionFailureState = new ExecutionFailureState(logger);
         _executionReportHub = new ExecutionReportHub(_options, () => gateway.GatewayId, auditTrail, logger, _executionFailureState);
         _executionAudit = new OrderExecutionAudit(auditTrail, () => gateway.GatewayId, logger);
@@ -158,17 +163,56 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
     }
 
     /// <inheritdoc />
-    public async Task<OrderResult> PlaceOrderAsync(OrderRequest request, CancellationToken ct = default)
+    /// <remarks>Legacy entry point: identity comes from request metadata (unattributed authority).</remarks>
+    public Task<OrderResult> PlaceOrderAsync(OrderRequest request, CancellationToken ct = default) =>
+        PlaceOrderSerializedAsync(request, authority: null, ct);
+
+    /// <inheritdoc />
+    public Task<OrderResult> SubmitAsync(OrderSubmitCommand command, CancellationToken ct = default)
     {
-        if (_portfolioState is not PaperTradingPortfolio { UsesCanonicalAccounting: true })
-            return await PlaceOrderCoreAsync(request, ct).ConfigureAwait(false);
-        await _canonicalSubmissionGate.WaitAsync(ct).ConfigureAwait(false);
-        try
-        { return await PlaceOrderCoreAsync(request, ct).ConfigureAwait(false); }
-        finally { _canonicalSubmissionGate.Release(); }
+        ArgumentNullException.ThrowIfNull(command);
+        return PlaceOrderSerializedAsync(OrderAuthorityMetadata.Bind(command.Order, command.Authority), command.Authority, ct);
     }
 
-    private async Task<OrderResult> PlaceOrderCoreAsync(OrderRequest request, CancellationToken ct)
+    /// <summary>
+    /// The authority to retain with this order's journal, audit, and parked escalation. Only typed
+    /// authority is retained; untyped orders keep their pre-existing records unchanged.
+    /// </summary>
+    private static OrderSubmissionAuthorityRecord? RetainedAuthority(PreparedOrderAdmission prepared) =>
+        prepared.Authority.Origin == OrderCommandOrigin.Unattributed ? null : prepared.Authority.ToRecord();
+
+    private async Task<OrderResult> PlaceOrderSerializedAsync(
+        OrderRequest request,
+        OrderSubmissionAuthority? authority,
+        CancellationToken ct)
+    {
+        OrderResult result;
+        if (_portfolioState is not PaperTradingPortfolio { UsesCanonicalAccounting: true })
+        {
+            result = await PlaceOrderCoreAsync(request, authority, ct).ConfigureAwait(false);
+        }
+        else
+        {
+            await _canonicalSubmissionGate.WaitAsync(ct).ConfigureAwait(false);
+            try
+            { result = await PlaceOrderCoreAsync(request, authority, ct).ConfigureAwait(false); }
+            finally { _canonicalSubmissionGate.Release(); }
+        }
+
+        // A typed submission that routed passed authority at preflight and again at dispatch.
+        return authority is not null && result.Success && result.AuthorityDecision is null
+            ? result with
+            {
+                AuthorityDecision = new AuthorityDecisionSummary(authority.Origin, IsAuthorized: true, ReasonCode: null,
+                    Reason: null, Checkpoint: "dispatch", ReadinessSnapshotVersion: null, PromotionAuditReference: null)
+            }
+            : result;
+    }
+
+    private async Task<OrderResult> PlaceOrderCoreAsync(
+        OrderRequest request,
+        OrderSubmissionAuthority? authority,
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
         OrderManagementLifecycleCoordinator.OperationLease operation;
@@ -185,7 +229,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
 
         var orderId = request.ClientOrderId ?? GenerateOrderId();
         Guid? journalAttemptId = _journal is null ? null : Guid.NewGuid();
-        var prepared = _admissionPolicy.Prepare(request, orderId);
+        var prepared = _admissionPolicy.Prepare(request, orderId, authority);
         request = prepared.Request;
         var safeRequest = prepared.SafeRequest;
         var brokerName = prepared.BrokerName;
@@ -214,7 +258,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                 journalAttemptId).ConfigureAwait(false);
         }
 
-        await RecordJournalIntentAsync(safeRequest, "Intent", journalAttemptId, ct).ConfigureAwait(false);
+        await RecordJournalIntentAsync(safeRequest, "Intent", journalAttemptId, ct, RetainedAuthority(prepared)).ConfigureAwait(false);
         var admission = await _admissionPolicy.EvaluatePreflightAsync(prepared, ct).ConfigureAwait(false);
         if (admission.Refusal is { } refusal)
         {
@@ -224,7 +268,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                 rejectionSource: refusal.Source,
                 reasonCode: refusal.ReasonCode,
                 metadata: refusal.Metadata,
-                journalAttemptId: journalAttemptId).ConfigureAwait(false);
+                journalAttemptId: journalAttemptId, authority: prepared.Authority).ConfigureAwait(false);
         }
         var usesFaceValuePercentageOfPar = admission.UsesFaceValuePercentageOfPar;
         var resolvedOrder = admission.ResolvedOrder
@@ -263,11 +307,16 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                     brokerageLimitRefusal, sessionId, ct,
                     rejectionSource: "brokerage admission limits",
                     reasonCode: "BROKERAGE_LIMIT_REJECTED",
-                    journalAttemptId: journalAttemptId).ConfigureAwait(false);
+                    journalAttemptId: journalAttemptId, authority: prepared.Authority).ConfigureAwait(false);
             }
 
             if (_riskValidator is not null)
             {
+                // A rule that parks this order retains its typed authority in the same durable
+                // write as the escalation entry (see RiskEscalationQueueService.StageAuthority).
+                using var stagedAuthority = RetainedAuthority(prepared) is { } authorityToStage && _escalationQueue is not null
+                    ? _escalationQueue.StageAuthority(orderId, authorityToStage)
+                    : null;
                 var riskResult = await _riskValidator.ValidateResolvedOrderAsync(resolvedOrder, ct).ConfigureAwait(false);
                 riskDecision = riskResult;
                 if (!riskResult.IsApproved)
@@ -294,7 +343,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                             correlationId,
                             riskResult,
                             sessionId,
-                            ct).ConfigureAwait(false);
+                            ct,
+                            RetainedAuthority(prepared)).ConfigureAwait(false);
                     }
 
                     return await RejectOrderAsync(
@@ -311,7 +361,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                         metadata: BuildRiskDecisionAuditMetadata(riskResult),
                         riskWarnings: riskResult.Warnings.Count > 0 ? riskResult.Warnings : null,
                         riskDecision: riskResult.ToSummary(),
-                        journalAttemptId: journalAttemptId)
+                        journalAttemptId: journalAttemptId, authority: prepared.Authority)
                         .ConfigureAwait(false);
                 }
 
@@ -334,11 +384,55 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                 }
             }
 
+            // Typed authority is re-checked here, after risk validation and before the dispatch
+            // lease: waiting for this gate and validating risk take time, in which a grant can
+            // age out, a run can end, readiness can be withdrawn, or an instrument suspended.
+            // Placed before the lease so authority lookups never extend the window a kill-switch
+            // sweep waits on; the operator-control recheck below still runs after the lease.
+            OrderAdmissionRefusal? authorityRefusal;
+            try
+            {
+                authorityRefusal = await _admissionPolicy.EvaluateDispatchAuthorityAsync(prepared, ct).ConfigureAwait(false);
+            }
+            catch
+            {
+                // The recheck reads readiness and Security Master and honors cancellation, so it
+                // can throw after risk validation consumed a release approval. Nothing has been
+                // dispatched, so re-arm the approval as a refusal would; the catch below rolls
+                // back the risk reservations.
+                RestoreConsumedApprovals(consumedApprovalId, "the order authority recheck failed before dispatch", orderId);
+                throw;
+            }
+
+            if (authorityRefusal is not null)
+            {
+                SettleRiskReservations(riskDecision, commit: false, orderId);
+                RestoreConsumedApprovals(consumedApprovalId, "order authority withdrawn before dispatch", orderId);
+                return await RejectOrderAsync(
+                    orderId,
+                    safeRequest,
+                    actor,
+                    brokerName,
+                    runId,
+                    correlationId,
+                    authorityRefusal.Reason,
+                    sessionId,
+                    ct,
+                    rejectionSource: authorityRefusal.Source,
+                    reasonCode: authorityRefusal.ReasonCode,
+                    metadata: authorityRefusal.Metadata,
+                    riskWarnings: riskWarnings,
+                    riskDecision: riskDecision?.ToSummary(),
+                    journalAttemptId: journalAttemptId, authority: prepared.Authority)
+                    .ConfigureAwait(false);
+            }
+
             // A derivative's contract multiplier must reach both the working-order reserve
             // and the fill: every exposure rail measures the position it opens.
             var orderMultiplier = ResolveContractMultiplier(safeRequest);
             orderState = new OrderState
             {
+                Origin = prepared.Authority.Origin,
                 OrderId = orderId,
                 JournalAttemptId = journalAttemptId,
                 Symbol = safeRequest.Symbol,
@@ -416,12 +510,12 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                         metadata: BuildOrderRejectedByControlAuditMetadata(dispatchDecision),
                         riskWarnings: riskWarnings,
                         riskDecision: riskDecision?.ToSummary(),
-                        journalAttemptId: journalAttemptId)
+                        journalAttemptId: journalAttemptId, authority: prepared.Authority)
                         .ConfigureAwait(false);
                 }
             }
 
-            await RecordJournalIntentAsync(safeRequest, "OpeningCheckpoint", journalAttemptId, ct).ConfigureAwait(false);
+            await RecordJournalIntentAsync(safeRequest, "OpeningCheckpoint", journalAttemptId, ct, RetainedAuthority(prepared)).ConfigureAwait(false);
             if (!TryRegisterOrder(orderId, orderState))
             {
                 // Lost a race with a concurrent submission that claimed the same client order id
@@ -511,7 +605,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
             // process exit must never make an already accepted client id available again.
             if (_gateway is IBrokerageGateway || _recoveryJournal.HasStore)
                 RetainBrokerageDispatch(orderState);
-            await RecordJournalIntentAsync(safeRequest, "Dispatch", journalAttemptId, ct).ConfigureAwait(false);
+            await RecordJournalIntentAsync(safeRequest, "Dispatch", journalAttemptId, ct, RetainedAuthority(prepared)).ConfigureAwait(false);
             var recoveryVersion = _recoveryJournal.CaptureVersion(orderId);
             if (await _admissionPolicy.EvaluateDispatchMarketChecksAsync(safeRequest, ct).ConfigureAwait(false) is { } marketRefusal)
                 throw new BrokerageRequestNotSentException(marketRefusal.Reason ?? "Current market conditions do not allow dispatch.");
@@ -605,7 +699,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                         Scope: BuildOrderAuditScope(safeRequest, runId),
                         Metadata: BuildOrderSubmittedAuditMetadata(
                             operatorControlDecision,
-                            liveOrderReadinessDecision)), CancellationToken.None).ConfigureAwait(false);
+                            liveOrderReadinessDecision,
+                            RetainedAuthority(prepared))), CancellationToken.None).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -1202,9 +1297,10 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
         IReadOnlyDictionary<string, string>? metadata = null,
         IReadOnlyList<string>? riskWarnings = null,
         RiskDecisionSummary? riskDecision = null,
-        Guid? journalAttemptId = null)
+        Guid? journalAttemptId = null,
+        OrderSubmissionAuthority? authority = null)
     {
-        var rejectedState = CreateRejectedState(orderId, request, message) with { JournalAttemptId = journalAttemptId };
+        var rejectedState = CreateRejectedState(orderId, request, message, authority?.Origin) with { JournalAttemptId = journalAttemptId };
         // TryAdd, not the indexer: gate rejections run before the order id is registered, so an
         // existing entry under this id belongs to a different order (e.g. a terminal order whose
         // id a rejected submission tried to reuse) and must survive. The rejection is still
@@ -1236,8 +1332,31 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
             ErrorMessage = message,
             OrderState = rejectedState,
             RiskWarnings = riskWarnings,
-            RiskDecision = riskDecision
+            RiskDecision = riskDecision,
+            AuthorityDecision = authority is null ? null : RefusedAuthorityDecision(authority, rejectionSource, reasonCode, message)
         };
+    }
+
+    /// <summary>
+    /// The ticket-facing authority outcome for a refusal, when the refusing gate was order authority
+    /// (including the live readiness check it performs). Other gates' refusals carry none.
+    /// </summary>
+    private static AuthorityDecisionSummary? RefusedAuthorityDecision(
+        OrderSubmissionAuthority authority,
+        string rejectionSource,
+        string? reasonCode,
+        string? reason)
+    {
+        var checkpoint = rejectionSource switch
+        {
+            "order authority" or "live order readiness gate" => "preflight",
+            "order authority at dispatch" => "dispatch",
+            _ => null
+        };
+        return checkpoint is null
+            ? null
+            : new AuthorityDecisionSummary(authority.Origin, IsAuthorized: false, reasonCode, reason, checkpoint,
+                ReadinessSnapshotVersion: null, PromotionAuditReference: null);
     }
 
     private async Task RecordOrderRejectionAsync(

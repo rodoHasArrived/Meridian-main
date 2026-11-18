@@ -208,14 +208,14 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static bool TryParseValue(string? value, out DataGranularity granularity);</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:403](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L403) |  |
-| <code>public static DataGranularity ParseValueOrDefault(string? value, DataGranularity defaultValue = DataGranularity.Daily) =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:441](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L441) |  |
-| <code>public static bool IsIntraday(this DataGranularity granularity) =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:444](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L444) |  |
-| <code>public static string ToAlpacaTimeframe(this DataGranularity granularity) =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:455](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L455) |  |
-| <code>public static TimeSpan ToTimeSpan(this DataGranularity granularity) =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:469](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L469) |  |
-| <code>public static string ToUiValue(this DataGranularity granularity) =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:483](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L483) |  |
-| <code>public static string ToConfigValue(this DataGranularity granularity) =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:497](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L497) |  |
-| <code>public static string ToStorageFilePrefix(this DataGranularity granularity) =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:511](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L511) |  |
-| <code>public static string ToDisplayName(this DataGranularity granularity) =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:522](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L522) |  |
+| <code>public static DataGranularity ParseValueOrDefault(string? value, DataGranularity defaultValue = DataGranularity.Daily) =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:445](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L445) |  |
+| <code>public static bool IsIntraday(this DataGranularity granularity) =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:448](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L448) |  |
+| <code>public static string ToAlpacaTimeframe(this DataGranularity granularity) =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:459](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L459) |  |
+| <code>public static TimeSpan ToTimeSpan(this DataGranularity granularity) =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:473](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L473) |  |
+| <code>public static string ToUiValue(this DataGranularity granularity) =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:487](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L487) |  |
+| <code>public static string ToConfigValue(this DataGranularity granularity) =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:501](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L501) |  |
+| <code>public static string ToStorageFilePrefix(this DataGranularity granularity) =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:515](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L515) |  |
+| <code>public static string ToDisplayName(this DataGranularity granularity) =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:526](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L526) |  |
 
 ## FailedModuleInfo
 

@@ -6,6 +6,78 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ILedgerPostingIdentityCollisionLookup
+
+Qualified name: <code>Meridian.Storage.Ledger.ILedgerPostingIdentityCollisionLookup</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:219](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L219).
+
+Optional optimized lookup for every retained journal that collides with a proposed posting identity. Journal-entry and command identifiers are global identities; source-event and idempotency identities are scoped to the accounting aggregate.
+
+```csharp
+public interface ILedgerPostingIdentityCollisionLookup
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;&gt; FindPostingIdentityCollisionsAsync(LedgerPostingIdentity identity, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:221](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L221) |  |
+
+## ILedgerReportingSnapshotSource
+
+Qualified name: <code>Meridian.Storage.Ledger.ILedgerReportingSnapshotSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:10](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L10).
+
+Reporting read boundary required by certification, capturing journals and retained disposal evidence from one consistent ledger population. Implementations must preserve all supplied query filters and prevent later commits from appearing in any component of the returned snapshot.
+
+```csharp
+public interface ILedgerReportingSnapshotSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;LedgerReportingSnapshot&gt; CaptureReportingSnapshotAsync(LedgerJournalEntryQuery query, Guid? accountingPeriodId = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:17](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L17) | Captures the optional report period independently of the journal query&#x27;s period filter, so all-history balance queries can retain the reporting period&#x27;s status and version atomically. The requested period must belong to the query&#x27;s exact ledger book. |
+
+## ILedgerSecurityEntitlementInventory
+
+Qualified name: <code>Meridian.Storage.Ledger.ILedgerSecurityEntitlementInventory</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerSecurityEntitlementInventory.cs:10](../../../../src/Meridian.Storage/Ledger/ILedgerSecurityEntitlementInventory.cs#L10).
+
+Complete, unpaged canonical lot population for one security in a tenant-owned ledger book. The reader must inspect the whole book for unidentified legacy lots and reconstruct held quantities from retained journal-effective mutation history, including lots disposed later. Missing ownership, identity or historical quantity facts must throw; a case/account subset must never be represented as this inventory.
+
+```csharp
+public interface ILedgerSecurityEntitlementInventory
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;LedgerSecurityEntitlementInventorySnapshot&gt; ReadSecurityEntitlementInventoryAsync(string tenantId, string companyId, Guid ledgerBookId, Guid securityId, DateOnly asOfDate, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerSecurityEntitlementInventory.cs:12](../../../../src/Meridian.Storage/Ledger/ILedgerSecurityEntitlementInventory.cs#L12) |  |
+
+## ILedgerStructurePostingAuthority
+
+Qualified name: <code>Meridian.Storage.Ledger.ILedgerStructurePostingAuthority</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:15](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L15).
+
+Lets native producers retain structure authority before taking global security locks.
+
+```csharp
+public interface ILedgerStructurePostingAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IAsyncDisposable&gt; AcquireStructureAuthorityAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:17](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L17) |  |
+
 ## ILedgerTaxLotDisposalHistory
 
 Qualified name: <code>Meridian.Storage.Ledger.ILedgerTaxLotDisposalHistory</code>. Kind: `interface`.
@@ -748,76 +820,3 @@ Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:579](../../../../src
 ```csharp
 public sealed record LedgerTaxLotMutationRecord(Guid MutationRecordId, Guid MutationBatchId, AtomicTaxLotMutationKind MutationKind, Guid TaxLotRecordId, string LotId, int SelectionOrdinal, decimal QuantityBefore, decimal QuantityDelta, decimal QuantityAfter, decimal UnitCost, decimal CostBasis, long ExpectedVersion, long ResultVersion, string SelectionEvidenceId, Guid JournalEntryId, Guid SourceEventId, IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence, DateTimeOffset RecordedAt, LedgerTaxLotRecord? LotBefore, LedgerTaxLotRecord LotAfter, Guid? CorrectsMutationBatchId = null, string? ReliefMethod = null, string? PolicyRevision = null, Guid SecurityId = default, Guid BookPositionId = default);
 ```
-
-## LedgerTaxLotRecord
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerTaxLotRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:418](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L418).
-
-```csharp
-public sealed record LedgerTaxLotRecord(Guid TaxLotRecordId, Guid LedgerBookId, LedgerAccount Account, string LotId, DateOnly AcquiredDate, decimal OriginalQuantity, decimal OpenQuantity, decimal UnitCost, string Currency, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, Guid? SourceJournalEntryId = null, string? EvidenceRef = null, long Version = 0, Guid? OriginatingMutationBatchId = null, Guid? LastMutationBatchId = null, Guid SecurityId = default, Guid BookPositionId = default, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] decimal? OriginalFace = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] decimal? BookedFactor = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] decimal? ParBasis = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto? Acquisition = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Meridian.Contracts.Accounting.Lots.OpenLotBasisAdjustmentDto? BasisAdjustment = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] decimal? CurrentFactor = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool HasFaceValueTerms =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:466](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L466) | True when the lot recorded the acquisition-time par conventions (OriginalFace, BookedFactor, ParBasis). They are persisted all-three-or-none, so a lot either states its face terms or states nothing and consumers fail closed rather than inheriting a price-per-100, factor-1 default. |
-
-## LegacyIntercompanyAttributionRules
-
-Qualified name: <code>Meridian.Storage.Ledger.LegacyIntercompanyAttributionRules</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs:10](../../../../src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs#L10).
-
-```csharp
-public static class LegacyIntercompanyAttributionRules
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static string SourceDigest(LedgerBookRecord book, LedgerJournalEntryRecord record, LedgerEntry line) =&gt; …;</code> | [src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs:12](../../../../src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs#L12) |  |
-| <code>public static IReadOnlyList&lt;LegacyIntercompanyAttributionDto&gt; Resolve(IEnumerable&lt;LegacyIntercompanyAttributionDto&gt; history) =&gt; …;</code> | [src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs:16](../../../../src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs#L16) |  |
-| <code>public static void ValidateAppend(LegacyIntercompanyAttributionDto fact, Guid? expectedPrevious, IReadOnlyList&lt;LegacyIntercompanyAttributionDto&gt; history);</code> | [src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs:21](../../../../src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs#L21) |  |
-
-## LegacyIntercompanyAttributionValidator
-
-Qualified name: <code>Meridian.Storage.Ledger.LegacyIntercompanyAttributionValidator</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs:76](../../../../src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs#L76).
-
-Checks reviewer assertions against immutable journal facts and retained approved terms.
-
-```csharp
-public sealed class LegacyIntercompanyAttributionValidator(ILedgerJournalStore journals, IIntercompanyAccountBindingStore bindings, IIntercompanyAccountingArrangementStore agreements, IIntercompanyAccountingArrangementLegalAuthority legalAuthority)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IAsyncDisposable&gt; AcquireAuthorityLeaseAsync(LegacyIntercompanyAttributionDto fact, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs:80](../../../../src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs#L80) |  |
-| <code>public async Task ValidateAsync(LegacyIntercompanyAttributionDto fact, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs:117](../../../../src/Meridian.Storage/Ledger/LegacyIntercompanyAttributionRules.cs#L117) |  |
-
-## OpenLotBackfillRules
-
-Qualified name: <code>Meridian.Storage.Ledger.OpenLotBackfillRules</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/OpenLotBackfillRules.cs:10](../../../../src/Meridian.Storage/Ledger/OpenLotBackfillRules.cs#L10).
-
-Deterministic backfill checks shared by retention, review and atomic application.
-
-```csharp
-public static class OpenLotBackfillRules
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static OpenLotBackfillFactsDto ReadFacts(byte[] content, string hash);</code> | [src/Meridian.Storage/Ledger/OpenLotBackfillRules.cs:19](../../../../src/Meridian.Storage/Ledger/OpenLotBackfillRules.cs#L19) |  |
-| <code>public static LedgerTaxLotRecord Enrich(LedgerTaxLotRecord lot, OpenLotBackfillEvidenceDto evidence);</code> | [src/Meridian.Storage/Ledger/OpenLotBackfillRules.cs:43](../../../../src/Meridian.Storage/Ledger/OpenLotBackfillRules.cs#L43) |  |
-| <code>public static IReadOnlyList&lt;string&gt; Issues(LedgerTaxLotRecord lot);</code> | [src/Meridian.Storage/Ledger/OpenLotBackfillRules.cs:90](../../../../src/Meridian.Storage/Ledger/OpenLotBackfillRules.cs#L90) |  |

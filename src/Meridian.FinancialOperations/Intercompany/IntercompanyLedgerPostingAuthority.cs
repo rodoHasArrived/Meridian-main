@@ -13,7 +13,8 @@ public sealed class IntercompanyLedgerPostingAuthority(IIntercompanyAccountingAr
     IntercompanyAccountingArrangementService service, IIntercompanyAccountBindingStore bindings,
     IAccountingConfigurationStore configuration, ILedgerJournalStore journals, IFundProfileTenancyRegistry owners,
     ILegacyIntercompanyAttributionStore? legacyAttributions = null,
-    IConsolidationFxAuthority? fxAuthority = null)
+    IConsolidationFxAuthority? fxAuthority = null,
+    IIntercompanyRateFixingStore? fixings = null)
     : ILedgerPostingAuthority, ILedgerBookControlPreflight
 {
     /// <summary>
@@ -43,6 +44,17 @@ public sealed class IntercompanyLedgerPostingAuthority(IIntercompanyAccountingAr
                     || !string.Equals(current.LegalRevision.PayloadHash, slice.AgreementPayloadHash, StringComparison.Ordinal))
                     throw new InvalidOperationException($"The legal revision retained for {day:yyyy-MM-dd} no longer applies. Recompute the accrual before review or posting.");
             }
+        // A fixing corrected and re-approved after drafting changes the rate those days should carry.
+        foreach (var pin in evidence.Computation.Slices.Select(slice => slice.Fixing).OfType<IntercompanyAccrualFixingPinDto>()
+            .DistinctBy(pin => pin.FixingId))
+        {
+            if (fixings is null)
+                throw new InvalidOperationException("Floating-rate accrual needs the reviewed rate-fixing authority, which is unavailable.");
+            var current = await fixings.GetAsync(tenantId, pin.FixingId, ct).ConfigureAwait(false);
+            if (current?.Approved is not { } approved || approved.RateFraction != pin.IndexRate
+                || !string.Equals(approved.ValueDigest, pin.ValueDigest, StringComparison.Ordinal))
+                throw new InvalidOperationException($"The approved {pin.IndexReference} fixing for {pin.FixingDate:yyyy-MM-dd} changed after drafting. Recompute the accrual before review or posting.");
+        }
     }
 
     public string ControlName => "intercompany";

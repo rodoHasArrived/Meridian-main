@@ -6,6 +6,55 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationPersonalTableViewRecord
+
+Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationPersonalTableViewRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs:219](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs#L219).
+
+```csharp
+public sealed record WorkstationPersonalTableViewRecord(string TenantId, string OperatorId, string TableId, WorkstationTableViewDto View);
+```
+
+## WorkstationServiceCollectionExtensions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationServiceCollectionExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:88](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L88).
+
+Registers the shared web-workstation service graph consumed by endpoint and host surfaces.
+
+```csharp
+public static class WorkstationServiceCollectionExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:90](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L90) |  |
+| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1569](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1569) |  |
+
+## WorkstationWorkflowReadScope
+
+Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationWorkflowReadScope</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs:28](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs#L28).
+
+Which workspace families a caller may read in the shared workflow summary. The summary is shell furniture that composes one card per canonical workspace, so its route admits the union of the per-workspace read permissions — otherwise a reporting or strategy reader loses the whole strip. Admission is therefore not authorization: without this projection a caller admitted by any one family receives every family&#x27;s card, and the strategy and accounting cards carry real record content (candidate strategy names, promotion state and reasons, open break counts, ledger continuity posture). Cards backed by no record content — Portfolio, Reporting and Settings, which vary only on whether an operating context is selected — are not gated here; there is nothing in them to withhold. There is deliberately no default: every caller of WorkstationWorkflowSummaryService.GetAsync states a scope, because the desktop lane reaches that service in process with no endpoint filter in between, and an optional argument there is a grant to whichever caller forgets it. Browser requests resolve theirs through ForRequest; the desktop resolves its operator&#x27;s through its own authenticated session.
+
+```csharp
+public sealed record WorkstationWorkflowReadScope(bool Trading, bool Accounting, bool Strategy, bool Data)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly WorkstationWorkflowReadScope All = new (Trading : true, Accounting : true, Strategy : true, Data : true);</code> | [src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs:38](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs#L38) | Every family readable. For a caller whose authority is already established to cover all of them, and for tests; never a stand-in for a scope that was not resolved. |
+| <code>public bool NeedsStrategyRuns =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs:49](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs#L49) | True when any family whose card is built from strategy runs is readable. Trading and Accounting both read the governed (paper and live) runs and Strategy reads the backtest queue, so a caller holding none of the three needs no run load at all. |
+| <code>public static WorkstationWorkflowReadScope ForRequest(HttpContext context) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs:71](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs#L71) | The families the current request may read. Each is the permission set already declared by the route that serves that family&#x27;s data directly, so the summary card and the surface it summarises admit the same callers and neither becomes the other&#x27;s second door: Trading — UserPermission.ViewTrades, as the trading read surface. Accounting — the reconciliation break queue&#x27;s set, which the accounting card&#x27;s open-break and continuity posture is drawn from. Strategy — the run-ledger routes&#x27; UserPermission.ViewStrategies and UserPermission.ManageStrategies. Data — the Data workspace&#x27;s own set. The card summarises that workspace and its next action opens it, so the two admit the same callers; the workspace payload reads the same provider metrics the card counts, so nothing reaches the card that the workspace withholds. UserPermission.AdminMaintenance is not a universal override: it appears only in the accounting set, because the reconciliation break queue accepts it and the trading, strategy and data workspaces do not. A profile carrying it alone administers maintenance routines; it is not thereby entitled to strategy candidates or trading posture. |
+
 ## WorkstationWorkflowSummaryService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationWorkflowSummaryService</code>. Kind: `class`.
@@ -239,6 +288,27 @@ Declared public members:
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;WorkflowDefinitionDto&gt; GetWorkflowDefinitions() =&gt; …;</code> | [src/Meridian.Ui.Shared/Workflows/BuiltInWorkflowDefinitionProvider.cs:11](../../../../src/Meridian.Ui.Shared/Workflows/BuiltInWorkflowDefinitionProvider.cs#L11) |  |
 
+## FileOperatorPreferenceStore
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.FileOperatorPreferenceStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:27](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L27).
+
+JSON-backed store under Meridian&#x27;s data root, keyed by tenant, company and user so one operator&#x27;s preferences never reach another. Writes replace the operator&#x27;s whole set through the snapshot store&#x27;s atomic replace, like the default operating scope. The one exception is OperatorPreferenceValuesDto.DesktopKeyBindings: the desktop owns it, so a save that leaves it null keeps the stored set and a browser save never clears it. Values are validated here so a client cannot store arbitrary text; clients still decode defensively because older hosts or other clients may hold values they do not recognise.
+
+```csharp
+public sealed partial class FileOperatorPreferenceStore : JsonFileSnapshotStore<OperatorPreferenceSnapshot>, IOperatorPreferenceStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileOperatorPreferenceStore(string dataRoot, ILogger&lt;FileOperatorPreferenceStore&gt; logger, TimeProvider? timeProvider = null) : base(ResolveSnapshotPath(dataRoot), OperatorPreferenceJsonContext.Default.OperatorPreferenceSnapshot);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:46](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L46) |  |
+| <code>public Task&lt;OperatorPreferencesDto&gt; GetAsync(string operatorKey, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:56](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L56) |  |
+| <code>public async Task&lt;OperatorPreferencesDto&gt; SetAsync(string operatorKey, OperatorPreferenceValuesDto? preferences, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:68](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L68) |  |
+| <code>public static OperatorPreferenceValuesDto? Normalize(OperatorPreferenceValuesDto? preferences);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:114](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L114) | Validates and trims each value and returns null when nothing is set. Throws ArgumentException naming the field for a value outside its allowed set or shape. |
+
 ## FileOperatorScopePreferenceStore
 
 Qualified name: <code>Meridian.Ui.Shared.Workflows.FileOperatorScopePreferenceStore</code>. Kind: `class`.
@@ -300,6 +370,25 @@ Declared public members:
 | <code>public FileWorkflowPresetStore(string dataRoot, ILogger&lt;FileWorkflowPresetStore&gt; logger) : base(ResolveSnapshotPath(dataRoot), WorkflowPresetJsonContext.Default.WorkflowPresetSnapshot);</code> | [src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs:22](../../../../src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs#L22) |  |
 | <code>public Task&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; LoadAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs:28](../../../../src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs#L28) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; UpdateAsync(Func&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;, IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; update, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs:31](../../../../src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs#L31) |  |
+
+## IOperatorPreferenceStore
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.IOperatorPreferenceStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:11](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L11).
+
+Durable per-operator presentation preferences (theme, density, time zone, descriptions, shortcuts, notifications).
+
+```csharp
+public interface IOperatorPreferenceStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;OperatorPreferencesDto&gt; GetAsync(string operatorKey, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:13](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L13) |  |
+| <code>Task&lt;OperatorPreferencesDto&gt; SetAsync(string operatorKey, OperatorPreferenceValuesDto? preferences, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:15](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L15) |  |
 
 ## IOperatorScopePreferenceStore
 
@@ -398,6 +487,26 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; LoadAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowPresetStore.cs:10](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowPresetStore.cs#L10) |  |
 | <code>Task&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; UpdateAsync(Func&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;, IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; update, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowPresetStore.cs:12](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowPresetStore.cs#L12) |  |
+
+## OperatorPreferenceRecord
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.OperatorPreferenceRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:350](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L350).
+
+```csharp
+public sealed record OperatorPreferenceRecord(string OperatorKey, OperatorPreferenceValuesDto Preferences, DateTimeOffset UpdatedAt);
+```
+
+## OperatorPreferenceSnapshot
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.OperatorPreferenceSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:352](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L352).
+
+```csharp
+public sealed record OperatorPreferenceSnapshot(int Version, IReadOnlyList<OperatorPreferenceRecord> Operators);
+```
 
 ## OperatorScopePreferenceRecord
 

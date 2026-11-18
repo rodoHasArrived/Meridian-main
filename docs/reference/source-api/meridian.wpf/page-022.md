@@ -6,6 +6,174 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkspaceToolbarControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Primitives.WorkspaceToolbarControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:75](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L75).
+
+Provides an items-control surface for workspace toolbar actions.
+
+```csharp
+public sealed class WorkspaceToolbarControl : ItemsControl
+```
+
+## WorkstationShellControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Primitives.WorkstationShellControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:9](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L9).
+
+Hosts workstation content with separate navigation, header, and status content slots.
+
+```csharp
+public sealed class WorkstationShellControl : ContentControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly DependencyProperty NavigationContentProperty = DependencyProperty.Register(nameof(NavigationContent), typeof(object), typeof(WorkstationShellControl));</code> | [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:11](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L11) |  |
+| <code>public static readonly DependencyProperty HeaderContentProperty = DependencyProperty.Register(nameof(HeaderContent), typeof(object), typeof(WorkstationShellControl));</code> | [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:14](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L14) |  |
+| <code>public static readonly DependencyProperty StatusContentProperty = DependencyProperty.Register(nameof(StatusContent), typeof(object), typeof(WorkstationShellControl));</code> | [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:17](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L17) |  |
+| <code>public object? NavigationContent { get; set; }</code> | [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:20](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L20) |  |
+| <code>public object? HeaderContent { get; set; }</code> | [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:26](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L26) |  |
+| <code>public object? StatusContent { get; set; }</code> | [src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs:32](../../../../src/Meridian.Wpf/Workstation/Primitives/WorkstationPrimitiveControls.cs#L32) |  |
+
+## WorkstationRegionState
+
+Qualified name: <code>Meridian.Wpf.Workstation.State.WorkstationRegionState</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:17](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L17).
+
+Provides observable region status, explanatory text, and optional recovery action identity.
+
+```csharp
+public sealed class WorkstationRegionState : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WorkstationRegionStatus Status { get; set; }</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:25](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L25) |  |
+| <code>public string Title { get; set; }</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:31](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L31) |  |
+| <code>public string Detail { get; set; }</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:37](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L37) |  |
+| <code>public string ActionId { get; set; }</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:43](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L43) |  |
+| <code>public string ActionLabel { get; set; }</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:49](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L49) |  |
+| <code>public static WorkstationRegionState Loading(string title, string detail) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:55](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L55) |  |
+| <code>public static WorkstationRegionState Empty(string title, string detail) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:63](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L63) |  |
+| <code>public static WorkstationRegionState Error(string title, string detail, string actionId = &quot;&quot;, string actionLabel = &quot;&quot;);</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:71](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L71) |  |
+| <code>public static WorkstationRegionState Success(string title, string detail) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:90](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L90) |  |
+| <code>public static WorkstationRegionState Warning(string title, string detail) =&gt; …;</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:98](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L98) |  |
+
+## WorkstationRegionStatus
+
+Qualified name: <code>Meridian.Wpf.Workstation.State.WorkstationRegionStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:5](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L5).
+
+```csharp
+public enum WorkstationRegionStatus
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Loading</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:7](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L7) |  |
+| <code>Empty</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:8](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L8) |  |
+| <code>Error</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:9](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L9) |  |
+| <code>Success</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:10](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L10) |  |
+| <code>Warning</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:11](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L11) |  |
+
+## ActivityLogGridControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Tables.ActivityLogGridControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:49](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L49).
+
+Displays read-only activity-log rows using row and column virtualization.
+
+```csharp
+public sealed class ActivityLogGridControl : DataGrid
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ActivityLogGridControl();</code> | [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:51](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L51) |  |
+
+## DenseDataGridControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Tables.DenseDataGridControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:8](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L8).
+
+Displays read-only rows with explicit columns and row and column virtualization.
+
+```csharp
+public sealed class DenseDataGridControl : DataGrid
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DenseDataGridControl();</code> | [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:10](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L10) |  |
+
+## KeyValueFactGridControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Tables.KeyValueFactGridControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:37](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L37).
+
+Displays read-only key-value facts using virtualized rows and columns.
+
+```csharp
+public sealed class KeyValueFactGridControl : DataGrid
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public KeyValueFactGridControl();</code> | [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:39](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L39) |  |
+
+## SearchFilterBarControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Tables.SearchFilterBarControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:30](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L30).
+
+Provides a content surface for table search and filter controls.
+
+```csharp
+public sealed class SearchFilterBarControl : ContentControl
+```
+
+## AuditTimelineEntry
+
+Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.AuditTimelineEntry</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs:8](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs#L8).
+
+Carries an audit event&#x27;s timestamp, actor, and message.
+
+```csharp
+public sealed class AuditTimelineEntry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DateTimeOffset Timestamp { get; init; }</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs:10](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs#L10) |  |
+| <code>public string Actor { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs:11](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs#L11) |  |
+| <code>public string Message { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs:12](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/AuditTimelineViewModel.cs#L12) |  |
+
 ## AuditTimelineViewModel
 
 Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.AuditTimelineViewModel</code>. Kind: `class`.

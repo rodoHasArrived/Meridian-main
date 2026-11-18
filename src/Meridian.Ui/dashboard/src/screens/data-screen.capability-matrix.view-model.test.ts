@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildCapabilityMatrixModel } from "./data-screen.capability-matrix.view-model";
+import { buildCapabilityFreshnessIndex, buildCapabilityMatrixModel, formatEvidenceAge } from "./data-screen.capability-matrix.view-model";
 import type { ProviderCapabilityMatrixResponse } from "@/types";
 
 function response(overrides: Partial<ProviderCapabilityMatrixResponse> = {}): ProviderCapabilityMatrixResponse {
@@ -88,5 +88,30 @@ describe("buildCapabilityMatrixModel", () => {
     const row = buildCapabilityMatrixModel(input).rows[0];
     expect(row.fixedIncomeTasks).toEqual(input.providers[0].fixedIncomeTasks);
     expect(row.cells[0].supported).toBe(true);
+  });
+});
+
+describe("buildCapabilityFreshnessIndex", () => {
+  const now = Date.parse("2026-11-17T12:00:00Z");
+  const freshness = buildCapabilityFreshnessIndex([
+    { providerId: "Alpaca", latestEvidenceAt: "2026-11-17T09:00:00Z", evidenceStale: false },
+    { providerId: "polygon", latestEvidenceAt: "2026-07-01T12:00:00Z", evidenceStale: true },
+    { providerId: "ibkr", latestEvidenceAt: null, evidenceStale: false }
+  ], now);
+
+  it("joins by provider id regardless of case and reports the age", () => {
+    expect(freshness("alpaca")).toEqual({ state: "current", label: "Current", ageText: "3h ago" });
+    expect(freshness("polygon")).toEqual({ state: "stale", label: "Stale", ageText: "4mo ago" });
+  });
+
+  it("reads no evidence for an untimed or unknown provider", () => {
+    expect(freshness("ibkr")).toEqual({ state: "no-evidence", label: "No evidence", ageText: null });
+    expect(freshness("stooq").state).toBe("no-evidence");
+  });
+
+  it("formats ages in hours, days, then months", () => {
+    expect(formatEvidenceAge(30 * 60_000)).toBe("under 1h ago");
+    expect(formatEvidenceAge(50 * 3_600_000)).toBe("2d ago");
+    expect(formatEvidenceAge(90 * 86_400_000)).toBe("3mo ago");
   });
 });

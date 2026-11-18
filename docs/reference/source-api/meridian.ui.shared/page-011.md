@@ -6,6 +6,54 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FileAccountingAuditPendingMarkerStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.FileAccountingAuditPendingMarkerStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs:20](../../../../src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs#L20).
+
+File-backed IAccountingAuditPendingMarkerStore: a small sidecar written atomically beside the accounting configuration snapshot.
+
+```csharp
+public sealed class FileAccountingAuditPendingMarkerStore : IAccountingAuditPendingMarkerStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileAccountingAuditPendingMarkerStore(string markerPath);</code> | [src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs:29](../../../../src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs#L29) |  |
+| <code>public string MarkerPath { get; }</code> | [src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs:36](../../../../src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs#L36) | Full path of the marker file. |
+| <code>public static string MarkerPathFor(string snapshotPath);</code> | [src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs:39](../../../../src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs#L39) | The conventional marker path for an accounting configuration snapshot. |
+| <code>public async Task&lt;AccountingAuditPendingMarker?&gt; ReadAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs:45](../../../../src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs#L45) |  |
+| <code>public async Task WriteAsync(AccountingAuditPendingMarker marker, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs:58](../../../../src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs#L58) |  |
+| <code>public async Task ClearAsync(Guid auditEventId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs:75](../../../../src/Meridian.Ui.Shared/Services/FileAccountingAuditPendingMarkerStore.cs#L75) |  |
+
+## FileAccountingConfigurationStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.FileAccountingConfigurationStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:123](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L123).
+
+Persists accounting workspaces and audit history with audit-chain verification.
+
+```csharp
+public sealed class FileAccountingConfigurationStore : JsonFileSnapshotStore<FileAccountingConfigurationStore.AccountingConfigurationSnapshot>, IAccountingConfigurationStore, IAccountingActionAuditStore, IAccountingAuditChainVerifier
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileAccountingConfigurationStore(string snapshotPath) : this(snapshotPath, anchorPath : null);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:160](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L160) |  |
+| <code>public FileAccountingConfigurationStore(string snapshotPath, string? anchorPath) : base(string.IsNullOrWhiteSpace(snapshotPath)? throw new ArgumentException(&quot;Accounting configuration snapshot path is required.&quot;, nameof(snapshotPath)) : snapshotPath, JsonOptions);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:170](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L170) |  |
+| <code>public string AuditChainAnchorPath =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:185](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L185) | Path of the head journal that anchors this store&#x27;s audit chain. |
+| <code>public async Task&lt;AccountingConfigurationWorkspaceDto?&gt; GetAsync(string fundProfileId, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:190](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L190) |  |
+| <code>public async Task SaveAsync(AccountingConfigurationWorkspaceDto workspace, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:217](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L217) |  |
+| <code>public async Task AppendAsync(AccountingActionAuditEventDto auditEvent, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:277](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L277) | Appends an audit event and extends the tamper-evident chain over it. |
+| <code>public async Task&lt;AccountingAuditChainVerification&gt; VerifyAuditChainAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:408](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L408) | Verifies the retained audit chain against its events and its external head. |
+| <code>public async Task&lt;IReadOnlyList&lt;AccountingActionAuditEventDto&gt;&gt; ListAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:424](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L424) |  |
+
 ## AccountingConfigurationSnapshot
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FileAccountingConfigurationStore.AccountingConfigurationSnapshot</code>. Kind: `record`.
@@ -889,7 +937,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static FundLedgerReconciliationSnapshot ProjectReconciliationSnapshot(FundLedgerSnapshot snapshot);</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Ledger.cs:99](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Ledger.cs#L99) |  |
+| <code>public static FundLedgerReconciliationSnapshot ProjectReconciliationSnapshot(FundLedgerSnapshot snapshot);</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Ledger.cs:109](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Ledger.cs#L109) |  |
 
 Source: [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.LiveViews.cs:26](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.LiveViews.cs#L26).
 
@@ -902,6 +950,31 @@ Source: [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Mode
 ```csharp
 public sealed partial class FundOperationsWorkspaceReadService
 ```
+
+Source: [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.NavComparison.cs:6](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.NavComparison.cs#L6).
+
+```csharp
+public sealed partial class FundOperationsWorkspaceReadService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;PeriodComparisonDto&gt; GetNavComparisonAsync(string fundProfileId, DateTimeOffset? asOf, DateTimeOffset? baselineAsOf, string? currency, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.NavComparison.cs:14](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.NavComparison.cs#L14) | Ledger NAV at asOf against NAV at baselineAsOf (default: the end of the calendar month before asOf), in total and by asset class. Both sides are rebuilt from the posted ledger as of their own date through the same NAV attribution the workspace uses, so the prior figure is what the ledger said then, not a stored snapshot. |
+
+Source: [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.NavTrend.cs:7](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.NavTrend.cs#L7).
+
+```csharp
+public sealed partial class FundOperationsWorkspaceReadService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int MaxNavTrendMonths = 24;</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.NavTrend.cs:10](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.NavTrend.cs#L10) | Most month-ends a NAV trend may span. |
+| <code>public async Task&lt;FundNavTrendDto&gt; GetNavTrendAsync(string fundProfileId, int months = 12, DateTimeOffset? asOf = null, string? currency = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.NavTrend.cs:21](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.NavTrend.cs#L21) | Ledger NAV at the end of each of the last months months, ending with NAV at asOf (default now). The ledger is built once, as of the latest date; each point is its NAV attribution as of that point, which reads only entries timestamped on or before it. Months before the ledger&#x27;s first NAV component are left out. |
 
 Source: [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.PortfolioReporting.cs:26](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.PortfolioReporting.cs#L26).
 
@@ -1069,41 +1142,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public ValueTask&lt;ImmutableArray&lt;ReportingRestatementChangedLine&gt;&gt; ResolveAsync(GovernedReportingRun releasedPredecessor, string reason, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:280](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L280) |  |
-
-## GovernedReportingTemplateCatalog
-
-Qualified name: <code>Meridian.Ui.Shared.Services.GovernedReportingTemplateCatalog</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:10](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L10).
-
-Resolves reporting templates through the governed registry and evaluates caller access.
-
-```csharp
-public sealed class GovernedReportingTemplateCatalog : IReportingTemplateCatalog
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public GovernedReportingTemplateCatalog(IReportingTemplateCatalog fallbackCatalog, ReportTemplateRegistryService templateRegistry);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:15](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L15) |  |
-| <code>public ReportingTemplateMetadata Get(string templateId);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:23](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L23) |  |
-| <code>public ReportingTemplateMetadata Get(string templateId, ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:32](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L32) |  |
-| <code>public ReportingTemplateMetadata Get(string templateId, ReportingOperationalScope? operationalScope) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:43](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L43) |  |
-| <code>public ReportingTemplateMetadata Get(VersionedReportTemplateIdDto templateId);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:48](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L48) |  |
-| <code>public ReportingTemplateMetadata Get(VersionedReportTemplateIdDto templateId, ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:63](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L63) |  |
-| <code>public ReportingTemplateMetadata Get(VersionedReportTemplateIdDto templateId, ReportingOperationalScope? operationalScope) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:80](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L80) |  |
-| <code>public IReadOnlyList&lt;ReportingTemplateMetadata&gt; ListTemplates();</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:85](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L85) |  |
-| <code>public IReadOnlyList&lt;ReportingTemplateMetadata&gt; ListTemplates(ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:104](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L104) |  |
-| <code>public ReportAccessEvaluationDto EvaluateAccess(string templateId, ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:124](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L124) |  |
-| <code>public ReportAccessEvaluationDto EvaluateAccess(VersionedReportTemplateIdDto templateId, ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:153](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L153) |  |
-
-## HaircutRule
-
-Qualified name: <code>Meridian.Ui.Shared.Services.HaircutRule</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:29](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L29).
-
-```csharp
-public sealed record HaircutRule(string Counterparty, string CollateralType, decimal HaircutPercent);
-```

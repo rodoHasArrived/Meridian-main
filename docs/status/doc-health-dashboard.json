@@ -1,11 +1,11 @@
 {
-  "total_files": 1276,
+  "total_files": 1279,
   "orphaned_count": 396,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 303,
   "health_score": 85,
-  "signal_digest": "sha256:351796a24177fbfc1f798b366c6fd1d4edaf488d8c1fa1523e48ba096f961bb5",
+  "signal_digest": "sha256:d20923035950a18b3ff56fd3603297b4bb5762cc2e5edea0cecc6f8f29304a74",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -2390,6 +2390,13 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/blueprints/governed-order-command-boundary-blueprint.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/blueprints/intercompany-agreement-registry.md",
       "has_heading": true,
       "todo_count": 0,
@@ -2442,6 +2449,13 @@
       "path": "docs/engineering/blueprints/security-master-passport-workbench.md",
       "has_heading": true,
       "todo_count": 1,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/blueprints/strategy-artifact-identity-blueprint.md",
+      "has_heading": true,
+      "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
@@ -4568,6 +4582,13 @@
     },
     {
       "path": "docs/reference/source-api/meridian.contracts/page-077.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-078.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

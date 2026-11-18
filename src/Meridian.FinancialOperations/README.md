@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-14
+last_reviewed: 2026-11-17
 ---
 
 # src/Meridian.FinancialOperations
@@ -65,6 +65,15 @@ directions separate, and reports missing mappings explicitly. Terms supply no ba
 The close cockpit consumes this structured schedule instead of intercompany keywords.
 NetSuite guarded export review retains its schedule hash and rechecks mapping completeness
 and freshness alongside the existing external NetSuite evidence requirements.
+
+`IntercompanyLedgerPostingAuthority` also re-reads every fixing a floating accrual pinned, so a value
+re-approved after drafting stops the draft before review or posting; the source builder retains the
+computation's own rule version. See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
+
+`IntercompanyBalanceConfirmationRules` and `IntercompanyBalanceConfirmationService` pin both sides'
+posted schedule balances for one approved accounting profile at a date, then record confirm, dispute
+and resolve steps against the exact version and balance digest shown. Advisory only; close is
+unchanged. See [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
 
 Intercompany services own approved accounting-profile revisions and governed counterpart templates;
 canonical legal terms and independent review remain in Application/FundStructure.
@@ -364,10 +373,12 @@ FX, but this delivery does not extend the event spine's cross-currency workflow.
 disposal relief is supplied by the separate PR #3050 implementation; these amortization corrections
 preserve that relief path and its retained acquisition facts.
 
-`FundAdministration/RecurringJournalState.cs` and `FileRecurringJournalStore` own versioned
+`FundAdministration/RecurringJournalState.cs` and `RecurringJournalDocumentSession` own versioned
 recurring schedules and templates, exact source evidence, one claim per schedule/effective date,
-and retained outcome history. A process-independent filesystem lease spans claim, intake and
-completion; retries preserve the deterministic draft identity. Changed definitions block existing
+and retained outcome history. `PostgresRecurringJournalStore` (selected when a ledger database is
+configured) holds a PostgreSQL advisory lock across claim, intake and completion, so runners on
+separate hosts share one authority; `FileRecurringJournalStore` uses a filesystem lease for hosts
+sharing one data root. Retries preserve the deterministic draft identity. Changed definitions block existing
 claims until exact retained definitions are explicitly restored with an actor and reason.
 Calculated source additions also require a write-once evidence digest on the occurrence, retained
 independently of the journal draft. An unpinned pre-existing calculated draft requires trusted
@@ -376,7 +387,8 @@ Initialization is explicit, and missing or corrupt initialized state fails close
 uses the existing PostgreSQL ledger for authoritative periods and governed reopens; the historical
 `FundAdministrationControlService` calendar and lock methods remain in-memory primitives, not
 runtime authority. See [Recurring Journal](../../docs/domain/recurring-journal.md) and
-`RecurringJournalStoreTests` / `RecurringJournalRunnerTests` for recovery and evidence boundaries.
+`RecurringJournalStoreTests` / `RecurringJournalPostgresStoreTests` / `RecurringJournalRunnerTests`
+for recovery and evidence boundaries.
 
 OFX account identity is scoped to the containing bank, credit-card or investment statement.
 The parser does not borrow an account from a sibling statement or unrelated row. Missing,

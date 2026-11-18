@@ -388,3 +388,46 @@ decisions:
       - W12-ICACCRUAL-001
       - W12-ICAGREE-001
       - W12-ICPAIR-001
+  - id: DEC-IC-CONFIRM-001
+    title: Bring advisory reciprocal intercompany balance confirmation into scope; register W12-ICCONFIRM-001
+    status: accepted
+    decided_on: 2026-11-17
+    owner_lane: Accounting and Ledger
+    summary: >-
+      Recorded on the repository owner's instruction of 2026-11-17, which chose the advisory slice of the
+      reciprocal balance confirmation proposal. For each approved accounting profile and as-of date, both
+      sides' posted due-to/due-from balances are pinned from the shared balance schedule; each side confirms
+      or disputes through its own book, the same person cannot confirm both sides, unbalanced pairs cannot be
+      confirmed, and disputes are resolved with a reason by someone other than the disputer. History is
+      append-only on durable storage. Confirmation status joins the existing intercompany close advisory and
+      never changes close eligibility. Opt-in, policy-governed close blocking is not brought into scope and
+      needs its own decision. Cross-company pairs within one tenant are not supported in this slice.
+      W12-ICCONFIRM-001 is registered as in_progress with yellow health under active implementation. The
+      decision changes no existing row's rank, status, dependency or acceptance, weakens no review, posting or
+      authorization control, and grants no release authority.
+    related_roadmap_items:
+      - W12-ICCONFIRM-001
+      - W12-ICPAIR-001
+      - W10-SEAM-001
+  - id: DEC-IC-FLOAT-001
+    title: Bring floating-rate intercompany loan interest into scope under rule intercompany-accrual-v2; register W12-ICFLOAT-001
+    status: accepted
+    decided_on: 2026-11-17
+    owner_lane: Accounting and Ledger
+    summary: >-
+      Recorded on the repository owner's instruction of 2026-11-17, which chose floating rates as the first
+      slice of the broader-terms proposal. Floating loans now declare a fixing lag, and simple interest is
+      calculated under the new rule intercompany-accrual-v2 (ADR-028 extension): each schedule period uses the
+      approved fixing of its declared index observed that many business days before the period starts, plus
+      the declared spread. Fixings are retained append-only and tenant-scoped, and a value sets rates only
+      after a second person approves it; a correction replaces it only on its own approval, and a draft whose
+      pinned fixing changed is stopped before review or posting. A missing fixing refuses the whole window and
+      is never inferred or fetched. Rule intercompany-accrual-v1 is unchanged for fixed-rate windows. Fees,
+      compounding, in-arrears or averaged rates, floors and caps, and scheduled runs are not brought into scope.
+      W12-ICFLOAT-001 is registered as in_progress with yellow health under active implementation. The decision
+      changes no existing row's rank, status, dependency or acceptance, weakens no review, posting or
+      authorization control, and grants no release authority.
+    related_roadmap_items:
+      - W12-ICFLOAT-001
+      - W12-ICACCRUAL-001
+      - W12-ICAGREE-001

@@ -6,7 +6,7 @@ module_id: SRC-STRATEGIES
 path: src/Meridian.Strategies
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-17
 ---
 
 # src/Meridian.Strategies
@@ -122,6 +122,16 @@ policy outcome names and legacy cell kinds remain compatibility inputs.
   promotion support services.
 
 ## Important workflows
+
+### Strategy-run order authority
+
+`LiveStrategyRunSession` submits each order under typed strategy-run authority: the run id and the
+run's retained fund account. A run without a fund account (paper only) keeps the untyped path.
+`StrategyRunAuthoritySource` gives the OMS read-only access to the run record and its approved live
+promotion, so a live order routes only for an active run that an approved live promotion targets.
+The OMS asks at preflight and again at dispatch, inside its pre-trade gate. The run record is read
+every time; an approved live promotion found for a run is remembered, because promotion history is
+append-only, so the promotion file is not re-read for every order.
 
 ### Shared SMA reference and retained comparison
 
@@ -282,6 +292,14 @@ vocabulary.
 replaying an isolated journal snapshot, optionally bounded by an as-of timestamp. The full journal,
 account and running-balance endpoints consume that same retained accounting source; a missing
 ledger remains unavailable instead of becoming an empty success.
+`StrategyRunReadService.GetAttributionPeriodComparisonAsync` compares a run's per-symbol P&L for
+one calendar month with the month before (`PeriodComparisonDto`), as the change in cumulative
+realized plus unrealized P&L between month ends from the run's daily snapshots. A run without
+snapshots, or one that starts after the prior month, is reported as unavailable. Snapshot P&L is
+before commissions. A symbol closed mid-month counts its closed lots' realized result, not its last
+mark. Commissions (from fills, dated UTC), margin interest, short rebates and cash interest (from the
+daily cash flows) are their own lines. The total, Net P&L, is the change in run equity over the
+month; what the lines do not explain (dividends, corporate-action cash, rounding) is shown as Other.
 Promotion requires an explicitly successful completed lifecycle; an end timestamp and qualifying
 metrics on a failed or cancelled attempt never establish eligibility. `PromotionReadiness.isTerminal`
 continues to classify terminal lifecycle states independently of eligibility.

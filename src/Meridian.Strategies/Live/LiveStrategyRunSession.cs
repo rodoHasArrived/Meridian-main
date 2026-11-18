@@ -575,7 +575,7 @@ internal sealed class LiveStrategyRunSession
 
             try
             {
-                var result = await _orderManager.PlaceOrderAsync(request, ct).ConfigureAwait(false);
+                var result = await SubmitRunOrderAsync(request, ct).ConfigureAwait(false);
                 if (result.RequiresApproval)
                 {
                     // Parked for governed approval, not rejected: the order can still be
@@ -918,6 +918,22 @@ internal sealed class LiveStrategyRunSession
                 _parkedClientOrderIds.Remove(clientOrderId);
             }
         }
+    }
+
+    /// <summary>
+    /// Submits a strategy order under the run's typed authority: the run id and the run's retained
+    /// fund account, which the OMS checks against the run's live promotion. A run without a fund
+    /// account (paper only; live runs are refused one at launch) keeps the untyped path.
+    /// </summary>
+    private Task<ExecutionSdk.OrderResult> SubmitRunOrderAsync(ExecutionSdk.OrderRequest request, CancellationToken ct)
+    {
+        if (_run.FundAccountId is not { } fundAccountId || fundAccountId == Guid.Empty)
+            return _orderManager.PlaceOrderAsync(request, ct);
+
+        var grant = new ExecutionSdk.ExecutionAccountGrant(
+            fundAccountId, ActorId, ExecutionSdk.ExecutionAccountGrantSources.StrategyRun, DateTimeOffset.UtcNow);
+        var authority = ExecutionSdk.OrderSubmissionAuthority.ForStrategyRun(ActorId, grant, _run.RunId);
+        return _orderManager.SubmitAsync(new ExecutionSdk.OrderSubmitCommand(request, authority), ct);
     }
 
     private ExecutionSdk.OrderRequest MapOrder(Order order, string clientOrderId) => new()

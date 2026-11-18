@@ -8,6 +8,11 @@ import { downloadCsv } from "@/lib/csv";
 
 vi.mock("@/lib/api", () => ({ getJson: vi.fn(), postJson: vi.fn() }));
 vi.mock("@/lib/csv", async importOriginal => ({ ...await importOriginal<typeof import("@/lib/csv")>(), downloadCsv: vi.fn(() => true) }));
+const { xlsxToFile, writeXlsxFile } = vi.hoisted(() => {
+  const toFile = vi.fn(async (_name: string) => undefined);
+  return { xlsxToFile: toFile, writeXlsxFile: vi.fn((_sheets: unknown) => ({ toFile })) };
+});
+vi.mock("write-excel-file/browser", () => ({ default: writeXlsxFile }));
 interface Row { id: string; amount: number; }
 const columns: TableWorkbenchColumn<Row>[] = [
   { id: "id", label: "Record", render: row => row.id, exportValue: row => row.id },
@@ -16,6 +21,48 @@ const columns: TableWorkbenchColumn<Row>[] = [
 beforeEach(() => { vi.clearAllMocks(); vi.mocked(getJson).mockResolvedValue([]); });
 
 const longRows: Row[] = "abcdefghijkl".split("").map((id, index) => ({ id, amount: index + 1 }));
+
+describe("TableWorkbench export as shown", () => {
+  const shownColumns: TableWorkbenchColumn<Row>[] = [
+    { id: "id", label: "Record", render: row => row.id, exportValue: row => row.id },
+    { id: "amount", label: "Amount", render: row => row.amount.toFixed(2), exportValue: row => row.amount, exportDisplay: row => row.amount.toFixed(2), exportNumberFormat: "#,##0.00" },
+    { id: "note", label: "Note", render: row => `Note ${row.id}`, exportDisplay: row => `Note ${row.id}` }
+  ];
+  const rows: Row[] = [{ id: "a", amount: 1 }, { id: "b", amount: 2.5 }];
+
+  it("exports the visible columns in order with the shown text and the totals row, as CSV and XLSX", async () => {
+    const user = userEvent.setup();
+    render(<TableWorkbench workbenchId="shown" columns={shownColumns} rows={rows} getRowId={row => row.id}
+      completePopulation sourceDescription="Complete snapshot" emptyText="None" ariaLabel="Records"
+      footerLabel="Totals" footerCells={{ amount: "3.50" }} footerExport={{ amount: { value: 3.5, display: "3.50" } }} />);
+    await act(async () => { await Promise.resolve(); });
+    // Hiding a column leaves it out of the export.
+    await user.click(screen.getByRole("checkbox", { name: "Note" }));
+    await user.click(screen.getByRole("button", { name: "Export as shown · CSV" }));
+    const [fileName, csv] = vi.mocked(downloadCsv).mock.calls.at(-1)!;
+    expect(fileName).toMatch(/^shown-.*-as-shown\.csv$/);
+    expect(csv.split("\n")[0]).toMatch(/^Record,Amount,Context · Source/);
+    expect(csv).toContain("b,2.50,");
+    expect(csv).toContain("Totals,3.50,");
+    expect(csv).not.toContain("Note a");
+    await user.click(screen.getByRole("button", { name: "Export as shown · XLSX" }));
+    await waitFor(() => expect(xlsxToFile).toHaveBeenCalledWith(expect.stringMatching(/^shown-.*\.xlsx$/)));
+    const sheets = writeXlsxFile.mock.calls.at(-1)![0] as Array<{ sheet: string; data: unknown[][] }>;
+    expect(sheets[0]!.data[0]).toEqual([{ value: "Record", type: String, fontWeight: "bold" }, { value: "Amount", type: String, fontWeight: "bold" }]);
+    expect(sheets[0]!.data[2]).toEqual([{ value: "b", type: String }, { value: 2.5, type: Number, format: "#,##0.00" }]);
+    expect(sheets[0]!.data[3]![1]).toMatchObject({ value: 3.5, fontWeight: "bold" });
+    expect(sheets[1]!.sheet).toBe("About");
+    expect(await screen.findByText("Exported 2 rows as shown with totals (XLSX).")).toBeInTheDocument();
+  });
+
+  it("is unavailable for a table the server pages", async () => {
+    render(<TableWorkbench workbenchId="paged" columns={shownColumns} rows={rows} getRowId={row => row.id}
+      onExportAll={vi.fn(async () => undefined)} sourceDescription="Server page" emptyText="None" ariaLabel="Records" />);
+    await act(async () => { await Promise.resolve(); });
+    expect(screen.getByRole("button", { name: "Export as shown · CSV" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Export as shown · XLSX" })).toBeDisabled();
+  });
+});
 
 describe("TableWorkbench", () => {
   it("keeps compact queries visible while table options retain columns, export and saving, with density from the global setting", async () => {
@@ -104,6 +151,25 @@ describe("TableWorkbench", () => {
       width.mockRestore();
       content.mockRestore();
     }
+  });
+
+  it("says once that a column has no values instead of a placeholder on every row", async () => {
+    interface DueRow { id: string; due: string | null }
+    const dueColumns: TableWorkbenchColumn<DueRow>[] = [
+      { id: "id", label: "Record", render: row => row.id },
+      { id: "due", label: "Due", hideWhenEmpty: row => !row.due, emptyNote: "Due: no item has a due time", render: row => row.due ?? "No due time" }
+    ];
+    const { rerender } = render(<TableWorkbench workbenchId="due-empty" columns={dueColumns}
+      rows={[{ id: "a", due: null }, { id: "b", due: null }]} getRowId={row => row.id} emptyText="None" ariaLabel="Due records" sourceDescription="Test rows" completePopulation />);
+    await act(async () => { await Promise.resolve(); });
+    expect(screen.queryByRole("columnheader", { name: "Due" })).not.toBeInTheDocument();
+    expect(screen.queryByText("No due time")).not.toBeInTheDocument();
+    expect(screen.getByText("Due: no item has a due time")).toBeInTheDocument();
+    rerender(<TableWorkbench workbenchId="due-empty" columns={dueColumns}
+      rows={[{ id: "a", due: null }, { id: "b", due: "Jul 14" }]} getRowId={row => row.id} emptyText="None" ariaLabel="Due records" sourceDescription="Test rows" completePopulation />);
+    expect(screen.getByRole("columnheader", { name: "Due" })).toBeInTheDocument();
+    expect(screen.getByText("No due time")).toBeInTheDocument();
+    expect(screen.queryByText("Due: no item has a due time")).not.toBeInTheDocument();
   });
 
   it("shows a selection bar only while rows are selected", async () => {

@@ -157,6 +157,16 @@ public interface IPortfolioCashBalanceProvider
     Task<IReadOnlyList<PortfolioCashBalanceDto>> GetCashBalancesAsync(CancellationToken ct = default);
 }
 
+/// <summary>
+/// Supplies opening cash balances as they stood at the end of an earlier day, so the ladder can be
+/// rebuilt as of a prior period end for comparison. Optional: a provider that cannot read history
+/// does not implement it, and the comparison says so rather than reusing today's cash.
+/// </summary>
+public interface IPortfolioCashBalanceHistoryProvider
+{
+    Task<IReadOnlyList<PortfolioCashBalanceDto>> GetCashBalancesAsOfAsync(DateOnly asOf, CancellationToken ct = default);
+}
+
 /// <summary>Supplies dated capital activity (investor schedule, expense accruals) for the ladder.</summary>
 public interface IPortfolioCapitalScheduleProvider
 {

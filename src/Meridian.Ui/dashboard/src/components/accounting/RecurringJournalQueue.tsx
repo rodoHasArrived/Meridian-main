@@ -2,15 +2,22 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ErrorNotice } from "@/components/ui/error-notice";
 import { PanelReload } from "@/components/ui/panel-reload";
+import type { PanelLoadStatus } from "@/lib/combined-load-state";
 import { getRecurringJournalQueue, type RecurringJournalQueue as Queue, type RecurringJournalScope } from "@/lib/api/recurring-journals.api";
 
 interface Props {
   scope: RecurringJournalScope | null;
   onSelectDraft: (journalEntryId: string) => void;
   availableDraftIds: string[];
+  /**
+   * When the page shows one combined notice for every journal-automation read, the queue reports
+   * its load status here and leaves its own failure notice and Retry to the page.
+   */
+  quietFailure?: boolean;
+  onLoadStatus?: (status: PanelLoadStatus) => void;
 }
 
-export function RecurringJournalQueue({ scope, onSelectDraft, availableDraftIds }: Props) {
+export function RecurringJournalQueue({ scope, onSelectDraft, availableDraftIds, quietFailure = false, onLoadStatus }: Props) {
   const [queue, setQueue] = useState<Queue | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
@@ -44,6 +51,11 @@ export function RecurringJournalQueue({ scope, onSelectDraft, availableDraftIds 
   // A scope change must hide previous rows during the render before the effect runs.
   const visibleQueue = queue?.fundProfileId === fundProfileId && queue?.ledgerBookId.toLowerCase() === ledgerBookId?.toLowerCase()
     && queue?.entityId === entityId ? queue : null;
+  const occurrenceCount = visibleQueue?.occurrences.length ?? null;
+  const loadState: PanelLoadStatus["state"] = !scope ? "idle" : loading ? "loading" : error ? "failed" : "ready";
+  useEffect(() => {
+    onLoadStatus?.({ state: loadState, count: occurrenceCount, error, retry: () => setRevision((value) => value + 1) });
+  }, [onLoadStatus, loadState, occurrenceCount, error]);
   return (
     <section className="accounting-draft-rail" data-appearance="light" aria-label="Recurring journal occurrences">
       <div className="accounting-reference-heading">
@@ -53,7 +65,7 @@ export function RecurringJournalQueue({ scope, onSelectDraft, availableDraftIds 
         </div>
       </div>
       {!scope ? <p role="status" className="text-sm text-muted-foreground">Select a fund, ledger book and entity to load recurring occurrences.</p> : null}
-      {error ? (
+      {error && !quietFailure ? (
         <ErrorNotice
           error={error}
           title="Recurring journals could not be loaded."
@@ -92,7 +104,7 @@ export function RecurringJournalQueue({ scope, onSelectDraft, availableDraftIds 
           </article>
         ))}
       </div>
-      {scope ? <PanelReload className="mt-3" reload={() => { if (!loading) setRevision((value) => value + 1); }} failed={Boolean(error)} busy={loading} what="recurring queue" /> : null}
+      {scope ? <PanelReload className="mt-3" reload={() => { if (!loading) setRevision((value) => value + 1); }} failed={Boolean(error) && !quietFailure} busy={loading} what="recurring queue" /> : null}
     </section>
   );
 }

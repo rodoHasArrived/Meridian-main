@@ -108,7 +108,8 @@ describe("workspace nav view model", () => {
       "/portfolio/brokerage-sync",
       "/portfolio/cash-ladder",
       "/portfolio/family-office",
-      "/portfolio/loan-book"
+      "/portfolio/loan-book",
+      "/portfolio/nav"
     ]);
     // Family Office left UNWIRED_WORKSTATION_ROUTES once the screen started loading
     // /api/workstation/family-office/overview, so it belongs in primary navigation again.

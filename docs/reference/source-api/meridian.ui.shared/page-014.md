@@ -6,6 +6,53 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerReportingAuthoritativeSource
+
+Qualified name: <code>Meridian.Ui.Shared.Services.LedgerReportingAuthoritativeSource</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:83](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L83).
+
+Captures an immutable as-of view from the durable ledger journal. Tenant ownership, fund structure, organization, book, period, accounting basis, currency, selected dimensions, and line-level dimensional stamps are all verified before a checkpoint is issued.
+
+```csharp
+public sealed partial class LedgerReportingAuthoritativeSource : IReportingAuthoritativeSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public LedgerReportingAuthoritativeSource(ILedgerJournalStore journalStore, IFundProfileTenancyRegistry tenancyRegistry, IFundStructureService fundStructure, TimeProvider? timeProvider = null, ILedgerTaxLotDisposalHistory? taxLotDisposalHistory = null, ILedgerOpenLotSuccessorHistory? openLotSuccessorHistory = null, CapitalCallNoticeSourceValidator? capitalCallNotices = null);</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:93](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L93) |  |
+| <code>public ValueTask&lt;ReportingAuthoritativeSourceCapture&gt; CaptureAsync(ReportingRunParametersDto parameters, ReportAccessQueryContext accessContext, CancellationToken cancellationToken = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:115](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L115) |  |
+| <code>public ValueTask&lt;ReportingAuthoritativeSourceCapture&gt; CaptureAsync(ReportingRunParametersDto parameters, ReportAccessQueryContext accessContext, ReportingAuthoritativeSourceCaptureIntent intent, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:121](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L121) |  |
+
+Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Successors.cs:11](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Successors.cs#L11).
+
+```csharp
+public sealed partial class LedgerReportingAuthoritativeSource
+```
+
+## LedgerReportingSchedulePeriodResolver
+
+Qualified name: <code>Meridian.Ui.Shared.Services.LedgerReportingSchedulePeriodResolver</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs:48](../../../../src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs#L48).
+
+Ledger-store-backed IReportingSchedulePeriodResolver.
+
+```csharp
+public sealed class LedgerReportingSchedulePeriodResolver : IReportingSchedulePeriodResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public LedgerReportingSchedulePeriodResolver(ILedgerJournalStore journalStore) : this((journalStore?? throw new ArgumentNullException(nameof(journalStore))).GetLedgerBookAsync, (fundId, ct) =&gt; journalStore.ListLedgerBooksAsync(fundProfileId : fundId, ct : ct), (bookId, ct) =&gt; journalStore.ListPeriodsAsync(ledgerBookId : bookId, ct : ct));</code> | [src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs:54](../../../../src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs#L54) |  |
+| <code>public LedgerReportingSchedulePeriodResolver(Func&lt;Guid, CancellationToken, Task&lt;LedgerBookRecord?&gt;&gt; getBook, Func&lt;string, CancellationToken, Task&lt;IReadOnlyList&lt;LedgerBookRecord&gt;&gt;&gt; listFundBooks, Func&lt;Guid, CancellationToken, Task&lt;IReadOnlyList&lt;LedgerAccountingPeriod&gt;&gt;&gt; listBookPeriods);</code> | [src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs:63](../../../../src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs#L63) | Lookup-delegate constructor; lets the selection rules be exercised without a full store. |
+| <code>public async Task&lt;ReportingSchedulePeriodMatch?&gt; ResolvePeriodAsync(ReportingRunParametersDto parameters, DateOnly date, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs:73](../../../../src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs#L73) |  |
+| <code>public async Task&lt;ReportingSchedulePeriodMatch?&gt; ResolveNextClosePeriodAsync(ReportingRunParametersDto parameters, DateOnly currentPeriodEnd, ReportingSchedulePeriodFrequencyDto frequency, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs:102](../../../../src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs#L102) |  |
+
 ## LiquidityWarning
 
 Qualified name: <code>Meridian.Ui.Shared.Services.LiquidityWarning</code>. Kind: `record`.
@@ -824,12 +871,24 @@ public sealed record PolicyDecision(bool Allowed, string Reason, bool RequiresDu
 
 Qualified name: <code>Meridian.Ui.Shared.Services.PortfolioCashLadderReadService</code>. Kind: `class`.
 
+Source: [src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.Comparison.cs:7](../../../../src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.Comparison.cs#L7).
+
+```csharp
+public sealed partial class PortfolioCashLadderReadService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;PeriodComparisonDto&gt; GetCashLadderComparisonAsync(PortfolioCashLadderQuery query, DateOnly? baselineAsOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.Comparison.cs:19](../../../../src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.Comparison.cs#L19) | Today&#x27;s ladder against the ladder rebuilt as of baselineAsOf (default: the last day of the previous calendar month): opening cash, flows, the lowest cumulative cash, the number of buckets below the minimum, and each bucket&#x27;s net flow by position. The prior ladder opens from the ledger&#x27;s cash as of that day; instruments are projected from the terms recorded by the end of that day when the asset-operations service can, and from current terms otherwise. |
+
 Source: [src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.cs:14](../../../../src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.cs#L14).
 
 Read model for the portfolio-wide cash ladder: resolves the securities the portfolio actually holds (and their quantities) from an optional holdings source, runs each held instrument through the asset-operations projection surface, joins opening cash and capital-schedule rows from optional providers, and hands the assembled inputs to PortfolioCashLadderEngine.
 
 ```csharp
-public sealed class PortfolioCashLadderReadService : IPortfolioCashLadderQueryService
+public sealed partial class PortfolioCashLadderReadService : IPortfolioCashLadderQueryService
 ```
 
 Declared public members:
@@ -837,7 +896,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public PortfolioCashLadderReadService(ISecurityMasterQueryService? securityMasterQueryService = null, IAssetOperationsQueryService? assetOperationsQueryService = null, IPortfolioHoldingsSource? holdingsSource = null, IPortfolioCashBalanceProvider? cashBalanceProvider = null, IPortfolioCapitalScheduleProvider? capitalScheduleProvider = null, Meridian.Contracts.Calendars.IBusinessDayCalendarSource? calendars = null, TimeProvider? clock = null);</code> | [src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.cs:28](../../../../src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.cs#L28) |  |
-| <code>public async Task&lt;PortfolioCashLadderDto&gt; GetCashLadderAsync(PortfolioCashLadderQuery query, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.cs:46](../../../../src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.cs#L46) |  |
+| <code>public Task&lt;PortfolioCashLadderDto&gt; GetCashLadderAsync(PortfolioCashLadderQuery query, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.cs:46](../../../../src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.cs#L46) |  |
 
 ## PortfolioLedgerCashBalanceProvider
 
@@ -848,7 +907,7 @@ Source: [src/Meridian.Ui.Shared/Services/PortfolioLedgerCashBalanceProvider.cs:2
 Supplies the portfolio cash ladder&#x27;s opening cash by reading the actuals view of the double-entry ledger. Cash is taken from the asset-side cash accounts (LedgerAccounts.Cash and the per-currency LedgerAccounts.CashInCurrency accounts) consolidated across the project&#x27;s ledger books.
 
 ```csharp
-public sealed class PortfolioLedgerCashBalanceProvider : IPortfolioCashBalanceProvider
+public sealed class PortfolioLedgerCashBalanceProvider : IPortfolioCashBalanceProvider, IPortfolioCashBalanceHistoryProvider
 ```
 
 Declared public members:
@@ -857,6 +916,7 @@ Declared public members:
 | --- | --- | --- |
 | <code>public PortfolioLedgerCashBalanceProvider(ProjectLedgerBook? ledgerBook = null);</code> | [src/Meridian.Ui.Shared/Services/PortfolioLedgerCashBalanceProvider.cs:46](../../../../src/Meridian.Ui.Shared/Services/PortfolioLedgerCashBalanceProvider.cs#L46) | The ProjectLedgerBook is optional so that registering this provider can never fail read-model resolution in a host that has not composed the ledger feature: when it is absent the ladder simply opens from zero cash, exactly as it does today, and the engine emits its &quot;no cash balances were provided&quot; warning. |
 | <code>public Task&lt;IReadOnlyList&lt;PortfolioCashBalanceDto&gt;&gt; GetCashBalancesAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PortfolioLedgerCashBalanceProvider.cs:51](../../../../src/Meridian.Ui.Shared/Services/PortfolioLedgerCashBalanceProvider.cs#L51) |  |
+| <code>public Task&lt;IReadOnlyList&lt;PortfolioCashBalanceDto&gt;&gt; GetCashBalancesAsOfAsync(DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PortfolioLedgerCashBalanceProvider.cs:99](../../../../src/Meridian.Ui.Shared/Services/PortfolioLedgerCashBalanceProvider.cs#L99) | Cash at the end of asOf (UTC), from the same actuals-view cash accounts, read from the ledger&#x27;s dated snapshot rather than its current summaries. |
 
 ## PortfolioLedgerWorkflowStatusService
 
@@ -997,40 +1057,3 @@ Source: [src/Meridian.Ui.Shared/Services/PeriodAdjustmentPreparationService.cs:9
 ```csharp
 public sealed record PreparePeriodAdjustmentRequest(Guid LedgerBookId, Guid SourceJournalEntryId, Guid TargetPeriodId, DateOnly AccountingDate, string IntentId, string Reason, bool ReversePeriodEndMark = false);
 ```
-
-## PrivateCapitalBankObservationService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PrivateCapitalBankObservationService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalBankObservationService.cs:14](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalBankObservationService.cs#L14).
-
-Imports reviewed settled bank observations without creating a payment or posting cash.
-
-```csharp
-public sealed class PrivateCapitalBankObservationService(IEvidenceArtifactStore vault, IBankingStore store, TimeProvider? clock = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;PrivateCapitalBankObservationImportResultDto&gt; ImportAsync(PrivateCapitalScopeDto scope, ImportPrivateCapitalBankObservationRequest request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalBankObservationService.cs:28](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalBankObservationService.cs#L28) |  |
-
-## PrivateCapitalFundEventCommandCenterService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PrivateCapitalFundEventCommandCenterService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs:9](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs#L9).
-
-Builds private-capital fund-event command-center projections with readiness and published-output evidence.
-
-```csharp
-public sealed class PrivateCapitalFundEventCommandCenterService : IPrivateCapitalFundEventCommandCenterService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PrivateCapitalFundEventCommandCenterService(IManualJournalEntryWorkbenchService manualJournalEntryWorkbenchService);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs:28](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs#L28) |  |
-| <code>public async Task&lt;PrivateCapitalFundEventCommandCenterDto?&gt; GetCommandCenterAsync(string? fundProfileId, Guid? ledgerBookId, string fundEventId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs:33](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs#L33) |  |

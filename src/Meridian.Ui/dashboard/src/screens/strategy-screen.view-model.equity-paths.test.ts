@@ -229,9 +229,10 @@ describe("equity-path compare builders", () => {
   });
 });
 
-describe("two-run compare selection stays as it was", () => {
-  it("still keeps only the last two runs", () => {
-    expect(toggleRunSelection(["a", "b"], "c")).toEqual(["b", "c"]);
+describe("compare selection is independent of the equity-path set", () => {
+  it("adds up to four runs and refuses a fifth rather than dropping the oldest", () => {
+    expect(toggleRunSelection(["a", "b"], "c")).toEqual(["a", "b", "c"]);
+    expect(toggleRunSelection(["a", "b", "c", "d"], "e")).toEqual(["a", "b", "c", "d"]);
     expect(toggleRunSelection(["a", "b"], "a")).toEqual(["b"]);
   });
 });

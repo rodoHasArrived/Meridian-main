@@ -21,6 +21,10 @@ import { hasMetricBasisDetail, metricBasisLabel, metricBasisValue, presentMetric
 import { useId } from "react";
 import { MetricPassport } from "@/components/meridian/metric-passport";
 
+function metricPopulation(metric: MetricSnapshot): string | null {
+  return "population" in metric && typeof metric.population === "string" && metric.population ? metric.population : null;
+}
+
 const statToneClass: Record<MetricSnapshot["tone"], string> = {
   default: "text-foreground",
   success: "text-success",
@@ -126,8 +130,14 @@ export function StatStripPresentation({
   // differ); otherwise the strip's own scope is printed once, so no strip leaves the operator
   // guessing what it counts.
   const provenanceStatesScope = Boolean(provenanceLine) && metrics.some((metric) => Boolean(metric.provenance?.scope?.trim()));
+  // Registry figures state what they count. One population shared by the strip is stated once;
+  // mixed populations are stated under each figure, so "1 of 4" never reads as the same group as
+  // "0 of 3" on another screen.
+  const populations = metrics.map(metricPopulation);
+  const sharedPopulation = populations.every((population) => population && population === populations[0]) ? populations[0] : null;
   const footnote = [
     stripFreshness === "fresh" ? null : degradedStripLabel[stripFreshness],
+    sharedPopulation ? `Covers: ${sharedPopulation}` : null,
     provenanceLine,
     !provenanceStatesScope && stripScope ? `Scope: ${stripScope}` : null
   ].filter(Boolean).join(" · ");
@@ -154,8 +164,14 @@ export function StatStripPresentation({
               title={trust.title ?? undefined}
               data-freshness={trust.freshness}
             >
-              <dt className={cn("whitespace-nowrap text-xs font-medium text-muted-foreground", usesTrackedCaps(metricLabel) && "uppercase tracking-[0.08em]")}>
+              <dt
+                className={cn("whitespace-nowrap text-xs font-medium text-muted-foreground", usesTrackedCaps(metricLabel) && "uppercase tracking-[0.08em]")}
+                title={metricPopulation(metric) ?? undefined}
+              >
                 {metricLabel}
+                {!sharedPopulation && metricPopulation(metric) ? (
+                  <span className="block font-normal normal-case tracking-normal" data-kpi-population-label>{metricPopulation(metric)}</span>
+                ) : null}
               </dt>
               <dd className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5" aria-describedby={sharedBasisDescription}>
                 <span

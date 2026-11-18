@@ -135,6 +135,12 @@ export function TradingOrderTicketForm({ orderTicket, preview }: {
           }
         />
 
+        {orderTicket.manualEntryDisabledReason && (
+          <div role="status" data-testid="manual-order-entry-unavailable" className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-foreground">
+            {orderTicket.manualEntryDisabledReason}
+          </div>
+        )}
+
         {orderTicket.errorText && (
           <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger flex items-center gap-2">
             <XCircle className="h-4 w-4 shrink-0" />

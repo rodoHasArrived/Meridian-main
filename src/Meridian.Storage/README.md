@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-17
 ---
 
 # src/Meridian.Storage
@@ -71,6 +71,10 @@ intent, approved FX revisions and legacy-attribution sidecars over exact immutab
 PostgreSQL supplies authority leases through financial commit; file stores provide durable local/demo
 parity without a production or cross-process fencing claim. Migration keeps old journal/evidence
 bytes and refuses unresolved history. See [the operator procedure](../../docs/operators/intercompany-entity-controls.md).
+
+`PostgresIntercompanyBalanceConfirmationStore` (ledger migration `073`, rewrite and truncate refused)
+and `FileIntercompanyBalanceConfirmationStore` retain every confirmation version append-only under
+an expected-version check. See [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
 
 Entity lifecycle history uses immutable tenant-bound timeline revisions and authority leases.
 Ledger migration 061 initializes existing books in `LegacyWarning` and stamps new books
@@ -158,6 +162,10 @@ unique within a tenant. Database guards refuse history rewrites and tenant reass
 reads remain stable under entity authority locks; sorted shared agreement leases survive through
 the ledger store's owned commit. Explicit references require that authority, while unsupported
 caller-owned append paths refuse them. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
+
+`PostgresIntercompanyRateFixingStore` (fund-structure migration `009`, rewrite and truncate refused)
+and `FileIntercompanyRateFixingStore` retain every fixing version append-only and tenant-scoped under
+an expected-version check. See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
 
 `LedgerOpenLotProjection` uses shared successor quote validation without rounding retained basis.
 The exception still requires unit-successor lineage, an originating atomic mutation batch and a

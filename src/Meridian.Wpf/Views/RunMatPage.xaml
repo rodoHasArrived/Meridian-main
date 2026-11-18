@@ -2,6 +2,7 @@
         FontFamily="{DynamicResource MeridianBodyFontFamily}"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:converters="clr-namespace:Meridian.Wpf.Converters"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
       Unloaded="OnPageUnloaded"
@@ -9,6 +10,7 @@
       AutomationProperties.AutomationId="RunMatPage">
     <Page.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters:DisplayTimestampConverter x:Key="DisplayTimestampConverter" />
     </Page.Resources>
 
     <Grid Margin="24"
@@ -121,7 +123,7 @@
                                     <TextBlock Text="{Binding Name}"
                                                FontWeight="SemiBold"
                                                Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                    <TextBlock Text="{Binding LastWriteTimeUtc, StringFormat='Updated {0:yyyy-MM-dd HH:mm} UTC'}"
+                                    <TextBlock Text="{Binding LastWriteTimeUtc, Converter={StaticResource DisplayTimestampConverter}, StringFormat='Updated {0}'}"
                                                FontSize="11"
                                                Foreground="{StaticResource ConsoleTextMutedBrush}" />
                                 </StackPanel>
