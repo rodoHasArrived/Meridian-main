@@ -42,7 +42,8 @@ public sealed partial class EventDrivenDecouplingTests
             new(Opening: new(SecurityTradePostingKind.OpenLong, 100_000m, 101_250m), FinancialAccountId: "broker")
             {
                 AccruedInterest = 1_500m
-            }) with { UsesFaceValuePercentageOfPar = false, FillPrice = 1.0125m };
+            }) with
+        { UsesFaceValuePercentageOfPar = false, FillPrice = 1.0125m };
         var store = new InMemoryTradeFillPostingStore(TestPostingScope);
         var target = new InMemoryTradeFillLedgerPostingTarget();
 

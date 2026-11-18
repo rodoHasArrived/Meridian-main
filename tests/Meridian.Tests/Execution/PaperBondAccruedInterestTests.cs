@@ -89,7 +89,8 @@ public sealed class PaperBondAccruedInterestTests
     public void DurableReplay_ReproducesDirtySettlementFromTheStampedReport()
     {
         var fill = BondFill(OrderSide.Buy, 100_000m, 101.25m, accruedPer100: 1.50m)
-            with { SettlementDate = new DateOnly(2026, 11, 19) };
+            with
+        { SettlementDate = new DateOnly(2026, 11, 19) };
         var replayed = JsonSerializer.Deserialize<ExecutionReport>(JsonSerializer.Serialize(fill))!;
 
         replayed.AccruedInterestPer100.Should().Be(1.50m);
