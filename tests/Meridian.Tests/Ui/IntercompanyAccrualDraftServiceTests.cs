@@ -154,15 +154,15 @@ public sealed partial class IntercompanyAccrualDraftServiceTests
 
     private static IntercompanyAccrualDraftService Service(bool openPeriod = true,
         IReadOnlyList<LedgerJournalEntryRecord>? principalJournals = null,
-        IReadOnlyList<LedgerJournalEntryRecord>? interestJournals = null, bool structured = true,
+        IReadOnlyList<LedgerJournalEntryRecord>? interestJournals = null, bool structured = true, bool compounding = false,
         bool floating = false, IntercompanyRateFixingService? fixings = null)
     {
         var interest = Profile(Interest, IntercompanyAccountingTemplateKindDto.LoanInterest,
             [new(Data.EntityA, Data.BookA, "a-int-recv", "a-int-pay", null, "a-int-income", "a-int-expense"),
-             new(Data.EntityB, Data.BookB, "b-int-recv", "b-int-pay", null, "b-int-income", "b-int-expense")], structured, floating);
+             new(Data.EntityB, Data.BookB, "b-int-recv", "b-int-pay", null, "b-int-income", "b-int-expense")], structured, compounding, floating);
         var principal = Profile(Principal, IntercompanyAccountingTemplateKindDto.Loan,
             [new(Data.EntityA, Data.BookA, "a-receivable", "a-payable", "a-cash"),
-             new(Data.EntityB, Data.BookB, "b-receivable", "b-payable", "b-cash")], structured, floating);
+             new(Data.EntityB, Data.BookB, "b-receivable", "b-payable", "b-cash")], structured, compounding, floating);
         var store = new Mock<IIntercompanyAccountingArrangementStore>();
         store.Setup(x => x.GetAsync("tenant-a", Interest, It.IsAny<CancellationToken>())).ReturnsAsync(History(interest));
         store.Setup(x => x.GetAsync("tenant-a", Principal, It.IsAny<CancellationToken>())).ReturnsAsync(History(principal));
@@ -195,7 +195,7 @@ public sealed partial class IntercompanyAccrualDraftServiceTests
     }
 
     private static ResolvedIntercompanyAccountingArrangementDto Profile(Guid id, IntercompanyAccountingTemplateKindDto kind,
-        IReadOnlyList<IntercompanyPartyMappingDto> mappings, bool structured, bool floating = false)
+        IReadOnlyList<IntercompanyPartyMappingDto> mappings, bool structured, bool compounding = false, bool floating = false)
     {
         var profile = IntercompanyArrangementTestData.Create(id, Organization, kind, Data.EntityA, Data.EntityB, "USD", mappings,
             Guid.NewGuid(), Effective);
@@ -207,7 +207,8 @@ public sealed partial class IntercompanyAccrualDraftServiceTests
                         IntercompanyRateBasisDto.Floating, null, "SOFR", 125m, IntercompanyDayCountDto.Actual360, IntercompanyCompoundingDto.Simple,
                         FixingLagBusinessDays: 2)
                     : new(new(From, new(2027, 6, 1), IntercompanyFrequencyDto.Monthly, "WEEKENDS", BusinessDayConvention.Following),
-                        IntercompanyRateBasisDto.Fixed, 0.05m, DayCount: IntercompanyDayCountDto.Actual360, Compounding: IntercompanyCompoundingDto.Simple)
+                        IntercompanyRateBasisDto.Fixed, 0.05m, DayCount: IntercompanyDayCountDto.Actual360,
+                        Compounding: compounding ? IntercompanyCompoundingDto.Monthly : IntercompanyCompoundingDto.Simple)
             }
             : new IntercompanyAgreementTermsDto(RateDescription: "Five percent, monthly");
         return profile with { LegalRevision = profile.LegalRevision with { Terms = profile.LegalRevision.Terms with { PartyOneRole = "Lender", PartyTwoRole = "Borrower", Terms = terms } } };

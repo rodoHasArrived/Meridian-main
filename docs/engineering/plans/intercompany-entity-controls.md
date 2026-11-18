@@ -190,6 +190,20 @@ row `W12-ICCONFIRM-001` carries its status. Semantics are in the
 Not in this slice: opt-in close blocking (needs its own decision and a reviewed policy revision),
 pairs spanning two companies of one tenant, and posting adjustments from a dispute.
 
+### Periodic compounding extension (2026-11-17)
+
+`DEC-IC-COMPOUND-001` and [ADR-030](../../adr/030-intercompany-interest-compounding.md) add rule
+`intercompany-accrual-v3`; roadmap row `W12-ICCOMPOUND-001` carries its status. Development verification only.
+
+| Piece | Decision and boundary | Verification |
+| --- | --- | --- |
+| Base | Posted principal plus the posted accrued-interest balance of the loan-interest profile at each period start; settlements and reversals reduce it. | `IntercompanyCompoundingAccrualPreviewTests`, `IntercompanyCompoundingSourceTests` (real journals, reversal) |
+| Coverage | Posted, unreversed accruals must cover every earlier day; one request stays in one period; frequency must equal the schedule. | `IntercompanyCompoundingAccrualPreviewTests` |
+| Evidence | The balance, posted windows and first principal date are retained; the guard refuses v3 without them; the workbench re-reads them before review or posting. | `IntercompanyAccrualDraftServiceTests.Compounding` |
+| Surfaces | Browser and WPF slice tables show compounded interest. | browser accrual test, `IntercompanyCompoundingSliceRowTests` |
+
+Daily compounding and compounding that differs from the schedule frequency remain out of scope.
+
 ## Verification record (2026-11-14)
 
 This records development verification for `W12-ICAGREE-001`, `W12-ENTITY-001`, `W12-ICPAIR-001`

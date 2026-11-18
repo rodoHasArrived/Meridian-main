@@ -452,3 +452,22 @@ decisions:
       - W12-ICFEE-001
       - W12-ICACCRUAL-001
       - W12-ICAGREE-001
+  - id: DEC-IC-COMPOUND-001
+    title: Bring periodic compounding of intercompany interest into scope under rule intercompany-accrual-v3; register W12-ICCOMPOUND-001
+    status: accepted
+    decided_on: 2026-11-17
+    owner_lane: Accounting and Ledger
+    summary: >-
+      Recorded on the repository owner's instruction of 2026-11-17, which chose compounding as the next slice of
+      the broader-terms proposal (ADR-030). A loan whose compounding frequency equals its schedule frequency now
+      accrues each period on posted principal plus the accrued interest posted on the loan-interest profile at the
+      period start, net of settlements and reversals. A window is refused unless posted, unreversed accruals cover
+      every earlier day, and one request stays inside one period, so nothing compounds on unposted interest. The
+      facts read are retained and re-checked before review or posting. No capitalisation journal is introduced.
+      Simple interest under intercompany-accrual-v1 is unchanged. Daily compounding and mismatched frequencies are
+      not brought into scope. W12-ICCOMPOUND-001 is registered as in_progress with yellow health under active
+      implementation. The decision changes no existing row's rank, status, dependency or acceptance, weakens no
+      review, posting or authorization control, and grants no release authority.
+    related_roadmap_items:
+      - W12-ICCOMPOUND-001
+      - W12-ICACCRUAL-001

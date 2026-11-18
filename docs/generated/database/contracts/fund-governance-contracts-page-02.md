@@ -2,7 +2,7 @@
 
 # `fund-governance-contracts` data objects - page 2 of 4
 
-Objects 81-160 of 245. References crossing pages remain available in the dependency manifest.
+Objects 81-160 of 246. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -397,8 +397,11 @@ classDiagram
     class Meridian_Contracts_FundStructure_IntercompanyAccrualComputationInput["IntercompanyAccrualComputationInput"] {
         +DateOnly AccrualFrom
         +DateOnly AccrualTo
+        +IReadOnlyList~IntercompanyAccrualPrincipalSegmentDto~ AccruedInterest
         +IReadOnlyList~IntercompanyAccrualAuthoritySegment~ Authority
+        +DateOnly? FirstPrincipalDate
         +IReadOnlyList~IntercompanyApprovedRateFixingDto~ Fixings
+        +IReadOnlyList~IntercompanyAccrualWindowDto~ PostedAccrualWindows
         +IReadOnlyList~IntercompanyAccrualPrincipalSegmentDto~ Principal
     }
     class Meridian_Contracts_FundStructure_IntercompanyAccrualFixingPinDto["IntercompanyAccrualFixingPinDto"] {
@@ -437,6 +440,7 @@ classDiagram
         +string AgreementPayloadHash
         +int AgreementVersion
         +decimal AnnualRate
+        +decimal? CompoundedInterest
         +string DayCount
         +IntercompanyAccrualFixingPinDto? Fixing
         +DateOnly From
@@ -444,6 +448,9 @@ classDiagram
         +string PrincipalEvidenceReference
         +int SchedulePeriodSequence
         +int Sequence
+    }
+    class Meridian_Contracts_FundStructure_IntercompanyAccrualWindowDto["IntercompanyAccrualWindowDto"] {
+        +DateOnly From
         +DateOnly To
     }
     class Meridian_Contracts_FundStructure_IntercompanyAgreementActionDto["IntercompanyAgreementActionDto"] {
@@ -592,8 +599,6 @@ classDiagram
         +int PageSize
         +IntercompanyAgreementStatusDto? Status
     }
-    class Meridian_Contracts_FundStructure_IntercompanyAgreementReviewIntegrity["IntercompanyAgreementReviewIntegrity"] {
-    }
     Meridian_Contracts_FundStructure_FundStructureGraphDto --> Meridian_Contracts_FundStructure_FundStructureNodeDto
     Meridian_Contracts_FundStructure_FundStructureNodeDto --> Meridian_Contracts_FundStructure_FundStructureNodeKindDto
     Meridian_Contracts_FundStructure_FundStructureQuery --> Meridian_Contracts_FundStructure_FundStructureNodeKindDto
@@ -633,6 +638,7 @@ classDiagram
     Meridian_Contracts_FundStructure_IntercompanyAccountingArrangementHistoryDto --> Meridian_Contracts_FundStructure_IntercompanyAccountingArrangementEventDto
     Meridian_Contracts_FundStructure_IntercompanyAccrualComputationInput --> Meridian_Contracts_FundStructure_IntercompanyAccrualAuthoritySegment
     Meridian_Contracts_FundStructure_IntercompanyAccrualComputationInput --> Meridian_Contracts_FundStructure_IntercompanyAccrualPrincipalSegmentDto
+    Meridian_Contracts_FundStructure_IntercompanyAccrualComputationInput --> Meridian_Contracts_FundStructure_IntercompanyAccrualWindowDto
     Meridian_Contracts_FundStructure_IntercompanyAccrualPreviewDto --> Meridian_Contracts_FundStructure_IntercompanyAccrualCalendarPinDto
     Meridian_Contracts_FundStructure_IntercompanyAccrualPreviewDto --> Meridian_Contracts_FundStructure_IntercompanyAccrualSliceDto
     Meridian_Contracts_FundStructure_IntercompanyAccrualSliceDto --> Meridian_Contracts_FundStructure_IntercompanyAccrualFixingPinDto

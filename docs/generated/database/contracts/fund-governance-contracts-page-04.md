@@ -2,11 +2,15 @@
 
 # `fund-governance-contracts` data objects - page 4 of 4
 
-Objects 241-245 of 245. References crossing pages remain available in the dependency manifest.
+Objects 241-246 of 246. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% fund-governance-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_FundStructure_UpdateCustodianAccountDetailsRequest["UpdateCustodianAccountDetailsRequest"] {
+        +CustodianAccountDetailsDto Details
+        +string UpdatedBy
+    }
     class Meridian_Contracts_FundStructure_UpdateLegalEntityProfileRequest["UpdateLegalEntityProfileRequest"] {
         +string? BaseCurrency
         +IReadOnlyList~BeneficialOwnerSummaryDto~? BeneficialOwners

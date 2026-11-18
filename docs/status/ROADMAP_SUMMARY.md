@@ -79,6 +79,7 @@ Snapshot date: 2026-11-12
 | W12-FINRPT-001 | Ledger-backed financial statement control pack | planned | green | medium | Accounting and Ledger |
 | W12-ICACCRUAL-001 | Governed intercompany loan-interest accrual from structured terms | in_progress | yellow | high | Accounting and Ledger |
 | W12-ICAGREE-001 | Intercompany accounting profiles and legacy attribution | accepted | green | high | Accounting and Ledger |
+| W12-ICCOMPOUND-001 | Periodic compounding of governed intercompany interest on posted accruals | in_progress | yellow | medium | Accounting and Ledger |
 | W12-ICCONFIRM-001 | Reciprocal intercompany balance confirmation, advisory | in_progress | yellow | high | Accounting and Ledger |
 | W12-ICFEE-001 | Governed fixed intercompany management fees from declared terms | in_progress | yellow | high | Accounting and Ledger |
 | W12-ICFLOAT-001 | Floating-rate intercompany loan interest from reviewed fixings | in_progress | yellow | high | Accounting and Ledger |

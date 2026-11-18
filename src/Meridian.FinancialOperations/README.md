@@ -80,6 +80,9 @@ posted schedule balances for one approved accounting profile at a date, then rec
 and resolve steps against the exact version and balance digest shown. Advisory only; close is
 unchanged. See [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
 
+`IntercompanyAccrualSourceBuilder` reads compounding facts (posted accrued-interest balance and standing
+accrual windows) and re-verifies them before review or posting. See [periodic compounding](../../docs/domain/intercompany-agreements.md#periodic-compounding).
+
 Intercompany services own approved accounting-profile revisions and governed counterpart templates;
 canonical legal terms and independent review remain in Application/FundStructure.
 Consolidation dispatches exact book policy versions: retained v1, stable-role/N-entity v2, whole-book

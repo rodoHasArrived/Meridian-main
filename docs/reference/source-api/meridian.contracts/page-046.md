@@ -6,6 +6,43 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionRestatementEvaluationStates
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionRestatementEvaluationStates</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs#L50).
+
+Defines the evaluation outcomes used when assessing corporate action restatements.
+
+```csharp
+public static class CorporateActionRestatementEvaluationStates
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Evaluated = &quot;Evaluated&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs:52](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs#L52) |  |
+| <code>public const string PendingPeriodValidation = &quot;PendingPeriodValidation&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs:53](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs#L53) |  |
+
+## CorporateActionScopeMismatchException
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionScopeMismatchException</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:941](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L941).
+
+Signals that corporate action data does not match the requested operating scope.
+
+```csharp
+public sealed class CorporateActionScopeMismatchException : CorporateActionOperationException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CorporateActionScopeMismatchException(string message) : base(CorporateActionProblemCodes.ScopeMismatch, message);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:943](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L943) |  |
+
 ## CorporateActionSourceConflictException
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionSourceConflictException</code>. Kind: `class`.
@@ -764,33 +801,3 @@ Normalized XBRL fact retained in the local EDGAR facts store.
 ```csharp
 public sealed record EdgarXbrlFact(string Cik, string Taxonomy, string Concept, string Unit, decimal? NumericValue, string? RawValue, DateOnly? StartDate, DateOnly? EndDate, int? FiscalYear, string? FiscalPeriod, string? Form, string? AccessionNumber, DateOnly? FiledDate, string? Frame);
 ```
-
-## ExchangeCorporateActionTerms
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ExchangeCorporateActionTerms</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:169](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L169).
-
-Held units exchanged for a successor security, optionally with cash (merger, conversion, exchange).
-
-```csharp
-public sealed record ExchangeCorporateActionTerms(string EventType, Guid? SuccessorSecurityId, decimal? ExchangeRatio, decimal? CashPerUnit, bool? IsVoluntary) : CorporateActionTerms(EventType);
-```
-
-## FaceValueAccrualHolding
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.FaceValueAccrualHolding</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/FaceValueAccrualHolding.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueAccrualHolding.cs#L13).
-
-A retained lot&#x27;s entitlement for one accounting date. OpenShare reflects closing disposals, while AccrualFactor is the factor before that date&#x27;s principal paydown: interest accrues through the paydown date before principal is reduced. Lot retains the acquisition facts and the factor held at that day&#x27;s close. This read projection must never be persisted as a replacement lot of record.
-
-```csharp
-public sealed record FaceValueAccrualHolding(DateOnly Date, FaceValueLot Lot, decimal OpenShare, decimal AccrualFactor, Guid? TaxLotRecordId = null, long? Version = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] BondAmortizationMethod? AmortizationMethod = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public decimal AccrualFace =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueAccrualHolding.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueAccrualHolding.cs#L24) | Face entitled to the date&#x27;s interest, with the factor and open share applied once. |

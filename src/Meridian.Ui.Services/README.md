@@ -66,6 +66,9 @@ name their pinned fixing. See [floating rates and reviewed fixings](../../docs/d
 over the client's exact-decimal confirmation reads and actions; a refused action keeps its request
 identity only for an identical retry. See [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
 
+The interest accrual workspace shows each slice's compounded interest for rule v3 previews. See
+[periodic compounding](../../docs/domain/intercompany-agreements.md#periodic-compounding).
+
 `IntercompanyCounterpartQueueWorkspace` is the desktop state for counterpart delivery records and
 booking breaks over the same `/api/ledger/intercompany/proposals` and `/breaks` routes as the
 browser queue. Retry, explicit linking and FX repricing send a reasoned request whose identity is

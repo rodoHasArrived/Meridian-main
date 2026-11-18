@@ -35,7 +35,19 @@ public sealed record IntercompanyAccrualEvidenceDto(string RuleVersion, Guid Dra
     string MonetaryAccountNodeId, string OperatingAccountNodeId, string FunctionalCurrency,
     [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal FunctionalAmount,
     IntercompanyAccrualPreviewDto Computation, IntercompanyAccrualPrincipalEvidenceDto Principal,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] ConsolidationFxAmountDto? Fx = null);
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] ConsolidationFxAmountDto? Fx = null)
+{
+    /// <summary>Compounding loans (rule v3): the posted accrued-interest facts the base was read from. Absent otherwise.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IntercompanyAccrualCompoundingEvidenceDto? Compounding { get; init; }
+}
+
+/// <summary>
+/// The posted accrued-interest balance of the loan-interest profile (same shape as principal evidence), the posted
+/// accrual windows that prove every earlier day was accrued, and the first principal date coverage starts from.
+/// </summary>
+public sealed record IntercompanyAccrualCompoundingEvidenceDto(IntercompanyAccrualPrincipalEvidenceDto? AccruedInterest,
+    IReadOnlyList<IntercompanyAccrualWindowDto> PostedWindows, DateOnly FirstPrincipalDate, DateOnly BalanceFrom);
 
 /// <summary>Preview and draft share one shape so the operator reviews exactly what would be retained.</summary>
 public sealed record IntercompanyAccrualProposalDto(IntercompanyAccrualPreviewDto Computation,
@@ -148,6 +160,11 @@ public static class IntercompanyAccrualEvidenceGuard
             || evidence.Computation is not { IsReady: true, Amount: { } amount } || evidence.Principal is null
             || evidence.Computation.RuleVersion != evidence.RuleVersion)
             return "Accrual provenance uses an unsupported calculation rule.";
+        // v3 always retains the compounding facts it read; v1 never compounds.
+        if ((evidence.RuleVersion == IntercompanyAccrualRules.CompoundingRuleVersion) != (evidence.Compounding is not null)
+            || evidence.Computation.Slices.Any(slice => slice.CompoundedInterest is not null)
+                != (evidence.RuleVersion == IntercompanyAccrualRules.CompoundingRuleVersion))
+            return "Accrual provenance states compounding that differs from its retained interest facts.";
         // v1 never carries a fixing; under v2 every pinned slice's rate is exactly its fixing plus the declared spread.
         if (evidence.Computation.Slices.Any(slice => slice.Fixing is { } pin
                 ? evidence.RuleVersion != IntercompanyAccrualRules.FloatingRuleVersion || slice.AnnualRate != pin.IndexRate + pin.SpreadBps / 10_000m
@@ -206,6 +223,7 @@ public static class IntercompanyAccrualEvidenceGuard
 [JsonSerializable(typeof(CreateIntercompanyAccrualDraftRequest))]
 [JsonSerializable(typeof(IntercompanyAccrualEvidenceDto))]
 [JsonSerializable(typeof(IntercompanyAccrualPrincipalEvidenceDto))]
+[JsonSerializable(typeof(IntercompanyAccrualCompoundingEvidenceDto))]
 [JsonSerializable(typeof(IntercompanyAccrualProposalDto))]
 [JsonSerializable(typeof(IntercompanyAccrualPreviewDto))]
 public partial class IntercompanyAccrualJsonContext : JsonSerializerContext;

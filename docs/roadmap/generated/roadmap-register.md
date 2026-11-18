@@ -2741,6 +2741,50 @@ W12-ICAGREE-001: accepted; health green; evidence complete. Accepted by the repo
 - `SRC-STORAGE`
 - `SRC-UI-SHARED`
 
+## W12-ICCOMPOUND-001 - Periodic compounding of governed intercompany interest on posted accruals
+| Field | Value |
+| --- | --- |
+| Wave | W12 |
+| Status | in_progress |
+| Health | yellow |
+| Priority | medium |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-11-17 |
+
+### Current Summary
+
+W12-ICCOMPOUND-001: in_progress; health yellow; evidence in_progress. Rule intercompany-accrual-v3 compounds at each schedule period start on posted accrued interest, once every earlier day is posted; facts are pinned and re-checked. No capitalisation journal. Daily and mismatched compounding stay open.
+
+### Status References
+
+- Decisions: DEC-IC-COMPOUND-001
+- PR references (not inferred acceptance): none recorded
+- Evidence: [src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs](../../../src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs)
+- Evidence: [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs](../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs)
+- Evidence: [tests/Meridian.FundStructure.Tests/IntercompanyCompoundingAccrualPreviewTests.cs](../../../tests/Meridian.FundStructure.Tests/IntercompanyCompoundingAccrualPreviewTests.cs)
+- Evidence: [tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyCompoundingSourceTests.cs](../../../tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyCompoundingSourceTests.cs)
+- Evidence: [tests/Meridian.Tests/Ui/IntercompanyAccrualDraftServiceTests.Compounding.cs](../../../tests/Meridian.Tests/Ui/IntercompanyAccrualDraftServiceTests.Compounding.cs)
+
+
+### Exit Criteria
+
+- A loan compounding at its schedule frequency accrues each period on posted principal plus the accrued interest posted on its loan-interest profile at the period start, net of settlements and reversals.
+- A window is refused unless posted, unreversed accruals cover every earlier day, and one request stays inside one period.
+- The accrued-interest balance, posted windows and first principal date are retained as evidence and re-read before review or posting.
+- Simple loans still compute under intercompany-accrual-v1 with unchanged evidence and draft identity.
+- Browser and WPF accrual previews show each slice's compounded interest as exact decimal strings.
+
+### Source Modules
+
+- `SRC-CONTRACTS`
+- `SRC-APP`
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-UI-SHARED`
+- `SRC-UI-SERVICES`
+- `SRC-WPF`
+- `SRC-UI-DASHBOARD`
+
 ## W12-ICCONFIRM-001 - Reciprocal intercompany balance confirmation, advisory
 | Field | Value |
 | --- | --- |

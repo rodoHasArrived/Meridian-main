@@ -165,6 +165,9 @@ Fund Operations adds a Rate fixings tab (`Views/IntercompanyRateFixingsControl.x
 `IntercompanyRateFixingWorkspace`; the agreement editor declares the fixing lag and the Interest
 accrual tab shows each slice's fixing. See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
 
+The Interest accrual tab shows a Compounded interest column for compounding loans. See
+[periodic compounding](../../docs/domain/intercompany-agreements.md#periodic-compounding).
+
 A Counterpart proposals tab (`Views/IntercompanyCounterpartProposalsControl.xaml`) binds the shared
 `IntercompanyCounterpartQueueWorkspace`: delivery records and aged booking breaks for a source
 book, retained source lines and provenance, delivery retry, explicit FX repricing with a

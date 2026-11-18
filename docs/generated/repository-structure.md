@@ -1064,7 +1064,6 @@ Meridian-main
 │   │   ├── testing
 │   │   │   ├── pipeline-benchmark-profile.json
 │   │   │   └── test-skip-register.json
-│   │   ├── evidence-footprint-baseline.json
 │   │   ├── file-size-baseline.json
 │   │   └── postgresql-payload.json
 │   ├── dotnet
@@ -1147,7 +1146,6 @@ Meridian-main
 │       │   ├── check-doc-health-delta.py
 │       │   ├── check-duplicate-helpers.py
 │       │   ├── check-endpoint-cancellation.py
-│       │   ├── check-evidence-footprint.py
 │       │   ├── check-file-size.py
 │       │   ├── check-generated-output.py
 │       │   ├── check-inline-sha256.py
@@ -1418,6 +1416,7 @@ Meridian-main
 │   │   ├── 027-single-economic-model-consolidation.md
 │   │   ├── 028-governed-intercompany-interest-accrual.md
 │   │   ├── 029-governed-intercompany-fixed-management-fees.md
+│   │   ├── 030-intercompany-interest-compounding.md
 │   │   ├── _template.md
 │   │   └── README.md
 │   ├── ai
@@ -1831,7 +1830,6 @@ Meridian-main
 │   │   │   ├── bond-capability-expansion.md
 │   │   │   ├── browser-workstation-ux-program.md
 │   │   │   ├── carta-inspired-capital-lifecycle.md
-│   │   │   ├── desktop-workstation-screen-blueprint.checklist.json
 │   │   │   ├── desktop-workstation-screen-blueprint.md
 │   │   │   ├── god-file-burn-down-plan.md
 │   │   │   ├── intercompany-entity-controls.md
@@ -2031,9 +2029,12 @@ Meridian-main
 │   │   └── verified-outcome-recovery.md
 │   ├── plans
 │   │   ├── codebase-audit-cleanup-roadmap.md
+│   │   ├── desktop-workstation-screen-blueprint.checklist.json
+│   │   ├── desktop-workstation-screen-blueprint.md
 │   │   ├── paper-trading-cockpit-reliability-sprint.md
 │   │   ├── README.md
-│   │   └── report-writer-auto-preview-blueprint.md
+│   │   ├── report-writer-auto-preview-blueprint.md
+│   │   └── research-backtest-trust-and-velocity-blueprint.md
 │   ├── product
 │   │   ├── history
 │   │   │   └── production-readiness-2026-11-14.md
@@ -3424,6 +3425,8 @@ Meridian-main
 │   ├── docs.mk
 │   ├── install.mk
 │   └── test.mk
+├── manifests
+│   └── meridian-runtime-observability.yaml
 ├── Meridian Design System
 │   ├── api
 │   │   ├── accounting.js
@@ -4938,6 +4941,8 @@ Meridian-main
 │   │   ├── security_master-company.html
 │   │   ├── security_master-print.html
 │   │   └── security_master.html
+│   ├── uploads
+│   │   └── ChatGPT Image Apr 24, 2026, 03_58_29 PM.png
 │   ├── .designsystem-cleaned
 │   ├── .gitignore
 │   ├── .thumbnail
@@ -12733,6 +12738,7 @@ Meridian-main
 │   │   ├── IntercompanyAgreementServiceTests.cs
 │   │   ├── IntercompanyAgreementServiceTests.ExternalReview.cs
 │   │   ├── IntercompanyAgreementServiceTests.Lifecycle.cs
+│   │   ├── IntercompanyCompoundingAccrualPreviewTests.cs
 │   │   ├── IntercompanyFeeAccrualPreviewServiceTests.cs
 │   │   ├── IntercompanyFloatingAccrualPreviewTests.cs
 │   │   ├── IntercompanyRateFixingServiceTests.cs
@@ -13489,6 +13495,7 @@ Meridian-main
 │   │   │   │   ├── IntercompanyBalanceConfirmationRulesTests.cs
 │   │   │   │   ├── IntercompanyBalanceConfirmationServiceTests.cs
 │   │   │   │   ├── IntercompanyBalanceScheduleTests.cs
+│   │   │   │   ├── IntercompanyCompoundingSourceTests.cs
 │   │   │   │   ├── IntercompanyCounterpartReversalBuilderTests.cs
 │   │   │   │   ├── IntercompanyFeeAccrualSourceBuilderTests.cs
 │   │   │   │   ├── IntercompanyObligationExpiryChronologyTests.cs
@@ -14958,6 +14965,7 @@ Meridian-main
 │   │   │   ├── FundProfileScopeEndpointFilterTests.cs
 │   │   │   ├── FundStructureEndpointAuthorizationTests.cs
 │   │   │   ├── InMemoryFundStructureTenancyGuardTests.cs
+│   │   │   ├── IntercompanyAccrualDraftServiceTests.Compounding.cs
 │   │   │   ├── IntercompanyAccrualDraftServiceTests.cs
 │   │   │   ├── IntercompanyAccrualDraftServiceTests.Floating.cs
 │   │   │   ├── IntercompanyAgreementAuthorityTests.cs
@@ -15336,6 +15344,7 @@ Meridian-main
 │   │   │   ├── IntercompanyAgreementWorkspaceTests.Structured.cs
 │   │   │   ├── IntercompanyBalanceConfirmationWorkspaceTests.cs
 │   │   │   ├── IntercompanyBookChoiceTests.cs
+│   │   │   ├── IntercompanyCompoundingSliceRowTests.cs
 │   │   │   ├── IntercompanyCounterpartQueueWorkspaceTests.cs
 │   │   │   ├── IntercompanyInterestAccrualWorkspaceTests.cs
 │   │   │   ├── IntercompanyManagementFeeWorkspaceTests.cs
@@ -15741,7 +15750,6 @@ Meridian-main
 │   │   ├── test_check_dashboard_type_barrel.py
 │   │   ├── test_check_duplicate_helpers.py
 │   │   ├── test_check_endpoint_cancellation.py
-│   │   ├── test_check_evidence_footprint.py
 │   │   ├── test_check_file_size_ratchet.py
 │   │   ├── test_check_generated_output.py
 │   │   ├── test_check_inline_sha256.py
