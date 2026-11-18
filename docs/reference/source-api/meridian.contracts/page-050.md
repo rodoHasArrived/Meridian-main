@@ -6,6 +6,38 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ScheduleCalendarUsage
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleCalendarUsage</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:100](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L100).
+
+Evidence of one calendar, identified by id and content hash, used for one purpose.
+
+```csharp
+public sealed record ScheduleCalendarUsage(string CalendarId, string ContentHash, ScheduleCalendarPurpose Purpose);
+```
+
+## ScheduleDayCount
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleDayCount</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleDayCount.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleDayCount.cs#L16).
+
+Day-count fractions for schedule periods: builds the DayCountPeriodContext a generated period implies and dispatches to the canonical DayCountConventions.TryFraction(DayCountConvention, DateOnly, DateOnly, DayCountPeriodContext, out decimal, out string?).
+
+```csharp
+public static class ScheduleDayCount
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static DayCountPeriodContext ContextFor(SchedulePeriod period, ScheduleGenerationResult schedule);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleDayCount.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleDayCount.cs#L21) | The day-count context of period within schedule. |
+| <code>public static bool TryFraction(DayCountConvention convention, SchedulePeriod period, ScheduleGenerationResult schedule, DateOnly start, DateOnly end, out decimal fraction, [NotNullWhen(false)] out string? refusal);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleDayCount.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleDayCount.cs#L44) | The fraction of &#91;start, end) inside period, or a refusal when the window leaves the period&#x27;s accrual dates, the convention lacks context, or ICMA is asked of an accrual-adjusted schedule. |
+| <code>public static bool TryPeriodFraction(DayCountConvention convention, SchedulePeriod period, ScheduleGenerationResult schedule, out decimal fraction, [NotNullWhen(false)] out string? refusal);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleDayCount.cs:79](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleDayCount.cs#L79) | The fraction of the whole accrual period of period; see TryFraction. |
+
 ## ScheduleDiagnostic
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleDiagnostic</code>. Kind: `record`.
@@ -981,31 +1013,3 @@ Enum declarations:
 | <code>Watchlist</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:174](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L174) |  |
 | <code>Candidate</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:175](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L175) |  |
 | <code>ReadyForFirstClassPackage</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:176](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L176) |  |
-
-## SecurityAssetProfilePromotionSignalDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfilePromotionSignalDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:187](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L187).
-
-```csharp
-public sealed record SecurityAssetProfilePromotionSignalDto(string Code, string Label, string Detail, SecurityAssetProfilePromotionSignalSeverityDto Severity);
-```
-
-## SecurityAssetProfilePromotionSignalSeverityDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfilePromotionSignalSeverityDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:180](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L180).
-
-```csharp
-public enum SecurityAssetProfilePromotionSignalSeverityDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Info</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:182](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L182) |  |
-| <code>Advisory</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:183](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L183) |  |
-| <code>Strong</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:184](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L184) |  |

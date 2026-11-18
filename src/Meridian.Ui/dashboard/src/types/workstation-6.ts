@@ -1094,9 +1094,18 @@ export interface LedgerPostedJournalEntry {
   isBalanced: boolean;
   lines: LedgerPostedJournalEntryLine[];
   accountingBasis?: AccountingBasisKind;
+  /** The execution this entry was posted from, as its metadata recorded it; absent otherwise. */
+  execution?: LedgerJournalExecutionLineage | null;
   // No entry-level `dimensions`: LedgerJournalEntryDto declares none. Posting dimensions belong to
   // LedgerJournalEntryLineDto, so an entry's scope has to be derived from its lines and only
   // exists when they agree — see resolvePostedEntryDimensions.
+}
+
+/** Order, fill and run identifiers a posting recorded; the order id is the execution journal's own. */
+export interface LedgerJournalExecutionLineage {
+  orderId: string | null;
+  fillId: string | null;
+  strategyRunId: string | null;
 }
 
 /** One posting to an account with the account balance after it. */

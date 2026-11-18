@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecuritySummaryDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecuritySummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L19).
+
+```csharp
+public sealed record SecuritySummaryDto(Guid SecurityId, string AssetClass, SecurityStatusDto Status, string DisplayName, string PrimaryIdentifier, string Currency, long Version);
+```
+
+## SecurityTermBinding
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityTermBinding</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L58).
+
+One member of a per-class record and the flat key that carries it.
+
+```csharp
+public sealed record SecurityTermBinding(string Path, string? Key, SecurityTermRead? Read, string? DecodeExpression = null, string? WriteVia = null, bool DecodeOnly = false, bool WriteOnly = false, string? WriteExpression = null, IReadOnlyList<SecurityListItemBinding>? Items = null);
+```
+
 ## SecurityTermBlocks
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityTermBlocks</code>. Kind: `class`.
@@ -884,38 +906,3 @@ Declared public members:
 | <code>[JsonIgnore] public DateOnly? InterestAccrualEnd =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:161](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L161) | The end of the interval this row&#x27;s interest accrues over, when it is known. |
 | <code>public bool Equals(StructuredCashFlowScheduleEntry? other) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:163](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L163) |  |
 | <code>public override int GetHashCode();</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:174](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L174) |  |
-
-## StructuredCashFlowScheduleEvidence
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCashFlowScheduleEvidence</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:335](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L335).
-
-How a projection&#x27;s schedule was generated from declared schedule conventions (ADR-025): the kernel and mapping versions, the calendars used and any coverage gaps, so the schedule can be reproduced and its calendar data identified.
-
-```csharp
-public sealed record StructuredCashFlowScheduleEvidence(string KernelVersion, string DeclaredMappingVersion, IReadOnlyList<StructuredCashFlowCalendarEvidence> Calendars, IReadOnlyList<StructuredCashFlowCoverageGap> CoverageGaps);
-```
-
-## StructuredCashFlowSourceKind
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCashFlowSourceKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L10).
-
-Identifies the originating source of structured cash flow projections.
-
-```csharp
-public enum StructuredCashFlowSourceKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>MIAC</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L12) |  |
-| <code>MoodysAnalytics</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L13) |  |
-| <code>ClientProvided</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L14) |  |
-| <code>CalculatedBullet</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L15) |  |
-| <code>CalculatedSinker</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L16) |  |
-| <code>Unknown</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L21) | Read-tolerance member: a source kind written by a newer node. Matches no provider and no calculated path, so projections resolve to null (no data) instead of the row failing to read. |

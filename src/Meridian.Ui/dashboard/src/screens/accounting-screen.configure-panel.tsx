@@ -138,7 +138,7 @@ export function ConfigureCommandBar(): JSX.Element {
                     className="flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-xs hover:bg-secondary/40 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
                   >
                     <span className="text-foreground">{entry.label}</span>
-                    <span className={cn("text-xs text-muted-foreground", usesTrackedCaps(entry.sectionLabel) && "font-mono uppercase tracking-[0.08em]")}>{entry.sectionLabel}</span>
+                    <span className={cn("text-xs text-muted-foreground", usesTrackedCaps(entry.sectionLabel) && "type-label--caps")}>{entry.sectionLabel}</span>
                   </button>
                 </li>
               ))}
@@ -499,7 +499,7 @@ export function LedgerBookSetupWizard({ view }: { view: AccountingConfigurationV
               <div className="grid gap-2">
                 {view.setupReadinessRows.map((row) => (
                   <div key={row.id} className="rounded-md border border-border/70 bg-secondary/15 px-3 py-2">
-                    <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(row.label) && "uppercase tracking-[0.12em]")}>{row.label}</div>
+                    <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(row.label) && "type-label--caps")}>{row.label}</div>
                     <div className={cn("mt-1 text-sm font-semibold", toneTextClass(row.tone))}>{row.value}</div>
                     <p className="mt-1 text-xs text-muted-foreground">{row.detail}</p>
                   </div>
@@ -1249,7 +1249,7 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
 
           {view.productionReadiness.migrationWorkerPlanRows.length > 0 ? (
             <div className="space-y-2" role="region" aria-label="Retained accounting migration worker plans">
-              <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(view.productionReadiness.migrationWorkerPlanSummaryLabel) && "uppercase tracking-[0.14em]")}>
+              <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(view.productionReadiness.migrationWorkerPlanSummaryLabel) && "type-label--caps")}>
                 {view.productionReadiness.migrationWorkerPlanSummaryLabel}
               </div>
               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">

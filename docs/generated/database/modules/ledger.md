@@ -886,7 +886,7 @@ erDiagram
 | `intercompany_proposal_links` | table | 10 | `tenant_id`, `request_id` | 1 | 1 | - |
 | `intercompany_proposal_retries` | table | 6 | `tenant_id`, `request_id` | 1 | 1 | - |
 | `intercompany_proposals` | table | 15 | `proposal_id` | 2 | 4 | - |
-| `journal_entries` | table | 19 | `global_sequence` | 0 | 17 | - |
+| `journal_entries` | table | 19 | `global_sequence` | 0 | 20 | - |
 | `journal_entries_global_sequence_seq` | sequence | 0 | - | 0 | 0 | - |
 | `journal_entry_integrity_seals` | table | 3 | `journal_entry_id` | 1 | 1 | - |
 | `journal_entry_open_postings` | table | 2 | `journal_entry_id` | 1 | 1 | - |

@@ -302,7 +302,7 @@ public sealed record LedgerControlDecisionDto(string Control, string Code, bool 
 
 Qualified name: <code>Meridian.Contracts.Ledger.LedgerCrossPeriodPnlReportDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:503](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L503).
+Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:511](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L511).
 
 ```csharp
 public sealed record LedgerCrossPeriodPnlReportDto(DateTimeOffset GeneratedAtUtc, Guid? LedgerBookId, string? FundProfileId, Guid? FundStructureNodeId, AccountingBasisKindDto? AccountingBasis, DateOnly? StartDate, DateOnly? EndDate, IReadOnlyList<LedgerPeriodPnlSummaryDto> Periods, decimal TotalRevenue, decimal TotalExpenses, decimal NetIncome, decimal TotalRealizedNetIncome = 0m, decimal TotalAccrualBasisAdjustmentNetImpact = 0m);
@@ -312,7 +312,7 @@ public sealed record LedgerCrossPeriodPnlReportDto(DateTimeOffset GeneratedAtUtc
 
 Qualified name: <code>Meridian.Contracts.Ledger.LedgerCrossPeriodTrialBalanceLineDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:466](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L466).
+Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:474](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L474).
 
 ```csharp
 public sealed record LedgerCrossPeriodTrialBalanceLineDto(Guid PeriodId, Guid LedgerBookId, int FiscalYear, int PeriodNo, string PeriodLabel, string AccountName, string AccountType, string? Symbol, string? FinancialAccountId, decimal DebitTotal, decimal CreditTotal, decimal Balance, int EntryCount, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, string AccountingPolicyId = "legacy-v1", string AccountingPolicyVersion = "legacy-v1", string? RuleId = null, string? RuleVersion = null, string? SourceEventId = null, Guid? SourceJournalEntryId = null, LedgerDimensionSetDto? Dimensions = null);
@@ -322,7 +322,7 @@ public sealed record LedgerCrossPeriodTrialBalanceLineDto(Guid PeriodId, Guid Le
 
 Qualified name: <code>Meridian.Contracts.Ledger.LedgerCrossPeriodTrialBalanceReportDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:489](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L489).
+Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:497](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L497).
 
 ```csharp
 public sealed record LedgerCrossPeriodTrialBalanceReportDto(DateTimeOffset GeneratedAtUtc, Guid? LedgerBookId, string? FundProfileId, Guid? FundStructureNodeId, AccountingBasisKindDto? AccountingBasis, DateOnly? StartDate, DateOnly? EndDate, IReadOnlyList<LedgerPeriodDto> Periods, IReadOnlyList<LedgerCrossPeriodTrialBalanceLineDto> Lines, decimal TotalDebits, decimal TotalCredits, decimal NetIncome);
@@ -480,14 +480,14 @@ Qualified name: <code>Meridian.Contracts.Ledger.LedgerJournalEntryDto</code>. Ki
 Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:386](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L386).
 
 ```csharp
-public sealed record LedgerJournalEntryDto(Guid JournalEntryId, Guid PeriodId, Guid? LedgerBookId, Guid AggregateId, Guid? CommandId, Guid? CorrelationId, long GlobalSequence, DateTimeOffset CreatedAt, DateTimeOffset Timestamp, string Description, decimal TotalDebits, decimal TotalCredits, bool IsBalanced, IReadOnlyList<LedgerJournalEntryLineDto> Lines, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, string AccountingPolicyId = "legacy-v1", string AccountingPolicyVersion = "legacy-v1", string? RuleId = null, string? RuleVersion = null, Guid? SourceEventId = null, Guid? SourceJournalEntryId = null, LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating, LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null)
+public sealed record LedgerJournalEntryDto(Guid JournalEntryId, Guid PeriodId, Guid? LedgerBookId, Guid AggregateId, Guid? CommandId, Guid? CorrelationId, long GlobalSequence, DateTimeOffset CreatedAt, DateTimeOffset Timestamp, string Description, decimal TotalDebits, decimal TotalCredits, bool IsBalanced, IReadOnlyList<LedgerJournalEntryLineDto> Lines, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, string AccountingPolicyId = "legacy-v1", string AccountingPolicyVersion = "legacy-v1", string? RuleId = null, string? RuleVersion = null, Guid? SourceEventId = null, Guid? SourceJournalEntryId = null, LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating, LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] LedgerJournalExecutionLineageDto? Execution = null)
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;LedgerJournalEntryLineDto&gt; Lines { get; init; } = Lines??[];</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:411](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L411) |  |
+| <code>public IReadOnlyList&lt;LedgerJournalEntryLineDto&gt; Lines { get; init; } = Lines??[];</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:412](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L412) |  |
 
 ## LedgerJournalEntryLineDto
 
@@ -497,6 +497,18 @@ Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:342](../../../../src/Me
 
 ```csharp
 public sealed record LedgerJournalEntryLineDto(Guid EntryId, Guid JournalEntryId, DateTimeOffset Timestamp, string AccountName, string AccountType, string? Symbol, string? FinancialAccountId, decimal Debit, decimal Credit, string Description, LedgerDimensionSetDto? Dimensions = null);
+```
+
+## LedgerJournalExecutionLineageDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.LedgerJournalExecutionLineageDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:420](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L420).
+
+The execution a journal entry was posted from, exactly as its retained metadata recorded it: the order identifier the execution journal uses, the fill, and the strategy run. Absent when the entry was not posted from an execution; never inferred from symbol, amount or time.
+
+```csharp
+public sealed record LedgerJournalExecutionLineageDto(string? OrderId, Guid? FillId, string? StrategyRunId);
 ```
 
 ## LedgerJournalTaxResultsDto
@@ -532,7 +544,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Ledger.LedgerPeriodCloseResultDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:518](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L518).
+Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:526](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L526).
 
 ```csharp
 public sealed record LedgerPeriodCloseResultDto(LedgerPeriodDto Period, LedgerPeriodSummaryDto Summary, OperatorWorkItemDto WorkItem);
@@ -552,7 +564,7 @@ public sealed record LedgerPeriodDto(Guid PeriodId, Guid LedgerBookId, int Fisca
 
 Qualified name: <code>Meridian.Contracts.Ledger.LedgerPeriodPnlSummaryDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:440](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L440).
+Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:448](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L448).
 
 ```csharp
 public sealed record LedgerPeriodPnlSummaryDto(Guid PeriodId, Guid LedgerBookId, int FiscalYear, int PeriodNo, string Label, decimal TotalRevenue, decimal TotalExpenses, decimal NetIncome, decimal? PeriodOnPeriodVariance, int OpenBreakCount, LedgerPeriodSignoffStatusDto SignoffStatus, DateTimeOffset CompletedAt, IReadOnlyList<LedgerPeriodTrialBalanceLineDto> RevenueLines, IReadOnlyList<LedgerPeriodTrialBalanceLineDto> ExpenseLines, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, string AccountingPolicyId = "legacy-v1", string AccountingPolicyVersion = "legacy-v1", decimal RealizedRevenue = 0m, decimal RealizedExpenses = 0m, decimal RealizedNetIncome = 0m, decimal AccrualAdjustmentRevenue = 0m, decimal AccrualAdjustmentExpenses = 0m, decimal AccrualBasisAdjustmentNetImpact = 0m, IReadOnlyList<LedgerPeriodTrialBalanceLineDto>? AccrualAdjustmentLines = null);
@@ -572,7 +584,7 @@ public sealed record LedgerPeriodQuery(Guid? LedgerBookId = null, string? FundPr
 
 Qualified name: <code>Meridian.Contracts.Ledger.LedgerPeriodReopenResultDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:523](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L523).
+Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:531](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L531).
 
 ```csharp
 public sealed record LedgerPeriodReopenResultDto(LedgerPeriodDto Period, string PriorStatus, string ReopenedBy, DateTimeOffset ReopenedAtUtc, string ApprovalReference, IReadOnlyList<string> EvidenceLinks);
@@ -657,7 +669,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Ledger.LedgerReportSignatureDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:414](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L414).
+Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:422](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L422).
 
 ```csharp
 public sealed record LedgerReportSignatureDto(string Algorithm, string PayloadChecksumSha256, string SignedBy, DateTimeOffset SignedAtUtc);
@@ -686,31 +698,8 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Ledger.LedgerTrialBalanceReportDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:420](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L420).
+Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:428](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L428).
 
 ```csharp
 public sealed record LedgerTrialBalanceReportDto(Guid PeriodId, Guid LedgerBookId, int FiscalYear, int PeriodNo, string Label, bool IsPeriodLocked, decimal TotalDebits, decimal TotalCredits, decimal NetIncome, decimal? PeriodOnPeriodVariance, int OpenBreakCount, LedgerPeriodSignoffStatusDto SignoffStatus, DateTimeOffset CompletedAt, IReadOnlyList<LedgerPeriodTrialBalanceLineDto> Lines, LedgerReportSignatureDto Signature, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, string AccountingPolicyId = "legacy-v1", string AccountingPolicyVersion = "legacy-v1");
 ```
-
-## LegacyIntercompanyAttributionDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.LegacyIntercompanyAttributionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/LegacyIntercompanyAttributionDtos.cs:9](../../../../src/Meridian.Contracts/Ledger/LegacyIntercompanyAttributionDtos.cs#L9).
-
-Approved sidecar evidence attributes an exact immutable legacy journal leg without rewriting it.
-
-```csharp
-public sealed record LegacyIntercompanyAttributionDto(Guid AttributionId, long Revision, Guid LedgerBookId, Guid JournalEntryId, Guid LineId, string SourceLineDigest, Guid AccountingArrangementId, Guid AccountingArrangementRevisionId, Guid AccountBindingRevisionId, string ChartAccountNodeId, string IntercompanyTransactionId, string PreparedBy, string ApprovedBy, DateTimeOffset ApprovedAt, string EvidenceReference, string TenantId, string? CompanyId, Guid? PreviousAttributionId = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Guid IntercompanyAgreementId { get; init; }</code> | [src/Meridian.Contracts/Ledger/LegacyIntercompanyAttributionDtos.cs:16](../../../../src/Meridian.Contracts/Ledger/LegacyIntercompanyAttributionDtos.cs#L16) |  |
-| <code>public int IntercompanyAgreementVersion { get; init; }</code> | [src/Meridian.Contracts/Ledger/LegacyIntercompanyAttributionDtos.cs:17](../../../../src/Meridian.Contracts/Ledger/LegacyIntercompanyAttributionDtos.cs#L17) |  |
-| <code>public string IntercompanyAgreementPayloadHash { get; init; } = string.Empty;</code> | [src/Meridian.Contracts/Ledger/LegacyIntercompanyAttributionDtos.cs:18](../../../../src/Meridian.Contracts/Ledger/LegacyIntercompanyAttributionDtos.cs#L18) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public LegacyIntercompanyReviewModeDto ReviewMode { get; init; }</code> | [src/Meridian.Contracts/Ledger/LegacyIntercompanyAttributionDtos.cs:20](../../../../src/Meridian.Contracts/Ledger/LegacyIntercompanyAttributionDtos.cs#L20) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? ReviewRationale { get; init; }</code> | [src/Meridian.Contracts/Ledger/LegacyIntercompanyAttributionDtos.cs:22](../../../../src/Meridian.Contracts/Ledger/LegacyIntercompanyAttributionDtos.cs#L22) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public bool Revoked { get; init; }</code> | [src/Meridian.Contracts/Ledger/LegacyIntercompanyAttributionDtos.cs:25](../../../../src/Meridian.Contracts/Ledger/LegacyIntercompanyAttributionDtos.cs#L25) | A reviewed successor retracts this exact assertion; the posted source and earlier history remain immutable. |

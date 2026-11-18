@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EdgarDebtOfferingTerms
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarDebtOfferingTerms</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:109](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L109).
+
+```csharp
+public sealed record EdgarDebtOfferingTerms(string Cik, string AccessionNumber, string Form, string SourceDocument, string? SourceDocumentDescription, string? IssuerName, string? SecurityTitle, string? Cusip, string? Isin, string? Currency, decimal? PrincipalAmount, decimal? IssueSize, decimal? CouponRate, string? CouponType, string? DayCount, string? InterestPaymentFrequency, DateOnly? IssueDate, DateOnly? MaturityDate, DateOnly? FirstInterestPaymentDate, string? Seniority, string? Ranking, bool? IsCallable, DateOnly? FirstCallDate, decimal? OfferingPrice, decimal? MinimumDenomination, decimal? AdditionalDenomination, string? Trustee, IReadOnlyList<string> Underwriters, IReadOnlyList<string> RedemptionTerms, decimal ExtractionConfidence, IReadOnlyList<string> ExtractionNotes);
+```
+
+## EdgarFactsRecord
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarFactsRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:212](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L212).
+
+Stored fact partition for a single EDGAR filer.
+
+```csharp
+public sealed record EdgarFactsRecord(string Cik, IReadOnlyList<EdgarXbrlFact> Facts, IssuerFactSnapshot? Snapshot, DateTimeOffset RetrievedAtUtc);
+```
+
 ## EdgarFilerRecord
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarFilerRecord</code>. Kind: `record`.
@@ -885,38 +907,3 @@ Declared public members:
 | <code>Task&lt;SecurityDetailDto&gt; AmendTermBlockAsync(Guid securityId, string blockKey, AmendSecurityTermBlockRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs#L18) | Replaces one nested term block declared by the security&#x27;s asset class (see SecurityTermBlocks), carrying every other term unchanged. Implementations that predate the generic block route refuse it rather than fail to compile. |
 | <code>Task DeactivateAsync(DeactivateSecurityRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs#L21) |  |
 | <code>Task&lt;SecurityAliasDto&gt; UpsertAliasAsync(UpsertSecurityAliasRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs#L22) |  |
-
-## ISecurityMasterStructuredCreditReclassificationService
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityMasterStructuredCreditReclassificationService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterStructuredCreditReclassification.cs:59](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterStructuredCreditReclassification.cs#L59).
-
-Builds a report of structured credit instruments requiring reference classification review.
-
-```csharp
-public interface ISecurityMasterStructuredCreditReclassificationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;StructuredCreditReclassificationReportDto&gt; BuildReportAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterStructuredCreditReclassification.cs:62](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterStructuredCreditReclassification.cs#L62) | Scans the active Security Master population and builds the reclassification report. |
-
-## ISecurityRateObservationProvider
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityRateObservationProvider</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L20).
-
-```csharp
-public interface ISecurityRateObservationProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>string Name { get; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L22) |  |
-| <code>Task&lt;IReadOnlyList&lt;SecurityRateObservationDto&gt;&gt; GetRateObservationsAsync(string seriesId, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L23) |  |

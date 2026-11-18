@@ -2,11 +2,13 @@
 
 # `ledger-contracts` data objects - page 6 of 7
 
-Objects 401-480 of 486. References crossing pages remain available in the dependency manifest.
+Objects 401-480 of 488. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_OperationalFinanceTraceStageDto["OperationalFinanceTraceStageDto"] {
+    }
     class Meridian_Contracts_Ledger_PaymentIntentApprovalStepDto["PaymentIntentApprovalStepDto"] {
         +string Actor
         +DateTimeOffset? DecidedAtUtc
@@ -89,6 +91,8 @@ classDiagram
         +string? CorrelationId
         +IReadOnlyList~string~ EvidenceLinks
         +string? TenantId
+    }
+    class Meridian_Contracts_Ledger_PostedComparisonMeasureDto["PostedComparisonMeasureDto"] {
     }
     class Meridian_Contracts_Ledger_PostedLedgerJournalEntryResultDto["PostedLedgerJournalEntryResultDto"] {
         +AccountingBasisKindDto AccountingBasis
@@ -803,31 +807,6 @@ classDiagram
         +string TaskId
         +Guid WorkflowId
     }
-    class Meridian_Contracts_Ledger_SubmitManualJournalEntryApprovalRequest["SubmitManualJournalEntryApprovalRequest"] {
-        +OperationsActionOriginDto ActionOrigin
-        +string Actor
-        +string? CompanyId
-        +string? CorrelationId
-        +IReadOnlyList~string~? EvidenceLinks
-        +string FundProfileId
-        +Guid JournalEntryId
-        +Guid? LedgerBookId
-        +string? Notes
-        +bool PeriodIsLocked
-        +IReadOnlyList~string~? ReportGroupPrincipalIds
-        +string? TenantId
-    }
-    class Meridian_Contracts_Ledger_TreasuryLedgerContextDto["TreasuryLedgerContextDto"] {
-        +string? BatchCorrelationId
-        +string? CapitalAccountId
-        +DateOnly? EffectiveDate
-        +string? FundEventId
-        +string? FundEventType
-        +string? IdempotencyKey
-        +string? InvestorId
-        +string? PaymentIntentId
-        +string? SettlementReference
-    }
     Meridian_Contracts_Ledger_PaymentIntentExpectedCashMovementDto --> Meridian_Contracts_Ledger_PaymentIntentCashDirectionDto
     Meridian_Contracts_Ledger_PaymentIntentWorkflowDto --> Meridian_Contracts_Ledger_PaymentIntentApprovalStepDto
     Meridian_Contracts_Ledger_PaymentIntentWorkflowDto --> Meridian_Contracts_Ledger_PaymentIntentAuditEventDto
@@ -836,12 +815,12 @@ classDiagram
     Meridian_Contracts_Ledger_PaymentIntentWorkflowDto --> Meridian_Contracts_Ledger_PaymentIntentReconciliationLinkDto
     Meridian_Contracts_Ledger_PaymentIntentWorkflowDto --> Meridian_Contracts_Ledger_PaymentIntentWorkflowStatusDto
     Meridian_Contracts_Ledger_PostPostingRuleJournalCandidateRequestDto --> Meridian_Contracts_Ledger_PostingRuleJournalCandidateRequestDto
+    Meridian_Contracts_Ledger_PostedPeriodComparisonDto --> Meridian_Contracts_Ledger_PostedComparisonMeasureDto
     Meridian_Contracts_Ledger_PostedPeriodComparisonDto --> Meridian_Contracts_Ledger_PostedPeriodComparisonLineDto
     Meridian_Contracts_Ledger_PostedPeriodComparisonDto --> Meridian_Contracts_Ledger_PostedPeriodComparisonRangeDto
     Meridian_Contracts_Ledger_PostedPostingRuleJournalCandidateResultDto --> Meridian_Contracts_Ledger_PostedLedgerJournalEntryResultDto
     Meridian_Contracts_Ledger_PostedPostingRuleJournalCandidateResultDto --> Meridian_Contracts_Ledger_PostingRuleJournalCandidateResultDto
     Meridian_Contracts_Ledger_PostingRuleDto --> Meridian_Contracts_Ledger_RulePromotionApprovalDto
-    Meridian_Contracts_Ledger_PostingRuleJournalCandidateRequestDto --> Meridian_Contracts_Ledger_TreasuryLedgerContextDto
     Meridian_Contracts_Ledger_PostingRuleJournalCandidateResultDto --> Meridian_Contracts_Ledger_PostingRuleJournalCandidateIssueDto
     Meridian_Contracts_Ledger_PostingRuleJournalCandidateResultDto --> Meridian_Contracts_Ledger_RuleDryRunResultDto
     Meridian_Contracts_Ledger_PriorPeriodAdjustmentSourceDto --> Meridian_Contracts_Ledger_PriorPeriodAdjustmentCorrectionDto

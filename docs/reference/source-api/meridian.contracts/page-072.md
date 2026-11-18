@@ -6,6 +6,37 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterEditOrigin
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterEditOrigin</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L10).
+
+Source attribution for a Security Master passport field value. Operator-authored values carry a retained justification; provider-sourced values originate from ingest/provider evidence.
+
+```csharp
+public enum SecurityMasterEditOrigin
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Provider = 0</code> | [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L12) |  |
+| <code>Operator = 1</code> | [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:13](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L13) |  |
+
+## SecurityMasterEditResultDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterEditResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:124](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L124).
+
+Result of a field edit / submit transition.
+
+```csharp
+public sealed record SecurityMasterEditResultDto(Guid SecurityId, Guid RevisionId, long NewVersion, SecurityMasterRevisionStateDto State, SecurityMasterChangeHistoryItemDto ChangeEntry);
+```
+
 ## SecurityMasterEntitlementApplicabilityDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterEntitlementApplicabilityDto</code>. Kind: `record`.
@@ -612,34 +643,3 @@ Enum declarations:
 | <code>ClassificationMismatch = 13</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:68](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L68) |  |
 | <code>DuplicateStatementItem = 14</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:69](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L69) |  |
 | <code>ValidationFailure = 15</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:70](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L70) |  |
-
-## StatementColumnConfidenceDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementColumnConfidenceDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:50](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L50).
-
-Confidence tier for one detected source column in the import preview.
-
-```csharp
-public enum StatementColumnConfidenceDto : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Exact = 0</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:52](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L52) |  |
-| <code>Alias = 1</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:53](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L53) |  |
-| <code>Fuzzy = 2</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:54](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L54) |  |
-| <code>Unmapped = 3</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:55](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L55) |  |
-
-## StatementColumnMappingDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementColumnMappingDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:58](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L58).
-
-```csharp
-public sealed record StatementColumnMappingDto(string SourceColumn, string? CanonicalField, StatementColumnConfidenceDto Confidence, decimal Score, string Rationale);
-```

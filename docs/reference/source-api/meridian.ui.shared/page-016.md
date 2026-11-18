@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingArtifactRetentionAuthorityProvider
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingArtifactRetentionAuthorityProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:191](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L191).
+
+Production service-principal identity used only for immutable artifact retention.
+
+```csharp
+public sealed class ReportingArtifactRetentionAuthorityProvider : IReportingArtifactRetentionAuthorityProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ValueTask&lt;ReportingAuthorityScope&gt; ResolveAsync(GovernedReportingRun governedRun, ReportingGovernanceCallerContext releaseCaller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:193](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L193) |  |
+
 ## ReportingArtifactRetentionReceipt
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingArtifactRetentionReceipt</code>. Kind: `record`.
@@ -807,13 +825,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public ReportingRunReadinessService(IReportingTemplateCatalog templateCatalog, GovernedReportingTemplateCatalog? governedTemplateCatalog = null, IReportingRunReadinessDependencyEvaluator? dependencyEvaluator = null, Func&lt;DateTimeOffset&gt;? utcNow = null, ReportingRunReadinessOptions? options = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs:463](../../../../src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs#L463) |  |
 | <code>public async Task&lt;ReportingRunReadinessDto&gt; AssessAsync(ReportingRunRequestDto request, ReportAccessQueryContext? accessContext = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs:477](../../../../src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs#L477) |  |
-
-## ReportingRunStoreOptions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRunStoreOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:15](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L15).
-
-```csharp
-public sealed record ReportingRunStoreOptions(string RootDirectory);
-```

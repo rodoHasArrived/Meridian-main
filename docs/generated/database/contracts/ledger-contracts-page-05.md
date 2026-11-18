@@ -2,7 +2,7 @@
 
 # `ledger-contracts` data objects - page 5 of 7
 
-Objects 321-400 of 486. References crossing pages remain available in the dependency manifest.
+Objects 321-400 of 488. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -369,9 +369,9 @@ classDiagram
         +Guid? CorrelationId
         +DateTimeOffset CreatedAt
         +string Description
+        +LedgerJournalExecutionLineageDto? Execution
         +long GlobalSequence
         +bool IsBalanced
-        +Guid JournalEntryId
     }
     class Meridian_Contracts_Ledger_LedgerJournalEntryLineDto["LedgerJournalEntryLineDto"] {
         +string AccountName
@@ -385,6 +385,11 @@ classDiagram
         +Guid JournalEntryId
         +string? Symbol
         +DateTimeOffset Timestamp
+    }
+    class Meridian_Contracts_Ledger_LedgerJournalExecutionLineageDto["LedgerJournalExecutionLineageDto"] {
+        +Guid? FillId
+        +string? OrderId
+        +string? StrategyRunId
     }
     class Meridian_Contracts_Ledger_LedgerJournalTaxResultsDto["LedgerJournalTaxResultsDto"] {
         +IReadOnlyList~LedgerDisposalTaxResultDto~ Disposals
@@ -663,8 +668,6 @@ classDiagram
         +OperationalFinanceTraceStageDto Stage
         +string Status
     }
-    class Meridian_Contracts_Ledger_OperationalFinanceTraceStageDto["OperationalFinanceTraceStageDto"] {
-    }
     Meridian_Contracts_Ledger_IntercompanyRefreshPreviewDto --> Meridian_Contracts_Ledger_ManualJournalEntryDraftDto
     Meridian_Contracts_Ledger_InvestorCapitalStatementDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
     Meridian_Contracts_Ledger_JournalEntryLifecycleActionRequestDto --> Meridian_Contracts_Ledger_JournalEntryLifecycleActionDto
@@ -691,6 +694,7 @@ classDiagram
     Meridian_Contracts_Ledger_LedgerDisposalTaxResultDto --> Meridian_Contracts_Ledger_LedgerDisposalTaxParcelDto
     Meridian_Contracts_Ledger_LedgerJournalEntryDto --> Meridian_Contracts_Ledger_LedgerAdjustmentApprovalMetadataDto
     Meridian_Contracts_Ledger_LedgerJournalEntryDto --> Meridian_Contracts_Ledger_LedgerJournalEntryLineDto
+    Meridian_Contracts_Ledger_LedgerJournalEntryDto --> Meridian_Contracts_Ledger_LedgerJournalExecutionLineageDto
     Meridian_Contracts_Ledger_LedgerJournalEntryDto --> Meridian_Contracts_Ledger_LedgerPostingKindDto
     Meridian_Contracts_Ledger_LedgerJournalEntryLineDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
     Meridian_Contracts_Ledger_LedgerJournalTaxResultsDto --> Meridian_Contracts_Ledger_LedgerDisposalTaxResultDto
@@ -728,5 +732,4 @@ classDiagram
     Meridian_Contracts_Ledger_OperationalFinanceScopeDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
     Meridian_Contracts_Ledger_OperationalFinanceScopeDto --> Meridian_Contracts_Ledger_OperationalFinanceScopeKindDto
     Meridian_Contracts_Ledger_OperationalFinanceTraceNodeDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
-    Meridian_Contracts_Ledger_OperationalFinanceTraceNodeDto --> Meridian_Contracts_Ledger_OperationalFinanceTraceStageDto
 ```

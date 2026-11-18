@@ -6,11 +6,47 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationReportingDeliveryPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportingDeliveryPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:727](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L727).
+
+Tenant-scoped projection of one durable canonical reporting delivery job.
+
+```csharp
+public sealed record WorkstationReportingDeliveryPayload(string JobId, string RunId, string PackageId, string ReleaseReceiptId, string ReleaseVersion, string ArtifactManifestHashSha256, string DistributionId, string TransportId, string Recipient, string RecipientRole, string Destination, string State, int AttemptCount, int MaxAttempts, DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc, DateTimeOffset? NextAttemptAtUtc, string RequestedBy, string? LastErrorCode, string? LastError, string? ProviderMessageId, string? AccessGrantId, IReadOnlyList<WorkstationReportingDeliveryReceiptPayload> Receipts);
+```
+
+## WorkstationReportingDeliveryReceiptPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportingDeliveryReceiptPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:715](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L715).
+
+Immutable provider or portal evidence retained against a canonical reporting delivery job.
+
+```csharp
+public sealed record WorkstationReportingDeliveryReceiptPayload(string ReceiptId, string Kind, DateTimeOffset OccurredAtUtc, string TransportId, string? ProviderReference = null, string? EvidenceReference = null, string? Detail = null);
+```
+
+## WorkstationReportingHistoryPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportingHistoryPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:787](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L787).
+
+Canonical tenant/company reporting history over durable run and delivery authorities.
+
+```csharp
+public sealed record WorkstationReportingHistoryPayload(IReadOnlyList<WorkstationReportingRunPayload> Runs, IReadOnlyList<WorkstationReportingDeliveryPayload> Deliveries, int Limit, DateTimeOffset GeneratedAtUtc);
+```
+
 ## WorkstationReportingPayload
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportingPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:747](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L747).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:756](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L756).
 
 Typed reporting payload returned directly by GET /api/workstation/reporting and also embedded as the Reporting summary inside WorkstationAccountingPayload.
 
@@ -22,7 +58,7 @@ public sealed record WorkstationReportingPayload(int ProfileCount, IReadOnlyList
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportingProfilePayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:472](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L472).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:481](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L481).
 
 A single export/reporting profile shown in the Reporting workspace. Matches the Reporting profile type in browser workstation models.
 
@@ -34,7 +70,7 @@ public sealed record WorkstationReportingProfilePayload(string Id, string Name, 
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportingRunLinkPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:582](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L582).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:591](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L591).
 
 Lightweight reporting run status with lineage and approval posture for operator surfaces.
 
@@ -46,7 +82,7 @@ public sealed record WorkstationReportingRunLinkPayload(string Id, string Kind, 
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportingRunNextActionPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:591](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L591).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:600](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L600).
 
 ```csharp
 public sealed record WorkstationReportingRunNextActionPayload(string Id, string Kind, string Label, string Href, string Method, bool IsEnabled, string? DisabledReason, bool IsBrowserNavigable);
@@ -56,7 +92,7 @@ public sealed record WorkstationReportingRunNextActionPayload(string Id, string 
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportingRunPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:614](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L614).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:623](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L623).
 
 ```csharp
 public sealed record WorkstationReportingRunPayload(string RunId, string TemplateId, string Family, string Status, string Trigger, string AsOfDate, int AttemptCount, int SectionCount, int LineageLinkedSections, IReadOnlyList<string> Artifacts, IReadOnlyList<string> AuditActions, string? FailureReason, IReadOnlyList<WorkstationReportingRunLinkPayload>? DrilldownLinks = null, IReadOnlyList<WorkstationReportingRunNextActionPayload>? NextActions = null, IReadOnlyList<WorkstationGeneratedReportWriterGridPayload>? GeneratedReportWriterGrids = null, string? ReportWriterDatasetSourceId = null, string? ReportWriterDatasetSourceLabel = null, int? ReportWriterDatasetRowCount = null, string? RunSeriesId = null, int? RunAttemptOrdinal = null, string? PriorRunId = null, string? RetryReason = null, string? LatestGeneratedRunId = null, string? LatestApprovedRunId = null, bool? IsLatestGenerated = null, bool? IsLatestApproved = null, string? ComparisonSummary = null, int? ChangedLineCount = null, int? AddedLineCount = null, int? RemovedLineCount = null, VersionedReportTemplateIdDto? ResolvedTemplate = null, ReportingRunParametersDto? ResolvedParameters = null, ReportingRunReadinessDto? Readiness = null);
@@ -66,7 +102,7 @@ public sealed record WorkstationReportingRunPayload(string RunId, string Templat
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportingTemplatePayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:547](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L547).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:556](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L556).
 
 ```csharp
 public sealed record WorkstationReportingTemplatePayload(string TemplateId, string Family, string Name, string Version, IReadOnlyList<string> Sections, string LifecycleStatus = "Approved", bool IsBuiltIn = true, bool IsLatestApproved = true, string ApprovalSummary = "Built-in approved template", string AuthoringRoute = "/api/fund-structure/reporting/templates", IReadOnlyList<WorkstationReportWriterGridPayload>? ReportWriterGrids = null, string AccessMode = "CompanyWide", string AccessSummary = "Company-wide access", bool IsAccessible = true, string? CreatedBy = null, DateTimeOffset? CreatedAt = null, string? UpdatedBy = null, DateTimeOffset? UpdatedAt = null, string? SubmittedBy = null, DateTimeOffset? SubmittedAt = null, string? ApprovedBy = null, DateTimeOffset? ApprovedAt = null, string? RejectedBy = null, DateTimeOffset? RejectedAt = null, string? DecisionRationale = null, string? ApprovalReference = null, VersionedReportTemplateIdDto? BasedOnTemplateId = null, IReadOnlyList<ReportTemplateAuditEventDto>? AuditTrail = null, IReadOnlyList<string>? ValidationIssues = null, IReadOnlyList<ReportTemplateParameterDefinitionDto>? Parameters = null);
@@ -76,7 +112,7 @@ public sealed record WorkstationReportingTemplatePayload(string TemplateId, stri
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportPackDistributionPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:671](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L671).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:680](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L680).
 
 Recipient-level distribution posture for governed report-pack output.
 
@@ -88,7 +124,7 @@ public sealed record WorkstationReportPackDistributionPayload(string Distributio
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportWriterDatasetSourcePayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:509](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L509).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:518](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L518).
 
 ```csharp
 public sealed record WorkstationReportWriterDatasetSourcePayload(string SourceId, string Label, string Description, int RowCount, IReadOnlyList<WorkstationReportWriterFieldPayload> Fields, IReadOnlyList<IReadOnlyDictionary<string, string>> Rows, IReadOnlyList<string>? Tags = null, string? CertificationState = null, string? ValidationState = null, string? ReconciliationState = null, string? RefreshCadence = null, string? Owner = null, string? Version = null, string? ReleaseApproval = null, string? LineageManifest = null, IReadOnlyList<string>? SourceRunIds = null, IReadOnlyList<string>? PermittedConsumers = null, string? RowLineageKeyField = null, string? EvidenceIndexField = null);
@@ -98,7 +134,7 @@ public sealed record WorkstationReportWriterDatasetSourcePayload(string SourceId
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportWriterFieldPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:501](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L501).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:510](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L510).
 
 ```csharp
 public sealed record WorkstationReportWriterFieldPayload(string Name, string Label, string Role, string DataType, string Dataset, string? Description = null);
@@ -108,7 +144,7 @@ public sealed record WorkstationReportWriterFieldPayload(string Name, string Lab
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportWriterFilterPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:495](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L495).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:504](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L504).
 
 ```csharp
 public sealed record WorkstationReportWriterFilterPayload(string Field, string Operator, string? Value = null, string? Label = null);
@@ -118,7 +154,7 @@ public sealed record WorkstationReportWriterFilterPayload(string Field, string O
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportWriterFormulaPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:490](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L490).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:499](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L499).
 
 ```csharp
 public sealed record WorkstationReportWriterFormulaPayload(string Name, string Expression, string? Label = null);
@@ -128,7 +164,7 @@ public sealed record WorkstationReportWriterFormulaPayload(string Name, string E
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportWriterGridPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:530](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L530).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:539](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L539).
 
 ```csharp
 public sealed record WorkstationReportWriterGridPayload(string GridId, string Title, string Kind, int DimensionCount, int MetricCount, int FormulaCount, IReadOnlyList<string>? RowFields = null, IReadOnlyList<string>? ColumnFields = null, IReadOnlyList<WorkstationReportWriterMetricPayload>? Metrics = null, IReadOnlyList<WorkstationReportWriterFormulaPayload>? Formulas = null, int? TopN = null, string? SortBy = null, bool SortDescending = true, IReadOnlyList<WorkstationReportWriterFilterPayload>? Filters = null, IReadOnlyList<WorkstationReportWriterFieldPayload>? SourceFields = null);
@@ -138,7 +174,7 @@ public sealed record WorkstationReportWriterGridPayload(string GridId, string Ti
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportWriterMetricPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:484](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L484).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:493](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L493).
 
 Template metadata exposed to browser and desktop Reporting operator surfaces.
 
@@ -150,7 +186,7 @@ public sealed record WorkstationReportWriterMetricPayload(string Name, string So
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationRiskGuardrail</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:400](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L400).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:409](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L409).
 
 One live guardrail from the enforced risk-rule registry, rendered as a utilization bar: how much of the rule&#x27;s configured headroom the current portfolio consumes.
 
@@ -162,7 +198,7 @@ public sealed record WorkstationRiskGuardrail(string RuleName, string State, str
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationRunDigest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:115](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L115).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:124](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L124).
 
 Minimal run digest attached to session and strategy payloads. Fields match BuildRunDigest in WorkstationEndpoints.
 
@@ -174,7 +210,7 @@ public sealed record WorkstationRunDigest(string RunId, string StrategyName, str
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationRunDrillInLinks</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:34](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L34).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:43](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L43).
 
 Shared drill-in links attached to strategy, trading, and accounting run records.
 
@@ -246,7 +282,7 @@ public sealed partial class WorkstationScopeOptionsJsonContext : JsonSerializerC
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationSecurityCoverageGapPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:60](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L60).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:69](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L69).
 
 ```csharp
 public sealed record WorkstationSecurityCoverageGapPayload(string Source, string Symbol, string? AccountName, string Reason);
@@ -256,7 +292,7 @@ public sealed record WorkstationSecurityCoverageGapPayload(string Source, string
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationSecurityCoveragePayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:66](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L66).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:75](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L75).
 
 ```csharp
 public sealed record WorkstationSecurityCoveragePayload(int PortfolioResolved, int PortfolioMissing, int LedgerResolved, int LedgerMissing, bool HasIssues, string Tone, string Summary, IReadOnlyList<WorkstationSecurityCoverageReferencePayload> ResolvedReferences, IReadOnlyList<WorkstationSecurityCoverageGapPayload> MissingReferences);
@@ -266,7 +302,7 @@ public sealed record WorkstationSecurityCoveragePayload(int PortfolioResolved, i
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationSecurityCoverageReferencePayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:43](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L43).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:52](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L52).
 
 ```csharp
 public sealed record WorkstationSecurityCoverageReferencePayload(string Source, string Symbol, string? AccountName, string? SecurityId, string DisplayName, string? AssetClass, string? SubType, string? Currency, string? Status, string? PrimaryIdentifier, string CoverageStatus, string? CoverageReason, string? MatchedIdentifierKind, string? MatchedIdentifierValue, string? MatchedProvider);
@@ -309,7 +345,7 @@ public sealed record WorkstationSecurityReference(Guid SecurityId, string Displa
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationSessionPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:165](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L165).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:174](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L174).
 
 Typed payload returned by GET /api/workstation/session. ActiveWorkspace uses the canonical browser shell roots: trading, portfolio, accounting, reporting, strategy, data, or settings.
 
@@ -321,7 +357,7 @@ public sealed record WorkstationSessionPayload(string DisplayName, string Role, 
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationSessionWorkspaceSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:153](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L153).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:162](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L162).
 
 Workspace-level summary embedded inside WorkstationSessionPayload.
 
@@ -333,7 +369,7 @@ public sealed record WorkstationSessionWorkspaceSummary(int TotalRuns, int Activ
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationStrategyPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:321](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L321).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:330](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L330).
 
 Typed payload returned by GET /api/workstation/strategy.
 
@@ -345,7 +381,7 @@ public sealed record WorkstationStrategyPayload(IReadOnlyList<WorkstationMetricC
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationStrategyRunCard</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:77](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L77).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:86](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L86).
 
 ```csharp
 public sealed record WorkstationStrategyRunCard(string Id, string StrategyName, string Engine, string Mode, string Status, string Dataset, string Window, string Pnl, string Sharpe, string LastUpdated, string Notes, string? PromotionState, string? LedgerReference, string? PortfolioId, decimal? NetPnl, decimal? TotalReturn, decimal? FinalEquity, WorkstationSecurityCoveragePayload SecurityCoverage, WorkstationRunDrillInLinks DrillIn, BiasDisclosureDto? BiasDisclosure = null, decimal? MaxDrawdown = null, IReadOnlyList<decimal>? TrendValues = null, IReadOnlyList<string>? TrendDates = null, string? SearchText = null);
@@ -355,7 +391,7 @@ public sealed record WorkstationStrategyRunCard(string Id, string StrategyName, 
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationStrategyWorkspaceSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:181](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L181).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:190](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L190).
 
 Workspace-level summary embedded inside WorkstationStrategyPayload.
 
@@ -423,7 +459,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationTimelineCard</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:136](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L136).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:145](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L145).
 
 Single entry in a run timeline strip. Fields match BuildTimelineCard in WorkstationEndpoints.
 
@@ -435,7 +471,7 @@ public sealed record WorkstationTimelineCard(string RunId, string StrategyName, 
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationTradingBrokerageState</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:427](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L427).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:436](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L436).
 
 Brokerage connection summary embedded inside the trading payload.
 
@@ -447,7 +483,7 @@ public sealed record WorkstationTradingBrokerageState(string Provider, string Ac
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationTradingFillRow</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:380](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L380).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:389](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L389).
 
 A single fill row shown in the trading workstation fills table.
 
@@ -459,7 +495,7 @@ public sealed record WorkstationTradingFillRow(string FillId, string OrderId, st
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationTradingOrderRow</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:355](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L355).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:364](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L364).
 
 A single open-order row shown in the trading workstation orders table.
 
@@ -471,7 +507,7 @@ public sealed record WorkstationTradingOrderRow(string OrderId, string Symbol, s
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationTradingPayload</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:442](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L442).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:451](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L451).
 
 Typed payload returned by GET /api/workstation/trading. Readiness is TradingOperatorReadinessDto; typed at the endpoint layer to avoid a circular project reference.
 
@@ -483,7 +519,7 @@ public sealed record WorkstationTradingPayload(IReadOnlyList<WorkstationMetricCa
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationTradingPositionRow</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:336](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L336).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:345](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L345).
 
 A single position row shown in the trading workstation positions table.
 
@@ -495,7 +531,7 @@ public sealed record WorkstationTradingPositionRow(string PositionKey, string Sy
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationTradingRiskState</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:413](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L413).
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:422](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L422).
 
 Risk state block embedded inside the trading payload. Guardrails carries the live rule-registry utilization bars; ActiveGuardrails keeps the flat string rendering of the same registry entries for text-only consumers.
 

@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Meridian.Contracts.Configuration;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
@@ -27,7 +28,15 @@ public sealed record WorkstationMetricCard(
     string? Basis = null,
     string? AsOf = null,
     string? Source = null,
-    NumberPassportReferenceDto? NumberPassport = null);
+    NumberPassportReferenceDto? NumberPassport = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<WorkstationMetricHistoryPointDto>? History = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? HistoryBasis = null);
+
+/// <summary>
+/// One point of a metric's history, oldest first. <see cref="Value"/> is null when the retained source
+/// cannot establish the figure for that date; a consumer shows a gap, never an interpolated value.
+/// </summary>
+public sealed record WorkstationMetricHistoryPointDto(DateOnly Date, decimal? Value);
 /// <summary>
 /// Shared drill-in links attached to strategy, trading, and accounting run records.
 /// </summary>

@@ -270,7 +270,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Ledger.LedgerAccountingPeriod</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:356](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L356).
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:360](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L360).
 
 ```csharp
 public sealed record LedgerAccountingPeriod(Guid PeriodId, Guid? LedgerBookId, int FiscalYear, int PeriodNo, string Label, DateOnly StartDate, DateOnly EndDate, string Status, DateTimeOffset OpenedAt, DateTimeOffset? ClosedAt, long Version)
@@ -280,13 +280,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string? MutationActor { get; init; }</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:370](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L370) | Actual command actor for this mutation; absent legacy attribution remains explicit. |
+| <code>public string? MutationActor { get; init; }</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:374](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L374) | Actual command actor for this mutation; absent legacy attribution remains explicit. |
 
 ## LedgerAccountTaxLotPolicyRecord
 
 Qualified name: <code>Meridian.Storage.Ledger.LedgerAccountTaxLotPolicyRecord</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:401](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L401).
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:405](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L405).
 
 ```csharp
 public sealed record LedgerAccountTaxLotPolicyRecord(Guid PolicyRecordId, Guid LedgerBookId, LedgerAccount Account, LedgerTaxLotReliefMethod ReliefMethod, string PolicyId, DateOnly EffectiveDate, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, string? Rationale = null, WashSalePolicy? WashSalePolicy = null)
@@ -296,7 +296,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public WashSalePolicy EffectiveWashSalePolicy =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:414](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L414) | The configured wash-sale policy with its governing tax-lot revision, or the disabled default. |
+| <code>public WashSalePolicy EffectiveWashSalePolicy =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:418](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L418) | The configured wash-sale policy with its governing tax-lot revision, or the disabled default. |
 
 ## LedgerBalanceSnapshotExtensions
 
@@ -348,7 +348,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Ledger.LedgerBookRecord</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:373](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L373).
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:377](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L377).
 
 ```csharp
 public sealed record LedgerBookRecord(Guid LedgerBookId, string FundProfileId, Guid FundStructureNodeId, FundStructureNodeKindDto FundStructureNodeKind, string DisplayName, string BaseCurrency, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, string? Description = null, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, string AccountingPolicyId = "legacy-v1", string AccountingPolicyVersion = "legacy-v1");
@@ -490,14 +490,14 @@ Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:325](../../../../src
 Conjunctive journal filters; an exact journal identity remains subject to every supplied scope filter.
 
 ```csharp
-public sealed record LedgerJournalEntryQuery(Guid? LedgerBookId = null, Guid? PeriodId = null, Guid? AggregateId = null, LedgerLineDimensionSet? LineDimensions = null, string? AccountName = null, DateTimeOffset? OccurredFrom = null, DateTimeOffset? OccurredTo = null, Guid? SourceEventId = null, DateOnly? EffectiveFrom = null, DateOnly? EffectiveTo = null, Guid? JournalEntryId = null);
+public sealed record LedgerJournalEntryQuery(Guid? LedgerBookId = null, Guid? PeriodId = null, Guid? AggregateId = null, LedgerLineDimensionSet? LineDimensions = null, string? AccountName = null, DateTimeOffset? OccurredFrom = null, DateTimeOffset? OccurredTo = null, Guid? SourceEventId = null, DateOnly? EffectiveFrom = null, DateOnly? EffectiveTo = null, Guid? JournalEntryId = null, Guid? FillId = null, string? OrderId = null);
 ```
 
 ## LedgerJournalEntryRecord
 
 Qualified name: <code>Meridian.Storage.Ledger.LedgerJournalEntryRecord</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:338](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L338).
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:342](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L342).
 
 ```csharp
 public sealed record LedgerJournalEntryRecord(JournalEntry Entry, Guid AggregateId, Guid PeriodId, Guid? CommandId, Guid? CorrelationId, long GlobalSequence, DateTimeOffset CreatedAt, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, string AccountingPolicyId = "legacy-v1", string AccountingPolicyVersion = "legacy-v1", string? RuleId = null, string? RuleVersion = null, Guid? SourceEventId = null, Guid? SourceJournalEntryId = null, LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating, LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null);
@@ -826,7 +826,7 @@ public sealed record LedgerTaxLotDisposalRecipientEvidence(Guid ReplacementTaxLo
 
 Qualified name: <code>Meridian.Storage.Ledger.LedgerTaxLotDisposalSelection</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:484](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L484).
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:488](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L488).
 
 ```csharp
 public sealed record LedgerTaxLotDisposalSelection(Guid TaxLotRecordId, string LotId, long ExpectedVersion, decimal ExpectedOpenQuantity, decimal Quantity, int SelectionOrdinal, string SelectionEvidenceId, decimal ExpectedUnitCost = 0m, decimal ExpectedCostBasis = 0m);

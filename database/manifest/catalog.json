@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "a39dd6e732d21e0b8c34dbbbe4dfbb40fb06da8ed120b6f90be593326d1c9808",
+  "database_fingerprint": "ac42ac5ad789263dfefa76e51ae86a6b9f36c2e83279ce9f520307248ec9e612",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -35787,6 +35787,18 @@
       "object": "index:ledger.ix_journal_entries_correlation"
     },
     {
+      "fingerprint": "ae737cbf663e0da144bc1d6c7c1bb6b134af4149ca7fe9f7e25078ecef91c9c7",
+      "object": "index:ledger.ix_journal_entries_metadata_fill_id"
+    },
+    {
+      "fingerprint": "e4dd15c59a276a2cfb86f592ecf33140a823ca834dd334c579f8f6f5eefe81a8",
+      "object": "index:ledger.ix_journal_entries_metadata_order_id"
+    },
+    {
+      "fingerprint": "c67f7b5bb7fb574e718a7887e1c70ea5d7dc99344dde896347bb6e5a06287bb9",
+      "object": "index:ledger.ix_journal_entries_metadata_source_order_id"
+    },
+    {
       "fingerprint": "8da6edff7ba7c8d963157d973c4234127803fe36a68f87d3fb1d7d2fef45f204",
       "object": "index:ledger.ix_journal_entries_period"
     },
@@ -38935,7 +38947,7 @@
       "object": "schema:identity_access"
     },
     {
-      "fingerprint": "654b7368c62b9d9552cacf5359a70d0170a121b1dc6390d73ca74a605088ebfb",
+      "fingerprint": "9c9f7e61355927687032e13149f95577309e5fa7f6b5fd729618a0847dbb6caf",
       "object": "schema:ledger"
     },
     {
@@ -39331,7 +39343,7 @@
       "object": "table:ledger.intercompany_proposals"
     },
     {
-      "fingerprint": "e366fe5f3f3d890ff4285b10c6576bc64e724fae5a85e1648abdc0d3c73fdc9e",
+      "fingerprint": "366f06d79ae1f339faf17c5e13bd2f2fa94e2e04f780e1facf8917cbc0f706ab",
       "object": "table:ledger.journal_entries"
     },
     {
@@ -88176,7 +88188,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "654b7368c62b9d9552cacf5359a70d0170a121b1dc6390d73ca74a605088ebfb",
+      "fingerprint": "9c9f7e61355927687032e13149f95577309e5fa7f6b5fd729618a0847dbb6caf",
       "foreign_tables": [],
       "functions": [
         {
@@ -100712,7 +100724,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "e366fe5f3f3d890ff4285b10c6576bc64e724fae5a85e1648abdc0d3c73fdc9e",
+          "fingerprint": "366f06d79ae1f339faf17c5e13bd2f2fa94e2e04f780e1facf8917cbc0f706ab",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -100827,6 +100839,72 @@
               "options": [],
               "owner": "meridian",
               "predicate": "correlation_id IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_journal_entries_metadata_fill_id ON ledger.journal_entries USING btree (((metadata ->> 'fillId'::text))) WHERE ((metadata ->> 'fillId'::text) IS NOT NULL)",
+              "expression": "metadata ->> 'fillId'::text",
+              "fingerprint": "ae737cbf663e0da144bc1d6c7c1bb6b134af4149ca7fe9f7e25078ecef91c9c7",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "(metadata ->> 'fillId'::text)"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_journal_entries_metadata_fill_id",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "(metadata ->> 'fillId'::text) IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_journal_entries_metadata_order_id ON ledger.journal_entries USING btree (((metadata ->> 'orderId'::text))) WHERE ((metadata ->> 'orderId'::text) IS NOT NULL)",
+              "expression": "metadata ->> 'orderId'::text",
+              "fingerprint": "e4dd15c59a276a2cfb86f592ecf33140a823ca834dd334c579f8f6f5eefe81a8",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "(metadata ->> 'orderId'::text)"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_journal_entries_metadata_order_id",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "(metadata ->> 'orderId'::text) IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_journal_entries_metadata_source_order_id ON ledger.journal_entries USING btree ((((metadata -> 'tags'::text) ->> 'source.orderId'::text))) WHERE (((metadata -> 'tags'::text) ->> 'source.orderId'::text) IS NOT NULL)",
+              "expression": "(metadata -> 'tags'::text) ->> 'source.orderId'::text",
+              "fingerprint": "c67f7b5bb7fb574e718a7887e1c70ea5d7dc99344dde896347bb6e5a06287bb9",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "((metadata -> 'tags'::text) ->> 'source.orderId'::text)"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_journal_entries_metadata_source_order_id",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "((metadata -> 'tags'::text) ->> 'source.orderId'::text) IS NOT NULL",
               "primary": false,
               "ready": true,
               "security_labels": [],
@@ -127671,7 +127749,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "e366fe5f3f3d890ff4285b10c6576bc64e724fae5a85e1648abdc0d3c73fdc9e",
+          "fingerprint": "366f06d79ae1f339faf17c5e13bd2f2fa94e2e04f780e1facf8917cbc0f706ab",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -127786,6 +127864,72 @@
               "options": [],
               "owner": "meridian",
               "predicate": "correlation_id IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_journal_entries_metadata_fill_id ON ledger.journal_entries USING btree (((metadata ->> 'fillId'::text))) WHERE ((metadata ->> 'fillId'::text) IS NOT NULL)",
+              "expression": "metadata ->> 'fillId'::text",
+              "fingerprint": "ae737cbf663e0da144bc1d6c7c1bb6b134af4149ca7fe9f7e25078ecef91c9c7",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "(metadata ->> 'fillId'::text)"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_journal_entries_metadata_fill_id",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "(metadata ->> 'fillId'::text) IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_journal_entries_metadata_order_id ON ledger.journal_entries USING btree (((metadata ->> 'orderId'::text))) WHERE ((metadata ->> 'orderId'::text) IS NOT NULL)",
+              "expression": "metadata ->> 'orderId'::text",
+              "fingerprint": "e4dd15c59a276a2cfb86f592ecf33140a823ca834dd334c579f8f6f5eefe81a8",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "(metadata ->> 'orderId'::text)"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_journal_entries_metadata_order_id",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "(metadata ->> 'orderId'::text) IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_journal_entries_metadata_source_order_id ON ledger.journal_entries USING btree ((((metadata -> 'tags'::text) ->> 'source.orderId'::text))) WHERE (((metadata -> 'tags'::text) ->> 'source.orderId'::text) IS NOT NULL)",
+              "expression": "(metadata -> 'tags'::text) ->> 'source.orderId'::text",
+              "fingerprint": "c67f7b5bb7fb574e718a7887e1c70ea5d7dc99344dde896347bb6e5a06287bb9",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "((metadata -> 'tags'::text) ->> 'source.orderId'::text)"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_journal_entries_metadata_source_order_id",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "((metadata -> 'tags'::text) ->> 'source.orderId'::text) IS NOT NULL",
               "primary": false,
               "ready": true,
               "security_labels": [],

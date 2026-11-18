@@ -13,7 +13,7 @@ export interface RatchetComparison {
 }
 
 export const BASELINE_PATH: string;
-export const RATCHETS: Record<"adHocStatusBadges" | "directIntlFormatting" | "rawTables" | "handRolledNumberFormatting" | "localMoneyFormatters" | "pascalCaseRenderedText" | "isoTimestampsInJsx" | "monospaceCapsLabels", DesignSystemRatchet>;
+export const RATCHETS: Record<"adHocStatusBadges" | "directIntlFormatting" | "rawTables" | "handRolledNumberFormatting" | "localMoneyFormatters" | "pascalCaseRenderedText" | "isoTimestampsInJsx" | "monospaceCapsLabels" | "rawSelects", DesignSystemRatchet>;
 export function isAdHocBadgeClass(value: string): boolean;
 export function countPascalCaseRenderedText(source: string): number;
 export function countIsoTimestampsInJsx(source: string): number;

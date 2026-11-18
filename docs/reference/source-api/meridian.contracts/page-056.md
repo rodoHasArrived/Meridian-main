@@ -6,6 +6,59 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CollectionSessionsConfig
+
+Qualified name: <code>Meridian.Contracts.Session.CollectionSessionsConfig</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Session/CollectionSession.cs:225](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L225).
+
+Configuration for collection sessions.
+
+```csharp
+public sealed class CollectionSessionsConfig
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;sessions&quot;)] public CollectionSession[]? Sessions { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:231](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L231) | Gets or sets the array of collection sessions. |
+| <code>[JsonPropertyName(&quot;activeSessionId&quot;)] public string? ActiveSessionId { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:237](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L237) | Gets or sets the currently active session identifier. |
+| <code>[JsonPropertyName(&quot;autoCreateDailySessions&quot;)] public bool AutoCreateDailySessions { get; set; } = true;</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:243](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L243) | Gets or sets a value indicating whether to auto-create daily sessions. |
+| <code>[JsonPropertyName(&quot;sessionNamingPattern&quot;)] public string SessionNamingPattern { get; set; } = &quot;{date}-{mode}&quot;;</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:249](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L249) | Gets or sets the pattern for naming new sessions. |
+| <code>[JsonPropertyName(&quot;generateManifestOnComplete&quot;)] public bool GenerateManifestOnComplete { get; set; } = true;</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:255](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L255) | Gets or sets a value indicating whether to generate a manifest on session completion. |
+| <code>[JsonPropertyName(&quot;retainSessionHistory&quot;)] public int RetainSessionHistory { get; set; } = 365;</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:261](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L261) | Gets or sets the number of days to retain session history. |
+
+## CollectionSessionStatistics
+
+Qualified name: <code>Meridian.Contracts.Session.CollectionSessionStatistics</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Session/CollectionSession.cs:141](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L141).
+
+Statistics for a collection session.
+
+```csharp
+public sealed class CollectionSessionStatistics
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;totalEvents&quot;)] public long TotalEvents { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:147](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L147) | Gets or sets the total number of events collected. |
+| <code>[JsonPropertyName(&quot;tradeEvents&quot;)] public long TradeEvents { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:153](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L153) | Gets or sets the number of trade events collected. |
+| <code>[JsonPropertyName(&quot;quoteEvents&quot;)] public long QuoteEvents { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:159](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L159) | Gets or sets the number of quote events collected. |
+| <code>[JsonPropertyName(&quot;depthEvents&quot;)] public long DepthEvents { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:165](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L165) | Gets or sets the number of market depth events collected. |
+| <code>[JsonPropertyName(&quot;barEvents&quot;)] public long BarEvents { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:171](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L171) | Gets or sets the number of bar events collected. |
+| <code>[JsonPropertyName(&quot;totalBytes&quot;)] public long TotalBytes { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:177](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L177) | Gets or sets the total uncompressed data size in bytes. |
+| <code>[JsonPropertyName(&quot;compressedBytes&quot;)] public long CompressedBytes { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:183](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L183) | Gets or sets the total compressed data size in bytes. |
+| <code>[JsonPropertyName(&quot;fileCount&quot;)] public int FileCount { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:189](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L189) | Gets or sets the number of data files created. |
+| <code>[JsonPropertyName(&quot;gapsDetected&quot;)] public int GapsDetected { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:195](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L195) | Gets or sets the number of data gaps detected. |
+| <code>[JsonPropertyName(&quot;gapsFilled&quot;)] public int GapsFilled { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:201](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L201) | Gets or sets the number of gaps that were filled. |
+| <code>[JsonPropertyName(&quot;sequenceErrors&quot;)] public int SequenceErrors { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:207](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L207) | Gets or sets the number of sequence errors detected. |
+| <code>[JsonPropertyName(&quot;eventsPerSecond&quot;)] public float EventsPerSecond { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:213](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L213) | Gets or sets the average events processed per second. |
+| <code>[JsonPropertyName(&quot;compressionRatio&quot;)] public float CompressionRatio { get; set; }</code> | [src/Meridian.Contracts/Session/CollectionSession.cs:219](../../../../src/Meridian.Contracts/Session/CollectionSession.cs#L219) | Gets or sets the compression ratio achieved. |
+
 ## SessionStatus
 
 Qualified name: <code>Meridian.Contracts.Session.SessionStatus</code>. Kind: `class`.
@@ -817,26 +870,4 @@ Result of a Security Master accrual calculation.
 
 ```csharp
 public sealed record AccrualCalculationResultDto(string EventId, Guid SecurityId, string Symbol, string AccountId, DateOnly AccrualStartDate, DateOnly AccrualEndDate, int AccrualDays, decimal DayCountFraction, decimal AccruedAmount, string Currency, AccrualInputSnapshotDto InputSnapshot);
-```
-
-## AccrualInputSnapshotDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AccrualInputSnapshotDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:249](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L249).
-
-Deterministic input snapshot used to generate an expected accounting event.
-
-```csharp
-public sealed record AccrualInputSnapshotDto(Guid SecurityId, string Symbol, string AccountId, DateOnly PeriodStart, DateOnly PeriodEnd, decimal ParAmount, decimal? CouponRate, string? CouponType, string? DayCountConvention, int? PaymentFrequencyPerYear, decimal? PriorFactor, decimal? CurrentFactor, string SourceHash);
-```
-
-## ActivationOutcomeDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ActivationOutcomeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:77](../../../../src/Meridian.Contracts/Workstation/FirstRunDtos.cs#L77).
-
-```csharp
-public sealed record ActivationOutcomeDto(string Key, string Label, string ActionLabel, string Route, bool IsComplete, DateTimeOffset? CompletedAtUtc);
 ```

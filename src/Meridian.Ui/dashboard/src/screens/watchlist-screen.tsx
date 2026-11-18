@@ -603,7 +603,7 @@ function WatchlistDetailPanel({
             <dl className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
               {detail.fields.map((field) => (
                 <div key={field.label} className="rounded-sm border border-border/60 bg-background/35 px-2.5 py-2">
-                  <dt className={cn("text-xs text-muted-foreground", usesTrackedCaps(field.label) && "uppercase tracking-[0.14em]")}>{field.label}</dt>
+                  <dt className={cn("text-xs text-muted-foreground", usesTrackedCaps(field.label) && "type-label--caps")}>{field.label}</dt>
                   <dd className={`mt-1 break-words font-mono text-xs ${detailFieldToneClass[field.tone]}`}>
                     {field.value}
                   </dd>

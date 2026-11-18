@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ClosedLotSummary
+
+Qualified name: <code>Meridian.Contracts.Workstation.ClosedLotSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1152](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1152).
+
+Workstation-facing summary of a closed lot for a strategy run.
+
+```csharp
+public sealed record ClosedLotSummary(Guid LotId, string Symbol, long Quantity, decimal EntryPrice, decimal ClosePrice, DateTimeOffset OpenedAt, DateTimeOffset ClosedAt, decimal RealizedPnl, bool IsLongTerm, string? AccountId = null);
+```
+
+## CloseReadinessBlockerDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.CloseReadinessBlockerDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs:35](../../../../src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs#L35).
+
+```csharp
+public sealed record CloseReadinessBlockerDto(string Code, string ContributorId, string Type, int Count, string Severity, string Owner, string Message, IReadOnlyList<string> RecordIds);
+```
+
 ## CloseReadinessContributionDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.CloseReadinessContributionDto</code>. Kind: `record`.
@@ -664,42 +686,3 @@ Enum declarations:
 | <code>Sftp = 4</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:269](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L269) |  |
 | <code>Api = 5</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:270](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L270) |  |
 | <code>PortalDownload = 6</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:271](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L271) |  |
-
-## EvidenceDocumentLinkDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.EvidenceDocumentLinkDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:131](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L131).
-
-```csharp
-public sealed record EvidenceDocumentLinkDto(EvidenceDocumentLinkKindDto LinkKind, string ObjectId, string? Label = null, string? Route = null, string? Relationship = null);
-```
-
-## EvidenceDocumentLinkKindDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.EvidenceDocumentLinkKindDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:104](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L104).
-
-```csharp
-public enum EvidenceDocumentLinkKindDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unknown = 0</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:106](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L106) |  |
-| <code>Period = 1</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:107](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L107) |  |
-| <code>Portfolio = 2</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:108](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L108) |  |
-| <code>Account = 3</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:109](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L109) |  |
-| <code>Instrument = 4</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:110](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L110) |  |
-| <code>Journal = 5</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:111](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L111) |  |
-| <code>ReconciliationCase = 6</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:112](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L112) |  |
-| <code>ReportLine = 7</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:113](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L113) |  |
-| <code>CloseTask = 8</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:114](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L114) |  |
-| <code>Fund = 9</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:115](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L115) |  |
-| <code>StatementRun = 10</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:116](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L116) |  |
-| <code>StatementImport = 11</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:117](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L117) |  |
-| <code>IntercompanyAgreement = 12</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:118](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L118) |  |
-| <code>LegalEntity = 13</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:119](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L119) |  |

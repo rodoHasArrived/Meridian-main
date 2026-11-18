@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingRunStoreOptions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRunStoreOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:15](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L15).
+
+```csharp
+public sealed record ReportingRunStoreOptions(string RootDirectory);
+```
+
 ## ReportingScheduleHostedService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingScheduleHostedService</code>. Kind: `class`.
@@ -918,14 +928,4 @@ Non-secret operator view of a durable recipient access grant.
 
 ```csharp
 public sealed record SecureReportingAccessGrantSummary(string GrantId, string RunId, string PackageId, string Audience, bool AllowPackageRead, IReadOnlyList<string> ArtifactIds, string State, DateTimeOffset CreatedAtUtc, DateTimeOffset ExpiresAtUtc, int MaxUses, int UseCount, DateTimeOffset? LastUsedAtUtc, DateTimeOffset? RevokedAtUtc, string? RevokedBy, string? RevocationReason, ReportingAccessPrincipalKind AudienceKind = ReportingAccessPrincipalKind.User);
-```
-
-## SecureReportingDeliveryQueueCommand
-
-Qualified name: <code>Meridian.Ui.Shared.Services.SecureReportingDeliveryQueueCommand</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:22](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L22).
-
-```csharp
-public sealed record SecureReportingDeliveryQueueCommand(string RunId, string DistributionId, string TransportId, string? RecipientPrincipalId, string Destination, string Subject, string Body, IReadOnlyList<string>? ArtifactIds = null, int? GrantLifetimeSeconds = null, int? GrantMaxUses = null, int MaxAttempts = 3, ReportingAccessPrincipalKind? RecipientPrincipalKind = null);
 ```

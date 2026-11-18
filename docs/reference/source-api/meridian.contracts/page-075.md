@@ -6,6 +6,46 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategyRunEngine
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunEngine</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:22](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L22).
+
+Shared workstation-facing execution engine for a strategy run.
+
+```csharp
+public enum StrategyRunEngine : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unknown</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:24](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L24) |  |
+| <code>MeridianNative</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:25](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L25) |  |
+| <code>Lean</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:26](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L26) |  |
+| <code>BrokerPaper</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:27](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L27) |  |
+| <code>BrokerLive</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:28](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L28) |  |
+
+## StrategyRunEvidenceLoop
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunEvidenceLoop</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:319](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L319).
+
+Retained operator criteria and cross-workflow references that close the bounded Backtest Studio evidence loop for a strategy run.
+
+```csharp
+public sealed record StrategyRunEvidenceLoop(IReadOnlyList<string> OperatorAcceptanceCriteria, IReadOnlyList<string> RetainedEvidenceReferences, IReadOnlyList<string> AccountingRecordReferences, IReadOnlyList<string> ApprovalReferences, IReadOnlyList<string> PaperValidationReferences, IReadOnlyList<string> GovernedReportReferences)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool TryCreateRequired(string? strategyIdentity, IEnumerable&lt;string&gt;? operatorAcceptanceCriteria, IEnumerable&lt;string&gt;? retainedEvidenceReferences, IEnumerable&lt;string&gt;? accountingRecordReferences, IEnumerable&lt;string&gt;? approvalReferences, IEnumerable&lt;string&gt;? paperValidationReferences, IEnumerable&lt;string&gt;? governedReportReferences, out StrategyRunEvidenceLoop evidenceLoop, out string validationError);</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:344](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L344) | Validates and normalizes the minimum evidence required before a bounded Backtest Studio run may invoke an engine or runner. |
+
 ## StrategyRunExecutionSummary
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunExecutionSummary</code>. Kind: `record`.
@@ -638,25 +678,3 @@ Enum declarations:
 | <code>ReviewRequired = 1</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:33](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L33) |  |
 | <code>Blocked = 2</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:34](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L34) |  |
 | <code>Unknown = 99</code> | [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:36](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L36) | Gate status has not yet been evaluated. |
-
-## TradingBrokerageAffectedRunDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.TradingBrokerageAffectedRunDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/TradingBrokerageRecoveryDtos.cs:29](../../../../src/Meridian.Contracts/Workstation/TradingBrokerageRecoveryDtos.cs#L29).
-
-```csharp
-public sealed record TradingBrokerageAffectedRunDto(string RunId, string StrategyId, string Status, string Detail);
-```
-
-## TradingBrokerageRecoveryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.TradingBrokerageRecoveryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/TradingBrokerageRecoveryDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/TradingBrokerageRecoveryDtos.cs#L4).
-
-Account-scoped broker evidence used by execution risk and recovery.
-
-```csharp
-public sealed record TradingBrokerageRecoveryDto(Guid? FundAccountId, string? ProviderId, string? ExternalAccountId, string Status, string Detail, TradingBrokerageRecoveryPortfolioDto? Portfolio, IReadOnlyList<string> BlockingReasons, IReadOnlyList<TradingBrokerageAffectedRunDto> AffectedRuns);
-```
