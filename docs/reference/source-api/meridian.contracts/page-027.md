@@ -235,6 +235,24 @@ Declared public members:
 | --- | --- | --- |
 | <code>IntercompanyAccrualPreviewDto Preview(IntercompanyAccrualComputationInput input);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs:79](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccrualDtos.cs#L79) |  |
 
+## IIntercompanyFeeAccrualPreviewService
+
+Qualified name: <code>Meridian.Contracts.FundStructure.IIntercompanyFeeAccrualPreviewService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyFeeAccrualDtos.cs:43](../../../../src/Meridian.Contracts/FundStructure/IntercompanyFeeAccrualDtos.cs#L43).
+
+Pure fee calculation over server-resolved legal and profile facts.
+
+```csharp
+public interface IIntercompanyFeeAccrualPreviewService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>IntercompanyFeeAccrualPreviewDto Preview(IntercompanyFeeAccrualComputationInput input);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyFeeAccrualDtos.cs:45](../../../../src/Meridian.Contracts/FundStructure/IntercompanyFeeAccrualDtos.cs#L45) |  |
+
 ## IIntercompanyRateFixingStore
 
 Qualified name: <code>Meridian.Contracts.FundStructure.IIntercompanyRateFixingStore</code>. Kind: `interface`.
@@ -259,7 +277,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.FundStructure.IIntercompanyStructuredTermsPreviewService</code>. Kind: `interface`.
 
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs:50](../../../../src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs#L50).
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs:56](../../../../src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs#L56).
 
 A pure date preview over server-resolved legal facts; no ledger or journal dependency.
 
@@ -271,7 +289,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>IntercompanyStructuredTermsPreviewDto Preview(IntercompanyAgreementDraftDto draft, string subjectHash);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs:52](../../../../src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs#L52) |  |
+| <code>IntercompanyStructuredTermsPreviewDto Preview(IntercompanyAgreementDraftDto draft, string subjectHash);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs:58](../../../../src/Meridian.Contracts/FundStructure/IntercompanyStructuredTermsDtos.cs#L58) |  |
 
 ## ILegalEntityReadAuthorityLease
 
@@ -715,13 +733,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;string&gt;? MigrationWarnings { get; init; }</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:95](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L95) |  |
-
-## IntercompanyAgreementDraftDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementDraftDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:27](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L27).
-
-```csharp
-public sealed record IntercompanyAgreementDraftDto(string Code, string Name, Guid PartyOneId, string PartyOneRole, Guid PartyTwoId, string PartyTwoRole, IntercompanyAgreementTypeDto AgreementType, string Currency, DateOnly EffectiveFrom, DateOnly? EffectiveTo = null, IntercompanyAgreementTermsDto? Terms = null, IReadOnlyList<IntercompanyAgreementEvidenceDto>? Evidence = null, IntercompanyAgreementActionDto Action = IntercompanyAgreementActionDto.Activate, DateOnly? TerminationEffectiveDate = null, string? Purpose = null);
-```

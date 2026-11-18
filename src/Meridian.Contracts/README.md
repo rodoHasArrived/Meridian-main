@@ -23,6 +23,11 @@ attestations retain reviewer and operator identities, while obligation-monitor D
 source/freshness evidence outside blocking close contributors. See
 [the native legal contract](../../docs/domain/intercompany-agreements.md).
 
+Fixed management-fee terms add a null-omitted `FixedFeeBasis` (per period or per annum).
+`IntercompanyFeeAccrualDtos` and `IntercompanyFeeAccrualEvidenceDtos` define rule `intercompany-fee-v1`, its
+retained evidence and `IntercompanyFeeAccrualEvidenceGuard`, which the accrual guard dispatches to for fee
+evidence. See [governed fixed management fees](../../docs/domain/intercompany-agreements.md#governed-fixed-management-fees).
+
 Floating loan terms add a null-omitted `FixingLagBusinessDays`. `IntercompanyRateFixingDtos` define
 the reviewed fixing record, its propose and decide requests and `IIntercompanyRateFixingStore`; accrual
 slices gain a null-omitted `Fixing` pin, and `IntercompanyAccrualRules` adds `intercompany-accrual-v2`.

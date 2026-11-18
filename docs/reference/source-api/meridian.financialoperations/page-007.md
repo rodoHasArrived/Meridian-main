@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DefaultReconciliationIngestionScheduler
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.DefaultReconciliationIngestionScheduler</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/DefaultReconciliationIngestionScheduler.cs:23](../../../../src/Meridian.FinancialOperations/Reconciliation/DefaultReconciliationIngestionScheduler.cs#L23).
+
+Captures source snapshots for a reconciliation run with a real scheduling policy instead of a sequential foreach: bounded concurrent capture across adapters, a per-attempt timeout, and exponential-backoff retries for transient per-source failures. Results are returned in a deterministic order (source type, then registration order) regardless of completion order, and a source that exhausts its attempts fails the run by rethrowing its final attempt&#x27;s exception with the original type and stack intact — retry telemetry is carried in structured logs, not in wrapper exception types. Adapters are invoked behind the deadline fence (their synchronous prefixes cannot stall the run), cooperative timeouts retry, and a source that ignores cancellation past the grace period fails terminally rather than stacking further live captures outside the concurrency accounting. Queueing is governed only by run cancellation; the per-source deadline starts after dispatch, so a queued callback can neither consume a source attempt before the adapter runs nor start later after its run has already been cancelled.
+
+```csharp
+public sealed class DefaultReconciliationIngestionScheduler : IReconciliationIngestionScheduler
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DefaultReconciliationIngestionScheduler(ReconciliationIngestionOptions? options = null, ILogger&lt;DefaultReconciliationIngestionScheduler&gt;? log = null) : this(options, log, static (capture, ct) =&gt; Task.Run(capture, ct));</code> | [src/Meridian.FinancialOperations/Reconciliation/DefaultReconciliationIngestionScheduler.cs:29](../../../../src/Meridian.FinancialOperations/Reconciliation/DefaultReconciliationIngestionScheduler.cs#L29) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;DataSourceSnapshot&gt;&gt; CaptureAsync(IReadOnlyList&lt;IReconciliationSourceAdapter&gt; adapters, ReconciliationIngestionRequest request, CancellationToken ct);</code> | [src/Meridian.FinancialOperations/Reconciliation/DefaultReconciliationIngestionScheduler.cs:47](../../../../src/Meridian.FinancialOperations/Reconciliation/DefaultReconciliationIngestionScheduler.cs#L47) |  |
+
 ## DeterministicFingerprint
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.DeterministicFingerprint</code>. Kind: `class`.
@@ -906,21 +925,3 @@ Declared public members:
 | <code>Task&lt;StatementRunWorkflowResult?&gt; GetAsync(string runId, CancellationToken cancellationToken = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs:77](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs#L77) |  |
 | <code>Task&lt;IReadOnlyList&lt;ReconciliationBreakRecord&gt;&gt; ListOpenBreaksAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs:78](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs#L78) |  |
 | <code>Task&lt;IReadOnlyList&lt;ReconciliationCase&gt;&gt; ListCasesAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs:79](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs#L79) |  |
-
-## IStatementToleranceProfileProvider
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IStatementToleranceProfileProvider</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementToleranceProfiles.cs:66](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementToleranceProfiles.cs#L66).
-
-Resolves the tolerance profile used by statement matching.
-
-```csharp
-public interface IStatementToleranceProfileProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>ValueTask&lt;StatementToleranceProfile&gt; GetProfileAsync(string profileId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementToleranceProfiles.cs:68](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementToleranceProfiles.cs#L68) |  |

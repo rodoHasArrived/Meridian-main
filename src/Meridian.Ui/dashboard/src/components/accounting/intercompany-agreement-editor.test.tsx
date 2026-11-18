@@ -91,3 +91,43 @@ it("records guarantee beneficiary and an unknown limit without forcing a payment
   fireEvent.submit(screen.getByRole("form", { name: "Create agreement draft" }));
   expect(save.mock.calls[0][0].terms.structuredTerms).toEqual({ schemaVersion: 1, guarantee: { beneficiaryReference: "External lender", limitAmount: null } });
 });
+
+it("declares a per-annum fixed management fee with its day count and clears both when the fee becomes a percentage", () => {
+  const save = vi.fn(); const initial = { ...newAgreementDraft("entity-a", "2026-11-17"), code: "fee", name: "Management fee", partyTwoId: "entity-b", currency: "USD" };
+  render(<IntercompanyAgreementEditor initial={initial} fixedIdentity={false} busy={false} onSave={save} onCancel={vi.fn()} />);
+  fireEvent.change(screen.getByLabelText("Agreement type"), { target: { value: "ManagementFee" } });
+  fireEvent.change(screen.getByLabelText("Legal terms format"), { target: { value: "StructuredV1" } });
+  fireEvent.change(screen.getByLabelText("Accrual schedule end"), { target: { value: "2027-11-17" } });
+  fireEvent.change(screen.getByLabelText("Declared business calendar"), { target: { value: "WEEKENDS" } });
+  fireEvent.change(screen.getByLabelText("Fixed fee amount in agreement currency"), { target: { value: "120000.005" } });
+  expect(screen.getByLabelText("Fixed fee covers")).toHaveValue("");
+  expect(screen.queryByLabelText("Declared day count")).not.toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText("Fixed fee covers"), { target: { value: "PerAnnum" } });
+  fireEvent.change(screen.getByLabelText("Declared day count"), { target: { value: "Actual365" } });
+  fireEvent.change(screen.getByLabelText("Change rationale"), { target: { value: "Signed fee terms" } });
+  fireEvent.submit(screen.getByRole("form", { name: "Create agreement draft" }));
+  expect(save.mock.calls[0][0].terms.structuredTerms).toMatchObject({ fixedFeeAmount: "120000.005", fixedFeeBasis: "PerAnnum", dayCount: "Actual365" });
+
+  // A per-period fee carries no day count.
+  fireEvent.change(screen.getByLabelText("Fixed fee covers"), { target: { value: "PerPeriod" } });
+  expect(screen.queryByLabelText("Declared day count")).not.toBeInTheDocument();
+  fireEvent.submit(screen.getByRole("form", { name: "Create agreement draft" }));
+  expect(save.mock.calls[1][0].terms.structuredTerms).toMatchObject({ fixedFeeBasis: "PerPeriod", dayCount: null });
+
+  // Percentage fees are not calculated, so the basis and day count are withdrawn.
+  fireEvent.change(screen.getByLabelText("Fixed fee covers"), { target: { value: "PerAnnum" } });
+  fireEvent.change(screen.getByLabelText("Declared day count"), { target: { value: "Actual360" } });
+  fireEvent.change(screen.getByLabelText("Fee calculation basis"), { target: { value: "Rate" } });
+  expect(screen.queryByLabelText("Fixed fee covers")).not.toBeInTheDocument();
+  fireEvent.change(screen.getByLabelText("Structured annual fee rate (fraction)"), { target: { value: "0.01" } });
+  fireEvent.change(screen.getByLabelText("Fee calculation base reference"), { target: { value: "NAV" } });
+  fireEvent.submit(screen.getByRole("form", { name: "Create agreement draft" }));
+  expect(save.mock.calls[2][0].terms.structuredTerms).toMatchObject({ fixedFeeAmount: null, fixedFeeBasis: null, dayCount: null, annualFeeRate: "0.01" });
+});
+
+it("summarizes the declared fixed fee basis and day count", () => {
+  render(<StructuredTermsSummary terms={{ schemaVersion: 1, fixedFeeAmount: "120000", fixedFeeBasis: "PerAnnum", dayCount: "Actual365" }} />);
+  expect(screen.getByText("Fixed fee covers").nextSibling).toHaveTextContent("One year (per annum)");
+  expect(screen.getByText("Day count").nextSibling).toHaveTextContent("Actual365");
+  expect(screen.getByText("120000")).toBeVisible();
+});

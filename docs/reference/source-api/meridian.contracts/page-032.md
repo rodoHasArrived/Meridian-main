@@ -6,6 +6,89 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountingBasisProjectionItemDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.AccountingBasisProjectionItemDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1133](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1133).
+
+```csharp
+public sealed record AccountingBasisProjectionItemDto(AccountingBasisKindDto AccountingBasis, Guid LedgerBookId, Guid PeriodId, PostingRuleJournalCandidateResultDto Candidate, string Status, string? DisabledReason = null);
+```
+
+## AccountingBasisProjectionSetDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.AccountingBasisProjectionSetDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1141](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1141).
+
+```csharp
+public sealed record AccountingBasisProjectionSetDto(Guid SourceEventId, string FundProfileId, string SourceEventType, DateOnly EffectiveDate, decimal EventAmount, string Currency, DateTimeOffset ProjectedAtUtc, IReadOnlyList<AccountingBasisProjectionItemDto>? Items = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;AccountingBasisProjectionItemDto&gt; Items { get; init; } = Items??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1151](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1151) |  |
+
+## AccountingBasisProjectionSetRequestDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.AccountingBasisProjectionSetRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1107](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1107).
+
+```csharp
+public sealed record AccountingBasisProjectionSetRequestDto(string FundProfileId, string SourceEventType, decimal EventAmount, string Currency, DateOnly EffectiveDate, string Actor, Guid SourceEventId, DateTimeOffset AccountingTimestamp, string Description, IReadOnlyList<AccountingBasisProjectionTargetDto> Targets, Guid? CorrelationId = null, string? CounterpartyId = null, string? InstrumentSymbol = null, TreasuryLedgerContextDto? TreasuryContext = null, IReadOnlyList<string>? EvidenceLinks = null, string? TenantId = null, string? CompanyId = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;AccountingBasisProjectionTargetDto&gt; Targets { get; init; } = Targets??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1126](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1126) |  |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1129](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1129) |  |
+
+## AccountingBasisProjectionTargetDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.AccountingBasisProjectionTargetDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1099](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1099).
+
+```csharp
+public sealed record AccountingBasisProjectionTargetDto(AccountingBasisKindDto AccountingBasis, Guid LedgerBookId, Guid PeriodId, string? PolicyId = null, AccountingTreatmentKindDto? TreatmentKind = null, LedgerDimensionSetDto? Dimensions = null);
+```
+
+## AccountingBookContextDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.AccountingBookContextDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingBookContextDtos.cs:5](../../../../src/Meridian.Contracts/Ledger/AccountingBookContextDtos.cs#L5).
+
+```csharp
+public sealed record AccountingBookContextDto(Guid LedgerBookId, string FundProfileId, Guid FundStructureNodeId, FundStructureNodeKindDto FundStructureNodeKind, string DisplayName, string BaseCurrency, AccountingBasisKindDto AccountingBasis, string AccountingPolicyId, string AccountingPolicyVersion, Guid? PeriodId = null, LedgerDimensionSetDto? Dimensions = null);
+```
+
+## AccountingCertificationStateDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.AccountingCertificationStateDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:105](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L105).
+
+```csharp
+public enum AccountingCertificationStateDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Draft = 0</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:107](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L107) |  |
+| <code>ReadyForReview = 1</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:108](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L108) |  |
+| <code>Certified = 2</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:109](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L109) |  |
+| <code>Rejected = 3</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:110](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L110) |  |
+| <code>Superseded = 4</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:111](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L111) |  |
+
 ## AccountingCloseReadinessItemDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.AccountingCloseReadinessItemDto</code>. Kind: `record`.
@@ -667,76 +750,4 @@ The server resolves account facts from the chart and stamps authenticated audit 
 
 ```csharp
 public sealed record AppendIntercompanyAccountBindingRequest(Guid BindingId, Guid RevisionId, Guid LedgerBookId, string ChartAccountNodeId, DateOnly EffectiveFrom, DateOnly? EffectiveTo, IReadOnlyList<string> HistoricalNames, string Reason, Guid? ExpectedPreviousRevisionId = null, bool IsArchived = false);
-```
-
-## AppendLegacyIntercompanyAttributionRequest
-
-Qualified name: <code>Meridian.Contracts.Ledger.AppendLegacyIntercompanyAttributionRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/LegacyIntercompanyAttributionDtos.cs:37](../../../../src/Meridian.Contracts/Ledger/LegacyIntercompanyAttributionDtos.cs#L37).
-
-```csharp
-public sealed record AppendLegacyIntercompanyAttributionRequest(LegacyIntercompanyAttributionDto Attribution, Guid? ExpectedPreviousAttributionId);
-```
-
-## ApproveConsolidationTransitionRequestDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.ApproveConsolidationTransitionRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/ConsolidationTransitionDtos.cs:25](../../../../src/Meridian.Contracts/Ledger/ConsolidationTransitionDtos.cs#L25).
-
-```csharp
-public sealed record ApproveConsolidationTransitionRequestDto(Guid PreviewId, string PreviewFingerprint);
-```
-
-## ApprovePostingRulePromotionRequest
-
-Qualified name: <code>Meridian.Contracts.Ledger.ApprovePostingRulePromotionRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:686](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L686).
-
-```csharp
-public sealed record ApprovePostingRulePromotionRequest(string FundProfileId, string RuleId, string RuleVersion, string Actor, string ApprovalId, string Notes, IReadOnlyList<string>? EvidenceLinks = null, string? RequestedBy = null, DateTimeOffset? RequestedAtUtc = null, string? CorrelationId = null, string? CompanyId = null, IReadOnlyList<string>? ReportGroupPrincipalIds = null, Guid? LedgerBookId = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator, string? TenantId = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:703](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L703) |  |
-
-## ApprovePrivateCapitalCommitmentRequest
-
-Qualified name: <code>Meridian.Contracts.Ledger.ApprovePrivateCapitalCommitmentRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/PrivateCapitalLifecycleDtos.cs:137](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalLifecycleDtos.cs#L137).
-
-Review the exact retained commitment revision.
-
-```csharp
-public sealed record ApprovePrivateCapitalCommitmentRequest(int Revision);
-```
-
-## AssetAccountingApprovalReceiptDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.AssetAccountingApprovalReceiptDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/FactorPaydownPreparationDtos.cs:50](../../../../src/Meridian.Contracts/Ledger/FactorPaydownPreparationDtos.cs#L50).
-
-Bytes retained by an actual authenticated independent approval command.
-
-```csharp
-public sealed record AssetAccountingApprovalReceiptDto(string ApprovalId, string Approver, DateTimeOffset ApprovedAtUtc, string CandidateFingerprint, string SubjectId, string CanonicalContentBase64, string ContentHashSha256);
-```
-
-## AssetAccountingDraftCapabilitiesDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.AssetAccountingDraftCapabilitiesDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/FactorPaydownPreparationDtos.cs:68](../../../../src/Meridian.Contracts/Ledger/FactorPaydownPreparationDtos.cs#L68).
-
-Caller-specific capability. Missing or unknown protocol remains read-only.
-
-```csharp
-public sealed record AssetAccountingDraftCapabilitiesDto(int ProtocolVersion, Guid JournalEntryId, int DraftVersion, string FundProfileId, Guid LedgerBookId, Guid PeriodId, string CandidateFingerprint, bool CanApprove, bool CanPost, string? ApproveBlockedReason, string? PostBlockedReason, AssetAccountingApprovalReceiptDto? Approval, bool HasPendingPost, JournalEntryLifecycleActionRequestDto? PendingPostCommand, PostedLedgerJournalEntryResultDto? PostedJournal, string? AuthenticatedActor = null);
 ```

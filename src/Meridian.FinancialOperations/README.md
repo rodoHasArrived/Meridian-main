@@ -66,6 +66,11 @@ The close cockpit consumes this structured schedule instead of intercompany keyw
 NetSuite guarded export review retains its schedule hash and rechecks mapping completeness
 and freshness alongside the existing external NetSuite evidence requirements.
 
+`IntercompanyFeeAccrualSourceBuilder` builds the fixed management-fee source draft with direction from the
+agreement's declared roles and detects overlapping posted fees; `IntercompanyLedgerPostingAuthority`
+re-resolves every fee slice's authority before review or posting. See
+[governed fixed management fees](../../docs/domain/intercompany-agreements.md#governed-fixed-management-fees).
+
 `IntercompanyLedgerPostingAuthority` also re-reads every fixing a floating accrual pinned, so a value
 re-approved after drafting stops the draft before review or posting; the source builder retains the
 computation's own rule version. See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).

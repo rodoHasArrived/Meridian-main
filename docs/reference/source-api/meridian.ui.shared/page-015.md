@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PostedStrategyRunLedgerSource
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PostedStrategyRunLedgerSource</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/PostedStrategyRunLedgerSource.cs:12](../../../../src/Meridian.Ui.Shared/Services/PostedStrategyRunLedgerSource.cs#L12).
+
+Rebuilds a run view from posted journals carrying its exact retained run identity. Books and accounts are authorized independently; strategy identity alone never selects a book.
+
+```csharp
+public sealed class PostedStrategyRunLedgerSource(ILedgerJournalStore? journals = null, IFundProfileTenancyRegistry? tenancy = null) : IStrategyRunLedgerSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IReadOnlyLedger?&gt; ReadAsync(StrategyRunEntry run, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PostedStrategyRunLedgerSource.cs:16](../../../../src/Meridian.Ui.Shared/Services/PostedStrategyRunLedgerSource.cs#L16) |  |
+
 ## PreparePeriodAdjustmentRequest
 
 Qualified name: <code>Meridian.Ui.Shared.Services.PreparePeriodAdjustmentRequest</code>. Kind: `record`.
@@ -827,15 +845,3 @@ Declared public members:
 | <code>public async Task&lt;ReportingArtifactRetentionReceipt&gt; RetainPackageAsync(ReportingArtifactPackageRetentionRequest request, ReportingAuthorityScope authority, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:95](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L95) |  |
 | <code>public async Task&lt;ReportingRetainedArtifactPackage&gt; GetPackageForReleaseAsync(string packageId, ReportingArtifactAccessContext context, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:215](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L215) |  |
 | <code>public async Task&lt;ReportingArtifactDownload&gt; ReadForDownloadAsync(string packageId, string artifactId, ReportingArtifactAccessContext context, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:256](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L256) |  |
-
-## ReportingAuthoritativeAsOfCertification
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingAuthoritativeAsOfCertification</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:48](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L48).
-
-Exact output returned by the server-side renderer/artifact producer. Artifact ids must be the same ids declared by the completed orchestration manifest; the coordinator rejects partial or augmented output sets before retaining any bytes.
-
-```csharp
-public sealed record ReportingAuthoritativeAsOfCertification(DateOnly AsOfDate, ReportingOperationalScope Scope, ReportingAccessScope Access, ReportingCertifiedSnapshotScope Snapshot, string SourceCheckpointId, string SourceCheckpointHash, bool IsAuthoritative, ImmutableArray<string> EvidenceIds);
-```

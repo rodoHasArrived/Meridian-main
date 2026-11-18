@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterOperationalReadinessService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterOperationalReadinessService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs:47](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs#L47).
+
+Evaluates Security Master coverage for multi-asset operational readiness views.
+
+```csharp
+public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterOperationalReadinessService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterOperationalReadinessService(AssetClassValidatorRegistry? assetClassValidators = null, ISecurityAssetProfileCatalog? assetProfileCatalog = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs:59](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs#L59) |  |
+| <code>public Task&lt;MultiAssetCoverageSummaryDto&gt; GetReadinessAsync(SecurityMasterOperationalReadinessRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs:67](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterOperationalReadinessService.cs#L67) |  |
+
 ## SecurityMasterPricingService
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterPricingService</code>. Kind: `class`.
@@ -1115,22 +1134,3 @@ Declared public members:
 | <code>public AppConfig GetConfig(string? configPath = null);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:551](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L551) | Returns the current on-disk config via ConfigStore. |
 | <code>public async Task SaveConfigAsync(AppConfig config, string? configPath = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/ConfigurationService.cs:560](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L560) | Saves a modified config back to disk. |
 | <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Services/ConfigurationService.cs:568](../../../../src/Meridian.Application/Services/ConfigurationService.cs#L568) |  |
-
-## ConfigurationServiceCredentialAdapter
-
-Qualified name: <code>Meridian.Application.Services.ConfigurationServiceCredentialAdapter</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/ConfigurationServiceCredentialAdapter.cs:10](../../../../src/Meridian.Application/Services/ConfigurationServiceCredentialAdapter.cs#L10).
-
-Adapter that wraps ConfigurationService to implement ICredentialResolver. Enables using ConfigurationService&#x27;s credential resolution with the unified ProviderFactory.
-
-```csharp
-public sealed class ConfigurationServiceCredentialAdapter : IProviderCredentialResolver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ConfigurationServiceCredentialAdapter(ConfigurationService configService);</code> | [src/Meridian.Application/Services/ConfigurationServiceCredentialAdapter.cs:14](../../../../src/Meridian.Application/Services/ConfigurationServiceCredentialAdapter.cs#L14) |  |
-| <code>public ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary&lt;string, string?&gt;? configuredValues = null);</code> | [src/Meridian.Application/Services/ConfigurationServiceCredentialAdapter.cs:19](../../../../src/Meridian.Application/Services/ConfigurationServiceCredentialAdapter.cs#L19) |  |

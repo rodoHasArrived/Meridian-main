@@ -930,6 +930,25 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static IntercompanyAgreementJournalLinesDto Project(IntercompanyAgreementDetailDto agreement, LedgerBookRecord book, IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, DateOnly asOf, string? cursor = null, int pageSize = 100);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAgreementJournalProjection.cs:13](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAgreementJournalProjection.cs#L13) |  |
 
+## IntercompanyFeeAccrualDraftService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IntercompanyFeeAccrualDraftService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/IntercompanyFeeAccrualDraftService.cs:15](../../../../src/Meridian.Ui.Shared/Services/IntercompanyFeeAccrualDraftService.cs#L15).
+
+Resolves approved management-fee terms and profile revisions into a source-side fee draft (rule intercompany-fee-v1). It never approves or posts: the draft enters the source book&#x27;s ordinary review, and the counterpart is produced by the existing proposal pipeline only after the source journal commits.
+
+```csharp
+public sealed class IntercompanyFeeAccrualDraftService(IntercompanyAccountingArrangementService arrangements, ILedgerJournalStore journals, IIntercompanyAccountBindingStore bindings, IAccountingConfigurationService configuration, IManualJournalEntryDraftStore drafts, ManualJournalEntryWorkbenchService workbench, IIntercompanyFeeAccrualPreviewService calculator, IConsolidationFxAuthority? fx = null, TimeProvider? time = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IntercompanyFeeAccrualProposalDto&gt; PreviewAsync(string tenantId, string? companyId, string actor, IntercompanyFeeAccrualRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyFeeAccrualDraftService.cs:23](../../../../src/Meridian.Ui.Shared/Services/IntercompanyFeeAccrualDraftService.cs#L23) | Read-only: computes the fee, its evidence and the draft that would be retained. |
+| <code>public async Task&lt;ManualJournalEntryDraftDto&gt; CreateDraftAsync(string tenantId, string? companyId, string actor, CreateIntercompanyFeeAccrualDraftRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyFeeAccrualDraftService.cs:107](../../../../src/Meridian.Ui.Shared/Services/IntercompanyFeeAccrualDraftService.cs#L107) | Retains the previewed fee as a draft in the source book&#x27;s review queue. A changed input since the preview is refused; an unreviewed draft of the same window is recomputed in place; one already submitted is never overwritten. |
+
 ## IntercompanyProposalDeliveryService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IntercompanyProposalDeliveryService</code>. Kind: `class`.
@@ -951,13 +970,3 @@ Declared public members:
 | <code>public async Task&lt;ManualJournalEntryDraftDto&gt; RefreshAsync(string tenant, string? company, Guid proposalId, RefreshIntercompanyProposalRequest request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs:217](../../../../src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs#L217) |  |
 | <code>public async Task LinkAsync(string tenant, Guid proposalId, LinkIntercompanyCounterpartRequest request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs:259](../../../../src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs#L259) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;IntercompanyBreakDto&gt;&gt; BreaksAsync(string tenant, string? company, Guid sourceBookId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs:451](../../../../src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs#L451) |  |
-
-## IntercompanyProposalHostedService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IntercompanyProposalHostedService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs:504](../../../../src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs#L504).
-
-```csharp
-public sealed class IntercompanyProposalHostedService(IServiceProvider services, ILogger<IntercompanyProposalHostedService> logger) : BackgroundService
-```

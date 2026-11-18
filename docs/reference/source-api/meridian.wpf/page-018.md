@@ -325,6 +325,22 @@ Declared public members:
 | --- | --- | --- |
 | <code>public IntercompanyInterestAccrualControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/IntercompanyInterestAccrualControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/IntercompanyInterestAccrualControl.xaml.cs#L7) |  |
 
+## IntercompanyManagementFeeControl
+
+Qualified name: <code>Meridian.Wpf.Views.IntercompanyManagementFeeControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/IntercompanyManagementFeeControl.xaml.cs:5](../../../../src/Meridian.Wpf/Views/IntercompanyManagementFeeControl.xaml.cs#L5).
+
+```csharp
+public partial class IntercompanyManagementFeeControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyManagementFeeControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/IntercompanyManagementFeeControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/IntercompanyManagementFeeControl.xaml.cs#L7) |  |
+
 ## IntercompanyRateFixingsControl
 
 Qualified name: <code>Meridian.Wpf.Views.IntercompanyRateFixingsControl</code>. Kind: `class`.
@@ -1015,25 +1031,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public RetentionAssurancePage();</code> | [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:25](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L25) |  |
-
-## AuditReportItem
-
-Qualified name: <code>Meridian.Wpf.Views.RetentionAssurancePage.AuditReportItem</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:191](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L191).
-
-Presents a retention audit report&#x27;s outcome, summary, retained size, and timestamp.
-
-```csharp
-public sealed class AuditReportItem
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string StatusText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:193](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L193) |  |
-| <code>public Brush StatusColor { get; set; } = Brushes.Gray;</code> | [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:194](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L194) |  |
-| <code>public string Summary { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:195](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L195) |  |
-| <code>public string SizeText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:196](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L196) |  |
-| <code>public string TimeText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs:197](../../../../src/Meridian.Wpf/Views/RetentionAssurancePage.xaml.cs#L197) |  |

@@ -6,6 +6,32 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkspaceEvidenceStripControl
+
+Qualified name: <code>Meridian.Wpf.Views.WorkspaceEvidenceStripControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs:9](../../../../src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs#L9).
+
+Hosts workflow evidence summaries and primary and secondary actions.
+
+```csharp
+public partial class WorkspaceEvidenceStripControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly DependencyProperty StripAutomationIdProperty = DependencyProperty.Register(nameof(StripAutomationId), typeof(string), typeof(WorkspaceEvidenceStripControl), new PropertyMetadata(&quot;WorkspaceEvidenceStrip&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs:11](../../../../src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs#L11) |  |
+| <code>public static readonly DependencyProperty WorkflowSummaryStripAutomationIdProperty = DependencyProperty.Register(nameof(WorkflowSummaryStripAutomationId), typeof(string), typeof(WorkspaceEvidenceStripControl), new PropertyMetadata(&quot;WorkflowSummaryStrip&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs:14](../../../../src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs#L14) |  |
+| <code>public static readonly DependencyProperty PrimaryActionButtonAutomationIdProperty = DependencyProperty.Register(nameof(PrimaryActionButtonAutomationId), typeof(string), typeof(WorkspaceEvidenceStripControl), new PropertyMetadata(&quot;PrimaryWorkflowActionButton&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs:17](../../../../src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs#L17) |  |
+| <code>public static readonly DependencyProperty SecondaryToggleButtonAutomationIdProperty = DependencyProperty.Register(nameof(SecondaryToggleButtonAutomationId), typeof(string), typeof(WorkspaceEvidenceStripControl), new PropertyMetadata(&quot;SecondaryWorkflowToggleButton&quot;));</code> | [src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs:20](../../../../src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs#L20) |  |
+| <code>public WorkspaceEvidenceStripControl();</code> | [src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs:23](../../../../src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs#L23) |  |
+| <code>public string StripAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs:28](../../../../src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs#L28) |  |
+| <code>public string WorkflowSummaryStripAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs:34](../../../../src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs#L34) |  |
+| <code>public string PrimaryActionButtonAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs:40](../../../../src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs#L40) |  |
+| <code>public string SecondaryToggleButtonAutomationId { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs:46](../../../../src/Meridian.Wpf/Views/WorkspaceEvidenceStripControl.xaml.cs#L46) |  |
+
 ## WorkspaceInspectorActionInvokedEventArgs
 
 Qualified name: <code>Meridian.Wpf.Views.WorkspaceInspectorActionInvokedEventArgs</code>. Kind: `class`.
@@ -943,22 +969,3 @@ Source: [src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs:
 ```csharp
 public sealed record EvidenceVaultManifestSnapshotModel(string ManifestId, string PackageText, string FrozenText, string ContentHashText, string DocumentCountText, string RequestCountText, string ObjectLinkCountText, WorkstationReadinessTone ReadinessTone, string Tone);
 ```
-
-## EvidenceVaultPresentationMapper
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.EvidenceVaultPresentationMapper</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs:49](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs#L49).
-
-Projects evidence-vault documents and manifest snapshots into desktop queue and readiness presentation.
-
-```csharp
-public static class EvidenceVaultPresentationMapper
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static EvidenceVaultDocumentQueuePresentationModel BuildDocumentQueue(IReadOnlyList&lt;EvidenceVaultDocumentEntryDto&gt; entries, EvidenceManifestDto? manifestSnapshot);</code> | [src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs:51](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs#L51) |  |
-| <code>public static EvidenceVaultManifestSnapshotModel ToManifestSnapshot(EvidenceManifestDto manifest);</code> | [src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs:74](../../../../src/Meridian.Wpf/Workstation/Models/EvidenceVaultPresentationModels.cs#L74) |  |

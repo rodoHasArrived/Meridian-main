@@ -32,6 +32,9 @@ journal-line reference editing follows the server's rollout capability; the brow
 rate text and source amounts. Rebuild with the canonical dashboard command after changes. See
 [intercompany agreements](../../docs/domain/intercompany-agreements.md) for authority and configuration.
 
+The served accounting bundle adds "Accrue fee" on approved management-fee profiles over
+`/api/ledger/intercompany/fees/*`. See [governed fixed management fees](../../docs/domain/intercompany-agreements.md#governed-fixed-management-fees).
+
 The served Entity operations bundle adds a Rate fixings tab over
 `/api/ledger/intercompany/rate-fixings`. See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
 

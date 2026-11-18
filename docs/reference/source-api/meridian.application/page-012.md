@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IndexSubscriptionStatus
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs:416](../../../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs#L416).
+
+Status of index subscription coverage.
+
+```csharp
+public sealed record IndexSubscriptionStatus(string IndexId, string? IndexName, int TotalComponents, int SubscribedCount, string[] SubscribedSymbols, string[] NotSubscribedSymbols);
+```
+
 ## IPortfolioOpeningBalanceQueue
 
 Qualified name: <code>Meridian.Application.Subscriptions.Services.IPortfolioOpeningBalanceQueue</code>. Kind: `interface`.

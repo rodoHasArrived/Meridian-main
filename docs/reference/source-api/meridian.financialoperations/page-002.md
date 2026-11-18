@@ -658,7 +658,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static IReadOnlyList&lt;(DateOnly From, DateOnly To, Guid RevisionId)&gt; ResolveAuthority(IntercompanyAccountingArrangementHistoryDto history, DateOnly from, DateOnly to);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs:23](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs#L23) | The approved profile revision applicable on each day of &#91;from, to), using the same end-of-day resolution as posting. A day with no single approved revision refuses the whole window. |
+| <code>public static IReadOnlyList&lt;(DateOnly From, DateOnly To, Guid RevisionId)&gt; ResolveAuthority(IntercompanyAccountingArrangementHistoryDto history, DateOnly from, DateOnly to, string profileLabel = &quot;loan-interest&quot;);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs:23](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs#L23) | The approved profile revision applicable on each day of &#91;from, to), using the same end-of-day resolution as posting. A day with no single approved revision refuses the whole window. |
 | <code>public static IntercompanyAccrualPrincipalResult BuildPrincipal(IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, Guid principalArrangementId, Guid sourceBookId, IReadOnlySet&lt;string&gt; receivableNodes, IReadOnlySet&lt;string&gt; payableNodes, string agreementCurrency, string functionalCurrency, DateOnly from, DateOnly to);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs:53](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs#L53) | A movement dated d changes the balance from d inclusive: a drawdown earns interest on its own date, a repayment stops earning on its own date. |
 | <code>public static string? FindPostedOverlap(IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, Guid interestArrangementId, DateOnly from, DateOnly to);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs:121](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs#L121) | A posted accrual of the profile whose window intersects &#91;from, to) and has not been reversed. Reversal is proved by correction lineage: a source-linked exact inverse of that journal. A settled receivable or payable nets to zero too, but its interest income stays posted, so balances prove nothing. |
 | <code>public static int PostedGeneration(IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, Guid interestArrangementId, DateOnly from, DateOnly to);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs:142](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs#L142) | How many accrual journals, originals and their corrections, are already posted for exactly this window. It only grows when a journal posts, so it is stable across retries and gives a recomputation after a reversal its own identity while the immutable original keeps its own. |
@@ -746,6 +746,29 @@ Declared public members:
 | <code>public static DateOnly VerifySource(IntercompanyProposalSourceDto source, LedgerJournalEntryRecord original, LedgerJournalEntryRecord inverse);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyCounterpartReversalBuilder.cs:11](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyCounterpartReversalBuilder.cs#L11) |  |
 | <code>public static ManualJournalEntryDraftDto Build(IntercompanyProposalDto proposal, IntercompanyProposalDto prior, ResolvedIntercompanyAccountingArrangementDto agreement, LedgerJournalEntryRecord original, LedgerBookRecord target, LedgerAccountingPeriod period, IReadOnlyList&lt;IntercompanyAccountBindingDto&gt; bindings, IReadOnlyList&lt;ChartOfAccountsNodeDto&gt; chart, DateTimeOffset now);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyCounterpartReversalBuilder.cs:23](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyCounterpartReversalBuilder.cs#L23) |  |
 
+## IntercompanyFeeAccrualSourceBuilder
+
+Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyFeeAccrualSourceBuilder</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs:13](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs#L13).
+
+Pure builders behind the governed fixed management-fee accrual: overlap detection and the source-side draft. Direction comes from the agreement&#x27;s declared roles (service provider or recipient); nothing posts or approves.
+
+```csharp
+public static class IntercompanyFeeAccrualSourceBuilder
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ProviderRole = &quot;Service provider&quot;;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs:15](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs#L15) |  |
+| <code>public static string? FindPostedOverlap(IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, Guid feeArrangementId, DateOnly from, DateOnly to);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs:21](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs#L21) | A posted fee of the profile whose window intersects &#91;from, to) and has not been reversed, by the same correction lineage as interest: a source-linked exact inverse, or a reversed delivered counterpart. |
+| <code>public static int PostedGeneration(IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, Guid feeArrangementId, DateOnly from, DateOnly to) =&gt; …;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs:36](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs#L36) | How many fee journals are already posted for exactly this window; a recomputation after a reversal gets its own identity. |
+| <code>public static Guid DraftId(string tenantId, IntercompanyFeeAccrualRequestDto request, int generation = 0) =&gt; …;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs:61](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs#L61) | One window of one fee profile in one book has one live draft identity; a recomputation updates it. |
+| <code>public static bool IsProvider(IntercompanyAgreementDraftDto terms, Guid entity);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs:69](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs#L69) | True when the source entity holds the declared service-provider role of the agreement. |
+| <code>public static IntercompanyFeeAccrualProposalDto BuildDraft(IntercompanyFeeAccrualRequestDto request, string tenantId, string? companyId, string actor, LedgerBookRecord book, LedgerAccountingPeriod period, ResolvedIntercompanyAccountingArrangementDto posting, IntercompanyFeeAccrualPreviewDto computation, IReadOnlyList&lt;IntercompanyAccountBindingDto&gt; bindings, IReadOnlyList&lt;ChartOfAccountsNodeDto&gt; chart, ConsolidationFxAmountDto? fx, DateTimeOffset now, int generation = 0);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs:81](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyFeeAccrualSourceBuilder.cs#L81) | The source-side draft: the provider debits its fee receivable and credits fee revenue; the recipient debits fee expense and credits its fee payable. Its counterpart arrives only through the proposal pipeline after posting. |
+
 ## IntercompanyJournalFamily
 
 Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyJournalFamily</code>. Kind: `class`.
@@ -787,6 +810,7 @@ Declared public members:
 | <code>public string ControlName =&gt; …;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs:60](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs#L60) |  |
 | <code>public async Task&lt;IAsyncDisposable&gt; AcquireAsync(IReadOnlyList&lt;LedgerPostingAuthorityContext&gt; contexts, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs:62](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs#L62) |  |
 | <code>public async Task&lt;LedgerBookControlPreflightLease&gt; CheckAsync(LedgerBookRecord book, string? tenantId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs:235](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs#L235) |  |
+| <code>public async Task VerifyFeeAccrualAuthorityAsync(string tenantId, IntercompanyFeeAccrualEvidenceDto evidence, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs:300](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs#L300) | Re-resolves every retained fee slice under current profile and legal authority before review or posting, so a revision retired, superseded or re-pinned after drafting stops the fee draft. |
 
 ## IntercompanyObligationMonitorService
 
@@ -881,22 +905,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;AccountingBasisProjectionResult&gt; ProjectAsync(AccountingBasisProjectionRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:370](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L370) |  |
-
-## AccountingBasisProjectionSetService
-
-Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingBasisProjectionSetService</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingBasisProjectionSetService.cs:19](../../../../src/Meridian.FinancialOperations/Ledger/AccountingBasisProjectionSetService.cs#L19).
-
-Uses the candidate service to assemble projections for multiple accounting bases.
-
-```csharp
-public sealed class AccountingBasisProjectionSetService : IAccountingBasisProjectionSetService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public AccountingBasisProjectionSetService(IAccountingPostingCandidateService candidateService);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingBasisProjectionSetService.cs:23](../../../../src/Meridian.FinancialOperations/Ledger/AccountingBasisProjectionSetService.cs#L23) |  |
-| <code>public async Task&lt;AccountingBasisProjectionSetDto&gt; BuildProjectionSetAsync(AccountingBasisProjectionSetRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingBasisProjectionSetService.cs:28](../../../../src/Meridian.FinancialOperations/Ledger/AccountingBasisProjectionSetService.cs#L28) |  |

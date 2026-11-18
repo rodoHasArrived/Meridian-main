@@ -139,6 +139,23 @@ written as treasury fund-event metadata. The exemption needs the server-retained
 and applies only when no fund event identity, capital account or investor is stated; the ledger
 guard is unchanged. `IntercompanyProposalDeliveryRetryTests` covers this in memory.
 
+### Fixed management-fee extension (2026-11-17)
+
+`DEC-IC-FEE-001` and [ADR-029](../../adr/029-governed-intercompany-fixed-management-fees.md) add rule
+`intercompany-fee-v1`; roadmap row `W12-ICFEE-001` carries its status. Development verification only, over
+synthetic fixtures.
+
+| Piece | Decision and boundary | Verification |
+| --- | --- | --- |
+| Terms | Fixed management fees declare `FixedFeeBasis` (per period, or per annum with a day count). Null-omitted, so earlier revisions keep their review hashes. | `IntercompanyFeeAccrualPreviewServiceTests` |
+| Calculation | Per-period fees prorate by covered days over period days; per-annum fees by the declared day count; cut at revision and period boundaries; rounded once. Percentage fees and an undeclared basis are refused. | `IntercompanyFeeAccrualPreviewServiceTests` (hand-derived amounts) |
+| Direction and draft | The declared service provider books receivable against revenue; the recipient expense against payable, under the existing `ManagementFee` profile. | `IntercompanyFeeAccrualDraftServiceTests`, `IntercompanyFeeAccrualSourceBuilderTests` |
+| Evidence and controls | Fee evidence shares the accrual-evidence fields under its own rule; the guard dispatches on it. The workbench refuses overlapping posted fees and re-resolves each slice's authority before review or posting. | `AccountingConfigurationServiceTests.IntercompanyFee`, `IntercompanyFeeAccrualDraftServiceTests` |
+| Counterpart | The existing mirror delivers the recipient's expense and payable after the source posts. | `IntercompanyFeeAccrualSourceBuilderTests` |
+| Surfaces | Browser "Accrue fee" and basis field; WPF Management fee tab and basis field, over `/api/ledger/intercompany/fees/preview` and `/drafts`. | `IntercompanyManagementFeeWorkspaceTests`, browser tests; WPF smoke test compiles on Linux and runs only on Windows |
+
+Percentage fees, loan commitment or utilisation fees and scheduled runs remain out of scope.
+
 ### Floating-rate extension (2026-11-17)
 
 `DEC-IC-FLOAT-001` and the ADR-028 extension add rule `intercompany-accrual-v2`; roadmap row

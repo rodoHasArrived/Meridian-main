@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IProviderIntegrationHttpTransport
+
+Qualified name: <code>Meridian.Application.Integrations.IProviderIntegrationHttpTransport</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/Integrations/ProviderIntegrationRestDryRunService.cs:17](../../../../src/Meridian.Application/Integrations/ProviderIntegrationRestDryRunService.cs#L17).
+
+Defines the HTTP request and response boundary used by provider integration dry runs.
+
+```csharp
+public interface IProviderIntegrationHttpTransport
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ProviderIntegrationHttpResponse&gt; SendAsync(ProviderIntegrationHttpRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationRestDryRunService.cs:19](../../../../src/Meridian.Application/Integrations/ProviderIntegrationRestDryRunService.cs#L19) |  |
+
 ## ProviderIntegrationActivationReadinessService
 
 Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationActivationReadinessService</code>. Kind: `class`.
@@ -1003,23 +1021,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public FSharpEventValidator(SymbolConfig[]? symbolConfigs = null, bool useRealTimeMode = false, ILogger&lt;FSharpEventValidator&gt;? logger = null);</code> | [src/Meridian.Application/Pipeline/FSharpEventValidator.cs:52](../../../../src/Meridian.Application/Pipeline/FSharpEventValidator.cs#L52) | Initialises the validator. |
 | <code>public ValidationResult Validate(in MarketEvent evt);</code> | [src/Meridian.Application/Pipeline/FSharpEventValidator.cs:67](../../../../src/Meridian.Application/Pipeline/FSharpEventValidator.cs#L67) |  |
-
-## HotPathBatchSerializer
-
-Qualified name: <code>Meridian.Application.Pipeline.HotPathBatchSerializer</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs:34](../../../../src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs#L34).
-
-Batch-serializes hot-path struct events (RawTradeEvent, RawQuoteEvent) to JSONL-formatted UTF-8 bytes.
-
-```csharp
-public sealed class HotPathBatchSerializer
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public HotPathBatchSerializer(SymbolTable symbolTable, int initialBufferCapacity = 65_536);</code> | [src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs:55](../../../../src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs#L55) | Creates a new serializer backed by the given symbol table. |
-| <code>public ReadOnlyMemory&lt;byte&gt; SerializeTrades(ReadOnlySpan&lt;RawTradeEvent&gt; batch);</code> | [src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs:78](../../../../src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs#L78) | Serializes a batch of RawTradeEvent structs to JSONL UTF-8 bytes. |
-| <code>public ReadOnlyMemory&lt;byte&gt; SerializeQuotes(ReadOnlySpan&lt;RawQuoteEvent&gt; batch);</code> | [src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs:111](../../../../src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs#L111) | Serializes a batch of RawQuoteEvent structs to JSONL UTF-8 bytes. |
