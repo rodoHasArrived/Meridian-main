@@ -6,6 +6,41 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataWorkspaceData
+
+Qualified name: <code>Meridian.Wpf.Services.DataWorkspaceData</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1015](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1015).
+
+Collects environment, scope, provider, notification, and operational data used to build the data workspace.
+
+```csharp
+public sealed class DataWorkspaceData
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FixtureModeKind EnvironmentMode { get; init; } = FixtureModeKind.Live;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1017](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1017) |  |
+| <code>public string ScopeLabel { get; init; } = &quot;Provider and storage posture&quot;;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1018](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1018) |  |
+| <code>public string ScopeSummary { get; init; } = &quot;Provider posture, backfill priority, storage follow-up, and export delivery stay in one fixed shell.&quot;;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1019](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1019) |  |
+| <code>public DateTimeOffset RetrievedAt { get; init; } = DateTimeOffset.Now;</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1020](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1020) |  |
+| <code>public int UnreadAlerts { get; init; }</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1021](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1021) |  |
+| <code>public IReadOnlyList&lt;NotificationHistoryItemModel&gt; Notifications { get; init; } = Array.Empty&lt;NotificationHistoryItemModel&gt;();</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1022](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1022) |  |
+| <code>public IReadOnlyList&lt;ProviderInfoModel&gt; Providers { get; init; } = Array.Empty&lt;ProviderInfoModel&gt;();</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1023](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1023) |  |
+| <code>public StatusProviderInfoModel? ProviderStatus { get; init; }</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1024](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1024) |  |
+| <code>public BackfillHealthResponse? BackfillHealth { get; init; }</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1025](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1025) |  |
+| <code>public BackfillResultDto? LastBackfillStatus { get; init; }</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1026](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1026) |  |
+| <code>public IReadOnlyList&lt;BackfillExecution&gt; BackfillExecutions { get; init; } = Array.Empty&lt;BackfillExecution&gt;();</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1027](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1027) |  |
+| <code>public IReadOnlyList&lt;BackfillCheckpoint&gt; ResumableJobs { get; init; } = Array.Empty&lt;BackfillCheckpoint&gt;();</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1028](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1028) |  |
+| <code>public IReadOnlyList&lt;BackfillSchedule&gt; BackfillSchedules { get; init; } = Array.Empty&lt;BackfillSchedule&gt;();</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1029](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1029) |  |
+| <code>public StorageStatsSummary? StorageStats { get; init; }</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1030](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1030) |  |
+| <code>public StorageHealthReport? StorageHealth { get; init; }</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1031](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1031) |  |
+| <code>public CollectionSession? ActiveSession { get; init; }</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1032](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1032) |  |
+| <code>public IReadOnlyList&lt;CollectionSession&gt; Sessions { get; init; } = Array.Empty&lt;CollectionSession&gt;();</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1033](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1033) |  |
+| <code>public IReadOnlyList&lt;ExportJob&gt; ExportJobs { get; init; } = Array.Empty&lt;ExportJob&gt;();</code> | [src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs:1034](../../../../src/Meridian.Wpf/Services/DataWorkspacePresentationBuilder.cs#L1034) |  |
+
 ## DataWorkspacePresentation
 
 Qualified name: <code>Meridian.Wpf.Services.DataWorkspacePresentation</code>. Kind: `class`.
@@ -1093,25 +1128,3 @@ Declared public members:
 | <code>public async Task ShowErrorAsync(string title, string message, string? context = null, string? remedy = null, CancellationToken cancellationToken = default);</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:112](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L112) |  |
 | <code>public static ErrorDetails CreateErrorDetails(Exception ex, string operation);</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:128](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L128) |  |
 | <code>public static int GetDurationForSeverity(InfoBarSeverity severity);</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:141](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L141) |  |
-
-## Durations
-
-Qualified name: <code>Meridian.Wpf.Services.InfoBarService.Durations</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/InfoBarService.cs:35](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L35).
-
-Defines default notification display durations by severity, including persistent critical alerts.
-
-```csharp
-public static class Durations
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const int Info = InfoBarConstants.InfoDurationMs;</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:37](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L37) |  |
-| <code>public const int Success = InfoBarConstants.SuccessDurationMs;</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:38](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L38) |  |
-| <code>public const int Warning = InfoBarConstants.WarningDurationMs;</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:39](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L39) |  |
-| <code>public const int Error = InfoBarConstants.ErrorDurationMs;</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:40](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L40) |  |
-| <code>public const int Critical = InfoBarConstants.CriticalDurationMs;</code> | [src/Meridian.Wpf/Services/InfoBarService.cs:41](../../../../src/Meridian.Wpf/Services/InfoBarService.cs#L41) |  |

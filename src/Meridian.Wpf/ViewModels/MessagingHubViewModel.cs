@@ -225,7 +225,7 @@ public sealed class MessagingHubViewModel : BindableBase, IDisposable
         var now = DateTime.UtcNow;
         var elapsed = (now - _pageLoadedAt).TotalSeconds;
         MessageRateText = elapsed > 0 ? $"{_totalMessages / elapsed:F1}/s" : "0/s";
-        LastRefreshText = $"Updated {now:HH:mm:ss} UTC";
+        LastRefreshText = $"Updated {Meridian.Ui.Services.FormatHelpers.FormatDisplayTimestamp(now, "HH:mm:ss")}";
 
         UpdateMessagingPosture();
         UpdateActivityVisibility();

@@ -6,6 +6,54 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkspaceShellChromeState
+
+Qualified name: <code>Meridian.Wpf.Views.WorkspaceShellChromeState</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs:10](../../../../src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs#L10).
+
+Exposes inherited shell-host state so legacy pages can compact duplicate chrome when they are rendered inside the shared workspace shell host.
+
+```csharp
+public static class WorkspaceShellChromeState
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly DependencyProperty IsHostedInWorkspaceShellProperty = DependencyProperty.RegisterAttached(&quot;IsHostedInWorkspaceShell&quot;, typeof(bool), typeof(WorkspaceShellChromeState), new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.Inherits));</code> | [src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs:12](../../../../src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs#L12) |  |
+| <code>public static readonly DependencyProperty ShellDensityModeProperty = DependencyProperty.RegisterAttached(&quot;ShellDensityMode&quot;, typeof(ShellDensityMode), typeof(WorkspaceShellChromeState), new FrameworkPropertyMetadata(ShellDensityMode.Standard, FrameworkPropertyMetadataOptions.Inherits, OnShellDensityModeChanged));</code> | [src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs:19](../../../../src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs#L19) |  |
+| <code>public static readonly DependencyProperty IsCompactDensityProperty = DependencyProperty.RegisterAttached(&quot;IsCompactDensity&quot;, typeof(bool), typeof(WorkspaceShellChromeState), new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.Inherits));</code> | [src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs:26](../../../../src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs#L26) |  |
+| <code>public static bool GetIsHostedInWorkspaceShell(DependencyObject element) =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs:33](../../../../src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs#L33) |  |
+| <code>public static void SetIsHostedInWorkspaceShell(DependencyObject element, bool value) =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs:36](../../../../src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs#L36) |  |
+| <code>public static ShellDensityMode GetShellDensityMode(DependencyObject element) =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs:39](../../../../src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs#L39) |  |
+| <code>public static void SetShellDensityMode(DependencyObject element, ShellDensityMode value) =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs:42](../../../../src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs#L42) |  |
+| <code>public static bool GetIsCompactDensity(DependencyObject element) =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs:45](../../../../src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs#L45) |  |
+| <code>public static void SetIsCompactDensity(DependencyObject element, bool value) =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs:48](../../../../src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs#L48) |  |
+
+## WorkspaceShellContextStripControl
+
+Qualified name: <code>Meridian.Wpf.Views.WorkspaceShellContextStripControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs:12](../../../../src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs#L12).
+
+Displays shell context titles and badges in regular or compact form.
+
+```csharp
+public partial class WorkspaceShellContextStripControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly DependencyProperty ShellContextProperty = DependencyProperty.Register(nameof(ShellContext), typeof(WorkspaceShellContext), typeof(WorkspaceShellContextStripControl), new PropertyMetadata(new WorkspaceShellContext(), OnShellContextChanged));</code> | [src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs:17](../../../../src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs#L17) |  |
+| <code>public static readonly DependencyProperty IsCompactProperty = DependencyProperty.Register(nameof(IsCompact), typeof(bool), typeof(WorkspaceShellContextStripControl), new PropertyMetadata(false, OnCompactPresentationChanged));</code> | [src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs:24](../../../../src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs#L24) |  |
+| <code>public WorkspaceShellContextStripControl();</code> | [src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs:31](../../../../src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs#L31) |  |
+| <code>public WorkspaceShellContext ShellContext { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs:37](../../../../src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs#L37) |  |
+| <code>public bool IsCompact { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs:43](../../../../src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs#L43) |  |
+
 ## WorkspaceShellPageBase (generic arity 2)
 
 Qualified name: <code>Meridian.Wpf.Views.WorkspaceShellPageBase</code>. Kind: `class`.
@@ -858,36 +906,4 @@ Source: [src/Meridian.Wpf/Workstation/Models/EvidenceWorkbenchPresentationModels
 
 ```csharp
 public sealed record EvidenceWorkbenchSummaryFactModel(string Label, string Value, string Detail);
-```
-
-## InspectorPanelModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.InspectorPanelModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:317](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L317).
-
-Carries selected-record title, supporting detail, badge, and facts for a workstation inspector.
-
-```csharp
-public sealed class InspectorPanelModel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Title { get; init; } = &quot;No selection&quot;;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:319](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L319) |  |
-| <code>public string Subtitle { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:321](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L321) |  |
-| <code>public string Detail { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:323](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L323) |  |
-| <code>public WorkstationBadgeModel? Badge { get; init; }</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:325](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L325) |  |
-| <code>public IReadOnlyList&lt;KeyValueFactModel&gt; Facts { get; init; } = Array.Empty&lt;KeyValueFactModel&gt;();</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:327](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L327) |  |
-
-## KeyValueFactModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.KeyValueFactModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:330](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L330).
-
-```csharp
-public sealed record KeyValueFactModel(string Label, string Value, string Detail = "", string Tone = WorkspaceTone.Neutral);
 ```

@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MaintenanceRunOptions
+
+Qualified name: <code>Meridian.Ui.Services.MaintenanceRunOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:53](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L53).
+
+Options for triggering a maintenance run.
+
+```csharp
+public sealed class MaintenanceRunOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool RunCompression { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:55](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L55) |  |
+| <code>public bool RunCleanup { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:56](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L56) |  |
+| <code>public bool RunIntegrityCheck { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:57](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L57) |  |
+| <code>public bool RunTierMigration { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:58](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L58) |  |
+| <code>public bool DryRun { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:59](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L59) |  |
+
 ## MaintenanceRunResponse
 
 Qualified name: <code>Meridian.Ui.Services.MaintenanceRunResponse</code>. Kind: `class`.
@@ -1155,23 +1177,3 @@ Declared public members:
 | <code>public string PackagePath { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/PortablePackagerService.cs:889](../../../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs#L889) |  |
 | <code>public bool ValidateFirst { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/PortablePackagerService.cs:890](../../../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs#L890) |  |
 | <code>public bool OverwriteExisting { get; set; }</code> | [src/Meridian.Ui.Services/Services/PortablePackagerService.cs:891](../../../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs#L891) |  |
-
-## PackageImportResult
-
-Qualified name: <code>Meridian.Ui.Services.PackageImportResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/PortablePackagerService.cs:897](../../../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs#L897).
-
-Reports package-import success, the number of imported files, and any error.
-
-```csharp
-public sealed class PackageImportResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/PortablePackagerService.cs:899](../../../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs#L899) |  |
-| <code>public int FilesImported { get; set; }</code> | [src/Meridian.Ui.Services/Services/PortablePackagerService.cs:900](../../../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs#L900) |  |
-| <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/PortablePackagerService.cs:901](../../../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs#L901) |  |

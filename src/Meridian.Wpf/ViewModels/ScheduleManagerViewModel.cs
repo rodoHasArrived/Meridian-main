@@ -294,7 +294,7 @@ public sealed class ScheduleManagerViewModel : BindableBase
             return $"Valid: {description}";
         }
 
-        var runs = string.Join(Environment.NewLine, result.NextRuns.Select(run => $"  {run:yyyy-MM-dd HH:mm:ss} UTC"));
+        var runs = string.Join(Environment.NewLine, result.NextRuns.Select(run => $"  {Meridian.Ui.Services.FormatHelpers.FormatDisplayTimestamp(run, "yyyy-MM-dd HH:mm:ss")}"));
         return $"Valid: {description}{Environment.NewLine}Next runs:{Environment.NewLine}{runs}";
     }
 

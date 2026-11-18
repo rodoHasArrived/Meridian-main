@@ -83,7 +83,7 @@ public static class EvidenceVaultPresentationMapper
         return new EvidenceVaultManifestSnapshotModel(
             manifest.ManifestId,
             $"{manifest.PackageKind} {manifest.PackageId}",
-            $"Frozen {manifest.FrozenAt.UtcDateTime:yyyy-MM-dd HH:mm} UTC",
+            $"Frozen {Meridian.Ui.Services.FormatHelpers.FormatDisplayTimestamp(manifest.FrozenAt)}",
             ShortHash(manifest.ContentHashSha256),
             Pluralize(manifest.Documents.Count, "document"),
             openRequestCount == 0 ? "No open requests" : Pluralize(openRequestCount, "open request"),

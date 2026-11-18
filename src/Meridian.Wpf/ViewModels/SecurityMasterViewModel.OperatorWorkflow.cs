@@ -140,7 +140,7 @@ public sealed partial class SecurityMasterViewModel
             return;
         }
 
-        WorkflowRetrievedAtText = FormatHelpers.FormatUtcTimestamp(status.RetrievedAtUtc);
+        WorkflowRetrievedAtText = FormatHelpers.FormatDisplayTimestamp(status.RetrievedAtUtc);
         if (status.IsImportActive && status.ActiveImport is not null)
         {
             WorkflowStatusText = $"Active ingest {status.ActiveImport.Processed}/{status.ActiveImport.Total} via {status.ActiveImport.FileExtension}.";
@@ -151,7 +151,7 @@ public sealed partial class SecurityMasterViewModel
 
         if (status.LastCompleted is not null)
         {
-            WorkflowStatusText = $"Last ingest completed {FormatHelpers.FormatUtcTimestamp(status.LastCompleted.CompletedAtUtc)}.";
+            WorkflowStatusText = $"Last ingest completed {FormatHelpers.FormatDisplayTimestamp(status.LastCompleted.CompletedAtUtc)}.";
             ImportSessionSummary =
                 $"Last ingest: {status.LastCompleted.Imported} imported • {status.LastCompleted.Skipped} skipped • {status.LastCompleted.Failed} failed • {status.LastCompleted.ConflictsDetected} conflicts.";
             return;

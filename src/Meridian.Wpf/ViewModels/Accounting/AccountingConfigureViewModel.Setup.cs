@@ -241,7 +241,7 @@ public sealed partial class AccountingConfigureViewModel
         PostingRuleRows.ReplaceWith(workspace.PostingRules.Select(rule =>
             new AccountingWorkbenchRow(rule.RuleId, rule.SourceEventType, rule.DisplayName, rule.TemplateId)));
         AuditRows.ReplaceWith(workspace.AuditTrail.Take(20).Select(audit =>
-            new AccountingWorkbenchRow(audit.Action, audit.Actor, UtcFormat.FormatUtcTimestamp(audit.RecordedAtUtc), audit.CorrelationId ?? string.Empty)));
+            new AccountingWorkbenchRow(audit.Action, audit.Actor, UtcFormat.FormatDisplayTimestamp(audit.RecordedAtUtc), audit.CorrelationId ?? string.Empty)));
         ApplySetupReadinessRows(workspace);
         ApplyLedgerBookRows(workspace);
         ApplyManualJournalValidationRows(workspace.ValidationIssues);

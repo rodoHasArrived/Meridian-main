@@ -648,6 +648,45 @@ collapses after it has been seen once. The icon opens with Enter/Space; Escape c
 returns focus. Storage failures leave help usable. The setting does not change financial data
 or authorization and does not synchronize between browsers.
 
+Workstation-global shortcuts (`lib/keymap.ts`: command palette `Mod+K`, keyboard help `?`) can be
+rebound from the keyboard help sheet. Each row offers Change, which captures the next chord through
+a window capture-phase listener that stops it reaching the shell's global handler (Esc cancels
+instead of closing the sheet), and Reset when overridden; "Reset all to defaults" clears every
+override. `setKeyBindingOverride` refuses, with a reason shown in a polite status line, a combo in
+use by another global binding (named), Esc/Tab/Enter/Space, browser-owned `Mod+W/T/N/Q/R/L`, and
+bare letters, digits and named keys other than F1–F24 (punctuation such as `?` may stay bare).
+Overrides persist per browser under `meridian.workstation.keymap.v1`, follow other tabs through
+`storage` events, and are decoded defensively: malformed, unknown, default-valued or refused
+entries are ignored, while a stored swap of the two bindings is kept. `getGlobalKeyBinding`
+returns the effective combo, so the shell and command palette honor overrides without other
+changes. Overrides follow the signed-in operator to other browsers through the host preferences
+below; they do not reach the WPF desktop.
+
+Operator presentation preferences follow the operator across browsers and machines
+(`lib/operator-preferences-sync.ts`, started from `app.tsx` once a non-fixture session is known):
+appearance, density, display time zone, the page-descriptions setting and the shortcut overrides are
+read from `GET /api/workstation/operator/preferences`. A value the host holds wins and is written to
+this browser's store without announcing a change; a value the host lacks keeps this browser's value,
+and the merged set is saved back, so the first signed-in visit migrates existing local choices.
+Afterwards every operator change saves the whole set (`PUT`, debounced 500 ms). Each preference
+writer announces changes through `lib/operator-preference-events.ts`; the theme and density toggles
+re-read their store when host values are applied. Host values the browser cannot use (an unknown
+appearance or density, a zone missing from its Intl data, refused shortcut combos) are ignored. Once
+the host holds a record, missing shortcut overrides mean "none", so a reset in one browser reaches
+the others. A failed read (no session, an older host, offline) leaves preferences browser-only for
+the visit and saves nothing; a failed save keeps the local value and retries with the next change.
+Last write wins across browsers. Fixture sessions stay browser-only. The values are display-only.
+Settings > Preferences > Notifications (`screens/settings-screen.notification-preferences.tsx`, store
+`lib/notification-preferences.ts`) holds the pop-up switch, five notification types (connection,
+errors, backfill, data gaps, storage), quiet hours as 24-hour `HH:mm` times in the display time zone
+(a window ending earlier than it starts runs past midnight; the end minute is not quiet; equal times
+never hold anything), and a test button that says when pop-ups are off or held. The set syncs with
+the other preferences. In the browser the switch and quiet hours hold price-alert system pop-ups
+(`popUpsAllowed`); triggers still reach the notification center and alert history. The five types
+govern the desktop app's toasts.
+The host set also carries the WPF desktop's shortcut overrides (`desktopKeyBindings`); the browser
+never applies or sends them, and the host keeps them when a browser save leaves them out.
+
 Every workspace overview opens with `PageHeading` (`components/ui/page-heading.tsx`): the page
 name, then an optional one-line purpose on its own line, then page actions. Write the purpose as
 one sentence in the operator's terms, with no internal vocabulary. The same rule covers every
@@ -843,6 +882,7 @@ scopes), `workspace-nav.test.tsx`, and `layout-switcher.test.tsx`.
 Shared contract change (additive): `OperatingScopeValuesDto` (the operator's default scope) gained
 optional `EntityId` and `FundId` members, appended last, so the server keeps entity and fund in a
 saved default; the dashboard mirror is `types/operator-scope-preference.ts`. No endpoint was added.
+The operator presentation preferences mirror `OperatorPreferencesDto` in `types/operator-preferences.ts`.
 
 React, React DOM, and their type packages are upgraded together. Runtime support uses the floating
 Node major in `.nvmrc` and the minimum declared in this dashboard's `engines.node`; both prerequisite

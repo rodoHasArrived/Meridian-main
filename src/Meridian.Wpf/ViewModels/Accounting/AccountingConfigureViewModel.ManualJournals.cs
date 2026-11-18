@@ -192,7 +192,7 @@ public sealed partial class AccountingConfigureViewModel
             new(
                 result.Transition.Action.ToString(),
                 $"{result.Transition.FromStatus} -> {result.Transition.ToStatus}",
-                $"{result.Transition.Actor} at {UtcFormat.FormatUtcTimestamp(result.Transition.RecordedAtUtc)}",
+                $"{result.Transition.Actor} at {UtcFormat.FormatDisplayTimestamp(result.Transition.RecordedAtUtc)}",
                 $"{result.Transition.EvidenceLinks.Count} evidence link(s); {result.Transition.Notes ?? "no notes"}",
                 result.Transition.TransitionId)
         };
@@ -209,7 +209,7 @@ public sealed partial class AccountingConfigureViewModel
             .Select(transition => new AccountingWorkbenchRow(
                 transition.Action.ToString(),
                 $"{transition.FromStatus} -> {transition.ToStatus}",
-                $"{transition.Actor} at {UtcFormat.FormatUtcTimestamp(transition.RecordedAtUtc)}",
+                $"{transition.Actor} at {UtcFormat.FormatDisplayTimestamp(transition.RecordedAtUtc)}",
                 $"{transition.EvidenceLinks.Count} evidence link(s); {transition.Notes ?? "no notes"}",
                 transition.TransitionId)));
 
@@ -269,7 +269,7 @@ public sealed partial class AccountingConfigureViewModel
             .Select(transition => new AccountingWorkbenchRow(
                 transition.Action.ToString(),
                 $"{transition.FromStatus} -> {transition.ToStatus}",
-                $"{transition.Actor} at {UtcFormat.FormatUtcTimestamp(transition.RecordedAtUtc)}",
+                $"{transition.Actor} at {UtcFormat.FormatDisplayTimestamp(transition.RecordedAtUtc)}",
                 $"{transition.EvidenceLinks.Count} evidence link(s); {transition.Notes ?? "no notes"}",
                 transition.TransitionId)));
     }

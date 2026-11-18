@@ -90,8 +90,8 @@ the posted journal.
 
 Nothing is estimated. The accrual is unavailable, with no amount, when any day lacks a single approved
 profile revision, falls outside the declared schedule or lacks provable principal; when terms are
-unstructured; when compounding does not match the schedule frequency or is declared on a floating rate; when a
-floating revision declares no fixing lag or a period has no approved fixing; when the calendar is missing; when a posted, unreversed
+unstructured or compounding; when a floating revision declares no fixing lag or a period has no
+approved fixing; when the calendar is missing; when a posted, unreversed
 accrual already covers part of the window; or when the source book has no single open period
 containing the posting date. A cross-currency loan converts through the governed FX authority or is
 unavailable. Fees follow their own rule, described next.
@@ -133,16 +133,22 @@ approved; a rejection needs a reason and leaves the approved value in force. Eve
 append-only. Each floating slice of an accrual pins the fixing it used, and a draft whose pinned
 fixing has since been corrected cannot be submitted, approved or posted until it is recomputed.
 
-### Periodic compounding
+### Floating rates and reviewed fixings
 
-A loan whose compounding frequency equals its schedule frequency accrues under rule `intercompany-accrual-v3`
-([ADR-030](../adr/030-intercompany-interest-compounding.md)). Each period earns interest on posted principal
-plus the accrued interest already posted on the loan-interest profile at the period start: posted accruals and
-delivered counterparts, net of settlements and reversals. Interest stays simple within a period. A window is
-refused unless posted, unreversed accruals cover every earlier day, and one request covers one period, so each
-period must be accrued and posted before the next can compound on it. The facts read are retained with the
-draft and read again before review or posting; a reversal, settlement or late accrual since drafting stops the
-draft until it is recomputed.
+A floating loan declares its index, its spread in basis points and a fixing lag of 0 to 10 business
+days. For each schedule period, the rate is the approved fixing of that index observed the lag before
+the period's accrual start on the schedule calendar, plus the spread, and it holds for the whole
+period. Exactly that date's approved value is used; a missing value refuses the whole window and no
+nearby, latest or carried-forward rate is used. In-arrears and averaged conventions, floors, caps and
+compounding are not calculated.
+
+Fixings are tenant-scoped reference data at `/api/ledger/intercompany/rate-fixings`, managed in the
+browser's Rate fixings tab and the WPF Rate fixings tab. An operator with ledger management records
+what the publisher showed, with a source and justification; someone else approves it before any
+accrual reads it. A correction is a new proposed value and replaces the approved value only once it is
+approved; a rejection needs a reason and leaves the approved value in force. Every step is retained
+append-only. Each floating slice of an accrual pins the fixing it used, and a draft whose pinned
+fixing has since been corrected cannot be submitted, approved or posted until it is recomputed.
 
 ## External-review attestation
 
