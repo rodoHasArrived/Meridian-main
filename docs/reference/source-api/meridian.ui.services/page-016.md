@@ -6,6 +6,48 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TourSession
+
+Qualified name: <code>Meridian.Ui.Services.TourSession</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:519](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L519).
+
+Active tour session state.
+
+```csharp
+public sealed class TourSession
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string TourId { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:521](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L521) |  |
+| <code>public TourDefinition Tour { get; init; } = null !;</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:522](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L522) |  |
+| <code>public int CurrentStepIndex { get; set; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:523](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L523) |  |
+| <code>public DateTime StartedAt { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:524](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L524) |  |
+
+## TourStep
+
+Qualified name: <code>Meridian.Ui.Services.TourStep</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:485](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L485).
+
+A single step in a tour.
+
+```csharp
+public sealed class TourStep
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Title { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:487](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L487) |  |
+| <code>public string Content { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:488](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L488) |  |
+| <code>public string? TargetElement { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:489](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L489) |  |
+| <code>public TooltipPlacement Placement { get; init; }</code> | [src/Meridian.Ui.Services/Services/OnboardingTourService.cs:490](../../../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs#L490) |  |
+
 ## TourStepEventArgs
 
 Qualified name: <code>Meridian.Ui.Services.TourStepEventArgs</code>. Kind: `class`.

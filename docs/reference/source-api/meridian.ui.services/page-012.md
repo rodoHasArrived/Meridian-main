@@ -163,6 +163,24 @@ Declared public members:
 | <code>Task&lt;EntityLifecycleReviewPreviewDto&gt; PreviewLifecycleReviewAsync(AppendEntityLifecycleRevisionRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs:9](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs#L9) |  |
 | <code>Task&lt;EntityLifecycleRevisionDto&gt; AppendLifecycleRevisionAsync(AppendEntityLifecycleRevisionRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs:11](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs#L11) |  |
 
+## IWorkstationFiscalYearCloseApiClient
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IWorkstationFiscalYearCloseApiClient</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationFiscalYearCloseApiClient.cs:11](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationFiscalYearCloseApiClient.cs#L11).
+
+Shared read of the governed fiscal-year close plan (W12-YEND-001). The server derives the plan from retained close snapshots; workstations present it and never recompute balances.
+
+```csharp
+public interface IWorkstationFiscalYearCloseApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;FiscalYearClosePlanDto&gt; GetClosePlanAsync(Guid ledgerBookId, int fiscalYear, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationFiscalYearCloseApiClient.cs:13](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationFiscalYearCloseApiClient.cs#L13) |  |
+
 ## IWorkstationIntercompanyAgreementApiClient
 
 Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IWorkstationIntercompanyAgreementApiClient</code>. Kind: `interface`.
@@ -513,6 +531,22 @@ Declared public members:
 | --- | --- | --- |
 | <code>public async Task&lt;EntityLifecycleReviewPreviewDto&gt; PreviewLifecycleReviewAsync(AppendEntityLifecycleRevisionRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs:17](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs#L17) |  |
 | <code>public async Task&lt;EntityLifecycleRevisionDto&gt; AppendLifecycleRevisionAsync(AppendEntityLifecycleRevisionRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs:19](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs#L19) |  |
+
+## WorkstationFiscalYearCloseApiClient
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.WorkstationFiscalYearCloseApiClient</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationFiscalYearCloseApiClient.cs:16](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationFiscalYearCloseApiClient.cs#L16).
+
+```csharp
+public sealed class WorkstationFiscalYearCloseApiClient(ApiClientService api) : IWorkstationFiscalYearCloseApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;FiscalYearClosePlanDto&gt; GetClosePlanAsync(Guid ledgerBookId, int fiscalYear, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationFiscalYearCloseApiClient.cs:18](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationFiscalYearCloseApiClient.cs#L18) |  |
 
 ## WorkstationIntercompanyAgreementApiClient
 
@@ -1348,52 +1382,3 @@ Enum declarations:
 | <code>Live</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:7](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L7) |  |
 | <code>Fixture</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:8](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L8) |  |
 | <code>Offline</code> | [src/Meridian.Ui.Services/Services/FixtureModeDetector.cs:9](../../../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs#L9) |  |
-
-## FixtureScenario
-
-Qualified name: <code>Meridian.Ui.Services.Services.FixtureScenario</code>. Kind: `enum`.
-
-Source: [src/Meridian.Ui.Services/Services/FixtureScenario.cs:9](../../../../src/Meridian.Ui.Services/Services/FixtureScenario.cs#L9).
-
-Named fixture scenarios for UI development and debugging. Each scenario corresponds to a distinct system state that can be activated at runtime without restarting the application, enabling rapid iteration over all visual states in a single session.
-
-```csharp
-public enum FixtureScenario
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Connected</code> | [src/Meridian.Ui.Services/Services/FixtureScenario.cs:15](../../../../src/Meridian.Ui.Services/Services/FixtureScenario.cs#L15) | System fully connected with healthy metrics — the happy-path state. Providers are active, throughput is nominal, no errors. |
-| <code>Disconnected</code> | [src/Meridian.Ui.Services/Services/FixtureScenario.cs:21](../../../../src/Meridian.Ui.Services/Services/FixtureScenario.cs#L21) | System disconnected from all providers. Useful for testing empty-state / reconnection UI paths. |
-| <code>Degraded</code> | [src/Meridian.Ui.Services/Services/FixtureScenario.cs:27](../../../../src/Meridian.Ui.Services/Services/FixtureScenario.cs#L27) | System partially connected with degraded metrics. Some providers are unavailable or rate-limited; throughput is reduced. |
-| <code>Error</code> | [src/Meridian.Ui.Services/Services/FixtureScenario.cs:33](../../../../src/Meridian.Ui.Services/Services/FixtureScenario.cs#L33) | System in error state — provider errors, high drop rate, low throughput. Useful for testing error banners, alerts, and recovery UI flows. |
-| <code>Loading</code> | [src/Meridian.Ui.Services/Services/FixtureScenario.cs:39](../../../../src/Meridian.Ui.Services/Services/FixtureScenario.cs#L39) | System is initializing or loading — connections pending, data not yet available. Useful for testing skeleton/loading states and progress indicators. |
-
-## FormValidationRules
-
-Qualified name: <code>Meridian.Ui.Services.Services.FormValidationRules</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/FormValidationRules.cs:9](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L9).
-
-Shared validation rules for form validation across desktop applications. Extracted from FormValidationService implementations to eliminate duplicate validation logic.
-
-```csharp
-public static class FormValidationRules
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ValidationResult ValidateRequired(string? value, string fieldName = &quot;This field&quot;);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:17](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L17) | Validates that a field is not empty. |
-| <code>public static ValidationResult ValidateSymbol(string? value);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:30](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L30) | Validates a stock symbol format. Symbols must be 1-10 characters, start with a letter, and contain only letters, numbers, dots, dashes, and slashes. |
-| <code>public static ValidationResult ValidateSymbolList(string? value, int maxSymbols = 100);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:52](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L52) | Validates a comma-separated list of symbols. |
-| <code>public static ValidationResult ValidateDateRange(DateTimeOffset? fromDate, DateTimeOffset? toDate);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:83](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L83) | Validates a date range for data collection or backfill. |
-| <code>public static ValidationResult ValidateDateRange(string? dateStr);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:104](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L104) | Validates a date string in ISO format (YYYY-MM-DD). |
-| <code>public static ValidationResult ValidateApiKey(string? value);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:121](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L121) | Validates an API key format. |
-| <code>public static ValidationResult ValidateUrl(string? value, string fieldName = &quot;URL&quot;);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:138](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L138) | Validates a URL format. |
-| <code>public static ValidationResult ValidatePort(int? value);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:154](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L154) | Validates a network port number. |
-| <code>public static ValidationResult ValidateFilePath(string? value);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:170](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L170) | Validates a file path format. |
-| <code>public static ValidationResult ValidateNumericRange(double? value, double min, double max, string fieldName = &quot;Value&quot;);</code> | [src/Meridian.Ui.Services/Services/FormValidationRules.cs:193](../../../../src/Meridian.Ui.Services/Services/FormValidationRules.cs#L193) | Validates that a numeric value is within a specified range. |

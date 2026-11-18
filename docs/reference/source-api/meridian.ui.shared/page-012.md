@@ -6,6 +6,71 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## GovernedReportingRestatementCertificationInputProvider
+
+Qualified name: <code>Meridian.Ui.Shared.Services.GovernedReportingRestatementCertificationInputProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:217](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L217).
+
+Resolves the approved template and reconstructs immutable parameters exclusively from the released predecessor snapshot. No HTTP restatement body can replace source rows or parameters.
+
+```csharp
+public sealed class GovernedReportingRestatementCertificationInputProvider : IReportingRestatementCertificationInputProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public GovernedReportingRestatementCertificationInputProvider(GovernedReportingTemplateCatalog templateCatalog, ReportingRunReadinessService readiness);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:223](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L223) |  |
+| <code>public async ValueTask&lt;ReportingRestatementCertificationInput&gt; ResolveAsync(ReportingRestatementRequest request, GovernedReportingRun releasedPredecessor, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:231](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L231) |  |
+
+## GovernedReportingRestatementChangedLineResolver
+
+Qualified name: <code>Meridian.Ui.Shared.Services.GovernedReportingRestatementChangedLineResolver</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:277](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L277).
+
+Server-owned placeholder disclosure at request time. Approval replaces it with an exact diff of the predecessor and recertified immutable source rows before the request is marked Approved.
+
+```csharp
+public sealed class GovernedReportingRestatementChangedLineResolver : IReportingRestatementChangedLineResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ValueTask&lt;ImmutableArray&lt;ReportingRestatementChangedLine&gt;&gt; ResolveAsync(GovernedReportingRun releasedPredecessor, string reason, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:280](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L280) |  |
+
+## GovernedReportingTemplateCatalog
+
+Qualified name: <code>Meridian.Ui.Shared.Services.GovernedReportingTemplateCatalog</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:10](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L10).
+
+Resolves reporting templates through the governed registry and evaluates caller access.
+
+```csharp
+public sealed class GovernedReportingTemplateCatalog : IReportingTemplateCatalog
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public GovernedReportingTemplateCatalog(IReportingTemplateCatalog fallbackCatalog, ReportTemplateRegistryService templateRegistry);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:15](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L15) |  |
+| <code>public ReportingTemplateMetadata Get(string templateId);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:23](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L23) |  |
+| <code>public ReportingTemplateMetadata Get(string templateId, ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:32](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L32) |  |
+| <code>public ReportingTemplateMetadata Get(string templateId, ReportingOperationalScope? operationalScope) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:43](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L43) |  |
+| <code>public ReportingTemplateMetadata Get(VersionedReportTemplateIdDto templateId);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:48](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L48) |  |
+| <code>public ReportingTemplateMetadata Get(VersionedReportTemplateIdDto templateId, ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:63](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L63) |  |
+| <code>public ReportingTemplateMetadata Get(VersionedReportTemplateIdDto templateId, ReportingOperationalScope? operationalScope) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:80](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L80) |  |
+| <code>public IReadOnlyList&lt;ReportingTemplateMetadata&gt; ListTemplates();</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:85](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L85) |  |
+| <code>public IReadOnlyList&lt;ReportingTemplateMetadata&gt; ListTemplates(ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:104](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L104) |  |
+| <code>public ReportAccessEvaluationDto EvaluateAccess(string templateId, ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:124](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L124) |  |
+| <code>public ReportAccessEvaluationDto EvaluateAccess(VersionedReportTemplateIdDto templateId, ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:153](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L153) |  |
+
 ## HaircutRule
 
 Qualified name: <code>Meridian.Ui.Shared.Services.HaircutRule</code>. Kind: `record`.
@@ -901,53 +966,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IntercompanyAgreementJournalLinesDto Project(IntercompanyAgreementDetailDto agreement, LedgerBookRecord book, IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, DateOnly asOf, string? cursor = null, int pageSize = 100);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAgreementJournalProjection.cs:13](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAgreementJournalProjection.cs#L13) |  |
-
-## IntercompanyProposalDeliveryService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IntercompanyProposalDeliveryService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs:16](../../../../src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs#L16).
-
-Delivers retained sources into the destination&#x27;s existing review queue.
-
-```csharp
-public sealed class IntercompanyProposalDeliveryService(IIntercompanyProposalStore store, IntercompanyAccountingArrangementService agreements, ILedgerJournalStore journals, IIntercompanyAccountBindingStore bindings, IAccountingConfigurationService configuration, IManualJournalEntryDraftStore drafts, ManualJournalEntryWorkbenchService workbench, IFundProfileTenancyRegistry owners, IConsolidationFxAuthority fx, TimeProvider? time = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;int&gt; RunOnceAsync(string workerId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs:24](../../../../src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs#L24) |  |
-| <code>public async Task&lt;IntercompanyRefreshPreviewDto&gt; RefreshPreviewAsync(string tenant, string? company, Guid proposalId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs:162](../../../../src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs#L162) |  |
-| <code>public async Task&lt;ManualJournalEntryDraftDto&gt; RefreshAsync(string tenant, string? company, Guid proposalId, RefreshIntercompanyProposalRequest request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs:217](../../../../src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs#L217) |  |
-| <code>public async Task LinkAsync(string tenant, Guid proposalId, LinkIntercompanyCounterpartRequest request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs:259](../../../../src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs#L259) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;IntercompanyBreakDto&gt;&gt; BreaksAsync(string tenant, string? company, Guid sourceBookId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs:451](../../../../src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs#L451) |  |
-
-## IntercompanyProposalHostedService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IntercompanyProposalHostedService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs:504](../../../../src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs#L504).
-
-```csharp
-public sealed class IntercompanyProposalHostedService(IServiceProvider services, ILogger<IntercompanyProposalHostedService> logger) : BackgroundService
-```
-
-## InvestmentAccountingTransactionLabService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.InvestmentAccountingTransactionLabService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/InvestmentAccountingTransactionLabService.cs:9](../../../../src/Meridian.Ui.Shared/Services/InvestmentAccountingTransactionLabService.cs#L9).
-
-Builds investment-accounting transaction lab scenarios and expected journal previews.
-
-```csharp
-public sealed class InvestmentAccountingTransactionLabService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public InvestmentAccountingTransactionLabPreviewDto Preview(InvestmentAccountingTransactionLabRequestDto request);</code> | [src/Meridian.Ui.Shared/Services/InvestmentAccountingTransactionLabService.cs:11](../../../../src/Meridian.Ui.Shared/Services/InvestmentAccountingTransactionLabService.cs#L11) |  |

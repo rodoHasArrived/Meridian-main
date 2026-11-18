@@ -796,6 +796,54 @@ Declared public members:
 | <code>public async Task&lt;FirstRunStatusDto&gt; CompleteAsync(string username, CompleteFirstRunRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs:43](../../../../src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs#L43) |  |
 | <code>public async Task&lt;FirstRunStatusDto&gt; CompleteOutcomeAsync(string username, string key, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs:90](../../../../src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs#L90) |  |
 
+## FiscalYearClosePlanBuilder
+
+Qualified name: <code>Meridian.Ui.Shared.Services.FiscalYearClosePlanBuilder</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/FiscalYearClosePlanBuilder.cs:28](../../../../src/Meridian.Ui.Shared/Services/FiscalYearClosePlanBuilder.cs#L28).
+
+Builds the read-only fiscal-year close plan (W12-YEND-001 slice 1) from retained hard-close snapshots. The final period&#x27;s snapshot already retains the book&#x27;s full journal population up to the fiscal year end, so the plan never reads live journals that may have been restated since.
+
+```csharp
+public static class FiscalYearClosePlanBuilder
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static FiscalYearClosePlanDto Build(Guid ledgerBookId, int fiscalYear, IReadOnlyList&lt;LedgerAccountingPeriod&gt; bookPeriods, IReadOnlyDictionary&lt;Guid, FiscalYearCloseSnapshotRead&gt; snapshots);</code> | [src/Meridian.Ui.Shared/Services/FiscalYearClosePlanBuilder.cs:32](../../../../src/Meridian.Ui.Shared/Services/FiscalYearClosePlanBuilder.cs#L32) |  |
+
+## FiscalYearClosePlanService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.FiscalYearClosePlanService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/FiscalYearClosePlanService.cs:10](../../../../src/Meridian.Ui.Shared/Services/FiscalYearClosePlanService.cs#L10).
+
+Loads a book&#x27;s periods and the retained hard-close snapshot of each constituent period, then builds the read-only fiscal-year close plan. Reading the plan never posts or changes state.
+
+```csharp
+public static class FiscalYearClosePlanService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static async Task&lt;FiscalYearClosePlanDto&gt; BuildAsync(ILedgerJournalStore store, Guid ledgerBookId, int fiscalYear, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FiscalYearClosePlanService.cs:12](../../../../src/Meridian.Ui.Shared/Services/FiscalYearClosePlanService.cs#L12) |  |
+
+## FiscalYearCloseSnapshotRead
+
+Qualified name: <code>Meridian.Ui.Shared.Services.FiscalYearCloseSnapshotRead</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/FiscalYearClosePlanBuilder.cs:15](../../../../src/Meridian.Ui.Shared/Services/FiscalYearClosePlanBuilder.cs#L15).
+
+The retained close snapshot read for one constituent period. IntegrityFailed is set when the store refused to serve retained bytes that no longer match their hash or scope.
+
+```csharp
+public sealed record FiscalYearCloseSnapshotRead(LedgerPeriodCloseSnapshot? Snapshot, bool IntegrityFailed = false);
+```
+
 ## FixedAssetDepreciationCalculation
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FixedAssetDepreciationCalculation</code>. Kind: `class`.
@@ -1057,68 +1105,3 @@ Source: [src/Meridian.Ui.Shared/Services/GovernanceReportPackRepository.cs:36](.
 ```csharp
 public sealed record GovernanceReportPackArtifactContent(string ArtifactKind, GovernanceReportArtifactFormatDto Format, string FileName, byte[] Content);
 ```
-
-## GovernedReportingRestatementCertificationInputProvider
-
-Qualified name: <code>Meridian.Ui.Shared.Services.GovernedReportingRestatementCertificationInputProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:217](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L217).
-
-Resolves the approved template and reconstructs immutable parameters exclusively from the released predecessor snapshot. No HTTP restatement body can replace source rows or parameters.
-
-```csharp
-public sealed class GovernedReportingRestatementCertificationInputProvider : IReportingRestatementCertificationInputProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public GovernedReportingRestatementCertificationInputProvider(GovernedReportingTemplateCatalog templateCatalog, ReportingRunReadinessService readiness);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:223](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L223) |  |
-| <code>public async ValueTask&lt;ReportingRestatementCertificationInput&gt; ResolveAsync(ReportingRestatementRequest request, GovernedReportingRun releasedPredecessor, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:231](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L231) |  |
-
-## GovernedReportingRestatementChangedLineResolver
-
-Qualified name: <code>Meridian.Ui.Shared.Services.GovernedReportingRestatementChangedLineResolver</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:277](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L277).
-
-Server-owned placeholder disclosure at request time. Approval replaces it with an exact diff of the predecessor and recertified immutable source rows before the request is marked Approved.
-
-```csharp
-public sealed class GovernedReportingRestatementChangedLineResolver : IReportingRestatementChangedLineResolver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ValueTask&lt;ImmutableArray&lt;ReportingRestatementChangedLine&gt;&gt; ResolveAsync(GovernedReportingRun releasedPredecessor, string reason, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:280](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L280) |  |
-
-## GovernedReportingTemplateCatalog
-
-Qualified name: <code>Meridian.Ui.Shared.Services.GovernedReportingTemplateCatalog</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:10](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L10).
-
-Resolves reporting templates through the governed registry and evaluates caller access.
-
-```csharp
-public sealed class GovernedReportingTemplateCatalog : IReportingTemplateCatalog
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public GovernedReportingTemplateCatalog(IReportingTemplateCatalog fallbackCatalog, ReportTemplateRegistryService templateRegistry);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:15](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L15) |  |
-| <code>public ReportingTemplateMetadata Get(string templateId);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:23](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L23) |  |
-| <code>public ReportingTemplateMetadata Get(string templateId, ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:32](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L32) |  |
-| <code>public ReportingTemplateMetadata Get(string templateId, ReportingOperationalScope? operationalScope) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:43](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L43) |  |
-| <code>public ReportingTemplateMetadata Get(VersionedReportTemplateIdDto templateId);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:48](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L48) |  |
-| <code>public ReportingTemplateMetadata Get(VersionedReportTemplateIdDto templateId, ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:63](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L63) |  |
-| <code>public ReportingTemplateMetadata Get(VersionedReportTemplateIdDto templateId, ReportingOperationalScope? operationalScope) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:80](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L80) |  |
-| <code>public IReadOnlyList&lt;ReportingTemplateMetadata&gt; ListTemplates();</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:85](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L85) |  |
-| <code>public IReadOnlyList&lt;ReportingTemplateMetadata&gt; ListTemplates(ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:104](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L104) |  |
-| <code>public ReportAccessEvaluationDto EvaluateAccess(string templateId, ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:124](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L124) |  |
-| <code>public ReportAccessEvaluationDto EvaluateAccess(VersionedReportTemplateIdDto templateId, ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs:153](../../../../src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs#L153) |  |

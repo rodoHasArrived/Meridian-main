@@ -2872,11 +2872,11 @@ items:
       - Accounting
       - Reporting
     owner_lane: Accounting and Ledger
-    status: planned
+    status: in_progress
     health: green
     priority: medium
-    evidence_posture: planned_evidence
-    status_note: Activate the existing year-end projector through governed close readiness and retained acceptance requirements.
+    evidence_posture: in_progress
+    status_note: A read-only fiscal-year close plan derives readiness, pre/post-closing trial balances, closing transfers and next-year openings from retained hard-close snapshots. Year-end posting, the retained close receipt, late-correction successors and workstation screens remain open.
     decision_ids:
     - DEC-FUND-OPERATIONS-DIRECTION-001
     pr_references: []
@@ -2903,7 +2903,15 @@ items:
     evidence:
       - type: reference
         path: docs/product/meridian-design-document.md
-    last_reviewed: 2026-10-17
+      - type: doc
+        path: docs/domain/fiscal-year-close.md
+      - type: source
+        path: src/Meridian.Ui.Shared/Services/FiscalYearClosePlanBuilder.cs
+      - type: test
+        path: tests/Meridian.Tests/Ledger/FiscalYearClosePlanBuilderTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Storage/FiscalYearClosePlanPostgresTests.cs
+    last_reviewed: 2026-11-18
 
   - id: W12-FINRPT-001
     title: Ledger-backed financial statement control pack

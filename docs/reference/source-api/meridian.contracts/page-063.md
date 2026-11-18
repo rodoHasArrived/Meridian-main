@@ -6,6 +6,62 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OnboardingDifferenceExplanationDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OnboardingDifferenceExplanationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:94](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L94).
+
+An operator explanation of one difference. It applies only while the compared amounts are unchanged, never to a OnboardingDifferenceClassifications.MeridianError, and for timing only through the expected reversal date.
+
+```csharp
+public sealed record OnboardingDifferenceExplanationDto(string ExplanationId, string ComparisonId, string DifferenceKey, string Classification, string Notes, IReadOnlyList<string> EvidenceIds, DateOnly? ExpectedReversalDate, decimal? MeridianAmount, decimal? ExternalAmount, string ActorId, DateTimeOffset RecordedAtUtc, int DataRevision);
+```
+
+## OnboardingMissingSourceDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OnboardingMissingSourceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:55](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L55).
+
+```csharp
+public sealed record OnboardingMissingSourceDto(string Code, string SourceKind, string? AccountId, string Message);
+```
+
+## OnboardingObservationDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OnboardingObservationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:49](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L49).
+
+Null means missing, never zero. All kinds retain the selected financial account identity.
+
+```csharp
+public sealed record OnboardingObservationDto(string Kind, string AccountId, string Currency, string? InstrumentId, decimal? MeridianAmount, decimal? ExternalAmount, IReadOnlyList<string> SnapshotIds, IReadOnlyList<string> EvidenceIds, string? MissingReason = null);
+```
+
+## OnboardingOpeningAccountMappingDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OnboardingOpeningAccountMappingDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:52](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L52).
+
+Maps an incumbent account identifier (IBAN, admin account code, GL account code) to a selected financial account.
+
+```csharp
+public sealed record OnboardingOpeningAccountMappingDto(string ExternalAccount, string AccountId);
+```
+
+## OnboardingOpeningBalanceLineDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OnboardingOpeningBalanceLineDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:64](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L64).
+
+```csharp
+public sealed record OnboardingOpeningBalanceLineDto(string DifferenceKey, string Kind, string AccountId, string Currency, string? InstrumentId, decimal? MeridianAmount, decimal? IncumbentAmount, decimal? Difference, decimal Tolerance, string Status, string? Classification, string? MissingReason, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? ComparisonId = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? SourceKind = null);
+```
+
 ## OnboardingOpeningBalanceReportDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OnboardingOpeningBalanceReportDto</code>. Kind: `record`.
@@ -529,60 +585,4 @@ Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:817](../
 
 ```csharp
 public sealed record OperationsCloseCalendarItemDto(Guid WorkflowId, Guid FundAccountId, string PeriodId, OperationsWorkflowStatusDto Status, long Version, DateOnly? NextDueDate, string? NextDueTaskId, string? NextDueLabel, string? NextDueOwner, string? ReadinessSeverity, int? ReadinessScore, bool IsReadyToClose, int BlockerCount, int OpenChecklistCount, int RequiredApprovalCount, int CompletedApprovalCount, string Route, IReadOnlyList<OperationsCloseReadinessComponentDto>? ReadinessComponents = null, IReadOnlyList<OperationsCloseReadinessBlockerDto>? ReadinessBlockers = null, IReadOnlyList<OperationsNextActionDto>? ReadinessNextActions = null);
-```
-
-## OperationsCloseCalendarItemUpsertRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseCalendarItemUpsertRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:839](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L839).
-
-```csharp
-public sealed record OperationsCloseCalendarItemUpsertRequestDto(Guid WorkflowId, string TaskId, DateOnly DueDate, string Owner, string RequestedBy, string Rationale, string? CorrelationId = null);
-```
-
-## OperationsCloseCalendarItemUpsertResultDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseCalendarItemUpsertResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:848](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L848).
-
-```csharp
-public sealed record OperationsCloseCalendarItemUpsertResultDto(OperationsCloseCalendarItemDto Item, OperationsCloseCalendarDto Calendar, OperationsCloseCalendarItemAuditEventDto AuditEvent);
-```
-
-## OperationsCloseChecklistGateSnapshotDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseChecklistGateSnapshotDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsCloseChecklistHistoryDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/OperationsCloseChecklistHistoryDtos.cs#L6).
-
-```csharp
-public sealed record OperationsCloseChecklistGateSnapshotDto(string TaskId, OperationsGateKeyDto Gate, OperationsGateStatusDto Status);
-```
-
-## OperationsCloseChecklistHistoryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseChecklistHistoryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsCloseChecklistHistoryDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/OperationsCloseChecklistHistoryDtos.cs#L11).
-
-```csharp
-public sealed record OperationsCloseChecklistHistoryDto(Guid WorkflowId, DateTimeOffset AsOf, string Status, string? Reason, DateTimeOffset? CoverageStart, DateTimeOffset? CoverageEnd, bool IsPartial, IReadOnlyList<Guid> MissingAuditIds, IReadOnlyList<OperationsCloseChecklistObservationDto> Observations)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;OperationsCloseChecklistVersionGapDto&gt; VersionGaps { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/OperationsCloseChecklistHistoryDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/OperationsCloseChecklistHistoryDtos.cs#L16) |  |
-
-## OperationsCloseChecklistObservationDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseChecklistObservationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsCloseChecklistHistoryDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/OperationsCloseChecklistHistoryDtos.cs#L8).
-
-```csharp
-public sealed record OperationsCloseChecklistObservationDto(Guid AuditId, DateTimeOffset RecordedAtUtc, long WorkflowVersion, int TotalTasks, int RemainingTasks, int BlockedTasks, int Segment);
 ```

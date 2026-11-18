@@ -6,6 +6,70 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerMarkToMarketCarryingValueSource
+
+Qualified name: <code>Meridian.Ui.Shared.Services.LedgerMarkToMarketCarryingValueSource</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/LedgerMarkToMarketCarryingValueSource.cs:13](../../../../src/Meridian.Ui.Shared/Services/LedgerMarkToMarketCarryingValueSource.cs#L13).
+
+Reads the requested ledger book&#x27;s as-of trial balance once and returns the durable securities-account carrying value for every requested security/account key within the requested entity. Missing accounts are explicit null results; present zero-balance accounts remain zero.
+
+```csharp
+public sealed class LedgerMarkToMarketCarryingValueSource(ILedgerJournalStore store) : IMarkToMarketCarryingValueSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IReadOnlyDictionary&lt;MarkToMarketCarryingValueKey, MarkToMarketCarryingValue&gt;&gt; GetCarryingValuesAsync(MarkToMarketCarryingValueRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerMarkToMarketCarryingValueSource.cs:16](../../../../src/Meridian.Ui.Shared/Services/LedgerMarkToMarketCarryingValueSource.cs#L16) |  |
+
+## LedgerRecurringJournalCalculationInputs
+
+Qualified name: <code>Meridian.Ui.Shared.Services.LedgerRecurringJournalCalculationInputs</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:127](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L127).
+
+Reads calculation inputs from the durable ledger journal store.
+
+```csharp
+public sealed class LedgerRecurringJournalCalculationInputs(ILedgerJournalStore? journalStore = null, TimeProvider? timeProvider = null) : IRecurringJournalCalculationInputs
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IReadOnlyLedger&gt; HydrateLedgerAsOfAsync(RecurringJournalScope scope, DateOnly asOf, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:130](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L130) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;LedgerTaxLot&gt;&gt; ListOpenLotsAsync(RecurringJournalScope scope, LedgerAccount account, Guid securityId, Guid? bookPositionId, DateOnly asOf, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:133](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L133) |  |
+| <code>public Task&lt;IReadOnlyList&lt;FaceValueAccrualHolding&gt;&gt; ListAccrualHoldingsAsync(RecurringJournalScope scope, Guid securityId, Guid bookPositionId, DateOnly from, DateOnly through, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:170](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L170) |  |
+
+## LedgerReportingAuthoritativeSource
+
+Qualified name: <code>Meridian.Ui.Shared.Services.LedgerReportingAuthoritativeSource</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:83](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L83).
+
+Captures an immutable as-of view from the durable ledger journal. Tenant ownership, fund structure, organization, book, period, accounting basis, currency, selected dimensions, and line-level dimensional stamps are all verified before a checkpoint is issued.
+
+```csharp
+public sealed partial class LedgerReportingAuthoritativeSource : IReportingAuthoritativeSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public LedgerReportingAuthoritativeSource(ILedgerJournalStore journalStore, IFundProfileTenancyRegistry tenancyRegistry, IFundStructureService fundStructure, TimeProvider? timeProvider = null, ILedgerTaxLotDisposalHistory? taxLotDisposalHistory = null, ILedgerOpenLotSuccessorHistory? openLotSuccessorHistory = null, CapitalCallNoticeSourceValidator? capitalCallNotices = null);</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:93](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L93) |  |
+| <code>public ValueTask&lt;ReportingAuthoritativeSourceCapture&gt; CaptureAsync(ReportingRunParametersDto parameters, ReportAccessQueryContext accessContext, CancellationToken cancellationToken = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:115](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L115) |  |
+| <code>public ValueTask&lt;ReportingAuthoritativeSourceCapture&gt; CaptureAsync(ReportingRunParametersDto parameters, ReportAccessQueryContext accessContext, ReportingAuthoritativeSourceCaptureIntent intent, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:121](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L121) |  |
+
+Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Successors.cs:11](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Successors.cs#L11).
+
+```csharp
+public sealed partial class LedgerReportingAuthoritativeSource
+```
+
 ## LedgerReportingSchedulePeriodResolver
 
 Qualified name: <code>Meridian.Ui.Shared.Services.LedgerReportingSchedulePeriodResolver</code>. Kind: `class`.
@@ -990,49 +1054,3 @@ Declared public members:
 | <code>public async Task&lt;PostedPeriodComparisonDto&gt; GetAsync(string tenantId, string companyId, Guid bookId, Guid currentPeriodId, Guid? baselinePeriodId, DateTimeOffset asOf, LedgerDimensionSetDto? dimensions, Func&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;, IReadOnlyList&lt;LedgerJournalEntryDto&gt;&gt; project, CancellationToken ct = default, AccountingBasisKindDto? accountingBasis = null);</code> | [src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs:14](../../../../src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs#L14) |  |
 | <code>public static (PostedPeriodComparisonRangeDto Current, PostedPeriodComparisonRangeDto? Baseline, string? Reason) SelectWindows(LedgerAccountingPeriod current, LedgerAccountingPeriod baseline, DateTimeOffset asOf);</code> | [src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs:139](../../../../src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs#L139) |  |
 | <code>public static IReadOnlyList&lt;PostedPeriodComparisonLineDto&gt; CompareLines(IReadOnlyList&lt;LedgerJournalEntryDto&gt; current, IReadOnlyList&lt;LedgerJournalEntryDto&gt; baseline);</code> | [src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs:169](../../../../src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs#L169) |  |
-
-## PostedStrategyRunLedgerSource
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PostedStrategyRunLedgerSource</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/PostedStrategyRunLedgerSource.cs:12](../../../../src/Meridian.Ui.Shared/Services/PostedStrategyRunLedgerSource.cs#L12).
-
-Rebuilds a run view from posted journals carrying its exact retained run identity. Books and accounts are authorized independently; strategy identity alone never selects a book.
-
-```csharp
-public sealed class PostedStrategyRunLedgerSource(ILedgerJournalStore? journals = null, IFundProfileTenancyRegistry? tenancy = null) : IStrategyRunLedgerSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyLedger?&gt; ReadAsync(StrategyRunEntry run, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PostedStrategyRunLedgerSource.cs:16](../../../../src/Meridian.Ui.Shared/Services/PostedStrategyRunLedgerSource.cs#L16) |  |
-
-## PreparePeriodAdjustmentRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PreparePeriodAdjustmentRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/PeriodAdjustmentPreparationService.cs:9](../../../../src/Meridian.Ui.Shared/Services/PeriodAdjustmentPreparationService.cs#L9).
-
-```csharp
-public sealed record PreparePeriodAdjustmentRequest(Guid LedgerBookId, Guid SourceJournalEntryId, Guid TargetPeriodId, DateOnly AccountingDate, string IntentId, string Reason, bool ReversePeriodEndMark = false);
-```
-
-## PrivateCapitalBankObservationService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PrivateCapitalBankObservationService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalBankObservationService.cs:14](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalBankObservationService.cs#L14).
-
-Imports reviewed settled bank observations without creating a payment or posting cash.
-
-```csharp
-public sealed class PrivateCapitalBankObservationService(IEvidenceArtifactStore vault, IBankingStore store, TimeProvider? clock = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;PrivateCapitalBankObservationImportResultDto&gt; ImportAsync(PrivateCapitalScopeDto scope, ImportPrivateCapitalBankObservationRequest request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalBankObservationService.cs:28](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalBankObservationService.cs#L28) |  |

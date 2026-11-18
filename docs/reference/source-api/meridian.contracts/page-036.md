@@ -6,6 +6,70 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyObligationMonitorDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyObligationMonitorDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs:22](../../../../src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs#L22).
+
+Advisory result only. IsComplete describes observation evidence and never changes close eligibility.
+
+```csharp
+public sealed record IntercompanyObligationMonitorDto(DateOnly AsOf, int ExpiryHorizonDays, DateTimeOffset EvaluatedAtUtc, string Status, bool IsComplete, string SourceFingerprint, IReadOnlyList<IntercompanyObligationSourceVersionDto> SourceVersions, IReadOnlyList<IntercompanyObligationFindingDto> Findings, IntercompanyBalanceScheduleDto? BalanceSchedule, IReadOnlyList<IntercompanyAgreementDetailDto> Guarantees);
+```
+
+## IntercompanyObligationMonitorJsonContext
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyObligationMonitorJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs:42](../../../../src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs#L42).
+
+```csharp
+public partial class IntercompanyObligationMonitorJsonContext : JsonSerializerContext;
+```
+
+## IntercompanyObligationMonitorRequestDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyObligationMonitorRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs:9](../../../../src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs#L9).
+
+Explicit observation scope. Amounts come only from the canonical posted balance schedule.
+
+```csharp
+public sealed record IntercompanyObligationMonitorRequestDto(string? FundProfileId, Guid? LedgerBookId, DateOnly AsOf, int ExpiryHorizonDays = 30, Guid? EntityId = null);
+```
+
+## IntercompanyObligationSourceVersionDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyObligationSourceVersionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs:18](../../../../src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs#L18).
+
+Retained source authority for this observation, separate from readiness or posting authority.
+
+```csharp
+public sealed record IntercompanyObligationSourceVersionDto(string SourceKind, string SourceId, string Version, string ContentHash);
+```
+
+## IntercompanyProposalDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyProposalDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:27](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L27).
+
+```csharp
+public sealed record IntercompanyProposalDto(IntercompanyProposalSourceDto Source, string SourceDigest, IntercompanyProposalStatusDto Status, int Attempts, DateTimeOffset RecordedAt, Guid? TargetBookId = null, Guid? TargetJournalId = null, string? LastError = null, string? ClaimToken = null, DateTimeOffset? LeaseUntil = null, DateOnly? DueDate = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IntercompanyCounterpartLinkDto? LatestLink { get; init; }</code> | [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:33](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L33) |  |
+| <code>public Guid? ResolvedTargetBookId =&gt; …;</code> | [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:34](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L34) |  |
+| <code>public Guid? ResolvedTargetJournalId =&gt; …;</code> | [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:35](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L35) |  |
+
 ## IntercompanyProposalJsonContext
 
 Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyProposalJsonContext</code>. Kind: `class`.
@@ -661,70 +725,3 @@ Declared public members:
 | <code>public const string EventMutated = &quot;EventMutated&quot;;</code> | [src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs:71](../../../../src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs#L71) | A chained event was edited, removed, or reordered. |
 | <code>public const string HeadDisagreement = &quot;HeadDisagreement&quot;;</code> | [src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs:74](../../../../src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs#L74) | Every link verified but the retained head disagrees with the suffix. |
 | <code>public const string CoverageMismatch = &quot;CoverageMismatch&quot;;</code> | [src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs:77](../../../../src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs#L77) | Retained ledger facts disagree with their audit coverage. |
-
-## LedgerEventAuditVerification
-
-Qualified name: <code>Meridian.Contracts.Ledger.LedgerEventAuditVerification</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs:20](../../../../src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs#L20).
-
-Outcome of verifying the ledger-event audit chain: the verified suffix is protected; genesis facts were retained before this guarantee.
-
-```csharp
-public sealed record LedgerEventAuditVerification(long ChainedEvents, long UnprotectedGenesisFacts, DateTimeOffset GenesisAtUtc);
-```
-
-## LedgerJournalEntryDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.LedgerJournalEntryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:386](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L386).
-
-```csharp
-public sealed record LedgerJournalEntryDto(Guid JournalEntryId, Guid PeriodId, Guid? LedgerBookId, Guid AggregateId, Guid? CommandId, Guid? CorrelationId, long GlobalSequence, DateTimeOffset CreatedAt, DateTimeOffset Timestamp, string Description, decimal TotalDebits, decimal TotalCredits, bool IsBalanced, IReadOnlyList<LedgerJournalEntryLineDto> Lines, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, string AccountingPolicyId = "legacy-v1", string AccountingPolicyVersion = "legacy-v1", string? RuleId = null, string? RuleVersion = null, Guid? SourceEventId = null, Guid? SourceJournalEntryId = null, LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating, LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;LedgerJournalEntryLineDto&gt; Lines { get; init; } = Lines??[];</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:411](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L411) |  |
-
-## LedgerJournalEntryLineDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.LedgerJournalEntryLineDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:342](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L342).
-
-```csharp
-public sealed record LedgerJournalEntryLineDto(Guid EntryId, Guid JournalEntryId, DateTimeOffset Timestamp, string AccountName, string AccountType, string? Symbol, string? FinancialAccountId, decimal Debit, decimal Credit, string Description, LedgerDimensionSetDto? Dimensions = null);
-```
-
-## LedgerJournalTaxResultsDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.LedgerJournalTaxResultsDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/LedgerDisposalTaxDtos.cs:4](../../../../src/Meridian.Contracts/Ledger/LedgerDisposalTaxDtos.cs#L4).
-
-A read of retained disposal evidence. EvaluatedAt is read time, not tax finalization.
-
-```csharp
-public sealed record LedgerJournalTaxResultsDto(Guid LedgerBookId, Guid PeriodId, Guid JournalEntryId, string FunctionalCurrency, DateTimeOffset EvaluatedAt, string EvidenceState, string Message, IReadOnlyList<LedgerDisposalTaxResultDto> Disposals);
-```
-
-## LedgerPeriodCloseKindDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.LedgerPeriodCloseKindDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:26](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L26).
-
-```csharp
-public enum LedgerPeriodCloseKindDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>SoftClose = 0</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:28](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L28) |  |
-| <code>HardClose = 1</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:29](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L29) |  |

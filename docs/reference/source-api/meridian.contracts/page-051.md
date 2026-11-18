@@ -6,6 +6,71 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityClosePriceLineDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityClosePriceLineDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs#L22).
+
+```csharp
+public sealed record SecurityClosePriceLineDto(Guid SecurityId, SecurityPriceGoldenCopyDto? Selection, IReadOnlyList<SecurityRawPriceDto> Observations, SecurityClosePriceOverrideDto? Override, decimal? ClosePrice, SecurityPriceUnit Unit);
+```
+
+## SecurityClosePriceOverrideDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityClosePriceOverrideDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs#L8).
+
+A supported manual adjustment; the original selected source evidence remains retained.
+
+```csharp
+public sealed record SecurityClosePriceOverrideDto(decimal Price, SecurityPriceUnit Unit, string Rationale, string EvidenceReference);
+```
+
+## SecurityClosePriceSetDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityClosePriceSetDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs:40](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs#L40).
+
+```csharp
+public sealed record SecurityClosePriceSetDto(SecurityClosePriceSnapshotDto Snapshot, SecurityClosePriceApprovalDto? Approval);
+```
+
+## SecurityClosePriceSnapshotDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityClosePriceSnapshotDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs#L28).
+
+An immutable review input. Corrections append a contiguous linked version.
+
+```csharp
+public sealed record SecurityClosePriceSnapshotDto(Guid SnapshotId, string AccountId, string BookId, DateOnly ValuationDate, int Version, Guid? CorrectsSnapshotId, string? CorrectionRationale, DateTimeOffset EvaluatedAsOf, DateTimeOffset KnowledgeAsOf, decimal MaxSourceDispersionPercent, string CreatedBy, DateTimeOffset CreatedAt, IReadOnlyList<SecurityClosePriceLineDto> Lines, IReadOnlyList<SecurityClosePriceBlockerDto> Blockers, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? CreationCommandDigest = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] DateTimeOffset? RequestedKnowledgeAsOf = null);
+```
+
+## SecurityCodecInputs
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCodecInputs</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:74](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L74).
+
+Inputs a class&#x27;s decode reads beyond the schema-bound terms.
+
+```csharp
+public enum SecurityCodecInputs
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>None = 0</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:76](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L76) |  |
+| <code>VersionedTerms = 1</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:78](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L78) | The row&#x27;s versioned-term decoding, for versioned containers inside a list entry. |
+| <code>EconomicSchedules = 2</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:80](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L80) | The parsed and validated economic schedules (principal, factor, step coupon). |
+| <code>ResolvedTermsDocument = 4</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:82](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L82) | The profile-resolved terms document, for a list read from it. |
+
 ## SecurityComparisonPriceDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityComparisonPriceDto</code>. Kind: `record`.
@@ -816,93 +881,4 @@ One listing-identity inconsistency on a stored security.
 
 ```csharp
 public sealed record SecurityListingIdentityFinding(string Code, string FieldPath, string Message);
-```
-
-## SecurityListItemBinding
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityListItemBinding</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L70).
-
-One key of a written list entry and the entry member it carries.
-
-```csharp
-public sealed record SecurityListItemBinding(string Key, string Member);
-```
-
-## SecurityLotModel
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityLotModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:40](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L40).
-
-The one lot model: every SecurityLotUnitKind maps to exactly one entry stating what its quantity means and which typed lot carries it. Consumers that need to know how a holding is sized read For(SecurityLotUnitKind) or ForAssetClass(string?) instead of switching on asset-class strings.
-
-```csharp
-public static class SecurityLotModel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;SecurityLotUnitDescriptor&gt; All =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:57](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L57) | Every lot unit the model describes, in enum order. |
-| <code>public static SecurityLotUnitDescriptor For(SecurityLotUnitKind unitKind) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:60](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L60) | The entry for unitKind. |
-| <code>public static SecurityLotUnitDescriptor ForAssetClass(string? assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:66](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L66) | The entry for the lot unit the asset-class registry assigns to assetClass. |
-| <code>public static SecurityLotUnitDescriptor For(IUnitizedLot lot);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L70) | The entry for the unit a lot reports. |
-| <code>public static IReadOnlyList&lt;string&gt; AssetClassesWithUnit(SecurityLotUnitKind unitKind) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:77](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L77) | The asset classes whose lots carry unitKind, in catalog order. |
-| <code>public static bool IsCanonicalLot(IUnitizedLot lot);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:87](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L87) | True when lot is the canonical typed lot for its own unit, or its unit has no typed lot and any IUnitizedLot may carry it. |
-
-## SecurityLotUnitDescriptor
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityLotUnitDescriptor</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L23).
-
-What one lot unit means and which canonical lot type carries it. Keyed on SecurityLotUnitKind, so an asset class&#x27;s lot behaviour is read from its descriptor&#x27;s SecurityAssetClassDescriptor.LotUnit and never from its name.
-
-```csharp
-public sealed record SecurityLotUnitDescriptor(SecurityLotUnitKind UnitKind, Type? CanonicalLotType, string QuantityMeaning, bool TracksPaydownFactor = false, bool AmortizesBySchedule = false)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool HasCanonicalLotType =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:31](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L31) | True when a typed lot aggregate owns this unit&#x27;s economics. |
-
-## SecurityLotUnitKind
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityLotUnitKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L9).
-
-What one unit of a position lot measures.
-
-```csharp
-public enum SecurityLotUnitKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Shares</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L12) | Equity shares. |
-| <code>Contracts</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L15) | Listed derivative contracts, scaled by the class&#x27;s contract multiplier. |
-| <code>FaceValue</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L18) | Par (face) amount of a debt instrument. |
-| <code>Notional</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L21) | Notional amount of an OTC derivative. |
-| <code>Units</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L24) | Fund, holding or other units with no par or notional meaning. |
-| <code>CurrencyAmount</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:27](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L27) | An amount of currency (FX spot, cash sweep balances). |
-| <code>Commitment</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:30](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L30) | A committed amount (fund commitments, guarantees). |
-
-## SecurityMasterClosePricesJsonContext
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterClosePricesJsonContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePricesJsonContext.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePricesJsonContext.cs#L14).
-
-Provides source-generated JSON metadata for retained close price snapshots and their approval evidence.
-
-```csharp
-public sealed partial class SecurityMasterClosePricesJsonContext : JsonSerializerContext;
 ```

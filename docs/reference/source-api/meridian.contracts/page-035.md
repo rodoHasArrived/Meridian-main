@@ -6,6 +6,85 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## GeneratedPostingLineDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.GeneratedPostingLineDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:398](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L398).
+
+```csharp
+public sealed record GeneratedPostingLineDto(string LineId, string AccountPath, AccountingTemplateLineSideDto Side, string AmountFormulaId, decimal Amount, string Currency = "USD", LedgerDimensionSetDto? Dimensions = null, string? Description = null);
+```
+
+## GeneratePrivateCapitalNoticeRequest
+
+Qualified name: <code>Meridian.Contracts.Ledger.GeneratePrivateCapitalNoticeRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/PrivateCapitalLifecycleDtos.cs:4](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalLifecycleDtos.cs#L4).
+
+A stable generation intent; retry the same operation and use a new ID for deliberate regeneration.
+
+```csharp
+public sealed record GeneratePrivateCapitalNoticeRequest(Guid OperationId, string? CommitmentId = null);
+```
+
+## IAccountingActionAuditStore
+
+Qualified name: <code>Meridian.Contracts.Ledger.IAccountingActionAuditStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1192](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1192).
+
+Retains content-validated accounting action audit events and retrieves their history.
+
+```csharp
+public interface IAccountingActionAuditStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task AppendAsync(AccountingActionAuditEventDto auditEvent, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1207](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1207) | Retains an audit event. |
+| <code>Task&lt;IReadOnlyList&lt;AccountingActionAuditEventDto&gt;&gt; ListAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1209](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1209) |  |
+
+## IAccountingAuditChainVerifier
+
+Qualified name: <code>Meridian.Contracts.Ledger.IAccountingAuditChainVerifier</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs:14](../../../../src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs#L14).
+
+A store whose accounting-action audit history is hash-chained and can be verified on demand, not only implicitly ahead of its next append.
+
+```csharp
+public interface IAccountingAuditChainVerifier
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;AccountingAuditChainVerification&gt; VerifyAuditChainAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs:16](../../../../src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs#L16) |  |
+
+## IAccountingAuditPendingMarkerStore
+
+Qualified name: <code>Meridian.Contracts.Ledger.IAccountingAuditPendingMarkerStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs:120](../../../../src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs#L120).
+
+Durable storage for the pending-audit marker. One marker at a time: the accounting mutation paths serialize on the store they write to, so a second outstanding marker would itself be a defect.
+
+```csharp
+public interface IAccountingAuditPendingMarkerStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;AccountingAuditPendingMarker?&gt; ReadAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs:123](../../../../src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs#L123) | The outstanding marker, or null when the last mutation-and-audit pair completed. |
+| <code>Task WriteAsync(AccountingAuditPendingMarker marker, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs:126](../../../../src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs#L126) | Records the intent to audit, before the mutation it describes runs. |
+| <code>Task ClearAsync(Guid auditEventId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs:132](../../../../src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs#L132) | Clears the marker for auditEventId. A no-op when the outstanding marker is for a different event, so a late clear cannot erase a newer intent. |
+
 ## IAccountingAutomaticPostingPolicyValidator
 
 Qualified name: <code>Meridian.Contracts.Ledger.IAccountingAutomaticPostingPolicyValidator</code>. Kind: `interface`.
@@ -756,67 +835,3 @@ Source: [src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs:12](
 ```csharp
 public sealed record IntercompanyObligationFindingDto(string Code, string Severity, string Message, Guid? EntityId = null, Guid? AgreementId = null, int? AgreementVersion = null, Guid? LedgerBookId = null, Guid? JournalEntryId = null, string? DrillThrough = null);
 ```
-
-## IntercompanyObligationMonitorDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyObligationMonitorDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs:22](../../../../src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs#L22).
-
-Advisory result only. IsComplete describes observation evidence and never changes close eligibility.
-
-```csharp
-public sealed record IntercompanyObligationMonitorDto(DateOnly AsOf, int ExpiryHorizonDays, DateTimeOffset EvaluatedAtUtc, string Status, bool IsComplete, string SourceFingerprint, IReadOnlyList<IntercompanyObligationSourceVersionDto> SourceVersions, IReadOnlyList<IntercompanyObligationFindingDto> Findings, IntercompanyBalanceScheduleDto? BalanceSchedule, IReadOnlyList<IntercompanyAgreementDetailDto> Guarantees);
-```
-
-## IntercompanyObligationMonitorJsonContext
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyObligationMonitorJsonContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs:42](../../../../src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs#L42).
-
-```csharp
-public partial class IntercompanyObligationMonitorJsonContext : JsonSerializerContext;
-```
-
-## IntercompanyObligationMonitorRequestDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyObligationMonitorRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs:9](../../../../src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs#L9).
-
-Explicit observation scope. Amounts come only from the canonical posted balance schedule.
-
-```csharp
-public sealed record IntercompanyObligationMonitorRequestDto(string? FundProfileId, Guid? LedgerBookId, DateOnly AsOf, int ExpiryHorizonDays = 30, Guid? EntityId = null);
-```
-
-## IntercompanyObligationSourceVersionDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyObligationSourceVersionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs:18](../../../../src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs#L18).
-
-Retained source authority for this observation, separate from readiness or posting authority.
-
-```csharp
-public sealed record IntercompanyObligationSourceVersionDto(string SourceKind, string SourceId, string Version, string ContentHash);
-```
-
-## IntercompanyProposalDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyProposalDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:27](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L27).
-
-```csharp
-public sealed record IntercompanyProposalDto(IntercompanyProposalSourceDto Source, string SourceDigest, IntercompanyProposalStatusDto Status, int Attempts, DateTimeOffset RecordedAt, Guid? TargetBookId = null, Guid? TargetJournalId = null, string? LastError = null, string? ClaimToken = null, DateTimeOffset? LeaseUntil = null, DateOnly? DueDate = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IntercompanyCounterpartLinkDto? LatestLink { get; init; }</code> | [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:33](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L33) |  |
-| <code>public Guid? ResolvedTargetBookId =&gt; …;</code> | [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:34](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L34) |  |
-| <code>public Guid? ResolvedTargetJournalId =&gt; …;</code> | [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:35](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L35) |  |

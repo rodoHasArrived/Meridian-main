@@ -6,6 +6,58 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PrivateCapitalImportPreview
+
+Qualified name: <code>Meridian.Contracts.PrivateCapital.PrivateCapitalImportPreview</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:38](../../../../src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs#L38).
+
+```csharp
+public sealed record PrivateCapitalImportPreview(Guid BatchId, string Fingerprint, IReadOnlyList<PrivateCapitalSnapshotInput> Rows, PrivateCapitalEvidence Evidence, string Rationale, DateTimeOffset CreatedAt, string CreatedBy);
+```
+
+## PrivateCapitalImportReceipt
+
+Qualified name: <code>Meridian.Contracts.PrivateCapital.PrivateCapitalImportReceipt</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:43](../../../../src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs#L43).
+
+```csharp
+public sealed record PrivateCapitalImportReceipt(Guid CommandId, Guid BatchId, IReadOnlyList<Guid> SnapshotIds, DateTimeOffset AcceptedAt);
+```
+
+## PrivateCapitalRecords
+
+Qualified name: <code>Meridian.Contracts.PrivateCapital.PrivateCapitalRecords</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:46](../../../../src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs#L46).
+
+```csharp
+public sealed record PrivateCapitalRecords(IReadOnlyList<PrivateCapitalCommitment> Commitments, IReadOnlyList<PrivateCapitalSnapshot> Snapshots, DateTimeOffset GeneratedAt);
+```
+
+## PrivateCapitalScope
+
+Qualified name: <code>Meridian.Contracts.PrivateCapital.PrivateCapitalScope</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:4](../../../../src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs#L4).
+
+Authenticated storage partition. Never accepted from a browser request.
+
+```csharp
+public sealed record PrivateCapitalScope(string TenantId, string CompanyId);
+```
+
+## PrivateCapitalSnapshot
+
+Qualified name: <code>Meridian.Contracts.PrivateCapital.PrivateCapitalSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:27](../../../../src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs#L27).
+
+```csharp
+public sealed record PrivateCapitalSnapshot(Guid SnapshotId, Guid CommitmentId, string AsOfDate, string? NavValuationDate, string? CommitmentAmount, string? CalledAmount, string? UnfundedAmount, string? CumulativeDistributions, string? NavAmount, string SourceReference, PrivateCapitalEvidence Evidence, Guid? SupersedesSnapshotId, DateTimeOffset RecordedAt, string RecordedBy, string Rationale, Guid BatchId);
+```
+
 ## PrivateCapitalSnapshotInput
 
 Qualified name: <code>Meridian.Contracts.PrivateCapital.PrivateCapitalSnapshotInput</code>. Kind: `record`.
@@ -609,59 +661,3 @@ Declared public members:
 | <code>public const string Treasury = &quot;treasury&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:76](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L76) |  |
 | <code>public const string Corporate = &quot;corporate&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:77](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L77) |  |
 | <code>public const string Crypto = &quot;crypto&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:78](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L78) |  |
-
-## AmendConvertibleEquityTermsRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs:30](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs#L30).
-
-```csharp
-public sealed record AmendConvertibleEquityTermsRequest(long ExpectedVersion, Guid UnderlyingSecurityId, decimal ConversionRatio, decimal? ConversionPrice, DateOnly? ConversionStartDate, DateOnly? ConversionEndDate, DateTimeOffset EffectiveFrom, string SourceSystem, string UpdatedBy, string? SourceRecordId, string? Reason);
-```
-
-## AmendPreferredEquityTermsRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.AmendPreferredEquityTermsRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs:74](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs#L74).
-
-Request to amend the preferred-equity-specific terms for an existing security.
-
-```csharp
-public sealed record AmendPreferredEquityTermsRequest(long ExpectedVersion, decimal? DividendRate, string? DividendType, decimal? RedemptionPrice, DateOnly? RedemptionDate, DateOnly? CallableDate, bool? ParticipatesInCommonDividends, decimal? AdditionalDividendThreshold, string? LiquidationPreferenceKind, decimal? LiquidationPreferenceMultiple, DateTimeOffset EffectiveFrom, string SourceSystem, string UpdatedBy, string? SourceRecordId, string? Reason);
-```
-
-## AmendSecurityTermBlockRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.AmendSecurityTermBlockRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityTermBlocks.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermBlocks.cs#L11).
-
-Request to replace one nested term block (an object or array term such as a preferred-terms object, a call schedule or swap legs) on any asset class.
-
-```csharp
-public sealed record AmendSecurityTermBlockRequest(long ExpectedVersion, JsonElement Block, DateTimeOffset EffectiveFrom, string SourceSystem, string UpdatedBy, string? SourceRecordId, string? Reason);
-```
-
-## AmendSecurityTermsRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.AmendSecurityTermsRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs#L17).
-
-```csharp
-public sealed record AmendSecurityTermsRequest(Guid SecurityId, long ExpectedVersion, JsonElement? CommonTerms, JsonElement? AssetSpecificTermsPatch, IReadOnlyList<SecurityIdentifierDto> IdentifiersToAdd, IReadOnlyList<SecurityIdentifierDto> IdentifiersToExpire, DateTimeOffset EffectiveFrom, string SourceSystem, string UpdatedBy, string? SourceRecordId, string? Reason);
-```
-
-## AppendOtcContractLifecycleRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.AppendOtcContractLifecycleRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:45](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L45).
-
-An idempotent lifecycle write fenced on the current contract version. Endpoints replace Actor with the session identity.
-
-```csharp
-public sealed record AppendOtcContractLifecycleRequest([property : JsonRequired] Guid EventId, [property : JsonRequired] Guid ContractId, [property : JsonRequired] long ExpectedVersion, [property : JsonRequired] DateOnly EffectiveDate, [property : JsonRequired] string SourceReference, [property : JsonRequired] OtcContractLifecycleData Data, string? Actor = null);
-```

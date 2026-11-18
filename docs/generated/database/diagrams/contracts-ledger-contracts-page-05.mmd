@@ -1,5 +1,41 @@
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_LedgerAccountRunningBalanceDto["LedgerAccountRunningBalanceDto"] {
+        +string AccountName
+        +string? AccountType
+        +decimal EndingBalance
+        +string? FinancialAccountId
+        +Guid LedgerBookId
+        +Guid PeriodId
+        +IReadOnlyList~LedgerAccountRunningBalancePointDto~ Points
+        +string? Symbol
+        +decimal TotalCredits
+        +decimal TotalDebits
+    }
+    class Meridian_Contracts_Ledger_LedgerAccountRunningBalancePointDto["LedgerAccountRunningBalancePointDto"] {
+        +decimal Balance
+        +decimal Credit
+        +decimal Debit
+        +string Description
+        +Guid EntryId
+        +long GlobalSequence
+        +Guid JournalEntryId
+        +DateTimeOffset Timestamp
+    }
+    class Meridian_Contracts_Ledger_LedgerAccountingArrangementDimensions["LedgerAccountingArrangementDimensions"] {
+    }
+    class Meridian_Contracts_Ledger_LedgerAdjustmentApprovalMetadataDto["LedgerAdjustmentApprovalMetadataDto"] {
+        +string ApprovalId
+        +DateTimeOffset ApprovedAt
+        +string ApprovedBy
+        +string? EvidenceLink
+        +string? GovernanceCaseId
+        +string? Notes
+        +string ReasonCode
+        +LedgerAdjustmentApprovalStatusDto Status
+    }
+    class Meridian_Contracts_Ledger_LedgerAdjustmentApprovalStatusDto["LedgerAdjustmentApprovalStatusDto"] {
+    }
     class Meridian_Contracts_Ledger_LedgerAgreementDimensions["LedgerAgreementDimensions"] {
     }
     class Meridian_Contracts_Ledger_LedgerBookControlModeDto["LedgerBookControlModeDto"] {
@@ -647,64 +683,8 @@ classDiagram
         +DateOnly RangeStart
         +string Status
     }
-    class Meridian_Contracts_Ledger_PostedPostingRuleJournalCandidateResultDto["PostedPostingRuleJournalCandidateResultDto"] {
-        +PostingRuleJournalCandidateResultDto Candidate
-        +PostedJournalImpactDto? JournalImpact
-        +IReadOnlyList~AssetAccountingStageEvidenceDto~ LifecycleStages
-        +PostedLedgerJournalEntryResultDto PostedJournal
-        +Guid? TaxLotMutationBatchId
-        +bool WasReplay
-    }
-    class Meridian_Contracts_Ledger_PostingRuleDto["PostingRuleDto"] {
-        +IReadOnlyList~AllocationRuleDto~ Allocations
-        +IReadOnlyList~AccountingRuleConditionGroupDto~ ConditionGroups
-        +IReadOnlyList~AccountingRuleConditionDto~ Conditions
-        +string? Description
-        +string DisplayName
-        +DateOnly? EffectiveFrom
-        +DateOnly? EffectiveTo
-        +IReadOnlyList~AccountingRuleFormulaDto~ Formulas
-        +IReadOnlyList~GeneratedPostingLineDto~ GeneratedPostings
-        +bool IsArchived
-        +int Priority
-        +RulePromotionApprovalDto? PromotionApproval
-    }
-    class Meridian_Contracts_Ledger_PostingRuleJournalCandidateIssueDto["PostingRuleJournalCandidateIssueDto"] {
-        +bool BlocksCandidate
-        +string Code
-        +string Message
-        +AccountingConfigurationValidationSeverityDto Severity
-        +string? SuggestedAction
-        +string? TargetId
-    }
-    class Meridian_Contracts_Ledger_PostingRuleJournalCandidateRequestDto["PostingRuleJournalCandidateRequestDto"] {
-        +AccountingBasisKindDto AccountingBasis
-        +DateTimeOffset AccountingTimestamp
-        +string Actor
-        +LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval
-        +Guid AggregateId
-        +AssetLotMutationInstructionDto? AssetLotMutation
-        +Meridian_Contracts_Accounting_Lots_BondCouponRecognitionInstructionDto? BondCouponRecognition
-        +AccountingBookContextDto? BookContext
-        +Guid? BookPositionId
-        +string? CompanyId
-        +Guid? CorrelationId
-        +string? CounterpartyId
-    }
-    class Meridian_Contracts_Ledger_PostingRuleJournalCandidateResultDto["PostingRuleJournalCandidateResultDto"] {
-        +AccountingBookContextDto? BookContext
-        +Guid? BookPositionId
-        +bool CanPostWithoutAdditionalApproval
-        +bool CanSubmitForApproval
-        +RuleDryRunResultDto DryRunResult
-        +EconomicEventReferenceDto? EconomicEvent
-        +IReadOnlyList~string~ EvidenceLinks
-        +IReadOnlyList~GeneratedPostingLineDto~ GeneratedPostingLines
-        +bool HasBlockingIssues
-        +decimal Imbalance
-        +bool IsBalanced
-        +IReadOnlyList~PostingRuleJournalCandidateIssueDto~ Issues
-    }
+    Meridian_Contracts_Ledger_LedgerAccountRunningBalanceDto --> Meridian_Contracts_Ledger_LedgerAccountRunningBalancePointDto
+    Meridian_Contracts_Ledger_LedgerAdjustmentApprovalMetadataDto --> Meridian_Contracts_Ledger_LedgerAdjustmentApprovalStatusDto
     Meridian_Contracts_Ledger_LedgerBookControlPreflightDto --> Meridian_Contracts_Ledger_LedgerControlDecisionDto
     Meridian_Contracts_Ledger_LedgerBookControlProfileDto --> Meridian_Contracts_Ledger_LedgerBookControlModeDto
     Meridian_Contracts_Ledger_LedgerBookRolloutAssessmentDto --> Meridian_Contracts_Ledger_LedgerBookRolloutBookStatusDto
@@ -716,6 +696,7 @@ classDiagram
     Meridian_Contracts_Ledger_LedgerCrossPeriodTrialBalanceReportDto --> Meridian_Contracts_Ledger_LedgerCrossPeriodTrialBalanceLineDto
     Meridian_Contracts_Ledger_LedgerCrossPeriodTrialBalanceReportDto --> Meridian_Contracts_Ledger_LedgerPeriodDto
     Meridian_Contracts_Ledger_LedgerDisposalTaxResultDto --> Meridian_Contracts_Ledger_LedgerDisposalTaxParcelDto
+    Meridian_Contracts_Ledger_LedgerJournalEntryDto --> Meridian_Contracts_Ledger_LedgerAdjustmentApprovalMetadataDto
     Meridian_Contracts_Ledger_LedgerJournalEntryDto --> Meridian_Contracts_Ledger_LedgerJournalEntryLineDto
     Meridian_Contracts_Ledger_LedgerJournalEntryDto --> Meridian_Contracts_Ledger_LedgerPostingKindDto
     Meridian_Contracts_Ledger_LedgerJournalEntryLineDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
@@ -739,7 +720,6 @@ classDiagram
     Meridian_Contracts_Ledger_ManualJournalEntryDraftDto --> Meridian_Contracts_Ledger_ManualJournalEntryLineDto
     Meridian_Contracts_Ledger_ManualJournalEntryDraftDto --> Meridian_Contracts_Ledger_ManualJournalEntryStatusDto
     Meridian_Contracts_Ledger_ManualJournalEntryDraftDto --> Meridian_Contracts_Ledger_ManualJournalEntryTypeDto
-    Meridian_Contracts_Ledger_ManualJournalEntryDraftDto --> Meridian_Contracts_Ledger_PostedPostingRuleJournalCandidateResultDto
     Meridian_Contracts_Ledger_ManualJournalEntryLineDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
     Meridian_Contracts_Ledger_ManualJournalEntryLineDto --> Meridian_Contracts_Ledger_ManualJournalLineCurrencyDto
     Meridian_Contracts_Ledger_ManualJournalEntryWorkbenchDto --> Meridian_Contracts_Ledger_LedgerBookDto
@@ -760,14 +740,7 @@ classDiagram
     Meridian_Contracts_Ledger_PaymentIntentWorkflowDto --> Meridian_Contracts_Ledger_PaymentIntentExpectedCashMovementDto
     Meridian_Contracts_Ledger_PaymentIntentWorkflowDto --> Meridian_Contracts_Ledger_PaymentIntentReconciliationLinkDto
     Meridian_Contracts_Ledger_PaymentIntentWorkflowDto --> Meridian_Contracts_Ledger_PaymentIntentWorkflowStatusDto
-    Meridian_Contracts_Ledger_PostPostingRuleJournalCandidateRequestDto --> Meridian_Contracts_Ledger_PostingRuleJournalCandidateRequestDto
     Meridian_Contracts_Ledger_PostedPeriodComparisonDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
     Meridian_Contracts_Ledger_PostedPeriodComparisonDto --> Meridian_Contracts_Ledger_PostedPeriodComparisonLineDto
     Meridian_Contracts_Ledger_PostedPeriodComparisonDto --> Meridian_Contracts_Ledger_PostedPeriodComparisonRangeDto
     Meridian_Contracts_Ledger_PostedPeriodComparisonLineDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
-    Meridian_Contracts_Ledger_PostedPostingRuleJournalCandidateResultDto --> Meridian_Contracts_Ledger_PostedLedgerJournalEntryResultDto
-    Meridian_Contracts_Ledger_PostedPostingRuleJournalCandidateResultDto --> Meridian_Contracts_Ledger_PostingRuleJournalCandidateResultDto
-    Meridian_Contracts_Ledger_PostingRuleDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
-    Meridian_Contracts_Ledger_PostingRuleJournalCandidateRequestDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
-    Meridian_Contracts_Ledger_PostingRuleJournalCandidateRequestDto --> Meridian_Contracts_Ledger_LedgerPostingKindDto
-    Meridian_Contracts_Ledger_PostingRuleJournalCandidateResultDto --> Meridian_Contracts_Ledger_PostingRuleJournalCandidateIssueDto

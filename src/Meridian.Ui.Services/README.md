@@ -43,6 +43,10 @@ must retain the requested organization/entity/as-of or consolidation scope. Its 
 drafts through existing workbench and lifecycle routes; the authenticated host resolves actor and
 tenant authority. Refused, stale and unavailable responses never produce local success.
 
+`Services/Accounting/WorkstationFiscalYearCloseApiClient` reads the governed fiscal-year close plan
+for one book and year. It refuses a plan for another book or year, and a "ready" plan without a
+hash or with blockers; workstations present the server's sections and never recompute balances.
+
 The shared entity/consolidation API client supplies authorized organization/entity/book/period
 choices, entity timeline and consolidation preview/draft operations to WPF. Requests preserve host
 scope and server-calculated capabilities; no workstation client derives financial truth locally.

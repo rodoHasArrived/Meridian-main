@@ -6,6 +6,138 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataVendorDataType
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.DataVendorDataType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L16).
+
+```csharp
+public enum DataVendorDataType
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Identifiers</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L18) |  |
+| <code>TermsAndConditions</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L19) |  |
+| <code>CreditRatings</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L20) |  |
+| <code>Pricing</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L21) |  |
+| <code>CashFlows</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L22) |  |
+| <code>FxRates</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L23) |  |
+| <code>CreditRisk</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L24) |  |
+| <code>Classification</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L25) |  |
+| <code>RateFixings</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L26) |  |
+| <code>InflationIndexes</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:27](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L27) |  |
+| <code>Curves</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L28) |  |
+| <code>Holdings</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L29) |  |
+
+## DataVendorEntitlementDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.DataVendorEntitlementDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:32](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L32).
+
+```csharp
+public sealed record DataVendorEntitlementDto(Guid EntitlementId, string VendorName, DataVendorDataType DataType, string? ContractReference, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, decimal? AumThresholdUsd, bool RequiresDirectClientContract, string? ContactEmail, int RenewalReminderDays, DataVendorEntitlementStatus Status, string CreatedBy, DateTimeOffset CreatedAt)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? ClientId { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:47](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L47) |  |
+| <code>public string? AccountId { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L48) |  |
+| <code>public string? FundProfileId { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L49) |  |
+| <code>public Guid? SecurityId { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L50) |  |
+| <code>public string? SourceCategory { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:51](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L51) |  |
+| <code>public string? ExpectedRefreshCadence { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:52](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L52) |  |
+| <code>public int? DefaultMaxDaysStale { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:53](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L53) |  |
+| <code>public string? OperatorMetadata { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:54](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L54) |  |
+
+## DataVendorEntitlementStatus
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.DataVendorEntitlementStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L7).
+
+```csharp
+public enum DataVendorEntitlementStatus
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Active</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L9) |  |
+| <code>ExpiringSoon</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L10) |  |
+| <code>Expired</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L11) |  |
+| <code>PendingRenewal</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L12) |  |
+
+## DayCountConvention
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.DayCountConvention</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L10).
+
+Canonical day-count basis for fixed-income accrual, coupon, amortization, and cost-basis math. Unknown is a real, non-throwing member: unrecognized raw conventions parse to it and evaluate through a documented Actual/365 fallback instead of failing a posting.
+
+```csharp
+public enum DayCountConvention
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Actual360</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L13) | Actual calendar days over a 360-day year (money-market: CP, CD, repo, T-bills). |
+| <code>Actual365</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L16) | Actual calendar days over a 365-day year, ignoring leap days in the denominator (UK gilts, CAD/AUD money markets). |
+| <code>Thirty360</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L19) | 30/360 US &quot;Bond Basis&quot; per ISDA 2006 §4.16(f) (US corporates, munis, agencies). |
+| <code>Business252</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L22) | Business/252 — Brazilian convention; business days over 252. Needs a business-day calendar; without one it degrades to Actual/365. |
+| <code>ActualActualIsda</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L25) | Actual/Actual (ISDA) per ISDA 2006 §4.16(b) — actual days per calendar year weighted by that year&#x27;s length (US Treasuries, many sovereigns). |
+| <code>ThirtyE360</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L28) | 30E/360 &quot;Eurobond Basis&quot; per ISDA 2006 §4.16(g) — both D1 and D2 of 31 become 30 unconditionally. |
+| <code>ThirtyE360Isda</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:31](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L31) | 30E/360 (ISDA) per ISDA 2006 §4.16(h) — D1/D2 snap to 30 when they are the last day of their month, including February. |
+| <code>ActualActualIcma</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:34](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L34) | Actual/Actual (ICMA) per ISDA 2006 §4.16(c) — needs the coupon period; without period context it degrades to Actual/Actual (ISDA). |
+| <code>Nl365</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:37](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L37) | NL/365 (Actual/365 No-Leap) — actual days excluding any 29 February, over 365. |
+| <code>Actual36525</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:40](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L40) | Actual/365.25 — actual days over the mean Julian year; used by some analytics and insurance conventions. |
+| <code>Unknown</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:43](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L43) | Unrecognized or absent convention; evaluated through the Actual/365 safe fallback. |
+
+## DayCountConventions
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.DayCountConventions</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:78](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L78).
+
+The single canonical day-count engine for Meridian&#x27;s fixed-income math. Every accrual, coupon, premium/discount amortization, cost-basis relief, and read-model preview path MUST route through this type so the same bond produces the same day-count fraction everywhere — otherwise GL postings and cost-basis relief silently fail to tie. The F# DayCount module delegates here as well, so there is exactly one 30/360 (and Actual/Actual) implementation across the C# and F# lanes.
+
+```csharp
+public static class DayCountConventions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const decimal DaysPerYear365 = 365m;</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:81](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L81) | Actual/365 Fixed year basis shared by discount-time, payment-lag and CPR survival arithmetic. |
+| <code>public static bool TryParseTerm(string? raw, out DayCountConvention convention);</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:87](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L87) | Parses the declared terms vocabulary without the analytics parser&#x27;s heuristic fallback. |
+| <code>public static string TermLabel(DayCountConvention convention) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:107](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L107) | Canonical flat-term spelling; enum values are never serialized as numeric economics. |
+| <code>public static DayCountConvention Parse(string? raw) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:129](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L129) | Parses a raw convention string (e.g. &quot;30/360&quot;, &quot;30E/360&quot;, &quot;ACT/365&quot;, &quot;Act/Act ICMA&quot;, &quot;NL/365&quot;, &quot;BUS/252&quot;, &quot;Thirty360&quot;, &quot;ActualActualISDA&quot;) into a DayCountConvention. Never throws: blank or unrecognized input returns DayCountConvention.Unknown. |
+| <code>public static bool TryParse(string? raw, out DayCountConvention convention);</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:137](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L137) | Attempts to parse a raw convention string. Returns true when a specific convention was recognized; returns false and yields DayCountConvention.Unknown for blank or unrecognized input. |
+| <code>public static decimal Fraction(DayCountConvention convention, DateOnly start, DateOnly end);</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:227](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L227) | The day-count fraction of a year between start (inclusive) and end (exclusive) under the given convention. Returns 0 when end is not after start. Conventions that need extra context degrade explicitly: DayCountConvention.ActualActualIcma evaluates as Act/Act ISDA (use ActualActualIcmaFraction for exact ICMA) and DayCountConvention.Business252 evaluates as Actual/365 (use the calendar overload). |
+| <code>public static decimal Fraction(string? raw, DateOnly start, DateOnly end) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:251](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L251) | Parses raw and returns the day-count fraction for it. |
+| <code>public static decimal Fraction(DayCountConvention convention, DateOnly start, DateOnly end, Func&lt;DateOnly, bool&gt; isBusinessDay);</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:259](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L259) | Calendar-aware fraction: identical to Fraction(DayCountConvention, DateOnly, DateOnly) except that DayCountConvention.Business252 counts days in &#91;start, end) satisfying isBusinessDay over 252 instead of degrading to Actual/365. |
+| <code>public static bool TryFraction(DayCountConvention convention, DateOnly start, DateOnly end, DayCountPeriodContext context, out decimal fraction, [NotNullWhen(false)] out string? refusal);</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:292](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L292) | Period-aware fraction that refuses instead of degrading when a convention&#x27;s context is missing. Returns 0 when end is not after start. |
+| <code>public static decimal Fraction(DayCountConvention convention, DateOnly start, DateOnly end, DayCountPeriodContext context) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:335](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L335) | Period-aware fraction; see TryFraction(DayCountConvention, DateOnly, DateOnly, DayCountPeriodContext, out decimal, out string?). |
+| <code>public static decimal ActualActualIcmaFraction(DateOnly start, DateOnly end, DateOnly periodStart, DateOnly periodEnd, int couponsPerYear);</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:396](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L396) | Actual/Actual (ICMA) per ISDA 2006 §4.16(c) for an accrual window inside a single coupon period: actual days accrued over (couponsPerYear × actual days in the period &#91;periodStart, periodEnd)). This is the exact US Treasury / ICMA bond accrued-interest convention; the period-less dispatch cannot express it. |
+| <code>public static int Days(DayCountConvention convention, DateOnly start, DateOnly end);</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:424](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L424) | The numerator day count consistent with Fraction(DayCountConvention, DateOnly, DateOnly): the convention&#x27;s 30/360 count for the 30/360 family, leap-day-excluded actual days for DayCountConvention.Nl365, otherwise actual calendar days. |
+| <code>public static int Days(string? raw, DateOnly start, DateOnly end) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:442](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L442) | Parses raw and returns the numerator day count for it. |
+| <code>public static int Thirty360Days(DateOnly start, DateOnly end);</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:450](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L450) | 30/360 US &quot;Bond Basis&quot; day count (ISDA 2006 §4.16(f)): D1 of 31 becomes 30; D2 of 31 becomes 30 only when D1 is (already) 30 or 31. Returns 0 when end is not after start. |
+| <code>public static int ThirtyE360Days(DateOnly start, DateOnly end);</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:466](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L466) | 30E/360 &quot;Eurobond Basis&quot; day count (ISDA 2006 §4.16(g)): D1 and D2 of 31 both become 30, unconditionally. Returns 0 when end is not after start. |
+| <code>public static int ThirtyE360IsdaDays(DateOnly start, DateOnly end, bool endIsMaturityDate = false);</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:483](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L483) | 30E/360 (ISDA) day count (ISDA 2006 §4.16(h)): D1 and D2 become 30 when they are the last day of their month, February included — except that when endIsMaturityDate is true and the end date is the last day of February, D2 keeps February&#x27;s true day per the §4.16(h) termination-date carve-out. Returns 0 when end is not after start. |
+| <code>public static int Nl365Days(DateOnly start, DateOnly end);</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:500](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L500) | NL/365 day count: actual calendar days between start and end minus any 29 February falling in (start, end&#93;. Returns 0 when end is not after start. |
+| <code>public static int Business252Days(DateOnly start, DateOnly end, Func&lt;DateOnly, bool&gt; isBusinessDay);</code> | [src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs:515](../../../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs#L515) | Business/252 day count: the number of days in &#91;start, end) satisfying isBusinessDay. Returns 0 when end is not after start. |
+
 ## DayCountPeriodContext
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.DayCountPeriodContext</code>. Kind: `record`.
@@ -746,101 +878,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;OtcExposureSnapshotDto?&gt; ComputeAsync(Guid nettingSetId, DateOnly asOfDate, string actor, DateTimeOffset? knowledgeAsOf = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:258](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L258) | Values the netting set&#x27;s open contracts as of asOfDate, applies its credit support terms and appends the result as the next snapshot version for that date. Every contract is valued at one knowledge time: knowledgeAsOf, else the instant the snapshot is stamped as computed. A knowledge time earlier than that instant replays what was known then: the snapshot is recorded as evidence, and no call is issued from it. Returns null when the netting set does not exist; an empty netting set id, a default as-of date, an as-of date after the current UTC date or a blank actor is an ArgumentException, refused before anything is read. |
-
-## ISecurityCashFlowReceiptStore
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityCashFlowReceiptStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowCalculationReceipt.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowCalculationReceipt.cs#L21).
-
-Immutable content-addressed retained calculation evidence.
-
-```csharp
-public interface ISecurityCashFlowReceiptStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task RetainAsync(SecurityCashFlowCalculationReceipt receipt, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowCalculationReceipt.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowCalculationReceipt.cs#L23) |  |
-| <code>Task&lt;SecurityCashFlowCalculationReceipt?&gt; GetAsync(string contentSha256, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowCalculationReceipt.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowCalculationReceipt.cs#L24) |  |
-
-## ISecurityCorporateActionsQueryService
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityCorporateActionsQueryService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/ISecurityCorporateActionsQueryService.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityCorporateActionsQueryService.cs#L6).
-
-Reads corporate actions without requiring unrelated Security Master queries.
-
-```csharp
-public interface ISecurityCorporateActionsQueryService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;CorporateActionDto&gt;&gt; GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityCorporateActionsQueryService.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityCorporateActionsQueryService.cs#L12) | Returns the time-ordered list of corporate action events for a security. Returns an empty list when no corporate actions are recorded. |
-
-## ISecurityCoverageSymbolSource
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityCoverageSymbolSource</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/ISecurityCoverageSymbolSource.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityCoverageSymbolSource.cs#L9).
-
-Supplies the set of symbols currently active in one platform surface (streaming subscriptions, ledger positions, strategy definitions, backfill manifests, ...) so the security-master coverage sweep can find symbols that lack a validated master record. Implementations are registered in DI and unioned by the data quality service.
-
-```csharp
-public interface ISecurityCoverageSymbolSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>string SourceName { get; }</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityCoverageSymbolSource.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityCoverageSymbolSource.cs#L12) | Stable kebab-case name of the surface, e.g. &quot;configured-streaming&quot;. |
-| <code>Task&lt;IReadOnlyCollection&lt;string&gt;&gt; GetActiveSymbolsAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityCoverageSymbolSource.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityCoverageSymbolSource.cs#L14) |  |
-
-## ISecurityCurveStore
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityCurveStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:117](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L117).
-
-Persistence for stored curves and their append-only versions.
-
-```csharp
-public interface ISecurityCurveStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SecurityCurveDefinitionDto&gt; DefineAsync(DefineSecurityCurveRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:120](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L120) | Defines a curve; an existing key with identical facts returns the stored definition. Throws InvalidOperationException when the key exists with different facts. |
-| <code>Task&lt;SecurityCurveDefinitionDto?&gt; GetDefinitionAsync(Guid curveId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:122](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L122) |  |
-| <code>Task&lt;IReadOnlyList&lt;SecurityCurveDefinitionDto&gt;&gt; ListDefinitionsAsync(SecurityCurveKind? kind = null, string? currency = null, string? indexName = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:124](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L124) |  |
-| <code>Task&lt;SecurityCurveVersionDto&gt; PublishVersionAsync(PublishSecurityCurveVersionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:131](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L131) | Appends a version; identical content for the same curve and as-of returns the retained version and writes nothing. |
-| <code>Task&lt;SecurityCurveVersionDto?&gt; GetVersionAsync(Guid curveId, long version, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:133](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L133) |  |
-| <code>Task&lt;SecurityCurveVersionDto?&gt; GetVersionByIdAsync(Guid curveId, Guid curveVersionId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:136](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L136) | The version with id curveVersionId when it belongs to curveId; null otherwise. |
-| <code>Task&lt;SecurityCurveVersionDto?&gt; GetLatestVersionAsOfAsync(Guid curveId, DateOnly asOf, DateTimeOffset? knownAt = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:139](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L139) | The latest version whose as-of is on or before asOf and that was recorded by knownAt (now when null). |
-| <code>Task&lt;IReadOnlyList&lt;SecurityCurveVersionDto&gt;&gt; ListVersionsAsync(Guid curveId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:141](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L141) |  |
-
-## ISecurityForwardCurveProvider
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityForwardCurveProvider</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:120](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L120).
-
-```csharp
-public interface ISecurityForwardCurveProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SecurityForwardCurve?&gt; GetForwardCurveAsync(string indexName, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:122](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L122) |  |
-| <code>Task&lt;SecurityForwardCurve?&gt; GetForwardCurveAsync(string indexName, BondCalculationContext context, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:125](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L125) | Reads a curve eligible at both cutoffs; providers without recorded-time support refuse strict requests. |

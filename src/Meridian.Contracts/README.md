@@ -243,6 +243,9 @@ converting their labels or units; operational source names grant no calculation 
 per-item bulk outcomes and the metadata persistence seam; these commands do not resolve underlying
 financial work. `Ledger/PostedPeriodComparisonDtos.cs` carries explicit fiscal comparison ranges,
 accounting basis/policy/currency, exact decimal changes and posted-journal population identities.
+`Ledger/FiscalYearClosePlanDtos.cs` carries the read-only fiscal-year close plan: named blockers,
+per-period snapshot evidence, pre/post-closing trial balances, posted and proposed closing transfers,
+next-year openings and the plan hash (see `docs/domain/fiscal-year-close.md`).
 
 `AutomatedPostingGrantReferenceDto` binds deterministic synthetic fill posting to an operator's
 retained tenant/account/book/period/policy/mapping delegation. `AuthorizedSystem` is distinct

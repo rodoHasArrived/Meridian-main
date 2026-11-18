@@ -722,6 +722,12 @@ Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.FactorPaydown.cs:19](.
 public static partial class LedgerEndpoints
 ```
 
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.FiscalYearClose.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.FiscalYearClose.cs#L12).
+
+```csharp
+public static partial class LedgerEndpoints
+```
+
 Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.GeneralLedgerExport.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.GeneralLedgerExport.cs#L15).
 
 ```csharp

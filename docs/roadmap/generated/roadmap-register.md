@@ -2888,16 +2888,16 @@ W12-ICPAIR-001: accepted; health green; evidence complete. Accepted by the repos
 | Field | Value |
 | --- | --- |
 | Wave | W12 |
-| Status | planned |
+| Status | in_progress |
 | Health | green |
 | Priority | medium |
 | Owner lane | Accounting and Ledger |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-10-17 |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-11-18 |
 
 ### Current Summary
 
-W12-YEND-001: planned; health green; evidence planned_evidence. Activate the existing year-end projector through governed close readiness and retained acceptance requirements.
+W12-YEND-001: in_progress; health green; evidence in_progress. A read-only fiscal-year close plan derives readiness, pre/post-closing trial balances, closing transfers and next-year openings from retained hard-close snapshots. Year-end posting, the retained close receipt, late-correction successors and workstation screens remain open.
 
 ### Status References
 
@@ -2905,6 +2905,10 @@ W12-YEND-001: planned; health green; evidence planned_evidence. Activate the exi
 - PR references (not inferred acceptance): none recorded
 - [Retained implementation detail and boundaries](../snapshots/status-prose-2026-11-14/W12-YEND-001.md)
 - Evidence: [docs/product/meridian-design-document.md](../../product/meridian-design-document.md)
+- Evidence: [docs/domain/fiscal-year-close.md](../../domain/fiscal-year-close.md)
+- Evidence: [src/Meridian.Ui.Shared/Services/FiscalYearClosePlanBuilder.cs](../../../src/Meridian.Ui.Shared/Services/FiscalYearClosePlanBuilder.cs)
+- Evidence: [tests/Meridian.Tests/Ledger/FiscalYearClosePlanBuilderTests.cs](../../../tests/Meridian.Tests/Ledger/FiscalYearClosePlanBuilderTests.cs)
+- Evidence: [tests/Meridian.Tests/Storage/FiscalYearClosePlanPostgresTests.cs](../../../tests/Meridian.Tests/Storage/FiscalYearClosePlanPostgresTests.cs)
 
 
 ### Exit Criteria

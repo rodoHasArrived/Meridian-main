@@ -6,6 +6,125 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DateRangeInfo
+
+Qualified name: <code>Meridian.Contracts.Manifest.DateRangeInfo</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Manifest/DataManifest.cs:125](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L125).
+
+Date range information.
+
+```csharp
+public sealed class DateRangeInfo
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;start&quot;)] public DateTime Start { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:131](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L131) | Gets or sets the start date of the range. |
+| <code>[JsonPropertyName(&quot;end&quot;)] public DateTime End { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:137](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L137) | Gets or sets the end date of the range. |
+| <code>[JsonPropertyName(&quot;tradingDays&quot;)] public int TradingDays { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:143](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L143) | Gets or sets the number of trading days in the range. |
+
+## ManifestFileEntry
+
+Qualified name: <code>Meridian.Contracts.Manifest.ManifestFileEntry</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Manifest/DataManifest.cs:149](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L149).
+
+Individual file entry in a manifest.
+
+```csharp
+public sealed class ManifestFileEntry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;path&quot;)] public string Path { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:155](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L155) | Gets or sets the absolute file path. |
+| <code>[JsonPropertyName(&quot;relativePath&quot;)] public string RelativePath { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:161](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L161) | Gets or sets the relative file path within the archive. |
+| <code>[JsonPropertyName(&quot;symbol&quot;)] public string? Symbol { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:167](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L167) | Gets or sets the ticker symbol for this file. |
+| <code>[JsonPropertyName(&quot;eventType&quot;)] public string? EventType { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:173](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L173) | Gets or sets the event type contained in this file. |
+| <code>[JsonPropertyName(&quot;date&quot;)] public DateTime? Date { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:179](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L179) | Gets or sets the date of the data in this file. |
+| <code>[JsonPropertyName(&quot;checksumSha256&quot;)] public string ChecksumSha256 { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:185](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L185) | Gets or sets the SHA-256 checksum for file integrity. |
+| <code>[JsonPropertyName(&quot;sizeBytes&quot;)] public long SizeBytes { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:191](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L191) | Gets or sets the uncompressed file size in bytes. |
+| <code>[JsonPropertyName(&quot;compressedSizeBytes&quot;)] public long? CompressedSizeBytes { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:197](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L197) | Gets or sets the compressed file size in bytes. |
+| <code>[JsonPropertyName(&quot;eventCount&quot;)] public long EventCount { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:203](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L203) | Gets or sets the number of events in the file. |
+| <code>[JsonPropertyName(&quot;firstTimestamp&quot;)] public DateTime? FirstTimestamp { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:209](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L209) | Gets or sets the timestamp of the first event in the file. |
+| <code>[JsonPropertyName(&quot;lastTimestamp&quot;)] public DateTime? LastTimestamp { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:215](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L215) | Gets or sets the timestamp of the last event in the file. |
+| <code>[JsonPropertyName(&quot;schemaVersion&quot;)] public string? SchemaVersion { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:221](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L221) | Gets or sets the schema version used for the data. |
+| <code>[JsonPropertyName(&quot;isCompressed&quot;)] public bool IsCompressed { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:227](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L227) | Gets or sets a value indicating whether the file is compressed. |
+| <code>[JsonPropertyName(&quot;compressionType&quot;)] public string? CompressionType { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:233](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L233) | Gets or sets the compression algorithm used (e.g., &quot;gzip&quot;, &quot;lz4&quot;). |
+| <code>[JsonPropertyName(&quot;verificationStatus&quot;)] public string VerificationStatus { get; set; } = VerificationStatusValues.Pending;</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:239](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L239) | Gets or sets the verification status of the file. |
+| <code>[JsonPropertyName(&quot;lastVerifiedAt&quot;)] public DateTime? LastVerifiedAt { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:245](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L245) | Gets or sets the timestamp of the last verification. |
+
+## VerificationStatusValues
+
+Qualified name: <code>Meridian.Contracts.Manifest.VerificationStatusValues</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Manifest/DataManifest.cs:104](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L104).
+
+Verification status constants.
+
+```csharp
+public static class VerificationStatusValues
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Pending = &quot;Pending&quot;;</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:109](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L109) | Indicates verification has not yet been performed. |
+| <code>public const string Verified = &quot;Verified&quot;;</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:114](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L114) | Indicates verification completed successfully. |
+| <code>public const string Failed = &quot;Failed&quot;;</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:119](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L119) | Indicates verification failed. |
+
+## MoneyMarketFundReferenceDto
+
+Qualified name: <code>Meridian.Contracts.MoneyMarketFunds.MoneyMarketFundReferenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/MoneyMarketFunds/MoneyMarketFundReferenceDtos.cs:3](../../../../src/Meridian.Contracts/MoneyMarketFunds/MoneyMarketFundReferenceDtos.cs#L3).
+
+```csharp
+public sealed record MoneyMarketFundReferenceDto(Guid SecurityId, string DisplayName, string Currency, string? FundFamily, bool SweepEligible, int? WeightedAverageMaturityDays, bool LiquidityFeeEligible, string PrimaryIdentifier, long Version);
+```
+
+## IEventMetrics
+
+Qualified name: <code>Meridian.Contracts.Monitoring.IEventMetrics</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:8](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L8).
+
+Abstraction over event pipeline counters so that hot-path metrics can be injected rather than accessed through a static class. Default implementations should preserve zero-allocation / thread-safe behavior on the hot path.
+
+```csharp
+public interface IEventMetrics
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>long Published { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:10](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L10) |  |
+| <code>long Dropped { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:11](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L11) |  |
+| <code>long Integrity { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:12](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L12) |  |
+| <code>long Trades { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:13](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L13) |  |
+| <code>long DepthUpdates { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:14](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L14) |  |
+| <code>long Quotes { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:15](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L15) |  |
+| <code>long HistoricalBars { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:16](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L16) |  |
+| <code>double EventsPerSecond { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:17](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L17) |  |
+| <code>double DropRate { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:18](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L18) |  |
+| <code>void IncPublished();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:20](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L20) |  |
+| <code>void IncDropped();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:21](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L21) |  |
+| <code>void IncIntegrity();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:22](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L22) |  |
+| <code>void IncTrades();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:23](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L23) |  |
+| <code>void IncDepthUpdates();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:24](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L24) |  |
+| <code>void IncQuotes();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:25](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L25) |  |
+| <code>void IncHistoricalBars();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:26](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L26) |  |
+| <code>void RecordLatency(long startTimestamp);</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:27](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L27) |  |
+| <code>void Reset();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:29](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L29) |  |
+| <code>MetricsSnapshot GetSnapshot();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:30](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L30) |  |
+
 ## IMonitoringWebhookSink
 
 Qualified name: <code>Meridian.Contracts.Monitoring.IMonitoringWebhookSink</code>. Kind: `interface`.
@@ -782,130 +901,3 @@ Source: [src/Meridian.Contracts/Options/OptionVisualizationDtos.cs:70](../../../
 ```csharp
 public sealed record RetainedOptionAssessment(string AssessmentId, BrokerOptionAssessment Assessment, string BasketFingerprint, string ContentSha256, DateTimeOffset RecordedAt, string RecordedBy, string SourceVaultId, string SourceDocumentId, string SourceSha256, string AssessmentVaultId, string AssessmentDocumentId, string? CorrectsAssessmentId, bool IsSuperseded = false);
 ```
-
-## IngestionCheckpointToken
-
-Qualified name: <code>Meridian.Contracts.Pipeline.IngestionCheckpointToken</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Pipeline/IngestionJob.cs:227](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L227).
-
-Checkpoint token enabling safe resume of an interrupted job.
-
-```csharp
-public sealed class IngestionCheckpointToken
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;lastSymbol&quot;)] public string? LastSymbol { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:233](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L233) | The symbol that was last successfully processed. |
-| <code>[JsonPropertyName(&quot;lastDate&quot;)] public DateTime? LastDate { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:239](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L239) | The date cursor for the last committed data point. |
-| <code>[JsonPropertyName(&quot;lastOffset&quot;)] public long? LastOffset { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:245](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L245) | The last durable offset (e.g., sequence number or stream position). |
-| <code>[JsonPropertyName(&quot;gapFillWindowStart&quot;)] public DateTime? GapFillWindowStart { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:251](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L251) | For realtime: the gap-fill window start (how far back to re-process on resume). |
-| <code>[JsonPropertyName(&quot;capturedAt&quot;)] public DateTime CapturedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:257](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L257) | UTC timestamp when this checkpoint was captured. |
-
-## IngestionJob
-
-Qualified name: <code>Meridian.Contracts.Pipeline.IngestionJob</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Pipeline/IngestionJob.cs:18](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L18).
-
-Unified ingestion job state machine that applies to both realtime and historical flows. Implements a single contract for all ingestion workload types, ensuring consistent status tracking, checkpoint semantics, and retry behavior.
-
-```csharp
-public sealed class IngestionJob
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;jobId&quot;)] public string JobId { get; set; } = Guid.NewGuid().ToString();</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:24](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L24) | Unique identifier for this ingestion job. |
-| <code>[JsonPropertyName(&quot;workloadType&quot;)] public IngestionWorkloadType WorkloadType { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:30](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L30) | The type of ingestion workload. |
-| <code>[JsonPropertyName(&quot;state&quot;)] public IngestionJobState State { get; set; } = IngestionJobState.Draft;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:36](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L36) | Current state of the job in the state machine. |
-| <code>[JsonPropertyName(&quot;symbols&quot;)] public string[] Symbols { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:42](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L42) | Symbols targeted by this job. |
-| <code>[JsonPropertyName(&quot;provider&quot;)] public string Provider { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:48](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L48) | The data provider executing this job. |
-| <code>[JsonPropertyName(&quot;fromDate&quot;)] public DateTime? FromDate { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:54](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L54) | Optional time range start (historical workloads). |
-| <code>[JsonPropertyName(&quot;toDate&quot;)] public DateTime? ToDate { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:60](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L60) | Optional time range end (historical workloads). |
-| <code>[JsonPropertyName(&quot;checkpointToken&quot;)] public IngestionCheckpointToken? CheckpointToken { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:68](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L68) | Checkpoint token enabling resume from last durable offset. For historical: last committed bar cursor (symbol/date). For realtime: latest stream offset + gap-fill window. |
-| <code>[JsonPropertyName(&quot;retryEnvelope&quot;)] public RetryEnvelope RetryEnvelope { get; set; } = new ();</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:74](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L74) | Retry envelope tracking attempt count, schedule, and policy. |
-| <code>[JsonPropertyName(&quot;sla&quot;)] public IngestionSla? Sla { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:80](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L80) | SLA expectations for this job. |
-| <code>[JsonPropertyName(&quot;createdAt&quot;)] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:86](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L86) | UTC timestamp when the job was created. |
-| <code>[JsonPropertyName(&quot;startedAt&quot;)] public DateTime? StartedAt { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:92](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L92) | UTC timestamp when the job started running. |
-| <code>[JsonPropertyName(&quot;completedAt&quot;)] public DateTime? CompletedAt { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:98](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L98) | UTC timestamp when the job reached a terminal state. |
-| <code>[JsonPropertyName(&quot;errorMessage&quot;)] public string? ErrorMessage { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:104](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L104) | Error message if the job failed. |
-| <code>[JsonPropertyName(&quot;symbolProgress&quot;)] public List&lt;IngestionSymbolProgress&gt; SymbolProgress { get; set; } = new ();</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:110](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L110) | Per-symbol progress details. |
-| <code>[JsonIgnore] public bool IsTerminal =&gt; …;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:116](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L116) | Gets whether the job is in a terminal state. |
-| <code>[JsonIgnore] public bool IsResumable =&gt; …;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:124](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L124) | Gets whether the job can be resumed. |
-| <code>public bool TryTransition(IngestionJobState newState);</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:132](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L132) | Attempts to transition the job to a new state. Returns false if the transition is invalid. |
-| <code>public static bool IsValidTransition(IngestionJobState from, IngestionJobState to);</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:158](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L158) | Validates whether a state transition is allowed. |
-
-## IngestionJobState
-
-Qualified name: <code>Meridian.Contracts.Pipeline.IngestionJobState</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Pipeline/IngestionJob.cs:181](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L181).
-
-States for the unified ingestion job state machine.
-
-```csharp
-public enum IngestionJobState : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Draft</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:184](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L184) | Job is being configured but not yet submitted. |
-| <code>Queued</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:187](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L187) | Job is submitted and waiting to run. |
-| <code>Running</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:190](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L190) | Job is actively processing data. |
-| <code>Paused</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:193](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L193) | Job has been temporarily paused by user or system. |
-| <code>Completed</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:196](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L196) | Job has successfully completed all work. |
-| <code>Failed</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:199](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L199) | Job encountered a fatal error and stopped. |
-| <code>Cancelled</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:202](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L202) | Job was cancelled by user request. |
-
-## IngestionSla
-
-Qualified name: <code>Meridian.Contracts.Pipeline.IngestionSla</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Pipeline/IngestionJob.cs:312](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L312).
-
-SLA expectations for an ingestion job.
-
-```csharp
-public sealed class IngestionSla
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;freshnessTargetSeconds&quot;)] public int FreshnessTargetSeconds { get; set; } = 60;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:318](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L318) | Target data freshness in seconds (how stale data can be before violation). |
-| <code>[JsonPropertyName(&quot;completionDeadline&quot;)] public DateTime? CompletionDeadline { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:324](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L324) | Deadline by which the job must complete (for historical workloads). |
-| <code>[JsonPropertyName(&quot;minimumCompleteness&quot;)] public float MinimumCompleteness { get; set; } = 0.95f;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:330](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L330) | Minimum completeness ratio (0.0 to 1.0) required for the job to be considered successful. |
-
-## IngestionSymbolProgress
-
-Qualified name: <code>Meridian.Contracts.Pipeline.IngestionSymbolProgress</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Pipeline/IngestionJob.cs:336](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L336).
-
-Per-symbol progress within an ingestion job.
-
-```csharp
-public sealed class IngestionSymbolProgress
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;symbol&quot;)] public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:342](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L342) | The symbol being processed. |
-| <code>[JsonPropertyName(&quot;state&quot;)] public IngestionJobState State { get; set; } = IngestionJobState.Queued;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:348](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L348) | Current state of this symbol&#x27;s processing. |
-| <code>[JsonPropertyName(&quot;dataPointsProcessed&quot;)] public long DataPointsProcessed { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:354](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L354) | Number of data points (bars, ticks, etc.) processed. |
-| <code>[JsonPropertyName(&quot;expectedDataPoints&quot;)] public long ExpectedDataPoints { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:360](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L360) | Expected total data points (if known). |
-| <code>[JsonPropertyName(&quot;lastCommittedDate&quot;)] public DateTime? LastCommittedDate { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:366](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L366) | Last date/offset successfully committed. |
-| <code>[JsonPropertyName(&quot;errorMessage&quot;)] public string? ErrorMessage { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:372](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L372) | Error message if this symbol failed. |
-| <code>[JsonPropertyName(&quot;retryCount&quot;)] public int RetryCount { get; set; }</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:378](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L378) | Number of retries for this specific symbol. |
-| <code>[JsonIgnore] public double ProgressPercent =&gt; …;</code> | [src/Meridian.Contracts/Pipeline/IngestionJob.cs:384](../../../../src/Meridian.Contracts/Pipeline/IngestionJob.cs#L384) | Progress percentage (0-100). |

@@ -1786,6 +1786,7 @@ Meridian-main
 │   │   ├── contractual-schedule.md
 │   │   ├── corporate-action-case.md
 │   │   ├── credit-support.md
+│   │   ├── fiscal-year-close.md
 │   │   ├── fund-event.md
 │   │   ├── intercompany-agreements-and-entity-lifecycle.md
 │   │   ├── intercompany-agreements.md
@@ -6041,6 +6042,7 @@ Meridian-main
 │   │   │   ├── ControlledCloseAuthorizationDtos.cs
 │   │   │   ├── CurrencyMinorUnits.cs
 │   │   │   ├── FactorPaydownPreparationDtos.cs
+│   │   │   ├── FiscalYearClosePlanDtos.cs
 │   │   │   ├── IConsolidationBookPolicyValidator.cs
 │   │   │   ├── IntercompanyAccountDtos.cs
 │   │   │   ├── IntercompanyAccrualEvidenceDtos.cs
@@ -10605,6 +10607,7 @@ Meridian-main
 │   │   │   │   ├── WorkstationAccountingCloseApiClient.cs
 │   │   │   │   ├── WorkstationEntityConsolidationApiClient.cs
 │   │   │   │   ├── WorkstationEntityConsolidationApiClient.Lifecycle.cs
+│   │   │   │   ├── WorkstationFiscalYearCloseApiClient.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.Accruals.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.Choices.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.Confirmations.cs
@@ -10843,6 +10846,7 @@ Meridian-main
 │   │   │   ├── LedgerEndpoints.EntityControls.cs
 │   │   │   ├── LedgerEndpoints.Export.cs
 │   │   │   ├── LedgerEndpoints.FactorPaydown.cs
+│   │   │   ├── LedgerEndpoints.FiscalYearClose.cs
 │   │   │   ├── LedgerEndpoints.GeneralLedgerExport.cs
 │   │   │   ├── LedgerEndpoints.IntercompanyAccountBindings.cs
 │   │   │   ├── LedgerEndpoints.JournalAutomation.cs
@@ -11149,6 +11153,8 @@ Meridian-main
 │   │   │   ├── FinancialRecordExplorerReadService.SecurityRows.cs
 │   │   │   ├── FinancialRecordExplorerSavedViewStore.cs
 │   │   │   ├── FirstRunExperienceService.cs
+│   │   │   ├── FiscalYearClosePlanBuilder.cs
+│   │   │   ├── FiscalYearClosePlanService.cs
 │   │   │   ├── FixedIncomeAccrualCalculation.cs
 │   │   │   ├── FundAccountCloseReadinessService.cs
 │   │   │   ├── FundOperationsWorkspaceReadService.Accounts.cs
@@ -13757,6 +13763,7 @@ Meridian-main
 │   │   │   ├── DimensionSignatureBackwardCompatibilityTests.cs
 │   │   │   ├── EuropeanDistributionWaterfallTests.cs
 │   │   │   ├── FinancialReportDocumentRendererTests.cs
+│   │   │   ├── FiscalYearClosePlanBuilderTests.cs
 │   │   │   ├── FixedAssetDepreciationDraftBuilderTests.cs
 │   │   │   ├── FixedAssetDepreciationProjectorTests.cs
 │   │   │   ├── FundAdministrationEventLogTests.cs
@@ -14426,6 +14433,7 @@ Meridian-main
 │   │   │   ├── ExportValidatorTests.cs
 │   │   │   ├── FileMaintenanceServiceTests.cs
 │   │   │   ├── FilePermissionsServiceTests.cs
+│   │   │   ├── FiscalYearClosePlanPostgresTests.cs
 │   │   │   ├── FundAccountTenantColumnMigrationTests.cs
 │   │   │   ├── FundScopedWriteTenantGateTests.cs
 │   │   │   ├── FundScopeTenantAuthorityTests.cs
@@ -15202,6 +15210,7 @@ Meridian-main
 │   │   │   ├── WatchlistServiceTests.cs
 │   │   │   ├── WorkstationAccountingCloseApiClientTests.cs
 │   │   │   ├── WorkstationEntityConsolidationApiClientTests.cs
+│   │   │   ├── WorkstationFiscalYearCloseApiClientTests.cs
 │   │   │   ├── WorkstationIntercompanyAgreementApiClientTests.Accruals.cs
 │   │   │   ├── WorkstationIntercompanyAgreementApiClientTests.Choices.cs
 │   │   │   ├── WorkstationIntercompanyAgreementApiClientTests.Confirmations.cs

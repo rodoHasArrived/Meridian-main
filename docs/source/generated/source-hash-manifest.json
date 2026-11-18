@@ -30,8 +30,8 @@
       "id": "SRC-CONTRACTS",
       "path": "src/Meridian.Contracts",
       "readme": "src/Meridian.Contracts/README.md",
-      "readme_hash": "47c8720225dfe54c391e6a819d9e9b909bb4b28347574a8955df411df1e1312f",
-      "source_hash": "1e69449e88e533ac01ff53308bccce308b301b76bf3a99337138096c7d2e459d"
+      "readme_hash": "8f9c27e714d9f1f0087200c7106e17a118cc5a9436936234e9ea3078e1d200ea",
+      "source_hash": "80026786b733edf87bae393977e7a618feea7c607b1770754363b244b4fbffac"
     },
     {
       "id": "SRC-CORE",
@@ -289,22 +289,22 @@
       "id": "SRC-UI-SERVICES",
       "path": "src/Meridian.Ui.Services",
       "readme": "src/Meridian.Ui.Services/README.md",
-      "readme_hash": "e8acf705a0785765267ba981fe16c9208df9fa3df9ce0064c5147bbdcb61ee96",
-      "source_hash": "55b53df41a65d556d27fdfa6454a14cf8b1ac4dbb8b32b4b8e9238fd3b114d5f"
+      "readme_hash": "525e555ae44d7998ae57b15144d140ce8f276b622ece93f9d62c3805b9257901",
+      "source_hash": "656b29ee5e87ccde8f91915d55a2434b3a0e28801eb0c1dca7c9fa7ea2def64e"
     },
     {
       "id": "SRC-UI-SHARED",
       "path": "src/Meridian.Ui.Shared",
       "readme": "src/Meridian.Ui.Shared/README.md",
-      "readme_hash": "363d6e373b47c5175f532d58a8123d7311b74f6588f5732cd67123d2ed984311",
-      "source_hash": "c4127e271d2e1794af1f36e343be1533034be0e70d6829841e151fa49f08eeee"
+      "readme_hash": "e4e2a32c25e66853e1ecad2c2b4bb79c653e562eeecf62e894e195a5e20cf32c",
+      "source_hash": "804a7b624ce213ef478cb558d577b12ce35ec2fde40379b25ee611c030e6550d"
     },
     {
       "id": "SRC-WPF",
       "path": "src/Meridian.Wpf",
       "readme": "src/Meridian.Wpf/README.md",
-      "readme_hash": "ff95a1b326983b6db2f842f908e0357248785444af009ec2667a26e14a42189a",
-      "source_hash": "57fd7ff18692cbfdb8d5aaa05af97c193e3c823d4ca1685cfcd72ec588fa700d"
+      "readme_hash": "0562e2b17a5b82991b31021881227531a6d8bfc2fb25f1244da0af8866f4cc33",
+      "source_hash": "1688e9b4475918b0e1dcf1968cbe504df8486855c4fe23a92894c338b96b5b2c"
     }
   ],
   "schema": {

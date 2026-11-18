@@ -6,6 +6,58 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportWriterGridRowDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridRowDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1549](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1549).
+
+```csharp
+public sealed record ReportWriterGridRowDto(string RowKey, IReadOnlyDictionary<string, string> Values, IReadOnlyDictionary<string, ReportWriterCellStyleDto>? StyleHints = null);
+```
+
+## ReportWriterGridValidationCheckDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridValidationCheckDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1579](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1579).
+
+```csharp
+public sealed record ReportWriterGridValidationCheckDto(string CheckId, string Status, string Detail);
+```
+
+## ReportWriterMetricDefinitionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterMetricDefinitionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1450](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1450).
+
+```csharp
+public sealed record ReportWriterMetricDefinitionDto(string Name, string SourceField, ReportWriterAggregateFunctionDto Function = ReportWriterAggregateFunctionDto.Sum, string? Label = null);
+```
+
+## ReportWriterMetricLineageDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterMetricLineageDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1554](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1554).
+
+```csharp
+public sealed record ReportWriterMetricLineageDto(string Name, string SourceField, string Function);
+```
+
+## ResearchBriefingAlert
+
+Qualified name: <code>Meridian.Contracts.Workstation.ResearchBriefingAlert</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:95](../../../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs#L95).
+
+Actionable alert shown on the research briefing surface.
+
+```csharp
+public sealed record ResearchBriefingAlert(string AlertId, string Title, string Summary, string Tone, string? RunId = null, string? ActionLabel = null);
+```
+
 ## ResearchBriefingDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ResearchBriefingDto</code>. Kind: `record`.
@@ -541,74 +593,4 @@ The typed outcome of a record&#x27;s declared call and put schedule at the snaps
 
 ```csharp
 public sealed record SecurityMasterDeclaredExerciseOutcomeDto(SecurityMasterDeclaredExerciseStatus Status, DateOnly AsOf, long? SecurityVersion, int WindowCount, IReadOnlyList<SecurityMasterScheduleBlockerDto> Blockers, IReadOnlyList<string> Diagnostics);
-```
-
-## SecurityMasterDeclaredExerciseStatus
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterDeclaredExerciseStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:226](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L226).
-
-Whether a record&#x27;s declared call and put schedule resolved to dated rows or is blocked.
-
-```csharp
-public enum SecurityMasterDeclaredExerciseStatus
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Resolved = 0</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:229](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L229) | The declared schedule resolved; its exercise and notice-deadline rows are in the schedule book. |
-| <code>Blocked = 1</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:232](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L232) | The declared schedule could not be resolved; no call or put row is shown and the scalar call date is not used. |
-
-## SecurityMasterDownstreamImpactDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterDownstreamImpactDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:403](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L403).
-
-```csharp
-public sealed record SecurityMasterDownstreamImpactDto(string? FundProfileId, bool IsScoped, SecurityMasterImpactSeverity Severity, string Summary, string PortfolioExposureSummary, string LedgerExposureSummary, string ReconciliationExposureSummary, string ReportPackExposureSummary, int MatchedRunCount, int PortfolioExposureCount, int LedgerExposureCount, int ReconciliationExposureCount, int ReportPackExposureCount, IReadOnlyList<SecurityMasterImpactLinkDto> Links);
-```
-
-## SecurityMasterEconomicDefinitionDrillInDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterEconomicDefinitionDrillInDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:117](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L117).
-
-```csharp
-public sealed record SecurityMasterEconomicDefinitionDrillInDto(Guid SecurityId, string AssetClass, string Currency, long Version, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, string? AssetFamily, string? SubType, string? IssuerType, string? RiskCountry, string? WinningSourceSystem, string? WinningSourceRecordId, DateTimeOffset? WinningSourceAsOf, string? WinningSourceUpdatedBy, string? WinningSourceReason);
-```
-
-## SecurityMasterEditOrigin
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterEditOrigin</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L10).
-
-Source attribution for a Security Master passport field value. Operator-authored values carry a retained justification; provider-sourced values originate from ingest/provider evidence.
-
-```csharp
-public enum SecurityMasterEditOrigin
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Provider = 0</code> | [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L12) |  |
-| <code>Operator = 1</code> | [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:13](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L13) |  |
-
-## SecurityMasterEditResultDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterEditResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:124](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L124).
-
-Result of a field edit / submit transition.
-
-```csharp
-public sealed record SecurityMasterEditResultDto(Guid SecurityId, Guid RevisionId, long NewVersion, SecurityMasterRevisionStateDto State, SecurityMasterChangeHistoryItemDto ChangeEntry);
 ```

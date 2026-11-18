@@ -2,7 +2,7 @@
 
 # `ledger-contracts` data objects - page 4 of 6
 
-Objects 241-320 of 467. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 472. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -37,6 +37,48 @@ classDiagram
         +string PeriodId
         +RestatementWorkflowDto? Restatement
         +IReadOnlyList~string~ StatementIds
+    }
+    class Meridian_Contracts_Ledger_FiscalYearCloseBalanceDto["FiscalYearCloseBalanceDto"] {
+        +string AccountName
+        +string AccountType
+        +decimal Balance
+        +decimal CreditTotal
+        +decimal DebitTotal
+        +LedgerDimensionSetDto? Dimensions
+        +string? FinancialAccountId
+        +string? Symbol
+    }
+    class Meridian_Contracts_Ledger_FiscalYearCloseBlockerCodes["FiscalYearCloseBlockerCodes"] {
+    }
+    class Meridian_Contracts_Ledger_FiscalYearCloseBlockerDto["FiscalYearCloseBlockerDto"] {
+        +string Code
+        +string Message
+        +Guid? PeriodId
+    }
+    class Meridian_Contracts_Ledger_FiscalYearClosePeriodEvidenceDto["FiscalYearClosePeriodEvidenceDto"] {
+        +DateOnly EndDate
+        +string Label
+        +Guid PeriodId
+        +int PeriodNo
+        +long PeriodVersion
+        +string? SnapshotHashSha256
+        +long? SnapshotVersion
+        +DateOnly StartDate
+        +string Status
+    }
+    class Meridian_Contracts_Ledger_FiscalYearClosePlanDto["FiscalYearClosePlanDto"] {
+        +IReadOnlyList~FiscalYearCloseBlockerDto~ Blockers
+        +int FiscalYear
+        +DateOnly? FiscalYearEnd
+        +DateOnly? FiscalYearStart
+        +bool IsReady
+        +Guid LedgerBookId
+        +IReadOnlyList~FiscalYearCloseBalanceDto~ NextYearOpeningBalances
+        +decimal OpeningEquity
+        +IReadOnlyList~FiscalYearClosePeriodEvidenceDto~ Periods
+        +string? PlanHashSha256
+        +decimal PostClosingEquity
+        +IReadOnlyList~FiscalYearCloseBalanceDto~ PostClosingTrialBalance
     }
     class Meridian_Contracts_Ledger_GeneratePrivateCapitalNoticeRequest["GeneratePrivateCapitalNoticeRequest"] {
         +string? CommitmentId
@@ -463,42 +505,9 @@ classDiagram
         +DateTimeOffset RequestedAtUtc
         +string RequestedBy
     }
-    class Meridian_Contracts_Ledger_LedgerAccountRunningBalanceDto["LedgerAccountRunningBalanceDto"] {
-        +string AccountName
-        +string? AccountType
-        +decimal EndingBalance
-        +string? FinancialAccountId
-        +Guid LedgerBookId
-        +Guid PeriodId
-        +IReadOnlyList~LedgerAccountRunningBalancePointDto~ Points
-        +string? Symbol
-        +decimal TotalCredits
-        +decimal TotalDebits
-    }
-    class Meridian_Contracts_Ledger_LedgerAccountRunningBalancePointDto["LedgerAccountRunningBalancePointDto"] {
-        +decimal Balance
-        +decimal Credit
-        +decimal Debit
-        +string Description
-        +Guid EntryId
-        +long GlobalSequence
-        +Guid JournalEntryId
-        +DateTimeOffset Timestamp
-    }
-    class Meridian_Contracts_Ledger_LedgerAccountingArrangementDimensions["LedgerAccountingArrangementDimensions"] {
-    }
-    class Meridian_Contracts_Ledger_LedgerAdjustmentApprovalMetadataDto["LedgerAdjustmentApprovalMetadataDto"] {
-        +string ApprovalId
-        +DateTimeOffset ApprovedAt
-        +string ApprovedBy
-        +string? EvidenceLink
-        +string? GovernanceCaseId
-        +string? Notes
-        +string ReasonCode
-        +LedgerAdjustmentApprovalStatusDto Status
-    }
-    class Meridian_Contracts_Ledger_LedgerAdjustmentApprovalStatusDto["LedgerAdjustmentApprovalStatusDto"] {
-    }
+    Meridian_Contracts_Ledger_FiscalYearClosePlanDto --> Meridian_Contracts_Ledger_FiscalYearCloseBalanceDto
+    Meridian_Contracts_Ledger_FiscalYearClosePlanDto --> Meridian_Contracts_Ledger_FiscalYearCloseBlockerDto
+    Meridian_Contracts_Ledger_FiscalYearClosePlanDto --> Meridian_Contracts_Ledger_FiscalYearClosePeriodEvidenceDto
     Meridian_Contracts_Ledger_IntercompanyAccountBindingDto --> Meridian_Contracts_Ledger_IntercompanyAccountRoleDto
     Meridian_Contracts_Ledger_IntercompanyAccrualEvidenceDto --> Meridian_Contracts_Ledger_IntercompanyAccountRoleDto
     Meridian_Contracts_Ledger_IntercompanyAccrualEvidenceDto --> Meridian_Contracts_Ledger_IntercompanyAccrualPrincipalEvidenceDto
@@ -528,6 +537,4 @@ classDiagram
     Meridian_Contracts_Ledger_JournalEntryLifecycleActionResultDto --> Meridian_Contracts_Ledger_JournalEntryLifecycleTransitionDto
     Meridian_Contracts_Ledger_JournalEntryLifecycleTransitionDto --> Meridian_Contracts_Ledger_JournalEntryLifecycleActionDto
     Meridian_Contracts_Ledger_JournalEntryTemplateDto --> Meridian_Contracts_Ledger_JournalEntryTemplateLineDto
-    Meridian_Contracts_Ledger_LedgerAccountRunningBalanceDto --> Meridian_Contracts_Ledger_LedgerAccountRunningBalancePointDto
-    Meridian_Contracts_Ledger_LedgerAdjustmentApprovalMetadataDto --> Meridian_Contracts_Ledger_LedgerAdjustmentApprovalStatusDto
 ```

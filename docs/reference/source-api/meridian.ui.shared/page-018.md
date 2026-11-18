@@ -6,6 +6,38 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecureReportingGrantExchangeCommand
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SecureReportingGrantExchangeCommand</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:66](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L66).
+
+```csharp
+public sealed record SecureReportingGrantExchangeCommand(string BearerToken, string ArtifactId);
+```
+
+## SecureReportingGrantIssueCommand
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SecureReportingGrantIssueCommand</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:44](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L44).
+
+```csharp
+public sealed record SecureReportingGrantIssueCommand(string RunId, string? RecipientPrincipalId, IReadOnlyList<string>? ArtifactIds = null, int? LifetimeSeconds = null, int? MaxUses = null, ReportingAccessPrincipalKind? RecipientPrincipalKind = null);
+```
+
+## SecureReportingGrantIssueResult
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SecureReportingGrantIssueResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:56](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L56).
+
+The bearer is returned exactly once inside RecipientAccessUri&#x27;s fragment and is not duplicated into a second result property or persisted by the service.
+
+```csharp
+public sealed record SecureReportingGrantIssueResult(string GrantId, string RecipientAccessUri, DateTimeOffset ExpiresAtUtc, string Audience, string RunId, string PackageId, IReadOnlyList<string> ArtifactIds, ReportingAccessPrincipalKind AudienceKind = ReportingAccessPrincipalKind.User);
+```
+
 ## SecureReportingTransportCapability
 
 Qualified name: <code>Meridian.Ui.Shared.Services.SecureReportingTransportCapability</code>. Kind: `record`.
@@ -890,50 +922,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;IntercompanyAgreementEvidenceDto&gt; ResolveAsync(string tenantId, string actor, Guid entityId, IntercompanyAgreementEvidenceDto evidence, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/EntityLifecycleExternalReviewEvidenceAuthority.cs:14](../../../../src/Meridian.Ui.Shared/Services/EntityLifecycleExternalReviewEvidenceAuthority.cs#L14) |  |
-
-## WorkstationIntercompanyAgreementEvidenceAuthority
-
-Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationIntercompanyAgreementEvidenceAuthority</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs:78](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs#L78).
-
-Resolves accepted, scoped Evidence Vault documents and verifies their retained bytes.
-
-```csharp
-public sealed class WorkstationIntercompanyAgreementEvidenceAuthority(IHttpContextAccessor accessor, IEvidenceArtifactStore evidenceStore) : IIntercompanyAgreementEvidenceAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyList&lt;IntercompanyAgreementEvidenceDto&gt;&gt; ResolveAsync(IntercompanyAgreementCallContext context, Guid agreementId, Guid proposalId, IReadOnlyList&lt;IntercompanyAgreementEvidenceDto&gt; evidence, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs:81](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs#L81) |  |
-
-## WorkstationPersonalTableViewRecord
-
-Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationPersonalTableViewRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs:219](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs#L219).
-
-```csharp
-public sealed record WorkstationPersonalTableViewRecord(string TenantId, string OperatorId, string TableId, WorkstationTableViewDto View);
-```
-
-## WorkstationServiceCollectionExtensions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationServiceCollectionExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:87](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L87).
-
-Registers the shared web-workstation service graph consumed by endpoint and host surfaces.
-
-```csharp
-public static class WorkstationServiceCollectionExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:89](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L89) |  |
-| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1565](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1565) |  |

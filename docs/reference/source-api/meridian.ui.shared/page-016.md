@@ -6,6 +6,47 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingAuthoritativeAsOfCertification
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingAuthoritativeAsOfCertification</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:48](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L48).
+
+Exact output returned by the server-side renderer/artifact producer. Artifact ids must be the same ids declared by the completed orchestration manifest; the coordinator rejects partial or augmented output sets before retaining any bytes.
+
+```csharp
+public sealed record ReportingAuthoritativeAsOfCertification(DateOnly AsOfDate, ReportingOperationalScope Scope, ReportingAccessScope Access, ReportingCertifiedSnapshotScope Snapshot, string SourceCheckpointId, string SourceCheckpointHash, bool IsAuthoritative, ImmutableArray<string> EvidenceIds);
+```
+
+## ReportingAuthoritativeSourceCapture
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingAuthoritativeSourceCapture</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:15](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L15).
+
+```csharp
+public sealed record ReportingAuthoritativeSourceCapture(ReportingAuthoritativeSourceCheckpoint Checkpoint, ImmutableArray<IReadOnlyDictionary<string, string>> DatasetRows, ReportingCertifiedLedgerPresentationInput? CertifiedLedgerPresentation = null);
+```
+
+## ReportingAuthoritativeSourceCaptureIntent
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingAuthoritativeSourceCaptureIntent</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:24](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L24).
+
+Template identity supplied by the governed certification/revalidation path when an authoritative source capture may require template-specific presentation evidence.
+
+```csharp
+public sealed record ReportingAuthoritativeSourceCaptureIntent(string TemplateId)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool RequiresCertifiedLedgerPresentation { get; init; }</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:27](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L27) |  |
+| <code>public static ReportingAuthoritativeSourceCaptureIntent FromTemplate(ReportingTemplateMetadata template);</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:29](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L29) |  |
+
 ## ReportingAuthoritativeSourceUnavailableException
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingAuthoritativeSourceUnavailableException</code>. Kind: `class`.
@@ -811,50 +852,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public IReportingSchedulePeriodResolver? PeriodResolver { get; init; }</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleService.OperationalAuthority.cs:20](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleService.OperationalAuthority.cs#L20) | Ledger authority for the accounting period a period-close schedule reports on. When it is absent, or cannot name a unique period, the retained selector is left untouched. |
 | <code>public ReportingScheduleRecordDto Delete(string scheduleId, ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleService.OperationalAuthority.cs:607](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleService.OperationalAuthority.cs#L607) | Permanently removes a schedule. Runs it already produced are retained by the run store; only the recurring definition is deleted. A schedule that is executing on this host is refused so an in-flight run cannot resurrect or lose its advance. |
-
-## ReportingScheduleStoreOptions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingScheduleStoreOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs:19](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs#L19).
-
-```csharp
-public sealed record ReportingScheduleStoreOptions(string SnapshotPath);
-```
-
-## ReportingScheduleWorkerOptions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingScheduleWorkerOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingScheduleHostedService.cs:7](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleHostedService.cs#L7).
-
-```csharp
-public sealed record ReportingScheduleWorkerOptions(TimeSpan PollInterval)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ReportingScheduleWorkerOptions Default { get; } = new (TimeSpan.FromMinutes(1));</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleHostedService.cs:9](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleHostedService.cs#L9) |  |
-
-## ReportingScheduleWorkerReadinessState
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingScheduleWorkerReadinessState</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:63](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L63).
-
-Process-local liveness receipt for the server-owned reporting schedule worker. Readiness is earned only by a successful cycle and is cleared by a cycle-level failure or worker stop.
-
-```csharp
-public sealed class ReportingScheduleWorkerReadinessState
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsReady =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:69](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L69) |  |
-| <code>public int ConsecutiveFailures =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:71](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L71) |  |
-| <code>public DateTimeOffset? LastSuccessfulCycleUtc =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:73](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L73) |  |
-| <code>public bool IsHealthy(DateTimeOffset nowUtc, TimeSpan maximumHeartbeatAge) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:76](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L76) |  |
