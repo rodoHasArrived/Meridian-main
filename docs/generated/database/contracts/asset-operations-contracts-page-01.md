@@ -2,7 +2,7 @@
 
 # `asset-operations-contracts` data objects - page 1 of 2
 
-Objects 1-80 of 137. References crossing pages remain available in the dependency manifest.
+Objects 1-80 of 138. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram

@@ -6,6 +6,115 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataQualitySummary
+
+Qualified name: <code>Meridian.Ui.Services.Services.DataQualitySummary</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:12](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L12).
+
+Summarizes file health, alerts, and per-symbol quality at the last check.
+
+```csharp
+public sealed class DataQualitySummary
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public double OverallScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:14](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L14) |  |
+| <code>public int TotalFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:15](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L15) |  |
+| <code>public int HealthyFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:16](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L16) |  |
+| <code>public int WarningFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:17](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L17) |  |
+| <code>public int CriticalFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:18](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L18) |  |
+| <code>public int ActiveAlerts { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:19](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L19) |  |
+| <code>public int UnacknowledgedAlerts { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:20](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L20) |  |
+| <code>public DateTime LastChecked { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:21](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L21) |  |
+| <code>public List&lt;SymbolQualitySummary&gt; SymbolSummaries { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:22](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L22) |  |
+
+## DesktopOperatorPreferenceMapping
+
+Qualified name: <code>Meridian.Ui.Services.Services.DesktopOperatorPreferenceMapping</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:18](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L18).
+
+Maps the shared operator preference vocabulary (OperatorPreferenceVocabulary) to the desktop shell&#x27;s own types. The browser has three densities and the desktop shell two, so default and spacious both show as ShellDensityMode.Standard, and a desktop save never narrows an operator&#x27;s browser spacious to default.
+
+```csharp
+public static class DesktopOperatorPreferenceMapping
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static AppTheme? ToAppTheme(string? appearance) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:21](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L21) | The desktop theme for a host appearance, or null for a value the desktop does not know. |
+| <code>public static string ToAppearance(AppTheme theme) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:29](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L29) |  |
+| <code>public static ShellDensityMode? ToShellDensity(string? density) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:37](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L37) | The desktop density for a host density, or null for a value the desktop does not know. |
+| <code>public static string ToHostDensity(ShellDensityMode density, string? currentHostDensity) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:48](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L48) | The host density to save for a desktop density. ShellDensityMode.Standard keeps a stored default or spacious, because both already show as Standard on the desktop. |
+| <code>public static IReadOnlyDictionary&lt;string, OperatorDesktopShortcutDto&gt; ToHostShortcuts(IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; overrides);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:57](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L57) | The host form of the desktop&#x27;s shortcut overrides, sorted by action id. |
+| <code>public static IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; ToDesktopShortcuts(IReadOnlyDictionary&lt;string, OperatorDesktopShortcutDto&gt; host);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:74](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L74) | The desktop form of the host&#x27;s desktop shortcut overrides. |
+| <code>public static bool SameShortcuts(IReadOnlyDictionary&lt;string, OperatorDesktopShortcutDto&gt;? left, IReadOnlyDictionary&lt;string, OperatorDesktopShortcutDto&gt;? right);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:91](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L91) | True when two desktop shortcut override sets hold the same entries. |
+| <code>public static NotificationSettings ToNotificationSettings(OperatorNotificationPreferencesDto host, NotificationSettings current);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:109](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L109) | The desktop notification settings for a host notification set: each value the host holds, otherwise the default (pop-ups on, every type on, quiet hours off from 22:00 to 07:00). A quiet-hours time that does not read as HH:mm keeps its default. The sound choice is desktop-only and kept. |
+| <code>public static OperatorNotificationPreferencesDto ToHostNotifications(NotificationSettings settings);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:129](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L129) | The host form of the desktop notification settings, with every value written out. |
+| <code>public static bool TryResolveTimeZone(string? ianaZone, out TimeZoneInfo zone);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:148](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L148) | Resolves an IANA display time zone with this machine&#x27;s time zone data. False for a missing or unknown zone, in which case the desktop keeps showing times as it does today. |
+
+## DesktopOperatorPreferenceSync
+
+Qualified name: <code>Meridian.Ui.Services.Services.DesktopOperatorPreferenceSync</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:267](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L267).
+
+Keeps the desktop shell&#x27;s theme, density and keyboard shortcut overrides in step with the operator&#x27;s host preferences, the same set the browser workstation syncs (OperatorPreferencesDto). On start, the values the host holds are applied. Theme and density are not saved back: the desktop does not persist its theme, so its startup theme is a default, not an operator choice. Desktop shortcut overrides (OperatorPreferenceValuesDto.DesktopKeyBindings) held by the host replace this desktop&#x27;s, including an empty set (every default). When the host has none yet, this desktop&#x27;s own overrides are saved up, so the first desktop to sync seeds them. When the operator changes the theme or density here, the latest host set is re-read and saved with only the appearance and density replaced; a shortcut change likewise replaces only the desktop shortcut overrides. Browser-only values (time zone, page descriptions, browser shortcut overrides, a spacious density) are kept. Notification choices and quiet hours (OperatorPreferenceValuesDto.Notifications) held by the host replace this desktop&#x27;s at start; a desktop change saves only that set. When the host cannot be read at start (no session, an older host, offline), the desktop stays local for the run and saves nothing. A failed save keeps the local change. The display time zone is applied to Meridian.Ui.Services.DisplayTimeZone, which desktop timestamps are formatted in; it is read at start and again whenever the desktop saves.
+
+```csharp
+public sealed class DesktopOperatorPreferenceSync : IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DesktopOperatorPreferenceSync(IOperatorPreferencesApi api, IDesktopPreferenceSurface surface, Action&lt;TimeZoneInfo?&gt;? applyDisplayTimeZone = null);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:280](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L280) |  |
+| <code>public TimeZoneInfo? DisplayTimeZone { get; private set; }</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:291](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L291) | The operator&#x27;s display time zone from the host, when it resolves on this machine (else null, meaning UTC). |
+| <code>public bool IsSyncing =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:294](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L294) | True once the host was read and local changes are being saved. |
+| <code>public async Task StartAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:297](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L297) | Reads the host set, applies it, and starts saving operator changes. Safe to call once. |
+| <code>public Task SaveLocalChangeAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:410](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L410) | Saves the current desktop theme and density into the operator&#x27;s host set, keeping every other stored value. Exposed for tests; the sync calls it after each operator change. |
+| <code>public Task SaveShortcutOverridesAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:423](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L423) | Saves this desktop&#x27;s shortcut overrides into the operator&#x27;s host set, keeping every other stored value. Exposed for tests; the sync calls it after each shortcut change. |
+| <code>public Task SaveNotificationsAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:435](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L435) | Saves this desktop&#x27;s notification settings into the operator&#x27;s host set, keeping every other stored value. Exposed for tests; the sync calls it after each notification change. |
+| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs:492](../../../../src/Meridian.Ui.Services/Services/DesktopOperatorPreferences.cs#L492) |  |
+
+## DesktopShellPreferences
+
+Qualified name: <code>Meridian.Ui.Services.Services.DesktopShellPreferences</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:29](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L29).
+
+Persisted desktop shell preferences consumed by the WPF workstation shell.
+
+```csharp
+public sealed record DesktopShellPreferences(ShellDensityMode ShellDensityMode)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static DesktopShellPreferences Default { get; } = new (ShellDensityMode.Standard);</code> | [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:35](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L35) |  |
+| <code>public IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; ShortcutOverrides { get; init; } = NoShortcutOverrides;</code> | [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:40](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L40) | The operator&#x27;s shortcut overrides; empty when every shortcut uses its default binding. |
+
+## DesktopShortcutOverride
+
+Qualified name: <code>Meridian.Ui.Services.Services.DesktopShortcutOverride</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:21](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L21).
+
+A persisted operator change to one default desktop keyboard shortcut, keyed by action id. Keys and modifiers are stored as their WPF enum names (for example F10 and Control, Shift) so this contract stays free of WPF types; a null member means &quot;keep the default&quot; for that part of the binding.
+
+```csharp
+public sealed record DesktopShortcutOverride(string? Key = null, string? Modifiers = null, bool? IsEnabled = null);
+```
+
 ## ErrorDetailsModel
 
 Qualified name: <code>Meridian.Ui.Services.Services.ErrorDetailsModel</code>. Kind: `class`.
@@ -1013,129 +1122,3 @@ Source: [src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionSe
 ```csharp
 public sealed record ReportingTemplateProjection(string TemplateId, string Family, string Name, string Version, IReadOnlyList<string> Sections);
 ```
-
-## SettingsConfigurationService
-
-Qualified name: <code>Meridian.Ui.Services.Services.SettingsConfigurationService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:20](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L20).
-
-Provides settings configuration capabilities including storage path preview generation, provider catalog data, and configuration profile management.
-
-```csharp
-public sealed class SettingsConfigurationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static SettingsConfigurationService Instance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:31](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L31) | Gets the singleton instance. |
-| <code>public event EventHandler&lt;DesktopShellPreferences&gt;? DesktopShellPreferencesChanged;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:33](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L33) |  |
-| <code>public string GenerateStoragePreview(string rootPath, string namingConvention, string datePartition, string compression, IReadOnlyList&lt;string&gt; symbols);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:50](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L50) | Generates a file tree preview showing what the storage directory structure would look like based on the given naming convention and symbols. |
-| <code>public IReadOnlyList&lt;ProviderCatalogEntry&gt; GetProviderCatalog();</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:87](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L87) | Gets metadata about all available data providers for display in a catalog. |
-| <code>public IReadOnlyList&lt;ProviderCredentialStatus&gt; GetProviderCredentialStatuses();</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:97](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L97) | Gets legacy environment diagnostics. Operator workflows use the asynchronous server status method. |
-| <code>public async Task&lt;ProviderCredentialStateDto&gt; SaveProviderCredentialsAsync(string providerId, IReadOnlyDictionary&lt;string, string?&gt; fields, string? connectionId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:147](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L147) | Saves credential fields through the authenticated service and returns the persisted state. ProviderCredentialStateDto.Partial means the fields were saved but required fields are still missing; callers present that as incomplete rather than as a failed save. |
-| <code>public async Task RemoveProviderCredentialsAsync(string providerId, string? connectionId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:164](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L164) | Removes credentials through the authenticated service. |
-| <code>public async Task&lt;bool&gt; VerifyProviderCredentialsAsync(string providerId, string? connectionId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:177](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L177) | Requests verification from the authenticated credential service. |
-| <code>public async Task&lt;IReadOnlyList&lt;ProviderConnectionDto&gt;&gt; GetOwnedCredentialConnectionsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:207](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L207) | Lists uniquely identified connections with complete retained credential ownership. |
-| <code>public async Task&lt;IReadOnlyList&lt;ProviderCredentialStatus&gt;&gt; GetProviderCredentialStatusesAsync(CancellationToken ct = default, string? connectionId = null, bool providerWideOnly = false);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:225](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L225) | Reads server-owned credential status without treating local environment values as authority. By default provider rows include the authenticated tenant&#x27;s own connection credentials; providerWideOnly reads only the provider-wide records, for flows that write them. |
-| <code>public DesktopShellPreferences GetDesktopShellPreferences();</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:302](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L302) | Gets the persisted desktop shell preferences, migrating any legacy compact-mode payloads on first load. |
-| <code>public ShellDensityMode GetShellDensityMode() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:314](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L314) | Gets the current workstation shell density mode. |
-| <code>public void SetShellDensityMode(ShellDensityMode densityMode);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:319](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L319) | Persists a new workstation shell density mode and raises a change event for live shell surfaces. |
-| <code>public IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; GetShortcutOverrides() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:347](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L347) | Gets the operator&#x27;s persisted desktop keyboard shortcut overrides, keyed by action id. |
-| <code>public void SetShortcutOverrides(IReadOnlyDictionary&lt;string, DesktopShortcutOverride&gt; overrides);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:354](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L354) | Replaces the persisted desktop keyboard shortcut overrides. An empty set restores every shortcut to its default binding. Density and other shell preferences are preserved. |
-| <code>public IReadOnlyList&lt;ConfigProfile&gt; GetProfiles() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:458](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L458) | Gets all configuration profiles (built-in + custom). |
-| <code>public ConfigProfile CreateProfile(string name, string description);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:461](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L461) | Creates a new custom configuration profile. |
-| <code>public bool RemoveProfile(string profileId);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:470](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L470) | Removes a custom profile (built-in profiles cannot be removed). |
-| <code>public string EstimateDailyStorageSize(int symbolCount, bool trades, bool quotes, bool depth);</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:481](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L481) | Estimates daily storage size based on symbol count and data types. |
-
-## ShellDensityMode
-
-Qualified name: <code>Meridian.Ui.Services.Services.ShellDensityMode</code>. Kind: `enum`.
-
-Source: [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:9](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L9).
-
-Shared shell density modes for the desktop workstation chrome.
-
-```csharp
-public enum ShellDensityMode : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Standard = 0</code> | [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:11](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L11) |  |
-| <code>Compact = 1</code> | [src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs:12](../../../../src/Meridian.Ui.Services/Services/DesktopShellPreferences.cs#L12) |  |
-
-## SimpleStatus
-
-Qualified name: <code>Meridian.Ui.Services.Services.SimpleStatus</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:14](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L14).
-
-Simplified status for display in the desktop UI. Includes provenance and staleness tracking (P0: explicit staleness + source provenance).
-
-```csharp
-public sealed class SimpleStatus
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public long Published { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:16](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L16) |  |
-| <code>public long Dropped { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:17](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L17) |  |
-| <code>public long Integrity { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:18](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L18) |  |
-| <code>public long Historical { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:19](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L19) |  |
-| <code>public StatusProviderInfo? Provider { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:20](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L20) |  |
-| <code>public DateTime? RetrievedAtUtc { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:25](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L25) | UTC timestamp when this status snapshot was retrieved from the backend. |
-| <code>public string? SourceProvider { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:31](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L31) | Name of the data source provider that produced these metrics. Null if sourced from fixture/offline data. |
-| <code>public bool IsStale { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:36](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L36) | Whether this status data is considered stale (backend reported stale or too old). |
-| <code>public double AgeSeconds { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:41](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L41) | Age of the data in seconds since last backend update. |
-| <code>public string DataProvenance { get; set; } = &quot;unknown&quot;;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:47](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L47) | Data provenance: &quot;live&quot;, &quot;cached&quot;, &quot;fixture&quot;, or &quot;offline&quot;. Indicates the origin of the data being displayed. |
-
-## SourceRanking
-
-Qualified name: <code>Meridian.Ui.Services.Services.SourceRanking</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:133](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L133).
-
-Ranks a source using its quality score, latency, and completeness.
-
-```csharp
-public sealed class SourceRanking
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Source { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:135](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L135) |  |
-| <code>public string Provider { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:136](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L136) |  |
-| <code>public double QualityScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:137](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L137) |  |
-| <code>public double Latency { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:138](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L138) |  |
-| <code>public double Completeness { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:139](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L139) |  |
-| <code>public int Rank { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:140](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L140) |  |
-
-## StatusChangedEventArgs
-
-Qualified name: <code>Meridian.Ui.Services.Services.StatusChangedEventArgs</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:89](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L89).
-
-Event arguments for status change events.
-
-```csharp
-public sealed class StatusChangedEventArgs : EventArgs
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string PreviousStatus { get; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:91](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L91) |  |
-| <code>public string NewStatus { get; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:92](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L92) |  |
-| <code>public DateTime Timestamp { get; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:93](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L93) |  |
-| <code>public StatusChangedEventArgs(string previousStatus, string newStatus);</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:95](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L95) |  |

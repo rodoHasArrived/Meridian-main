@@ -165,26 +165,8 @@ export function WorkspaceNav({
                 aria-label={`${item.label} pages`}
                 aria-hidden={!expanded}
               >
-                {expanded ? (
-                  item.subItemGroups.length > 0
-                    ? item.subItemGroups.map((group) => {
-                      const groupLabelId = `${subMenuId}-${group.id}-label`;
-                      return (
-                        <div
-                          key={group.id}
-                          className="operator-nav-subgroup"
-                          role="group"
-                          aria-labelledby={groupLabelId}
-                        >
-                          <div id={groupLabelId} className="operator-nav-subgroup-label" title={group.label}>
-                            {group.label}
-                          </div>
-                          {group.items.map(renderSubItem)}
-                        </div>
-                      );
-                    })
-                    : item.subItems.map(renderSubItem)
-                ) : null}
+                {/* Accounting's rail rows are its groups; each page carries its group's own menu. */}
+                {expanded ? item.railSubItems.map(renderSubItem) : null}
               </div>
             )}
           </React.Fragment>

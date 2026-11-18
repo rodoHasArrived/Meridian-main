@@ -792,6 +792,8 @@ W8-WPF-PARITY-001: in_progress; health on_track; evidence in_progress. WPF remai
 - Evidence: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs](../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs)
 - Evidence: [tests/Meridian.Ui.Tests/Services/IntercompanyCounterpartQueueWorkspaceTests.cs](../../../tests/Meridian.Ui.Tests/Services/IntercompanyCounterpartQueueWorkspaceTests.cs)
 - Evidence: [tests/Meridian.Wpf.Tests/Views/IntercompanyNativeControlSmokeTests.CounterpartProposals.cs](../../../tests/Meridian.Wpf.Tests/Views/IntercompanyNativeControlSmokeTests.CounterpartProposals.cs)
+- Evidence: [src/Meridian.Ui.Shared/Services/WorkstationKpiDefinitions.cs](../../../src/Meridian.Ui.Shared/Services/WorkstationKpiDefinitions.cs)
+- Evidence: [tests/Meridian.Tests/Ui/WorkstationKpiDefinitionsTests.cs](../../../tests/Meridian.Tests/Ui/WorkstationKpiDefinitionsTests.cs)
 
 
 ### Exit Criteria

@@ -18,6 +18,8 @@ import { cn } from "@/lib/utils";
 import type { OperationsApproval, OperationsContinuityWorkflow, OperationsContinuityWorkflowSummary, OperationsTimelineEntry } from "@/types";
 import { approvalBlockedReason, approvalEvidenceSummary, approvalNextAction, approvalSignerLabel, approvalWorkflowStatusLabel, buildApprovalActionDisabledReason, formatApprovalDate, formatApprovalError, missingApprovalEvidenceLabel, resolveApprovalReportPackId, splitApprovalWords } from "@/screens/accounting-screen.approvals";
 import { AccountingValue } from "@/screens/accounting-screen.accounting-value";
+import { SinceLastVisitBadge } from "@/components/meridian/since-last-visit-badge";
+import { APPROVALS_VISIT_SURFACE, classifySinceLastVisit, describeSinceLastVisit, summarizeSinceLastVisit, useSinceLastVisit } from "@/lib/since-last-visit";
 
 export function AccountingApprovalsWorkstream() {
   const { search } = useLocation();
@@ -33,6 +35,11 @@ export function AccountingApprovalsWorkstream() {
   const [action, setAction] = useState<"approve" | "reject" | "request-changes" | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const requestedApprovalId = useMemo(() => new URLSearchParams(search).get("approvalId"), [search]);
+  // Changed since you last looked (UX Phase E). Workflow summaries carry only an update time, so a
+  // workflow that moved after the previous visit reads "Updated"; none reads "New".
+  const approvalsVisit = useSinceLastVisit(APPROVALS_VISIT_SURFACE);
+  const approvalsVisitTimes = (workflow: OperationsContinuityWorkflowSummary) => ({ lastUpdatedAt: workflow.updatedAtUtc });
+  const approvalsVisitLine = describeSinceLastVisit(approvalsVisit, summarizeSinceLastVisit(workflows.map(approvalsVisitTimes), approvalsVisit.baseline), "Workflows");
 
   const refreshWorkflows = async () => {
     setLoading(true);
@@ -189,6 +196,7 @@ export function AccountingApprovalsWorkstream() {
           </CardHeader>
           <CardContent className="space-y-2 px-3 py-1">
             <ApprovalStatusMessage loading={loading} error={error} empty={!loading && workflows.length === 0} />
+            {approvalsVisitLine && workflows.length > 0 ? <p className="text-xs text-muted-foreground" data-testid="approvals-since-last-visit">{approvalsVisitLine}</p> : null}
             {workflows.length > 0 ? (
               <div className="overflow-hidden rounded-md border border-border/70" role="region" aria-label="Accounting approval queue">
                 <TableWorkbench<OperationsContinuityWorkflowSummary>
@@ -202,7 +210,7 @@ export function AccountingApprovalsWorkstream() {
                   getRowAriaControls={() => "accounting-approval-detail"} getRowAriaExpanded={(workflow) => workflow.workflowId === selectedWorkflowId}
                   getRowAriaLabel={(workflow) => `${workflow.periodId}, ${approvalWorkflowStatusLabel(workflow, detail?.workflowId === workflow.workflowId ? detail : null)}`}
                   columns={[
-                    { id: "period", label: "Period", render: (workflow) => workflow.periodId, exportValue: (workflow) => workflow.periodId },
+                    { id: "period", label: "Period", render: (workflow) => { const mark = classifySinceLastVisit(approvalsVisitTimes(workflow), approvalsVisit.baseline); return <span className="inline-flex items-center gap-2">{workflow.periodId}{mark ? <SinceLastVisitBadge mark={mark} /> : null}</span>; }, exportValue: (workflow) => workflow.periodId },
                     { id: "status", label: "Status", render: (workflow) => <DesignSystemStatus status={workflow.status}>{approvalWorkflowStatusLabel(workflow, detail?.workflowId === workflow.workflowId ? detail : null)}</DesignSystemStatus>, exportValue: (workflow) => workflow.status },
                     { id: "signer", label: "Signer", render: (workflow) => approvalSignerLabel(detail?.workflowId === workflow.workflowId ? detail.approvals : []), exportValue: (workflow) => detail?.workflowId === workflow.workflowId ? approvalSignerLabel(detail.approvals) : null },
                     { id: "evidence", label: "Evidence", render: (workflow) => approvalEvidenceSummary(detail?.workflowId === workflow.workflowId ? detail : null), exportValue: (workflow) => detail?.workflowId === workflow.workflowId ? approvalEvidenceSummary(detail) : null },

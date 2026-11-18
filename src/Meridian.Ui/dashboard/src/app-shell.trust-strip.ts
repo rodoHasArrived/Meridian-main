@@ -334,3 +334,26 @@ function buildProviderTrustStripItem({
 function formatCount(count: number, singular: string, plural = `${singular}s`): string {
   return pluralizeCount(count, singular, { plural });
 }
+
+/** The workstation-wide freshness fact the status bar starts from; see `resolveShellFreshness`. */
+export interface AppShellFreshness {
+  tone: "ready" | "review" | "blocked" | "unknown";
+  value: string | null;
+}
+
+const SHELL_FRESHNESS_ITEMS = ["source", "providers"] as const;
+const SHELL_TONE_RANK: Record<AppShellTrustStripTone, number> = { pending: 0, ready: 1, review: 2, blocked: 3 };
+
+/**
+ * The freshness of the sources every screen depends on, judged by the same items the masthead
+ * pill shows: data provenance and provider health (which already caps a provider whose evidence
+ * is stale). The status bar starts from this and a page can only make it worse, so the footer
+ * cannot say "up to date" while the pill above it says a source needs review.
+ */
+export function resolveShellFreshness(state: Pick<AppShellTrustStripState, "items">): AppShellFreshness {
+  const items = state.items.filter((item) => (SHELL_FRESHNESS_ITEMS as readonly string[]).includes(item.id));
+  if (items.length === 0) return { tone: "unknown", value: null };
+  const worst = items.reduce((current, item) => SHELL_TONE_RANK[item.tone] > SHELL_TONE_RANK[current.tone] ? item : current);
+  if (worst.tone === "pending") return { tone: "unknown", value: null };
+  return { tone: worst.tone, value: worst.tone === "ready" ? null : `${worst.label} ${worst.value}` };
+}

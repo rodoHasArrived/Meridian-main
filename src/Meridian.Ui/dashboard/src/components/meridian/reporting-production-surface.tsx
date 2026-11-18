@@ -5,12 +5,19 @@ import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian
 import { cn } from "@/lib/utils";
 import type { ReportingProductionModel, ReportingProductionRow } from "@/lib/reporting-production";
 import type { ReportingPeriodModel } from "@/lib/reporting-period-object";
+import { SinceLastVisitBadge } from "@/components/meridian/since-last-visit-badge";
+import {
+  classifySinceLastVisit, describeSinceLastVisit, REPORTING_TRIAGE_VISIT_SURFACE, summarizeSinceLastVisit, useSinceLastVisit,
+  type SurfaceVisitServices
+} from "@/lib/since-last-visit";
 
 export interface ReportingProductionSurfaceProps {
   model: ReportingProductionModel;
   /** Rendered as the period governance strip when the period is known. */
   period?: ReportingPeriodModel | null;
   className?: string;
+  /** Test seam for the per-viewer visit record behind "new since you last looked". */
+  visitServices?: Partial<SurfaceVisitServices>;
 }
 
 /**
@@ -20,7 +27,11 @@ export interface ReportingProductionSurfaceProps {
  * The production register is the dominant plane; the lane index, period strip and
  * attention rail are supporting context rather than competing containers.
  */
-export function ReportingProductionSurface({ model, period, className }: ReportingProductionSurfaceProps) {
+export function ReportingProductionSurface({ model, period, className, visitServices }: ReportingProductionSurfaceProps) {
+  // Published since you last looked (UX Phase E): a report run's only time is its publication.
+  const triageVisit = useSinceLastVisit(REPORTING_TRIAGE_VISIT_SURFACE, visitServices);
+  const visitTimes = (row: ReportingProductionRow) => ({ detectedAt: row.publishedAtUtc });
+  const visitLine = describeSinceLastVisit(triageVisit, summarizeSinceLastVisit(model.register.map(visitTimes), triageVisit.baseline), "Reports");
   // The owner column is only worth its width once at least one report has a known
   // owner; otherwise it renders a column of "Unassigned" and crowds out the state.
   const hasKnownOwner = model.register.some((row) => row.owner !== "Unassigned");
@@ -37,6 +48,7 @@ export function ReportingProductionSurface({ model, period, className }: Reporti
           >
             {row.reportName}
           </a>
+          {(() => { const mark = classifySinceLastVisit(visitTimes(row), triageVisit.baseline); return mark ? <span className="ml-2 align-middle"><SinceLastVisitBadge mark={mark} /></span> : null; })()}
           <div className="text-xs text-muted-foreground">
             {row.reportClass} · {row.asOfLabel}
           </div>
@@ -89,6 +101,7 @@ export function ReportingProductionSurface({ model, period, className }: Reporti
             Plan, prepare, review, approve, publish and preserve the reports this period owes. Blocked and past-due
             reports are ranked first.
           </p>
+          {visitLine ? <p className="text-xs text-muted-foreground" data-testid="reporting-since-last-visit">{visitLine}</p> : null}
         </div>
         <div className="flex flex-wrap items-start gap-2">
           <Badge variant={model.blockedCount > 0 ? "danger" : model.reviewCount > 0 ? "warning" : "success"}>

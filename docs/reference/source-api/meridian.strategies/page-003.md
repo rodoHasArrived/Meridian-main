@@ -696,6 +696,19 @@ public sealed record StrategyRunReadScope(string? TenantId, string? CompanyId);
 
 Qualified name: <code>Meridian.Strategies.Services.StrategyRunReadService</code>. Kind: `class`.
 
+Source: [src/Meridian.Strategies/Services/StrategyRunReadService.AttributionComparison.cs:8](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.AttributionComparison.cs#L8).
+
+```csharp
+public sealed partial class StrategyRunReadService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;PeriodComparisonDto?&gt; GetAttributionPeriodComparisonAsync(string runId, DateOnly? periodEnd, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.AttributionComparison.cs:17](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.AttributionComparison.cs#L17) | Per-symbol P&amp;L for one calendar month of a run against the month before (UX Phase E). The month is the one containing periodEnd (default: the run&#x27;s last recorded day). Period P&amp;L is the change in each symbol&#x27;s cumulative realized plus unrealized P&amp;L between month ends, read from the run&#x27;s daily portfolio snapshots, with commissions and financing as their own lines; the total is the change in run equity. Returns null when the run does not exist. |
+| <code>public Task&lt;PeriodComparisonDto?&gt; GetAttributionPeriodComparisonAsync(string runId, DateOnly? periodEnd, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.AttributionComparison.cs:20](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.AttributionComparison.cs#L20) |  |
+
 Source: [src/Meridian.Strategies/Services/StrategyRunReadService.cs:17](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L17).
 
 Provides the shared Phase 12 run browser/read model for backtest, paper, and live history.

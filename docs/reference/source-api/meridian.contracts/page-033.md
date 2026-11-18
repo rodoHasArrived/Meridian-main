@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AppendLegacyIntercompanyAttributionRequest
+
+Qualified name: <code>Meridian.Contracts.Ledger.AppendLegacyIntercompanyAttributionRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/LegacyIntercompanyAttributionDtos.cs:37](../../../../src/Meridian.Contracts/Ledger/LegacyIntercompanyAttributionDtos.cs#L37).
+
+```csharp
+public sealed record AppendLegacyIntercompanyAttributionRequest(LegacyIntercompanyAttributionDto Attribution, Guid? ExpectedPreviousAttributionId);
+```
+
 ## ApproveConsolidationTransitionRequestDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.ApproveConsolidationTransitionRequestDto</code>. Kind: `record`.
@@ -700,14 +710,4 @@ Explicit owner assignment for this preparation; it does not certify directory me
 
 ```csharp
 public sealed record ClosePreparationOwnerMappingDto(string SourceOwner, string TargetOwner);
-```
-
-## ClosePreparationPreviewDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.ClosePreparationPreviewDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs:58](../../../../src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs#L58).
-
-```csharp
-public sealed record ClosePreparationPreviewDto(Guid PreviewId, Guid TemplateId, int TemplateVersion, Guid SourceWorkflowId, LedgerBookDto TargetBook, LedgerPeriodDto TargetPeriod, ClosePreparationCalendarDto Calendar, IReadOnlyList<ClosePreparationTaskDto> Tasks, IReadOnlyList<ClosePreparationIssueDto> Issues, bool PolicyChanged, bool CanCreate, DateTimeOffset CreatedAtUtc, DateTimeOffset ExpiresAtUtc);
 ```

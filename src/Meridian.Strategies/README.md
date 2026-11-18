@@ -292,6 +292,14 @@ vocabulary.
 replaying an isolated journal snapshot, optionally bounded by an as-of timestamp. The full journal,
 account and running-balance endpoints consume that same retained accounting source; a missing
 ledger remains unavailable instead of becoming an empty success.
+`StrategyRunReadService.GetAttributionPeriodComparisonAsync` compares a run's per-symbol P&L for
+one calendar month with the month before (`PeriodComparisonDto`), as the change in cumulative
+realized plus unrealized P&L between month ends from the run's daily snapshots. A run without
+snapshots, or one that starts after the prior month, is reported as unavailable. Snapshot P&L is
+before commissions. A symbol closed mid-month counts its closed lots' realized result, not its last
+mark. Commissions (from fills, dated UTC), margin interest, short rebates and cash interest (from the
+daily cash flows) are their own lines. The total, Net P&L, is the change in run equity over the
+month; what the lines do not explain (dividends, corporate-action cash, rounding) is shown as Other.
 Promotion requires an explicitly successful completed lifecycle; an end timestamp and qualifying
 metrics on a failed or cancelled attempt never establish eligibility. `PromotionReadiness.isTerminal`
 continues to classify terminal lifecycle states independently of eligibility.

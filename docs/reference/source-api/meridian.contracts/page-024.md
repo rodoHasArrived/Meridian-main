@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BondSettlementConsiderationRequest
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondSettlementConsiderationRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs:8](../../../../src/Meridian.Contracts/FixedIncome/BondSettlementConsideration.cs#L8).
+
+Prepares a held-bond settlement; fees are separately expensed, never capitalized implicitly.
+
+```csharp
+public sealed record BondSettlementConsiderationRequest(BondAnalyticsRequest Analytics, decimal OriginalFace, decimal BookedFactor, decimal Fees, decimal ObservedDirtyCash, string SourceEvidenceId, string CashAccountId, string AccruedInterestAccountId, string? FeesAccountId = null, string? FunctionalCurrency = null, decimal? SettlementFxRateToFunctional = null);
+```
+
 ## BondSettlementPreparationResult
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondSettlementPreparationResult</code>. Kind: `record`.
@@ -802,13 +814,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;IReadOnlyList&lt;BondWorkflowRateObservation&gt;&gt; GetAsync(string indexName, BondMarketObservationKind kind, DateOnly from, DateOnly to, DateTimeOffset knownAt, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:121](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L121) |  |
-
-## RetainBondObservedFixingRequest
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.RetainBondObservedFixingRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondObservedFixings.cs:15](../../../../src/Meridian.Contracts/FixedIncome/BondObservedFixings.cs#L15).
-
-```csharp
-public sealed record RetainBondObservedFixingRequest(long ExpectedSecurityVersion, DateOnly ResetDate, SecurityRateObservationDto Observation, string Justification);
-```

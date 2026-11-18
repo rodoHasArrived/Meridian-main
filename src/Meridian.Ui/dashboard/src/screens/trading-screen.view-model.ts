@@ -746,7 +746,7 @@ export function buildTradingBlotterViewModel({
     hasPositions: positionRows.length > 0,
     hasOpenOrders: orderRows.length > 0,
     hasFills: fillRows.length > 0,
-    positionsTableLabel: "Live positions evidence",
+    positionsTableLabel: "Session positions evidence",
     ordersTableLabel: "Open orders evidence",
     fillsTableLabel: "Recent fills evidence",
     positionDetailId: tradingPositionDetailId,

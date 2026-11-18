@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ClosePreparationPreviewDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.ClosePreparationPreviewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs:58](../../../../src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs#L58).
+
+```csharp
+public sealed record ClosePreparationPreviewDto(Guid PreviewId, Guid TemplateId, int TemplateVersion, Guid SourceWorkflowId, LedgerBookDto TargetBook, LedgerPeriodDto TargetPeriod, ClosePreparationCalendarDto Calendar, IReadOnlyList<ClosePreparationTaskDto> Tasks, IReadOnlyList<ClosePreparationIssueDto> Issues, bool PolicyChanged, bool CanCreate, DateTimeOffset CreatedAtUtc, DateTimeOffset ExpiresAtUtc);
+```
+
 ## ClosePreparationTaskDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.ClosePreparationTaskDto</code>. Kind: `record`.
@@ -668,13 +678,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? CreatedBy { get; init; }</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:260](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L260) | Actual creator, stamped from the authenticated caller at public boundaries. |
-
-## CreatePreparedClosePlanRequestDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.CreatePreparedClosePlanRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs:64](../../../../src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs#L64).
-
-```csharp
-public sealed record CreatePreparedClosePlanRequestDto(Guid PreviewId, string IdempotencyKey, string? Actor = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
-```

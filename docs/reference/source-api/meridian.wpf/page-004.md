@@ -6,6 +6,41 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FundReconciliationQueueView
+
+Qualified name: <code>Meridian.Wpf.Models.FundReconciliationQueueView</code>. Kind: `enum`.
+
+Source: [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:5](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L5).
+
+```csharp
+public enum FundReconciliationQueueView : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>BreakQueue = 0</code> | [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:7](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L7) |  |
+| <code>Runs = 1</code> | [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:8](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L8) |  |
+
+## FundReconciliationReadAvailability
+
+Qualified name: <code>Meridian.Wpf.Models.FundReconciliationReadAvailability</code>. Kind: `enum`.
+
+Source: [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:31](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L31).
+
+```csharp
+public enum FundReconciliationReadAvailability : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Available = 0</code> | [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:33](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L33) |  |
+| <code>Degraded = 1</code> | [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:34](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L34) |  |
+| <code>Unavailable = 2</code> | [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:35](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L35) |  |
+
 ## FundReconciliationReadResult
 
 Qualified name: <code>Meridian.Wpf.Models.FundReconciliationReadResult</code>. Kind: `record`.
@@ -993,23 +1028,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public string KindLabel =&gt; …;</code> | [src/Meridian.Wpf/Models/QuantScriptModels.cs:14](../../../../src/Meridian.Wpf/Models/QuantScriptModels.cs#L14) |  |
-
-## SecurityMasterChecklistItem
-
-Qualified name: <code>Meridian.Wpf.Models.SecurityMasterChecklistItem</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Models/SecurityMasterPresentationModels.cs:12](../../../../src/Meridian.Wpf/Models/SecurityMasterPresentationModels.cs#L12).
-
-```csharp
-public sealed record SecurityMasterChecklistItem(string Label, string Owner, string Status);
-```
-
-## SecurityMasterEvidenceItem
-
-Qualified name: <code>Meridian.Wpf.Models.SecurityMasterEvidenceItem</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Models/SecurityMasterPresentationModels.cs:17](../../../../src/Meridian.Wpf/Models/SecurityMasterPresentationModels.cs#L17).
-
-```csharp
-public sealed record SecurityMasterEvidenceItem(string Title, string Detail, string Destination);
-```

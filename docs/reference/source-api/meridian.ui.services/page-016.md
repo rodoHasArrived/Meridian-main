@@ -6,6 +6,120 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TierUsage
+
+Qualified name: <code>Meridian.Ui.Services.TierUsage</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:232](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L232).
+
+Usage statistics for a single storage tier.
+
+```csharp
+public sealed class TierUsage
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string TierName { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:234](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L234) |  |
+| <code>public long SizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:235](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L235) |  |
+| <code>public long FileCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:236](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L236) |  |
+| <code>public double PercentOfTotal { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:237](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L237) |  |
+| <code>public DateOnly? OldestData { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:238](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L238) |  |
+| <code>public DateOnly? NewestData { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:239](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L239) |  |
+
+## TierUsageResponse
+
+Qualified name: <code>Meridian.Ui.Services.TierUsageResponse</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:222](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L222).
+
+HTTP response payload for tier usage.
+
+```csharp
+public sealed class TierUsageResponse
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public List&lt;TierUsage&gt;? TierUsage { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:224](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L224) |  |
+| <code>public long TotalSizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:225](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L225) |  |
+| <code>public long TotalFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:226](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L226) |  |
+
+## TierUsageResult
+
+Qualified name: <code>Meridian.Ui.Services.TierUsageResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:210](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L210).
+
+Result of getting tier usage statistics.
+
+```csharp
+public sealed class TierUsageResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:212](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L212) |  |
+| <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:213](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L213) |  |
+| <code>public List&lt;TierUsage&gt; TierUsage { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:214](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L214) |  |
+| <code>public long TotalSizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:215](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L215) |  |
+| <code>public long TotalFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:216](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L216) |  |
+
+## TimeAndSalesData
+
+Qualified name: <code>Meridian.Ui.Services.TimeAndSalesData</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:497](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L497).
+
+Time and sales data.
+
+```csharp
+public sealed class TimeAndSalesData
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:499](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L499) |  |
+| <code>public List&lt;TradeRecord&gt; RecentTrades { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:500](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L500) |  |
+| <code>public decimal TotalVolume { get; set; }</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:501](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L501) |  |
+| <code>public decimal BuyVolume { get; set; }</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:502](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L502) |  |
+| <code>public decimal SellVolume { get; set; }</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:503](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L503) |  |
+| <code>public decimal VolumeImbalance { get; set; }</code> | [src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs:504](../../../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs#L504) |  |
+
+## TimeSeriesAlignmentService
+
+Qualified name: <code>Meridian.Ui.Services.TimeSeriesAlignmentService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:12](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L12).
+
+Service for aligning time series data to regular intervals and generating OHLCV bars. Supports multiple aggregation methods and gap handling strategies.
+
+```csharp
+public sealed class TimeSeriesAlignmentService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static TimeSeriesAlignmentService Instance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:17](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L17) |  |
+| <code>public event EventHandler&lt;AlignmentProgressEventArgs&gt;? ProgressChanged;</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:28](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L28) |  |
+| <code>public async Task&lt;AlignmentResult&gt; AlignDataAsync(AlignmentOptions options, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:34](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L34) | Aligns time series data with specified options. |
+| <code>public Task&lt;List&lt;AlignmentInterval&gt;&gt; GetAlignmentIntervalsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:83](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L83) | Gets available alignment intervals. |
+| <code>public Task&lt;List&lt;AggregationMethod&gt;&gt; GetAggregationMethodsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:104](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L104) | Gets available aggregation methods. |
+| <code>public Task&lt;List&lt;GapHandlingStrategy&gt;&gt; GetGapStrategiesAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:170](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L170) | Gets available gap handling strategies. |
+| <code>public Task&lt;List&lt;AlignmentPreset&gt;&gt; GetAlignmentPresetsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:222](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L222) | Gets alignment presets for common use cases. |
+| <code>public async Task&lt;AlignmentPreview&gt; PreviewAlignmentAsync(AlignmentOptions options, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:299](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L299) | Previews alignment results without creating output. |
+| <code>public AlignmentValidationResult ValidateOptions(AlignmentOptions options);</code> | [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs:338](../../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs#L338) | Validates alignment options. |
+
 ## TimeSeriesInterval
 
 Qualified name: <code>Meridian.Ui.Services.TimeSeriesInterval</code>. Kind: `enum`.

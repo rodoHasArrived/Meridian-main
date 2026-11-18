@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyBalanceConfirmationFindingDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationFindingDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs:86](../../../../src/Meridian.Contracts/Ledger/IntercompanyBalanceConfirmationDtos.cs#L86).
+
+Codes: NotProposed, AwaitingConfirmation, Disputed, BalancesChanged, ResolvedAwaitingProposal, Unavailable.
+
+```csharp
+public sealed record IntercompanyBalanceConfirmationFindingDto(string Code, string Message, Guid AccountingArrangementId, Guid? ConfirmationId);
+```
+
 ## IntercompanyBalanceConfirmationJsonContext
 
 Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationJsonContext</code>. Kind: `class`.
@@ -708,14 +720,4 @@ Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:178](../../../../src/Me
 
 ```csharp
 public sealed record LedgerBookQuery(string? FundProfileId = null, Guid? FundStructureNodeId = null, FundStructureNodeKindDto? FundStructureNodeKind = null, AccountingBasisKindDto? AccountingBasis = null);
-```
-
-## LedgerBookRequiredScopeDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.LedgerBookRequiredScopeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:192](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L192).
-
-```csharp
-public sealed record LedgerBookRequiredScopeDto(Guid FundStructureNodeId, FundStructureNodeKindDto FundStructureNodeKind, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, string? DisplayName = null);
 ```

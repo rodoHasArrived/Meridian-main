@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Services;
+using Meridian.Ui.Services.Services.Comparisons;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Workstation.Models;
@@ -14,7 +15,7 @@ namespace Meridian.Wpf.ViewModels;
 /// Loads a <see cref="RunCashFlowSummary"/> for a strategy run and exposes
 /// both the raw entry list and the time-bucketed cash ladder to the view.
 /// </summary>
-public sealed class CashFlowViewModel : BindableBase
+public sealed partial class CashFlowViewModel : BindableBase
 {
     private readonly StrategyRunWorkspaceService _runService;
     private readonly NavigationService _navigationService;
@@ -317,18 +318,22 @@ public sealed class CashFlowViewModel : BindableBase
     /// dependencies from the static singleton instances.
     /// </summary>
     public CashFlowViewModel()
-        : this(StrategyRunWorkspaceService.Instance, NavigationService.Instance)
+        : this(StrategyRunWorkspaceService.Instance, NavigationService.Instance,
+            periodComparisonClient: new PeriodComparisonApiClient(Meridian.Ui.Services.ApiClientService.Instance))
     {
     }
 
     internal CashFlowViewModel(
         StrategyRunWorkspaceService runService,
         NavigationService navigationService,
-        StrategyRunContinuityService? continuityService = null)
+        StrategyRunContinuityService? continuityService = null,
+        IPeriodComparisonApiClient? periodComparisonClient = null)
     {
         _runService = runService ?? throw new ArgumentNullException(nameof(runService));
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _continuityService = continuityService;
+        _periodComparisonClient = periodComparisonClient;
+        LoadPortfolioLadderComparisonCommand = new AsyncRelayCommand(LoadPortfolioLadderComparisonAsync, () => _periodComparisonClient is not null);
 
         EntriesTable = new WorkstationTableModel<CashFlowEntryDto>(
             Entries,

@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FundStructureSetupVehicleDraftDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureSetupVehicleDraftDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs:59](../../../../src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs#L59).
+
+```csharp
+public sealed record FundStructureSetupVehicleDraftDto(Guid? VehicleId, string Code, string Name, string BaseCurrency, string? Description = null);
+```
+
 ## FundStructureSharedDataAccessDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto</code>. Kind: `record`.
@@ -723,13 +733,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;string&gt;? MigrationWarnings { get; init; }</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:95](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L95) |  |
-
-## IntercompanyAgreementDraftDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementDraftDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:27](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L27).
-
-```csharp
-public sealed record IntercompanyAgreementDraftDto(string Code, string Name, Guid PartyOneId, string PartyOneRole, Guid PartyTwoId, string PartyTwoRole, IntercompanyAgreementTypeDto AgreementType, string Currency, DateOnly EffectiveFrom, DateOnly? EffectiveTo = null, IntercompanyAgreementTermsDto? Terms = null, IReadOnlyList<IntercompanyAgreementEvidenceDto>? Evidence = null, IntercompanyAgreementActionDto Action = IntercompanyAgreementActionDto.Activate, DateOnly? TerminationEffectiveDate = null, string? Purpose = null);
-```

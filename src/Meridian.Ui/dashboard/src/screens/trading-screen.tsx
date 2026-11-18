@@ -6,7 +6,8 @@ import React, { type ReactNode } from "react";
 import { ServerOrderPreviewPanel } from "./trading-screen.server-preview";
 import { ExecutionJournalPanel } from "./trading-screen.journal";
 import { MarkFreshnessCell } from "@/components/meridian/mark-freshness-cell";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { describeBrokerageSessionSource, positionSourceAttributes } from "@/lib/position-source";
 import { StatusBadge } from "@/design-system/status";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -477,6 +478,7 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
   const headlineMetrics = applyCrossScreenCounts(data?.metrics ?? [], crossCounts);
   const shellVm = useTradingScreenShellViewModel({ pathname, data });
   const blotterVm = useTradingBlotterViewModel(data);
+  const positionSource = describeBrokerageSessionSource(data?.brokerage);
   const fundAccountId = normalizeFundAccountGuid(operatingFundAccountId);
   const tradingReadiness = useTradingReadinessViewModel({ initialReadiness: data?.readiness ?? null, fundAccountId });
   const executionEvidence = useExecutionEvidenceViewModel();
@@ -726,14 +728,18 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
         </div>
       )}>
 
-        <Card className="panel-surface">
+        <Card className="panel-surface" {...positionSourceAttributes(positionSource)}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Wallet className="h-4 w-4 text-primary" />
-                  Live positions
+                  Positions
                 </CardTitle>
+                <p className="mt-1 text-xs text-muted-foreground" data-testid="trading-position-source">
+                  Source: {positionSource.label}. Portfolio holdings cover every account and can differ.{" "}
+                  <Link className="underline underline-offset-2" to="/portfolio#compare-sources">Compare with Portfolio holdings</Link>
+                </p>
                 <CardDescription className="mt-2">
                   Select a holding to keep risk, exposure, and guardrail context visible.
                 </CardDescription>
@@ -1702,7 +1708,7 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
                   <dl className="mt-2 grid gap-2 sm:grid-cols-3">
                     {promotionGate.evaluationPanel.metrics.map((metric) => (
                       <div key={metric.id}>
-                        <dt className={cn("text-xs opacity-75", usesTrackedCaps(metric.label) && "font-mono uppercase tracking-[0.14em]")}>{metric.label}</dt>
+                        <dt className={cn("text-xs opacity-75", usesTrackedCaps(metric.label) && "uppercase tracking-[0.08em]")}>{metric.label}</dt>
                         <dd className="font-mono text-xs">{metric.value}</dd>
                       </div>
                     ))}

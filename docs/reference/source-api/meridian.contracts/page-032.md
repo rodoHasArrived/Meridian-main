@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountingBasisProjectionItemDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.AccountingBasisProjectionItemDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1133](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1133).
+
+```csharp
+public sealed record AccountingBasisProjectionItemDto(AccountingBasisKindDto AccountingBasis, Guid LedgerBookId, Guid PeriodId, PostingRuleJournalCandidateResultDto Candidate, string Status, string? DisabledReason = null);
+```
+
 ## AccountingBasisProjectionSetDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.AccountingBasisProjectionSetDto</code>. Kind: `record`.
@@ -740,14 +750,4 @@ The server resolves account facts from the chart and stamps authenticated audit 
 
 ```csharp
 public sealed record AppendIntercompanyAccountBindingRequest(Guid BindingId, Guid RevisionId, Guid LedgerBookId, string ChartAccountNodeId, DateOnly EffectiveFrom, DateOnly? EffectiveTo, IReadOnlyList<string> HistoricalNames, string Reason, Guid? ExpectedPreviousRevisionId = null, bool IsArchived = false);
-```
-
-## AppendLegacyIntercompanyAttributionRequest
-
-Qualified name: <code>Meridian.Contracts.Ledger.AppendLegacyIntercompanyAttributionRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/LegacyIntercompanyAttributionDtos.cs:37](../../../../src/Meridian.Contracts/Ledger/LegacyIntercompanyAttributionDtos.cs#L37).
-
-```csharp
-public sealed record AppendLegacyIntercompanyAttributionRequest(LegacyIntercompanyAttributionDto Attribution, Guid? ExpectedPreviousAttributionId);
 ```

@@ -1,4 +1,4 @@
-import { providerStatusFromReadiness, worstProviderStatus, type ListedProviderStatus } from "@/lib/cross-screen-counts";
+import { resolveProviderStatus, worstProviderStatus, type ListedProviderStatus } from "@/lib/cross-screen-counts";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import * as workstationApi from "@/lib/api";
@@ -399,6 +399,10 @@ export interface DataOperationsProviderRow {
   note: string;
   /** Why a provider reported healthy is shown as review: its newest evidence is past the staleness threshold. */
   staleEvidenceReason: string | null;
+  /** Newest timestamped evidence for the provider, or null when none carries a time. */
+  latestEvidenceAt: string | null;
+  /** Whether that newest evidence is past the staleness threshold. */
+  evidenceStale: boolean;
   statusTone: "success" | "warning" | "danger";
   trustFields: DataOperationsDetailField[];
   reasonLabelText: string;
@@ -2425,6 +2429,8 @@ export function buildProviderRow(
     signalSourceText,
     note: recommendedActionText ?? providerRecord?.note ?? "No operator action reported",
     staleEvidenceReason: cappedByStaleEvidence ? staleness.reason : null,
+    latestEvidenceAt: staleness.latestEvidenceAt,
+    evidenceStale: staleness.stale,
     statusTone,
     trustFields: [
       {
@@ -2870,8 +2876,9 @@ function resolveProviderDisplayStatus(record: DataOperationsProviderCenterRecord
   if (listed === null && !record.readiness) {
     return record.trustSnapshot ? record.trustSnapshot.isHealthy ? "Healthy" : "Degraded" : "Warning";
   }
+  // A provider known only from readiness has no listed warning to keep, so readiness decides.
   return record.readiness
-    ? worstProviderStatus(listed ?? "Healthy", providerStatusFromReadiness(record.readiness.status))
+    ? resolveProviderStatus(listed ?? "Healthy", record.readiness.status) as ListedProviderStatus
     : listed ?? "Warning";
 }
 

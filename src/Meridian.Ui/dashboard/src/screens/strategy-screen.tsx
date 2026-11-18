@@ -1,4 +1,5 @@
 import { PageHeading } from "@/components/ui/page-heading";
+import { RunComparisonOverlayCharts, RunCompareTray } from "@/screens/strategy-screen.comparison";
 import { Histogram } from "@/components/charts";
 import { CompareToggle } from "@/components/charts/SelectionCompare";
 import { Sparkline } from "@/components/charts/Sparkline";
@@ -590,6 +591,7 @@ function StrategyScreenContent({ data, fundAccountId }: StrategyScreenProps) {
         <CardContent className="space-y-4">
           {showRuns ? (
           <>
+          <RunCompareTray selectedRuns={vm.selectedRuns} notice={vm.selectionNotice} onRemove={vm.toggleRun} onClear={vm.clearRunSelection} />
           <div className="flex flex-col gap-3 rounded-lg border border-border/70 bg-secondary/25 px-4 py-3 md:flex-row md:items-center md:justify-between">
             <div>
               <div className="eyebrow-label">Selection</div>
@@ -905,6 +907,7 @@ function StrategyScreenContent({ data, fundAccountId }: StrategyScreenProps) {
             <CardDescription>Shared comparison evidence returned by the workstation API.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            <RunComparisonOverlayCharts overlay={vm.comparisonOverlay} loading={vm.comparisonCurvesLoading} />
             <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
               <TableWorkbench workbenchId="strategy-comparison"
                 columns={tableColumnsWithExport(comparisonColumns, { strategy: row => row.strategyName, mode: row => row.modeText, status: row => row.statusText, "net-pnl": row => row.netPnlText, return: row => row.totalReturnText, drawdown: row => row.maxDrawdownText, sharpe: row => row.sharpeRatioText, fills: row => row.fillCountText })}

@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## UpsertCashFlowSourceRequest
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.UpsertCashFlowSourceRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:386](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L386).
+
+Request to assign or update the cash flow source for a security.
+
+```csharp
+public sealed record UpsertCashFlowSourceRequest(Guid SecurityId, StructuredCashFlowSourceKind SourceKind, bool IsClientOverride, string? ClientConfirmedBy, string Actor, bool Force = false);
+```
+
 ## UpsertCorporateActionProcessingOptionRequestDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.UpsertCorporateActionProcessingOptionRequestDto</code>. Kind: `record`.
@@ -894,14 +906,4 @@ Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:156](.
 
 ```csharp
 public sealed record StrategyEngineRunRequest(string StrategyId, string StrategyVersion, IReadOnlyDictionary<string, string> Parameters, IReadOnlyList<string> Universe, DateTimeOffset From, DateTimeOffset To, string DataSource, StrategyEngineRunMode Mode, string? CostModel = null, string? SlippageModel = null, IReadOnlyDictionary<string, string>? RiskConstraints = null, string? RunReason = null, string? OperatorId = null);
-```
-
-## StrategyEngineSignal
-
-Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineSignal</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:181](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L181).
-
-```csharp
-public sealed record StrategyEngineSignal(string Symbol, string SignalType, string Direction, decimal? Strength, decimal? Confidence, DateTimeOffset Timestamp, string Horizon, string Rationale, string SourceRunId, string? RequiredFollowUpAction = null);
 ```

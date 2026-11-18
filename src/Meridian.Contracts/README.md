@@ -492,6 +492,22 @@ persistence port without referencing the Storage implementation.
 provider health and open breaks) with the definition each was counted with. A count the caller may
 not read, or whose source is not registered, is null, so clients show "—" rather than a substitute.
 
+`Workstation/KpiDefinitionDtos.cs` carries the headline-figure catalog: each figure's id, label,
+population and comparison basis (null when the figure carries no change), so the browser and WPF
+state a figure with the same name over the same population.
+
+`Workstation/PeriodComparisonDtos.cs` carries prior-period comparisons for NAV, run attribution
+and the cash ladder (`PeriodComparisonDto`: status, the two windows, lines and notes on what the
+figures include) and `PeriodChange`, the one variance rule every comparison uses: change is current
+minus prior, percent divides by the absolute prior, and a zero prior has no percent. The posted
+ledger comparison uses it too. `AssetOperations/PortfolioCashLadderDtos.cs` adds the optional
+`IPortfolioCashBalanceHistoryProvider` for opening cash at an earlier date.
+`IAssetOperationsQueryService.GetOperationsAsOfAsync` projects operations at a
+`BondCalculationContext` cutoff; its default falls back to the current projection, and
+`SupportsTermsAsOf` says which one a service gives.
+`Workstation/FundNavTrendDtos.cs` carries ledger NAV at recent month-ends (`FundNavTrendDto`), with
+long, short, gross and net securities exposure on each point.
+
 `Workstation/OperatorScopePreferenceDtos.cs` carries the signed-in operator's default operating
 scope (symbol, fund account, run, provider and date dimensions, plus the optional legal entity and
 fund dimensions `EntityId`/`FundId`, appended last), which browser and WPF apply when a session opens

@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityAssetTermsFieldEditValidator
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetTermsFieldEditValidator</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsFieldEditValidator.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsFieldEditValidator.cs#L16).
+
+Schema validation for operator field edits that target a security&#x27;s asset-specific terms. The workbench edit surface historically accepted any free-text field path and any string value; this validator anchors assetSpecificTerms.* edits to the declared SecurityAssetTermsSchema contract for the record&#x27;s asset class — the key must be a declared term field (or a profile-governed profileFields path on profile-backed classes) and the value must coerce to the declared type. Paths outside the asset-terms namespace are the annotation surface and pass through unchanged. Discriminant fields carry the additional constraint that the value must be one of the schema&#x27;s declared vocabulary members.
+
+```csharp
+public static class SecurityAssetTermsFieldEditValidator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string AssetSpecificTermsPrefix = &quot;assetSpecificTerms.&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsFieldEditValidator.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsFieldEditValidator.cs#L18) |  |
+| <code>public static bool TargetsAssetSpecificTerms(string? fieldPath);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsFieldEditValidator.cs:27](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsFieldEditValidator.cs#L27) | True when the field path addresses the asset-specific-terms namespace — including the EXACT root assetSpecificTerms (no trailing dot). The bare root never validates (it names no schema field), but it must still classify as reserved: treating it as a free annotation would let a root-level asset-terms value stage past the schema, pinned-profile validation, and the overrides endpoint&#x27;s reserved-namespace rejection. |
+| <code>public static bool TryValidate(string assetClass, string fieldPath, string? newValue, out string canonicalFieldPath, out string? error);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsFieldEditValidator.cs:52](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsFieldEditValidator.cs#L52) | Validates an asset-terms field edit against the declared schema for assetClass. Returns true when the edit is acceptable; otherwise error carries an actionable rejection reason. A null or whitespace newValue is always acceptable — it clears the overlay value rather than asserting a typed one. canonicalFieldPath is the schema-normalized path the edit must be PERSISTED under: aliases resolve to the declared field key and casing/whitespace variants collapse to one spelling, so assetSpecificTerms.dayCount and its alias assetSpecificTerms.dayCountConvention address the same override key, revision lineage, and provenance row instead of forking per spelling. Paths outside the asset-terms namespace (and rejected edits) pass through unchanged. |
+
 ## SecurityAssetTermsSchema
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema</code>. Kind: `class`.
@@ -840,23 +860,3 @@ Field-level provenance: which source system asserted the value at FieldPath, as 
 ```csharp
 public sealed record SecurityFieldProvenance(string FieldPath, string SourceSystem, DateTimeOffset? AsOf, string? UpdatedBy, decimal? Confidence);
 ```
-
-## SecurityFieldProvenanceOrigins
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceOrigins</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L58).
-
-Canonical origins for persisted field-level provenance rows. The origin distinguishes canonical golden-record attribution from overlay annotations, so an operator edit can never masquerade as (or clobber) a conflict-resolution winner.
-
-```csharp
-public static class SecurityFieldProvenanceOrigins
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string ConflictResolution = &quot;ConflictResolution&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:61](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L61) | The attribution written when a golden-record conflict resolves to a winning source. |
-| <code>public const string OperatorFieldEdit = &quot;OperatorFieldEdit&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L64) | The attribution written when an operator stages an overlay field edit. |
-| <code>public const string CanonicalWrite = &quot;CanonicalWrite&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:72](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L72) | The attribution written when an ordinary canonical create/amend changes a governed field — the per-field record of WHICH source supplied the current value, kept so conflict detection can name the true incumbent even when the field was never conflicted (record-level provenance flips on every amendment and cannot answer that question). |

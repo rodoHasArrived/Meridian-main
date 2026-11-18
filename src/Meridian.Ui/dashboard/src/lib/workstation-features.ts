@@ -68,7 +68,8 @@ export const WORKSPACE_NAVIGATION_FEATURES: Readonly<Record<WorkspaceKey, readon
     feature("portfolioBrokerageSync", "Brokerage sync", "Review household brokerage account sync status and recovery actions.", ["sync broker", "brokerage account", "account synchronization"]),
     feature("portfolioCashLadder", "Cash ladder", "Review projected cash flows and upcoming funding needs.", ["cash forecast", "cash flow", "liquidity", "funding schedule", "coupon income", "bond maturities", "bond cash flows"]),
     feature("portfolioFamilyOffice", "Family office", "Review family net worth, entity ownership, asset-class exposure, commitments, breaks, and stale valuations.", ["net worth", "household", "family assets"]),
-    feature("portfolioLoanBook", "Loan book", "Review lending exposure, loan balances, and servicing activity.", ["loans", "loan portfolio", "lending", "debt"])
+    feature("portfolioLoanBook", "Loan book", "Review lending exposure, loan balances, and servicing activity.", ["loans", "loan portfolio", "lending", "debt"]),
+    feature("portfolioNav", "NAV", "Compare net asset value with a prior date, in total and by asset class.", ["net asset value", "nav change", "prior period", "month over month"])
   ],
   accounting: ACCOUNTING_NAVIGATION_ITEMS.map((item) => {
     const purpose = ACCOUNTING_FEATURE_PURPOSES[item.id];
