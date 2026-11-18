@@ -3354,6 +3354,16 @@ npm --prefix src/Meridian.Ui/dashboard run build
 npm --prefix src/Meridian.Ui/dashboard run smoke:workstation
 ```
 
+`smoke:workstation` also audits six task routes (Today, Accounting reconciliation, exceptions and
+ledger, Portfolio NAV, Trading) with axe at WCAG 2.0–2.2 A/AA, and focuses each control in the
+reconciliation inspector to check nothing covers it (SC 2.4.11 Focus Not Obscured). Serious and
+critical axe findings fail unless `scripts/smoke-workstation-axe-baseline.json` lists them as
+`route:rule`; that baseline only shrinks (`npm run smoke:workstation -- --write-axe-baseline` locks
+in a removal and refuses any addition). `--skip-a11y` skips both checks. Set
+`CHROMIUM_EXECUTABLE_PATH` or `MERIDIAN_CHROMIUM_PATH` to use a system Chromium. The helpers are
+covered by `scripts/smoke-workstation-a11y.test.mjs` (`npm run test:tooling`). The smoke is not
+part of `scripts/ci.sh`.
+
 Linting is a correctness-only ESLint flat-config baseline (`eslint.config.mjs`): typescript-eslint
 recommended, react-hooks rules, and a local kebab-case filename rule with grandfathered
 PascalCase/camelCase directories (`components/accounting`, `components/charts`,
