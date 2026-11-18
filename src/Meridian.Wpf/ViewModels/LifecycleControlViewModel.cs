@@ -312,7 +312,7 @@ public sealed class LifecycleControlViewModel : BindableBase
     {
         LatestReceiptText = receipt is null
             ? "No prior shutdown receipt is available."
-            : $"{receipt.Outcome} · {receipt.Reason} · {UtcFormat.FormatUtcTimestamp(receipt.CompletedAtUtc)} · forced: {(receipt.ForcedTermination ? "yes" : "no")}";
+            : $"{receipt.Outcome} · {receipt.Reason} · {UtcFormat.FormatDisplayTimestamp(receipt.CompletedAtUtc)} · forced: {(receipt.ForcedTermination ? "yes" : "no")}";
     }
 
     private void ApplyUnavailable(string message)

@@ -136,6 +136,41 @@ status joins and catalog deduplication. Aliases resolve to one canonical status 
 service field schema; ambiguous duplicate service rows remain unavailable. Status projections retain
 verification state and timestamp so callers can distinguish configured from verified credentials.
 
+`DesktopOperatorPreferenceSync` keeps the desktop theme, density and keyboard shortcut overrides in
+step with the operator's host preferences (`/api/workstation/operator/preferences`, the set the browser workstation syncs).
+`DesktopOperatorPreferenceMapping` maps the shared vocabulary to `AppTheme` and `ShellDensityMode`:
+`default` and `spacious` both show as Standard, and a desktop Standard save keeps a stored
+`spacious`. On start the host values are applied and nothing is saved, because the desktop does not
+persist its theme and its startup theme is a default rather than a choice. An operator change on the
+desktop re-reads the host set and saves it with only appearance and density replaced, so the time
+zone, page-descriptions setting and browser shortcut overrides are kept. Desktop shortcut overrides
+travel as `DesktopKeyBindings`: a host set (an empty set included) replaces this desktop's at start;
+when the host has none yet, this desktop's own overrides are saved up to seed it; and an operator
+rebind, toggle or reset saves only that set. `ToHostShortcuts`, `ToDesktopShortcuts` and
+`SameShortcuts` map and compare the two forms. Notification choices travel as `Notifications`: a host
+set replaces the desktop's `NotificationSettings` at start (unset values take the defaults; the sound
+choice stays desktop-only), and a desktop change saves only that set (`ToNotificationSettings`,
+`ToHostNotifications`).
+
+`NotificationServiceBase` judges quiet hours with `QuietHours.IsActive` against its `TimeProvider`
+and the shared `DisplayTimeZone`, so the window is wall-clock time in the operator's display zone; a
+window ending earlier than it starts runs past midnight, the end minute is not quiet, and equal times
+never hold anything. `IsQuietHoursNow` exposes the state, `UpdateSettings` raises `SettingsChanged`,
+and `NotificationSettings.Copy()` builds a change without editing the settings in use. A host that cannot be read at
+start leaves the desktop local for the run; a failed save keeps the local change and the next change
+retries. The display time zone is resolved with this machine's zone data at start and again whenever
+the desktop saves, and applied to the shared `DisplayTimeZone` (UTC when unset or unknown here).
+`OperatorPreferencesApiClient` is the HTTP client and `IDesktopPreferenceSurface` the seam the WPF
+shell implements.
+
+`FormatHelpers.FormatDisplayTimestamp` (with `DateTime`, nullable and `FormatDisplayTimeRange`
+overloads) formats an instant in `DisplayTimeZone.Current`. In UTC the label is exactly the
+`FormatUtcTimestamp` form ("2026-07-05 12:00 UTC"); in any other zone the local time carries its
+offset for that instant ("2026-07-05 13:00 UTC+01:00"), so a zone that is at +00:00 for part of the
+year is never labelled UTC. `TryParseDisplayTimestamp` reads either form back to UTC. Display only:
+stored, audit and ledger values are unchanged. `DisplayTimestampTests` set the process-wide zone and
+run in a serial test collection.
+
 `DesktopShellPreferences` holds the desktop shell density and the operator's keyboard shortcut
 overrides (`ShortcutOverrides`, keyed by action id, with keys and modifiers stored as WPF enum
 names so this contract stays free of WPF types). `SettingsConfigurationService` persists both in

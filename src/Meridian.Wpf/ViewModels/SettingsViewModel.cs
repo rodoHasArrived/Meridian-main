@@ -325,7 +325,8 @@ public sealed partial class SettingsViewModel : BindableBase
         : "Standard keeps the full shell summary and spacing for review-heavy sessions.";
 
     /// <summary>
-    /// Whether Windows notifications are enabled.
+    /// Whether pop-up notifications are shown. Applied to the live notification settings at once and
+    /// saved with the operator's preferences, not with the host configuration file.
     /// The XAML NotificationSettingsPanel binds its Opacity to
     /// <see cref="NotificationsPanelOpacity"/> which is derived from this flag.
     /// </summary>
@@ -334,10 +335,9 @@ public sealed partial class SettingsViewModel : BindableBase
         get => _isNotificationsEnabled;
         set
         {
-            if (SetProperty(ref _isNotificationsEnabled, value))
+            if (SetNotificationChoice(ref _isNotificationsEnabled, value, (settings, on) => settings.Enabled = on))
             {
                 RaisePropertyChanged(nameof(NotificationsPanelOpacity));
-                MarkDirty();
             }
         }
     }
@@ -416,6 +416,7 @@ public sealed partial class SettingsViewModel : BindableBase
     public void Initialize()
     {
         LoadDesktopPreferences();
+        LoadNotificationPreferences();
         _ = LoadConfigAsync();
         RefreshCapabilityToggles();
         ConfigPath = _configService.ConfigPath;
@@ -729,7 +730,6 @@ public sealed partial class SettingsViewModel : BindableBase
             var settings = config.Settings ?? new AppSettingsDto();
             ApiBaseUrl = config.IBClientPortal?.BaseUrl ?? ApiEndpointDefaults.LocalApiBaseUrl;
             StatusRefreshInterval = settings.StatusRefreshIntervalSeconds.ToString();
-            IsNotificationsEnabled = settings.NotificationsEnabled;
             SelectedShellDensityMode = settings.CompactMode ? ShellDensityMode.Compact : ShellDensityMode.Standard;
             ThemeIndex = string.Equals(settings.Theme, "Dark", StringComparison.OrdinalIgnoreCase) ? 2 : string.Equals(settings.Theme, "Light", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
             AccentColorIndex = 0;
@@ -847,11 +847,6 @@ public sealed partial class SettingsViewModel : BindableBase
     }
 
     // ── Test / support ────────────────────────────────────────────────────────
-
-    private void SendTestNotification()
-    {
-        _notificationService.ShowNotification("Test Notification", "This is a test notification from Meridian.", NotificationType.Info);
-    }
 
     private async Task TestConnectionAsync(CancellationToken ct = default)
     {

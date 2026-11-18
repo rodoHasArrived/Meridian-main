@@ -6,6 +6,76 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WithdrawShadowBookRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WithdrawShadowBookRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:44](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L44).
+
+```csharp
+public sealed record WithdrawShadowBookRequestDto(int ExpectedVersion, string Reason);
+```
+
+## WorkflowActionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkflowActionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:29](../../../../src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs#L29).
+
+Reusable action target that can be used by summaries, inbox routing, and workflow UI.
+
+```csharp
+public sealed record WorkflowActionDto(string ActionId, string Label, string Detail, string TargetPageTag, string Tone, OperatorWorkItemKindDto? WorkItemKind, IReadOnlyList<string> RoutePrefixes, IReadOnlyList<string> RouteContains, IReadOnlyList<string> Aliases);
+```
+
+## WorkflowBlockerSummary
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkflowBlockerSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs:42](../../../../src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs#L42).
+
+Primary blocker that explains why the operator cannot progress smoothly.
+
+```csharp
+public sealed record WorkflowBlockerSummary(string Code, string Label, string Detail, string Tone, bool IsBlocking);
+```
+
+## WorkflowDefinitionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkflowDefinitionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:14](../../../../src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs#L14).
+
+User-facing workflow definition that groups actions, evidence, and target workspace.
+
+```csharp
+public sealed record WorkflowDefinitionDto(string WorkflowId, string Title, string Summary, string WorkspaceId, string WorkspaceTitle, string EntryPageTag, string Tone, IReadOnlyList<WorkflowActionDto> Actions, IReadOnlyList<string> EvidenceTags, IReadOnlyList<string> MarketPatternTags);
+```
+
+## WorkflowEvidenceBadge
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkflowEvidenceBadge</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs:52](../../../../src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs#L52).
+
+Lightweight evidence chip supporting a workflow recommendation.
+
+```csharp
+public sealed record WorkflowEvidenceBadge(string Label, string Value, string Tone);
+```
+
+## WorkflowLibraryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkflowLibraryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs#L6).
+
+Shared catalog projection for reusable workstation workflows.
+
+```csharp
+public sealed record WorkflowLibraryDto(DateTimeOffset GeneratedAt, IReadOnlyList<WorkflowDefinitionDto> Workflows, IReadOnlyList<WorkflowActionDto> Actions);
+```
+
 ## WorkflowNextAction
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkflowNextAction</code>. Kind: `record`.
@@ -498,64 +568,4 @@ Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:103](../
 
 ```csharp
 public sealed record WorkstationModeComparisonRun(string RunId, string Mode, string Status, decimal? NetPnl, decimal? TotalReturn, WorkstationRunDrillInLinks DrillIn);
-```
-
-## WorkstationPlotToolFocusPointPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPlotToolFocusPointPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:225](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L225).
-
-```csharp
-public sealed record WorkstationPlotToolFocusPointPayload(string Label, string XValueText, string YValueText, string Detail);
-```
-
-## WorkstationPlotToolLegendItemPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPlotToolLegendItemPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:219](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L219).
-
-```csharp
-public sealed record WorkstationPlotToolLegendItemPayload(string Id, string Label, string Detail, string Tone);
-```
-
-## WorkstationPlotToolMomentPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPlotToolMomentPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:268](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L268).
-
-```csharp
-public sealed record WorkstationPlotToolMomentPayload(string Id, string Label, string Value, string Benchmark);
-```
-
-## WorkstationPlotToolPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPlotToolPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:310](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L310).
-
-```csharp
-public sealed record WorkstationPlotToolPayload(WorkstationPlotToolWorkspacePayload Workspace, WorkstationPlotToolStatisticsPayload Statistics, IReadOnlyList<WorkstationPlotToolStudyPayload> Studies, IReadOnlyList<WorkstationPlotToolTabState> Tabs, string ActiveView = "workspace", string AnalyticsEvidenceStatus = "Unavailable");
-```
-
-## WorkstationPlotToolPointPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPlotToolPointPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:209](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L209).
-
-```csharp
-public sealed record WorkstationPlotToolPointPayload(int X, int Y, bool Emphasis);
-```
-
-## WorkstationPlotToolRegressionPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPlotToolRegressionPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:274](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L274).
-
-```csharp
-public sealed record WorkstationPlotToolRegressionPayload(string Equation, IReadOnlyList<string> DetailItems);
 ```

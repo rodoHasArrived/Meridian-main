@@ -6,6 +6,77 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingRunScopeDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportingRunScopeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1313](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1313).
+
+```csharp
+public sealed record ReportingRunScopeDto(string FundProfileId, ReportingEntityScopeKindDto EntityScopeKind = ReportingEntityScopeKindDto.AllEntities, string? EntityId = null, string? PortfolioId = null, string? InvestorId = null, LedgerDimensionSetDto? Dimensions = null);
+```
+
+## ReportingScheduleDeliveryPlanDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportingScheduleDeliveryPlanDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1080](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1080).
+
+```csharp
+public sealed record ReportingScheduleDeliveryPlanDto(string PlanId, string ScheduleId, string TemplateId, string DistributionId, string Recipient, string RecipientRole, string Channel, ReportPackDeliveryModeDto DeliveryMode, IReadOnlyList<GovernanceReportArtifactFormatDto> Formats, bool IsReady, string ReadinessSummary, string Route, DateTimeOffset DueAtUtc, DateOnly NextAsOfDate, string Owner, string? Note = null, Guid? LastDeliveryAttemptId = null, ReportPackDeliveryStateDto? LastDeliveryState = null, DateTimeOffset? LastDeliveryAtUtc = null, string? LastDeliveryPackageRoute = null, string? LastDeliverySecureLink = null, IReadOnlyList<ReportPackDeliveryAccessLinkDto>? LastDeliveryAccessLinks = null, DateTimeOffset? LastDeliveryAccessExpiresAtUtc = null, string? LastDeliveryAccessSummary = null, string? LastDeliveryChannelSummary = null, string? LastDeliveryDownloadSummary = null, int LastDeliveryNotificationCount = 0, string? LastDeliveryNotificationSummary = null, int LastDeliveryGeneratedReportWriterGridCount = 0, int LastDeliveryRenderedReportWriterGridCount = 0, string? LastDeliveryReportWriterDatasetSummary = null, string? LastDeliveryReportWriterGridSummary = null, string? VersionStamp = null, int LastDeliveryArtifactCount = 0, string? LastDeliveryIntegritySummary = null, IReadOnlyList<string>? ReadinessBlockers = null, string? BrandingThemeId = null, ReportBrandingThemeDto? BrandingTheme = null, string? LastDeliveryEntitlementScope = null);
+```
+
+## ReportingScheduleDeliveryTargetDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportingScheduleDeliveryTargetDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1034](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1034).
+
+```csharp
+public sealed record ReportingScheduleDeliveryTargetDto(string DistributionId, IReadOnlyList<GovernanceReportArtifactFormatDto>? Formats = null, ReportPackDeliveryModeDto? DeliveryMode = null, string? Note = null, string? RecipientPrincipalId = null, ReportAccessPrincipalKindDto? RecipientPrincipalKind = null);
+```
+
+## ReportingScheduledReleaseHandoffDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportingScheduledReleaseHandoffDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1054](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1054).
+
+Durable, token-free handoff from scheduled generation to the canonical post-release secure distribution queue. Package identities and bearer grants are intentionally derived only after governance release and are never retained here.
+
+```csharp
+public sealed record ReportingScheduledReleaseHandoffDto(string HandoffId, string TenantId, string CompanyId, string ScheduleId, string RunId, string TemplateId, string DistributionId, string TargetDistributionId, string TransportId, string? RecipientPrincipalId, string Destination, string Subject, string Body, IReadOnlyList<GovernanceReportArtifactFormatDto>? RequestedFormats, IReadOnlyList<string>? ArtifactIds, int? GrantLifetimeSeconds, int? GrantMaxUses, int MaxAttempts, DateTimeOffset CreatedAtUtc, ReportingScheduledReleaseHandoffStateDto State = ReportingScheduledReleaseHandoffStateDto.PendingRelease, string? EnqueuedDeliveryJobId = null, DateTimeOffset? EnqueuedAtUtc = null, string? RecipientPrincipalKind = null, string? DeliveryTargetsSnapshotHash = null);
+```
+
+## ReportingScheduledReleaseHandoffStateDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportingScheduledReleaseHandoffStateDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1043](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1043).
+
+```csharp
+public enum ReportingScheduledReleaseHandoffStateDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>PendingRelease = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1045](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1045) |  |
+| <code>Enqueued = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1046](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1046) |  |
+
+## ReportingSchedulePeriodCadenceDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportingSchedulePeriodCadenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1221](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1221).
+
+Period-close cadence for a reporting schedule: one run per monthly, quarterly, or annual period, as of the period end and due DueDaysAfterPeriodEnd days later.
+
+```csharp
+public sealed record ReportingSchedulePeriodCadenceDto(ReportingSchedulePeriodFrequencyDto Frequency, int DueDaysAfterPeriodEnd = 0);
+```
+
 ## ReportingSchedulePeriodFrequencyDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportingSchedulePeriodFrequencyDto</code>. Kind: `enum`.
@@ -527,93 +598,3 @@ Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1429]
 ```csharp
 public sealed record ReportTemplateParameterDefinitionDto(string Name, bool Required);
 ```
-
-## ReportWriterAggregateFunctionDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterAggregateFunctionDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1441](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1441).
-
-```csharp
-public enum ReportWriterAggregateFunctionDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Sum = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1443](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1443) |  |
-| <code>Count = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1444](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1444) |  |
-| <code>Average = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1445](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1445) |  |
-| <code>Min = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1446](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1446) |  |
-| <code>Max = 4</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1447](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1447) |  |
-
-## ReportWriterCellStyleDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterCellStyleDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1499](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1499).
-
-```csharp
-public enum ReportWriterCellStyleDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>None = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1501](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1501) |  |
-| <code>Success = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1502](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1502) |  |
-| <code>Warning = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1503](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1503) |  |
-| <code>Danger = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1504](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1504) |  |
-| <code>Info = 4</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1505](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1505) |  |
-
-## ReportWriterChartDefinitionDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterChartDefinitionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1525](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1525).
-
-```csharp
-public sealed record ReportWriterChartDefinitionDto(ReportWriterChartTypeDto Type, string CategoryField, IReadOnlyList<string> ValueColumns, string? Title = null);
-```
-
-## ReportWriterChartRenderDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterChartRenderDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1536](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1536).
-
-```csharp
-public sealed record ReportWriterChartRenderDto(ReportWriterChartTypeDto Type, string Title, string CategoryField, IReadOnlyList<string> Categories, IReadOnlyList<ReportWriterChartSeriesDto> Series, IReadOnlyList<string> Warnings);
-```
-
-## ReportWriterChartSeriesDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterChartSeriesDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1531](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1531).
-
-```csharp
-public sealed record ReportWriterChartSeriesDto(string Key, string Label, IReadOnlyList<decimal> Values);
-```
-
-## ReportWriterChartTypeDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterChartTypeDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1516](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1516).
-
-```csharp
-public enum ReportWriterChartTypeDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Bar = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1518](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1518) |  |
-| <code>StackedBar = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1519](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1519) |  |
-| <code>Line = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1520](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1520) |  |
-| <code>Area = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1521](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1521) |  |
-| <code>Pie = 4</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1522](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1522) |  |

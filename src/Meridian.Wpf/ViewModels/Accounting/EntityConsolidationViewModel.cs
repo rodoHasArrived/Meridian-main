@@ -217,7 +217,7 @@ public sealed partial class EntityConsolidationViewModel : BindableBase
             if (ct.IsCancellationRequested)
                 return;
             _timeline = timeline;
-            EntityDetail = $"{timeline.Entity.Name} · {timeline.Entity.LifecycleStatus} · {timeline.Entity.BaseCurrency} · as of {timeline.AsOf:yyyy-MM-dd HH:mm} UTC";
+            EntityDetail = $"{timeline.Entity.Name} · {timeline.Entity.LifecycleStatus} · {timeline.Entity.BaseCurrency} · as of {Meridian.Ui.Services.FormatHelpers.FormatDisplayTimestamp(timeline.AsOf)}";
             Replace(Warnings, timeline.Warnings);
             Replace(TimelineRows, timeline.LifecycleRevisions.OrderByDescending(item => item.Revision).SelectMany(revision => revision.Timeline.Select(state =>
                 new AccountingWorkbenchRow($"Revision {revision.Revision} · {state.Status}", state.EventKind.ToString(),

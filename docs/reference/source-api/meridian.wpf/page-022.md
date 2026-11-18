@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ActivityLogGridControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Tables.ActivityLogGridControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:49](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L49).
+
+Displays read-only activity-log rows using row and column virtualization.
+
+```csharp
+public sealed class ActivityLogGridControl : DataGrid
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ActivityLogGridControl();</code> | [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:51](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L51) |  |
+
+## DenseDataGridControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Tables.DenseDataGridControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:8](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L8).
+
+Displays read-only rows with explicit columns and row and column virtualization.
+
+```csharp
+public sealed class DenseDataGridControl : DataGrid
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DenseDataGridControl();</code> | [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:10](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L10) |  |
+
 ## KeyValueFactGridControl
 
 Qualified name: <code>Meridian.Wpf.Workstation.Tables.KeyValueFactGridControl</code>. Kind: `class`.

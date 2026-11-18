@@ -499,6 +499,14 @@ Operator Inbox composition for the workstation API surface: builds the prioritiz
 public static partial class WorkstationEndpoints
 ```
 
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorPreferences.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorPreferences.cs#L17).
+
+The signed-in operator&#x27;s presentation preferences (theme, density, display time zone, page descriptions, browser shortcut overrides), so they follow the operator to another browser or machine. Only the operator themselves can read or replace them; the values are display-only.
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
 Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorScopePreference.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorScopePreference.cs#L16).
 
 The signed-in operator&#x27;s default operating scope (C1). Browser and WPF read it when a session opens with no scope in its link or local storage; only the operator themselves can read or set it.

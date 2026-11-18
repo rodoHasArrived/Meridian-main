@@ -1259,7 +1259,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             return;
         }
 
-        AsOfText = UtcFormat.FormatUtcTimestamp(summary.AsOf);
+        AsOfText = UtcFormat.FormatDisplayTimestamp(summary.AsOf);
         JournalEntriesText = summary.JournalEntryCount.ToString("N0");
         LedgerEntriesText = summary.LedgerEntryCount.ToString("N0");
         AssetBalanceText = summary.AssetBalance.ToString("C2");
@@ -1686,7 +1686,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             SecurityMissingCount: securityMissingCount,
             SecurityCoverageIssues: reconciliation.SecurityCoverageIssueCount);
 
-        WorkspaceAsOfText = UtcFormat.FormatUtcTimestamp(summary.AsOf);
+        WorkspaceAsOfText = UtcFormat.FormatDisplayTimestamp(summary.AsOf);
         TotalAccountsText = summary.TotalAccounts.ToString("N0");
         BankAccountsText = summary.BankAccountCount.ToString("N0");
         BrokerageAccountsText = summary.BrokerageAccountCount.ToString("N0");
@@ -1800,7 +1800,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             : "No account links retained";
         var facts = new List<KeyValueFactModel>
         {
-            new("Timestamp", UtcFormat.FormatUtcTimestamp(entry.Timestamp)),
+            new("Timestamp", UtcFormat.FormatDisplayTimestamp(entry.Timestamp)),
             new("Debits", entry.TotalDebits.ToString("C2")),
             new("Credits", entry.TotalCredits.ToString("C2")),
             new("Lines", entry.LineCount.ToString("N0")),
@@ -2127,11 +2127,11 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
 
             _reportPackPreview = preview;
             ReportPackKindText = preview.ReportKind.ToString();
-            ReportPackAsOfText = UtcFormat.FormatUtcTimestamp(preview.AsOf);
+            ReportPackAsOfText = UtcFormat.FormatDisplayTimestamp(preview.AsOf);
             ReportPackNetAssetsText = preview.TotalNetAssets.ToString("C2");
             ReportPackTrialBalanceLinesText = preview.TrialBalanceLineCount.ToString("N0");
             ReportPackAssetSectionsText = preview.AssetClassSectionCount.ToString("N0");
-            ReportPackGeneratedAtText = UtcFormat.FormatUtcTimestamp(preview.GeneratedAt);
+            ReportPackGeneratedAtText = UtcFormat.FormatDisplayTimestamp(preview.GeneratedAt);
             ReportPackStatusText = $"{preview.DisplayName} {preview.ReportKind} preview is ready for operator handoff.";
 
             ReportPackAssetSections.Clear();
@@ -2880,7 +2880,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
 
     private static string FormatQueueTimestamp(DateTimeOffset? value)
         => value.HasValue
-            ? value.Value.UtcDateTime.ToString("MMM d, HH:mm 'UTC'", System.Globalization.CultureInfo.InvariantCulture)
+            ? UtcFormat.FormatDisplayTimestamp(value.Value, "MMM d, HH:mm")
             : "No timestamp";
 
     private static string FormatQueueStatusLabel(string value)
@@ -2990,7 +2990,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     }
 
     private static string FormatCloseTimestamp(DateTimeOffset? timestamp)
-        => UtcFormat.FormatUtcTimestamp(timestamp, "Not decided");
+        => UtcFormat.FormatDisplayTimestamp(timestamp, "Not decided");
 
     private static string MapPrivateCapitalCloseRouteTarget(string? route)
     {
@@ -3264,8 +3264,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             return fallback;
         }
 
-        // The timestamp text is a UTC label written by FormatHelpers.FormatUtcTimestamp.
-        if (!UtcFormat.TryParseUtcTimestamp(timestampText, out var parsedTimestamp))
+        // The timestamp text is a display label written by FormatHelpers.FormatDisplayTimestamp (UTC or the operator's zone).
+        if (!UtcFormat.TryParseDisplayTimestamp(timestampText, out var parsedTimestamp))
         {
             return fallback;
         }

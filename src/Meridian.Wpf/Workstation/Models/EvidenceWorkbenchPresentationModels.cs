@@ -317,7 +317,7 @@ public static class EvidenceWorkbenchPresentationMapper
     }
 
     private static string FormatTimestamp(DateTimeOffset value)
-        => $"{value.UtcDateTime:yyyy-MM-dd HH:mm} UTC";
+        => Meridian.Ui.Services.FormatHelpers.FormatDisplayTimestamp(value);
 
     private static string Pluralize(int count, string singular)
         => count == 1 ? $"1 {singular}" : $"{count} {singular}s";

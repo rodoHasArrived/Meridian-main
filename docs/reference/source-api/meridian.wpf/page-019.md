@@ -6,6 +6,54 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RunMatPage
+
+Qualified name: <code>Meridian.Wpf.Views.RunMatPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:52](../../../../src/Meridian.Wpf/Views/Pages.cs#L52).
+
+```csharp
+public partial class RunMatPage : Page
+```
+
+Source: [src/Meridian.Wpf/Views/RunMatPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/RunMatPage.xaml.cs#L10).
+
+Strategy workspace surface for editing and executing RunMat scripts.
+
+```csharp
+public partial class RunMatPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public RunMatPage(RunMatViewModel viewModel);</code> | [src/Meridian.Wpf/Views/RunMatPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/RunMatPage.xaml.cs#L14) |  |
+
+## RunPortfolioPage
+
+Qualified name: <code>Meridian.Wpf.Views.RunPortfolioPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:70](../../../../src/Meridian.Wpf/Views/Pages.cs#L70).
+
+```csharp
+public partial class RunPortfolioPage : Page
+```
+
+Source: [src/Meridian.Wpf/Views/RunPortfolioPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/RunPortfolioPage.xaml.cs#L10).
+
+Provides the desktop page to review holdings, exposures, and weights for the selected run.
+
+```csharp
+public partial class RunPortfolioPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public RunPortfolioPage();</code> | [src/Meridian.Wpf/Views/RunPortfolioPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/RunPortfolioPage.xaml.cs#L12) |  |
+
 ## RunRiskPage
 
 Qualified name: <code>Meridian.Wpf.Views.RunRiskPage</code>. Kind: `class`.
@@ -1083,51 +1131,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public WorkspacePage();</code> | [src/Meridian.Wpf/Views/WorkspacePage.xaml.cs:19](../../../../src/Meridian.Wpf/Views/WorkspacePage.xaml.cs#L19) |  |
-
-## WorkspaceShellChromeState
-
-Qualified name: <code>Meridian.Wpf.Views.WorkspaceShellChromeState</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs:10](../../../../src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs#L10).
-
-Exposes inherited shell-host state so legacy pages can compact duplicate chrome when they are rendered inside the shared workspace shell host.
-
-```csharp
-public static class WorkspaceShellChromeState
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly DependencyProperty IsHostedInWorkspaceShellProperty = DependencyProperty.RegisterAttached(&quot;IsHostedInWorkspaceShell&quot;, typeof(bool), typeof(WorkspaceShellChromeState), new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.Inherits));</code> | [src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs:12](../../../../src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs#L12) |  |
-| <code>public static readonly DependencyProperty ShellDensityModeProperty = DependencyProperty.RegisterAttached(&quot;ShellDensityMode&quot;, typeof(ShellDensityMode), typeof(WorkspaceShellChromeState), new FrameworkPropertyMetadata(ShellDensityMode.Standard, FrameworkPropertyMetadataOptions.Inherits, OnShellDensityModeChanged));</code> | [src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs:19](../../../../src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs#L19) |  |
-| <code>public static readonly DependencyProperty IsCompactDensityProperty = DependencyProperty.RegisterAttached(&quot;IsCompactDensity&quot;, typeof(bool), typeof(WorkspaceShellChromeState), new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.Inherits));</code> | [src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs:26](../../../../src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs#L26) |  |
-| <code>public static bool GetIsHostedInWorkspaceShell(DependencyObject element) =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs:33](../../../../src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs#L33) |  |
-| <code>public static void SetIsHostedInWorkspaceShell(DependencyObject element, bool value) =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs:36](../../../../src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs#L36) |  |
-| <code>public static ShellDensityMode GetShellDensityMode(DependencyObject element) =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs:39](../../../../src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs#L39) |  |
-| <code>public static void SetShellDensityMode(DependencyObject element, ShellDensityMode value) =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs:42](../../../../src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs#L42) |  |
-| <code>public static bool GetIsCompactDensity(DependencyObject element) =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs:45](../../../../src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs#L45) |  |
-| <code>public static void SetIsCompactDensity(DependencyObject element, bool value) =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs:48](../../../../src/Meridian.Wpf/Views/WorkspaceShellChromeState.cs#L48) |  |
-
-## WorkspaceShellContextStripControl
-
-Qualified name: <code>Meridian.Wpf.Views.WorkspaceShellContextStripControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs:12](../../../../src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs#L12).
-
-Displays shell context titles and badges in regular or compact form.
-
-```csharp
-public partial class WorkspaceShellContextStripControl : UserControl
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly DependencyProperty ShellContextProperty = DependencyProperty.Register(nameof(ShellContext), typeof(WorkspaceShellContext), typeof(WorkspaceShellContextStripControl), new PropertyMetadata(new WorkspaceShellContext(), OnShellContextChanged));</code> | [src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs:17](../../../../src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs#L17) |  |
-| <code>public static readonly DependencyProperty IsCompactProperty = DependencyProperty.Register(nameof(IsCompact), typeof(bool), typeof(WorkspaceShellContextStripControl), new PropertyMetadata(false, OnCompactPresentationChanged));</code> | [src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs:24](../../../../src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs#L24) |  |
-| <code>public WorkspaceShellContextStripControl();</code> | [src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs:31](../../../../src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs#L31) |  |
-| <code>public WorkspaceShellContext ShellContext { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs:37](../../../../src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs#L37) |  |
-| <code>public bool IsCompact { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs:43](../../../../src/Meridian.Wpf/Views/WorkspaceShellContextStripControl.xaml.cs#L43) |  |

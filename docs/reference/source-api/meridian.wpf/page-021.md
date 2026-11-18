@@ -6,6 +6,38 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## InspectorPanelModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.InspectorPanelModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:317](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L317).
+
+Carries selected-record title, supporting detail, badge, and facts for a workstation inspector.
+
+```csharp
+public sealed class InspectorPanelModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Title { get; init; } = &quot;No selection&quot;;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:319](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L319) |  |
+| <code>public string Subtitle { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:321](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L321) |  |
+| <code>public string Detail { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:323](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L323) |  |
+| <code>public WorkstationBadgeModel? Badge { get; init; }</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:325](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L325) |  |
+| <code>public IReadOnlyList&lt;KeyValueFactModel&gt; Facts { get; init; } = Array.Empty&lt;KeyValueFactModel&gt;();</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:327](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L327) |  |
+
+## KeyValueFactModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.KeyValueFactModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:330](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L330).
+
+```csharp
+public sealed record KeyValueFactModel(string Label, string Value, string Detail = "", string Tone = WorkspaceTone.Neutral);
+```
+
 ## OperationsContinuityCloseBlockerPresentation
 
 Qualified name: <code>Meridian.Wpf.Workstation.Models.OperationsContinuityCloseBlockerPresentation</code>. Kind: `record`.
@@ -745,39 +777,3 @@ Enum declarations:
 | <code>Error</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:9](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L9) |  |
 | <code>Success</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:10](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L10) |  |
 | <code>Warning</code> | [src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs:11](../../../../src/Meridian.Wpf/Workstation/State/WorkstationRegionState.cs#L11) |  |
-
-## ActivityLogGridControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Tables.ActivityLogGridControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:49](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L49).
-
-Displays read-only activity-log rows using row and column virtualization.
-
-```csharp
-public sealed class ActivityLogGridControl : DataGrid
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ActivityLogGridControl();</code> | [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:51](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L51) |  |
-
-## DenseDataGridControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Tables.DenseDataGridControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:8](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L8).
-
-Displays read-only rows with explicit columns and row and column virtualization.
-
-```csharp
-public sealed class DenseDataGridControl : DataGrid
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DenseDataGridControl();</code> | [src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs:10](../../../../src/Meridian.Wpf/Workstation/Tables/WorkstationTableControls.cs#L10) |  |

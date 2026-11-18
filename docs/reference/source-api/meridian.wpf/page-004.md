@@ -6,6 +6,22 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FundReconciliationReadResult
+
+Qualified name: <code>Meridian.Wpf.Models.FundReconciliationReadResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:38](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L38).
+
+```csharp
+public sealed record FundReconciliationReadResult(ReconciliationSummary Summary, int KnownRunCount, int MissingRunCount, int UnavailableRunCount)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FundReconciliationReadAvailability Availability =&gt; …;</code> | [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:44](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L44) |  |
+
 ## FundReconciliationRunRow
 
 Qualified name: <code>Meridian.Wpf.Models.FundReconciliationRunRow</code>. Kind: `record`.
@@ -996,14 +1012,4 @@ Source: [src/Meridian.Wpf/Models/SecurityMasterPresentationModels.cs:17](../../.
 
 ```csharp
 public sealed record SecurityMasterEvidenceItem(string Title, string Detail, string Destination);
-```
-
-## SecurityMasterPresentationField
-
-Qualified name: <code>Meridian.Wpf.Models.SecurityMasterPresentationField</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Models/SecurityMasterPresentationModels.cs:3](../../../../src/Meridian.Wpf/Models/SecurityMasterPresentationModels.cs#L3).
-
-```csharp
-public sealed record SecurityMasterPresentationField(string Label, string Value);
 ```

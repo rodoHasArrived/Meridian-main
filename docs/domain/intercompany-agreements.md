@@ -133,6 +133,23 @@ approved; a rejection needs a reason and leaves the approved value in force. Eve
 append-only. Each floating slice of an accrual pins the fixing it used, and a draft whose pinned
 fixing has since been corrected cannot be submitted, approved or posted until it is recomputed.
 
+### Floating rates and reviewed fixings
+
+A floating loan declares its index, its spread in basis points and a fixing lag of 0 to 10 business
+days. For each schedule period, the rate is the approved fixing of that index observed the lag before
+the period's accrual start on the schedule calendar, plus the spread, and it holds for the whole
+period. Exactly that date's approved value is used; a missing value refuses the whole window and no
+nearby, latest or carried-forward rate is used. In-arrears and averaged conventions, floors, caps and
+compounding are not calculated.
+
+Fixings are tenant-scoped reference data at `/api/ledger/intercompany/rate-fixings`, managed in the
+browser's Rate fixings tab and the WPF Rate fixings tab. An operator with ledger management records
+what the publisher showed, with a source and justification; someone else approves it before any
+accrual reads it. A correction is a new proposed value and replaces the approved value only once it is
+approved; a rejection needs a reason and leaves the approved value in force. Every step is retained
+append-only. Each floating slice of an accrual pins the fixing it used, and a draft whose pinned
+fixing has since been corrected cannot be submitted, approved or posted until it is recomputed.
+
 ## External-review attestation
 
 An explicit external-review decision binds the exact submitted hash and expected aggregate

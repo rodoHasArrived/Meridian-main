@@ -1258,6 +1258,27 @@ through the snapshot store's atomic replace; values are trimmed, capped at 128 p
 and an empty scope clears the default (an entity or fund alone is a scope). Both routes require an
 authenticated session and only ever read or write the caller's own record.
 
+## Operator presentation preferences
+
+`GET`/`PUT /api/workstation/operator/preferences` (`Endpoints/WorkstationEndpoints.OperatorPreferences.cs`)
+read and replace the signed-in operator's presentation preferences: appearance, density, display time
+zone, page-descriptions setting, browser shortcut overrides, WPF desktop shortcut overrides and pop-up
+notification choices with quiet hours.
+`Workflows/FileOperatorPreferenceStore.cs`
+keeps one record per tenant, company and user (the same key as the default scope) under
+`workstation/operators/preferences.json`, through the snapshot store's atomic replace. A save
+replaces the whole set; an empty set clears it. The exception is `DesktopKeyBindings`, which the
+desktop owns: a save that leaves it null (every browser save) keeps the stored set, and an empty set
+is stored as "every desktop shortcut on its default". Values are validated: appearance and density from
+the shared `OperatorPreferenceVocabulary` sets, the zone by IANA-name shape (at most 64 characters; the browser confirms it against its
+own zone data), at most 32 browser shortcut overrides with hyphenated lowercase ids and printable combos
+of at most 64 characters, and at most 64 desktop shortcut overrides with letter-and-digit action ids,
+key names and comma-separated modifier names (entries with nothing set are dropped), and
+notification quiet-hours times as 24-hour `HH:mm` (a notification set with nothing chosen stores
+nothing). An invalid value returns 400 naming the field and keeps the stored set.
+Both routes require an authenticated session, only touch the caller's record, and return 501 when
+no store is registered. The values are display-only and never change stored or ledger data.
+
 ## Operating-scope options
 
 `GET /api/workstation/scope-options` (`Endpoints/WorkstationEndpoints.ScopeOptions.cs`) lists the
