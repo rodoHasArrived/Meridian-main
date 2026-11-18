@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationsStatusDerivationService
+
+Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.OperationsStatusDerivationService</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsStatusDerivationService.cs:17](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsStatusDerivationService.cs#L17).
+
+Calculates workflow status from retained operations state and control evidence.
+
+```csharp
+public sealed class OperationsStatusDerivationService : IOperationsStatusDerivationService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public OperationsWorkflowStatusDto Derive(OperationsContinuityWorkflow workflow);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsStatusDerivationService.cs:19](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsStatusDerivationService.cs#L19) |  |
+
 ## OperationsWorkflowAuditDraft
 
 Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.OperationsWorkflowAuditDraft</code>. Kind: `record`.
@@ -848,24 +866,3 @@ Declared public members:
 | <code>public async Task&lt;bool&gt; DeleteAsync(string scheduleId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs:122](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs#L122) |  |
 | <code>public async Task RecordRunAsync(string scheduleId, DateTimeOffset ranAtUtc, string status, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs:136](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs#L136) |  |
 | <code>public async Task RecordFailureAsync(string scheduleId, DateTimeOffset attemptedAtUtc, string status, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs:163](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs#L163) |  |
-
-## FileStatementMappingProfileStore
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.FileStatementMappingProfileStore</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/FileStatementMappingProfileStore.cs:26](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/FileStatementMappingProfileStore.cs#L26).
-
-File-backed profile store using the versioned-snapshot pattern: a single JSON document persisted through AtomicFileWriter so a crash mid-write never corrupts operator-authored mapping profiles.
-
-```csharp
-public sealed class FileStatementMappingProfileStore : JsonFileSnapshotStore<StatementMappingProfileSnapshot>, IStatementMappingProfileStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FileStatementMappingProfileStore(string dataRoot, ILogger&lt;FileStatementMappingProfileStore&gt;? logger = null) : base(GetSnapshotPath(dataRoot), StatementMappingProfileJsonContext.Default.StatementMappingProfileSnapshot);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/FileStatementMappingProfileStore.cs:33](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/FileStatementMappingProfileStore.cs#L33) |  |
-| <code>public Task&lt;IReadOnlyList&lt;StatementMappingProfileDocument&gt;&gt; ListAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/FileStatementMappingProfileStore.cs:40](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/FileStatementMappingProfileStore.cs#L40) |  |
-| <code>public async Task&lt;StatementMappingProfileDocument&gt; UpsertAsync(StatementMappingProfileDocument document, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/FileStatementMappingProfileStore.cs:43](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/FileStatementMappingProfileStore.cs#L43) |  |
-| <code>public async Task&lt;bool&gt; DeleteAsync(string profileId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/FileStatementMappingProfileStore.cs:70](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/FileStatementMappingProfileStore.cs#L70) |  |

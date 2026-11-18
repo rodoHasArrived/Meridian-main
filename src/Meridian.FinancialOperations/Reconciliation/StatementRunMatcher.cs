@@ -95,12 +95,27 @@ internal static class StatementRunMatcher
         // unmatched — the breaks are real evidence but carry no comparison. Classify them so the
         // governed queue publishes them as informational instead of close blockers.
         var internalTransactionsUnavailable = populations.LedgerTransactions.Count == 0;
+        var internalPositionsByEvidence = populations.Positions
+            .GroupBy(static position => position.EvidenceReference, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(static group => group.Key, static group => group.First(), StringComparer.OrdinalIgnoreCase);
+        var accruedTolerance = Math.Max(
+            ToEngineTolerance(toleranceProfile).PositionMarketValue,
+            StatementAccruedInterestReconciliation.MinimumTolerance);
         foreach (var result in engineResult.Results)
         {
             if (result.MatchTier is StatementMatchTier.Exact or StatementMatchTier.Tolerance)
             {
                 matchCount++;
                 matchGroups.Add(BuildMatchGroup(import.ImportId, result));
+                // A holding can agree on quantity and value yet disagree on accrued interest (a bond
+                // bought between coupons). That is a distinct break on the matched position.
+                if (result.Kind == StatementMatchKind.Position
+                    && TryBuildAccruedInterestBreak(import.ImportId, result, rowByEvidence, internalPositionsByEvidence,
+                        accruedTolerance, fxRateProvider, normalizedBase, createdAtUtc, ref breakOrdinal) is { } accruedBreak)
+                {
+                    breaks.Add(accruedBreak);
+                }
+
                 continue;
             }
 
@@ -225,6 +240,76 @@ internal static class StatementRunMatcher
         }
     }
 
+    private static StatementRunBreak? TryBuildAccruedInterestBreak(
+        string importId,
+        StatementMatchResult result,
+        IReadOnlyDictionary<string, CanonicalStatementRow> rowByEvidence,
+        IReadOnlyDictionary<string, InternalPortfolioPosition> internalPositionsByEvidence,
+        decimal tolerance,
+        IReconciliationFxRateProvider fxRateProvider,
+        string baseCurrency,
+        DateTimeOffset createdAtUtc,
+        ref int breakOrdinal)
+    {
+        if (result.BrokerEvidenceReference is not { } brokerEvidence
+            || result.InternalEvidenceReference is not { } internalEvidence
+            || !rowByEvidence.TryGetValue(brokerEvidence, out var row)
+            || row.AccruedInterest is not { } statedAccrued
+            || !internalPositionsByEvidence.TryGetValue(internalEvidence, out var internalPosition))
+        {
+            return null;
+        }
+
+        string breakCode;
+        decimal delta;
+        string explanation;
+        if (!fxRateProvider.TryConvert(statedAccrued, NormalizeCurrency(row.Currency, baseCurrency), baseCurrency,
+                row.TradeDate, out var custodianAccrued))
+        {
+            breakCode = StatementAccruedInterestReconciliation.UnavailableBreakCode;
+            delta = Math.Abs(statedAccrued);
+            explanation = $"Custodian accrued interest in {row.Currency} cannot be converted to {baseCurrency}; it is not compared.";
+        }
+        else if (internalPosition.AccruedInterest is not { } bookedAccrued)
+        {
+            breakCode = StatementAccruedInterestReconciliation.UnavailableBreakCode;
+            delta = Math.Abs(custodianAccrued);
+            explanation = "Custodian states accrued interest on this holding, but the internal book carries none.";
+        }
+        else
+        {
+            delta = custodianAccrued - bookedAccrued;
+            if (Math.Abs(delta) <= tolerance)
+                return null;
+            breakCode = StatementAccruedInterestReconciliation.VarianceBreakCode;
+            explanation = $"Custodian accrued interest {custodianAccrued} differs from booked accrued interest {bookedAccrued} by {delta}.";
+        }
+
+        var engineResult = new StatementMatchResult(
+            StatementMatchKind.Position,
+            StatementMatchTier.Candidate,
+            result.Confidence,
+            [StatementAccruedInterestReconciliation.RuleId],
+            brokerEvidence,
+            internalEvidence,
+            new StatementMatchVariance(Amount: delta),
+            new StatementMatchTolerance(Amount: tolerance),
+            explanation);
+        var record = new ReconciliationBreakRecord(
+            BreakId: BuildBreakId(importId, breakOrdinal++, brokerEvidence, breakCode),
+            RunId: importId,
+            ImportId: importId,
+            SourceReference: brokerEvidence,
+            BreakCode: breakCode,
+            Category: row.ActivityType,
+            Delta: Math.Abs(delta),
+            Tolerance: tolerance,
+            ToleranceBreached: true,
+            CreatedAtUtc: createdAtUtc,
+            Status: "Open");
+        return new StatementRunBreak(record, engineResult, row);
+    }
+
     private static NormalizedStatementPosition MapPosition(
         CanonicalStatementRow row,
         string account,
@@ -232,8 +317,10 @@ internal static class StatementRunMatcher
         IReconciliationFxRateProvider fxRateProvider,
         string baseCurrency)
     {
-        var marketValueSource = row.Price * row.Quantity;
-        if (marketValueSource == 0m && row.CashAmount != 0m)
+        // A stated market value is authoritative: a bond's quantity is face and its price is per
+        // 100 face, so quantity x price would overstate value a hundredfold.
+        var marketValueSource = row.MarketValue ?? row.Price * row.Quantity;
+        if (row.MarketValue is null && marketValueSource == 0m && row.CashAmount != 0m)
         {
             marketValueSource = row.CashAmount;
         }
@@ -254,7 +341,11 @@ internal static class StatementRunMatcher
             marketValue,
             evidence)
         {
-            Price = marketValue is null ? null : NormalizePrice(row.Price, row.Currency, baseCurrency, row.TradeDate, fxRateProvider)
+            // With a stated market value the quoted price may be per 100 face rather than per unit,
+            // so the engine derives the comparable unit price from value and quantity instead.
+            Price = marketValue is null || row.MarketValue is not null
+                ? null
+                : NormalizePrice(row.Price, row.Currency, baseCurrency, row.TradeDate, fxRateProvider)
         };
     }
 
@@ -427,3 +518,21 @@ internal sealed record StatementRunBreak(
     ReconciliationBreakRecord Record,
     StatementMatchResult EngineResult,
     CanonicalStatementRow? StatementRow);
+
+/// <summary>
+/// Typed break codes and policy for reconciling custodian-stated accrued interest on a matched
+/// position against Meridian's booked accrued interest receivable.
+/// </summary>
+public static class StatementAccruedInterestReconciliation
+{
+    /// <summary>Booked and custodian accrued interest differ beyond tolerance.</summary>
+    public const string VarianceBreakCode = "POSITION_ACCRUED_INTEREST_VARIANCE";
+
+    /// <summary>The custodian states accrued interest but no comparable internal figure exists.</summary>
+    public const string UnavailableBreakCode = "POSITION_ACCRUED_INTEREST_UNAVAILABLE";
+
+    public const string RuleId = "statement-position-accrued-interest-v1";
+
+    /// <summary>One minor unit: accrued interest is a rounded cash amount, so sub-cent drift is noise.</summary>
+    public const decimal MinimumTolerance = 0.01m;
+}

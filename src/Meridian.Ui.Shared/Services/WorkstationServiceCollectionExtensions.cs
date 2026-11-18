@@ -1390,6 +1390,16 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<Meridian.Application.SecurityMaster.ISecurityMasterAmortizationLedgerBridge>(),
                 sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterCashFlowService>(),
                 sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>())));
+        // Governed bond coupon income: prepares spine candidates for review; never approves or posts.
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IRecurringJournalCalculation, BondCouponIncomeCalculation>(sp =>
+            new BondCouponIncomeCalculation(
+                sp.GetService<Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionService>(),
+                sp.GetService<Meridian.FinancialOperations.Ledger.IAssetAccountingEventSpineService>(),
+                sp.GetService<Meridian.Storage.FixedIncome.BondWorkspaceSnapshotStore>(),
+                sp.GetService<Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionStore>(),
+                sp.GetService<Meridian.Contracts.Accounting.Lots.IBondIncomeService>(),
+                sp.GetService<Meridian.FinancialOperations.Ledger.IBondIncomePreparationService>(),
+                sp.GetService<ILogger<BondCouponIncomeCalculation>>())));
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IRecurringJournalCalculation, FxRevaluationCalculation>(sp =>
             new FxRevaluationCalculation(
                 sp.GetRequiredService<IRecurringJournalCalculationInputs>(),

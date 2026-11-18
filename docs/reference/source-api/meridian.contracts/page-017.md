@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LoanContractDetailDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.LoanContractDetailDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:195](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L195).
+
+```csharp
+public sealed record LoanContractDetailDto(Guid LoanId, string FacilityName, BorrowerInfoDto Borrower, LoanStatus Status, DateOnly EffectiveDate, DateOnly? ActivationDate, DateOnly? CloseDate, int CurrentTermsVersion, DirectLendingTermsDto CurrentTerms, IReadOnlyList<LoanTermsVersionDto> TermsVersions);
+```
+
 ## LoanEventLineageDto
 
 Qualified name: <code>Meridian.Contracts.DirectLending.LoanEventLineageDto</code>. Kind: `record`.
@@ -677,14 +687,4 @@ Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:388](
 
 ```csharp
 public sealed record ServicerStatementApplyRequestDto(IReadOnlyList<string> RowIds, ServicerStatementApplyMode? DefaultMode = null, string? AppliedBy = null, string? Rationale = null);
-```
-
-## ServicerStatementApplyResultDto
-
-Qualified name: <code>Meridian.Contracts.DirectLending.ServicerStatementApplyResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:394](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L394).
-
-```csharp
-public sealed record ServicerStatementApplyResultDto(Guid BatchId, int RequestedRowCount, int AppliedRowCount, int SkippedRowCount, IReadOnlyList<ServicerStatementRowDto> Rows, IReadOnlyList<ServicerStatementValidationIssueDto> Issues, string Status);
 ```

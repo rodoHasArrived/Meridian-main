@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ServicerStatementApplyResultDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.ServicerStatementApplyResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:394](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L394).
+
+```csharp
+public sealed record ServicerStatementApplyResultDto(Guid BatchId, int RequestedRowCount, int AppliedRowCount, int SkippedRowCount, IReadOnlyList<ServicerStatementRowDto> Rows, IReadOnlyList<ServicerStatementValidationIssueDto> Issues, string Status);
+```
+
 ## ServicerStatementImportRequestDto
 
 Qualified name: <code>Meridian.Contracts.DirectLending.ServicerStatementImportRequestDto</code>. Kind: `record`.
@@ -159,7 +169,7 @@ public sealed record UpdateCollateralValueRequest(Guid CollateralId, decimal New
 
 Qualified name: <code>Meridian.Contracts.Domain.AccountSnapshotRecord</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:39](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L39).
+Source: [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:48](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L48).
 
 Serialisation-friendly per-account portfolio snapshot persisted by IPositionSnapshotStore.
 
@@ -744,7 +754,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Domain.IPositionSnapshotStore</code>. Kind: `interface`.
 
-Source: [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:155](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L155).
+Source: [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:164](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L164).
 
 Provides crash-safe persistence for per-account portfolio snapshots. Implementations must follow the WAL pattern (ADR-007) and respect the LifecyclePolicyEngine tiered-storage rules (ADR-002).
 
@@ -756,12 +766,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task SaveSnapshotAsync(AccountSnapshotRecord snapshot, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:162](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L162) | Persists an account snapshot with the same atomic equivalence/conflict semantics as SaveSnapshotConditionallyAsync. This retained compatibility method does not expose whether an equivalent retry was skipped. |
-| <code>Task&lt;PositionSnapshotSaveOutcome&gt; SaveSnapshotConditionallyAsync(AccountSnapshotRecord snapshot, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:179](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L179) | Atomically persists an account snapshot using the logical identity of run, account, exact owner scope, and UTC AccountSnapshotRecord.AsOf. An equivalent retry must be a no-op; a different payload at the same identity must throw PositionSnapshotConflictException. The check and append must be serialized for concurrent writers to the same durable partition. Implementations must resolve &quot;latest&quot; by the greatest AccountSnapshotRecord.AsOf value rather than physical append order. |
-| <code>Task&lt;AccountSnapshotRecord?&gt; GetLatestSnapshotAsync(string runId, string accountId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:192](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L192) | Retrieves the snapshot with the greatest AccountSnapshotRecord.AsOf value for the given run / account pair. Returns null when none exists. Equal-time conflicting legacy records must throw PositionSnapshotConflictException rather than return a file-order-dependent winner. |
-| <code>Task&lt;AccountSnapshotRecord?&gt; GetLatestSnapshotAsync(string runId, string accountId, PositionSnapshotOwnerScope ownerScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:200](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L200) | Retrieves the snapshot with the greatest AccountSnapshotRecord.AsOf value owned by the exact accounting scope. Implementations must not fall back to an unowned or differently owned run/account snapshot. Equal-time conflicting legacy records must throw PositionSnapshotConflictException. |
-| <code>IAsyncEnumerable&lt;AccountSnapshotRecord&gt; GetSnapshotHistoryAsync(string runId, string accountId, DateTimeOffset from, DateTimeOffset to, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:210](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L210) | Streams all snapshots for the given run / account pair between from and to (both inclusive, UTC). |
-| <code>IAsyncEnumerable&lt;AccountSnapshotRecord&gt; GetSnapshotHistoryAsync(string runId, string accountId, PositionSnapshotOwnerScope ownerScope, DateTimeOffset from, DateTimeOffset to, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:221](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L221) | Streams snapshots for the exact accounting owner between the inclusive UTC bounds. Implementations must not fall back to legacy unowned or differently owned history. |
+| <code>Task SaveSnapshotAsync(AccountSnapshotRecord snapshot, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:171](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L171) | Persists an account snapshot with the same atomic equivalence/conflict semantics as SaveSnapshotConditionallyAsync. This retained compatibility method does not expose whether an equivalent retry was skipped. |
+| <code>Task&lt;PositionSnapshotSaveOutcome&gt; SaveSnapshotConditionallyAsync(AccountSnapshotRecord snapshot, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:188](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L188) | Atomically persists an account snapshot using the logical identity of run, account, exact owner scope, and UTC AccountSnapshotRecord.AsOf. An equivalent retry must be a no-op; a different payload at the same identity must throw PositionSnapshotConflictException. The check and append must be serialized for concurrent writers to the same durable partition. Implementations must resolve &quot;latest&quot; by the greatest AccountSnapshotRecord.AsOf value rather than physical append order. |
+| <code>Task&lt;AccountSnapshotRecord?&gt; GetLatestSnapshotAsync(string runId, string accountId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:201](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L201) | Retrieves the snapshot with the greatest AccountSnapshotRecord.AsOf value for the given run / account pair. Returns null when none exists. Equal-time conflicting legacy records must throw PositionSnapshotConflictException rather than return a file-order-dependent winner. |
+| <code>Task&lt;AccountSnapshotRecord?&gt; GetLatestSnapshotAsync(string runId, string accountId, PositionSnapshotOwnerScope ownerScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:209](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L209) | Retrieves the snapshot with the greatest AccountSnapshotRecord.AsOf value owned by the exact accounting scope. Implementations must not fall back to an unowned or differently owned run/account snapshot. Equal-time conflicting legacy records must throw PositionSnapshotConflictException. |
+| <code>IAsyncEnumerable&lt;AccountSnapshotRecord&gt; GetSnapshotHistoryAsync(string runId, string accountId, DateTimeOffset from, DateTimeOffset to, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:219](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L219) | Streams all snapshots for the given run / account pair between from and to (both inclusive, UTC). |
+| <code>IAsyncEnumerable&lt;AccountSnapshotRecord&gt; GetSnapshotHistoryAsync(string runId, string accountId, PositionSnapshotOwnerScope ownerScope, DateTimeOffset from, DateTimeOffset to, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:230](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L230) | Streams snapshots for the exact accounting owner between the inclusive UTC bounds. Implementations must not fall back to legacy unowned or differently owned history. |
 
 ## ListingId
 
@@ -975,15 +985,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static BboQuotePayload FromUpdate(DateTimeOffset timestamp, string symbol, decimal bidPrice, long bidSize, decimal askPrice, long askSize, long sequenceNumber, string? streamId = null, string? venue = null);</code> | [src/Meridian.Contracts/Domain/Models/BboQuotePayload.cs:34](../../../../src/Meridian.Contracts/Domain/Models/BboQuotePayload.cs#L34) | Creates a BboQuotePayload from a MarketQuoteUpdate (adapter input). Calculates mid-price and spread automatically. |
 | <code>public static BboQuotePayload FromUpdate(MarketQuoteUpdate update, long seq, bool isProviderSequence = false);</code> | [src/Meridian.Contracts/Domain/Models/BboQuotePayload.cs:76](../../../../src/Meridian.Contracts/Domain/Models/BboQuotePayload.cs#L76) | Creates a BboQuotePayload from a MarketQuoteUpdate with conditional spread/mid-price calculation. Returns null for spread and mid-price if: - Either bid or ask price is 0 - Market is crossed (bid &gt; ask) |
-
-## DepthIntegrityEvent
-
-Qualified name: <code>Meridian.Contracts.Domain.Models.DepthIntegrityEvent</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Domain/Models/DepthIntegrityEvent.cs:10](../../../../src/Meridian.Contracts/Domain/Models/DepthIntegrityEvent.cs#L10).
-
-Integrity event specific to market depth streams.
-
-```csharp
-public sealed record DepthIntegrityEvent(DateTimeOffset Timestamp, string Symbol, [property : JsonPropertyName("integrityKind")] DepthIntegrityKind Kind, string Description, ushort Position, DepthOperation Operation, OrderBookSide Side, long SequenceNumber, string? StreamId = null, string? Venue = null) : MarketEventPayload;
-```

@@ -49,7 +49,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         var openedAt = DateTimeOffset.Parse("2026-05-01T00:00:00Z");
         await database.JournalStore.SaveLedgerBookAsync(new(bookId, "historical-lots", Guid.NewGuid(),
             FundStructureNodeKindDto.Fund, "Historical lots", "USD", openedAt, openedAt));
-        var authority = await database.SeedLotReferenceAuthorityAsync(bookId, TestSecurityId, TestBookPositionId);
+        var authority = await database.SeedLotReferenceAuthorityAsync(bookId, TestSecurityId, TestBookPositionId, assetClass: "Bond");
         var period = await database.JournalStore.SavePeriodAsync(new(periodId, bookId, 2026, 5, "2026-05",
             new(2026, 5, 1), new(2026, 5, 31), "Open", openedAt, null, 0), 0);
         await database.JournalStore.SaveTaxLotPolicyAsync(new(Guid.NewGuid(), bookId,

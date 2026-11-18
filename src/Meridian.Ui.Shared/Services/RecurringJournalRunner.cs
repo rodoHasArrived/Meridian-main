@@ -107,6 +107,7 @@ public sealed class RecurringJournalRunner(
                             now < new DateTimeOffset(date.AddDays(1).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero))
                             throw new InvalidOperationException(
                                 $"This amount is measured at the close of {date:yyyy-MM-dd}; it is calculated once that day has ended.");
+                        RequireSingleCouponIncomeMethod(session, definition, calculation, date);
                         if (index > 0 && dependent is { DependsOnPostedHistory: true })
                             await RequirePreviousOccurrenceSettledAsync(session, definition, schedule.EffectiveDateFor(index - 1), ct).ConfigureAwait(false);
                         var outcome = await CalculateAsync(calculation, claim, period,
@@ -230,6 +231,26 @@ public sealed class RecurringJournalRunner(
 
         throw new InvalidOperationException(
             $"The {previousDate:yyyy-MM-dd} occurrence is {status}. This amount depends on what it posts; post or reject it first.");
+    }
+
+    // Both calculations recognize bond coupon income. The governed lot-level calculation is
+    // blocked while the same ledger scope still schedules the bridge accrual, so adopting it
+    // cannot book the same coupon twice; the existing accrual schedules are left as they run.
+    private static void RequireSingleCouponIncomeMethod(IRecurringJournalSession session,
+        RecurringScheduleDefinition definition, JournalTemplateCalculation calculation, DateOnly date)
+    {
+        if (!string.Equals(calculation.Kind, BondCouponIncomeCalculation.CalculationKind, StringComparison.OrdinalIgnoreCase))
+            return;
+        var conflicting = session.CurrentSchedules.FirstOrDefault(other =>
+            !Same(other.ScheduleId, definition.ScheduleId)
+            && other.Scope == definition.Scope
+            && (other.Schedule.EndsOn is null || other.Schedule.EndsOn >= date)
+            && string.Equals(session.GetCurrentTemplate(other.Schedule.TemplateId).Template.Calculation?.Kind,
+                FixedIncomeAccrualCalculation.CalculationKind, StringComparison.OrdinalIgnoreCase));
+        if (conflicting is not null)
+            throw new InvalidOperationException(
+                $"Schedule '{conflicting.ScheduleId}' already accrues fixed-income coupon income in this ledger book. " +
+                "End it before scheduling governed bond coupon income, so the same coupon is not recognized twice.");
     }
 
     private async Task<RecurringJournalCalculationResult> CalculateAsync(JournalTemplateCalculation calculation,

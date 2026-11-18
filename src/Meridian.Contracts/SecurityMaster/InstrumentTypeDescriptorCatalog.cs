@@ -125,7 +125,7 @@ public static class InstrumentTypeDescriptorCatalog
             InstrumentType: InstrumentType.Forex,
             DisplayName: "FX spot",
             SecurityMasterAssetClass: "FxSpot",
-            SecurityMasterAssetFamily: "BankProduct",
+            SecurityMasterAssetFamily: "ForeignExchange",
             SecurityMasterSubType: "OtherSubType",
             DefaultProviderSecurityType: "CASH",
             IsTradeable: true,
@@ -257,7 +257,7 @@ public static class InstrumentTypeDescriptorCatalog
             InstrumentType: InstrumentType.CFD,
             DisplayName: "CFD",
             SecurityMasterAssetClass: "Cfd",
-            SecurityMasterAssetFamily: "ListedDerivative",
+            SecurityMasterAssetFamily: "OtcDerivative",
             SecurityMasterSubType: "OtherSubType",
             DefaultProviderSecurityType: "CFD",
             IsTradeable: true,
@@ -301,7 +301,7 @@ public static class InstrumentTypeDescriptorCatalog
             InstrumentType: InstrumentType.Swap,
             DisplayName: "Swap",
             SecurityMasterAssetClass: "Swap",
-            SecurityMasterAssetFamily: "ListedDerivative",
+            SecurityMasterAssetFamily: "OtcDerivative",
             SecurityMasterSubType: "SwapContract",
             DefaultProviderSecurityType: "SWAP",
             IsTradeable: true,
@@ -408,8 +408,7 @@ public static class InstrumentTypeDescriptorCatalog
     /// unchanged and still surface as passport fallbacks, so this reconciliation changes no output.
     /// <para>
     /// Some matching labels are reviewed approximations rather than identities: Warrant uses
-    /// <c>OptionContract</c>, FX spot uses the <c>BankProduct</c> family and Deposit uses
-    /// <c>DemandDeposit</c>, because the domain declares no closer case. They are listed in
+    /// <c>OptionContract</c> and Deposit uses <c>DemandDeposit</c>, because the domain declares no closer case. They are listed in
     /// <see cref="ApproximateDomainLabelMappings"/>.
     /// </para>
     /// </summary>
@@ -442,8 +441,6 @@ public static class InstrumentTypeDescriptorCatalog
     [
         new(InstrumentType.Warrant, InstrumentTypeDescriptorLabelField.SubType, "OptionContract",
             "The domain declares no warrant sub-type; a warrant is recorded as an option contract."),
-        new(InstrumentType.Forex, InstrumentTypeDescriptorLabelField.AssetFamily, "BankProduct",
-            "The domain declares no FX family; FX spot is grouped with bank products."),
         new(InstrumentType.Deposit, InstrumentTypeDescriptorLabelField.SubType, "DemandDeposit",
             "A generic deposit descriptor defaults to the demand-deposit sub-type; time deposits use TimeDeposit.")
     ];

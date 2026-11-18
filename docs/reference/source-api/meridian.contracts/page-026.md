@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CreateAccountRequest
+
+Qualified name: <code>Meridian.Contracts.FundStructure.CreateAccountRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:516](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L516).
+
+Request to create a new fund account.
+
+```csharp
+public sealed record CreateAccountRequest(Guid AccountId, AccountTypeDto AccountType, string AccountCode, string DisplayName, string BaseCurrency, DateTimeOffset EffectiveFrom, string CreatedBy, Guid? FundId = null, Guid? EntityId = null, Guid? SleeveId = null, Guid? VehicleId = null, string? Institution = null, string? PortfolioId = null, string? LedgerReference = null, string? StrategyId = null, string? RunId = null, AccountOperationalStatusDto OperationalStatus = AccountOperationalStatusDto.Active, CustodianAccountDetailsDto? CustodianDetails = null, BankAccountDetailsDto? BankDetails = null);
+```
+
 ## CreateBusinessRequest
 
 Qualified name: <code>Meridian.Contracts.FundStructure.CreateBusinessRequest</code>. Kind: `record`.
@@ -596,14 +608,4 @@ Source: [src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs:
 
 ```csharp
 public sealed record FundStructureSetupPreviewDto(IReadOnlyList<FundStructureNodeDto> Nodes, IReadOnlyList<FundStructureSetupPreviewLinkDto> OwnershipLinks, FundStructureSetupValidationSummaryDto ValidationSummary);
-```
-
-## FundStructureSetupPreviewLinkDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureSetupPreviewLinkDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs:112](../../../../src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs#L112).
-
-```csharp
-public sealed record FundStructureSetupPreviewLinkDto(FundStructureSetupNodeAlias Parent, FundStructureSetupNodeAlias Child, OwnershipRelationshipTypeDto RelationshipType, decimal? OwnershipPercent, bool IsPrimary, string? Notes);
 ```

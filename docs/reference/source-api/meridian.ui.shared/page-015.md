@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PeriodAdjustmentPreparationService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PeriodAdjustmentPreparationService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/PeriodAdjustmentPreparationService.cs:23](../../../../src/Meridian.Ui.Shared/Services/PeriodAdjustmentPreparationService.cs#L23).
+
+Prepares a source-linked inverse in an explicitly selected open period. Source journals and their closed workbench records remain immutable; independent approval and posting are separate. Delta mark accounting remains the default. Reversing a period-end mark is an explicit policy.
+
+```csharp
+public sealed class PeriodAdjustmentPreparationService(ILedgerJournalStore store, AutomatedJournalDraftIntakeService intake, IAutomatedJournalScheduleStore? schedules = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;AutomatedJournalDraftIntakeResult&gt; PrepareAsync(PreparePeriodAdjustmentRequest request, string actor, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PeriodAdjustmentPreparationService.cs:30](../../../../src/Meridian.Ui.Shared/Services/PeriodAdjustmentPreparationService.cs#L30) |  |
+| <code>public async Task&lt;AutomatedJournalScheduleWorkItem&gt; ScheduleMarkReversalAsync(PreparePeriodAdjustmentRequest request, string actor, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PeriodAdjustmentPreparationService.cs:42](../../../../src/Meridian.Ui.Shared/Services/PeriodAdjustmentPreparationService.cs#L42) | Retains an opt-in, one-time next-period mark reversal for the existing scheduler. |
+
 ## PlaidWebhookVerifier
 
 Qualified name: <code>Meridian.Ui.Shared.Services.PlaidWebhookVerifier</code>. Kind: `class`.
@@ -877,24 +896,3 @@ Source: [src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs:8](.
 ```csharp
 public sealed record RecurringJournalPeriodState(string PeriodId, long Version, bool IsOpen, string? LockOwner, string? ReopenPath, string? Blocker, DateOnly? StartDate = null, DateOnly? EndDate = null);
 ```
-
-## RecurringJournalRunner
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalRunner</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:13](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L13).
-
-Runs under the existing scheduled worker and admits only retained human-review drafts.
-
-```csharp
-public sealed class RecurringJournalRunner(IRecurringJournalStore store, AutomatedJournalDraftIntakeService intake, IManualJournalEntryDraftStore drafts, IRecurringJournalPeriodAuthority periods, IEnumerable<IRecurringJournalCalculation>? calculations = null) : IRecurringJournalQueueSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool SupportsCalculation(string kind) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:24](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L24) | Whether a calculated template of this kind can be run by this host. |
-| <code>public IReadOnlyList&lt;string&gt; MissingCalculationInputs(JournalTemplateCalculation calculation) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:27](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L27) | The inputs a calculated template of this kind must state and does not. |
-| <code>public async Task&lt;IReadOnlyList&lt;AutomatedJournalScheduledRunResult&gt;&gt; RunDueAsync(DateTimeOffset now, string? tenant = null, string? company = null, bool scopeSpecified = false, CancellationToken ct = default, string? scheduleId = null, RecurringJournalScope? exactScope = null, int? expectedScheduleVersion = null);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:32](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L32) |  |
-| <code>public async Task&lt;RecurringJournalQueueDto&gt; GetQueueAsync(string fundProfileId, Guid ledgerBookId, string entityId, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:339](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L339) |  |

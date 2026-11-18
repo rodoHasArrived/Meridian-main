@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RecurringJournalRunner
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalRunner</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:13](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L13).
+
+Runs under the existing scheduled worker and admits only retained human-review drafts.
+
+```csharp
+public sealed class RecurringJournalRunner(IRecurringJournalStore store, AutomatedJournalDraftIntakeService intake, IManualJournalEntryDraftStore drafts, IRecurringJournalPeriodAuthority periods, IEnumerable<IRecurringJournalCalculation>? calculations = null) : IRecurringJournalQueueSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool SupportsCalculation(string kind) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:24](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L24) | Whether a calculated template of this kind can be run by this host. |
+| <code>public IReadOnlyList&lt;string&gt; MissingCalculationInputs(JournalTemplateCalculation calculation) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:27](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L27) | The inputs a calculated template of this kind must state and does not. |
+| <code>public async Task&lt;IReadOnlyList&lt;AutomatedJournalScheduledRunResult&gt;&gt; RunDueAsync(DateTimeOffset now, string? tenant = null, string? company = null, bool scopeSpecified = false, CancellationToken ct = default, string? scheduleId = null, RecurringJournalScope? exactScope = null, int? expectedScheduleVersion = null);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:32](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L32) |  |
+| <code>public async Task&lt;RecurringJournalQueueDto&gt; GetQueueAsync(string fundProfileId, Guid ledgerBookId, string entityId, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:360](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L360) |  |
+
 ## RecurringJournalSubjectAuthority
 
 Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalSubjectAuthority</code>. Kind: `class`.
@@ -787,16 +808,4 @@ Inputs from server-owned read models used to certify a replacement snapshot. Dat
 
 ```csharp
 public sealed record ReportingRestatementCertificationInput(ReportingTemplateMetadata Template, ReportingRunReadinessDto Readiness, ReportAccessQueryContext AccessContext);
-```
-
-## ReportingRetainedManifestArtifactDescriptor
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRetainedManifestArtifactDescriptor</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs:22](../../../../src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs#L22).
-
-Hash and byte-length declaration embedded in the retained manifest. The manifest entry itself intentionally has no hash/length to avoid a circular self-hash; its exact hash and length are authoritatively carried by the immutable package catalog.
-
-```csharp
-public sealed record ReportingRetainedManifestArtifactDescriptor(string ArtifactId, string FileName, string ContentType, long? ByteLength, string? ContentHashSha256);
 ```
