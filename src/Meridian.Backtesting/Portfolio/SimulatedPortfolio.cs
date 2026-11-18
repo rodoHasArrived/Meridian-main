@@ -575,16 +575,18 @@ internal sealed partial class SimulatedPortfolio
         {
             var accountId = account.Account.AccountId;
             var lines = new List<(LedgerAccount account, decimal debit, decimal credit)>();
+            var cashAccount = _chart.Resolve(LedgerAccountRole.Cash, accountId);
+            var securitiesAccount = _chart.Resolve(LedgerAccountRole.Securities, accountId, assetEvent.Symbol);
             if (amount > 0m)
-                lines.Add((LedgerAccounts.CashAccount(accountId), amount, 0m));
+                lines.Add((cashAccount, amount, 0m));
             else
-                lines.Add((LedgerAccounts.CashAccount(accountId), 0m, -amount));
+                lines.Add((cashAccount, 0m, -amount));
             if (basisRelieved > 0m)
-                lines.Add((LedgerAccounts.Securities(assetEvent.Symbol, accountId), 0m, basisRelieved));
+                lines.Add((securitiesAccount, 0m, basisRelieved));
             else if (basisRelieved < 0m)
-                lines.Add((LedgerAccounts.Securities(assetEvent.Symbol, accountId), -basisRelieved, 0m));
+                lines.Add((securitiesAccount, -basisRelieved, 0m));
             if (gain > 0m)
-                lines.Add((LedgerAccounts.RealizedGainFor(accountId), 0m, gain));
+                lines.Add((_chart.Resolve(LedgerAccountRole.RealizedGain, accountId), 0m, gain));
             PostInvestingLedgerLines(assetEvent.EffectiveAt, string.IsNullOrWhiteSpace(assetEvent.Description)
                     ? $"Return of capital – {assetEvent.Symbol}" : assetEvent.Description,
                 lines, BuildAssetEventMetadata(account, assetEvent, assetEvent.Symbol, null, quantity, amount, null));
@@ -1351,7 +1353,8 @@ internal sealed partial class SimulatedPortfolio
             return;
         var journalId = Guid.NewGuid();
         var draft = new JournalEntry(journalId, timestamp, description, lines.Select(line =>
-            new LedgerEntry(Guid.NewGuid(), journalId, timestamp, line.account, line.debit, line.credit, description)).ToArray(), metadata);
+            new LedgerEntry(Guid.NewGuid(), journalId, timestamp, line.account, line.debit, line.credit, description,
+                currency: _ledger.Policy?.FunctionalAmount(line.debit, line.credit))).ToArray(), metadata);
         _ledger.Post(LedgerCashFlowAttribution.WithClassifiedActivity(draft, LedgerCashFlowCategory.Investing, description));
     }
 

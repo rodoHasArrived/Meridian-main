@@ -960,6 +960,7 @@ public static class UiApiRoutes
     public const string RunsLedgerTrialBalanceAsOf = "/api/workstation/runs/{runId}/ledger/trial-balance/as-of";
     public const string RunsLedgerRunningBalance = "/api/workstation/runs/{runId}/ledger/running-balance";
     public const string RunsLedgerSymbol = "/api/workstation/runs/{runId}/ledger/symbols/{symbol}";
+    public const string RunsLedgerIntegrity = "/api/workstation/runs/{runId}/ledger/integrity";
     public const string LedgerPeriodJournalExport = "/api/ledger/periods/{periodId:guid}/journal-export";
     public const string LedgerBooks = "/api/ledger/books";
     public const string LedgerAutomationGrants = "/api/ledger/automation/grants";
