@@ -139,6 +139,23 @@ written as treasury fund-event metadata. The exemption needs the server-retained
 and applies only when no fund event identity, capital account or investor is stated; the ledger
 guard is unchanged. `IntercompanyProposalDeliveryRetryTests` covers this in memory.
 
+### Fixed management-fee extension (2026-11-17)
+
+`DEC-IC-FEE-001` and [ADR-029](../../adr/029-governed-intercompany-fixed-management-fees.md) add rule
+`intercompany-fee-v1`; roadmap row `W12-ICFEE-001` carries its status. Development verification only, over
+synthetic fixtures.
+
+| Piece | Decision and boundary | Verification |
+| --- | --- | --- |
+| Terms | Fixed management fees declare `FixedFeeBasis` (per period, or per annum with a day count). Null-omitted, so earlier revisions keep their review hashes. | `IntercompanyFeeAccrualPreviewServiceTests` |
+| Calculation | Per-period fees prorate by covered days over period days; per-annum fees by the declared day count; cut at revision and period boundaries; rounded once. Percentage fees and an undeclared basis are refused. | `IntercompanyFeeAccrualPreviewServiceTests` (hand-derived amounts) |
+| Direction and draft | The declared service provider books receivable against revenue; the recipient expense against payable, under the existing `ManagementFee` profile. | `IntercompanyFeeAccrualDraftServiceTests`, `IntercompanyFeeAccrualSourceBuilderTests` |
+| Evidence and controls | Fee evidence shares the accrual-evidence fields under its own rule; the guard dispatches on it. The workbench refuses overlapping posted fees and re-resolves each slice's authority before review or posting. | `AccountingConfigurationServiceTests.IntercompanyFee`, `IntercompanyFeeAccrualDraftServiceTests` |
+| Counterpart | The existing mirror delivers the recipient's expense and payable after the source posts. | `IntercompanyFeeAccrualSourceBuilderTests` |
+| Surfaces | Browser "Accrue fee" and basis field; WPF Management fee tab and basis field, over `/api/ledger/intercompany/fees/preview` and `/drafts`. | `IntercompanyManagementFeeWorkspaceTests`, browser tests; WPF smoke test compiles on Linux and runs only on Windows |
+
+Percentage fees, loan commitment or utilisation fees and scheduled runs remain out of scope.
+
 ### Floating-rate extension (2026-11-17)
 
 `DEC-IC-FLOAT-001` and the ADR-028 extension add rule `intercompany-accrual-v2`; roadmap row
@@ -172,6 +189,35 @@ row `W12-ICCONFIRM-001` carries its status. Semantics are in the
 
 Not in this slice: opt-in close blocking (needs its own decision and a reviewed policy revision),
 pairs spanning two companies of one tenant, and posting adjustments from a dispute.
+
+### Periodic compounding extension (2026-11-17)
+
+`DEC-IC-COMPOUND-001` and [ADR-030](../../adr/030-intercompany-interest-compounding.md) add rule
+`intercompany-accrual-v3`; roadmap row `W12-ICCOMPOUND-001` carries its status. Development verification only.
+
+| Piece | Decision and boundary | Verification |
+| --- | --- | --- |
+| Base | Posted principal plus the posted accrued-interest balance of the loan-interest profile at each period start; settlements and reversals reduce it. | `IntercompanyCompoundingAccrualPreviewTests`, `IntercompanyCompoundingSourceTests` (real journals, reversal) |
+| Coverage | Posted, unreversed accruals must cover every earlier day; one request stays in one period; frequency must equal the schedule. | `IntercompanyCompoundingAccrualPreviewTests` |
+| Evidence | The balance, posted windows and first principal date are retained; the guard refuses v3 without them; the workbench re-reads them before review or posting. | `IntercompanyAccrualDraftServiceTests.Compounding` |
+| Surfaces | Browser and WPF slice tables show compounded interest. | browser accrual test, `IntercompanyCompoundingSliceRowTests` |
+
+Daily compounding and compounding that differs from the schedule frequency remain out of scope.
+
+### Opt-in accrual schedules (2026-11-17)
+
+`DEC-IC-SCHEDULE-001` and [ADR-031](../../adr/031-intercompany-accrual-schedules.md); roadmap row
+`W12-ICSCHEDULE-001`. Development verification only.
+
+| Piece | Decision and boundary | Verification |
+| --- | --- | --- |
+| Schedule | Book, loan-interest profile and principal profile; maker-checker; reject or disable with a reason; one open schedule per book and profile. | `IntercompanyAccrualScheduleRulesTests`, `IntercompanyAccrualScheduleServiceTests` |
+| Storage | Append-only versions in ledger migration `076` or an atomic file store. | `IntercompanyAccrualScheduleStoreTests` (file and PostgreSQL) |
+| Runs | Completed periods ending on or after approval; drafts through the operator path; existing drafts skipped; refusals reported; 24 periods per run. | `IntercompanyAccrualScheduleServiceTests` |
+| Runner | Every six hours after a one-minute start-up delay; disabled schedules ignored; one failure never stops the rest. | `IntercompanyAccrualScheduleServiceTests` |
+| Routes and surfaces | `/api/ledger/intercompany/accrual-schedules`, due preview and run now; browser and WPF tabs. | `IntercompanyAccrualScheduleEndpointTests`, workspace and browser tests |
+
+Management-fee schedules follow once governed fee drafting is composed on main.
 
 ## Verification record (2026-11-14)
 

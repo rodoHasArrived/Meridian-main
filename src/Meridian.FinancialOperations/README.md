@@ -66,6 +66,11 @@ The close cockpit consumes this structured schedule instead of intercompany keyw
 NetSuite guarded export review retains its schedule hash and rechecks mapping completeness
 and freshness alongside the existing external NetSuite evidence requirements.
 
+`IntercompanyFeeAccrualSourceBuilder` builds the fixed management-fee source draft with direction from the
+agreement's declared roles and detects overlapping posted fees; `IntercompanyLedgerPostingAuthority`
+re-resolves every fee slice's authority before review or posting. See
+[governed fixed management fees](../../docs/domain/intercompany-agreements.md#governed-fixed-management-fees).
+
 `IntercompanyLedgerPostingAuthority` also re-reads every fixing a floating accrual pinned, so a value
 re-approved after drafting stops the draft before review or posting; the source builder retains the
 computation's own rule version. See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
@@ -74,6 +79,13 @@ computation's own rule version. See [floating rates and reviewed fixings](../../
 posted schedule balances for one approved accounting profile at a date, then record confirm, dispute
 and resolve steps against the exact version and balance digest shown. Advisory only; close is
 unchanged. See [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
+
+`IntercompanyAccrualSourceBuilder` reads compounding facts (posted accrued-interest balance and standing
+accrual windows) and re-verifies them before review or posting. See [periodic compounding](../../docs/domain/intercompany-agreements.md#periodic-compounding).
+
+`IntercompanyAccrualScheduleRules` hold the maker-checker transitions of accrual schedules: active only once
+someone other than the proposer approves, rejected or disabled with a reason. See
+[opt-in accrual schedules](../../docs/domain/intercompany-agreements.md#opt-in-accrual-schedules).
 
 Intercompany services own approved accounting-profile revisions and governed counterpart templates;
 canonical legal terms and independent review remain in Application/FundStructure.

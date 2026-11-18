@@ -27,12 +27,20 @@ public sealed class IntercompanyAccrualPreviewService(IBusinessDayCalendarSource
         ArgumentNullException.ThrowIfNull(input);
         var agreementId = input.Authority?.FirstOrDefault()?.LegalRevision?.AgreementId;
         var currency = input.Authority?.FirstOrDefault()?.LegalRevision?.Terms?.Currency;
-        // Any floating day makes the whole window a v2 computation; an all-fixed window stays exactly v1.
-        var rule = input.Authority?.Any(item => item.LegalRevision?.Terms?.Terms?.StructuredTerms?.RateBasis == IntercompanyRateBasisDto.Floating) == true
-            ? IntercompanyAccrualRules.FloatingRuleVersion : IntercompanyAccrualRules.RuleVersion;
+        // Any compounding day makes the whole window a v3 computation and any floating day a v2 one; an all-simple,
+        // all-fixed window stays exactly v1. A day that is both floating and compounding is refused below.
+        var terms0 = (input.Authority ?? []).Select(item => item.LegalRevision?.Terms?.Terms?.StructuredTerms).ToArray();
+        var rule = terms0.Any(item => item?.Compounding is { } compounding && compounding != IntercompanyCompoundingDto.Simple)
+            ? IntercompanyAccrualRules.CompoundingRuleVersion
+            : terms0.Any(item => item?.RateBasis == IntercompanyRateBasisDto.Floating)
+                ? IntercompanyAccrualRules.FloatingRuleVersion : IntercompanyAccrualRules.RuleVersion;
         IntercompanyAccrualPreviewDto Unavailable(string reason) => new(IntercompanyAccrualRules.StatusUnavailable,
             rule, agreementId, currency, input.AccrualFrom, input.AccrualTo, null, null,
             ScheduleGenerator.KernelVersion, [], [], [reason]);
+        // One version that both floats and compounds is refused per day below with its own reason.
+        if (terms0.Any(item => item?.RateBasis != IntercompanyRateBasisDto.Floating && item?.Compounding is { } c && c != IntercompanyCompoundingDto.Simple)
+            && terms0.Any(item => item?.RateBasis == IntercompanyRateBasisDto.Floating))
+            return Unavailable("The window mixes floating-rate and compounding agreement versions; accrue each version's days in separate windows.");
 
         if (input.AccrualTo <= input.AccrualFrom)
             return Unavailable("The accrual window must be a nonempty [from, to) range.");
@@ -62,12 +70,15 @@ public sealed class IntercompanyAccrualPreviewService(IBusinessDayCalendarSource
             catch (IntercompanyAgreementValidationException error)
             { return Unavailable($"Agreement version {legal.AgreementVersion}: {error.Message}"); }
             var floating = terms.RateBasis == IntercompanyRateBasisDto.Floating;
+            var compounding = terms.Compounding != IntercompanyCompoundingDto.Simple;
+            if (floating && compounding)
+                return Unavailable($"Agreement version {legal.AgreementVersion} compounds a floating rate; floating-rate interest is calculated as simple interest only.");
             if (floating && terms.FixingLagBusinessDays is null)
                 return Unavailable($"Agreement version {legal.AgreementVersion} declares a floating rate without a fixing lag; no fixing date is inferred.");
             if (!floating && terms.FixedAnnualRate is null)
                 return Unavailable($"Agreement version {legal.AgreementVersion} declares no fixed annual rate.");
-            if (terms.Compounding != IntercompanyCompoundingDto.Simple)
-                return Unavailable("Only simple interest is calculated; compounding needs retained capitalization history.");
+            if (compounding && !string.Equals(terms.Compounding.ToString(), terms.Schedule!.Frequency.ToString(), StringComparison.Ordinal))
+                return Unavailable($"Agreement version {legal.AgreementVersion} compounds {terms.Compounding} on a {terms.Schedule!.Frequency} schedule; this rule compounds only at each schedule period start.");
             var schedule = terms.Schedule!;
             if (!calendars.TryGet(schedule.CalendarId, out var calendar))
                 return Unavailable("The declared business-day calendar is unavailable; no fallback was applied.");
@@ -88,6 +99,17 @@ public sealed class IntercompanyAccrualPreviewService(IBusinessDayCalendarSource
                     continue;
                 if (from != cursor)
                     break;
+                decimal? compounded = null;
+                if (compounding)
+                {
+                    // A later period compounds on interest of this window that is not posted yet.
+                    if (slices.Count > 0 && slices[^1].SchedulePeriodSequence != period.Sequence)
+                        return Unavailable(OnePeriodOnly);
+                    var (balance, refusal) = CompoundingBase(input, terms.Schedule!, period.AccrualStart);
+                    if (refusal is not null)
+                        return Unavailable(refusal);
+                    compounded = balance;
+                }
                 IntercompanyAccrualFixingPinDto? pin = null;
                 var rate = terms.FixedAnnualRate ?? 0m;
                 if (floating)
@@ -111,9 +133,9 @@ public sealed class IntercompanyAccrualPreviewService(IBusinessDayCalendarSource
                     var fraction = through - before;
                     slices.Add(new(slices.Count + 1, start, end, authority.AccountingArrangementRevisionId,
                         legal.AgreementVersion, legal.PayloadHash, period.Sequence, principal.Principal, rate,
-                        DayCountConventions.TermLabel(convention), fraction, principal.Principal * rate * fraction,
+                        DayCountConventions.TermLabel(convention), fraction, (principal.Principal + (compounded ?? 0m)) * rate * fraction,
                         principal.EvidenceReference)
-                    { Fixing = pin });
+                    { CompoundedInterest = compounded, Fixing = pin });
                 }
                 cursor = to;
             }
@@ -121,6 +143,8 @@ public sealed class IntercompanyAccrualPreviewService(IBusinessDayCalendarSource
                 return Unavailable($"Agreement version {legal.AgreementVersion} declares no schedule period for {cursor:yyyy-MM-dd}; days outside the declared schedule do not accrue by inference.");
         }
 
+        if (rule == IntercompanyAccrualRules.CompoundingRuleVersion && slices.Select(slice => slice.SchedulePeriodSequence).Distinct().Count() > 1)
+            return Unavailable(OnePeriodOnly);
         var unrounded = slices.Sum(slice => slice.UnroundedAmount);
         var amount = decimal.Round(unrounded, CurrencyMinorUnits.GetPrecision(currency!), MidpointRounding.AwayFromZero);
         var calendarPins = pins.OrderBy(pin => pin.Key, StringComparer.Ordinal)
@@ -132,6 +156,43 @@ public sealed class IntercompanyAccrualPreviewService(IBusinessDayCalendarSource
         return new(IntercompanyAccrualRules.StatusReady, rule, agreementId, currency,
             input.AccrualFrom, input.AccrualTo, amount, unrounded, ScheduleGenerator.KernelVersion, calendarPins, slices,
             ["Calculated proposal input only. Nothing is posted; each side still requires its own review."]);
+    }
+
+    private const string OnePeriodOnly = "A compounding accrual covers one schedule period at most; accrue and post each period before the next compounds on it.";
+
+    /// <summary>
+    /// The posted accrued interest a compounding period adds to principal: the loan-interest profile's posted balance at
+    /// the period start. Refused unless posted, unreversed accruals cover every earlier day from the later of the schedule
+    /// start and the first principal movement, so a period never compounds on interest that was only estimated.
+    /// </summary>
+    private static (decimal Balance, string? Refusal) CompoundingBase(IntercompanyAccrualComputationInput input,
+        IntercompanyScheduleDto schedule, DateOnly periodStart)
+    {
+        var coverFrom = input.FirstPrincipalDate is { } first && first > schedule.StartDate ? first : schedule.StartDate;
+        var cursor = coverFrom;
+        foreach (var window in (input.PostedAccrualWindows ?? []).OrderBy(item => item.From))
+        {
+            if (cursor >= periodStart)
+                break;
+            if (window.From > cursor)
+                break;
+            if (window.To > cursor)
+                cursor = window.To;
+        }
+        if (cursor < periodStart)
+            return (0m, $"Posted accruals do not cover {cursor:yyyy-MM-dd} before the compounding period starting {periodStart:yyyy-MM-dd}; accrue and post every earlier day first.");
+        var segments = input.AccruedInterest ?? [];
+        if (segments.Count == 0)
+            return cursor > coverFrom
+                ? (0m, "Earlier accruals are posted but the accrued-interest balance is unavailable; no compounding base is inferred.")
+                : (0m, null);
+        var at = segments.SingleOrDefault(item => item.From <= periodStart && periodStart < item.To);
+        if (at is null)
+            return periodStart < segments[0].From && cursor == coverFrom ? (0m, null)
+                : (0m, $"The posted accrued-interest balance does not cover {periodStart:yyyy-MM-dd}.");
+        return at.Principal < 0m
+            ? (0m, $"Posted accrued interest is negative on {periodStart:yyyy-MM-dd}; resolve it before compounding.")
+            : (at.Principal, null);
     }
 
     /// <summary>

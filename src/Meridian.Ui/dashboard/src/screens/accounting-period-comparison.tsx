@@ -7,7 +7,7 @@ import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { TableWorkbench } from "@/components/meridian/table-workbench";
 import { formatTaxDecimal } from "@/lib/ledger-tax-results-format";
-import { getPostedPeriodComparison, type PostedComparisonLine, type PostedComparisonQuery, type PostedPeriodComparison } from "@/lib/posted-period-comparison-api";
+import { getPostedPeriodComparison, type PostedComparisonLine, type PostedComparisonMeasure, type PostedComparisonQuery, type PostedPeriodComparison } from "@/lib/posted-period-comparison-api";
 import { varianceColumns } from "@/components/meridian/variance-columns";
 import { roundDecimal } from "@/lib/variance";
 import { defaultMaterialityPolicyForClass } from "@/lib/reporting-materiality";
@@ -24,48 +24,71 @@ function accountingDecimal(value: string): string {
   return formatted.startsWith("-") ? `(${formatted.slice(1)})` : formatted;
 }
 
+/** Wording and URL state for each measure, so a balance comparison never reads as activity. */
+const MEASURE_COPY: Record<PostedComparisonMeasure, { toggle: string; urlValue: string; column: string; defaultBaseline: string; explanation: string; empty: string }> = {
+  Movements: {
+    toggle: "Vs prior period",
+    urlValue: "prior",
+    column: "movement",
+    defaultBaseline: "Previous completed fiscal period · same elapsed interval",
+    explanation: "Account movements from posted entries within these intervals. Opening and cumulative ending balances are not implied.",
+    empty: "No posted account activity in these comparable intervals."
+  },
+  ClosingBalances: {
+    toggle: "Closing balances vs prior close",
+    urlValue: "closing",
+    column: "closing balance",
+    defaultBaseline: "Previous completed fiscal period · full period close",
+    explanation: "Cumulative closing balances: every posting in this book's earlier periods plus each period's own postings, at the period end (to date while the current period is open).",
+    empty: "No posted balances in this book up to these period ends."
+  }
+};
+
 /** This panel only compares the immutable posted book; it never accepts strategy-run totals. */
-export function AccountingPeriodComparison({ bookId, periodId, expectedBasis, enabled = true, periodOptions, service = getPostedPeriodComparison }: {
+export function AccountingPeriodComparison({ bookId, periodId, expectedBasis, enabled = true, periodOptions, service = getPostedPeriodComparison, measure = "Movements" }: {
   bookId: string | null | undefined;
   periodId: string | null;
   expectedBasis?: string;
   enabled?: boolean;
   periodOptions: readonly { id: string; label: string; statusLabel: string }[];
   service?: ComparisonService;
+  /** Movements (Ledger Explorer) or ClosingBalances (Trial balance). */
+  measure?: PostedComparisonMeasure;
 }) {
+  const copy = MEASURE_COPY[measure];
   const id = useId();
   const [search, setSearch] = useSearchParams();
-  const show = search.get("comparison") === "prior";
+  const show = search.get("comparison") === copy.urlValue;
   const baselinePeriodId = search.get("baselinePeriodId") ?? "";
   const asOf = search.get("asOf") ?? undefined;
   const searchKey = search.toString();
   const dimensions = useMemo(() => Object.fromEntries([...new URLSearchParams(searchKey)].filter(([key, value]) => value && (dimensionKeys.has(key) || key.startsWith("externalGl.") || key.startsWith("dimension")))), [searchKey]);
   const incompleteExternalScope = Boolean(search.get("externalGlDimensionKey")?.trim()) !== Boolean(search.get("externalGlDimensionValue")?.trim());
   const unsupportedScope = search.has("shareClassId") || incompleteExternalScope;
-  const key = JSON.stringify({ bookId, periodId, baselinePeriodId, asOf, dimensions, expectedBasis, enabled, show });
+  const key = JSON.stringify({ bookId, periodId, baselinePeriodId, asOf, dimensions, expectedBasis, enabled, show, measure });
   const [state, setState] = useState<{ key: string; result?: PostedPeriodComparison; error?: string }>({ key: "" });
   const [reload, setReload] = useState(0);
   useEffect(() => {
     if (!show || !enabled || !bookId || !periodId || unsupportedScope) { setState({ key }); return; }
     const controller = new AbortController();
     setState({ key });
-    service({ bookId, periodId, baselinePeriodId, asOf, accountingBasis: expectedBasis, dimensions }, { signal: controller.signal, allowDevelopmentFallback: false })
+    service({ bookId, periodId, baselinePeriodId, asOf, accountingBasis: expectedBasis, dimensions, ...(measure === "Movements" ? {} : { measure }) }, { signal: controller.signal, allowDevelopmentFallback: false })
       .then((result) => { if (!controller.signal.aborted) setState({ key, result }); })
       .catch((failure: unknown) => { if (!controller.signal.aborted) setState({ key, error: failure instanceof Error ? failure.message : "Comparison could not be loaded." }); });
     return () => controller.abort();
-  }, [key, reload, service, show, enabled, bookId, periodId, baselinePeriodId, asOf, expectedBasis, dimensions, unsupportedScope]);
+  }, [key, reload, service, show, enabled, bookId, periodId, baselinePeriodId, asOf, expectedBasis, dimensions, unsupportedScope, measure]);
   const current = state.key === key ? state : null;
   const result = current?.result;
   const candidates = periodOptions.filter((option) => option.id !== periodId);
   const unknownBaseline = baselinePeriodId && !candidates.some((option) => option.id === baselinePeriodId);
   function toggle() {
     const next = new URLSearchParams(search);
-    if (show) next.delete("comparison"); else next.set("comparison", "prior");
+    if (show) next.delete("comparison"); else next.set("comparison", copy.urlValue);
     setSearch(next);
   }
   return (
-    <section aria-label="Posted period comparison" className="space-y-3">
-      <Button variant="outline" size="sm" aria-pressed={show} onClick={toggle}>Vs prior period</Button>
+    <section aria-label={measure === "Movements" ? "Posted period comparison" : "Posted closing balance comparison"} className="space-y-3">
+      <Button variant="outline" size="sm" aria-pressed={show} onClick={toggle}>{copy.toggle}</Button>
       {show ? <>
         <FormRow label="Comparison baseline" labelFor={id}>
           <Select id={id} value={baselinePeriodId} onChange={(event) => {
@@ -73,7 +96,7 @@ export function AccountingPeriodComparison({ bookId, periodId, expectedBasis, en
             if (event.target.value) next.set("baselinePeriodId", event.target.value); else next.delete("baselinePeriodId");
             setSearch(next);
           }}>
-            <option value="">Previous completed fiscal period · same elapsed interval</option>
+            <option value="">{copy.defaultBaseline}</option>
             {unknownBaseline ? <option value={baselinePeriodId}>Selected baseline unavailable in this book</option> : null}
             {candidates.map((option) => <option key={option.id} value={option.id}>{option.label} · {option.statusLabel}</option>)}
           </Select>
@@ -83,25 +106,26 @@ export function AccountingPeriodComparison({ bookId, periodId, expectedBasis, en
           : current?.error ? <StatusBanner role="alert" tone="warning" title="Comparison unavailable" detail={<>{current.error} <Button variant="outline" size="sm" onClick={() => setReload((value) => value + 1)}>Retry comparison</Button></>} />
           : !result ? <p role="status" className="text-sm">Reading comparable posted journal populations…</p>
           : expectedBasis && String(result.accountingBasis ?? "Unavailable").toLowerCase() !== expectedBasis.toLowerCase() ? <StatusBanner tone="warning" title="Comparison unavailable" detail={`The response does not match the selected ${expectedBasis} basis. No substitute figures are shown.`} />
+          : (result.measure ?? "Movements") !== measure ? <StatusBanner tone="warning" title="Comparison unavailable" detail="The response does not match the requested comparison measure. No substitute figures are shown." />
           : result.status !== "Ready" || !result.baseline ? <StatusBanner tone="warning" title="Comparison unavailable" detail={result.reason ?? "A compatible prior posted period could not be established."} />
           : <>
             <p className="text-sm font-medium">{result.bookName} · {result.accountingBasis} · {result.currency}</p>
-            <p className="text-sm">Current: {result.current.label} · {result.current.rangeStart}–{result.current.rangeEnd}{result.current.isPartial ? " · period to date" : " · completed period"}. Prior: {result.baseline.label} · {result.baseline.rangeStart}–{result.baseline.rangeEnd}{result.baseline.isPartial ? " · equivalent elapsed interval" : " · completed period"}.</p>
-            <p className="text-xs text-muted-foreground">Account movements from posted entries within these intervals. Opening and cumulative ending balances are not implied. The source cut identifies contributing journals; individual amount support remains in journal proof.</p>
-            <TableWorkbench workbenchId="accounting-period-comparison" sourceKey={key}
+            <p className="text-sm">Current: {result.current.label} · {result.current.rangeStart}–{result.current.rangeEnd}{result.current.isPartial ? " · period to date" : " · completed period"}. Prior: {result.baseline.label} · {result.baseline.rangeStart}–{result.baseline.rangeEnd}{result.baseline.isPartial ? " · equivalent elapsed interval" : " · completed period"}.{measure === "ClosingBalances" ? ` Balances at ${result.current.rangeEnd} and ${result.baseline.rangeEnd}.` : ""}</p>
+            <p className="text-xs text-muted-foreground">{copy.explanation} The source cut identifies contributing journals; individual amount support remains in journal proof.</p>
+            <TableWorkbench workbenchId={measure === "Movements" ? "accounting-period-comparison" : "accounting-period-closing-balance-comparison"} sourceKey={key}
               sourceDescription={`${result.bookName} · ${result.accountingBasis} · ${result.currency} · current ${result.current.rangeStart}–${result.current.rangeEnd} · prior ${result.baseline.rangeStart}–${result.baseline.rangeEnd} · population ${result.populationHash}`}
-              exportContext={{ "Ledger book": result.ledgerBookId, Fund: result.fundProfileId, Basis: result.accountingBasis, Currency: result.currency, "As of": result.asOf, "Current period": result.current.periodId, "Prior period": result.baseline.periodId, "Dimension scope": JSON.stringify(result.dimensions ?? {}) }}
+              exportContext={{ Measure: measure, "Ledger book": result.ledgerBookId, Fund: result.fundProfileId, Basis: result.accountingBasis, Currency: result.currency, "As of": result.asOf, "Current period": result.current.periodId, "Prior period": result.baseline.periodId, "Dimension scope": JSON.stringify(result.dimensions ?? {}) }}
               completePopulation getSearchText={(line) => `${line.accountName} ${line.accountType} ${line.symbol ?? ""}`}
-              ariaLabel="Posted period account comparison" rows={result.lines} getRowId={(line) => line.accountKey} emptyText="No posted account activity in these comparable intervals."
+              ariaLabel={measure === "Movements" ? "Posted period account comparison" : "Posted closing balance comparison"} rows={result.lines} getRowId={(line) => line.accountKey} emptyText={copy.empty}
               columns={[
                 { id: "account", label: "Account", render: (line) => line.accountName, exportValue: (line) => line.accountName },
-                { id: "current", label: `Current movement · ${result.currency}`, align: "right", className: "tabular-nums", render: (line) => accountingDecimal(line.currentBalance), exportType: "decimal", exportValue: (line) => line.currentBalance },
+                { id: "current", label: `Current ${copy.column} · ${result.currency}`, align: "right", className: "tabular-nums", render: (line) => accountingDecimal(line.currentBalance), exportType: "decimal", exportValue: (line) => line.currentBalance },
                 // Prior, variance and variance % from the server, flagged against the Accounting
                 // materiality policy (UX Phase E).
                 ...varianceColumns<PostedComparisonLine>({
                   prior: (line) => line.priorBalance, change: (line) => line.change, percent: (line) => line.percentChange,
                   formatAmount: accountingDecimal, formatPercent: (value) => `${formatTaxDecimal(roundDecimal(value, 2) ?? value, 2)}%`,
-                  unit: result.currency, priorLabel: "Prior movement", policy: COMPARISON_MATERIALITY
+                  unit: result.currency, priorLabel: `Prior ${copy.column}`, policy: COMPARISON_MATERIALITY
                 })
               ]} />
             <p className="text-xs text-muted-foreground">Variances over {formatCurrency(COMPARISON_MATERIALITY.absoluteVariance ?? 0, { maximumFractionDigits: 0 })} are marked Material (Accounting materiality policy).</p>

@@ -6,6 +6,425 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EdgarDebtOfferingTerms
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarDebtOfferingTerms</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:109](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L109).
+
+```csharp
+public sealed record EdgarDebtOfferingTerms(string Cik, string AccessionNumber, string Form, string SourceDocument, string? SourceDocumentDescription, string? IssuerName, string? SecurityTitle, string? Cusip, string? Isin, string? Currency, decimal? PrincipalAmount, decimal? IssueSize, decimal? CouponRate, string? CouponType, string? DayCount, string? InterestPaymentFrequency, DateOnly? IssueDate, DateOnly? MaturityDate, DateOnly? FirstInterestPaymentDate, string? Seniority, string? Ranking, bool? IsCallable, DateOnly? FirstCallDate, decimal? OfferingPrice, decimal? MinimumDenomination, decimal? AdditionalDenomination, string? Trustee, IReadOnlyList<string> Underwriters, IReadOnlyList<string> RedemptionTerms, decimal ExtractionConfidence, IReadOnlyList<string> ExtractionNotes);
+```
+
+## EdgarFactsRecord
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarFactsRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:212](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L212).
+
+Stored fact partition for a single EDGAR filer.
+
+```csharp
+public sealed record EdgarFactsRecord(string Cik, IReadOnlyList<EdgarXbrlFact> Facts, IssuerFactSnapshot? Snapshot, DateTimeOffset RetrievedAtUtc);
+```
+
+## EdgarFilerRecord
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarFilerRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:32](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L32).
+
+Local EDGAR filer reference record derived from the SEC submissions API.
+
+```csharp
+public sealed record EdgarFilerRecord(string Cik, string Name, string? EntityType, string? Sic, string? SicDescription, string? Category, string? StateOfIncorporation, string? StateOfIncorporationDescription, string? FiscalYearEnd, string? Ein, string? Description, string? Website, string? InvestorWebsite, string? Phone, EdgarAddress? BusinessAddress, EdgarAddress? MailingAddress, bool? InsiderTransactionForOwnerExists, bool? InsiderTransactionForIssuerExists, IReadOnlyList<string> Flags, IReadOnlyList<string> Tickers, IReadOnlyList<string> Exchanges, IReadOnlyList<EdgarFormerName> FormerNames, IReadOnlyList<EdgarFilingSummary> RecentFilings, DateTimeOffset RetrievedAtUtc);
+```
+
+## EdgarFilingSummary
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarFilingSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:84](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L84).
+
+```csharp
+public sealed record EdgarFilingSummary(string Cik, string AccessionNumber, string Form, DateOnly? FilingDate, DateOnly? ReportDate, string? PrimaryDocument, string? PrimaryDocDescription, string? FileNumber, string? FilmNumber, string? Items, long? Size, bool? IsXbrl, bool? IsInlineXbrl, IReadOnlyList<string> SecurityDataTags);
+```
+
+## EdgarFormerName
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarFormerName</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:66](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L66).
+
+```csharp
+public sealed record EdgarFormerName(string Name, DateOnly? From, DateOnly? To);
+```
+
+## EdgarFundHolding
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarFundHolding</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:142](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L142).
+
+```csharp
+public sealed record EdgarFundHolding(string Cik, string AccessionNumber, string Form, string SourceDocument, string? HoldingName, string? IssuerName, string? Title, string? Cusip, string? Isin, string? Ticker, string? Lei, string? AssetCategory, string? IssuerCategory, string? Country, string? Currency, decimal? Balance, string? Units, decimal? ValueUsd, decimal? PercentageOfNetAssets, decimal? CouponRate, DateOnly? MaturityDate, bool? Restricted, string? FairValueLevel);
+```
+
+## EdgarIngestRequest
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarIngestRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L6).
+
+Request for EDGAR reference-data ingest.
+
+```csharp
+public sealed record EdgarIngestRequest(string Scope = "all-filers", bool IncludeXbrl = false, string? Cik = null, int? MaxFilers = null, bool DryRun = false, bool IncludeFilingDocuments = false);
+```
+
+## EdgarIngestResult
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarIngestResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L17).
+
+Summary returned after an EDGAR ingest run.
+
+```csharp
+public sealed record EdgarIngestResult(int FilersProcessed, int TickerAssociationsStored, int FactsStored, int SecurityDataStored, int SecuritiesCreated, int SecuritiesAmended, int SecuritiesSkipped, int ConflictsDetected, bool DryRun, IReadOnlyList<string> Errors);
+```
+
+## EdgarReferenceDataManifest
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarReferenceDataManifest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:218](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L218).
+
+```csharp
+public sealed record EdgarReferenceDataManifest(DateTimeOffset UpdatedAtUtc, int TickerAssociationCount, int FilerPartitionCount, int FactPartitionCount, int SecurityDataPartitionCount);
+```
+
+## EdgarSecurityDataRecord
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarSecurityDataRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:103](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L103).
+
+Security-specific data parsed from EDGAR filing documents and retained outside Security Master.
+
+```csharp
+public sealed record EdgarSecurityDataRecord(string Cik, IReadOnlyList<EdgarDebtOfferingTerms> DebtOfferings, IReadOnlyList<EdgarFundHolding> FundHoldings, DateTimeOffset RetrievedAtUtc);
+```
+
+## EdgarTickerAssociation
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarTickerAssociation</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:74](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L74).
+
+Association between an EDGAR filer and a listed ticker or mutual-fund series/class identifier.
+
+```csharp
+public sealed record EdgarTickerAssociation(string Cik, string Ticker, string? Name, string? Exchange, string? SeriesId, string? ClassId, string? SecurityType, string Source);
+```
+
+## EdgarXbrlFact
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarXbrlFact</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:170](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L170).
+
+Normalized XBRL fact retained in the local EDGAR facts store.
+
+```csharp
+public sealed record EdgarXbrlFact(string Cik, string Taxonomy, string Concept, string Unit, decimal? NumericValue, string? RawValue, DateOnly? StartDate, DateOnly? EndDate, int? FiscalYear, string? FiscalPeriod, string? Form, string? AccessionNumber, DateOnly? FiledDate, string? Frame);
+```
+
+## ExchangeCorporateActionTerms
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ExchangeCorporateActionTerms</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:169](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L169).
+
+Held units exchanged for a successor security, optionally with cash (merger, conversion, exchange).
+
+```csharp
+public sealed record ExchangeCorporateActionTerms(string EventType, Guid? SuccessorSecurityId, decimal? ExchangeRatio, decimal? CashPerUnit, bool? IsVoluntary) : CorporateActionTerms(EventType);
+```
+
+## FaceValueAccrualHolding
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.FaceValueAccrualHolding</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/FaceValueAccrualHolding.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueAccrualHolding.cs#L13).
+
+A retained lot&#x27;s entitlement for one accounting date. OpenShare reflects closing disposals, while AccrualFactor is the factor before that date&#x27;s principal paydown: interest accrues through the paydown date before principal is reduced. Lot retains the acquisition facts and the factor held at that day&#x27;s close. This read projection must never be persisted as a replacement lot of record.
+
+```csharp
+public sealed record FaceValueAccrualHolding(DateOnly Date, FaceValueLot Lot, decimal OpenShare, decimal AccrualFactor, Guid? TaxLotRecordId = null, long? Version = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] BondAmortizationMethod? AmortizationMethod = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal AccrualFace =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueAccrualHolding.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueAccrualHolding.cs#L24) | Face entitled to the date&#x27;s interest, with the factor and open share applied once. |
+
+## FaceValueLot
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.FaceValueLot</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L14).
+
+Canonical open lot for par-denominated (face-value) instruments. This aggregate makes explicit the facts that were previously implicit caller conventions: the quote basis the acquisition price is expressed in (ParBasis — no more silent price-per-100 assumption), the pool factor the recorded face was booked at (BookedFactor), and the Security Master identity the lot amortizes against. All derived economics (cost basis, premium/discount, factor-restated face, day-count amortized basis) are owned here so every consumer computes them identically.
+
+```csharp
+public sealed record FaceValueLot : IUnitizedLot
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FaceValueLot(string lotId, Guid securityId, DateOnly acquiredDate, decimal originalFace, decimal pricePercentOfPar, decimal bookedFactor = 1m, decimal parBasis = 100m, decimal? currentFactor = null);</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L16) |  |
+| <code>public string LotId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:54](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L54) |  |
+| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:68](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L68) | Security Master identity the lot&#x27;s reference data (day count, factor, maturity) resolves from. |
+| <code>public DateOnly AcquiredDate { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L70) |  |
+| <code>public decimal OriginalFace { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:73](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L73) | Face amount at acquisition, in currency units of par. |
+| <code>public decimal PricePercentOfPar { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:76](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L76) | Acquisition price expressed per ParBasis of par (e.g. 102 per 100 = 2% premium). |
+| <code>public decimal BookedFactor { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:79](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L79) | Pool factor already reflected in OriginalFace when the lot was booked (1 = original face). |
+| <code>public decimal CurrentFactor { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:86](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L86) | Pool factor the lot currently carries. It starts at BookedFactor and moves with each principal paydown applied through ApplyFactor, so the paydown factor lives inside the lot rather than being re-applied by each consumer. |
+| <code>public decimal ParFace =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:93](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L93) | Face at a factor of one: the lot&#x27;s original face restated from the factor it was booked at. This is the face a factor paydown scales (principal = par face × factor decline), and the one the Security Master&#x27;s factor history is expressed against. |
+| <code>public decimal FaceOutstanding =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:96](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L96) | Face outstanding under CurrentFactor. |
+| <code>public decimal ParBasis { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:103](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L103) | The quote basis PricePercentOfPar is expressed against: 100 for the bond price-per-100 convention, 1 for prices quoted per unit of face. Making this explicit is what prevents a per-unit-priced lot from silently mis-amortizing through math that assumes 100. |
+| <code>public decimal CostBasis =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:106](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L106) | Acquisition cost in currency units. |
+| <code>public decimal PremiumDiscount =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:112](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L112) | Signed premium (positive) or discount (negative) over par, in currency units — the amount that amortizes toward zero by maturity. |
+| <code>public decimal CurrentFace(decimal currentFactor);</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:118](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L118) | Face outstanding under currentFactor, restated from the factor the lot was booked at. |
+| <code>public FaceValueLot WithFactor(decimal currentFactor) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:125](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L125) | The same lot carrying currentFactor as its current pool factor. |
+| <code>public FaceValueLotFactorPaydown ApplyFactor(decimal newFactor);</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:136](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L136) | Applies a factor decline to the lot: the restated lot carries newFactor and the principal paid down is the face released by the decline, ParFace × (CurrentFactor − newFactor), the same arithmetic the factor-paydown projection posts. A factor equal to the current one releases no principal; a higher factor is a restatement, not a paydown, and is refused. A factor of zero is a full paydown: every remaining par face is released and the lot holds no face. |
+| <code>public decimal AmortizedBasisAsOf(DayCountConvention convention, DateOnly maturity, DateOnly asOf);</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:154](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L154) | The lot&#x27;s amortized cost basis as of asOf: straight-line premium/discount amortization toward par, weighted by the day-count year fraction of elapsed holding over the lot&#x27;s life to maturity — the same method the cost-basis relief and ledger amortization engines apply, so a basis computed here always ties to what they post. Returns CostBasis unchanged when no life has elapsed or the lot has no amortizable life. |
+| <code>public decimal AmortizedBasisAsOf(BondAmortizationMethod method, DayCountConvention convention, DateOnly maturity, DateOnly asOf, decimal annualCouponRatePercent, int paymentsPerYear = 2) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:187](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L187) | The lot&#x27;s amortized cost basis as of asOf under the requested method. BondAmortizationMethod.ConstantYield applies the effective-interest method (US GAAP ASC 310-20 for most premium amortization); BondAmortizationMethod.NoAmortization holds the book flat; BondAmortizationMethod.AuctionRate recognises the premium/discount to par immediately; the remaining methods fall back to day-count-weighted straight-line (AmortizedBasisAsOf(DayCountConvention, DateOnly, DateOnly)), the historical immaterial-difference accommodation. |
+| <code>public decimal ConstantYieldAmortizedBasisAsOf(DayCountConvention convention, DateOnly maturity, DateOnly asOf, decimal annualCouponRatePercent, int paymentsPerYear = 2, decimal? retainedAnnualEffectiveYield = null) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:242](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L242) | Effective-interest (constant-yield) amortized basis: the yield to maturity implied by the acquisition price is solved once, then the book value rolls forward period by period — interest income accrues as a constant proportion of carrying value (basis × (1 + i) less the period coupon), so a premium amortizes slowly at first and faster near maturity, and a discount accretes in reverse — the ASC 310-20 profile the straight-line method only approximates. The partial current period interpolates linearly between calendar coupon boundaries using the current period&#x27;s day-count fraction. Supports one to 1200 monthly, quarterly, semiannual or annual coupon dates after acquisition, including end-of-month schedules. Regular schedules (acquisition on a coupon date of the calendar schedule running from acquisition to maturity) roll whole periods exactly as before. Odd (short) first period — acquisition settling inside a coupon period, the usual secondary-market case. The schedule is generated backward from maturity at the regular frequency: maturity is assumed to be a regular coupon date, a maturity on the last day of its month implies an end-of-month schedule, and otherwise the maturity day is kept and clipped only in short months. The first period is a stub from acquisition to the next coupon date with fraction f = DCF(acquisition, nextCoupon) / DCF(previousCoupon, nextCoupon) under convention; the full regular coupon is paid at the next coupon date. Accrued-interest assumption: PricePercentOfPar is a clean price, so the purchased accrued interest AI = coupon × (1 − f) is not part of the cost basis — it is a separate receivable repaid by the first coupon. The yield therefore solves the street-convention dirty price clean + AI = Σ CFk / (1 + y)f + k (k = 0 … n − 1, par with the last coupon), and the ex-coupon basis at the first coupon date is (clean + AI)(1 + y)f − coupon, which equals the present value of the remaining flows at the solved yield. Inside the stub the basis interpolates linearly by day count between the clean cost and that value. A retained yield must reconcile to the clean price through this same pricing function. Odd last periods are not modelled: without a contractual first-coupon or issue-date anchor, maturity is treated as a regular coupon date, so no short final period can arise. |
+| <code>public decimal RegularScheduleAnnualYield(DateOnly redemptionDate, decimal annualCouponRatePercent, int paymentsPerYear);</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:724](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L724) | Annual yield on the same regular coupon grid used by canonical amortization, solved per period by bisection and certified against the acquisition price. Refuses an unbracketed yield. |
+
+## FaceValueLotFactorPaydown
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.FaceValueLotFactorPaydown</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:783](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L783).
+
+The outcome of applying a factor decline to a FaceValueLot.
+
+```csharp
+public sealed record FaceValueLotFactorPaydown(FaceValueLot Lot, decimal PrincipalPaydown);
+```
+
+## FundUnitLot
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.FundUnitLot</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L9).
+
+Canonical open lot for unit-denominated fund holdings (investment funds, money market funds, unitized private vehicles), whose SecurityAssetClassDescriptor.LotUnit is SecurityLotUnitKind.Units. The lot is a count of units and the NAV per unit they were acquired at; cost basis is owned here so every consumer derives it identically.
+
+```csharp
+public sealed record FundUnitLot : IUnitizedLot
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FundUnitLot(string lotId, Guid securityId, DateOnly acquiredDate, decimal units, decimal navPerUnit);</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L11) |  |
+| <code>public string LotId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:34](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L34) |  |
+| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L44) | Security Master identity the lot&#x27;s reference data (fund family, pricing cadence) resolves from. |
+| <code>public DateOnly AcquiredDate { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:46](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L46) |  |
+| <code>public decimal Units { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L49) | Units held; fractional units are ordinary for funds. |
+| <code>public decimal NavPerUnit { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:52](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L52) | NAV per unit the lot was acquired at, in the fund&#x27;s currency. |
+| <code>public decimal CostBasis =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:54](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L54) |  |
+| <code>public decimal ValueAt(decimal navPerUnit);</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:57](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L57) | Value of the lot at navPerUnit. |
+| <code>public FundUnitLot WithReducedUnits(decimal redeemedUnits);</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:66](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L66) | The lot remaining after redeeming redeemedUnits; cost basis scales with the units. |
+
+## ICorporateActionCaseAccountingService
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ICorporateActionCaseAccountingService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs:198](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs#L198).
+
+Governed corporate-action accounting lane: attach an exact-version projection binding, record maker-checker approval, and execute durable posting through the Asset Accounting Event Spine. This is the dedicated downstream command path; the generic case transition command can prepare a case through ReadyForApproval but can never grant Approved or Posted.
+
+```csharp
+public interface ICorporateActionCaseAccountingService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;CorporateActionAccountingProjectionMutationResultDto&gt; AttachProjectionAsync(AttachCorporateActionAccountingProjectionRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs:200](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs#L200) |  |
+| <code>Task&lt;CorporateActionAccountingApprovalResultDto&gt; ApproveAsync(ApproveCorporateActionCaseAccountingRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs:204](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs#L204) |  |
+| <code>Task&lt;CorporateActionAccountingPostingResultDto&gt; PostAsync(PostCorporateActionCaseAccountingRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs:208](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs#L208) |  |
+
+## ICorporateActionCashDividendAccountingService
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ICorporateActionCashDividendAccountingService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:176](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L176).
+
+```csharp
+public interface ICorporateActionCashDividendAccountingService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;CorporateActionCashDividendPreviewDto&gt; PreviewCashDividendAsync(Guid caseId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:178](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L178) |  |
+| <code>Task&lt;CorporateActionCashDividendAttestationResultDto&gt; AttestCashDividendAsync(AttestCorporateActionCashDividendRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:181](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L181) |  |
+| <code>Task&lt;CorporateActionCashDividendPostingResultDto&gt; PostAttestedCashDividendAsync(PostAttestedCorporateActionCashDividendRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:184](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L184) |  |
+
+## ICorporateActionCashDividendEligibilityResolver
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ICorporateActionCashDividendEligibilityResolver</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:167](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L167).
+
+```csharp
+public interface ICorporateActionCashDividendEligibilityResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;CorporateActionCashDividendEligibilityDto&gt; ResolveAsync(CorporateActionProcessingCaseDto processingCase, CorporateActionCaseAccountingProjectionDto projection, AssetAccountingEventSpineDto spine, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:169](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L169) |  |
+
+## ICorporateActionCashDividendReconciliationSupport
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ICorporateActionCashDividendReconciliationSupport</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CashDividendReconciliationSupport.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/CashDividendReconciliationSupport.cs#L8).
+
+```csharp
+public interface ICorporateActionCashDividendReconciliationSupport
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;CashDividendReconciliationSupportDto&gt; GetSupportAsync(CorporateActionCaseScopeDto scope, Guid securityId, DateOnly entitlementCutoff, IReadOnlyList&lt;CashDividendReconciliationAccountDto&gt; accounts, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CashDividendReconciliationSupport.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/CashDividendReconciliationSupport.cs#L10) |  |
+
+## ICorporateActionOperationsService
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ICorporateActionOperationsService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:746](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L746).
+
+Manages corporate action source proposals, scoped cases, evidence, and governed workflow commands.
+
+```csharp
+public interface ICorporateActionOperationsService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;CorporateActionSourceProposalDto&gt; RecordSourceProposalAsync(RecordCorporateActionSourceProposalRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:748](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L748) |  |
+| <code>Task&lt;CorporateActionSourceProposalDto?&gt; GetSourceProposalAsync(Guid proposalId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:752](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L752) |  |
+| <code>Task&lt;IReadOnlyList&lt;CorporateActionSourceProposalDto&gt;&gt; ListSourceProposalsAsync(Guid? securityId, string? state, int take, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:754](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L754) |  |
+| <code>Task&lt;CorporateActionDurableInboxDto&gt; GetInboxAsync(CorporateActionCaseScopeDto acceptanceScope, int take, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:760](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L760) |  |
+| <code>Task&lt;CorporateActionSourceProposalAcceptanceResultDto&gt; AcceptSourceProposalAsync(AcceptCorporateActionSourceProposalRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:765](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L765) |  |
+| <code>Task&lt;CorporateActionSourceProposalDecisionResultDto&gt; RejectSourceProposalAsync(RejectCorporateActionSourceProposalRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:769](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L769) |  |
+| <code>Task&lt;CorporateActionProcessingCaseDto?&gt; GetCaseAsync(Guid caseId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:773](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L773) |  |
+| <code>Task&lt;IReadOnlyList&lt;CorporateActionProcessingCaseDto&gt;&gt; ListCasesAsync(string tenantId, string companyId, Guid? securityId, string? state, int take, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:779](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L779) |  |
+| <code>Task&lt;CorporateActionConflictDto?&gt; GetConflictAsync(Guid caseId, Guid conflictId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:787](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L787) |  |
+| <code>Task&lt;IReadOnlyList&lt;CorporateActionConflictDto&gt;&gt; ListConflictsAsync(Guid caseId, string tenantId, string companyId, string? state, int take, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:794](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L794) |  |
+| <code>Task&lt;CorporateActionEvidenceMutationResultDto&gt; AddEvidenceAsync(AddCorporateActionEvidenceRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:802](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L802) |  |
+| <code>Task&lt;CorporateActionConflictMutationResultDto&gt; RecordConflictAsync(RecordCorporateActionConflictRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:806](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L806) |  |
+| <code>Task&lt;CorporateActionConflictResolutionResultDto&gt; ResolveConflictAsync(ResolveCorporateActionConflictRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:810](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L810) |  |
+| <code>Task&lt;CorporateActionProcessingOptionMutationResultDto&gt; UpsertOptionAsync(UpsertCorporateActionProcessingOptionRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:814](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L814) |  |
+| <code>Task&lt;CorporateActionCaseTransitionResultDto&gt; TransitionCaseAsync(TransitionCorporateActionCaseRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:818](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L818) |  |
+
+## IDataVendorEntitlementService
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.IDataVendorEntitlementService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/IDataVendorEntitlementService.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/IDataVendorEntitlementService.cs#L8).
+
+Queries, updates, and deactivates data vendor entitlements and identifies approaching expirations.
+
+```csharp
+public interface IDataVendorEntitlementService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;DataVendorEntitlementDto&gt;&gt; GetAllAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/IDataVendorEntitlementService.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/IDataVendorEntitlementService.cs#L10) |  |
+| <code>Task&lt;IReadOnlyList&lt;DataVendorEntitlementDto&gt;&gt; GetExpiringAsync(int withinDays, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/IDataVendorEntitlementService.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/IDataVendorEntitlementService.cs#L11) |  |
+| <code>Task&lt;DataVendorEntitlementDto&gt; UpsertAsync(UpsertDataVendorEntitlementRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/IDataVendorEntitlementService.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/IDataVendorEntitlementService.cs#L12) |  |
+| <code>Task DeactivateAsync(Guid entitlementId, string actor, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/IDataVendorEntitlementService.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/IDataVendorEntitlementService.cs#L13) |  |
+
+## IHistoricalSymbolTimelineResolver
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/IHistoricalSymbolTimelineResolver.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/IHistoricalSymbolTimelineResolver.cs#L9).
+
+Resolves the ticker a security actually traded under on a given date, using security-master identifier validity intervals. Lets a historical backfill that spans a ticker rename (e.g. FB→META) query the provider with the era-correct symbol per date-range chunk while landing all data under the canonical requested symbol.
+
+```csharp
+public interface IHistoricalSymbolTimelineResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;string&gt; ResolveTickerForDateAsync(string symbol, DateOnly date, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/IHistoricalSymbolTimelineResolver.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/IHistoricalSymbolTimelineResolver.cs#L16) | Returns the ticker under which the security identified by symbol traded on date. Returns symbol unchanged when the security master has no mapping for that date. |
+
+## ILivePositionCorporateActionAdjuster
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ILivePositionCorporateActionAdjuster</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs#L21).
+
+Adjusts an open position&#x27;s quantity and carrying basis for corporate actions.
+
+```csharp
+public interface ILivePositionCorporateActionAdjuster
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;PositionCorporateActionAdjustment&gt; AdjustPositionAsync(string ticker, decimal quantity, decimal costBasis, DateTimeOffset positionOpenedAt, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs#L24) | Returns unchanged values when no applicable action or identity is found. |
+| <code>Task&lt;PositionCorporateActionAdjustment&gt; AdjustPositionAsync(string ticker, decimal quantity, decimal costBasis, decimal totalCostBasis, DateTimeOffset positionOpenedAt, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs:35](../../../../src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs#L35) | Preserves retained total carrying basis when supported. Legacy implementations retain their quantity/quote behavior without claiming exact total-basis evidence. |
+
+## IngestSecurityRatesRequest
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.IngestSecurityRatesRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L44).
+
+```csharp
+public sealed record IngestSecurityRatesRequest(Guid CurveId, DateOnly AsOf, SecurityRateConstructionMethod ConstructionMethod, string MethodDescription, IReadOnlyList<SecurityRateIngestionPointDto> Points);
+```
+
+## InstrumentTypeDescriptor
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptor</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:541](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L541).
+
+```csharp
+public sealed record InstrumentTypeDescriptor(InstrumentType InstrumentType, string DisplayName, string SecurityMasterAssetClass, string? SecurityMasterAssetFamily, string? SecurityMasterSubType, string DefaultProviderSecurityType, bool IsTradeable, bool IsReferenceOnly, bool IsDerivative, bool RequiresUnderlying, bool ProducesCashFlows, bool RequiresLotTracking, string SettlementModel, IReadOnlyList<string> CompatibleSecurityMasterAssetClasses, IReadOnlyList<string> PreferredIdentifierKinds, IReadOnlyList<string> RequiredEconomicTerms, IReadOnlyList<string> ProviderCapabilities, IReadOnlyList<string> LifecycleEvents, IReadOnlyList<string> ValidationRules, IReadOnlyList<string> LedgerBehaviorHints, IReadOnlyList<string> RiskModelHints);
+```
+
 ## InstrumentTypeDescriptorCatalog
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorCatalog</code>. Kind: `class`.
@@ -24,21 +443,21 @@ Declared public members:
 | --- | --- | --- |
 | <code>public const string UnclassifiedAssetFamilyLabel = &quot;OtherFamily&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:398](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L398) | The descriptor placeholder for &quot;no specific domain family&quot;. It is a descriptor-taxonomy label, not an F# AssetFamily name: the domain carries an unlisted family as OtherFamily &quot;value&quot;, stored as the bare caller value. |
 | <code>public const string UnclassifiedSubTypeLabel = &quot;OtherSubType&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:401](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L401) | The descriptor placeholder for &quot;no specific domain sub-type&quot;; see UnclassifiedAssetFamilyLabel. |
-| <code>public static IReadOnlyList&lt;InstrumentTypeDescriptorLabelException&gt; DomainLabelExceptions { get; } = [new (InstrumentType.Forex, InstrumentTypeDescriptorLabelField.SubType, UnclassifiedSubTypeLabel, &quot;The domain declares no FX spot sub-type; FX spot records carry OtherSubType with a caller value.&quot;), new (InstrumentType.Commodity, InstrumentTypeDescriptorLabelField.AssetFamily, UnclassifiedAssetFamilyLabel, &quot;The domain declares no commodity family.&quot;), new (InstrumentType.Commodity, InstrumentTypeDescriptorLabelField.SubType, UnclassifiedSubTypeLabel, &quot;The domain declares no commodity sub-type.&quot;), new (InstrumentType.Crypto, InstrumentTypeDescriptorLabelField.AssetFamily, UnclassifiedAssetFamilyLabel, &quot;The domain declares no digital-asset family.&quot;), new (InstrumentType.Crypto, InstrumentTypeDescriptorLabelField.SubType, UnclassifiedSubTypeLabel, &quot;The domain declares no digital-asset sub-type.&quot;), new (InstrumentType.Index, InstrumentTypeDescriptorLabelField.AssetFamily, UnclassifiedAssetFamilyLabel, &quot;A reference-only index has no domain security family.&quot;), new (InstrumentType.Index, InstrumentTypeDescriptorLabelField.SubType, UnclassifiedSubTypeLabel, &quot;A reference-only index has no domain security sub-type.&quot;), new (InstrumentType.CFD, InstrumentTypeDescriptorLabelField.SubType, UnclassifiedSubTypeLabel, &quot;The domain declares no contract-for-difference sub-type.&quot;)];</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:415](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L415) | Every descriptor family/sub-type label that is intentionally NOT an F# domain familyName/subTypeName value. All other descriptor labels map one-to-one onto the domain label of the same text (see ResolveDomainAssetFamilyLabel); a coverage test fails when a descriptor label is neither. The descriptor values themselves are unchanged and still surface as passport fallbacks, so this reconciliation changes no output. Some matching labels are reviewed approximations rather than identities: Warrant uses OptionContract and Deposit uses DemandDeposit, because the domain declares no closer case. They are listed in ApproximateDomainLabelMappings. |
-| <code>public static IReadOnlyList&lt;InstrumentTypeDescriptorLabelException&gt; ApproximateDomainLabelMappings { get; } = [new (InstrumentType.Warrant, InstrumentTypeDescriptorLabelField.SubType, &quot;OptionContract&quot;, &quot;The domain declares no warrant sub-type; a warrant is recorded as an option contract.&quot;), new (InstrumentType.Deposit, InstrumentTypeDescriptorLabelField.SubType, &quot;DemandDeposit&quot;, &quot;A generic deposit descriptor defaults to the demand-deposit sub-type; time deposits use TimeDeposit.&quot;)];</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:440](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L440) | Descriptor labels that equal a domain label but approximate its meaning (see DomainLabelExceptions). Recorded so the approximation is a reviewed decision rather than an implied identity; nothing consumes them as classification authority. |
-| <code>public static string? ResolveDomainAssetFamilyLabel(InstrumentTypeDescriptor descriptor) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:453](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L453) | Maps a descriptor&#x27;s family label onto the domain family label: the same text, or null when the descriptor label is a listed DomainLabelExceptions placeholder that names no domain family. |
-| <code>public static string? ResolveDomainSubTypeLabel(InstrumentTypeDescriptor descriptor) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:457](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L457) | Maps a descriptor&#x27;s sub-type label onto the domain sub-type label; see ResolveDomainAssetFamilyLabel. |
-| <code>public static IReadOnlyList&lt;InstrumentTypeDescriptor&gt; All =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:479](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L479) |  |
-| <code>public static InstrumentTypeDescriptor? Find(InstrumentType instrumentType) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:481](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L481) |  |
-| <code>public static bool TryGet(InstrumentType instrumentType, out InstrumentTypeDescriptor descriptor) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:484](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L484) |  |
-| <code>public static bool RequiresContractMultiplier(string? assetClass);</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:495](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L495) | True when a descriptor whose PRIMARY asset class is assetClass declares a contract multiplier among its required economic terms (listed options and futures; not swaps, warrants or FX forwards). Compatible-class lists are deliberately not consulted: they let a class be recorded under a related instrument type (an equity as a single-stock future, a spot commodity as a future), which must not make every record of that class require a multiplier. Clients use this instead of matching the asset-class name so they cannot diverge. |
-| <code>public static IReadOnlyList&lt;InstrumentTypeDescriptor&gt; FindBySecurityMasterAssetClass(string? assetClass);</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:508](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L508) |  |
+| <code>public static IReadOnlyList&lt;InstrumentTypeDescriptorLabelException&gt; DomainLabelExceptions { get; } = [new (InstrumentType.Forex, InstrumentTypeDescriptorLabelField.SubType, UnclassifiedSubTypeLabel, &quot;The domain declares no FX spot sub-type; FX spot records carry OtherSubType with a caller value.&quot;), new (InstrumentType.Commodity, InstrumentTypeDescriptorLabelField.AssetFamily, UnclassifiedAssetFamilyLabel, &quot;The domain declares no commodity family.&quot;), new (InstrumentType.Commodity, InstrumentTypeDescriptorLabelField.SubType, UnclassifiedSubTypeLabel, &quot;The domain declares no commodity sub-type.&quot;), new (InstrumentType.Crypto, InstrumentTypeDescriptorLabelField.AssetFamily, UnclassifiedAssetFamilyLabel, &quot;The domain declares no digital-asset family.&quot;), new (InstrumentType.Crypto, InstrumentTypeDescriptorLabelField.SubType, UnclassifiedSubTypeLabel, &quot;The domain declares no digital-asset sub-type.&quot;), new (InstrumentType.Index, InstrumentTypeDescriptorLabelField.AssetFamily, UnclassifiedAssetFamilyLabel, &quot;A reference-only index has no domain security family.&quot;), new (InstrumentType.Index, InstrumentTypeDescriptorLabelField.SubType, UnclassifiedSubTypeLabel, &quot;A reference-only index has no domain security sub-type.&quot;), new (InstrumentType.CFD, InstrumentTypeDescriptorLabelField.SubType, UnclassifiedSubTypeLabel, &quot;The domain declares no contract-for-difference sub-type.&quot;)];</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:416](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L416) | Every descriptor family/sub-type label that is intentionally NOT an F# domain familyName/subTypeName value. All other descriptor labels map one-to-one onto the domain label of the same text (see ResolveDomainAssetFamilyLabel); a coverage test fails when a descriptor label is neither. The descriptor values themselves are unchanged and still surface as passport fallbacks, so this reconciliation changes no output. Some matching labels are reviewed approximations rather than identities: Warrant uses OptionContract, FX spot uses the BankProduct family and Deposit uses DemandDeposit, because the domain declares no closer case. They are listed in ApproximateDomainLabelMappings. |
+| <code>public static IReadOnlyList&lt;InstrumentTypeDescriptorLabelException&gt; ApproximateDomainLabelMappings { get; } = [new (InstrumentType.Warrant, InstrumentTypeDescriptorLabelField.SubType, &quot;OptionContract&quot;, &quot;The domain declares no warrant sub-type; a warrant is recorded as an option contract.&quot;), new (InstrumentType.Forex, InstrumentTypeDescriptorLabelField.AssetFamily, &quot;BankProduct&quot;, &quot;The domain declares no FX family; FX spot is grouped with bank products.&quot;), new (InstrumentType.Deposit, InstrumentTypeDescriptorLabelField.SubType, &quot;DemandDeposit&quot;, &quot;A generic deposit descriptor defaults to the demand-deposit sub-type; time deposits use TimeDeposit.&quot;)];</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:441](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L441) | Descriptor labels that equal a domain label but approximate its meaning (see DomainLabelExceptions). Recorded so the approximation is a reviewed decision rather than an implied identity; nothing consumes them as classification authority. |
+| <code>public static string? ResolveDomainAssetFamilyLabel(InstrumentTypeDescriptor descriptor) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:456](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L456) | Maps a descriptor&#x27;s family label onto the domain family label: the same text, or null when the descriptor label is a listed DomainLabelExceptions placeholder that names no domain family. |
+| <code>public static string? ResolveDomainSubTypeLabel(InstrumentTypeDescriptor descriptor) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:460](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L460) | Maps a descriptor&#x27;s sub-type label onto the domain sub-type label; see ResolveDomainAssetFamilyLabel. |
+| <code>public static IReadOnlyList&lt;InstrumentTypeDescriptor&gt; All =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:482](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L482) |  |
+| <code>public static InstrumentTypeDescriptor? Find(InstrumentType instrumentType) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:484](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L484) |  |
+| <code>public static bool TryGet(InstrumentType instrumentType, out InstrumentTypeDescriptor descriptor) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:487](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L487) |  |
+| <code>public static bool RequiresContractMultiplier(string? assetClass);</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:498](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L498) | True when a descriptor whose PRIMARY asset class is assetClass declares a contract multiplier among its required economic terms (listed options and futures; not swaps, warrants or FX forwards). Compatible-class lists are deliberately not consulted: they let a class be recorded under a related instrument type (an equity as a single-stock future, a spot commodity as a future), which must not make every record of that class require a multiplier. Clients use this instead of matching the asset-class name so they cannot diverge. |
+| <code>public static IReadOnlyList&lt;InstrumentTypeDescriptor&gt; FindBySecurityMasterAssetClass(string? assetClass);</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:511](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L511) |  |
 
 ## InstrumentTypeDescriptorLabelException
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelException</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:532](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L532).
+Source: [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:535](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L535).
 
 A reviewed descriptor label whose relationship to the domain label is recorded explicitly.
 
@@ -50,7 +469,7 @@ public sealed record InstrumentTypeDescriptorLabelException(InstrumentType Instr
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelField</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:525](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L525).
+Source: [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:528](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L528).
 
 Which descriptor classification label an exception or mapping entry describes.
 
@@ -62,8 +481,8 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>AssetFamily</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:527](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L527) |  |
-| <code>SubType</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:528](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L528) |  |
+| <code>AssetFamily</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:530](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L530) |  |
+| <code>SubType</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:531](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L531) |  |
 
 ## IOtcCollateralStore
 
@@ -318,24 +737,6 @@ Declared public members:
 | <code>Task&lt;StructuredCashFlowProjectionDto&gt; ReplayProjectionAsync(SecurityCashFlowCalculationReceipt receipt, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs:45](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs#L45) | Recomputes a retained receipt, refusing changed or unavailable calendar evidence. |
 | <code>Task&lt;StructuredCashFlowProjectionDto?&gt; ReplayProjectionAsync(string contentSha256, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs#L50) | Replays evidence fetched from the configured immutable receipt store. |
 
-## ISecurityMasterClassificationDriftReportService
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityMasterClassificationDriftReportService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterClassificationDrift.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterClassificationDrift.cs#L41).
-
-Builds the classification drift report for the active Security Master population.
-
-```csharp
-public interface ISecurityMasterClassificationDriftReportService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SecurityClassificationDriftReportDto&gt; BuildReportAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterClassificationDrift.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterClassificationDrift.cs#L44) | Scans active securities and compares each one&#x27;s retained classification with the current taxonomy. |
-
 ## ISecurityMasterCorporateActionCommandService
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityMasterCorporateActionCommandService</code>. Kind: `interface`.
@@ -506,437 +907,3 @@ Declared public members:
 | <code>Task&lt;SecurityDetailDto&gt; AmendTermBlockAsync(Guid securityId, string blockKey, AmendSecurityTermBlockRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs#L18) | Replaces one nested term block declared by the security&#x27;s asset class (see SecurityTermBlocks), carrying every other term unchanged. Implementations that predate the generic block route refuse it rather than fail to compile. |
 | <code>Task DeactivateAsync(DeactivateSecurityRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs#L21) |  |
 | <code>Task&lt;SecurityAliasDto&gt; UpsertAliasAsync(UpsertSecurityAliasRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterService.cs#L22) |  |
-
-## ISecurityMasterStructuredCreditReclassificationService
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityMasterStructuredCreditReclassificationService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterStructuredCreditReclassification.cs:59](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterStructuredCreditReclassification.cs#L59).
-
-Builds a report of structured credit instruments requiring reference classification review.
-
-```csharp
-public interface ISecurityMasterStructuredCreditReclassificationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;StructuredCreditReclassificationReportDto&gt; BuildReportAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterStructuredCreditReclassification.cs:62](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterStructuredCreditReclassification.cs#L62) | Scans the active Security Master population and builds the reclassification report. |
-
-## ISecurityRateObservationProvider
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityRateObservationProvider</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L20).
-
-```csharp
-public interface ISecurityRateObservationProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>string Name { get; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L22) |  |
-| <code>Task&lt;IReadOnlyList&lt;SecurityRateObservationDto&gt;&gt; GetRateObservationsAsync(string seriesId, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L23) |  |
-
-## ISecurityResolver
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityResolver</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs#L6).
-
-Resolves an identifier to a stable Security Master identity without exposing its implementation.
-
-```csharp
-public interface ISecurityResolver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;Guid?&gt; ResolveAsync(ResolveSecurityRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs#L8) |  |
-
-## ISecurityTradingParametersQueryService
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityTradingParametersQueryService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/ISecurityTradingParametersQueryService.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityTradingParametersQueryService.cs#L6).
-
-Reads the execution and simulation parameters for an already resolved security.
-
-```csharp
-public interface ISecurityTradingParametersQueryService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;TradingParametersDto?&gt; GetTradingParametersAsync(Guid securityId, DateTimeOffset asOf, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityTradingParametersQueryService.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityTradingParametersQueryService.cs#L12) | Returns the trading parameters (lot size, tick size, etc.) for a security as of the specified point in time. Returns null when the security is not found. |
-
-## ISecurityUnderlyingGraphStore
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityUnderlyingGraphStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:100](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L100).
-
-The underlying graph store: declared links are written through it, derived links are written by the projection store on every security write, and both are read from it. Declared links are operator-entered state, so every declaration, amendment and removal is recorded in the Security Master governance event log with its actor, in the same transaction as the change.
-
-```csharp
-public interface ISecurityUnderlyingGraphStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;SecurityUnderlyingLinkDto&gt;&gt; GetUnderlyingsAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:103](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L103) | The links from securityId to its underlyings, derived and declared. |
-| <code>Task&lt;IReadOnlyList&lt;SecurityUnderlyingLinkDto&gt;&gt; GetDependentsAsync(Guid underlyingSecurityId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:106](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L106) | The links from every instrument that names underlyingSecurityId as a target. |
-| <code>Task&lt;SecurityUnderlyingLinkDto&gt; DeclareAsync(DeclareSecurityUnderlyingLinkRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:114](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L114) | Declares (or re-declares) a link; the returned link carries the stored id and timestamps. A new edge, or a change to an existing one&#x27;s weight, window or notes, is recorded as a governance event naming DeclareSecurityUnderlyingLinkRequest.CreatedBy with the state it replaced. Re-declaring an edge unchanged writes nothing and returns it as stored. |
-| <code>Task&lt;bool&gt; RemoveDeclaredAsync(Guid securityId, Guid linkId, string removedBy, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:121](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L121) | Removes a declared link and records the removal, with the removed link and removedBy, as a governance event. Derived links cannot be removed; they follow the terms. |
-
-## ISecurityValuationModel
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityValuationModel</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:122](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L122).
-
-One valuation model. The service dispatches to the registered model whose Kind the request or catalog names.
-
-```csharp
-public interface ISecurityValuationModel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>SecurityValuationModelKind Kind { get; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:124](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L124) |  |
-| <code>string ModelKey { get; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:127](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L127) | A stable key such as quoted-price or discounted-cash-flow. |
-| <code>string ModelVersion { get; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:130](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L130) | The model&#x27;s version, such as v1; changes when the arithmetic changes. |
-| <code>Task&lt;SecurityValuationResult&gt; ValueAsync(SecurityValuationRequest request, SecurityDetailDto security, CancellationToken ct);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:132](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L132) |  |
-
-## ISecurityValuationService
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityValuationService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:136](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L136).
-
-Values a security with the model its request or asset class names.
-
-```csharp
-public interface ISecurityValuationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SecurityValuationResult?&gt; ValueAsync(SecurityValuationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:139](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L139) | Null when the security is unknown; a blocked result otherwise, never an exception for missing inputs. |
-
-## IssueOtcMarginCallRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.IssueOtcMarginCallRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:131](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L131).
-
-Issues the call for one movement of a snapshot.
-
-```csharp
-public sealed record IssueOtcMarginCallRequest(Guid SnapshotId, OtcMovementKind Kind, OtcMovementParty Mover, DateOnly IssuedOn, DateOnly? DueOn = null, string? Notes = null, string? UpdatedBy = null);
-```
-
-## IssuerFactSnapshot
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.IssuerFactSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:189](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L189).
-
-Common issuer-level facts selected from the full XBRL fact history for fast lookup.
-
-```csharp
-public sealed record IssuerFactSnapshot(string Cik, DateTimeOffset AsOfUtc, EdgarXbrlFact? TradingSymbol, EdgarXbrlFact? Security12bTitle, EdgarXbrlFact? SecurityExchangeName, EdgarXbrlFact? EntityFileNumber, EdgarXbrlFact? Assets, EdgarXbrlFact? Liabilities, EdgarXbrlFact? StockholdersEquity, EdgarXbrlFact? Revenue, EdgarXbrlFact? NetIncomeLoss, EdgarXbrlFact? EarningsPerShareDiluted, EdgarXbrlFact? OperatingCashFlow, EdgarXbrlFact? SharesOutstanding, EdgarXbrlFact? CommonStockSharesIssued, EdgarXbrlFact? WeightedAverageBasicSharesOutstanding, EdgarXbrlFact? WeightedAverageDilutedSharesOutstanding, EdgarXbrlFact? PublicFloat);
-```
-
-## IStructuredCashFlowProvider
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.IStructuredCashFlowProvider</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/IStructuredCashFlowProvider.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/IStructuredCashFlowProvider.cs#L7).
-
-Port for a structured cash flow provider such as MIAC (agency MBS) or Moody&#x27;s Analytics (other prepaying/structured products).
-
-```csharp
-public interface IStructuredCashFlowProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>string ProviderId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/IStructuredCashFlowProvider.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/IStructuredCashFlowProvider.cs#L9) |  |
-| <code>Task&lt;StructuredCashFlowProjectionDto?&gt; GetProjectedCashFlowsAsync(Guid securityId, string? isin, DateTimeOffset factorDate, StructuredCashFlowScenario scenario, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/IStructuredCashFlowProvider.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/IStructuredCashFlowProvider.cs#L11) |  |
-| <code>Task&lt;decimal?&gt; GetCurrentFactorAsync(Guid securityId, string? isin, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/IStructuredCashFlowProvider.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/IStructuredCashFlowProvider.cs#L18) |  |
-
-## IUnitizedLot
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.IUnitizedLot</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L12).
-
-The one lot shape shared by execution, backtesting, the ledger and face-value accounting: a decimal quantity, what one unit of it measures, and the contract multiplier that scales it to economic exposure. A face-value lot is the SecurityLotUnitKind.FaceValue case with a multiplier of one; a listed-option lot is the SecurityLotUnitKind.Contracts case carrying the option&#x27;s multiplier.
-
-```csharp
-public interface IUnitizedLot
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>decimal Quantity { get; }</code> | [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L15) | Lot quantity in UnitKind units. Never fractional-unsafe: always decimal. |
-| <code>SecurityLotUnitKind UnitKind { get; }</code> | [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L18) | What one unit of Quantity measures. |
-| <code>decimal Multiplier { get; }</code> | [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L21) | The factor that scales one unit to economic exposure (1 unless the unit is a contract). |
-
-## LotQuantity
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.LotQuantity</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L25).
-
-A unitized lot quantity value.
-
-```csharp
-public readonly record struct LotQuantity(decimal Amount, SecurityLotUnitKind UnitKind, decimal Multiplier)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public decimal EconomicUnits =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L28) | The quantity scaled by its multiplier: shares, face, notional or contract exposure units. |
-| <code>public decimal ValueAtPrice(decimal price) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:43](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L43) | Value at a raw unit quote, scaling by the unit kind&#x27;s default quote convention: face-value lots read the quote as a percentage of par, everything else per unit, and listed contracts scale by their contract multiplier. Exact retained monetary basis must not pass through this conversion a second time. The unit-kind default and the catalog&#x27;s declared SecurityAssetClassDescriptor.QuoteConvention agree for every catalogued class today (pinned by SecurityQuoteConventionCoverageTests). A class-aware caller pricing a class that declares a different convention uses ValueAtPrice(decimal, SecurityQuoteConvention) with QuoteConventionFor(string?) instead of this overload. |
-| <code>public decimal ValueAtPrice(decimal price, SecurityQuoteConvention quoteConvention);</code> | [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L49) | Value at a raw unit quote under a declared quote convention. |
-| <code>public static SecurityQuoteConvention QuoteConventionFor(string? assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:60](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L60) | The quote convention an asset class declares in the catalog, for class-aware pricing paths. Unknown classes are rejected rather than guessed. |
-| <code>public static LotQuantity Of(IUnitizedLot lot);</code> | [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:66](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L66) | The unitized quantity of any lot. |
-| <code>public static (SecurityLotUnitKind UnitKind, decimal Multiplier) UnitFor(string? assetClass, JsonElement? assetSpecificTerms = null);</code> | [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:78](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L78) | The lot unit and multiplier an asset class&#x27;s lots carry, read from the asset-class registry: the class&#x27;s SecurityAssetClassDescriptor.LotUnit and, when it declares a SecurityAssetClassDescriptor.LotMultiplierTermKey, that term&#x27;s positive value from assetSpecificTerms. Unknown classes and missing or invalid contract multipliers are rejected. |
-| <code>public static LotQuantity For(string? assetClass, decimal amount, JsonElement? assetSpecificTerms = null);</code> | [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:86](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L86) | A quantity of amount for an asset class, unitized from the registry. |
-| <code>public static bool TryFor(string? assetClass, decimal amount, JsonElement? assetSpecificTerms, out LotQuantity quantity, [System.Diagnostics.CodeAnalysis.NotNullWhen(false)] out string? error);</code> | [src/Meridian.Contracts/SecurityMaster/LotQuantity.cs:97](../../../../src/Meridian.Contracts/SecurityMaster/LotQuantity.cs#L97) | For without the exception: false, with the reason, when the class is not registered or its contract multiplier term is missing or not positive. Callers that report a skipped posting rather than fail (journal producers, ledger bridges) use this form. |
-
-## MultiAssetCoverageSpecification
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.MultiAssetCoverageSpecification</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs:346](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs#L346).
-
-```csharp
-public sealed record MultiAssetCoverageSpecification(string AssetClass, string DisplayName, string Summary, IReadOnlyList<string> RequiredIdentifiers, IReadOnlyList<string> EconomicTerms, IReadOnlyList<string> ProviderFeeds, string LedgerClassification, IReadOnlyList<string> ReconciliationSignals, bool HardBlocker, bool RequiresOperationalProfileReview = false);
-```
-
-## NotionalLot
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.NotionalLot</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L11).
-
-Canonical open lot for notional-denominated OTC derivatives (interest rate swaps, credit default swaps, swaptions, caps and floors), whose SecurityAssetClassDescriptor.LotUnit is SecurityLotUnitKind.Notional. The lot&#x27;s size is the notional the contract&#x27;s payments are computed on, not a count of anything owned, so it has no shares, face or units and amortizes by replacing the notional rather than by relieving quantity. Any upfront payment exchanged at inception is the only cost the lot carries.
-
-```csharp
-public sealed record NotionalLot : IUnitizedLot
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public NotionalLot(string lotId, Guid securityId, DateOnly effectiveDate, decimal originalNotional, decimal? currentNotional = null, decimal upfrontPayment = 0m);</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L13) |  |
-| <code>public string LotId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L42) |  |
-| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:52](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L52) | Security Master identity the contract&#x27;s terms (legs, index, fixed rate, maturity) resolve from. |
-| <code>public DateOnly EffectiveDate { get; }</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:55](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L55) | Date the contract became effective and the notional started accruing. |
-| <code>public decimal OriginalNotional { get; }</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L58) | Notional at inception, in the contract currency. |
-| <code>public decimal CurrentNotional { get; }</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:61](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L61) | Notional outstanding after any amortization, in the contract currency. |
-| <code>public decimal UpfrontPayment { get; }</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L64) | Upfront payment made at inception, in the contract currency; zero for a par swap. |
-| <code>public decimal AmortizationFactor =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:67](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L67) | The share of the original notional still outstanding, the notional analogue of a pool factor. |
-| <code>public decimal AmortizedNotional =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L70) | Notional the lot has amortized away since inception. |
-| <code>public decimal CostBasis =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:73](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L73) | The lot&#x27;s cost basis: a notional lot&#x27;s only cost is the upfront payment. |
-| <code>public bool IsFullyAmortized =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:76](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L76) | True once the notional has fully amortized and the contract no longer accrues. |
-| <code>public NotionalLot WithNotional(decimal currentNotional) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:79](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L79) | The same lot with its notional replaced by currentNotional, the way an amortization schedule steps it. |
-| <code>public NotionalLot Amortize(decimal amount);</code> | [src/Meridian.Contracts/SecurityMaster/NotionalLot.cs:86](../../../../src/Meridian.Contracts/SecurityMaster/NotionalLot.cs#L86) | Reduces the notional outstanding by amount. A reduction larger than the notional outstanding is refused rather than silently floored. |
-
-## OfferCorporateActionTerms
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OfferCorporateActionTerms</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:201](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L201).
-
-An offer the holder may accept (tender offer).
-
-```csharp
-public sealed record OfferCorporateActionTerms(string EventType, decimal? OfferPricePerUnit, DateOnly? ExpiryDate, bool? IsPartial, bool? IsVoluntary) : CorporateActionTerms(EventType);
-```
-
-## OperatorOverrideDecisionRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OperatorOverrideDecisionRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:73](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L73).
-
-Public API request for a reviewer&#x27;s decision on a pending operator-override overlay. Decision must be SecurityOverrideApprovalStatusDto.Approved or SecurityOverrideApprovalStatusDto.Rejected, with an optional comment recorded on the durable audit trail. The reviewer identity is intentionally absent: the API layer derives it from the authenticated principal and maps this request onto the internal store command, so a caller cannot attribute a decision to someone else.
-
-```csharp
-public sealed record OperatorOverrideDecisionRequest(SecurityOverrideApprovalStatusDto Decision, string? Comment = null);
-```
-
-## OperatorOverridesDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OperatorOverridesDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L36).
-
-Operator-supplied per-security override values that supplement the authoritative Security Master record. Values are string key/value pairs staged by the operator workstation: paths outside the asset-terms namespace are free-form annotations (e.g. ratings, sector classification) that never amend the canonical security terms, while assetSpecificTerms.* paths are schema-validated corrections that — once approved and published through the governed revision lifecycle — are merged into the canonical terms as a complete economic-definition amendment by the publish fan-out&#x27;s canonical-merge handler. Until publish, staged values of either kind live only in this overlay.
-
-```csharp
-public sealed record OperatorOverridesDto(Guid SecurityId, IReadOnlyDictionary<string, string> Values, string UpdatedBy, DateTimeOffset UpdatedAt)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityOverrideApprovalStatusDto ApprovalStatus { get; init; } = SecurityOverrideApprovalStatusDto.NotRequested;</code> | [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L42) |  |
-| <code>public string? ReasonCode { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L44) |  |
-| <code>public string? ReviewedBy { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:46](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L46) |  |
-| <code>public DateTimeOffset? ReviewedAt { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L48) |  |
-| <code>public IReadOnlyList&lt;SecurityOverrideAuditEntryDto&gt; AuditTrail { get; init; } = [];</code> | [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L50) |  |
-
-## OperatorOverridesPatchRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OperatorOverridesPatchRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L58).
-
-Partial update request for operator overrides. SetValues upserts the listed keys; RemoveKeys deletes the listed keys. Both collections are optional and may be empty (no-op patch).
-
-```csharp
-public sealed record OperatorOverridesPatchRequest(IReadOnlyDictionary<string, string>? SetValues, IReadOnlyList<string>? RemoveKeys)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? ReasonCode { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:62](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L62) |  |
-
-## OtcAuctionSettlementData
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcAuctionSettlementData</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L41).
-
-Full CDS auction settlement linked to its retained credit trigger. Amount is signed from the fund&#x27;s side.
-
-```csharp
-public sealed record OtcAuctionSettlementData([property : JsonRequired] Guid CreditEventId, [property : JsonRequired] DateOnly AuctionDate, [property : JsonRequired] decimal FinalPricePercent, [property : JsonRequired] decimal SettlementAmount, [property : JsonRequired] string Currency, [property : JsonRequired] int SettlementScale, [property : JsonRequired] string AuctionReference) : OtcContractLifecycleData;
-```
-
-## OtcCollateralAgreementDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCollateralAgreementDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:81](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L81).
-
-A credit support annex (or equivalent) under a master agreement: the thresholds, minimum transfer amount, independent amount, rounding, valuation cadence and eligible collateral that govern margin calls between the two parties.
-
-```csharp
-public sealed record OtcCollateralAgreementDto(Guid CollateralAgreementId, Guid MasterAgreementId, string Currency, decimal ThresholdOurs, decimal ThresholdTheirs, decimal MinimumTransferAmount, decimal? IndependentAmount, decimal? RoundingAmount, string ValuationFrequency, IReadOnlyList<OtcEligibleCollateralDto> EligibleCollateral, DateOnly EffectiveDate, DateOnly? TerminationDate, string? Notes, long Version, string UpdatedBy, DateTimeOffset UpdatedAt);
-```
-
-## OtcCollateralBalanceDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCollateralBalanceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L70).
-
-Collateral posted or received under a collateral agreement: one eligible-collateral line, its quantity and unit value, the valued amount they multiply to, the haircut copied from the agreement when the balance was written and the date the valuation is good for. A zero quantity is a fully returned line. A snapshot applies the line&#x27;s haircut as the agreement states it at computation time, so the copy here records what applied when the balance was written.
-
-```csharp
-public sealed record OtcCollateralBalanceDto(Guid BalanceId, Guid CollateralAgreementId, OtcCollateralDirection Direction, OtcCollateralKind Kind, string EligibleCollateralDescription, Guid? SecurityId, string Currency, decimal Quantity, decimal UnitValue, decimal ValuedAmount, decimal HaircutPercent, DateOnly ValuedAsOf, string? Reference, string? Notes, long Version, string UpdatedBy, DateTimeOffset UpdatedAt);
-```
-
-## OtcCollateralDirection
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCollateralDirection</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L9).
-
-Which way collateral moved: posted by the fund to the counterparty, or received by the fund from it.
-
-```csharp
-public enum OtcCollateralDirection
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Posted</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L12) | Posted by the fund; the counterparty holds it. |
-| <code>Received</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L15) | Received from the counterparty; the fund holds it. |
-
-## OtcCollateralHeldLineDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCollateralHeldLineDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:140](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L140).
-
-One collateral balance as the snapshot saw it, with the haircut applied: the haircut of the agreement&#x27;s eligible-collateral line at computation time, not the one copied onto the balance.
-
-```csharp
-public sealed record OtcCollateralHeldLineDto(Guid BalanceId, OtcCollateralDirection Direction, OtcCollateralKind Kind, string Description, decimal ValuedAmount, decimal HaircutPercent, decimal HaircutAdjusted, DateOnly ValuedAsOf);
-```
-
-## OtcCollateralJsonContext
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCollateralJsonContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:522](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L522).
-
-Provides source-generated JSON metadata for OTC collateral contracts.
-
-```csharp
-public sealed partial class OtcCollateralJsonContext : JsonSerializerContext;
-```
-
-## OtcCollateralKind
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCollateralKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L20).
-
-What the collateral is.
-
-```csharp
-public enum OtcCollateralKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Cash</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L22) |  |
-| <code>Security</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L23) |  |
-
-## OtcCollateralMovementDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCollateralMovementDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:130](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L130).
-
-A collateral transfer the credit support terms imply: who moves it and whether it is a delivery or a return.
-
-```csharp
-public sealed record OtcCollateralMovementDto(OtcMovementKind Kind, OtcMovementParty Mover, decimal Amount, string Currency);
-```

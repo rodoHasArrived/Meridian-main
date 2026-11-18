@@ -293,6 +293,34 @@ public sealed class IntercompanyLedgerPostingAuthority(IIntercompanyAccountingAr
         catch { await new Lease(leases).DisposeAsync().ConfigureAwait(false); throw; }
     }
 
+    /// <summary>
+    /// Re-resolves every retained fee slice under current profile and legal authority before review or posting, so
+    /// a revision retired, superseded or re-pinned after drafting stops the fee draft.
+    /// </summary>
+    public async Task VerifyFeeAccrualAuthorityAsync(string tenantId, IntercompanyFeeAccrualEvidenceDto evidence, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(evidence);
+        foreach (var slice in evidence.Computation.Slices)
+            foreach (var day in new[] { slice.From, slice.To.AddDays(-1) }.Distinct())
+            {
+                ResolvedIntercompanyAccountingArrangementDto current;
+                try
+                {
+                    current = await service.ResolveApprovedRevisionAsync(tenantId, evidence.AccountingArrangementId,
+                        slice.AccountingArrangementRevisionId, new DateTimeOffset(day.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero), ct).ConfigureAwait(false);
+                }
+                catch (Exception error) when (error is InvalidOperationException or KeyNotFoundException)
+                {
+                    throw new InvalidOperationException($"The management-fee profile authority retained for {day:yyyy-MM-dd} no longer applies. Recompute the fee before review or posting.", error);
+                }
+                if (current.TemplateKind != IntercompanyAccountingTemplateKindDto.ManagementFee
+                    || current.CanonicalAgreementId != evidence.AgreementId
+                    || current.LegalRevision.AgreementVersion != slice.AgreementVersion
+                    || !string.Equals(current.LegalRevision.PayloadHash, slice.AgreementPayloadHash, StringComparison.Ordinal))
+                    throw new InvalidOperationException($"The legal revision retained for {day:yyyy-MM-dd} no longer applies. Recompute the fee before review or posting.");
+            }
+    }
+
     private static bool IsExactIntercompanyInverse(JournalEntry inverse, JournalEntry original)
         => IntercompanyJournalCorrectionEvidence.IsExactInverse(inverse, original);
 

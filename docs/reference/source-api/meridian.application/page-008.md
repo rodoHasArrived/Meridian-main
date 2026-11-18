@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterTickerChangeService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.SecurityMasterTickerChangeService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterTickerChangeService.cs:26](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterTickerChangeService.cs#L26).
+
+Records ticker changes through the standard amend path: the old ticker identifier&#x27;s validity interval is closed at the change date and the new ticker&#x27;s interval opens there. Because this flows through the event store, historical as-of resolution answers lookups for the old ticker at pre-change dates, and the change is visible in the security&#x27;s event history like any other amendment.
+
+```csharp
+public sealed class SecurityMasterTickerChangeService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterTickerChangeService(ContractSecurityMasterQueryService queryService, ISecurityMasterService commandService, ILogger&lt;SecurityMasterTickerChangeService&gt; logger, ISecurityMasterAmender? systemAmender = null);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterTickerChangeService.cs:33](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterTickerChangeService.cs#L33) |  |
+| <code>public async Task&lt;SecurityDetailDto&gt; RecordAsync(RecordTickerChangeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterTickerChangeService.cs:47](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterTickerChangeService.cs#L47) |  |
+
 ## CoverageInvalidationHandler
 
 Qualified name: <code>Meridian.Application.SecurityMaster.CoverageInvalidationHandler</code>. Kind: `class`.

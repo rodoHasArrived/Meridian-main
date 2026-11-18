@@ -6,6 +6,66 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerGroupSummaryDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.LedgerGroupSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:412](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L412).
+
+```csharp
+public sealed record LedgerGroupSummaryDto(LedgerGroupId LedgerGroupId, string DisplayName, IReadOnlyList<Guid> AccountIds, IReadOnlyList<Guid> InvestmentPortfolioIds, IReadOnlyList<Guid> ClientIds, IReadOnlyList<Guid> FundIds, IReadOnlyList<Guid> SleeveIds, IReadOnlyList<Guid> VehicleIds, FundStructureSharedDataAccessDto? SharedDataAccess = null);
+```
+
+## LedgerMappingAccountDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.LedgerMappingAccountDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:445](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L445).
+
+```csharp
+public sealed record LedgerMappingAccountDto(Guid AccountId, string AccountCode, string DisplayName, AccountTypeDto AccountType, AccountOperationalStatusDto OperationalStatus, string BaseCurrency, string? Institution, Guid? FundId, Guid? SleeveId, Guid? VehicleId, Guid? EntityId, string? PortfolioId, string? LedgerReference, LedgerMappingResolutionDto Mapping, string RecommendedAction);
+```
+
+## LedgerMappingAssignmentAuditEventDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.LedgerMappingAssignmentAuditEventDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:482](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L482).
+
+```csharp
+public sealed record LedgerMappingAssignmentAuditEventDto(Guid AuditId, string EventType, DateTimeOffset OccurredAtUtc, string Actor, string Rationale, string CorrelationId, Guid AccountId, string AccountCode, string? FromLedgerGroupId, string ToLedgerGroupId, Guid AssignmentId);
+```
+
+## LedgerMappingAssignmentRequestDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.LedgerMappingAssignmentRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:473](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L473).
+
+```csharp
+public sealed record LedgerMappingAssignmentRequestDto(Guid AccountId, string LedgerGroupId, string RequestedBy, string Rationale, DateTimeOffset? EffectiveFrom = null, string? CorrelationId = null, Guid? AssignmentId = null);
+```
+
+## LedgerMappingAssignmentResultDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.LedgerMappingAssignmentResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:495](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L495).
+
+```csharp
+public sealed record LedgerMappingAssignmentResultDto(FundStructureAssignmentDto Assignment, LedgerMappingAccountDto Account, LedgerMappingAssignmentAuditEventDto AuditEvent, LedgerMappingWorkbenchDto Workbench);
+```
+
+## LedgerMappingResolutionDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.LedgerMappingResolutionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:436](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L436).
+
+```csharp
+public sealed record LedgerMappingResolutionDto(LedgerGroupId LedgerGroupId, LedgerMappingSourceDto Source, Guid? SourceNodeId, FundStructureNodeKindDto? SourceNodeKind, string? SourceReference, bool RequiresUserMapping, IReadOnlyList<string> IssueCodes);
+```
+
 ## LedgerMappingSourceDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.LedgerMappingSourceDto</code>. Kind: `enum`.
@@ -642,64 +702,4 @@ Source: [src/Meridian.Contracts/FxSpot/FxSpotReferenceDtos.cs:12](../../../../sr
 
 ```csharp
 public sealed record FxSpotPairsForCurrencyDto(string Currency, IReadOnlyList<FxSpotReferenceDto> Pairs);
-```
-
-## FxSpotReferenceDto
-
-Qualified name: <code>Meridian.Contracts.FxSpot.FxSpotReferenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FxSpot/FxSpotReferenceDtos.cs:3](../../../../src/Meridian.Contracts/FxSpot/FxSpotReferenceDtos.cs#L3).
-
-```csharp
-public sealed record FxSpotReferenceDto(Guid SecurityId, string DisplayName, string BaseCurrency, string QuoteCurrency, string PairCode, string PrimaryIdentifier, long Version);
-```
-
-## EndpointDefinitionDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.EndpointDefinitionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:188](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L188).
-
-```csharp
-public sealed record EndpointDefinitionDto(string EndpointKey, ProviderCapabilityKindDto Capability, ProviderIntegrationHttpMethodDto Method, string Path, IReadOnlyDictionary<string, string> Headers, IReadOnlyDictionary<string, string> Query, string? RequestBodyTemplate, EndpointDependencyDto? DependsOn, EndpointPaginationDto Pagination, EndpointResponseShapeDto Response);
-```
-
-## EndpointDependencyDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.EndpointDependencyDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:171](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L171).
-
-```csharp
-public sealed record EndpointDependencyDto(string EndpointKey, string OutputPath, string ParameterName);
-```
-
-## EndpointPaginationDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.EndpointPaginationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:176](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L176).
-
-```csharp
-public sealed record EndpointPaginationDto(ProviderIntegrationPaginationTypeDto Type, string? CursorPath, string? CursorParam, string? NextUrlPath, int? PageSize);
-```
-
-## EndpointResponseShapeDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.EndpointResponseShapeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:183](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L183).
-
-```csharp
-public sealed record EndpointResponseShapeDto(string RecordsPath, string? SchemaFingerprint, IReadOnlyList<string> RequiredPaths);
-```
-
-## FieldMappingDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.FieldMappingDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:204](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L204).
-
-```csharp
-public sealed record FieldMappingDto(ProviderCapabilityKindDto Capability, string SourcePath, string TargetField, TransformRuleDto? Transform, bool Required, ProviderMappingConfidenceDto Confidence, string? DefaultValue, string? ConstantValue);
 ```

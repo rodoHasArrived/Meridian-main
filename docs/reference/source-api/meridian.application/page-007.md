@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BackfillSchedulePresets
+
+Qualified name: <code>Meridian.Application.Scheduling.BackfillSchedulePresets</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Scheduling/BackfillSchedule.cs:225](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L225).
+
+Preset schedule templates for common use cases.
+
+```csharp
+public static class BackfillSchedulePresets
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static BackfillSchedule DailyGapFill(string name, IEnumerable&lt;string&gt;? symbols = null) =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:235](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L235) | Daily gap-fill at 2 AM UTC. |
+| <code>public static BackfillSchedule WeeklyFullBackfill(string name, IEnumerable&lt;string&gt;? symbols = null) =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:249](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L249) | Weekly full backfill on Sunday at 3 AM UTC. |
+| <code>public static BackfillSchedule EndOfDayUpdate(string name, IEnumerable&lt;string&gt;? symbols = null) =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:263](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L263) | End-of-day update weekdays at 6 PM EST (11 PM UTC). |
+| <code>public static BackfillSchedule MonthlyDeepBackfill(string name, IEnumerable&lt;string&gt;? symbols = null) =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:277](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L277) | Monthly deep historical backfill on first Sunday at 1 AM UTC. |
+
 ## ExecutionStatistics
 
 Qualified name: <code>Meridian.Application.Scheduling.ExecutionStatistics</code>. Kind: `class`.
@@ -1015,22 +1036,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public SecurityMasterCorporateActionCommandService(ISecurityMasterEventStore eventStore, ILogger&lt;SecurityMasterCorporateActionCommandService&gt; logger, ISecurityMasterStore? store = null, ICorporateActionRestatementTrigger? restatementTrigger = null, ICorporateActionOperationsService? durableOperations = null);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterCorporateActionCommandService.cs:18](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterCorporateActionCommandService.cs#L18) |  |
 | <code>public async Task&lt;SecurityMasterCorporateActionAppendResultDto&gt; AppendAsync(SecurityMasterCorporateActionAppendRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterCorporateActionCommandService.cs:32](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterCorporateActionCommandService.cs#L32) |  |
-
-## SecurityMasterTickerChangeService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.SecurityMasterTickerChangeService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterTickerChangeService.cs:26](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterTickerChangeService.cs#L26).
-
-Records ticker changes through the standard amend path: the old ticker identifier&#x27;s validity interval is closed at the change date and the new ticker&#x27;s interval opens there. Because this flows through the event store, historical as-of resolution answers lookups for the old ticker at pre-change dates, and the change is visible in the security&#x27;s event history like any other amendment.
-
-```csharp
-public sealed class SecurityMasterTickerChangeService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterTickerChangeService(ContractSecurityMasterQueryService queryService, ISecurityMasterService commandService, ILogger&lt;SecurityMasterTickerChangeService&gt; logger, ISecurityMasterAmender? systemAmender = null);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterTickerChangeService.cs:33](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterTickerChangeService.cs#L33) |  |
-| <code>public async Task&lt;SecurityDetailDto&gt; RecordAsync(RecordTickerChangeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterTickerChangeService.cs:47](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/SecurityMasterTickerChangeService.cs#L47) |  |

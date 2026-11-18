@@ -216,6 +216,14 @@ describe("workspace metadata", () => {
     ]);
   });
 
+  it("names a sidebar destination that is a view of a shared route by its view", () => {
+    expect(resolveWorkstationRouteBreadcrumbLabel("/data/quotes", workspaceForKey("data"), "?view=options&symbol=XYZ"))
+      .toBe("Options screening");
+    expect(resolveWorkstationRouteBreadcrumbLabel("/data/quotes", workspaceForKey("data"), "?view=watchlist"))
+      .toBe("Market Data");
+    expect(resolveWorkstationRouteBreadcrumbLabel("/data/quotes", workspaceForKey("data"))).toBe("Market Data");
+  });
+
   it("resolves route breadcrumb labels from the centralized workstation route registry", () => {
     expect(resolveWorkstationRouteBreadcrumbLabel("/reporting/operations-record", workspaceForKey("reporting"))).toBe(
       "Operations Record"

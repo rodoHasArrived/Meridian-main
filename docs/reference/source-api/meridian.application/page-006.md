@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## HotPathBatchSerializer
+
+Qualified name: <code>Meridian.Application.Pipeline.HotPathBatchSerializer</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs:34](../../../../src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs#L34).
+
+Batch-serializes hot-path struct events (RawTradeEvent, RawQuoteEvent) to JSONL-formatted UTF-8 bytes.
+
+```csharp
+public sealed class HotPathBatchSerializer
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public HotPathBatchSerializer(SymbolTable symbolTable, int initialBufferCapacity = 65_536);</code> | [src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs:55](../../../../src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs#L55) | Creates a new serializer backed by the given symbol table. |
+| <code>public ReadOnlyMemory&lt;byte&gt; SerializeTrades(ReadOnlySpan&lt;RawTradeEvent&gt; batch);</code> | [src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs:78](../../../../src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs#L78) | Serializes a batch of RawTradeEvent structs to JSONL UTF-8 bytes. |
+| <code>public ReadOnlyMemory&lt;byte&gt; SerializeQuotes(ReadOnlySpan&lt;RawQuoteEvent&gt; batch);</code> | [src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs:111](../../../../src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs#L111) | Serializes a batch of RawQuoteEvent structs to JSONL UTF-8 bytes. |
+
 ## IDedupStore
 
 Qualified name: <code>Meridian.Application.Pipeline.IDedupStore</code>. Kind: `interface`.
@@ -1036,24 +1056,3 @@ Declared public members:
 | <code>public IReadOnlyList&lt;BackfillSchedule&gt; GetSchedulesByTag(string tag);</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:518](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L518) | Get schedules by tag. |
 | <code>public bool HasRunningSchedules();</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:530](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L530) | Check if any schedules are currently running. |
 | <code>public ScheduleStatusSummary GetStatusSummary();</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:539](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L539) | Get schedule status summary. |
-
-## BackfillSchedulePresets
-
-Qualified name: <code>Meridian.Application.Scheduling.BackfillSchedulePresets</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Scheduling/BackfillSchedule.cs:225](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L225).
-
-Preset schedule templates for common use cases.
-
-```csharp
-public static class BackfillSchedulePresets
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static BackfillSchedule DailyGapFill(string name, IEnumerable&lt;string&gt;? symbols = null) =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:235](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L235) | Daily gap-fill at 2 AM UTC. |
-| <code>public static BackfillSchedule WeeklyFullBackfill(string name, IEnumerable&lt;string&gt;? symbols = null) =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:249](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L249) | Weekly full backfill on Sunday at 3 AM UTC. |
-| <code>public static BackfillSchedule EndOfDayUpdate(string name, IEnumerable&lt;string&gt;? symbols = null) =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:263](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L263) | End-of-day update weekdays at 6 PM EST (11 PM UTC). |
-| <code>public static BackfillSchedule MonthlyDeepBackfill(string name, IEnumerable&lt;string&gt;? symbols = null) =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:277](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L277) | Monthly deep historical backfill on first Sunday at 1 AM UTC. |

@@ -1848,8 +1848,9 @@
     @apply rounded-lg border border-border/70 bg-[hsl(var(--panel-soft)/0.92)];
   }
 
+  /* Light caps in the sans face: monospace is for numbers, IDs and code, not labels. */
   .eyebrow-label {
-    @apply font-mono text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground;
+    @apply font-sans text-xs font-medium uppercase tracking-[0.04em] text-muted-foreground;
   }
 
   /* Three-tier type scale: page title (the workspace header's h1), section (CardTitle and region
@@ -1879,10 +1880,11 @@
   }
 
   /* Caps keep the label tier's 11px: the contract test holds metadata at or above it. */
+  /* Short labels keep light caps but stay in the body face; monospace is for figures and IDs. */
   .type-label--caps {
-    font-family: var(--font-data);
+    font-family: var(--font-body);
     text-transform: uppercase;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.04em;
   }
 
   .eyebrow-label.eyebrow-label--sentence {

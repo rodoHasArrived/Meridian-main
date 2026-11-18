@@ -206,9 +206,13 @@ function crossScreenOpenBreaks(models: KpiReadModels): ComputedKpi {
   const count = models.accounting?.workspace?.openBreaks ?? countOpenBreaks(models.accounting?.breakQueue) ?? models.crossScreenCounts?.openBreaks?.count;
   if (count == null) return unavailable("Open-break count unavailable");
   const caption = models.accounting?.metrics?.find((metric) => metric.id === "open-breaks" || metric.id === "breaks");
+  // The producer's history travels with the figure only when it ends on the same count shown here;
+  // the count may come from another source, and a line ending elsewhere would contradict it.
+  const lastHistoryValue = caption?.history?.at(-1)?.value;
+  const history = lastHistoryValue === count ? { history: caption?.history, historyBasis: caption?.historyBasis } : {};
   return {
     ...scalar(count, count === 0 ? "success" : "warning", caption?.delta ?? ""),
-    evidence: { baseline: caption?.baseline, comparisonPeriod: caption?.comparisonPeriod }
+    evidence: { baseline: caption?.baseline, comparisonPeriod: caption?.comparisonPeriod, ...history }
   };
 }
 

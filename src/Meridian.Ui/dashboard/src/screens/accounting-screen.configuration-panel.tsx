@@ -70,7 +70,7 @@ export function AccountingConfigurationPanel({ view }: { view: AccountingConfigu
       <div id="configure-section-setup" className="configure-anchor scroll-mt-20 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         {view.metricRows.map((metric) => (
           <div key={metric.id} className="panel-surface px-4 py-3">
-            <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(metric.label) && "uppercase tracking-[0.14em]")}>{metric.label}</div>
+            <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(metric.label) && "type-label--caps")}>{metric.label}</div>
             <div className={cn("mt-2 font-mono text-xl font-semibold", statusTextClass(metric.tone))}>{metric.value}</div>
             <p className="mt-2 text-xs leading-5 text-muted-foreground">{metric.detail}</p>
           </div>
@@ -80,7 +80,7 @@ export function AccountingConfigurationPanel({ view }: { view: AccountingConfigu
       <div className="grid gap-4 md:grid-cols-2">
         {view.setupReadinessRows.map((row) => (
           <div key={row.id} className="rounded-md border border-border/70 bg-secondary/20 px-4 py-3">
-            <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(row.label) && "uppercase tracking-[0.14em]")}>{row.label}</div>
+            <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(row.label) && "type-label--caps")}>{row.label}</div>
             <div className={cn("mt-2 text-sm font-semibold", statusTextClass(row.tone))}>{row.value}</div>
             <p className="mt-2 text-xs leading-5 text-muted-foreground">{row.detail}</p>
           </div>
@@ -126,7 +126,7 @@ export function AccountingConfigurationPanel({ view }: { view: AccountingConfigu
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="min-w-0">
                       <div className="font-semibold text-foreground">{book.title}</div>
-                      <div className={cn("mt-1 text-xs text-muted-foreground", usesTrackedCaps(book.id) && "font-mono uppercase tracking-[0.08em]")}>{book.id}</div>
+                      <div className={cn("mt-1 text-xs text-muted-foreground", usesTrackedCaps(book.id) && "type-label--caps")}>{book.id}</div>
                     </div>
                     <Badge variant={statusBadgeVariant(book.tone)}>{book.statusLabel}</Badge>
                   </div>
@@ -744,7 +744,7 @@ export function AccountingConfigurationPanel({ view }: { view: AccountingConfigu
 function RulesStudioList({ title, rows }: { title: string; rows: string[] }) {
   return (
     <div>
-      <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(title) && "uppercase tracking-[0.14em]")}>{title}</div>
+      <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(title) && "type-label--caps")}>{title}</div>
       <div className="mt-2 space-y-1.5">
         {rows.map((row, index) => (
           <div key={`${title}-${index}-${row}`} className="rounded border border-border/60 bg-secondary/20 px-2 py-1.5 text-xs leading-5 text-muted-foreground">

@@ -367,7 +367,28 @@ public static partial class LedgerEndpoints
             record.SourceEventId,
             record.SourceJournalEntryId,
             record.PostingKind,
-            record.AdjustmentApproval);
+            record.AdjustmentApproval,
+            BuildExecutionLineage(record.Entry.Metadata));
+    }
+
+    /// <summary>
+    /// The order, fill and run a posting recorded. The order id comes from the retained
+    /// <c>source.orderId</c> tag (the execution journal's own identifier, e.g. "PO-1") before the
+    /// metadata's GUID form, which exists only when that identifier parses as a GUID.
+    /// </summary>
+    internal static LedgerJournalExecutionLineageDto? BuildExecutionLineage(JournalEntryMetadata? metadata)
+    {
+        if (metadata is null)
+            return null;
+        var tags = metadata.Tags;
+        var orderId = tags is not null && tags.TryGetValue("source.orderId", out var taggedOrder) && !string.IsNullOrWhiteSpace(taggedOrder)
+            ? taggedOrder.Trim()
+            : metadata.OrderId?.ToString("D");
+        var runId = tags is not null && tags.TryGetValue(LedgerQuery.StrategyRunIdTag, out var taggedRun) && !string.IsNullOrWhiteSpace(taggedRun)
+            ? taggedRun.Trim()
+            : null;
+        return orderId is null && metadata.FillId is null ? null
+            : new LedgerJournalExecutionLineageDto(orderId, metadata.FillId, runId);
     }
 
     private static LedgerJournalEntryLineDto BuildJournalEntryLineDto(

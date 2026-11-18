@@ -106,6 +106,74 @@ public sealed class OperatorTriageAccountScopeTests
     }
 
     [Fact]
+    public async Task BulkAcknowledgementAppliesEachItemUnderItsOwnRetainedReceipt()
+    {
+        await using var harness = await Harness.CreateAsync();
+        var item = await harness.BrokerageItemAsync();
+        var command = new OperatorTriageBulkCommand("ack-bulk", OperatorTriageAction.Acknowledge,
+            "Reviewed the retained brokerage warning.", AssigneeId: null,
+            [new(item.WorkItemId, item.Version)], FundAccountId: harness.AccountId);
+
+        using var response = await harness.Client.PostAsJsonAsync("/api/workstation/operator/triage/bulk", command, Json);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var result = Assert.Single((await response.Content.ReadFromJsonAsync<OperatorTriageBulkResult>(Json))!.Results);
+        Assert.Equal("Applied", result.Status);
+        Assert.NotNull(result.Item!.AcknowledgedAt);
+        // Acknowledgement is personal state; it does not assign the item.
+        Assert.Null(result.Item.OwnerId);
+        var retained = await harness.Store.GetAsync(Harness.Scope, item.WorkItemId);
+        Assert.Equal("ack-bulk:0", Assert.Single(retained.Receipts).CommandId);
+
+        // The same bulk command replays per item rather than acting twice.
+        using var replay = await harness.Client.PostAsJsonAsync("/api/workstation/operator/triage/bulk", command, Json);
+        Assert.True(Assert.Single((await replay.Content.ReadFromJsonAsync<OperatorTriageBulkResult>(Json))!.Results).Replayed);
+        Assert.Single((await harness.Store.GetAsync(Harness.Scope, item.WorkItemId)).Activity);
+    }
+
+    [Fact]
+    public async Task BulkSnoozeFollowsTheSingleItemSnoozePolicy()
+    {
+        await using var harness = await Harness.CreateAsync();
+        var item = await harness.BrokerageItemAsync();
+        var until = DateTimeOffset.UtcNow.AddDays(1);
+        var command = new OperatorTriageBulkCommand("snooze-bulk", OperatorTriageAction.Snooze,
+            "Waiting on the broker statement.", AssigneeId: null,
+            [new(item.WorkItemId, item.Version)], FundAccountId: harness.AccountId, SnoozedUntil: until);
+
+        using var response = await harness.Client.PostAsJsonAsync("/api/workstation/operator/triage/bulk", command, Json);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var result = Assert.Single((await response.Content.ReadFromJsonAsync<OperatorTriageBulkResult>(Json))!.Results);
+        if (item.Capabilities.CanSnooze)
+        {
+            Assert.Equal("Applied", result.Status);
+            Assert.NotNull(result.Item!.SnoozedUntil);
+        }
+        else
+        {
+            // A blocker stays visible: bulk snooze is refused per item exactly as single snooze is.
+            Assert.NotEqual("Applied", result.Status);
+            Assert.Empty((await harness.Store.GetAsync(Harness.Scope, item.WorkItemId)).Receipts);
+        }
+    }
+
+    [Theory]
+    [InlineData("Unsnooze", null, false)]
+    [InlineData("Snooze", null, false)]
+    [InlineData("Assign", null, false)]
+    public async Task BulkCommandRejectsUnsupportedActionsAndMissingFieldsBeforeWriting(string action, string? assignee, bool withUntil)
+    {
+        await using var harness = await Harness.CreateAsync();
+        var item = await harness.BrokerageItemAsync();
+        var command = new OperatorTriageBulkCommand("bulk-invalid", Enum.Parse<OperatorTriageAction>(action),
+            "Reviewed.", assignee, [new(item.WorkItemId, item.Version)], FundAccountId: harness.AccountId,
+            SnoozedUntil: withUntil ? DateTimeOffset.UtcNow.AddDays(1) : null);
+
+        using var response = await harness.Client.PostAsJsonAsync("/api/workstation/operator/triage/bulk", command, Json);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Empty((await harness.Store.GetAsync(Harness.Scope, item.WorkItemId)).Receipts);
+    }
+
+    [Fact]
     public async Task ForeignAccountReadAndCommandsAreRefusedBeforeReadingTheAccountOrWritingMetadata()
     {
         await using var harness = await Harness.CreateAsync();
