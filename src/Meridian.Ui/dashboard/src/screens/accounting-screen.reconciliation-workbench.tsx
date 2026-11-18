@@ -418,7 +418,7 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
               Back to break queue
             </Button>
             {reconciliation.selectedDetail ? <p className="mt-3 text-sm text-muted-foreground">{reconciliation.selectedDetail.description}</p> : <p role="status" aria-label={reconciliation.detailEmptyAriaLabel} className="text-sm text-muted-foreground">{reconciliation.detailEmptyText}</p>}
-            {selectedSource ? <BreakLifecyclePanel key={selectedSource.breakId} item={selectedSource} onUpdated={reconciliation.applyCaseworkUpdate} services={lifecycleServices} /> : null}
+            {selectedSource ? <BreakLifecyclePanel key={`lifecycle:${selectedSource.breakId}`} item={selectedSource} onUpdated={reconciliation.applyCaseworkUpdate} services={lifecycleServices} /> : null}
             {selectedRow ? <ReconciliationCaseDiscussion key={selectedRow.breakId} breakId={selectedRow.breakId} onUpdated={reconciliation.applyCaseworkUpdate} /> : null}
             {reconciliation.selectedDetail && selectedBreakTechnicalFields.length > 0 ? (
               <TechnicalDetails
@@ -511,7 +511,7 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
                 </div>
               </form>
             ) : null}
-            {selectedRow ? <BreakAuditTimeline key={selectedRow.breakId} breakId={selectedRow.breakId} refreshKey={selectedSource?.version ?? null} load={auditLoader} /> : null}
+            {selectedRow ? <BreakAuditTimeline key={`audit:${selectedRow.breakId}`} breakId={selectedRow.breakId} refreshKey={selectedSource?.version ?? null} load={auditLoader} /> : null}
           </DetailRail>
         )}
       >
