@@ -7658,6 +7658,7 @@ Meridian-main
 │   │   ├── LedgerLineDimensionSetFields.cs
 │   │   ├── LedgerLineDimensionSetNormalizer.cs
 │   │   ├── LedgerPartnersCapitalStatement.cs
+│   │   ├── LedgerPolicy.cs
 │   │   ├── LedgerQuery.cs
 │   │   ├── LedgerReportExportFormat.cs
 │   │   ├── LedgerReportPackArtifact.cs
@@ -8335,6 +8336,8 @@ Meridian-main
 │   │   │   ├── FileIntercompanyAccountBindingStore.cs
 │   │   │   ├── FileIntercompanyAccrualScheduleStore.cs
 │   │   │   ├── FileIntercompanyBalanceConfirmationStore.cs
+│   │   │   ├── FileLedgerJournalLog.cs
+│   │   │   ├── FileLedgerJournalLogFactory.cs
 │   │   │   ├── FileLegacyIntercompanyAttributionStore.cs
 │   │   │   ├── GeneralLedgerExportBuilder.cs
 │   │   │   ├── GeneralLedgerSymbolPnlBuilder.cs
@@ -8361,8 +8364,10 @@ Meridian-main
 │   │   │   ├── LedgerBookServiceException.cs
 │   │   │   ├── LedgerCurrencyBackfill.cs
 │   │   │   ├── LedgerDurableBalanceRule.cs
+│   │   │   ├── LedgerJournalLogJsonContext.cs
 │   │   │   ├── LedgerJournalStoreHydrationExtensions.cs
 │   │   │   ├── LedgerJournalStoreOptions.cs
+│   │   │   ├── LedgerJournalStream.cs
 │   │   │   ├── LedgerMigrationRunner.cs
 │   │   │   ├── LedgerOpenLotProjection.cs
 │   │   │   ├── LedgerPeriodCloseSnapshot.cs
@@ -13960,6 +13965,7 @@ Meridian-main
 │   │   │   ├── LedgerJournalReversalTests.cs
 │   │   │   ├── LedgerPartnersCapitalReconciliationTests.cs
 │   │   │   ├── LedgerPeriodStatementsTests.cs
+│   │   │   ├── LedgerPolicyStrictnessTests.cs
 │   │   │   ├── LedgerReportAccountScopeProvenanceTests.cs
 │   │   │   ├── LedgerReportCsvFormulaGuardTests.cs
 │   │   │   ├── LedgerReportDeterministicExportTests.cs
@@ -14602,6 +14608,7 @@ Meridian-main
 │   │   │   ├── EventBufferTests.cs
 │   │   │   ├── ExclusiveFileLockTests.cs
 │   │   │   ├── ExportValidatorTests.cs
+│   │   │   ├── FileLedgerJournalLogTests.cs
 │   │   │   ├── FileMaintenanceServiceTests.cs
 │   │   │   ├── FilePermissionsServiceTests.cs
 │   │   │   ├── FundAccountTenantColumnMigrationTests.cs

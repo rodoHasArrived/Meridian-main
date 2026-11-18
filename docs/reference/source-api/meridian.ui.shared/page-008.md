@@ -81,7 +81,7 @@ public partial class IntercompanyOperationsJsonContext : JsonSerializerContext;
 
 Qualified name: <code>Meridian.Ui.Shared.Serialization.RunLedgerExportRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs:13](../../../../src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs#L13).
+Source: [src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs:15](../../../../src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs#L15).
 
 ```csharp
 public sealed record RunLedgerExportRequest(string Format = "csv", IReadOnlyDictionary<string, string>? AccountMapping = null);
