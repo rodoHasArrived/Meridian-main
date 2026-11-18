@@ -6,6 +6,61 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IBacktestPreflightService
+
+Qualified name: <code>Meridian.Contracts.Services.IBacktestPreflightService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Services/IBacktestPreflightService.cs:8](../../../../src/Meridian.Contracts/Services/IBacktestPreflightService.cs#L8).
+
+Runs backtest-scoped trust-gate checks before replay begins.
+
+```csharp
+public interface IBacktestPreflightService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;BacktestPreflightReportV2Dto&gt; RunAsync(BacktestPreflightRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IBacktestPreflightService.cs:13](../../../../src/Meridian.Contracts/Services/IBacktestPreflightService.cs#L13) | Executes backtest preflight checks and returns a structured report. |
+
+## IConnectivityProbeService
+
+Qualified name: <code>Meridian.Contracts.Services.IConnectivityProbeService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Services/IConnectivityProbeService.cs:8](../../../../src/Meridian.Contracts/Services/IConnectivityProbeService.cs#L8).
+
+Contract for probing internet connectivity and broadcasting state changes.
+
+```csharp
+public interface IConnectivityProbeService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>bool IsOnline { get; }</code> | [src/Meridian.Contracts/Services/IConnectivityProbeService.cs:13](../../../../src/Meridian.Contracts/Services/IConnectivityProbeService.cs#L13) | Gets whether the system is currently online. |
+| <code>event EventHandler&lt;bool&gt;? ConnectivityChanged;</code> | [src/Meridian.Contracts/Services/IConnectivityProbeService.cs:18](../../../../src/Meridian.Contracts/Services/IConnectivityProbeService.cs#L18) | Raised when connectivity state changes (true = online, false = offline). |
+
+## IEntityLifecycleProjectionSink
+
+Qualified name: <code>Meridian.Contracts.Services.IEntityLifecycleProjectionSink</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Services/IEntityLifecycleService.cs:15](../../../../src/Meridian.Contracts/Services/IEntityLifecycleService.cs#L15).
+
+Local compatibility projection; implementations must verify the retained revision.
+
+```csharp
+public interface IEntityLifecycleProjectionSink
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task ApplyLifecycleProjectionAsync(EntityLifecycleRevisionDto revision, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEntityLifecycleService.cs:17](../../../../src/Meridian.Contracts/Services/IEntityLifecycleService.cs#L17) |  |
+
 ## IEntityLifecycleService
 
 Qualified name: <code>Meridian.Contracts.Services.IEntityLifecycleService</code>. Kind: `interface`.
@@ -893,62 +948,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static FundScopedWriteTenantDecision Decide(bool hasTenantScope, bool enforce) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs:31](../../../../src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs#L31) | A caller with a resolved tenant is always allowed. A tenantless caller is denied only when enforcement is enabled; otherwise it is allowed but flagged for detection. |
-
-## FundScopeTenantAuthority
-
-Qualified name: <code>Meridian.Contracts.Tenancy.FundScopeTenantAuthority</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs:28](../../../../src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs#L28).
-
-The tenant an out-of-request reader is acting for, established explicitly for the duration of a unit of background work (W9-GOV-008 criterion 2).
-
-```csharp
-public static class FundScopeTenantAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static string? CurrentTenantId =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs:33](../../../../src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs#L33) | The tenant the current background scope holds authority for, or null when none is held. |
-| <code>public static string? CurrentReason =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs:39](../../../../src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs#L39) | Why the current scope holds authority — the job or workflow name — for diagnostics when a background read is scoped differently from an operator&#x27;s. |
-| <code>public static IDisposable Enter(string tenantId, string reason);</code> | [src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs:50](../../../../src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs#L50) | Acts as tenantId until the returned scope is disposed. |
-
-## IAuthoritativeScopeFanOutService
-
-Qualified name: <code>Meridian.Contracts.Tenancy.IAuthoritativeScopeFanOutService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:121](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L121).
-
-The authoritative multi-tenant scope fan-out authority: given a security-level fact, it names every accounting scope that fact reaches, or refuses to answer. This is the tenancy authority that security-master decisions depend on. A corporate-action source decision is a statement about a globally observed fact, but applying it creates per-scope casework; without an authority that can enumerate the affected scopes, a decision taken in one tenant either silently misses other affected tenants or leaks their existence. Consumers must treat a non-authoritative result as a denial, never as an empty affected set.
-
-```csharp
-public interface IAuthoritativeScopeFanOutService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;ScopeFanOutResult&gt; ResolveAffectedScopesAsync(ScopeFanOutRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:127](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L127) | Enumerates every accounting scope affected by the fact, across all tenants. Never throws for an unavailable backing store — that is reported as a blocker. |
-| <code>Task&lt;ScopeFanOutResult&gt; ResolveOwnedScopesAsync(string tenantId, string companyId, ScopeFanOutRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:137](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L137) | Enumerates the affected scopes owned by exactly one tenant/company, for a caller that may only see its own tenancy. The result is authoritative only when the full cross-tenant resolution was authoritative, so a caller cannot obtain a confident single-tenant answer while the wider fan-out is unknown. |
-
-## IFundProfileTenancyRegistry
-
-Qualified name: <code>Meridian.Contracts.Tenancy.IFundProfileTenancyRegistry</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:13](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L13).
-
-Authoritative registry mapping a fund profile to its owning tenant/company — the storage-enforced source of truth for fund-scoped tenant isolation (security backlog SEC-005). Once a fund profile is bound to a tenant, data keyed by that fund (strategy runs, ledger books, report packs) must only be served to callers in the owning tenant. Ownership is established on first authoritative use under a tenant scope (trust-on-first-use); the first owner wins and is never silently reassigned. Under a single-company-per-deployment runtime every fund binds to the one tenant, so nothing is ever foreign and behavior is unchanged.
-
-```csharp
-public interface IFundProfileTenancyRegistry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;FundProfileOwnership&gt; BindAsync(string fundProfileId, string tenantId, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:21](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L21) | Claims fundProfileId for the given tenant/company if it is currently unbound, then returns the effective owner. Idempotent and first-owner-wins: a fund already bound to a different tenant is left unchanged and that existing owner is returned, so the caller can compare it to detect a foreign fund. |
-| <code>Task&lt;FundProfileOwnership?&gt; ResolveAsync(string fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:28](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L28) | Resolves the owning tenant/company for a fund profile, or null when it is unbound. |
-| <code>Task&lt;bool&gt; IsAccessibleAsync(string fundProfileId, string tenantId, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:34](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L34) | True when the caller&#x27;s tenant may use the fund: it is unbound (unknown) or bound to the caller. False only when the fund is bound to a different tenant. A read-only check — it never binds. |

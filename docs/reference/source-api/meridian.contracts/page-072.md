@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterScheduleProvenanceDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterScheduleProvenanceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:321](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L321).
+
+```csharp
+public sealed record SecurityMasterScheduleProvenanceDto(string ProvenanceId, string Category, string Summary, DateOnly? EffectiveDate, string SourceSystem, string? SourceRecordId, DateTimeOffset? SourceAsOfUtc, string? SourceUpdatedBy, string? SourceReason, long? StreamVersion, string? EventType);
+```
+
+## SecurityMasterScheduleSummaryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterScheduleSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:259](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L259).
+
+```csharp
+public sealed record SecurityMasterScheduleSummaryDto(bool SupportsCashflowSchedule, bool SupportsFactorHistory, bool HasEconomicScheduleTerms, decimal? CurrentFactor, DateOnly? CurrentFactorDate, DateOnly? NextLifecycleDate, string SourceSummary, string Summary, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] SecurityMasterDeclaredExerciseOutcomeDto? DeclaredExercise = null);
+```
+
+## SecurityMasterSchemaCompatibilityDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterSchemaCompatibilityDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:200](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L200).
+
+```csharp
+public sealed record SecurityMasterSchemaCompatibilityDto(string AssetClass, int LegacyAssetSpecificTermsSchemaVersion, int EconomicTermsSchemaVersion, bool HasLegacyAssetSpecificTerms, bool HasEconomicTerms, bool HasClassificationPayload, string Summary);
+```
+
 ## SecurityMasterSourceCandidateDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterSourceCandidateDto</code>. Kind: `record`.
@@ -623,38 +653,4 @@ Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:235](
 
 ```csharp
 public sealed record StatementReconciliationCaseCommentDto(string? CommentId, string? Body, string? Actor, DateTimeOffset? CreatedAtUtc, string? ParentCommentId = null);
-```
-
-## StatementReconciliationCaseCommentThreadDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementReconciliationCaseCommentThreadDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:230](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L230).
-
-```csharp
-public sealed record StatementReconciliationCaseCommentThreadDto(string? ThreadId, string? Subject, IReadOnlyList<StatementReconciliationCaseCommentDto>? Comments);
-```
-
-## StatementReconciliationCaseDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementReconciliationCaseDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:206](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L206).
-
-Operator case opened to investigate and close one or more statement reconciliation breaks.
-
-```csharp
-public sealed record StatementReconciliationCaseDto(string? CaseId, string? RunId, string? Status, string? Priority, string? Title, string? Summary, IReadOnlyList<string>? BreakIds, DateTimeOffset? CreatedAtUtc, DateTimeOffset? LastUpdatedAtUtc, string? LastUpdatedBy, string? Owner = null, DateTimeOffset? DueAtUtc = null, DateTimeOffset? ResolvedAtUtc = null, string? ResolutionCode = null, string? ResolutionSummary = null, string? EvidenceLink = null, string? Disposition = null, int? AgingDays = null, IReadOnlyList<StatementReconciliationCaseCommentThreadDto>? CommentThreads = null, IReadOnlyList<StatementReconciliationCaseAttachmentDto>? Attachments = null, StatementReconciliationBreakExplanationDto? BreakExplanation = null, IReadOnlyList<StatementReconciliationCaseAuditEventDto>? AuditEvents = null);
-```
-
-## StatementReconciliationReportArtifactDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementReconciliationReportArtifactDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:220](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L220).
-
-One immutable, hash-verified artifact produced by the statement reconciliation report workflow.
-
-```csharp
-public sealed record StatementReconciliationReportArtifactDto(string ArtifactId = default !, string ArtifactKind = default !, string FileName = default !, string ContentType = default !, long ByteLength = default, string ContentHashSha256 = default !, string DownloadRoute = default !, DateTimeOffset RetainedAtUtc = default);
 ```

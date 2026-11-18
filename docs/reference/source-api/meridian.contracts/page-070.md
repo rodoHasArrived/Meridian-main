@@ -6,6 +6,46 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportWriterCellStyleDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterCellStyleDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1499](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1499).
+
+```csharp
+public enum ReportWriterCellStyleDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>None = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1501](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1501) |  |
+| <code>Success = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1502](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1502) |  |
+| <code>Warning = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1503](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1503) |  |
+| <code>Danger = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1504](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1504) |  |
+| <code>Info = 4</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1505](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1505) |  |
+
+## ReportWriterChartDefinitionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterChartDefinitionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1525](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1525).
+
+```csharp
+public sealed record ReportWriterChartDefinitionDto(ReportWriterChartTypeDto Type, string CategoryField, IReadOnlyList<string> ValueColumns, string? Title = null);
+```
+
+## ReportWriterChartRenderDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterChartRenderDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1536](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1536).
+
+```csharp
+public sealed record ReportWriterChartRenderDto(ReportWriterChartTypeDto Type, string Title, string CategoryField, IReadOnlyList<string> Categories, IReadOnlyList<ReportWriterChartSeriesDto> Series, IReadOnlyList<string> Warnings);
+```
+
 ## ReportWriterChartSeriesDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterChartSeriesDto</code>. Kind: `record`.
@@ -571,40 +611,4 @@ A single executed fill from a strategy run.
 
 ```csharp
 public sealed record RunFillEntry(Guid FillId, Guid OrderId, string Symbol, long FilledQuantity, decimal FillPrice, decimal Commission, DateTimeOffset FilledAt, string? AccountId);
-```
-
-## RunFillSummary
-
-Qualified name: <code>Meridian.Contracts.Workstation.RunFillSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:929](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L929).
-
-Trade-level fill list for one run.
-
-```csharp
-public sealed record RunFillSummary(string RunId, StrategyRunMode Mode, int TotalFills, decimal TotalCommissions, IReadOnlyList<RunFillEntry> Fills);
-```
-
-## RunLotSummary
-
-Qualified name: <code>Meridian.Contracts.Workstation.RunLotSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1167](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1167).
-
-Lot history for a single strategy run, optionally filtered to one symbol.
-
-```csharp
-public sealed record RunLotSummary(string RunId, int TotalOpenLots, int TotalClosedLots, decimal TotalRealizedPnl, IReadOnlyList<OpenLotSummary> OpenLots, IReadOnlyList<ClosedLotSummary> ClosedLots);
-```
-
-## RunPortfolioDrillInSummary
-
-Qualified name: <code>Meridian.Contracts.Workstation.RunPortfolioDrillInSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1009](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1009).
-
-Composite portfolio drill-in payload that keeps attribution, drawdown, cash-flow, and trade slices aligned under one additive, versioned contract.
-
-```csharp
-public sealed record RunPortfolioDrillInSummary(string SchemaVersion, string RunId, DateTimeOffset AsOf, string Currency, StrategyRunMode Mode, RunAttributionSummary? Attribution, EquityCurveSummary? DrawdownProfile, RunCashFlowSummary? CashFlow, RunFillSummary? Trades);
 ```

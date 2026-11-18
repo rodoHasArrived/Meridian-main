@@ -6,6 +6,45 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityValidationSeverityDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValidationSeverityDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L6).
+
+```csharp
+public enum SecurityValidationSeverityDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Info = 0</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L8) |  |
+| <code>Warning = 1</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L9) |  |
+| <code>Error = 2</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L10) |  |
+| <code>Critical = 3</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L11) |  |
+
+## SecurityValidationSnapshotDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValidationSnapshotDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:56](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L56).
+
+```csharp
+public sealed record SecurityValidationSnapshotDto(Guid SnapshotId, Guid? SecurityId, string Scope, SecurityValidationWorkflowDto Workflow, string? WorkflowReference, string? Actor, string Reason, DateTimeOffset RecordedAtUtc, string ReportHashSha256, SecurityValidationReportDto Report, IReadOnlyList<SecurityEvidenceLinkDto> EvidenceLinks);
+```
+
+## SecurityValidationSnapshotRequestDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValidationSnapshotRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L49).
+
+```csharp
+public sealed record SecurityValidationSnapshotRequestDto(SecurityValidationWorkflowDto Workflow, string? WorkflowReference, string? Actor, string Reason, IReadOnlyList<SecurityEvidenceLinkDto> EvidenceLinks);
+```
+
 ## SecurityValidationWorkflowDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValidationWorkflowDto</code>. Kind: `enum`.
@@ -31,7 +70,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationAccountingTreatment</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1511](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1511).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1541](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1541).
 
 The declared mark-based accounting treatment for an asset class.
 
@@ -43,8 +82,8 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Unspecified</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1513](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1513) |  |
-| <code>FairValueThroughProfitOrLoss</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1514](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1514) |  |
+| <code>Unspecified</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1543](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1543) |  |
+| <code>FairValueThroughProfitOrLoss</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1544](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1544) |  |
 
 ## SecurityValuationBlockerDto
 
@@ -755,58 +794,3 @@ Source: [src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs:59](../../../
 ```csharp
 public sealed record UpsertSecurityAliasRequest(Guid AliasId, Guid SecurityId, string AliasKind, string AliasValue, string? Provider, SecurityAliasScope Scope, string CreatedBy, DateTimeOffset ValidFrom, DateTimeOffset? ValidTo, string? Reason);
 ```
-
-## IBacktestPreflightService
-
-Qualified name: <code>Meridian.Contracts.Services.IBacktestPreflightService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Services/IBacktestPreflightService.cs:8](../../../../src/Meridian.Contracts/Services/IBacktestPreflightService.cs#L8).
-
-Runs backtest-scoped trust-gate checks before replay begins.
-
-```csharp
-public interface IBacktestPreflightService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;BacktestPreflightReportV2Dto&gt; RunAsync(BacktestPreflightRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IBacktestPreflightService.cs:13](../../../../src/Meridian.Contracts/Services/IBacktestPreflightService.cs#L13) | Executes backtest preflight checks and returns a structured report. |
-
-## IConnectivityProbeService
-
-Qualified name: <code>Meridian.Contracts.Services.IConnectivityProbeService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Services/IConnectivityProbeService.cs:8](../../../../src/Meridian.Contracts/Services/IConnectivityProbeService.cs#L8).
-
-Contract for probing internet connectivity and broadcasting state changes.
-
-```csharp
-public interface IConnectivityProbeService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>bool IsOnline { get; }</code> | [src/Meridian.Contracts/Services/IConnectivityProbeService.cs:13](../../../../src/Meridian.Contracts/Services/IConnectivityProbeService.cs#L13) | Gets whether the system is currently online. |
-| <code>event EventHandler&lt;bool&gt;? ConnectivityChanged;</code> | [src/Meridian.Contracts/Services/IConnectivityProbeService.cs:18](../../../../src/Meridian.Contracts/Services/IConnectivityProbeService.cs#L18) | Raised when connectivity state changes (true = online, false = offline). |
-
-## IEntityLifecycleProjectionSink
-
-Qualified name: <code>Meridian.Contracts.Services.IEntityLifecycleProjectionSink</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Services/IEntityLifecycleService.cs:15](../../../../src/Meridian.Contracts/Services/IEntityLifecycleService.cs#L15).
-
-Local compatibility projection; implementations must verify the retained revision.
-
-```csharp
-public interface IEntityLifecycleProjectionSink
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task ApplyLifecycleProjectionAsync(EntityLifecycleRevisionDto revision, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEntityLifecycleService.cs:17](../../../../src/Meridian.Contracts/Services/IEntityLifecycleService.cs#L17) |  |

@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkflowActionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkflowActionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:29](../../../../src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs#L29).
+
+Reusable action target that can be used by summaries, inbox routing, and workflow UI.
+
+```csharp
+public sealed record WorkflowActionDto(string ActionId, string Label, string Detail, string TargetPageTag, string Tone, OperatorWorkItemKindDto? WorkItemKind, IReadOnlyList<string> RoutePrefixes, IReadOnlyList<string> RouteContains, IReadOnlyList<string> Aliases);
+```
+
+## WorkflowBlockerSummary
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkflowBlockerSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs:42](../../../../src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs#L42).
+
+Primary blocker that explains why the operator cannot progress smoothly.
+
+```csharp
+public sealed record WorkflowBlockerSummary(string Code, string Label, string Detail, string Tone, bool IsBlocking);
+```
+
+## WorkflowDefinitionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkflowDefinitionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:14](../../../../src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs#L14).
+
+User-facing workflow definition that groups actions, evidence, and target workspace.
+
+```csharp
+public sealed record WorkflowDefinitionDto(string WorkflowId, string Title, string Summary, string WorkspaceId, string WorkspaceTitle, string EntryPageTag, string Tone, IReadOnlyList<WorkflowActionDto> Actions, IReadOnlyList<string> EvidenceTags, IReadOnlyList<string> MarketPatternTags);
+```
+
 ## WorkflowEvidenceBadge
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkflowEvidenceBadge</code>. Kind: `record`.
@@ -536,36 +572,4 @@ A single KPI card shown in a workstation dashboard header strip.
 
 ```csharp
 public sealed record WorkstationMetricCard(string Id, string Label, string Value, string Delta = "", string Tone = "default", string? ComparisonPeriod = null, string? Basis = null, string? AsOf = null, string? Source = null, NumberPassportReferenceDto? NumberPassport = null);
-```
-
-## WorkstationModeComparisonGroup
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationModeComparisonGroup</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:128](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L128).
-
-Per-strategy cross-mode comparison group used by strategy and trading surfaces.
-
-```csharp
-public sealed record WorkstationModeComparisonGroup(string StrategyName, IReadOnlyList<WorkstationModeComparisonRun> Modes);
-```
-
-## WorkstationModeComparisonRun
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationModeComparisonRun</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:103](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L103).
-
-```csharp
-public sealed record WorkstationModeComparisonRun(string RunId, string Mode, string Status, decimal? NetPnl, decimal? TotalReturn, WorkstationRunDrillInLinks DrillIn);
-```
-
-## WorkstationPlotToolFocusPointPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPlotToolFocusPointPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:225](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L225).
-
-```csharp
-public sealed record WorkstationPlotToolFocusPointPayload(string Label, string XValueText, string YValueText, string Detail);
 ```

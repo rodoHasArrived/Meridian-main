@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationsReopenWorkflowRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsReopenWorkflowRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:730](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L730).
+
+```csharp
+public sealed record OperationsReopenWorkflowRequestDto(long ExpectedVersion, string Actor, string Rationale, string IncidentId, bool IsGovernedAdmin, string? Justification = null, string? ApprovalReference = null, string? ImpactSummary = null, string? CorrelationId = null, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
+```
+
+## OperationsReportPackReadinessDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsReportPackReadinessDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1335](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1335).
+
+```csharp
+public sealed record OperationsReportPackReadinessDto(bool IsReady, string? ReportPackId, string? BlockingReason, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks);
+```
+
+## OperationsResolveBreakCaseRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsResolveBreakCaseRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:653](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L653).
+
+```csharp
+public sealed record OperationsResolveBreakCaseRequestDto(long ExpectedVersion, string Actor, string ResolutionStatus, string Rationale, string? CorrelationId = null, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator, string? ApprovalActor = null, string? ApprovalReference = null, string? SupersedingBreakId = null);
+```
+
 ## OperationsReviewedAutomationArtifactDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsReviewedAutomationArtifactDto</code>. Kind: `record`.
@@ -669,54 +699,4 @@ A prior-period comparison for a workstation surface (NAV, run attribution, cash 
 
 ```csharp
 public sealed record PeriodComparisonDto(string Status, string? Reason, string Subject, string? Currency, PeriodComparisonWindowDto Current, PeriodComparisonWindowDto? Baseline, IReadOnlyList<PeriodComparisonLineDto> Lines, IReadOnlyList<string> Notes, DateTimeOffset GeneratedAt);
-```
-
-## PeriodComparisonLineDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.PeriodComparisonLineDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs:46](../../../../src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs#L46).
-
-One compared figure.
-
-```csharp
-public sealed record PeriodComparisonLineDto(string Key, string Label, decimal Current, decimal Prior, decimal Change, decimal? PercentChange, bool IsTotal = false)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static PeriodComparisonLineDto Create(string key, string label, decimal current, decimal prior, bool isTotal = false) =&gt; …;</code> | [src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs:56](../../../../src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs#L56) | Builds a line with change and percent from PeriodChange. |
-
-## PeriodComparisonStatus
-
-Qualified name: <code>Meridian.Contracts.Workstation.PeriodComparisonStatus</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs:18](../../../../src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs#L18).
-
-Outcome of a prior-period comparison request.
-
-```csharp
-public static class PeriodComparisonStatus
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Ready = &quot;Ready&quot;;</code> | [src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs:20](../../../../src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs#L20) |  |
-| <code>public const string Unavailable = &quot;Unavailable&quot;;</code> | [src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs:22](../../../../src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs#L22) | No baseline figures exist for the requested prior period. |
-| <code>public const string Incompatible = &quot;Incompatible&quot;;</code> | [src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs:24](../../../../src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs#L24) | The request cannot be compared, for example a baseline on or after the current date. |
-
-## PeriodComparisonWindowDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.PeriodComparisonWindowDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs:32](../../../../src/Meridian.Contracts/Workstation/PeriodComparisonDtos.cs#L32).
-
-One side of a comparison: the period it covers and whether it is complete.
-
-```csharp
-public sealed record PeriodComparisonWindowDto(string Label, DateOnly? Start, DateOnly End, bool IsPartial);
 ```

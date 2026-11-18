@@ -6,6 +6,46 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FinancialRecordExplorerSummaryItemDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FinancialRecordExplorerSummaryItemDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:54](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L54).
+
+```csharp
+public sealed record FinancialRecordExplorerSummaryItemDto(string Label, string Value, string Detail = "", FinancialRecordExplorerTone Tone = FinancialRecordExplorerTone.Default);
+```
+
+## FinancialRecordExplorerTone
+
+Qualified name: <code>Meridian.Contracts.Workstation.FinancialRecordExplorerTone</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L6).
+
+```csharp
+public enum FinancialRecordExplorerTone : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Default</code> | [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L8) |  |
+| <code>Success</code> | [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:9](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L9) |  |
+| <code>Warning</code> | [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L10) |  |
+| <code>Danger</code> | [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L11) |  |
+| <code>Info</code> | [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L12) |  |
+
+## FirstRunStatusDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FirstRunStatusDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:3](../../../../src/Meridian.Contracts/Workstation/FirstRunDtos.cs#L3).
+
+```csharp
+public sealed record FirstRunStatusDto(bool IsComplete, string? Goal, string? StarterKitId, string? DataChoice, WorkspaceModeDto Workspace, IReadOnlyList<StarterWorkspaceDto> StarterKits, IReadOnlyList<ActivationOutcomeDto> Outcomes, IReadOnlyList<RecommendedActionDto> RecommendedActions, SampleWorkspaceDto? SampleWorkspace = null);
+```
+
 ## FreezeOnboardingPacketRequestDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.FreezeOnboardingPacketRequestDto</code>. Kind: `record`.
@@ -597,46 +637,4 @@ Audit event describing a report-pack lifecycle transition.
 
 ```csharp
 public sealed record FundReportPackLifecycleEventDto(GovernanceReportPackStatusDto? FromStatus, GovernanceReportPackStatusDto ToStatus, DateTimeOffset ChangedAt, string Actor, string Reason, string CorrelationId);
-```
-
-## FundReportPackLineagePointerDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundReportPackLineagePointerDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:589](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L589).
-
-```csharp
-public sealed record FundReportPackLineagePointerDto(string ScopeType, string ScopeKey, string EvidenceType, string EvidenceId, string? DisplayLabel = null, string? Route = null, string? SourceSystem = null, IReadOnlyList<string>? RelatedEvidenceIds = null, int? EvidenceCount = null, decimal? Amount = null, DateTimeOffset? CapturedAt = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public Guid? AmountId { get; init; }</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:603](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L603) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public LedgerAmountScopeDto? AmountScope { get; init; }</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:605](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L605) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SourceSnapshotHash { get; init; }</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:607](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L607) |  |
-
-## FundReportPackPreviewDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundReportPackPreviewDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:518](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L518).
-
-Preview of a generated governed report pack without writing the artifact to disk.
-
-```csharp
-public sealed record FundReportPackPreviewDto(Guid ReportId, string FundProfileId, string DisplayName, GovernanceReportKindDto ReportKind, string Currency, DateTimeOffset AsOf, DateTimeOffset GeneratedAt, decimal TotalNetAssets, int TrialBalanceLineCount, int AssetClassSectionCount, IReadOnlyList<FundReportAssetClassSectionDto> AssetClassSections, ReportBrandingThemeDto? BrandingTheme = null);
-```
-
-## FundReportPackPreviewRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundReportPackPreviewRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:482](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L482).
-
-Request to build a preview of a governed report pack for one fund profile.
-
-```csharp
-public sealed record FundReportPackPreviewRequestDto(string FundProfileId, GovernanceReportKindDto ReportKind = GovernanceReportKindDto.TrialBalance, DateTimeOffset? AsOf = null, string? Currency = null, string? BrandingThemeId = null, ReportBrandingThemeDto? BrandingThemeOverride = null);
 ```

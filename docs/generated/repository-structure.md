@@ -2090,7 +2090,8 @@ Meridian-main
 │   │   │   │   ├── page-009.md
 │   │   │   │   ├── page-010.md
 │   │   │   │   ├── page-011.md
-│   │   │   │   └── page-012.md
+│   │   │   │   ├── page-012.md
+│   │   │   │   └── page-013.md
 │   │   │   ├── meridian.audit
 │   │   │   │   └── page-001.md
 │   │   │   ├── meridian.backtesting
@@ -2639,6 +2640,7 @@ Meridian-main
 │   │   │   ├── web-accounting-factor-paydown.png
 │   │   │   ├── web-accounting-journal-entries.png
 │   │   │   ├── web-accounting-journal-entry-detail.png
+│   │   │   ├── web-accounting-ledger-1024.png
 │   │   │   ├── web-accounting-ledger.png
 │   │   │   ├── web-accounting-margin-control.png
 │   │   │   ├── web-accounting-operations-continuity.png
@@ -2647,6 +2649,7 @@ Meridian-main
 │   │   │   ├── web-accounting-security-master.png
 │   │   │   ├── web-accounting-statement-import.png
 │   │   │   ├── web-accounting-trial-balance-detail.png
+│   │   │   ├── web-accounting-workspace-1024.png
 │   │   │   ├── web-accounting-workspace.png
 │   │   │   ├── web-daily-control-tower.png
 │   │   │   ├── web-data-alerts.png
@@ -2668,6 +2671,7 @@ Meridian-main
 │   │   │   ├── web-portfolio-cash-ladder.png
 │   │   │   ├── web-portfolio-family-office.png
 │   │   │   ├── web-portfolio-loan-book.png
+│   │   │   ├── web-portfolio-nav.png
 │   │   │   ├── web-portfolio-workspace.png
 │   │   │   ├── web-reporting-evidence-workbench.png
 │   │   │   ├── web-reporting-exports.png
@@ -2703,6 +2707,7 @@ Meridian-main
 │   │   │   ├── web-trading-orders.png
 │   │   │   ├── web-trading-positions.png
 │   │   │   ├── web-trading-risk.png
+│   │   │   ├── web-trading-workspace-1024.png
 │   │   │   └── web-trading-workspace.png
 │   │   ├── capture-manifest.json
 │   │   ├── README.md
@@ -5489,6 +5494,7 @@ Meridian-main
 │   │   │   ├── SecurityAssetTermsFieldSnapshot.cs
 │   │   │   ├── SecurityCashFlowReceiptJsonContext.cs
 │   │   │   ├── SecurityCashFlowScheduleRowCodec.cs
+│   │   │   ├── SecurityClassificationTaxonomy.cs
 │   │   │   ├── SecurityDayCountWriteGuard.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.BondWorkflow.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.CapitalHomes.cs
@@ -5505,6 +5511,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterCashFlowService.DeclaredBondLeg.cs
 │   │   │   ├── SecurityMasterCashFlowService.DeclaredConventions.cs
 │   │   │   ├── SecurityMasterCashFlowService.FactorAccrual.cs
+│   │   │   ├── SecurityMasterClassificationDriftReportService.cs
 │   │   │   ├── SecurityMasterConcurrencyException.cs
 │   │   │   ├── SecurityMasterConflictAuthorityPolicy.cs
 │   │   │   ├── SecurityMasterConflictDetection.cs
@@ -6230,6 +6237,7 @@ Meridian-main
 │   │   │   ├── SecurityListingIdentity.cs
 │   │   │   ├── SecurityLotModel.cs
 │   │   │   ├── SecurityMasterCashFlow.cs
+│   │   │   ├── SecurityMasterClassificationDrift.cs
 │   │   │   ├── SecurityMasterClosePrices.cs
 │   │   │   ├── SecurityMasterClosePricesJsonContext.cs
 │   │   │   ├── SecurityMasterConflictFieldCategories.cs
@@ -14224,6 +14232,7 @@ Meridian-main
 │   │   │   ├── SecurityAssetClassAliasMappingTests.cs
 │   │   │   ├── SecurityAssetClassBehaviorFactsTests.cs
 │   │   │   ├── SecurityAssetClassCatalogTests.cs
+│   │   │   ├── SecurityAssetClassFactParityTests.cs
 │   │   │   ├── SecurityAssetClassOperationalWiringTests.cs
 │   │   │   ├── SecurityAssetClassParityGuardTests.cs
 │   │   │   ├── SecurityAssetClassRegistryCoverageTests.cs
@@ -14287,6 +14296,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterAssetClassSupportTests.cs
 │   │   │   ├── SecurityMasterCanonicalSymbolSeedFallbackTests.cs
 │   │   │   ├── SecurityMasterCanonicalSymbolSeedReconciliationTests.cs
+│   │   │   ├── SecurityMasterClassificationDriftReportServiceTests.cs
 │   │   │   ├── SecurityMasterClassificationTextGuardTests.cs
 │   │   │   ├── SecurityMasterClosePriceServiceTests.cs
 │   │   │   ├── SecurityMasterConflictServiceTests.cs
@@ -15076,6 +15086,7 @@ Meridian-main
 │   │   │   ├── RiskRuleRuntimePriceCollarConfigTests.cs
 │   │   │   ├── SecureReportingDistributionEndpointTests.cs
 │   │   │   ├── SecurityMasterAliasEndpointsTests.cs
+│   │   │   ├── SecurityMasterClassificationDriftEndpointsTests.cs
 │   │   │   ├── SecurityMasterConvertibleEquityEndpointsTests.cs
 │   │   │   ├── SecurityMasterCurveEndpointsTests.cs
 │   │   │   ├── SecurityMasterExceptionCaseworkServiceTests.cs

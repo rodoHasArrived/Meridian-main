@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OtcCompressionData
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCompressionData</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:32](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L32).
+
+One contract&#x27;s externally agreed compression result; zero remaining notional closes it. No other contract is modified.
+
+```csharp
+public sealed record OtcCompressionData([property : JsonRequired] string CompressionReference, [property : JsonRequired] decimal RemainingNotional) : OtcContractLifecycleData;
+```
+
 ## OtcContractDirection
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcContractDirection</code>. Kind: `enum`.
@@ -804,24 +816,3 @@ Declared public members:
 | <code>public const string InteractiveBrokers = &quot;ib&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:60](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L60) |  |
 | <code>public const string Meridian = &quot;meridian&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:66](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L66) | Meridian&#x27;s own lowercase execution vocabulary (&quot;equity&quot;, &quot;option&quot;, ...): what the IB mapper reports and what execution metadata carries for brokers without a vendor spelling. |
 | <code>public static IReadOnlyList&lt;string&gt; All { get; } = [Alpaca, Robinhood, InteractiveBrokers, Meridian];</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:68](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L68) |  |
-
-## ProviderAssetClassCodeRoles
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ProviderAssetClassCodeRoles</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L7).
-
-Where a provider asset-class code appears on the wire.
-
-```csharp
-public enum ProviderAssetClassCodeRoles
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>None = 0</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L9) |  |
-| <code>OrderPayload = 1</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L12) | The code is sent to (or read back from) the provider on an order. |
-| <code>PositionReport = 2</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L15) | The code is stamped on positions, fills, or execution reports. |
-| <code>Search = 4</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L18) | The code is a symbol-search asset type. |

@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelException</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:535](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L535).
+Source: [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:532](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L532).
 
 A reviewed descriptor label whose relationship to the domain label is recorded explicitly.
 
@@ -22,7 +22,7 @@ public sealed record InstrumentTypeDescriptorLabelException(InstrumentType Instr
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelField</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:528](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L528).
+Source: [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:525](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L525).
 
 Which descriptor classification label an exception or mapping entry describes.
 
@@ -34,8 +34,8 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>AssetFamily</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:530](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L530) |  |
-| <code>SubType</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:531](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L531) |  |
+| <code>AssetFamily</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:527](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L527) |  |
+| <code>SubType</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:528](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L528) |  |
 
 ## IOtcCollateralStore
 
@@ -289,6 +289,24 @@ Declared public members:
 | <code>Task&lt;SecurityCashFlowCalculationReceipt?&gt; CaptureProjectionAsync(Guid securityId, StructuredCashFlowScenario scenario, BondCalculationContext context, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs#L41) | Captures selected inputs for callers to retain with their calculation evidence. |
 | <code>Task&lt;StructuredCashFlowProjectionDto&gt; ReplayProjectionAsync(SecurityCashFlowCalculationReceipt receipt, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs:45](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs#L45) | Recomputes a retained receipt, refusing changed or unavailable calendar evidence. |
 | <code>Task&lt;StructuredCashFlowProjectionDto?&gt; ReplayProjectionAsync(string contentSha256, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs#L50) | Replays evidence fetched from the configured immutable receipt store. |
+
+## ISecurityMasterClassificationDriftReportService
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityMasterClassificationDriftReportService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterClassificationDrift.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterClassificationDrift.cs#L41).
+
+Builds the classification drift report for the active Security Master population.
+
+```csharp
+public interface ISecurityMasterClassificationDriftReportService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;SecurityClassificationDriftReportDto&gt; BuildReportAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterClassificationDrift.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterClassificationDrift.cs#L44) | Scans active securities and compares each one&#x27;s retained classification with the current taxonomy. |
 
 ## ISecurityMasterCorporateActionCommandService
 
@@ -916,15 +934,3 @@ Declared public members:
 | <code>public static OtcEligibleCollateralDto? FindEligible(OtcCollateralAgreementDto agreement, string? description);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:238](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L238) | The agreement&#x27;s eligible-collateral line with this description regardless of case, or null when there is none. |
 | <code>public static decimal ValuedAmount(decimal quantity, decimal unitValue) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:248](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L248) | The valued amount of a balance: quantity times unit value, computed, never supplied. |
 | <code>public static string RequireActor(string? value) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:251](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L251) | Collateral and margin writes are operator actions, so the actor is required rather than defaulted. |
-
-## OtcCompressionData
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCompressionData</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:32](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L32).
-
-One contract&#x27;s externally agreed compression result; zero remaining notional closes it. No other contract is modified.
-
-```csharp
-public sealed record OtcCompressionData([property : JsonRequired] string CompressionReference, [property : JsonRequired] decimal RemainingNotional) : OtcContractLifecycleData;
-```
