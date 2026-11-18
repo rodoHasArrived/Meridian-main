@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ServicerStatementApplyResultDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.ServicerStatementApplyResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:394](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L394).
+
+```csharp
+public sealed record ServicerStatementApplyResultDto(Guid BatchId, int RequestedRowCount, int AppliedRowCount, int SkippedRowCount, IReadOnlyList<ServicerStatementRowDto> Rows, IReadOnlyList<ServicerStatementValidationIssueDto> Issues, string Status);
+```
+
 ## ServicerStatementImportRequestDto
 
 Qualified name: <code>Meridian.Contracts.DirectLending.ServicerStatementImportRequestDto</code>. Kind: `record`.
@@ -975,15 +985,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static BboQuotePayload FromUpdate(DateTimeOffset timestamp, string symbol, decimal bidPrice, long bidSize, decimal askPrice, long askSize, long sequenceNumber, string? streamId = null, string? venue = null);</code> | [src/Meridian.Contracts/Domain/Models/BboQuotePayload.cs:34](../../../../src/Meridian.Contracts/Domain/Models/BboQuotePayload.cs#L34) | Creates a BboQuotePayload from a MarketQuoteUpdate (adapter input). Calculates mid-price and spread automatically. |
 | <code>public static BboQuotePayload FromUpdate(MarketQuoteUpdate update, long seq, bool isProviderSequence = false);</code> | [src/Meridian.Contracts/Domain/Models/BboQuotePayload.cs:76](../../../../src/Meridian.Contracts/Domain/Models/BboQuotePayload.cs#L76) | Creates a BboQuotePayload from a MarketQuoteUpdate with conditional spread/mid-price calculation. Returns null for spread and mid-price if: - Either bid or ask price is 0 - Market is crossed (bid &gt; ask) |
-
-## DepthIntegrityEvent
-
-Qualified name: <code>Meridian.Contracts.Domain.Models.DepthIntegrityEvent</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Domain/Models/DepthIntegrityEvent.cs:10](../../../../src/Meridian.Contracts/Domain/Models/DepthIntegrityEvent.cs#L10).
-
-Integrity event specific to market depth streams.
-
-```csharp
-public sealed record DepthIntegrityEvent(DateTimeOffset Timestamp, string Symbol, [property : JsonPropertyName("integrityKind")] DepthIntegrityKind Kind, string Description, ushort Position, DepthOperation Operation, OrderBookSide Side, long SequenceNumber, string? StreamId = null, string? Venue = null) : MarketEventPayload;
-```

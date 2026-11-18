@@ -6,6 +6,22 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## JournalEntryLifecycleTransitionDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.JournalEntryLifecycleTransitionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1206](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1206).
+
+```csharp
+public sealed record JournalEntryLifecycleTransitionDto(string TransitionId, ManualJournalEntryStatusDto FromStatus, ManualJournalEntryStatusDto ToStatus, JournalEntryLifecycleActionDto Action, string Actor, DateTimeOffset RecordedAtUtc, string? Notes = null, string? CorrelationId = null, IReadOnlyList<string>? EvidenceLinks = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1217](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1217) |  |
+
 ## JournalEntryRebookDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.JournalEntryRebookDto</code>. Kind: `record`.
@@ -676,21 +692,3 @@ Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:306](../../../../src/Me
 ```csharp
 public sealed record LedgerPeriodTrialBalanceLineDto(string AccountName, string AccountType, string? Symbol, string? FinancialAccountId, decimal DebitTotal, decimal CreditTotal, decimal Balance, int EntryCount, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, string AccountingPolicyId = "legacy-v1", string AccountingPolicyVersion = "legacy-v1", string? RuleId = null, string? RuleVersion = null, string? SourceEventId = null, Guid? SourceJournalEntryId = null, LedgerDimensionSetDto? Dimensions = null);
 ```
-
-## LedgerPostingKindDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.LedgerPostingKindDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:42](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L42).
-
-```csharp
-public enum LedgerPostingKindDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Originating = 0</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:44](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L44) |  |
-| <code>Adjustment = 1</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:45](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L45) |  |
-| <code>ClosingEntry = 2</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:53](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L53) | Period-close closing entries. Produced only by the governed period-close workflow after human approval, these are the sanctioned exception to the closed-period posting bar: they finalize the period being closed by zeroing temporary accounts and rolling net income to retained earnings, so the posting guard permits them into soft- and hard-closed periods. |

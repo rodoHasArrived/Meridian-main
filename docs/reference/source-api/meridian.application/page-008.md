@@ -891,6 +891,24 @@ Declared public members:
 | <code>public Task&lt;StructuredCashFlowProjectionDto?&gt; GetProjectionAsync(Guid securityId, StructuredCashFlowScenario scenario, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:76](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L76) |  |
 | <code>public Task&lt;StructuredCashFlowProjectionDto?&gt; GetProjectionAsOfAsync(Guid securityId, StructuredCashFlowScenario scenario, DateTimeOffset asOf, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:80](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L80) |  |
 
+## NullSecurityMasterClassificationDriftReportService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.NullSecurityMasterClassificationDriftReportService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:138](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L138).
+
+Rejects classification drift reports when Security Master is unavailable.
+
+```csharp
+public sealed class NullSecurityMasterClassificationDriftReportService : ISecurityMasterClassificationDriftReportService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;SecurityClassificationDriftReportDto&gt; BuildReportAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:140](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L140) |  |
+
 ## NullSecurityMasterCorporateActionCommandService
 
 Qualified name: <code>Meridian.Application.SecurityMaster.NullSecurityMasterCorporateActionCommandService</code>. Kind: `class`.
@@ -975,21 +993,3 @@ Declared public members:
 | <code>public Task&lt;SecurityClosePriceSetDto&gt; ApproveClosePriceSetAsync(ApproveSecurityClosePriceSetRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:52](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L52) |  |
 | <code>public Task&lt;SecurityClosePriceSetDto?&gt; GetClosePriceSetAsync(string accountId, string bookId, DateOnly valuationDate, Guid snapshotId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:55](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L55) |  |
 | <code>public Task&lt;IReadOnlyList&lt;SecurityClosePriceSetDto&gt;&gt; GetClosePriceSetsAsync(string accountId, string bookId, DateOnly valuationDate, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:58](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L58) |  |
-
-## NullSecurityMasterProfilePromotionService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.NullSecurityMasterProfilePromotionService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:138](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L138).
-
-Rejects CustomAsset profile promotion reports when Security Master is unavailable.
-
-```csharp
-public sealed class NullSecurityMasterProfilePromotionService : ISecurityMasterProfilePromotionService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;SecurityMasterProfilePromotionReportDto&gt; BuildReportAsync(string profileId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs:140](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterReferenceServices.cs#L140) |  |

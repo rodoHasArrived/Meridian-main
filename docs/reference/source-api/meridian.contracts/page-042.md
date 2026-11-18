@@ -6,6 +6,31 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IPlaidConnectionRepository
+
+Qualified name: <code>Meridian.Contracts.Plaid.IPlaidConnectionRepository</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:342](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L342).
+
+Retains Plaid items, accounts, sync cursors, status, and webhook processing state.
+
+```csharp
+public interface IPlaidConnectionRepository
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;PlaidItemDto&gt;&gt; ListItemsAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:344](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L344) |  |
+| <code>Task&lt;PlaidItemDto?&gt; GetItemAsync(string itemId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:346](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L346) |  |
+| <code>Task&lt;IReadOnlyList&lt;PlaidAccountDto&gt;&gt; ListAccountsAsync(string? itemId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:348](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L348) |  |
+| <code>Task UpsertItemAsync(PlaidItemDto item, IReadOnlyList&lt;PlaidAccountDto&gt; accounts, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:350](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L350) |  |
+| <code>Task UpdateTransactionsCursorAsync(string itemId, string? cursor, DateTimeOffset syncedAt, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:352](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L352) |  |
+| <code>Task UpdateItemStatusAsync(string itemId, PlaidItemStatusDto status, string? webhookType, string? webhookCode, string? error, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:354](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L354) |  |
+| <code>Task&lt;bool&gt; TryAppendWebhookAsync(PlaidWebhookEventDto webhook, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:362](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L362) |  |
+| <code>Task RecordTransferAsync(PlaidTransferResult result, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:364](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L364) |  |
+
 ## IPlaidIngestionService
 
 Qualified name: <code>Meridian.Contracts.Plaid.IPlaidIngestionService</code>. Kind: `interface`.
@@ -587,14 +612,4 @@ Source: [src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs:3](..
 
 ```csharp
 public sealed record StatementImportSummaryDto(string ImportId, string Broker, string StatementDate, string ImportedAtUtc, int RawRowCount, int NormalizedRowCount);
-```
-
-## StatementReconciliationRunAuthorization
-
-Qualified name: <code>Meridian.Contracts.Reconciliation.StatementReconciliationRunAuthorization</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:9](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L9).
-
-```csharp
-public sealed record StatementReconciliationRunAuthorization(string RunId, Guid FundAccountId, string FundProfileId, Guid LedgerBookId, Guid AccountingPeriodId, DateOnly AsOfDate, DateOnly PeriodStart, DateOnly PeriodEnd);
 ```

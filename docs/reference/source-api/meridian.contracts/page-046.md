@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionNotFoundException
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionNotFoundException</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:840](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L840).
+
+Signals that a requested corporate action resource could not be found.
+
+```csharp
+public sealed class CorporateActionNotFoundException : CorporateActionOperationException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CorporateActionNotFoundException(string resourceType, Guid resourceId) : base(CorporateActionProblemCodes.NotFound, $&quot;{resourceType} &#x27;{resourceId:D}&#x27; was not found.&quot;);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:842](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L842) |  |
+| <code>public string ResourceType { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:849](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L849) |  |
+| <code>public Guid ResourceId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:850](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L850) |  |
+
 ## CorporateActionOperationException
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionOperationException</code>. Kind: `class`.
@@ -909,15 +929,3 @@ Enum declarations:
 | <code>Undeclared</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L13) | The record declares no conventions this node decodes, so the legacy projection applies unchanged. |
 | <code>Declared</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L16) | The record declares conventions, and they map to a schedule spec. |
 | <code>Refused</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L19) | The record declares conventions, or cannot be read, and no schedule may be generated from it. |
-
-## DeclareSecurityUnderlyingLinkRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.DeclareSecurityUnderlyingLinkRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:72](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L72).
-
-A request to declare a link; the link id is derived from the security, role and target so a repeat is an upsert.
-
-```csharp
-public sealed record DeclareSecurityUnderlyingLinkRequest(Guid SecurityId, SecurityUnderlyingRole Role, Guid? UnderlyingSecurityId, string? Reference, decimal? Weight, DateTimeOffset ValidFrom, DateTimeOffset? ValidTo, string? Notes, string? CreatedBy = null);
-```

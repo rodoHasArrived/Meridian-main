@@ -98,7 +98,7 @@ public sealed partial class AssetAcquisitionLotPostgresRoundTripTests
         var books = new PostgresLedgerBookService(journal);
         assets = new PostgresAssetOperationsProjectionStore(assetOptions, journal);
         var securityId = Guid.NewGuid();
-        var securityQuery = await CreateSecurityAsync(securityOptions, securityId, ct);
+        var securityQuery = await CreateSecurityAsync(securityOptions, securityId, faceLot, ct);
         var bookId = Guid.NewGuid();
         var periodId = Guid.NewGuid();
         var ownerId = Guid.NewGuid();
@@ -350,7 +350,7 @@ public sealed partial class AssetAcquisitionLotPostgresRoundTripTests
     }
 
     private static async Task<SecurityMasterQueryService> CreateSecurityAsync(
-        SecurityMasterOptions options, Guid securityId, CancellationToken ct)
+        SecurityMasterOptions options, Guid securityId, bool faceLot, CancellationToken ct)
     {
         var events = new PostgresSecurityMasterEventStore(options, NullLogger<PostgresSecurityMasterEventStore>.Instance);
         var snapshots = new PostgresSecurityMasterSnapshotStore(options);
@@ -358,6 +358,25 @@ public sealed partial class AssetAcquisitionLotPostgresRoundTripTests
         var rebuilder = new SecurityMasterAggregateRebuilder(events, snapshots);
         var service = new SecurityMasterService(events, snapshots, store, rebuilder, options,
             NullLogger<SecurityMasterService>.Instance);
+        // Only a face-value class may be booked with a Face quantity basis (LotQuantityBasisRules),
+        // so the face-lot cases acquire a bond and the unit-lot cases an equity.
+        if (faceLot)
+        {
+            await service.CreateAsync(new CreateSecurityRequest(securityId, "Bond",
+                JsonSerializer.SerializeToElement(new
+                {
+                    displayName = "Acquisition test bond",
+                    currency = "USD",
+                    countryOfRisk = "US",
+                    issuerName = "Fixture issuer"
+                }),
+                JsonSerializer.SerializeToElement(new { maturity = "2036-01-15", couponRate = 0.05m }),
+                [new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, "ACQB" + securityId.ToString("N"), true,
+                    new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero))],
+                new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero), "test", Preparer, null, "Test bond"), ct);
+            return new SecurityMasterQueryService(events, store, rebuilder);
+        }
+
         await service.CreateAsync(new CreateSecurityRequest(securityId, "Equity",
             JsonSerializer.SerializeToElement(new
             {

@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionCaseTransitionResultDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCaseTransitionResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:738](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L738).
+
+```csharp
+public sealed record CorporateActionCaseTransitionResultDto(CorporateActionProcessingCaseDto Case, CorporateActionCaseTransitionDto Transition, bool Replayed);
+```
+
 ## CorporateActionCashDividendAttestationDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCashDividendAttestationDto</code>. Kind: `record`.
@@ -763,23 +773,3 @@ Declared public members:
 | <code>public static bool IsWriteable(string? state) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionLifecycleStates.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionLifecycleStates.cs#L21) | States accepted on appended events; Ex/Paid are derived, never written. |
 | <code>public static int Rank(string? state) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionLifecycleStates.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionLifecycleStates.cs#L29) | Monotonic ordering for supersede checks: a superseding event may not move the lifecycle backwards, except to Cancelled (which ranks above all progress states). Unknown states rank as -1 and are rejected by validation. |
 | <code>public static string Resolve(string? storedState, DateOnly exDate, DateOnly? payDate, DateTimeOffset asOf);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionLifecycleStates.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionLifecycleStates.cs#L41) | Resolves the effective display state, deriving Ex/Paid from dates. |
-
-## CorporateActionNotFoundException
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionNotFoundException</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:840](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L840).
-
-Signals that a requested corporate action resource could not be found.
-
-```csharp
-public sealed class CorporateActionNotFoundException : CorporateActionOperationException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CorporateActionNotFoundException(string resourceType, Guid resourceId) : base(CorporateActionProblemCodes.NotFound, $&quot;{resourceType} &#x27;{resourceId:D}&#x27; was not found.&quot;);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:842](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L842) |  |
-| <code>public string ResourceType { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:849](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L849) |  |
-| <code>public Guid ResourceId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:850](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L850) |  |

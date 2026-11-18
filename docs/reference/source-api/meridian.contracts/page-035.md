@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CreateIntercompanyAccrualDraftRequest
+
+Qualified name: <code>Meridian.Contracts.Ledger.CreateIntercompanyAccrualDraftRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs:13](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs#L13).
+
+The digest proves the operator is drafting exactly the computation they previewed.
+
+```csharp
+public sealed record CreateIntercompanyAccrualDraftRequest(IntercompanyAccrualRequestDto Accrual, string ExpectedEvidenceDigest);
+```
+
 ## CreateIntercompanyFeeAccrualDraftRequest
 
 Qualified name: <code>Meridian.Contracts.Ledger.CreateIntercompanyFeeAccrualDraftRequest</code>. Kind: `record`.
@@ -846,16 +858,4 @@ Source: [src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs:229](.
 
 ```csharp
 public partial class IntercompanyAccrualJsonContext : JsonSerializerContext;
-```
-
-## IntercompanyAccrualPrincipalEvidenceDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAccrualPrincipalEvidenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs:20](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs#L20).
-
-Principal is read from posted journals of the reviewed loan profile; it is never typed in.
-
-```csharp
-public sealed record IntercompanyAccrualPrincipalEvidenceDto(Guid PrincipalArrangementId, IntercompanyAccountRoleDto Role, IReadOnlyList<string> ReceivableAccountNodeIds, IReadOnlyList<string> PayableAccountNodeIds, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal OpeningPrincipal, int OpeningJournalCount, string OpeningJournalDigest, IReadOnlyList<IntercompanyAccrualPrincipalMovementDto> Movements);
 ```

@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EnvironmentNodeRemapDto
+
+Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentNodeRemapDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:117](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L117).
+
+```csharp
+public sealed record EnvironmentNodeRemapDto(string RemovedNodeDefinitionId, string ReplacementNodeDefinitionId);
+```
+
 ## EnvironmentPublishChangeDto
 
 Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentPublishChangeDto</code>. Kind: `record`.
@@ -930,28 +940,3 @@ Declared public members:
 | <code>public bool Bars { get; set; } = true;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:103](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L103) |  |
 | <code>public bool OrderBook { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:104](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L104) |  |
 | <code>public bool OrderFlow { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:105](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L105) |  |
-
-## DateRangeType
-
-Qualified name: <code>Meridian.Contracts.Export.DateRangeType</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Export/ExportPreset.cs:210](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L210).
-
-Date range types for export presets.
-
-```csharp
-public enum DateRangeType : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Today</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:213](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L213) | Export today&#x27;s data. |
-| <code>Yesterday</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:215](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L215) | Export yesterday&#x27;s data. |
-| <code>LastWeek</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:217](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L217) | Export last 7 days. |
-| <code>LastMonth</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:219](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L219) | Export last 30 days. |
-| <code>LastQuarter</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:221](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L221) | Export last quarter (90 days). |
-| <code>LastYear</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:223](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L223) | Export last year. |
-| <code>All</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:225](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L225) | Export all available data. |
-| <code>Custom</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:227](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L227) | Use custom date range. |
