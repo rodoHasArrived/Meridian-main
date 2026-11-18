@@ -6,6 +6,50 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IDedupStore
+
+Qualified name: <code>Meridian.Application.Pipeline.IDedupStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/Pipeline/IDedupStore.cs:17](../../../../src/Meridian.Application/Pipeline/IDedupStore.cs#L17).
+
+Abstraction over the persistent event deduplication ledger. Implementations must be thread-safe and survive application restarts.
+
+```csharp
+public interface IDedupStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>long TotalChecked { get; }</code> | [src/Meridian.Application/Pipeline/IDedupStore.cs:20](../../../../src/Meridian.Application/Pipeline/IDedupStore.cs#L20) | Gets the total number of events checked for duplicates. |
+| <code>long TotalDuplicates { get; }</code> | [src/Meridian.Application/Pipeline/IDedupStore.cs:27](../../../../src/Meridian.Application/Pipeline/IDedupStore.cs#L27) | Gets the total number of duplicate events detected — deliveries suppressed by a committed entry. An unresolved pending reservation is not a detection and is not counted while it merely defers a caller. |
+| <code>Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/IDedupStore.cs:30](../../../../src/Meridian.Application/Pipeline/IDedupStore.cs#L30) | Loads persisted dedup state from durable storage on startup. |
+| <code>ValueTask&lt;bool&gt; IsDuplicateAsync(MarketEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/IDedupStore.cs:41](../../../../src/Meridian.Application/Pipeline/IDedupStore.cs#L41) | Returns true if evt has been seen before and records it if new. |
+| <code>ValueTask&lt;DedupReservationResult&gt; TryReserveAsync(MarketEvent evt, DedupLookupScope scope, CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/IDedupStore.cs:54](../../../../src/Meridian.Application/Pipeline/IDedupStore.cs#L54) | Attempts to claim the identity of evt for exclusive persistence. |
+| <code>Task CommitDurableAsync(IReadOnlyList&lt;DedupReservation&gt; reservations, CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/IDedupStore.cs:68](../../../../src/Meridian.Application/Pipeline/IDedupStore.cs#L68) | Durably commits held reservations as durability-confirmed (version 2) identities and flushes the backing store. |
+| <code>bool Release(in DedupReservation reservation);</code> | [src/Meridian.Application/Pipeline/IDedupStore.cs:78](../../../../src/Meridian.Application/Pipeline/IDedupStore.cs#L78) | Releases a pending reservation so the identity can be claimed again. |
+| <code>Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/IDedupStore.cs:81](../../../../src/Meridian.Application/Pipeline/IDedupStore.cs#L81) | Flushes in-memory state to durable backing storage. |
+| <code>Task CompactAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/IDedupStore.cs:84](../../../../src/Meridian.Application/Pipeline/IDedupStore.cs#L84) | Compacts the backing store by discarding expired entries. |
+
+## IEventValidator
+
+Qualified name: <code>Meridian.Application.Pipeline.IEventValidator</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/Pipeline/IEventValidator.cs:12](../../../../src/Meridian.Application/Pipeline/IEventValidator.cs#L12).
+
+Validates MarketEvent instances before they are persisted to the WAL or storage sinks. Implementations should be stateless and thread-safe so they can be invoked concurrently from the pipeline consumer.
+
+```csharp
+public interface IEventValidator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ValidationResult Validate(in MarketEvent evt);</code> | [src/Meridian.Application/Pipeline/IEventValidator.cs:20](../../../../src/Meridian.Application/Pipeline/IEventValidator.cs#L20) | Validates a market event and returns a result indicating whether the event is acceptable for persistence. Invalid events should be routed to a dead-letter sink. |
+
 ## IngestionJobService
 
 Qualified name: <code>Meridian.Application.Pipeline.IngestionJobService</code>. Kind: `class`.
@@ -1013,60 +1057,3 @@ Declared public members:
 | <code>public static BackfillSchedule WeeklyFullBackfill(string name, IEnumerable&lt;string&gt;? symbols = null) =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:249](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L249) | Weekly full backfill on Sunday at 3 AM UTC. |
 | <code>public static BackfillSchedule EndOfDayUpdate(string name, IEnumerable&lt;string&gt;? symbols = null) =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:263](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L263) | End-of-day update weekdays at 6 PM EST (11 PM UTC). |
 | <code>public static BackfillSchedule MonthlyDeepBackfill(string name, IEnumerable&lt;string&gt;? symbols = null) =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillSchedule.cs:277](../../../../src/Meridian.Application/Scheduling/BackfillSchedule.cs#L277) | Monthly deep historical backfill on first Sunday at 1 AM UTC. |
-
-## ExecutionStatistics
-
-Qualified name: <code>Meridian.Application.Scheduling.ExecutionStatistics</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:197](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L197).
-
-Statistics from a scheduled execution.
-
-```csharp
-public sealed class ExecutionStatistics
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int TotalSymbols { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:199](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L199) |  |
-| <code>public int SuccessfulSymbols { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:200](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L200) |  |
-| <code>public int FailedSymbols { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:201](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L201) |  |
-| <code>public int SkippedSymbols { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:202](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L202) |  |
-| <code>public int GapsDetected { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:204](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L204) |  |
-| <code>public int GapsFilled { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:205](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L205) |  |
-| <code>public int GapsRemaining =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:206](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L206) |  |
-| <code>public long TotalBarsRetrieved { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:208](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L208) |  |
-| <code>public long TotalBytesDownloaded { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:209](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L209) |  |
-| <code>public int TotalRequests { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:211](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L211) |  |
-| <code>public int SuccessfulRequests { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:212](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L212) |  |
-| <code>public int FailedRequests { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:213](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L213) |  |
-| <code>public int RateLimitedRequests { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:214](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L214) |  |
-| <code>public double AverageRequestDurationMs { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:216](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L216) |  |
-| <code>public double MaxRequestDurationMs { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:217](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L217) |  |
-| <code>public double SuccessRate =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:222](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L222) | Success rate (0.0 - 1.0). |
-
-## ExecutionStatus
-
-Qualified name: <code>Meridian.Application.Scheduling.ExecutionStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:170](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L170).
-
-Status of a scheduled execution.
-
-```csharp
-public enum ExecutionStatus : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Pending</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:173](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L173) | Execution is queued. |
-| <code>Running</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:176](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L176) | Execution is running. |
-| <code>Completed</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:179](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L179) | Execution completed successfully. |
-| <code>PartialSuccess</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:182](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L182) | Execution completed with some failures. |
-| <code>Failed</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:185](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L185) | Execution failed. |
-| <code>Cancelled</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:188](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L188) | Execution was cancelled. |
-| <code>Skipped</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:191](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L191) | Execution was skipped (e.g., already running). |

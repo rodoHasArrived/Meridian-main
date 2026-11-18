@@ -76,13 +76,16 @@ public static partial class IntercompanyAgreementRules
                 Fail("Structured loans require rate basis, day count and compounding declarations.");
             if (terms.RateBasis == IntercompanyRateBasisDto.Fixed)
             {
-                if (terms.FixedAnnualRate is null || terms.FixedAnnualRate is < -1m or > 1m || terms.FloatingIndexReference is not null || terms.SpreadBps is not null)
+                if (terms.FixedAnnualRate is null || terms.FixedAnnualRate is < -1m or > 1m || terms.FloatingIndexReference is not null || terms.SpreadBps is not null
+                    || terms.FixingLagBusinessDays is not null)
                     Fail("Fixed annual rates use decimal fractions between -1 and 1; floating fields must be absent.");
                 if (draft.Terms?.FixedAnnualRate is { } legacyRate && legacyRate != terms.FixedAnnualRate)
                     Fail("Legacy and structured fixed annual rates conflict.");
             }
             else if (terms.FixedAnnualRate is not null || string.IsNullOrWhiteSpace(terms.FloatingIndexReference) || terms.SpreadBps is null || draft.Terms?.FixedAnnualRate is not null)
                 Fail("Floating terms require an index reference and spread in basis points, with no fixed annual rate.");
+            else if (terms.FixingLagBusinessDays is < 0 or > MaximumFixingLagBusinessDays)
+                Fail($"A floating fixing lag is between 0 and {MaximumFixingLagBusinessDays} business days before each period start.");
             if (HasFeeFields(terms) || HasAllocationFields(terms))
                 Fail("Loan terms cannot contain fee or allocation fields.");
             return;
@@ -116,7 +119,10 @@ public static partial class IntercompanyAgreementRules
 
     private static bool HasLoanFields(IntercompanyStructuredTermsDto terms) => terms.RateBasis is not null ||
         terms.FixedAnnualRate is not null || terms.FloatingIndexReference is not null || terms.SpreadBps is not null ||
-        terms.DayCount is not null || terms.Compounding is not null;
+        terms.DayCount is not null || terms.Compounding is not null || terms.FixingLagBusinessDays is not null;
+
+    /// <summary>Upper bound on a declared in-advance fixing lag.</summary>
+    public const int MaximumFixingLagBusinessDays = 10;
     private static bool HasFeeFields(IntercompanyStructuredTermsDto terms) => terms.FixedFeeAmount is not null ||
         terms.AnnualFeeRate is not null || terms.CalculationBaseReference is not null;
     private static bool HasAllocationFields(IntercompanyStructuredTermsDto terms) => terms.Allocations is not null || terms.AllocationDriverReference is not null;

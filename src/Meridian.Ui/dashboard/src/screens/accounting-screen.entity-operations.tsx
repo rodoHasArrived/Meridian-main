@@ -10,6 +10,7 @@ import { EntityLifecycleTimeline } from "./accounting-screen.entity-timeline";
 import { EntityBookControls } from "./accounting-screen.entity-book-controls";
 import { EntityCounterpartProposals } from "./accounting-screen.entity-proposals";
 import { EntityFxAuthority } from "./accounting-screen.entity-fx";
+import { EntityRateFixings } from "./accounting-screen.entity-rate-fixings";
 import { EntityAccountBindings } from "./accounting-screen.entity-account-bindings";
 import { EntityObligationMonitor } from "./accounting-screen.entity-obligations";
 import { EntityBalanceConfirmations } from "./accounting-screen.entity-confirmations";
@@ -19,7 +20,7 @@ import { OperationError, useEntityData } from "./accounting-screen.entity-operat
 const tabs = [
   { id: "profiles", label: "Accounting profiles" }, { id: "obligations", label: "Obligation monitor" }, { id: "confirmations", label: "Balance confirmation" }, { id: "timeline", label: "Entity timeline" },
   { id: "controls", label: "Book controls" }, { id: "accounts", label: "Account roles" },
-  { id: "proposals", label: "Counterpart proposals" }, { id: "fx", label: "FX authority" }, { id: "perimeter", label: "Perimeter cutover" }
+  { id: "proposals", label: "Counterpart proposals" }, { id: "fx", label: "FX authority" }, { id: "fixings", label: "Rate fixings" }, { id: "perimeter", label: "Perimeter cutover" }
 ];
 
 /** Entity operations remain within Accounting and reuse its explicit selected-book scope. */
@@ -46,6 +47,7 @@ export function EntityOperationsPanel({ book }: { book: LedgerBook }) {
       <TabPanel>{active === "accounts" ? <EntityAccountBindings scope={scope} /> : null}</TabPanel>
       <TabPanel>{active === "proposals" ? <EntityCounterpartProposals scope={scope} /> : null}</TabPanel>
       <TabPanel>{active === "fx" ? <EntityFxAuthority scope={scope} /> : null}</TabPanel>
+      <TabPanel>{active === "fixings" ? <EntityRateFixings scope={scope} /> : null}</TabPanel>
       <TabPanel>{active === "perimeter" ? <EntityPerimeterTransition scope={scope} /> : null}</TabPanel>
     </Tabs> : null}
   </CardContent></Card>;

@@ -147,6 +147,15 @@ erDiagram
         jsonb payload
         timestamp_with_time_zone retained_at_utc
     }
+    fund_structure_intercompany_rate_fixings {
+        text tenant_id PK
+        uuid fixing_id PK
+        bigint version PK
+        text index_key
+        date fixing_date
+        jsonb payload
+        timestamp_with_time_zone recorded_at
+    }
     fund_structure_investment_portfolio {
         uuid investment_portfolio_id PK
         uuid business_id
