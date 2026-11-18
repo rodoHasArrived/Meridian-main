@@ -13840,6 +13840,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ISecurityMasterClassificationDriftReportService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.ISecurityMasterCorporateActionCommandService"
     },
     {
@@ -14993,6 +14999,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClassCodecBinding"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClassificationDriftEntryDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClassificationDriftReportDto"
     },
     {
       "kind": "contract-set-member",
@@ -30766,6 +30784,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ISecurityMasterClassificationDriftReportService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.ISecurityMasterCorporateActionCommandService"
     },
     {
@@ -31919,6 +31943,18 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClassCodecBinding"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClassificationDriftEntryDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClassificationDriftReportDto"
     },
     {
       "kind": "contract-set-member",
@@ -48485,6 +48521,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityClassCodecBinding",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermBinding"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityClassificationDriftReportDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClassificationDriftEntryDto"
     },
     {
       "kind": "contract-reference",
@@ -68649,7 +68691,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "bf226fe0f92781b01bcdaa6422f978aaabc3f3b40dd40c1d41c9f1e2fdef83cf",
+  "fingerprint": "6cb91f5acb223ed3c2c7e8e5cd762ad0e26d81e39c8179250c7f2f2066fb271a",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -82540,6 +82582,12 @@
     },
     {
       "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.SecurityMaster.ISecurityMasterClassificationDriftReportService",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.ISecurityMasterClassificationDriftReportService"
+    },
+    {
+      "classification": "service_contract",
       "id": "contract:Meridian.Contracts.SecurityMaster.ISecurityMasterCorporateActionCommandService",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.ISecurityMasterCorporateActionCommandService"
@@ -83695,6 +83743,18 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityClassCodecBinding",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityClassCodecBinding"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityClassificationDriftEntryDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityClassificationDriftEntryDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityClassificationDriftReportDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityClassificationDriftReportDto"
     },
     {
       "classification": "dto",
@@ -100871,11 +100931,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4231,
-    "contract_set_memberships": 5515,
-    "edges": 11404,
+    "contract_references": 4232,
+    "contract_set_memberships": 5521,
+    "edges": 11411,
     "foreign_keys": 208,
     "logical_references": 6,
-    "nodes": 5603
+    "nodes": 5606
   }
 }
