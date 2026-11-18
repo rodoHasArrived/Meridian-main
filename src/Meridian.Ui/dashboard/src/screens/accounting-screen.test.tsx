@@ -4704,9 +4704,14 @@ describe("AccountingScreen", () => {
     await renderAccountingScreen(data, "/accounting/exceptions");
 
     expect(screen.getAllByRole("heading", { name: "Operational exception workbench" }).length).toBeGreaterThan(0);
-    expect(screen.getByRole("region", { name: "Unified operational exception queue" })).toHaveTextContent("Cash variance needs review");
-    expect(screen.getByRole("region", { name: "Unified operational exception queue" })).toHaveTextContent("2 comments");
-    expect(screen.getByRole("region", { name: "Unified operational exception queue" })).toHaveTextContent("3 evidence links");
+    // Phase 1: the break is listed once, in the break queue, not again in a separate case list.
+    const exceptionSummary = screen.getByRole("region", { name: "Unified operational exception queue" });
+    expect(exceptionSummary).toHaveTextContent("in the reconciliation break queue below");
+    expect(exceptionSummary).not.toHaveTextContent("Cash variance needs review");
+    expect(within(exceptionSummary).getByRole("link", { name: "Go to the break queue" })).toHaveAttribute("href", "#reconciliation-break-queue");
+    expect(screen.queryByRole("list", { name: "Operational exception cases" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Exception workflow next steps" })).not.toBeInTheDocument();
+    expect(within(screen.getByRole("treegrid", { name: "Reconciliation break queue" })).getAllByRole("row").slice(1)).toHaveLength(1);
     expect(screen.getAllByRole("link", { name: "Approval gate" })[0]).toHaveAttribute("href", "/accounting/approvals");
     expect(screen.getByRole("link", { name: "Open exception evidence packet" })).toHaveAttribute(
       "href",
