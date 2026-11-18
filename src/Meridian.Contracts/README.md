@@ -290,6 +290,14 @@ readiness row; classes without a specialized profile carry a persistent operatio
 requirement. Canonical aliases live in `SecurityAssetClassCatalog`; broad legacy vocabulary such as
 Debt and SPV is scoped to readiness so it cannot classify imports or accounting records. Securitized
 aliases resolve exclusively to StructuredCredit, and BankLoan resolves to DirectLoan.
+
+`SecurityAssetClassNames` holds one constant per Security Master asset class, and the catalog's
+descriptors use them. Contracts cannot reference the F# domain, so the constants and the
+`InstrumentTypeDescriptorCatalog` family and sub-type labels are copies of the F#
+`AssetClassRegistry` table; `SecurityAssetClassFactParityTests` holds them equal to it.
+`SecurityClassificationDriftReportDto` and `ISecurityMasterClassificationDriftReportService` describe
+the read-only report of active securities whose retained classification differs from the current
+taxonomy (ADR-022 amendment 2026-11-18).
 `SecurityAssetPackReadinessMappingTests` pins the readiness-only alias table (each alias must name a
 canonical class and stay reachable past catalog labels) and requires every catalog class to name
 readiness projectors or appear in a reasoned fallback list. The pack registry's policy text
