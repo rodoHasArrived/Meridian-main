@@ -498,6 +498,9 @@ public static class UiApiRoutes
     // Structured-credit reclassification report (ADR-022, report first)
     public const string SecurityMasterStructuredCreditReclassificationReport = "/api/security-master/structured-credit-reclassification/report";
 
+    // Classification drift report (taxonomy revisions; report only, retained events are append-only)
+    public const string SecurityMasterClassificationDriftReport = "/api/security-master/classification-drift/report";
+
     // CustomAsset profile promotion report (ADR-022, report first; promotion is an envelope amendment)
     public const string SecurityMasterProfilePromotionReport = "/api/security-master/profile-promotion/{profileId}/report";
 

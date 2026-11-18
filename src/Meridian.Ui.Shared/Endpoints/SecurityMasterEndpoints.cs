@@ -1432,6 +1432,10 @@ public static partial class SecurityMasterEndpoints
             is not (null or AppSecurityMaster.NullSecurityMasterStructuredCreditReclassificationService))
             MapStructuredCreditReclassificationEndpoints(group, jsonOptions);
 
+        if (app.Services.GetService<ISecurityMasterClassificationDriftReportService>()
+            is not (null or AppSecurityMaster.NullSecurityMasterClassificationDriftReportService))
+            MapClassificationDriftEndpoints(group, jsonOptions);
+
         if (app.Services.GetService<ISecurityMasterProfilePromotionService>()
             is not (null or AppSecurityMaster.NullSecurityMasterProfilePromotionService))
             MapProfilePromotionEndpoints(group, jsonOptions);
@@ -1916,6 +1920,28 @@ public static partial class SecurityMasterEndpoints
         })
         .WithName("BuildSecurityMasterStructuredCreditReclassificationReport")
         .Produces<StructuredCreditReclassificationReportDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden);
+    }
+
+    // ── Classification drift report (taxonomy revisions) ────────────────────
+
+    private static void MapClassificationDriftEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
+    {
+        // Report only: lists active securities whose retained classification differs from the
+        // current taxonomy. Classification is derived on read, and retained events are append-only.
+        group.MapPost(UiApiRoutes.SecurityMasterClassificationDriftReport, async (
+            HttpContext context,
+            [FromServices] ISecurityMasterClassificationDriftReportService driftReportService,
+            CancellationToken ct) =>
+        {
+            if (!EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance))
+                return EndpointHelpers.Forbidden();
+
+            var report = await driftReportService.BuildReportAsync(ct).ConfigureAwait(false);
+            return Results.Json(report, jsonOptions);
+        })
+        .WithName("BuildSecurityMasterClassificationDriftReport")
+        .Produces<SecurityClassificationDriftReportDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden);
     }
 

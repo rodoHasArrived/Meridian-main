@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-11-13
+**Reviewed:** 2026-11-18
 **Audience:** contributors and agents adding a first-class Security Master kind
 
 This is the checklist for adding a first-class asset class, or for giving a governed CustomAsset
@@ -19,7 +19,7 @@ the class name and compare each hit with this list.
 | File | What to add |
 | --- | --- |
 | `Domain/SecurityMaster.fs` | The `<Class>Terms` record, the `SecurityKind` case, the classification row (asset class, family, sub-type, issuer type, derivative flag) and the kind-name arm. |
-| `Domain/SecurityClassification.fs` | The `SecuritySubType` case and its label; an `AssetFamily` only when no existing family fits. |
+| `Domain/SecurityClassification.fs` | The `SecuritySubType` case and its label; an `AssetFamily` only when no existing family fits (add the new case name to `ClassificationLabelReader.KnownCaseNames` too). Every class except `OtherSecurity` must declare a family; derivatives use `ListedDerivative` (exchange-traded, booked in contracts) or `OtcDerivative` (bilateral). |
 | `Domain/SecurityKindPersistence.fs` | The kind's persistence arms, including the issue-date arm. |
 | `Domain/SecurityMasterCommands.fs` | The kind's command invariants (`validateKindInvariants`), each with a stable error code. |
 | `Domain/SecurityMasterLegacyUpgrade.fs` | The kind's arm in the legacy-upgrade match, so a replayed record keeps its terms. |
@@ -34,11 +34,12 @@ build warnings for each file above. Run
 
 | File | What to add |
 | --- | --- |
-| `SecurityAssetClassCatalog.cs` | The `SecurityAssetClassDescriptor`: asset pack ids, lot unit, cash-flow behaviour, `ProjectionKind`, preferred identifier kinds, Asset Operations capabilities, aliases, accounting class, `SupportsProfileBackedTerms`, `ClassificationLabels` and, for a promotion target, `ReclassifyingProfileIds`. |
+| `SecurityAssetClassCatalog.cs` | A `SecurityAssetClassNames` constant for the class, and the `SecurityAssetClassDescriptor` (use the constant for `AssetClass`): asset pack ids, lot unit, cash-flow behaviour, `ProjectionKind`, preferred identifier kinds, Asset Operations capabilities, aliases, accounting class, `SupportsProfileBackedTerms`, `ClassificationLabels` and, for a promotion target, `ReclassifyingProfileIds`. |
 | `SecurityAssetTermsSchema.cs` | The class's fields in `FieldsByAssetClass`. Declaration order is the required-field refusal order on read. A field added after version 1 needs `.Since(n)` and, when required, `ReadsAbsentAs(...)`. List the class in `ReadsProfileResolvedTerms` when it reads profile-resolved terms. |
 | `SecurityAssetTermsCodecBindings.cs` | The flat codec bindings for the class's members, when the class uses the schema-bound codec. |
 | `SecurityAssetSpecificTermsUpcasterChain.cs`, `SecurityRateFieldUnits.cs` | Rate units and any key renames the class's terms carry. |
 | `ClassificationLabelReader.cs`, `SecurityAssetPackRegistry*.cs` | The classification label and the pack's readiness specification. |
+| `InstrumentTypeDescriptorCatalog.cs` | When an instrument type maps to the class, its family and sub-type labels must equal the F# table's, or be listed in `DomainLabelExceptions` / `ApproximateDomainLabelMappings`. |
 
 ## 3. Application codec and validation (`src/Meridian.Application/SecurityMaster/`)
 
@@ -86,7 +87,7 @@ When the class is where a governed profile's records should live:
 Run these after the change:
 
 ```bash
-dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTargeting=true --filter "FullyQualifiedName~SecurityAssetClassOperationalWiringTests|FullyQualifiedName~SecurityAssetClassRegistryCoverageTests|FullyQualifiedName~SecurityAssetClassSurfaceParityTests|FullyQualifiedName~SecurityAssetClassCatalogTests|FullyQualifiedName~SecurityTermsProjectionRegistryTests|FullyQualifiedName~SecurityAssetTermsSchema|FullyQualifiedName~SecurityMasterRequiredReadOrderTests|FullyQualifiedName~SecurityAssetClassTermsHistoryTests|FullyQualifiedName~SecurityTermsWriteGoldenTests|FullyQualifiedName~SecurityAssetClassLiteralRatchetTests|FullyQualifiedName~CustomAssetPromotion"
+dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTargeting=true --filter "FullyQualifiedName~SecurityAssetClassOperationalWiringTests|FullyQualifiedName~SecurityAssetClassRegistryCoverageTests|FullyQualifiedName~SecurityAssetClassSurfaceParityTests|FullyQualifiedName~SecurityAssetClassCatalogTests|FullyQualifiedName~SecurityAssetClassFactParityTests|FullyQualifiedName~InstrumentTypeDescriptor|FullyQualifiedName~SecurityTermsProjectionRegistryTests|FullyQualifiedName~SecurityAssetTermsSchema|FullyQualifiedName~SecurityMasterRequiredReadOrderTests|FullyQualifiedName~SecurityAssetClassTermsHistoryTests|FullyQualifiedName~SecurityTermsWriteGoldenTests|FullyQualifiedName~SecurityAssetClassLiteralRatchetTests|FullyQualifiedName~CustomAssetPromotion"
 dotnet test tests/Meridian.FSharp.Tests -c Release /p:EnableWindowsTargeting=true
 npm --prefix src/Meridian.Ui/dashboard run test
 ```

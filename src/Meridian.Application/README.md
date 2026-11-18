@@ -469,6 +469,15 @@ path would persist) ahead of blocked ones (the terms carried over plus the block
 stored terms cannot be mapped are counted as unreadable and logged, never guessed. The service
 writes nothing; applying a proposal is a governed amendment.
 
+`SecurityMasterClassificationDriftReportService` lists active securities whose latest retained
+event recorded an asset class or family that the current F# `AssetClassRegistry` taxonomy now derives
+differently, grouped by class and stored labels (`POST /api/security-master/classification-drift/report`,
+`AdminMaintenance`). Classification is derived on read, so current projections already carry the
+current labels; retained events are append-only and keep theirs. The report is the evidence of a
+taxonomy revision and writes nothing. `SecurityClassificationTaxonomy` holds the comparison; the
+workstation change history also uses it to label such a change "Taxonomy revision" rather than
+"Classification".
+
 `SecurityMasterProfilePromotionService` builds the CustomAsset promotion report for one
 reclassifying profile. For each active `CustomAsset` pinned to it, it runs the main checks an
 envelope amendment runs under the target class: the classification-metadata check, the target
