@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PaperTradingCostModel
+
+Qualified name: <code>Meridian.Execution.PaperMatching.PaperTradingCostModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs:30](../../../../src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs#L30).
+
+Computes commission, fee, slippage, and spread costs for paper fills from PaperTradingCostOptions. This is the documented cost policy (CostModelVersion) shared by both paper gateways and recorded on paper sessions for promotion evidence.
+
+```csharp
+public sealed class PaperTradingCostModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string CostModelVersion = &quot;paper-cost/1&quot;;</code> | [src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs:36](../../../../src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs#L36) | Version identifier for this cost policy, recorded on paper sessions and cited by promotion evidence. |
+| <code>public PaperTradingCostModel(PaperTradingCostOptions? options = null);</code> | [src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs:41](../../../../src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs#L41) | Creates a cost model over the given options (defaults when omitted). |
+| <code>public PaperFillCostBreakdown Compute(decimal quantity, decimal fillPrice, decimal? midPrice, decimal contractMultiplier = 1m);</code> | [src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs:61](../../../../src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs#L61) | Computes the cost breakdown for one fill. |
+
 ## PaperTradingCostOptions
 
 Qualified name: <code>Meridian.Execution.PaperMatching.PaperTradingCostOptions</code>. Kind: `class`.
@@ -47,20 +67,20 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public PaperTradingGateway(ILogger&lt;PaperTradingGateway&gt; logger, ISecurityMasterQueryService? securityMaster = null, Adapters.PaperTradingGatewayOptions? options = null, Interfaces.ILiveFeedAdapter? liveFeed = null, PaperTradingCostOptions? costOptions = null) : this(logger, (ISecurityTradingParametersQueryService?) securityMaster, options, liveFeed, costOptions, securityMaster);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:90](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L90) | Retains the aggregate-query constructor used by compiled consumers. |
-| <code>public PaperTradingGateway(ILogger&lt;PaperTradingGateway&gt; logger, ISecurityTradingParametersQueryService? securityMaster, Adapters.PaperTradingGatewayOptions? options = null, Interfaces.ILiveFeedAdapter? liveFeed = null, PaperTradingCostOptions? costOptions = null, ISecurityIdentityQueryService? securityIdentity = null);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:100](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L100) |  |
-| <code>public string GatewayId =&gt; …;</code> | [src/Meridian.Execution/PaperTradingGateway.cs:125](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L125) |  |
-| <code>public ExecutionMode ExecutionMode =&gt; …;</code> | [src/Meridian.Execution/PaperTradingGateway.cs:128](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L128) |  |
-| <code>public bool UsesFaceValuePercentageOfPar(OrderRequest request);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:138](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L138) | Mirrors the live brokerage convention (see AlpacaBrokerageGateway): a treasury or corporate fixed-income order routes its quantity as face value with prices quoted as a percentage of par. Without this capability on the supported paper path, a 100,000-face order at 101.25 is measured by the pre-trade rails and booked by the paper book as $10,125,000 instead of $101,250 — the paper simulation must exercise the same sizing semantics the live gateway routes. |
-| <code>public bool IsConnected =&gt; …;</code> | [src/Meridian.Execution/PaperTradingGateway.cs:168](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L168) |  |
-| <code>public Task ConnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:171](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L171) |  |
-| <code>public Task DisconnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:179](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L179) |  |
-| <code>public async Task&lt;ExecutionReport&gt; SubmitOrderAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:187](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L187) |  |
-| <code>public Task&lt;ExecutionReport&gt; CancelOrderAsync(string orderId, CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:310](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L310) |  |
-| <code>public Task&lt;ExecutionReport&gt; ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:340](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L340) |  |
-| <code>public async IAsyncEnumerable&lt;ExecutionReport&gt; StreamExecutionReportsAsync([EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:418](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L418) |  |
-| <code>public void EvaluateSymbol(string symbol);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:431](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L431) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/PaperTradingGateway.cs:639](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L639) |  |
+| <code>public PaperTradingGateway(ILogger&lt;PaperTradingGateway&gt; logger, ISecurityMasterQueryService? securityMaster = null, Adapters.PaperTradingGatewayOptions? options = null, Interfaces.ILiveFeedAdapter? liveFeed = null, PaperTradingCostOptions? costOptions = null) : this(logger, (ISecurityTradingParametersQueryService?) securityMaster, options, liveFeed, costOptions, securityMaster);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:91](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L91) | Retains the aggregate-query constructor used by compiled consumers. |
+| <code>public PaperTradingGateway(ILogger&lt;PaperTradingGateway&gt; logger, ISecurityTradingParametersQueryService? securityMaster, Adapters.PaperTradingGatewayOptions? options = null, Interfaces.ILiveFeedAdapter? liveFeed = null, PaperTradingCostOptions? costOptions = null, ISecurityIdentityQueryService? securityIdentity = null, Meridian.Contracts.FixedIncome.IBondAnalyticsService? bondAnalytics = null);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:101](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L101) |  |
+| <code>public string GatewayId =&gt; …;</code> | [src/Meridian.Execution/PaperTradingGateway.cs:128](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L128) |  |
+| <code>public ExecutionMode ExecutionMode =&gt; …;</code> | [src/Meridian.Execution/PaperTradingGateway.cs:131](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L131) |  |
+| <code>public bool UsesFaceValuePercentageOfPar(OrderRequest request);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:141](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L141) | Mirrors the live brokerage convention (see AlpacaBrokerageGateway): a treasury or corporate fixed-income order routes its quantity as face value with prices quoted as a percentage of par. Without this capability on the supported paper path, a 100,000-face order at 101.25 is measured by the pre-trade rails and booked by the paper book as $10,125,000 instead of $101,250 — the paper simulation must exercise the same sizing semantics the live gateway routes. |
+| <code>public bool IsConnected =&gt; …;</code> | [src/Meridian.Execution/PaperTradingGateway.cs:171](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L171) |  |
+| <code>public Task ConnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:174](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L174) |  |
+| <code>public Task DisconnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:182](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L182) |  |
+| <code>public async Task&lt;ExecutionReport&gt; SubmitOrderAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:190](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L190) |  |
+| <code>public Task&lt;ExecutionReport&gt; CancelOrderAsync(string orderId, CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:313](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L313) |  |
+| <code>public Task&lt;ExecutionReport&gt; ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:343](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L343) |  |
+| <code>public async IAsyncEnumerable&lt;ExecutionReport&gt; StreamExecutionReportsAsync([EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:421](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L421) |  |
+| <code>public void EvaluateSymbol(string symbol);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:434](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L434) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/PaperTradingGateway.cs:684](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L684) |  |
 
 ## SecurityMasterGate
 
@@ -118,7 +138,7 @@ public sealed record PaperFinancingRequest(DateOnly AccrualDate, decimal Amount,
 
 Qualified name: <code>Meridian.Execution.Services.AccountDefinition</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1423](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1423).
+Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1431](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1431).
 
 Defines one account within a multi-account paper trading session.
 
@@ -837,13 +857,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static LiveOrderReadinessDecision Approved(string evidenceReference) =&gt; …;</code> | [src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs:39](../../../../src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs#L39) |  |
 | <code>public static LiveOrderReadinessDecision Rejected(string reason) =&gt; …;</code> | [src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs:42](../../../../src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs#L42) |  |
-
-## LiveOrderReadinessRequest
-
-Qualified name: <code>Meridian.Execution.Services.LiveOrderReadinessRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs:22](../../../../src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs#L22).
-
-```csharp
-public sealed record LiveOrderReadinessRequest(string RunId, string BrokerName, string Symbol, OrderSide Side, OrderType OrderType, decimal Quantity, string? StrategyId = null, string? Actor = null, string? CorrelationId = null, Guid? FundAccountId = null);
-```

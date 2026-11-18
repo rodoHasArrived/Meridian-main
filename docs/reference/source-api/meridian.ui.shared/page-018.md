@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RunCapitalCallIssuanceDraftIntakeRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RunCapitalCallIssuanceDraftIntakeRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CapitalCallIssuanceIntake.cs:32](../../../../src/Meridian.Ui.Shared/Services/CapitalCallIssuanceIntake.cs#L32).
+
+Request to plan a fund-level capital call over the supplied commitment register and land the per-LP issuance drafts in the manual journal workbench queue. Drafts flow through the same governed submit → approve → post lifecycle as every other automated intake lane; this run never posts anything.
+
+```csharp
+public sealed record RunCapitalCallIssuanceDraftIntakeRequest(string FundProfileId, string Currency, string Actor, string CallId, decimal AmountToCall, DateOnly NoticeDate, DateOnly DueDate, IReadOnlyList<CapitalCallCommitmentInput> Commitments, CapitalCallAllocationBasis AllocationBasis = CapitalCallAllocationBasis.ProRataByUncalled, string? Purpose = null, Guid? LedgerBookId = null, string? PeriodId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null, DateTimeOffset? AsOf = null);
+```
+
 ## RunDailyMarkToMarketDraftIntakeRequest
 
 Qualified name: <code>Meridian.Ui.Shared.Services.RunDailyMarkToMarketDraftIntakeRequest</code>. Kind: `record`.
@@ -859,22 +871,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;int&gt; RunDueAsync(DateTimeOffset nowUtc, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs:41](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs#L41) |  |
-
-## ThreeWayReconciliationService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayReconciliationService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationService.cs:10](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationService.cs#L10).
-
-Retains source operands and routes discrepancies into existing governed casework.
-
-```csharp
-public sealed class ThreeWayReconciliationService(IThreeWayReconciliationSourceReader sources, FileThreeWayReconciliationEvidenceStore store, IReconciliationBreakQueueRepository queue, ThreeWayReconciliationOptions options, TimeProvider? timeProvider = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;ThreeWayReconciliationResultDto&gt; RunAsync(Guid accountId, ReconciliationBreakQueueScope access, ThreeWayReconciliationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationService.cs:19](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationService.cs#L19) |  |
-| <code>public async Task&lt;ThreeWayReconciliationResultDto?&gt; GetLatestAsync(Guid accountId, ReconciliationBreakQueueScope access, Guid bookId, Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationService.cs:69](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationService.cs#L69) |  |
