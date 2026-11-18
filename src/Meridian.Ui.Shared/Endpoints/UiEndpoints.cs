@@ -274,6 +274,9 @@ public static class UiEndpoints
             app.MapDataQualityEndpoints(qualityService);
         }
 
+        // User-editable cross-provider tolerances (save applies live via the runtime applier)
+        app.MapCrossProviderToleranceEndpoints(jsonOptions);
+
         // Map SLA monitoring endpoints
         var slaMonitor = app.Services.GetService<DataFreshnessSlaMonitor>();
         if (slaMonitor is not null)

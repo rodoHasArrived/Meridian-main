@@ -56,6 +56,13 @@ WPF changes in this delta were compile-checked with the full WPF build; WPF test
 | Bulk Acknowledge and Snooze with a confirmation per item | Not ported; WPF can loop the same per-item triage command. |
 | Strategy comparison of up to four runs with overlaid curves | Not ported. |
 
+## Provider configuration delta — live apply and cross-provider tolerances — 2026-11-18
+
+| Browser change | WPF state |
+| --- | --- |
+| Failover saves say what the host did ("Applied live", "Provider routing updated live", "Pending host restart" with a reason per deferred setting) | Shared seam ready: `ConfigurationChangeStatus.LastApply` (`src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs`) is additive, so the existing `ConfigurationChangeStatusViewModel` keeps working. WPF should list `LastApply.Entries` instead of inferring a restart from the save alone. |
+| Cross-provider tolerance editor with asset-class overrides, reason-on-loosen and a 30-day "would have flagged" preview (Data → data-quality watch) | **Gap.** Shared seam ready: `GET/PUT /api/quality/cross-provider/policy` and `POST /api/quality/cross-provider/preview` (`CrossProviderToleranceEndpoints`). A WPF editor must post to these routes, show the server's bounds and audit, and must not validate or save tolerances locally. |
+
 This plan operationalizes the v0.25 design-charter decision to reactivate the WPF desktop
 workstation as an active, co-equal operator UI lane and bring it up to parity with the browser
 workstation. It is the working companion to roadmap item `W8-WPF-PARITY-001`.

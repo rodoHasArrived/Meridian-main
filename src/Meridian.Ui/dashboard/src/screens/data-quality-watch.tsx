@@ -15,6 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { StatusBanner } from "@/components/ui/status-banner";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { cn } from "@/lib/utils";
+import { CrossProviderTolerancePanel } from "@/screens/data-quality-watch.cross-provider-policy";
 import {
   getHighLatencyQualitySymbols,
   getLowCompletenessQualitySymbols,
@@ -247,6 +248,8 @@ export function DataQualityWatch() {
             caption={`The ${UNACKNOWLEDGED_ANOMALY_COUNT} most recent anomalies awaiting acknowledgement.`}
           />
         </Section>
+
+        <CrossProviderTolerancePanel />
       </CardContent>
     </Card>
   );
