@@ -2,11 +2,38 @@
 
 # `ledger-contracts` data objects - page 6 of 6
 
-Objects 401-474 of 474. References crossing pages remain available in the dependency manifest.
+Objects 401-476 of 476. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_PostedLedgerJournalEntryResultDto["PostedLedgerJournalEntryResultDto"] {
+        +AccountingBasisKindDto AccountingBasis
+        +Guid AggregateId
+        +Guid? CommandId
+        +Guid? CorrelationId
+        +long? GlobalSequence
+        +string? IdempotencyKey
+        +Guid JournalEntryId
+        +Guid LedgerBookId
+        +Guid PeriodId
+        +DateTimeOffset? PostedAtUtc
+        +Guid? SourceEventId
+    }
+    class Meridian_Contracts_Ledger_PostedPeriodComparisonDto["PostedPeriodComparisonDto"] {
+        +AccountingBasisKindDto AccountingBasis
+        +string AccountingPolicyId
+        +string AccountingPolicyVersion
+        +DateTimeOffset AsOf
+        +PostedPeriodComparisonRangeDto? Baseline
+        +IReadOnlyList~Guid~ BaselineJournalIds
+        +string BookName
+        +string Currency
+        +PostedPeriodComparisonRangeDto Current
+        +IReadOnlyList~Guid~ CurrentJournalIds
+        +LedgerDimensionSetDto? Dimensions
+        +string FundProfileId
+    }
     class Meridian_Contracts_Ledger_PostedPeriodComparisonLineDto["PostedPeriodComparisonLineDto"] {
         +string AccountKey
         +string AccountName
@@ -774,6 +801,9 @@ classDiagram
         +bool PeriodIsLocked
         +string? TenantId
     }
+    Meridian_Contracts_Ledger_PostedPeriodComparisonDto --> Meridian_Contracts_Ledger_PostedPeriodComparisonLineDto
+    Meridian_Contracts_Ledger_PostedPeriodComparisonDto --> Meridian_Contracts_Ledger_PostedPeriodComparisonRangeDto
+    Meridian_Contracts_Ledger_PostedPostingRuleJournalCandidateResultDto --> Meridian_Contracts_Ledger_PostedLedgerJournalEntryResultDto
     Meridian_Contracts_Ledger_PostedPostingRuleJournalCandidateResultDto --> Meridian_Contracts_Ledger_PostingRuleJournalCandidateResultDto
     Meridian_Contracts_Ledger_PostingRuleDto --> Meridian_Contracts_Ledger_RulePromotionApprovalDto
     Meridian_Contracts_Ledger_PostingRuleJournalCandidateRequestDto --> Meridian_Contracts_Ledger_TreasuryLedgerContextDto

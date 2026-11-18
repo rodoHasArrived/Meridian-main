@@ -159,7 +159,7 @@ export function AcceptanceStatusCard({
 function ReadinessSummaryPill({ row }: { row: TradingReadinessSummaryRow }) {
   return (
     <div className={cn("data-grid-surface border border-l-[3px] px-3 py-2", acceptanceTone[row.level])} aria-label={row.ariaLabel}>
-      <p className={cn("text-xs font-semibold opacity-80", usesTrackedCaps(row.label) && "uppercase tracking-[0.14em]")}>{row.label}</p>
+      <p className={cn("text-xs font-semibold opacity-80", usesTrackedCaps(row.label) && "type-label--caps")}>{row.label}</p>
       <p className="mt-1 break-words font-mono text-xs font-semibold text-foreground">{row.label}: {row.value}</p>
     </div>
   );
@@ -170,7 +170,7 @@ function AcceptanceRow({ item }: { item: CockpitAcceptanceItem }) {
     <div className={cn("data-grid-surface border border-l-[3px] px-4 py-3", acceptanceTone[item.level])}>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className={cn("text-xs font-semibold opacity-80", usesTrackedCaps(item.label) && "uppercase tracking-[0.14em]")}>{item.label}</p>
+          <p className={cn("text-xs font-semibold opacity-80", usesTrackedCaps(item.label) && "type-label--caps")}>{item.label}</p>
           <p className="mt-1 font-mono text-sm font-semibold">{item.value}</p>
         </div>
         <SeverityBadge status={acceptanceStatus[item.level]} label={acceptanceLabel[item.level]} />

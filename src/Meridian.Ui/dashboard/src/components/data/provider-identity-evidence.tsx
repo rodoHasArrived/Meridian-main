@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { resolveProviderIntegrationIdentity } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
@@ -70,10 +71,10 @@ function IdentityEvidenceRow({ connectionId, row, onResolved }: {
     </div>
     {row.operatorResolution ? <p className="mt-2 text-muted-foreground">Retained choice: {row.operatorResolution.selectedSecurityId} · {row.operatorResolution.reviewedBy} · {row.operatorResolution.reviewedAt}<br />{row.operatorResolution.reason}</p> : null}
     {reviewable && choices.length > 0 ? <div className="mt-2 grid gap-2">
-      <label>Chosen security<select className="mt-1 w-full rounded-sm border border-input bg-background p-1" value={selection} onChange={(event) => setSelection(event.target.value)} disabled={busy}>
+      <label>Chosen security<Select className="mt-1 w-full" value={selection} onChange={(event) => setSelection(event.target.value)} disabled={busy}>
         <option value="">Select an active match</option>
         {choices.map((candidate) => <option key={candidate.internalSecurityId} value={candidate.internalSecurityId!}>{candidate.displayName ?? candidate.internalSecurityId} · {candidate.internalSecurityId}</option>)}
-      </select></label>
+      </Select></label>
       <label>Resolution reason<textarea className="mt-1 w-full rounded-sm border border-input bg-background p-1" value={reason} onChange={(event) => setReason(event.target.value)} disabled={busy} /></label>
       <Button size="sm" variant="outline" onClick={() => void resolve()} disabled={busy || !selection || !reason.trim() || !row.evidenceHash}>Resolve source conflict</Button>
     </div> : null}

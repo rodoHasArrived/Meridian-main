@@ -10924,6 +10924,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerJournalExecutionLineageDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.LedgerJournalTaxResultsDto"
     },
     {
@@ -11183,6 +11189,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.PostPostingRuleJournalCandidateRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PostedComparisonMeasureDto"
     },
     {
       "kind": "contract-set-member",
@@ -22852,6 +22864,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationMetricHistoryPointDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationModeComparisonGroup"
     },
     {
@@ -28840,6 +28858,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerJournalExecutionLineageDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.LedgerJournalTaxResultsDto"
     },
     {
@@ -29099,6 +29123,12 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.PostPostingRuleJournalCandidateRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PostedComparisonMeasureDto"
     },
     {
       "kind": "contract-set-member",
@@ -44542,6 +44572,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.LedgerJournalEntryDto",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerJournalExecutionLineageDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.LedgerJournalEntryDto",
       "target": "contract:Meridian.Contracts.Ledger.LedgerPostingKindDto"
     },
     {
@@ -45017,6 +45053,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.PostedPeriodComparisonDto",
       "target": "contract:Meridian.Contracts.Ledger.LedgerDimensionSetDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PostedPeriodComparisonDto",
+      "target": "contract:Meridian.Contracts.Ledger.PostedComparisonMeasureDto"
     },
     {
       "kind": "contract-reference",
@@ -57951,6 +57993,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.WorkstationMetricCard",
+      "target": "contract:Meridian.Contracts.Workstation.WorkstationMetricHistoryPointDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.WorkstationModeComparisonGroup",
       "target": "contract:Meridian.Contracts.Workstation.WorkstationModeComparisonRun"
     },
@@ -68913,7 +68961,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "4428a1179ed1c96081b8c5dd14e79eaf47847b9d9a06a338cf78e3cb1bb97c4c",
+  "fingerprint": "68f9237ba1cc2769d704efdbe1cac8626cce0ab80cd4847e98297350155bd5ec",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -79888,6 +79936,12 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.LedgerJournalExecutionLineageDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.LedgerJournalExecutionLineageDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Ledger.LedgerJournalTaxResultsDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.LedgerJournalTaxResultsDto"
@@ -80149,6 +80203,12 @@
       "id": "contract:Meridian.Contracts.Ledger.PostPostingRuleJournalCandidateRequestDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.PostPostingRuleJournalCandidateRequestDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Ledger.PostedComparisonMeasureDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.PostedComparisonMeasureDto"
     },
     {
       "classification": "dto",
@@ -91815,6 +91875,12 @@
       "label": "Meridian.Contracts.Workstation.WorkstationMetricCard"
     },
     {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.WorkstationMetricHistoryPointDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.WorkstationMetricHistoryPointDto"
+    },
+    {
       "classification": "record",
       "id": "contract:Meridian.Contracts.Workstation.WorkstationModeComparisonGroup",
       "kind": "contract-type",
@@ -101219,11 +101285,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4247,
-    "contract_set_memberships": 5543,
-    "edges": 11448,
+    "contract_references": 4250,
+    "contract_set_memberships": 5548,
+    "edges": 11456,
     "foreign_keys": 208,
     "logical_references": 6,
-    "nodes": 5617
+    "nodes": 5620
   }
 }

@@ -190,6 +190,13 @@ describe("workspace nav view model", () => {
     });
   });
 
+  it("highlights only the destination whose view the page shows", () => {
+    const options = buildWorkspaceNavViewModel("/data/quotes", undefined, "?view=options").items.find((item) => item.key === "data");
+    expect(options?.subItems.filter((item) => item.active).map((item) => item.label)).toEqual(["Options screening"]);
+    const quotes = buildWorkspaceNavViewModel("/data/quotes", undefined, "?view=watchlist").items.find((item) => item.key === "data");
+    expect(quotes?.subItems.filter((item) => item.active).map((item) => item.label)).toEqual(["Market data"]);
+  });
+
   it("keeps the evidence workbench out of Accounting navigation after canonicalization", () => {
     const model = buildWorkspaceNavViewModel("/accounting/ledger");
     const accounting = model.items.find((item) => item.key === "accounting");

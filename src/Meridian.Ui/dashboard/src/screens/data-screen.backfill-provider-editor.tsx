@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Select } from "@/components/ui/select";
 import { apiGetJson, apiPutJson } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { PanelReload } from "@/components/ui/panel-reload";
@@ -110,10 +111,10 @@ export function BackfillProviderEditorRegion() {
             <label className="flex items-center gap-2"><input type="checkbox" checked={draft.enabled} disabled={saving}
               onChange={event => setDraft({ ...draft, enabled: event.target.checked })} />Enabled</label>
             <label className="block text-sm">Vendor tier
-              <select className="mt-1 block w-full rounded border bg-background p-2" value={draft.tierId} disabled={saving}
+              <Select className="mt-1" value={draft.tierId} disabled={saving}
                 onChange={event => { const chosen = provider.metadata.tiers.find(t => t.id === event.target.value); if (chosen) setDraft({ ...draft, tierId: chosen.id, rateLimitPerMinute: chosen.rateLimitPerMinute, rateLimitPerHour: chosen.rateLimitPerHour }); }}>
                 {provider.metadata.tiers.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
-              </select>
+              </Select>
             </label>
             {selected !== "openfigi" ? <label className="block text-sm">Priority<Input type="number" min={0} max={10000} step={1} value={draft.priority} disabled={saving}
               onChange={event => setDraft({ ...draft, priority: Number(event.target.value) })} /></label> : <p className="text-xs text-muted-foreground">Identifier resolution only; OpenFIGI is outside the historical fallback chain.</p>}

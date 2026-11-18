@@ -1,4 +1,7 @@
 import { Clock3 } from "lucide-react";
+import { Sparkline } from "@/components/charts/Sparkline";
+import { describeMetricHistory, trailingKnownRun } from "@/lib/metric-history";
+import type { MetricHistoryPoint } from "@/types";
 import { cn } from "@/lib/utils";
 import { normalizeFinancialLabel } from "@/lib/format";
 import {
@@ -187,6 +190,7 @@ export function StatStripPresentation({
                   {metric.value}
                 </span>
                 <MetricPassport metric={metric} />
+                <MetricSparkline label={metricLabel} history={metric.history} basis={metric.historyBasis} />
                 {!basesAgree && hasMetricBasisDetail(metric) ? <span className="text-xs text-muted-foreground">{metricBasisLabel(metric)}</span> : null}
                 {trust.freshnessDetail ? <span className="sr-only">{trust.freshnessDetail}</span> : null}
                 {delta ? (
@@ -206,5 +210,21 @@ export function StatStripPresentation({
         </p>
       ) : null}
     </div>
+  );
+}
+
+/**
+ * A sparkline from the producer's own history, never computed here. It draws only the latest run
+ * of established days; with fewer than two there is nothing to draw.
+ */
+function MetricSparkline({ label, history, basis }: { label: string; history?: MetricHistoryPoint[] | null; basis?: string | null }) {
+  const run = trailingKnownRun(history);
+  if (!run) return null;
+  const description = describeMetricHistory(label, run, history!.length);
+  return (
+    <span className="inline-flex self-center" title={basis ? `${description} ${basis}` : description} data-metric-sparkline>
+      <Sparkline points={run.map((point) => point.value)} width={56} height={16} />
+      <span className="sr-only">{description}</span>
+    </span>
   );
 }

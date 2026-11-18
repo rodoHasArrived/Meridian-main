@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getGlobalKeyBinding, KEY_BINDING_OVERRIDES_STORAGE_KEY, reloadKeyBindingOverrides, setKeyBindingOverride } from "@/lib/keymap";
 import { KeyboardShortcutsSheet } from "./keyboard-shortcuts-sheet";
+import { QUEUE_KEY_BINDINGS } from "@/lib/keymap";
 
 function press(init: KeyboardEventInit) {
   act(() => {
@@ -25,6 +26,16 @@ describe("KeyboardShortcutsSheet", () => {
 
     expect(screen.getByText("Open command palette")).toBeTruthy();
     expect(screen.getByText("Show keyboard shortcuts")).toBeTruthy();
+  });
+
+  it("lists the work-queue keys from the same registry the queues use", () => {
+    render(<KeyboardShortcutsSheet open onOpenChange={vi.fn()} />);
+
+    const queueKeys = screen.getByRole("list", { name: "Work queue shortcuts" });
+    for (const binding of Object.values(QUEUE_KEY_BINDINGS)) {
+      expect(queueKeys).toHaveTextContent(binding.label);
+    }
+    expect(queueKeys).toHaveTextContent("Acknowledge the selected item");
   });
 
   it("renders nothing while closed", () => {

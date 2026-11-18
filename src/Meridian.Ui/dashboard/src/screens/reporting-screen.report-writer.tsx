@@ -1113,7 +1113,7 @@ export function ReportWriterDesignerGrid({
             </Select>
           </label>
           <label className="space-y-1">
-            <span className={cn("text-xs text-muted-foreground", usesTrackedCaps(accessPrincipalIdLabel) && "uppercase tracking-[0.14em]")}>{accessPrincipalIdLabel}</span>
+            <span className={cn("text-xs text-muted-foreground", usesTrackedCaps(accessPrincipalIdLabel) && "type-label--caps")}>{accessPrincipalIdLabel}</span>
             <PrincipalIdInput
               principalKind={settings.principalKind}
               value={settings.principalId}
@@ -1698,7 +1698,7 @@ function ReportWriterDropZoneView({
       onDragOver={(event) => event.preventDefault()}
       onDrop={(event) => onZoneDrop(event, grid, zone)}
     >
-      <div className={cn("mb-2 text-xs text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.14em]")}>{label}</div>
+      <div className={cn("mb-2 text-xs text-muted-foreground", usesTrackedCaps(label) && "type-label--caps")}>{label}</div>
       <div className="flex flex-wrap gap-1.5">
         {tokens.length > 0 ? tokens.map((token, tokenIndex) => (
           <ReportWriterTokenChip

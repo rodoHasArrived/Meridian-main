@@ -255,8 +255,16 @@ converting their labels or units; operational source names grant no calculation 
 
 `Workstation/OperatorTriageDtos.cs` defines personal acknowledgement/snooze, shared assignment,
 per-item bulk outcomes and the metadata persistence seam; these commands do not resolve underlying
-financial work. `Ledger/PostedPeriodComparisonDtos.cs` carries explicit fiscal comparison ranges,
-accounting basis/policy/currency, exact decimal changes and posted-journal population identities.
+financial work. `OperatorTriageBulkCommand` carries Assign (with `AssigneeId`), Acknowledge, or Snooze
+(with optional trailing `SnoozedUntil`); Unsnooze stays single-item. `Ledger/PostedPeriodComparisonDtos.cs` carries explicit fiscal comparison ranges,
+accounting basis/policy/currency, exact decimal changes and posted-journal population identities;
+`PostedComparisonMeasureDto` selects Movements (each period's postings, the default) or ClosingBalances
+(cumulative postings from the book's earlier periods through each period end).
+`WorkstationMetricCard` may carry an optional `History` (`WorkstationMetricHistoryPointDto`: date and
+nullable value, oldest first) with a `HistoryBasis`; a null value is a day the source cannot establish.
+`LedgerJournalEntryDto.Execution` (`LedgerJournalExecutionLineageDto`) carries the order, fill and
+strategy run a posting recorded; absent for entries not posted from an execution. The execution
+journal-entries route returns the same DTO for a book's postings from a given fill or order.
 
 `AutomatedPostingGrantReferenceDto` binds deterministic synthetic fill posting to an operator's
 retained tenant/account/book/period/policy/mapping delegation. `AuthorizedSystem` is distinct

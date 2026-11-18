@@ -1522,6 +1522,47 @@ Reporting queue selection uses `reportingWork` in the URL, preserving other quer
 and the hash. The selected item owns the inspector's evidence and actions. Removed or unknown
 items are explicitly unavailable, and changing financial scope clears the prior selection.
 The shared dense-row keyboard contract supports row selection, detail focus, and return focus.
+`DenseDataTable` marks its scroll viewport `data-overflow-end` while columns are clipped on the
+right and fades that edge, so wide tables show that more columns sit beyond the visible ones.
+Short labels (`type-label--caps`, `eyebrow-label`) use light caps in the body face; monospace
+stays on figures, IDs and code. Every dropdown uses `Select` from `@/components/ui/select`, and the
+`rawSelects` ratchet in `scripts/design-system-ratchets.mjs` (alongside `monospaceCapsLabels`) keeps
+hand-styled native selects from growing back.
+The shared inbox (Today and `OperatorTriageQueue`) filters by owner (Everyone, My items,
+Unassigned; saved views that carry the older `mineOnly` filter still restore). Its queue keys
+come from `QUEUE_KEY_BINDINGS` in `src/lib/keymap.ts`, which the `?` sheet lists read-only below the
+editable global shortcuts (queue keys are not rebindable): j/k move,
+a assigns, c acknowledges and s snoozes; each opens the reviewed dialog that requires a reason,
+and a blocker still cannot be snoozed. On Today, workspace signals have no owner, so the "Assigned
+to me" choice hides them. The reconciliation break queue keeps its own map in
+`src/lib/queue-keyboard-map.ts`.
+Trial balance offers two posted-period comparisons through `AccountingPeriodComparison`: "Vs prior
+period" (movements, matching the per-period trial balance on that screen) and "Closing balances vs
+prior close" (`measure="ClosingBalances"`, cumulative balances against the prior period's full close).
+The client and panel refuse a response whose `measure` differs from the request, so movements are
+never shown under a balance heading.
+Close Cockpit shows a close board (`src/lib/close-board.ts`, `CloseBoard`) built from the loaded
+close plan's own tasks: columns are calendar days after the period end (T+0), and each card shows
+the task's owner, status, blocker and dependencies by name, with met dependencies struck through.
+A task is overdue only when its due date has passed and it is not signed off; a task without a
+calendar due date is listed separately, never placed on a guessed day. No plan, no board.
+Headline KPIs draw a sparkline only from a producer-supplied `history` (`MetricSparkline` in the stat
+strip, `lib/metric-history.ts`): the latest run of established days, at least two, never bridging a
+gap, with a screen-reader description. The open-breaks KPI carries the history only when its last
+point equals the count it shows. Source-metric KPIs (for example timing drift) show the producer's own
+figure and carry its history unchanged; the producer ends the series on that figure.
+A posted journal entry recorded from an execution shows its lineage on the journal-entry detail
+(`JournalExecutionLineage`): strategy run (Run Ledger link), order (Trading › Orders `?orderId=`),
+fill (identifier only; it has no page) and the entry itself. The other way, Trading's order evidence
+lists the order's ledger postings (`OrderLedgerPostings`): the book is the one whose fund-structure
+node is exactly the order's account, otherwise the operator chooses it; the lookup uses the order id
+and each GUID fill id, merged by journal entry.
+The Data overview's provider verification history is linkable: `?verificationConnection=`
+selects an exact connection and `?providerFamily=` its family's first connection (matched on
+`providerFamilyId`, never on display names; otherwise the first loaded connection), anchored at
+`#provider-verification-history` (`src/lib/provider-history-link.ts`). A degraded provider item
+in Today's queue that carries a `providerId` opens that history; one without an id keeps the
+provider trust list.
 
 `src/lib/workstation-features.ts` supplies wired browser destinations to both sidebar navigation
 and local command search. Purpose descriptions and search-only aliases expose intents such as
@@ -1591,7 +1632,12 @@ Rules worth knowing when adding a signal:
 
 Workspace routes open on their own job: the route heading leads, the workspace KPI strip follows it,
 and the sidebar is the only sub-route navigation (Trading, Portfolio, Strategy and Data no longer
-repeat it as an in-page tab strip; Data's Backfill queue has its own sidebar entry). Off the Trading
+repeat it as an in-page tab strip; Data's Backfill queue has its own sidebar entry, and Options
+screening is a sidebar entry rather than a Market Data desk tab: `?view=options` renders it alone and
+the sidebar, heading and breadcrumb name that view). Accounting's sidebar lists the seven
+`primary` destinations in `src/lib/accounting-navigation.ts`; the rest sit behind a "More"
+disclosure that opens itself when the current page is one of them, and every destination stays in
+command search. Off the Trading
 overview the brokerage recovery panel is one blocked-state row with a Review link to the full panel,
 and nothing once evidence reconciles. With no fund account in scope and a brokerage environment that
 is known and not live, the panel and row are a neutral setup state with a "Choose account" action;
