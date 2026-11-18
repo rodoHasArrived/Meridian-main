@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BondMigrationPreviewRequest
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondMigrationPreviewRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs:8](../../../../src/Meridian.Contracts/FixedIncome/BondMigrationDtos.cs#L8).
+
+Explicit reviewed assignment; no coupon-unit or calendar convention is inferred.
+
+```csharp
+public sealed record BondMigrationPreviewRequest(Guid SecurityId, long ExpectedVersion, BondCalculationContext Context, JsonElement ScheduleConventions);
+```
+
 ## BondMigrationSubmitRequest
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondMigrationSubmitRequest</code>. Kind: `record`.
@@ -655,14 +667,4 @@ Issuer is a case-insensitive substring; currency, coupon and agency rating label
 
 ```csharp
 public sealed record BondScreeningQuery(DateOnly AsOf, DateTimeOffset KnownAtUtc, DateOnly MaturityFrom, DateOnly MaturityTo, string? Issuer = null, string? Currency = null, string? CouponKind = null, DateOnly? CallProtectedThrough = null, string? RatingAgency = null, IReadOnlyList<string>? AcceptedRatings = null, int PageSize = 50, string? Cursor = null);
-```
-
-## BondScreeningRow
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondScreeningRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondScreeningDtos.cs:11](../../../../src/Meridian.Contracts/FixedIncome/BondScreeningDtos.cs#L11).
-
-```csharp
-public sealed record BondScreeningRow(BondReferenceDto Reference, IReadOnlyList<BondMarketObservationDto> Ratings, IReadOnlyList<string> Gaps);
 ```

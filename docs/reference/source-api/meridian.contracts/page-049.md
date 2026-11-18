@@ -6,6 +6,49 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OtcExposureRules
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcExposureRules</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:266](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L266).
+
+Exposure and credit support as pure functions, in the way OtcContractRules is pure: no clock, no I/O, ArgumentException naming the rule. Every amount is in the collateral agreement currency and every mark is signed from the fund&#x27;s side.
+
+```csharp
+public static class OtcExposureRules
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string RuleVersion = &quot;otc-exposure-rules-v1&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:269](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L269) | Stamped on every snapshot so a reader knows which arithmetic produced it. |
+| <code>public static bool PermitsCloseOutNetting(OtcMasterAgreementType agreementType) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:275](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L275) | Whether the master agreement form permits close-out netting. Other is treated as not netting: the model records no netting opinion, so it fails closed to gross exposure. |
+| <code>public static bool EntersExposure(OtcContractDto contract, DateOnly asOfDate);</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:279](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L279) | Whether a contract enters the exposure as of a date: open and already traded. |
+| <code>public static IReadOnlyList&lt;OtcContractDto&gt; SelectContracts(IEnumerable&lt;OtcContractDto&gt; contracts, DateOnly asOfDate);</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:286](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L286) | The contracts that enter the exposure as of a date, in their given order. |
+| <code>public static string ResolveCurrency(OtcNettingSetViewDto view, DateOnly asOfDate);</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:298](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L298) | The currency the exposure is computed in: the collateral agreement&#x27;s, or, with no collateral agreement, the notional currency of the first contract that enters the exposure as of the date (exposures only), so a closed or not-yet-traded contract cannot set it. When no contract enters, the first contract&#x27;s currency is used; nothing is valued in it. |
+| <code>public static decimal HaircutAdjusted(decimal valuedAmount, decimal haircutPercent) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:309](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L309) | The value of a collateral balance after its haircut. |
+| <code>public static decimal RoundUp(decimal amount, decimal? roundingAmount) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:313](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L313) | Rounds a delivery up to the rounding amount; no rounding amount leaves it as is. |
+| <code>public static decimal RoundDown(decimal amount, decimal? roundingAmount) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:317](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L317) | Rounds a return down to the rounding amount; no rounding amount leaves it as is. |
+| <code>public static decimal CreditSupportAmount(decimal exposure, decimal independentAmountPledgor, decimal independentAmountSecuredParty, decimal thresholdPledgor) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:325](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L325) | The credit support amount owed to a Secured Party: its exposure plus the Pledgor&#x27;s independent amount, less the Secured Party&#x27;s own independent amount and the Pledgor&#x27;s threshold, floored at zero. |
+| <code>public static OtcCollateralMovementDto? Movement(decimal deliveryRaw, decimal returnRaw, decimal minimumTransferAmount, decimal? roundingAmount, OtcMovementParty pledgor, OtcMovementParty securedParty, string currency);</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:333](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L333) | The movement one side&#x27;s arithmetic implies. The minimum transfer amount is tested on the unrounded delivery or return; a delivery then rounds up and a return rounds down, and a return that rounds to nothing is no movement. The Pledgor delivers; the Secured Party returns. |
+| <code>public static OtcExposureSnapshotDto Compute(OtcNettingSetViewDto view, IReadOnlyList&lt;OtcContractValuationDto&gt; valuations, IReadOnlyList&lt;OtcCollateralBalanceDto&gt; balances, IReadOnlyCollection&lt;Guid&gt; nettingSetsUnderAgreement, DateOnly asOfDate, string computedBy, DateTimeOffset computedAt, DateTimeOffset? knowledgeAsOf = null);</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:379](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L379) | Computes the exposure snapshot for a netting set as of a date from the valuations of the contracts that enter it and the collateral balances under its collateral agreement. The independent amount on the collateral agreement is read as the amount the fund posts, and each balance takes the haircut of the agreement&#x27;s eligible-collateral line it is posted as. Any unvalued contract, a missing, not-yet-effective, terminated or shared collateral agreement, an open contract past its termination date, or a positive balance valued after the as-of date or no longer eligible leaves the snapshot OtcExposureSnapshotStatus.Incomplete: exposures are reported for what was valued and no movement is computed. With no collateral agreement both credit support sides are null. nettingSetsUnderAgreement is every netting set that references the collateral agreement, as the store reports it (empty with no agreement); any netting set other than this one is a OtcValuationBlockerCodes.SharedCollateralAgreement blocker. The snapshot&#x27;s OtcExposureSnapshotDto.Inputs record the netting set version, every contract in the view, every balance under the collateral agreement and the netting sets under it, each with the version read, and the securities valued with knowledgeAsOf (the knowledge time the valuations used, else computedAt), so a call can be refused once any of them changes. An as-of date after the UTC date of computedAt is refused (RequireNotFutureDated). The returned snapshot carries no version and no digest; the store assigns both. |
+| <code>public static void RequireNotFutureDated(DateOnly asOfDate, DateTimeOffset now);</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:573](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L573) | Refuses an as-of date after the UTC date of now. A snapshot values a date that has come: one for a later date would stand as the netting set&#x27;s latest valuation before that date arrives, and since snapshots are append-only it could never be withdrawn. |
+| <code>public static string Digest(OtcExposureSnapshotDto snapshot);</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:621](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L621) | The digest a snapshot is stored and verified with: the canonical serialization of the snapshot with an empty OtcExposureSnapshotDto.PayloadSha256. |
+| <code>public static string SerializePayload(OtcExposureSnapshotDto snapshot);</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:628](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L628) | The snapshot as its jsonb payload is written: the digest field is empty, so the payload can be digested. |
+
+## OtcExposureSnapshotDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcExposureSnapshotDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:210](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L210).
+
+The append-only valuation of one netting set on one date: the contracts valued, the netting basis, gross and net exposure, the collateral held on each side, the credit support each side&#x27;s terms imply and the movements that follow. Recomputing a date appends the next version. With no collateral agreement the snapshot reports exposures only and both credit support sides are null. Inputs records the version of every record the computation read and the market data knowledge time; it is null only on a payload stored without it, and such a snapshot cannot be called.
+
+```csharp
+public sealed record OtcExposureSnapshotDto(Guid SnapshotId, Guid NettingSetId, Guid MasterAgreementId, Guid? CollateralAgreementId, DateOnly AsOfDate, int Version, string RuleVersion, string Currency, OtcNettingBasis NettingBasis, OtcExposureSnapshotStatus Status, DataProvenance Provenance, long MasterAgreementVersion, long? CollateralAgreementVersion, IReadOnlyList<OtcContractValuationDto> Contracts, decimal GrossPositive, decimal GrossNegative, decimal NetExposure, OtcCreditSupportSideDto? FundAsSecuredParty, OtcCreditSupportSideDto? CounterpartyAsSecuredParty, IReadOnlyList<OtcCollateralHeldLineDto> CollateralHeld, IReadOnlyList<OtcCollateralMovementDto> Movements, IReadOnlyList<OtcValuationBlockerDto> Blockers, OtcExposureSnapshotInputsDto? Inputs, string PayloadSha256, string ComputedBy, DateTimeOffset ComputedAt);
+```
+
 ## OtcExposureSnapshotInputsDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcExposureSnapshotInputsDto</code>. Kind: `record`.
@@ -762,26 +805,4 @@ Request to resolve or dismiss a golden record conflict. ChosenWinnerSource recor
 
 ```csharp
 public sealed record ResolveConflictRequest(Guid ConflictId, string Resolution, string ResolvedBy, string? Reason = null, string? ChosenWinnerSource = null);
-```
-
-## ResolveCorporateActionConflictRequestDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ResolveCorporateActionConflictRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:655](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L655).
-
-Versioned, idempotent disposition of one open source-term conflict. Waivers require retained evidence just like resolutions; neither disposition implicitly confirms the case terms.
-
-```csharp
-public sealed record ResolveCorporateActionConflictRequestDto(Guid CaseId, Guid ConflictId, long ExpectedVersion, string IdempotencyKey, string TenantId, string CompanyId, string Disposition, string Resolution, string EvidenceReference, string EvidenceHash, string Actor, string? CorrelationId = null, CorporateActionCaseScopeDto? ScopeAssertion = null);
-```
-
-## ResolveSecurityRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ResolveSecurityRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs:3](../../../../src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs#L3).
-
-```csharp
-public sealed record ResolveSecurityRequest(SecurityIdentifierKind IdentifierKind, string IdentifierValue, string? Provider, DateTimeOffset? AsOfUtc, bool ActiveOnly = false);
 ```

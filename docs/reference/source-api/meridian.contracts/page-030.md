@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## VehicleSummaryDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.VehicleSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:204](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L204).
+
+```csharp
+public sealed record VehicleSummaryDto(Guid VehicleId, Guid FundId, Guid LegalEntityId, string Code, string Name, string BaseCurrency, bool IsActive, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, IReadOnlyList<Guid> InvestmentPortfolioIds, IReadOnlyList<Guid> AccountIds, string? Description = null);
+```
+
 ## FutureLifecycleStat
 
 Qualified name: <code>Meridian.Contracts.Futures.FutureLifecycleStat</code>. Kind: `enum`.
@@ -741,13 +751,3 @@ Declared public members:
 | <code>public ProviderIntegrationReplayModeDto Mode { get; init; } = ProviderIntegrationReplayModeDto.Original;</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:394](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L394) |  |
 | <code>public int? TargetManifestVersion { get; init; }</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:396](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L396) |  |
 | <code>public string? TargetManifestDigest { get; init; }</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:398](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L398) |  |
-
-## ProviderIntegrationQuarantineReplayResultDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationQuarantineReplayResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:401](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L401).
-
-```csharp
-public sealed record ProviderIntegrationQuarantineReplayResultDto(string ReplaySyncRunId, string RawPayloadId, ProviderCapabilityKindDto Capability, int RecordsReplayed, int RecordsAccepted, int RecordsRequarantined, ProviderIntegrationProcessingStatusDto Status, IReadOnlyList<ValidationIssueDto> Issues);
-```

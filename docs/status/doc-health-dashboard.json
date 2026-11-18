@@ -1,11 +1,11 @@
 {
-  "total_files": 1289,
+  "total_files": 1287,
   "orphaned_count": 396,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 303,
   "health_score": 85,
-  "signal_digest": "sha256:de0f249790425638c193d85cc8af22febbcf3e47773bb13a0987278712616fff",
+  "signal_digest": "sha256:d53f41dd7fcf6e7b3bc16ae454bc1a830ddc5c170e5ab8cb3f7dcf15ac269c03",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",

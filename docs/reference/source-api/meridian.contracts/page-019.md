@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DepthIntegrityEvent
+
+Qualified name: <code>Meridian.Contracts.Domain.Models.DepthIntegrityEvent</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Domain/Models/DepthIntegrityEvent.cs:10](../../../../src/Meridian.Contracts/Domain/Models/DepthIntegrityEvent.cs#L10).
+
+Integrity event specific to market depth streams.
+
+```csharp
+public sealed record DepthIntegrityEvent(DateTimeOffset Timestamp, string Symbol, [property : JsonPropertyName("integrityKind")] DepthIntegrityKind Kind, string Description, ushort Position, DepthOperation Operation, OrderBookSide Side, long SequenceNumber, string? StreamId = null, string? Venue = null) : MarketEventPayload;
+```
+
 ## GreeksSnapshot
 
 Qualified name: <code>Meridian.Contracts.Domain.Models.GreeksSnapshot</code>. Kind: `record`.
@@ -1058,13 +1070,3 @@ Enum declarations:
 | <code>Entity</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:16](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L16) |  |
 | <code>Account</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:17](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L17) |  |
 | <code>LedgerGroup</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:18](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L18) |  |
-
-## EnvironmentNodeRemapDto
-
-Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentNodeRemapDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:117](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L117).
-
-```csharp
-public sealed record EnvironmentNodeRemapDto(string RemovedNodeDefinitionId, string ReplacementNodeDefinitionId);
-```
