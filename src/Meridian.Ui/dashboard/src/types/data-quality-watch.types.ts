@@ -17,6 +17,8 @@
  * rather than guessed. `TimeSpan` values arrive as `"hh:mm:ss"` strings.
  */
 
+import type { ConfigurationChangeStatus } from "@/screens/settings-change-impact";
+
 /** `HealthState` ordinals. */
 export const QUALITY_HEALTH_STATE_LABELS: Readonly<Record<number, string>> = Object.freeze({
   0: "Healthy",
@@ -154,4 +156,93 @@ export interface QualityAnomaly {
   provider?: string | null;
   isAcknowledged: boolean;
   detectedAt: string;
+}
+
+// --- Cross-provider tolerance policy (/api/quality/cross-provider/*) ---
+
+export type CrossProviderVolumeMode = "Alert" | "Informational" | "Off";
+
+/** Unset fields inherit the policy defaults. */
+export interface CrossProviderToleranceOverride {
+  priceTolerancePercent?: number | null;
+  quoteTolerancePercent?: number | null;
+  volumeTolerancePercent?: number | null;
+  volumeMode?: CrossProviderVolumeMode | null;
+  backfillCloseTolerancePercent?: number | null;
+}
+
+export interface CrossProviderTolerancePolicy {
+  priceTolerancePercent: number;
+  quoteTolerancePercent: number;
+  volumeTolerancePercent: number;
+  volumeMode: CrossProviderVolumeMode;
+  /** null compares every bar. */
+  backfillBarsToCompare: number | null;
+  backfillCloseTolerancePercent: number;
+  assetClassOverrides?: Record<string, CrossProviderToleranceOverride> | null;
+}
+
+export interface CrossProviderToleranceBounds {
+  maxPriceTolerancePercent: number;
+  maxVolumeTolerancePercent: number;
+  maxBackfillBarsToCompare: number;
+  maxAssetClassOverrides: number;
+  maxPreviewDays: number;
+}
+
+export interface CrossProviderTolerancePolicyAudit {
+  id: string;
+  changedAt: string;
+  actor: string;
+  reason: string | null;
+  loosened: boolean;
+  before: CrossProviderTolerancePolicy;
+  after: CrossProviderTolerancePolicy;
+}
+
+export interface CrossProviderTolerancePolicyResponse {
+  policy: CrossProviderTolerancePolicy;
+  defaults: CrossProviderTolerancePolicy;
+  bounds: CrossProviderToleranceBounds;
+  audit: CrossProviderTolerancePolicyAudit[];
+  previewProviders: string[];
+  providerCallsPerPreview: number;
+}
+
+export interface CrossProviderTolerancePolicySaveResponse {
+  policy: CrossProviderTolerancePolicy;
+  audit: CrossProviderTolerancePolicyAudit;
+  changeImpact: ConfigurationChangeStatus;
+}
+
+export interface CrossProviderTolerancePreviewRequest {
+  symbol: string;
+  baselineProvider: string;
+  comparisonProvider: string;
+  days: number;
+  policy: CrossProviderTolerancePolicy;
+  assetClass: string | null;
+}
+
+export interface CrossProviderTolerancePreviewDay {
+  sessionDate: string;
+  baselineClose: number | null;
+  comparisonClose: number | null;
+  closeDifferencePercent: number | null;
+  volumeDifferencePercent: number | null;
+  flaggedBy: "Price" | "Volume";
+}
+
+export interface CrossProviderTolerancePreviewResponse {
+  symbol: string;
+  from: string;
+  to: string;
+  baselineProvider: string;
+  comparisonProvider: string;
+  flaggedDays: number;
+  flagged: CrossProviderTolerancePreviewDay[];
+  informationalDays: number;
+  missingSessions: number;
+  providerErrors: string[];
+  providerCallsUsed: number;
 }

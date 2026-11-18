@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useId, useState } from "react";
+import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useOnGlobalRefresh } from "@/lib/global-refresh";
 import { Input } from "@/components/ui/input";
@@ -74,9 +75,9 @@ export function SymbolMappingEditor({ api = symbolMappingApi, onChanged }: { api
       <fieldset disabled={!available} className="grid gap-3">
         <legend className="text-sm font-semibold">1. Correct aliases</legend>
         <label className="grid gap-1 text-sm" htmlFor={`${id}-existing`}>Existing mapping
-          <select id={`${id}-existing`} className="rounded-md border bg-background p-2" value={existing ? draft.canonicalSymbol : ""} onChange={event => selectMapping(event.currentTarget.value)}>
+          <Select id={`${id}-existing`} value={existing ? draft.canonicalSymbol : ""} onChange={event => selectMapping(event.currentTarget.value)}>
             <option value="">New mapping</option>{mappings.map(row => <option key={row.canonicalSymbol} value={row.canonicalSymbol}>{row.canonicalSymbol}</option>)}
-          </select>
+          </Select>
         </label>
         <label className="grid gap-1 text-sm" htmlFor={`${id}-canonical`}>Canonical symbol
           <Input id={`${id}-canonical`} required value={draft.canonicalSymbol} onChange={event => selectMapping(event.currentTarget.value.toUpperCase())} />
@@ -101,9 +102,9 @@ export function SymbolMappingEditor({ api = symbolMappingApi, onChanged }: { api
     <fieldset disabled={!available} className="grid gap-3 rounded-md border p-3">
       <legend className="text-sm font-semibold">2. Compare → Canonical rollout</legend>
       <label className="grid gap-1 text-sm" htmlFor={`${id}-provider`}>Rollout provider
-        <select id={`${id}-provider`} className="rounded-md border bg-background p-2" value={provider} onChange={event => { setProvider(event.currentTarget.value); resetReview(); }}>
+        <Select id={`${id}-provider`} value={provider} onChange={event => { setProvider(event.currentTarget.value); resetReview(); }}>
           {providerFields.map(([field, name]) => <option key={field} value={field.replace("Symbol", "")}>{name}</option>)}
-        </select>
+        </Select>
       </label>
       {selected ? <>
         <p className="text-sm">Active: <strong>{selected.activeMode ?? "Unavailable"}</strong> · Saved: <strong>{selected.savedMode}</strong>{selected.pendingRestart ? " · Pending host restart" : ""}</p>

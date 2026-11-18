@@ -431,3 +431,61 @@ decisions:
       - W12-ICFLOAT-001
       - W12-ICACCRUAL-001
       - W12-ICAGREE-001
+  - id: DEC-IC-FEE-001
+    title: Bring fixed intercompany management fees into scope under rule intercompany-fee-v1; register W12-ICFEE-001
+    status: accepted
+    decided_on: 2026-11-17
+    owner_lane: Accounting and Ledger
+    summary: >-
+      Recorded on the repository owner's instruction of 2026-11-17, which chose fixed management fees as the
+      first fee slice (ADR-029). Fixed management-fee terms now declare whether the amount covers each schedule
+      period or one year (per annum also declares a day count); without that declaration no fee is calculated.
+      Rule intercompany-fee-v1 prorates per-period fees by covered days and per-annum fees by the declared day
+      count, cuts at revision and period boundaries and rounds once. Direction comes from the agreement's declared
+      service-provider and recipient roles. The source side is a draft in ordinary review under the existing
+      ManagementFee profile, its counterpart arrives through the existing proposal pipeline, and nothing posts
+      automatically. Percentage fees, loan commitment or utilisation fees and scheduled runs are not brought into
+      scope. W12-ICFEE-001 is registered as in_progress with yellow health under active implementation. The
+      decision changes no existing row's rank, status, dependency or acceptance, weakens no review, posting or
+      authorization control, and grants no release authority.
+    related_roadmap_items:
+      - W12-ICFEE-001
+      - W12-ICACCRUAL-001
+      - W12-ICAGREE-001
+  - id: DEC-IC-COMPOUND-001
+    title: Bring periodic compounding of intercompany interest into scope under rule intercompany-accrual-v3; register W12-ICCOMPOUND-001
+    status: accepted
+    decided_on: 2026-11-17
+    owner_lane: Accounting and Ledger
+    summary: >-
+      Recorded on the repository owner's instruction of 2026-11-17, which chose compounding as the next slice of
+      the broader-terms proposal (ADR-030). A loan whose compounding frequency equals its schedule frequency now
+      accrues each period on posted principal plus the accrued interest posted on the loan-interest profile at the
+      period start, net of settlements and reversals. A window is refused unless posted, unreversed accruals cover
+      every earlier day, and one request stays inside one period, so nothing compounds on unposted interest. The
+      facts read are retained and re-checked before review or posting. No capitalisation journal is introduced.
+      Simple interest under intercompany-accrual-v1 is unchanged. Daily compounding and mismatched frequencies are
+      not brought into scope. W12-ICCOMPOUND-001 is registered as in_progress with yellow health under active
+      implementation. The decision changes no existing row's rank, status, dependency or acceptance, weakens no
+      review, posting or authorization control, and grants no release authority.
+    related_roadmap_items:
+      - W12-ICCOMPOUND-001
+      - W12-ICACCRUAL-001
+  - id: DEC-IC-SCHEDULE-001
+    title: Bring opt-in, reviewed intercompany accrual schedules into scope; register W12-ICSCHEDULE-001
+    status: accepted
+    decided_on: 2026-11-17
+    owner_lane: Accounting and Ledger
+    summary: >-
+      Recorded on the repository owner's instruction of 2026-11-17, which chose opt-in, reviewed schedules for
+      scheduled accrual runs (ADR-031). A schedule names one book, one approved loan-interest profile and its
+      principal profile; one person proposes it and another approves it, and it can be rejected or disabled with a
+      reason. A background runner drafts each completed period ending on or after approval through the ordinary
+      preview-then-draft path, never posts, never recomputes an existing draft, and reports refusals for retry.
+      Automatic accrual of unscheduled profiles and management-fee schedules are not brought into scope here.
+      W12-ICSCHEDULE-001 is registered as in_progress with yellow health under active implementation. The decision
+      changes no existing row's rank, status, dependency or acceptance, weakens no review, posting or authorization
+      control, and grants no release authority.
+    related_roadmap_items:
+      - W12-ICSCHEDULE-001
+      - W12-ICACCRUAL-001

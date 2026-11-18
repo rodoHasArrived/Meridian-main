@@ -2,11 +2,22 @@
 
 # `security-master-contracts` data objects - page 8 of 8
 
-Objects 561-594 of 594. References crossing pages remain available in the dependency manifest.
+Objects 561-597 of 597. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityVersionedTerms["SecurityVersionedTerms"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SplitCorporateActionTerms["SplitCorporateActionTerms"] {
+        +string EventType
+        +decimal? Ratio
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredCashFlowCalendarEvidence["StructuredCashFlowCalendarEvidence"] {
+        +string CalendarId
+        +string ContentHash
+        +string Purpose
+    }
     class Meridian_Contracts_SecurityMaster_StructuredCashFlowCoverageGap["StructuredCashFlowCoverageGap"] {
         +string CalendarId
         +DateOnly FirstDate
@@ -313,6 +324,7 @@ classDiagram
     Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms
     Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredFactorScheduleEntry
     Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEntry --> Meridian_Contracts_SecurityMaster_StructuredCashFlowInterestSegment
+    Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEvidence --> Meridian_Contracts_SecurityMaster_StructuredCashFlowCalendarEvidence
     Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEvidence --> Meridian_Contracts_SecurityMaster_StructuredCashFlowCoverageGap
     Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLeg
     Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredFactorScheduleEntry

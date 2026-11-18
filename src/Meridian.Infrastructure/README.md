@@ -244,6 +244,14 @@ tolerances. Profile edits require a host restart; loosening records a reason and
 before/after audit evidence through the shared provider settings endpoint. Null stale-event
 threshold and zero maximum latency disable their respective optional checks.
 
+`StreamingFailoverService.ApplyConfiguration` swaps edited rule thresholds and backup lists (limited
+to providers with a live client) and the health-check interval without a restart, keeping each
+rule's active provider; new rules and removal of a rule a runtime drives are reported as deferred.
+`SetProviderEnabled` excludes a provider from failover selection and recovery, and
+`MoveOffDisabledProviderAsync` hands a rule off a disabled active provider through the normal
+two-phase transition. `CrossProviderValidator` (backfill cross-validation, still off by default)
+uses the configured tolerance policy's bar count and close tolerance.
+
 Composite provider rotation retains the latest 1,024 quota observations across providers in
 process memory. The existing rate-limit history API exposes observed throttles and the next
 provider actually attempted, with known HTTP 429 status, request usage and reset time.

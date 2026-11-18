@@ -22,6 +22,8 @@
 .table-workbench .dense-data-table { min-width:max-content; border-collapse:separate; border-spacing:0; }
 .table-workbench .dense-data-table thead { z-index:3; background:hsl(var(--card)); }
 .table-workbench .dense-data-table th:first-child,.table-workbench .dense-data-table td:first-child { position:sticky; left:0; background:hsl(var(--card)); z-index:2; box-shadow:1px 0 hsl(var(--border)); }
+/* The sticky first column keeps the totals row's shade rather than the card background. */
+.table-workbench .dense-data-table .dense-data-table-footer td:first-child { background:var(--ws-surface-subtle); }
 .table-workbench .dense-data-table thead th:first-child { z-index:4; }
 .table-workbench .dense-data-table td { white-space:nowrap; font-family:var(--font-body,sans-serif); font-variant-numeric:tabular-nums; }
 .table-workbench .dense-data-table tbody .text-right .font-mono { font-family:var(--font-body,sans-serif); font-variant-numeric:tabular-nums; }

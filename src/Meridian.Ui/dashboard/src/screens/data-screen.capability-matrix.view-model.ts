@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { getProviderCapabilityMatrix } from "@/lib/api";
+import { formatRelativeTime } from "@/lib/format";
 import { describeApiError } from "@/lib/api-errors";
 import type {
   ProviderCapabilityMatrixResponse,
@@ -144,13 +145,10 @@ export interface CapabilityFreshnessSource {
   evidenceStale: boolean;
 }
 
-export function formatEvidenceAge(ageMs: number): string {
-  const hours = ageMs / 3_600_000;
-  if (hours < 1) return "under 1h ago";
-  if (hours < 48) return `${Math.floor(hours)}h ago`;
-  const days = hours / 24;
-  if (days < 60) return `${Math.floor(days)}d ago`;
-  return `${Math.floor(days / 30)}mo ago`;
+/** Evidence age through the shared age vocabulary: hours to 48h, days to 60d, then "since <date>". */
+export function formatEvidenceAge(ageMs: number, nowMs: number = Date.now()): string {
+  if (ageMs < 3_600_000) return "under 1h ago";
+  return formatRelativeTime(nowMs - ageMs, nowMs);
 }
 
 /**
@@ -167,7 +165,7 @@ export function buildCapabilityFreshnessIndex(
     const source = byId.get(providerId.trim().toLowerCase());
     const time = Date.parse(source?.latestEvidenceAt ?? "");
     if (!source || !Number.isFinite(time)) return { state: "no-evidence", label: "No evidence", ageText: null };
-    const ageText = formatEvidenceAge(Math.max(0, nowMs - time));
+    const ageText = formatEvidenceAge(Math.max(0, nowMs - time), nowMs);
     return source.evidenceStale ? { state: "stale", label: "Stale", ageText } : { state: "current", label: "Current", ageText };
   };
 }

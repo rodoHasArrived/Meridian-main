@@ -54,6 +54,10 @@ input, server capabilities, exact approved versions, evidence and review history
 agreement authority in the desktop client. Source-line responses verify agreement/book/date identity
 and retain exact amount strings. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
 
+`IntercompanyManagementFeeWorkspace` is the desktop state for fixed management fees over the client's fee
+preview and draft calls; the agreement workspace carries the fixed-fee basis. See
+[governed fixed management fees](../../docs/domain/intercompany-agreements.md#governed-fixed-management-fees).
+
 `IntercompanyRateFixingWorkspace` is the desktop state for reviewed fixings over the client's
 list, propose and decide calls; the agreement workspace carries the fixing lag and accrual slices
 name their pinned fixing. See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
@@ -61,6 +65,9 @@ name their pinned fixing. See [floating rates and reviewed fixings](../../docs/d
 `IntercompanyBalanceConfirmationWorkspace` is the desktop state for reciprocal balance confirmation
 over the client's exact-decimal confirmation reads and actions; a refused action keeps its request
 identity only for an identical retry. See [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
+
+The interest accrual workspace shows each slice's compounded interest for rule v3 previews. See
+[periodic compounding](../../docs/domain/intercompany-agreements.md#periodic-compounding).
 
 `IntercompanyCounterpartQueueWorkspace` is the desktop state for counterpart delivery records and
 booking breaks over the same `/api/ledger/intercompany/proposals` and `/breaks` routes as the
@@ -81,6 +88,16 @@ book or computation is refused. It never approves or posts. The book is chosen f
 `/api/ledger/intercompany-accounting-arrangements` read, and the principal choices are the Loan
 profiles of the same legal agreement. The lists only fill the selection; the server still
 authorizes every identifier, and a profile read for a book no longer chosen is ignored.
+
+`IntercompanyAccrualScheduleWorkspace` is the desktop state for opt-in, reviewed accrual schedules
+over `/api/ledger/intercompany/accrual-schedules*`, the routes the browser uses. Choosing a book
+lists its schedules and, for ledger managers, the LoanInterest profiles and same-agreement Loan
+principal profiles to propose one with a reason. A selected schedule is approved, rejected or
+disabled (reject and disable need a reason) against its exact version; due periods are previewed
+as of today's UTC date and an active schedule can be run now. Schedules only draft for ordinary
+review; nothing posts, and the server refuses approval by the proposer. A request identity is
+reused only for an identical retry, read-only operators get no mutation commands, and responses
+for another book, schedule, date or request are refused.
 
 `WorkstationOnboardingApiClient` and `OnboardingShadowWorkspace` bring shadow-mode onboarding
 (W11-SHADOW-001) to the desktop over the browser's onboarding routes. The panel covers:

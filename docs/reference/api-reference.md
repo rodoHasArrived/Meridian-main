@@ -941,7 +941,7 @@ This source reference records literal `MapGet`, `MapPost`, `MapPut`, `MapDelete`
 
 Handler parameters retain C# binding types, including injected services and infrastructure parameters; they are not all request-body fields. Body-read operations list explicitly decoded types. Response entries quote declared `.Produces*` metadata and observed `Results`/`TypedResults` factories, not an exhaustive response schema or status guarantee. A dash means the declaration supplies no extractable metadata; follow the source and detailed contracts above.
 
-**477 declarations** from **58 source files**.
+**480 declarations** from **58 source files**.
 
 
 ### HostAdapters
@@ -1501,9 +1501,11 @@ Source: [src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs](..
 | `/api/ledger/intercompany/proposals/{proposalId}/refresh` | POST | `async (Guid proposalId, RefreshIntercompanyProposalRequest request, HttpContext context) => …` | `Results.Unauthorized`; `Results.Json`; `Results.Conflict` | — | [L105](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L105) |
 | `/api/ledger/intercompany/accruals/preview` | POST | `async (IntercompanyAccrualRequestDto request, HttpContext context) => …` | `Results.Unauthorized`; `Results.Json` | — | [L128](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L128) |
 | `/api/ledger/intercompany/accruals/drafts` | POST | `async (CreateIntercompanyAccrualDraftRequest request, HttpContext context) => …` | `Results.Unauthorized`; `Results.Json`; `Results.Conflict` | — | [L150](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L150) |
-| `/api/ledger/intercompany/breaks` | GET | `async (Guid sourceBookId, DateOnly? asOf, HttpContext context) => …` | `Results.Json` | — | [L173](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L173) |
-| `/api/ledger/intercompany/proposals/{proposalId}/retry` | POST | `async (Guid proposalId, RetryIntercompanyProposalRequest request, HttpContext context) => …` | `Results.Unauthorized`; `Results.Json`; `Results.Conflict` | — | [L186](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L186) |
-| `/api/ledger/intercompany/proposals/{proposalId}/link` | POST | `async (Guid proposalId, LinkIntercompanyCounterpartRequest request, HttpContext context) => …` | `Results.Unauthorized`; `Results.Json`; `Results.Conflict` | — | [L209](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L209) |
+| `/api/ledger/intercompany/fees/preview` | POST | `async (IntercompanyFeeAccrualRequestDto request, HttpContext context) => …` | `Results.Unauthorized`; `Results.Json` | — | [L174](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L174) |
+| `/api/ledger/intercompany/fees/drafts` | POST | `async (CreateIntercompanyFeeAccrualDraftRequest request, HttpContext context) => …` | `Results.Unauthorized`; `Results.Json`; `Results.Conflict` | — | [L195](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L195) |
+| `/api/ledger/intercompany/breaks` | GET | `async (Guid sourceBookId, DateOnly? asOf, HttpContext context) => …` | `Results.Json` | — | [L218](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L218) |
+| `/api/ledger/intercompany/proposals/{proposalId}/retry` | POST | `async (Guid proposalId, RetryIntercompanyProposalRequest request, HttpContext context) => …` | `Results.Unauthorized`; `Results.Json`; `Results.Conflict` | — | [L231](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L231) |
+| `/api/ledger/intercompany/proposals/{proposalId}/link` | POST | `async (Guid proposalId, LinkIntercompanyCounterpartRequest request, HttpContext context) => …` | `Results.Unauthorized`; `Results.Json`; `Results.Conflict` | — | [L254](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L254) |
 
 ### LedgerEndpoints.CloseSnapshots
 
@@ -1597,7 +1599,8 @@ Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.PeriodComparison.cs](.
 
 | Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
 | --- | --- | --- | --- | --- | --- |
-| `/api/ledger/books/{ledgerBookId}/periods/{periodId}/comparison` | GET | `async (Guid ledgerBookId, Guid periodId, Guid? baselinePeriodId, DateTimeOffset? asOf, AccountingBasisKindDto? accountingBasis, HttpContext context) => …` | `Produces<PostedPeriodComparisonDto>(200)`; `Produces(400)`; `Produces(403)`; `Produces(404)`; `Produces(503)`; `Results.Problem`; `Results.BadRequest`; `Results.Json`; `Results.NotFound` | `WithName("GetPostedLedgerPeriodComparison")` | [L19](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.PeriodComparison.cs#L19) |
+| `/api/ledger/books/{ledgerBookId}/periods/{periodId}/comparison` | GET | `async (Guid ledgerBookId, Guid periodId, Guid? baselinePeriodId, DateTimeOffset? asOf, AccountingBasisKindDto? accountingBasis, PostedComparisonMeasureDto? measure, HttpContext context) => …` | `Produces<PostedPeriodComparisonDto>(200)`; `Produces(400)`; `Produces(403)`; `Produces(404)`; `Produces(503)`; `Results.Problem`; `Results.BadRequest`; `Results.Json`; `Results.NotFound` | `WithName("GetPostedLedgerPeriodComparison")` | [L19](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.PeriodComparison.cs#L19) |
+| `/api/ledger/books/{ledgerBookId}/execution-journal-entries` | GET | `async (Guid ledgerBookId, Guid? fillId, string? orderId, HttpContext context) => …` | `Produces<IReadOnlyList<LedgerJournalEntryDto>>(200)`; `Produces(400)`; `Produces(403)`; `Produces(503)`; `Results.BadRequest`; `Results.Problem`; `Results.Json` | `WithName("GetExecutionJournalLineage")` | [L71](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.PeriodComparison.cs#L71) |
 
 ### MoneyMarketFundEndpoints
 
@@ -1822,9 +1825,9 @@ Source: [src/Meridian/UiServer.cs](../../src/Meridian/UiServer.cs)
 
 | Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
 | --- | --- | --- | --- | --- | --- |
-| `/api/system/lifecycle` | GET | `(HttpContext context) => …` | `Results.Ok` | — | [L680](../../src/Meridian/UiServer.cs#L680) |
-| `/api/system/shutdown` | POST | `async (HttpContext context) => …`<br>Body reads: `DeserializeAsync` | `Results.Json` | — | [L714](../../src/Meridian/UiServer.cs#L714) |
-| `/api/system/shutdown/{operationId}` | GET | `(string operationId, HttpContext context) => …` | `Results.Ok` | — | [L768](../../src/Meridian/UiServer.cs#L768) |
-| `/api/system/shutdown/receipts/latest` | GET | `async (HttpContext context) => …` | `Results.Ok` | — | [L789](../../src/Meridian/UiServer.cs#L789) |
+| `/api/system/lifecycle` | GET | `(HttpContext context) => …` | `Results.Ok` | — | [L682](../../src/Meridian/UiServer.cs#L682) |
+| `/api/system/shutdown` | POST | `async (HttpContext context) => …`<br>Body reads: `DeserializeAsync` | `Results.Json` | — | [L716](../../src/Meridian/UiServer.cs#L716) |
+| `/api/system/shutdown/{operationId}` | GET | `(string operationId, HttpContext context) => …` | `Results.Ok` | — | [L770](../../src/Meridian/UiServer.cs#L770) |
+| `/api/system/shutdown/receipts/latest` | GET | `async (HttpContext context) => …` | `Results.Ok` | — | [L791](../../src/Meridian/UiServer.cs#L791) |
 
 <!-- END GENERATED HTTP DECLARATION REFERENCE -->

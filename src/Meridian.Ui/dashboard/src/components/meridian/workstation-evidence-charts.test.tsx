@@ -1,8 +1,8 @@
 import { screen } from "@testing-library/react";
 import { axe } from "jest-axe";
 import { renderWithRouter } from "@/test/render";
-import { buildBreakAgingRows, buildProviderFreshnessRows, chooseEvidenceAgeUnit, CloseTaskProgressChart, ReconciliationAgingChart } from "./workstation-evidence-charts";
-import type { ProviderConnectionRow, ReconciliationBreakQueueItem } from "@/types";
+import { buildBreakAgingRows, buildProviderFreshnessRows, chooseEvidenceAgeUnit, CloseChecklistProgressChart, CloseTaskProgressChart, ProviderFreshnessChart, ReconciliationAgingChart } from "./workstation-evidence-charts";
+import type { OperationsCloseChecklistTask, ProviderConnectionRow, ReconciliationBreakQueueItem } from "@/types";
 
 const now = Date.parse("2026-11-11T12:00:00Z");
 
@@ -61,5 +61,21 @@ describe("operational chart evidence", () => {
     expect(screen.getByText("No close plan tasks are loaded.")).toBeInTheDocument();
     expect(screen.queryByRole("img")).not.toBeInTheDocument();
     expect(screen.getByText(/Historical task snapshots are unavailable/)).toBeInTheDocument();
+  });
+
+  it("shows figures instead of a chart when there are fewer than three categories", async () => {
+    const tasks = [{ status: "Done" }] as OperationsCloseChecklistTask[];
+    const { container } = renderWithRouter(<CloseChecklistProgressChart tasks={tasks} />);
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
+    expect(screen.getByText("Done")).toBeInTheDocument();
+    expect(screen.getByText("1")).toBeInTheDocument();
+    expect((await axe(container)).violations).toEqual([]);
+  });
+
+  it("keeps a single provider's evidence age as a figure", () => {
+    const providers = [{ providerId: "alpaca", displayName: "Alpaca", lastSuccessfulAt: "2026-11-11T09:00:00Z" }] as ProviderConnectionRow[];
+    renderWithRouter(<ProviderFreshnessChart providers={providers} nowMs={now} />);
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
+    expect(screen.getByText("3h")).toBeInTheDocument();
   });
 });

@@ -143,6 +143,14 @@ describe("formatRelativeTime", () => {
     expect(formatRelativeTime(now, now)).toBe("0s ago");
   });
 
+  it("keeps hours to 48h, days to 60d, then names the date", () => {
+    expect(formatRelativeTime("2026-05-07T13:00:00.000Z", now)).toBe("47h ago");
+    expect(formatRelativeTime("2026-05-07T12:00:00.000Z", now)).toBe("2d ago");
+    expect(formatRelativeTime("2026-03-11T12:00:00.000Z", now)).toBe("59d ago");
+    expect(formatRelativeTime("2026-03-10T12:00:00.000Z", now)).toBe("since Mar 10, 2026");
+    expect(formatRelativeTime("2025-10-26T12:00:00.000Z", now)).toBe("since Oct 26, 2025");
+  });
+
   it("renders future instants with 'in'", () => {
     expect(formatRelativeTime("2026-05-09T14:00:00.000Z", now)).toBe("in 2h");
     expect(formatRelativeTime("2026-05-09T12:00:45.000Z", now)).toBe("in 45s");

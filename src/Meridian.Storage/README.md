@@ -76,6 +76,10 @@ bytes and refuses unresolved history. See [the operator procedure](../../docs/op
 and `FileIntercompanyBalanceConfirmationStore` retain every confirmation version append-only under
 an expected-version check. See [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
 
+`PostgresIntercompanyAccrualScheduleStore` (ledger migration `076`, rewrite and truncate refused) and
+`FileIntercompanyAccrualScheduleStore` retain accrual-schedule versions append-only and tenant-scoped. See
+[opt-in accrual schedules](../../docs/domain/intercompany-agreements.md#opt-in-accrual-schedules).
+
 Entity lifecycle history uses immutable tenant-bound timeline revisions and authority leases.
 Ledger migration 061 initializes existing books in `LegacyWarning` and stamps new books
 `Enforced` at insertion. Activation recomputes migration preflight while holding its authority
@@ -555,6 +559,8 @@ locks through commit. Missing or stale authority refuses the new posting. Exact 
 precedes this guard; omitting the optional fingerprint field preserves historical receipts.
 Position status matches `Active` using ordinal case-insensitive equality, consistent with candidate
 validation. Inactive or other statuses still refuse new acquisition/disposal postings without writes.
+An acquisition booked with a `Face` quantity basis is refused unless the locked security's catalog
+lot unit is `FaceValue` (`LotQuantityBasisRules`); a face-value class may still be booked by units.
 See [the posting contract](../../docs/reference/ledger-journal-store.md#acquisition-and-disposal-reference-authority).
 
 Atomic lot commands bind explicit direction to their immutable acquisition facts. Historical
@@ -1642,6 +1648,13 @@ or export consumers.
 `journal_entries.source_event_id` column, allowing a book/event proof chain to find its immutable
 journal without scanning unrelated metadata. No projection-event-to-journal link table, alternate
 schema, or new route is introduced.
+`LedgerJournalEntryQuery.FillId` and `.OrderId` find postings by the execution identifiers their
+metadata recorded: `fillId` exactly, and an order through the `source.orderId` tag or, for a GUID
+identifier, the `orderId` field. Migration `V_ledger_075` adds partial expression indexes on exactly
+those three metadata expressions (only postings that recorded the identifier are indexed), so the
+lookup does not scan unrelated metadata; callers still bound it by book (the execution-lineage route
+always does). The filter SQL and the index expressions must stay textually identical for the planner
+to use them.
 Approved typed posting commands stamp command, approval, source-event, Security Master, book
 position, projection model/run/event, and selected rule-pack/rule identities into normalized journal
 metadata while retaining typed evidence and line dimensions. Conflicting pre-existing command-owned

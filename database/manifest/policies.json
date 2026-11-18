@@ -2,8 +2,8 @@
   "counts": {
     "error": 0,
     "info": 0,
-    "total": 308,
-    "warning": 308
+    "total": 309,
+    "warning": 309
   },
   "failed": false,
   "findings": [
@@ -674,6 +674,16 @@
       },
       "message": "Business table ledger.intercompany_account_binding_revisions does not have a table comment.",
       "object": "ledger.intercompany_account_binding_revisions",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "intercompany_accrual_schedules"
+      },
+      "message": "Business table ledger.intercompany_accrual_schedules does not have a table comment.",
+      "object": "ledger.intercompany_accrual_schedules",
       "rule_id": "business-table-must-have-comment",
       "severity": "warning"
     },
@@ -3438,5 +3448,5 @@
       "severity": "warning"
     }
   ],
-  "fingerprint": "e8553441860d42b3103220f122250b1d8d5e9b040ba6e7117a43bf8d2851eb55"
+  "fingerprint": "87b1f01978d1694c9d09d5401cf4f3e91056107aa04b46746a54172c0bb7132a"
 }

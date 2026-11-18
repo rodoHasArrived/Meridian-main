@@ -15,6 +15,7 @@ import {
 import {
   appendOperatingScopeToRoute,
   buildOperatingScopeFromSearch,
+  carryOperatingScopeIntoSearch,
   describeOperatingScopeForRoute,
   operatingScopeDimensionsForRoute,
   readOperatingScopeFromSearch,
@@ -396,7 +397,8 @@ function AppShell({
   const previousRouteKeyRef = useRef<string | null>(null);
   const scopeReplacementLocationRef = useRef<string | null>(null);
   const navigate = useNavigate();
-  const { hash, pathname, search, key: locationKey } = useLocation();
+  const location = useLocation();
+  const { hash, pathname, search, key: locationKey } = location;
   const activeWorkspace = resolveWorkspaceKeyFromPath(pathname);
   const routeOperatingScope = useMemo(() => readOperatingScopeFromSearch(search), [search]);
   const operatingScopeInput = useMemo(
@@ -592,6 +594,23 @@ function AppShell({
     writeStoredOperatingScope(nextScope);
     setStoredOperatingScope(nextScope);
   }, [locationKey, routeOperatingScope, storedOperatingScope]);
+
+  // Scope survives every in-app link (Phase 1, P2 step 1). A plain catalog link drops the query
+  // string; screens that read the URL then lost their fund filter while the bar still showed it.
+  // Routes render against the scoped location on the first render, so no screen fetches unscoped,
+  // and the address bar is brought in line so copied links carry the same scope.
+  const scopedSearch = useMemo(
+    () => carryOperatingScopeIntoSearch(pathname, search, storedOperatingScope),
+    [pathname, search, storedOperatingScope]
+  );
+  const scopedLocation = useMemo(
+    () => (scopedSearch === search ? location : { ...location, search: scopedSearch }),
+    [location, scopedSearch, search]
+  );
+  useEffect(() => {
+    if (scopedSearch === search) return;
+    navigate({ pathname, search: scopedSearch, hash }, { replace: true, state: location.state });
+  }, [hash, location.state, navigate, pathname, scopedSearch, search]);
 
   // Replace the operating scope from the picker: persist it and reflect the
   // applicable dimensions into the current route so URL-reading screens filter,
@@ -817,8 +836,8 @@ function AppShell({
   // Sidebar badges are per-workspace views of the one attention list Today's queue shows.
   const workspaceAttention = useMemo(() => countAttention(shell.attention.items), [shell.attention.items]);
   const breadcrumbItems = useMemo(
-    () => buildWorkspaceBreadcrumbItems(pathname, shell.activeWorkspace, navigate),
-    [pathname, shell.activeWorkspace, navigate]
+    () => buildWorkspaceBreadcrumbItems(pathname, shell.activeWorkspace, navigate, search),
+    [pathname, shell.activeWorkspace, navigate, search]
   );
   // Recent and pinned pages for the palette (UX Phase D): the page's own name and its query, so
   // reopening one restores its scope and filters.
@@ -854,7 +873,7 @@ function AppShell({
     search,
     hash,
     workspaceLabel: shell.activeWorkspace.label,
-    routeLabel: resolveWorkstationRouteBreadcrumbLabel(pathname, shell.activeWorkspace)
+    routeLabel: resolveWorkstationRouteBreadcrumbLabel(pathname, shell.activeWorkspace, search)
   }), [hash, pathname, search, shell.activeWorkspace]);
   const dataRouteElement = (
     <DataScreen
@@ -1057,7 +1076,7 @@ function AppShell({
             {shell.canRenderRoutes ? (
               <RouteErrorBoundary routeKey={routeErrorContext.routeKey} context={routeErrorContext}>
                 <Suspense fallback={<WorkspaceRouteFallback title={`Loading ${shell.activeWorkspace.label}`} />}>
-                  <Routes>
+                  <Routes location={scopedLocation}>
                   <Route path="/" element={(
                     <DailyControlTowerScreen
                       viewModel={shell.workflowContinuity}
@@ -1325,7 +1344,8 @@ function focusRouteTargetWhenReady(
 function buildWorkspaceBreadcrumbItems(
   pathname: string,
   workspace: WorkspaceSummary,
-  navigate: ReturnType<typeof useNavigate>
+  navigate: ReturnType<typeof useNavigate>,
+  search = ""
 ): BreadcrumbItem[] {
   // The masthead already says "Meridian", so the trail starts at the workspace and ends in the
   // page name, which the header renders as the page heading.
@@ -1334,7 +1354,7 @@ function buildWorkspaceBreadcrumbItems(
     return [{ label: "Today", current: true }];
   }
 
-  const routeLabel = resolveWorkstationRouteBreadcrumbLabel(pathname, workspace);
+  const routeLabel = resolveWorkstationRouteBreadcrumbLabel(pathname, workspace, search);
   const workspaceIsCurrent = routeLabel === workspace.label;
 
   return [

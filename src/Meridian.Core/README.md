@@ -27,6 +27,10 @@ preset alone does not activate it.
 incomplete responses and throttling for explicit provider lookups. A successful empty search is
 represented by its result rather than a failure category.
 `AppConfig.ProviderQuotas` contains restart-required account quota declarations, without secrets.
+`AppConfig.DataQuality.CrossProvider` (`CrossProviderTolerancePolicy`) holds bounded cross-provider
+tolerances (price/quote/close 0-5%, volume 0-50%, volume `Alert`/`Informational`/`Off`, backfill bars
+to compare, per-asset-class overrides) plus before/after audit; defaults reproduce the historical
+hard-coded thresholds. `FailoverRuleReferences` rejects failover rules naming unconfigured source IDs.
 Twelve Data separates per-minute/daily credits, explicit fundamentals entitlement and explicit
 `NoDailyLimit`; Alpha Vantage declares per-minute/daily request capacity and `NoDailyLimit`.
 The explicit boolean survives configuration and desktop DTO round trips; an omitted nullable cap

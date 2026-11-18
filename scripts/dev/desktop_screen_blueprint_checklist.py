@@ -13,7 +13,7 @@ from typing import Any
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_CHECKLIST_PATH = REPO_ROOT / "docs" / "plans" / "desktop-workstation-screen-blueprint.checklist.json"
+DEFAULT_CHECKLIST_PATH = REPO_ROOT / "docs" / "engineering" / "plans" / "desktop-workstation-screen-blueprint.checklist.json"
 DEFAULT_WORKFLOWS_PATH = REPO_ROOT / "scripts" / "dev" / "desktop-workflows.json"
 VALID_STATUSES = {"planned", "partial", "implemented", "blocked", "deferred"}
 VALID_ROOT_WORKSPACES = {"Trading", "Portfolio", "Accounting", "Reporting", "Strategy", "Data", "Settings"}

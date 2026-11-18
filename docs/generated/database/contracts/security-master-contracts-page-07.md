@@ -2,11 +2,31 @@
 
 # `security-master-contracts` data objects - page 7 of 8
 
-Objects 481-560 of 594. References crossing pages remain available in the dependency manifest.
+Objects 481-560 of 597. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityMasterProfilePromotionReportDto["SecurityMasterProfilePromotionReportDto"] {
+        +int AlreadyPromotedCount
+        +int BlockedCount
+        +int CandidateCount
+        +IReadOnlyList~SecurityMasterProfilePromotionCandidateDto~ Candidates
+        +DateTimeOffset GeneratedAt
+        +string ProfileId
+        +int ReadyCount
+        +int SecuritiesScanned
+        +string TargetAssetClass
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityMasterProvenanceReader["SecurityMasterProvenanceReader"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityMasterQualityReportDto["SecurityMasterQualityReportDto"] {
+        +DateTimeOffset RunAt
+        +int SecuritiesScanned
+        +int? UntaggedTermsPayloadCount
+        +int ViolationCount
+        +IReadOnlyList~DataQualityRuleViolationDto~ Violations
+    }
     class Meridian_Contracts_SecurityMaster_SecurityMasterReportingReference["SecurityMasterReportingReference"] {
         +DateTimeOffset AsOfUtc
         +SecurityDetailDto Detail
@@ -389,17 +409,6 @@ classDiagram
         +bool ProfileGoverned
         +int Through
         +bool WriteMode
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityVersionedTerms["SecurityVersionedTerms"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SplitCorporateActionTerms["SplitCorporateActionTerms"] {
-        +string EventType
-        +decimal? Ratio
-    }
-    class Meridian_Contracts_SecurityMaster_StructuredCashFlowCalendarEvidence["StructuredCashFlowCalendarEvidence"] {
-        +string CalendarId
-        +string ContentHash
-        +string Purpose
     }
     Meridian_Contracts_SecurityMaster_SecurityMasterReportingReference --> Meridian_Contracts_SecurityMaster_SecurityMasterReportingResolutionMode
     Meridian_Contracts_SecurityMaster_SecurityOverrideAuditEntryDto --> Meridian_Contracts_SecurityMaster_SecurityOverrideApprovalStatusDto

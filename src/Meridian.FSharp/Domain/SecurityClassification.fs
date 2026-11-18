@@ -29,6 +29,14 @@ type AssetFamily =
     /// family for the `StructuredCredit` asset class (ADR-022).
     | SecuritizedCredit
     | ListedDerivative
+    /// Bilateral or centrally cleared over-the-counter derivatives — swaps, CFDs, FX forwards,
+    /// NDFs, CDS, swaptions and caps/floors. Distinct from <see cref="ListedDerivative"/>, which
+    /// is reserved for exchange-traded contracts.
+    | OtcDerivative
+    /// Spot foreign-exchange (currency) positions.
+    | ForeignExchange
+    /// Pooled investment vehicles other than money-market funds (mutual funds, ETFs, UCITS).
+    | PooledFund
     | PrivateLoan
     | OtherFamily of string
 
@@ -111,6 +119,9 @@ module SecurityClassification =
         | AssetFamily.StructuredCash -> "StructuredCash"
         | AssetFamily.SecuritizedCredit -> "SecuritizedCredit"
         | AssetFamily.ListedDerivative -> "ListedDerivative"
+        | AssetFamily.OtcDerivative -> "OtcDerivative"
+        | AssetFamily.ForeignExchange -> "ForeignExchange"
+        | AssetFamily.PooledFund -> "PooledFund"
         | AssetFamily.PrivateLoan -> "PrivateLoan"
         | AssetFamily.OtherFamily value -> value
 

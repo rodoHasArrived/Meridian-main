@@ -6,11 +6,77 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementMatchKind
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementMatchKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1043](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1043).
+
+```csharp
+public enum StatementMatchKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Position</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1045](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1045) |  |
+| <code>Cash</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1046](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1046) |  |
+| <code>Transaction</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1047](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1047) |  |
+
+## StatementMatchResult
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementMatchResult</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:995](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L995).
+
+```csharp
+public sealed record StatementMatchResult(StatementMatchKind Kind, StatementMatchTier MatchTier, decimal Confidence, IReadOnlyList<string> RuleIds, string? BrokerEvidenceReference, string? InternalEvidenceReference, StatementMatchVariance Variance, StatementMatchTolerance Tolerance, string Explanation)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt;? BrokerEvidenceReferences { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1010](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1010) | Every broker-side member of a many-to-one split group. Null for pair and unmatched results, whose only broker member is BrokerEvidenceReference. |
+| <code>public IReadOnlyList&lt;string&gt;? InternalEvidenceReferences { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1016](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1016) | Every internal-side member of a one-to-many split group. Null for pair and unmatched results, whose only internal member is InternalEvidenceReference. |
+| <code>public IReadOnlyList&lt;string&gt; AllBrokerEvidenceReferences =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1019](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1019) | All broker-side evidence members, whether the result is a pair or a split group. |
+| <code>public IReadOnlyList&lt;string&gt; AllInternalEvidenceReferences =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1023](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1023) | All internal-side evidence members, whether the result is a pair or a split group. |
+
+## StatementMatchResultArtifact
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementMatchResultArtifact</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:243](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L243).
+
+```csharp
+public sealed record StatementMatchResultArtifact(string RunId, string ImportId, IReadOnlyList<ReconciliationMatchLink> Matches, IReadOnlyList<StatementBreakRecord> Breaks, IReadOnlyList<StatementCaseLink> CaseLinks);
+```
+
+## StatementMatchTier
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementMatchTier</code>. Kind: `enum`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1050](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1050).
+
+```csharp
+public enum StatementMatchTier
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Exact</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1052](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1052) |  |
+| <code>Tolerance</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1053](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1053) |  |
+| <code>Candidate</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1054](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1054) |  |
+| <code>Unmatched</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1055](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1055) |  |
+
 ## StatementMatchTolerance
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementMatchTolerance</code>. Kind: `record`.
 
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1031](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1031).
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1039](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1039).
 
 ```csharp
 public sealed record StatementMatchTolerance(decimal? Quantity = null, decimal? Amount = null);
@@ -20,7 +86,7 @@ public sealed record StatementMatchTolerance(decimal? Quantity = null, decimal? 
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementMatchVariance</code>. Kind: `record`.
 
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1019](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1019).
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1027](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1027).
 
 ```csharp
 public sealed record StatementMatchVariance(decimal? Quantity = null, decimal? MarketValue = null, decimal? Amount = null)
@@ -30,7 +96,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal LargestAbsoluteAmount =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1024](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1024) |  |
+| <code>public decimal LargestAbsoluteAmount =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:1032](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L1032) |  |
 
 ## StatementNormalizedEntities
 

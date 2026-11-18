@@ -15,6 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { StatusBanner } from "@/components/ui/status-banner";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { cn } from "@/lib/utils";
+import { CrossProviderTolerancePanel } from "@/screens/data-quality-watch.cross-provider-policy";
 import {
   getHighLatencyQualitySymbols,
   getLowCompletenessQualitySymbols,
@@ -247,6 +248,8 @@ export function DataQualityWatch() {
             caption={`The ${UNACKNOWLEDGED_ANOMALY_COUNT} most recent anomalies awaiting acknowledgement.`}
           />
         </Section>
+
+        <CrossProviderTolerancePanel />
       </CardContent>
     </Card>
   );
@@ -255,7 +258,7 @@ export function DataQualityWatch() {
 function Stat({ label, value, tone }: { label: string; value: string; tone?: QualityTone }) {
   return (
     <div className="flex min-w-0 items-baseline gap-2">
-      <dt className={cn("whitespace-nowrap text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.08em]")}>{label}</dt>
+      <dt className={cn("whitespace-nowrap text-muted-foreground", usesTrackedCaps(label) && "type-label--caps")}>{label}</dt>
       <dd className={cn("whitespace-nowrap font-mono text-sm font-semibold", toneClass(tone ?? "default"))}>{value}</dd>
     </div>
   );

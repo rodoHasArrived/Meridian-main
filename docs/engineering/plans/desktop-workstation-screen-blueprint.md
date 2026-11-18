@@ -5,7 +5,7 @@
 **Reviewed:** 2026-10-15
 
 This reference retains the twenty screen scopes consumed by the
-[desktop checklist](../../plans/desktop-workstation-screen-blueprint.checklist.json) and
+[desktop checklist](desktop-workstation-screen-blueprint.checklist.json) and
 [desktop workflow catalog](../../../scripts/dev/desktop-workflows.json). The original design plan
 is [historical source material](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/desktop-workstation-screen-blueprint.md).
 Its archive redirect cannot supply the headings required by the active checklist validator.

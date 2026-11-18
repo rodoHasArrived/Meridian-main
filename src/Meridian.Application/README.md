@@ -20,11 +20,19 @@ record external legal review while ordinary independent review remains available
 revisions retain the same separate audit facts. See
 [terms and review boundaries](../../docs/domain/intercompany-agreements.md).
 
+`IntercompanyFeeAccrualPreviewService` is the pure calculator for fixed management fees under rule
+`intercompany-fee-v1`: per-period fees prorate by covered days, per-annum fees by the declared day count.
+See [governed fixed management fees](../../docs/domain/intercompany-agreements.md#governed-fixed-management-fees).
+
 `IntercompanyAccrualPreviewService` computes floating slices under rule `intercompany-accrual-v2` from
 the approved fixing of each period plus the spread, and refuses a window with a missing fixing.
 `IntercompanyRateFixingRules` and `IntercompanyRateFixingService` own maker-checker fixing history;
 `IntercompanyEntityServiceRegistration` composes its PostgreSQL or file store. See
 [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
+
+`IntercompanyAccrualPreviewService` compounds at each schedule period start on posted accrued interest under
+rule `intercompany-accrual-v3`, refusing uncovered earlier days and multi-period windows. See
+[periodic compounding](../../docs/domain/intercompany-agreements.md#periodic-compounding).
 
 Structured decimal normalization preserves representable declarations when canonical formatting
 uses an exponent. Retrying an externally reviewed lifecycle append repairs an interrupted local
@@ -37,6 +45,16 @@ The current runtime cannot rebuild providers in process, so pending provider rec
 `RequiresRestart=true`; clients must not imply that a connection retry applies new provider options.
 Later live saves retain outstanding restart/reconnect changes; reverting a field to its host baseline
 clears that field's pending state. The journal stores value hashes rather than configuration values.
+After a durable save, `ConfigStore` offers the changed paths to `IConfigurationRuntimeApplier`s attached
+to that file (`ConfigurationRuntimeAppliers`, process-wide because desktop mode hosts the UI server and
+collector in separate containers). Applied paths stop being pending; deferred paths stay
+`RestartHost` with a reason in `ConfigurationChangeStatus.LastApply`; applier failures never fail
+the save. `ProviderConfigReconciler` (attached by `CollectorModeRunner` when streaming failover runs)
+applies failover rule thresholds, backup order among providers with a live client, the health-check
+interval and source enable/disable live, and reports settings the runtime does not read as
+`NoRuntimeEffect`. `CrossProviderPolicyApplier` applies `DataQuality.CrossProvider` tolerances to the
+running `CrossProviderComparisonService`. The collector also publishes its coordinator to
+`StreamingFailoverRegistry.Process` and honours `Sources[*].Enabled = false` at startup.
 `SaveAsync` now also refuses to overwrite a malformed existing authoritative document.
 
 Provider routing rejects disabled connections and policy-gated fallbacks consistently across direct
@@ -120,6 +138,9 @@ its specialized authority instead of reacquiring the same fences. See
 `IntercompanyEntityServiceRegistration` also composes the advisory `IntercompanyBalanceConfirmationService` over a
 PostgreSQL store (ledger migration `073`) when a ledger database is configured, otherwise an atomic
 file store. See [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
+
+`IntercompanyEntityServiceRegistration` also composes the accrual-schedule store: PostgreSQL (ledger
+migration `074`) with a ledger database, otherwise an atomic file store. See [opt-in accrual schedules](../../docs/domain/intercompany-agreements.md#opt-in-accrual-schedules).
 
 `DirectLendingJournalLines.ForEvent` owns the loan journal templates consumed by both
 `LoanAccountingProjector` and `DirectLendingOutboxDispatcher`. Their trading cash and loan-specific
@@ -468,6 +489,15 @@ StructuredCredit proposal, and returns ready proposals (the exact stamped terms 
 path would persist) ahead of blocked ones (the terms carried over plus the blockers). Records whose
 stored terms cannot be mapped are counted as unreadable and logged, never guessed. The service
 writes nothing; applying a proposal is a governed amendment.
+
+`SecurityMasterClassificationDriftReportService` lists active securities whose latest retained
+event recorded an asset class or family that the current F# `AssetClassRegistry` taxonomy now derives
+differently, grouped by class and stored labels (`POST /api/security-master/classification-drift/report`,
+`AdminMaintenance`). Classification is derived on read, so current projections already carry the
+current labels; retained events are append-only and keep theirs. The report is the evidence of a
+taxonomy revision and writes nothing. `SecurityClassificationTaxonomy` holds the comparison; the
+workstation change history also uses it to label such a change "Taxonomy revision" rather than
+"Classification".
 
 `SecurityMasterProfilePromotionService` builds the CustomAsset promotion report for one
 reclassifying profile. For each active `CustomAsset` pinned to it, it runs the main checks an

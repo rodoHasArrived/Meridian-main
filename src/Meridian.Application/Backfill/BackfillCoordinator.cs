@@ -437,7 +437,8 @@ public sealed class BackfillCoordinator : IDisposable
                 enableCrossValidation: false,
                 log: _log,
                 progressTracker: _progressTracker,
-                validationProfiles: backfillCfg?.ValidationProfiles
+                validationProfiles: backfillCfg?.ValidationProfiles,
+                crossValidationPolicy: () => CrossProviderTolerancePolicy.FromConfig(_store.Load())
             );
 
             // Combine composite (for fallback routing) with individual providers (for direct selection)

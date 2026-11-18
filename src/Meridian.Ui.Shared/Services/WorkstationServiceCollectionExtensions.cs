@@ -1262,6 +1262,19 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IIntercompanyAccrualPreviewService>(sp =>
             sp.GetService<Meridian.Contracts.Calendars.IBusinessDayCalendarSource>() is { } calendars
                 ? new Meridian.Application.FundStructure.IntercompanyAccrualPreviewService(calendars) : null!);
+        services.TryAddSingleton<IIntercompanyFeeAccrualPreviewService>(sp =>
+            sp.GetService<Meridian.Contracts.Calendars.IBusinessDayCalendarSource>() is { } calendars
+                ? new Meridian.Application.FundStructure.IntercompanyFeeAccrualPreviewService(calendars) : null!);
+        services.TryAddSingleton<IntercompanyFeeAccrualDraftService>(sp =>
+            sp.GetService<IIntercompanyProposalStore>() is not null &&
+            sp.GetService<ILedgerJournalStore>() is { } journals &&
+            sp.GetService<IIntercompanyAccountBindingStore>() is { } bindings &&
+            sp.GetService<ManualJournalEntryWorkbenchService>() is { } workbench &&
+            sp.GetService<IIntercompanyFeeAccrualPreviewService>() is { } calculator
+                ? new IntercompanyFeeAccrualDraftService(sp.GetRequiredService<IntercompanyAccountingArrangementService>(),
+                    journals, bindings, sp.GetRequiredService<IAccountingConfigurationService>(),
+                    sp.GetRequiredService<IManualJournalEntryDraftStore>(), workbench, calculator,
+                    sp.GetService<IConsolidationFxAuthority>(), sp.GetRequiredService<TimeProvider>()) : null!);
         // Accrual drafting needs the same durable authorities as counterpart delivery; without them it is unavailable.
         services.TryAddSingleton<IntercompanyAccrualDraftService>(sp =>
             sp.GetService<IIntercompanyProposalStore>() is not null &&
@@ -1274,6 +1287,15 @@ public static class WorkstationServiceCollectionExtensions
                     sp.GetRequiredService<IManualJournalEntryDraftStore>(), workbench, calculator,
                     sp.GetService<IConsolidationFxAuthority>(), sp.GetRequiredService<TimeProvider>(),
                     sp.GetService<Meridian.Application.FundStructure.IntercompanyRateFixingService>()) : null!);
+        // Opt-in accrual schedules draft through the same interest drafting service, so they exist only beside it.
+        services.TryAddSingleton<IntercompanyAccrualScheduleService>(sp =>
+            sp.GetService<IIntercompanyAccrualScheduleStore>() is { } schedules &&
+            sp.GetService<IntercompanyAccrualDraftService>() is { } drafter &&
+            sp.GetService<Meridian.Contracts.Calendars.IBusinessDayCalendarSource>() is { } scheduleCalendars &&
+            sp.GetService<ILedgerJournalStore>() is { } scheduleJournals
+                ? new IntercompanyAccrualScheduleService(schedules, drafter, sp.GetRequiredService<IntercompanyAccountingArrangementService>(),
+                    scheduleCalendars, scheduleJournals, sp.GetRequiredService<IManualJournalEntryDraftStore>(), sp.GetRequiredService<TimeProvider>()) : null!);
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, IntercompanyAccrualScheduleRunner>());
         if (services.Any(item => item.ServiceType == typeof(IIntercompanyProposalStore)
             && item.ImplementationType == typeof(PostgresIntercompanyProposalStore)))
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, IntercompanyProposalHostedService>());
@@ -1368,6 +1390,16 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<Meridian.Application.SecurityMaster.ISecurityMasterAmortizationLedgerBridge>(),
                 sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterCashFlowService>(),
                 sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>())));
+        // Governed bond coupon income: prepares spine candidates for review; never approves or posts.
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IRecurringJournalCalculation, BondCouponIncomeCalculation>(sp =>
+            new BondCouponIncomeCalculation(
+                sp.GetService<Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionService>(),
+                sp.GetService<Meridian.FinancialOperations.Ledger.IAssetAccountingEventSpineService>(),
+                sp.GetService<Meridian.Storage.FixedIncome.BondWorkspaceSnapshotStore>(),
+                sp.GetService<Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionStore>(),
+                sp.GetService<Meridian.Contracts.Accounting.Lots.IBondIncomeService>(),
+                sp.GetService<Meridian.FinancialOperations.Ledger.IBondIncomePreparationService>(),
+                sp.GetService<ILogger<BondCouponIncomeCalculation>>())));
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IRecurringJournalCalculation, FxRevaluationCalculation>(sp =>
             new FxRevaluationCalculation(
                 sp.GetRequiredService<IRecurringJournalCalculationInputs>(),

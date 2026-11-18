@@ -2,6 +2,7 @@ import { TimeText } from "@/components/ui/time-text";
 import { EntityLink } from "@/components/meridian/entity-inspector";
 import { GeneralLedgerExportPanel } from "./reporting-screen.general-ledger-export";
 import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
+import { useScreenPaletteActions } from "@/components/meridian/command-palette.actions";
 import { FileText, Landmark, Network, PencilLine, XCircle } from "lucide-react";
 import { NewCustomReportBar } from "@/screens/reporting-screen.new-custom-report";
 import { useLocation } from "react-router-dom";
@@ -491,6 +492,16 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
       });
     }
   }
+
+  useScreenPaletteActions("reporting", [{
+    id: "reporting.refresh-live-portfolio-views",
+    verbLabel: "Refresh live portfolio views",
+    description: "Reloads the live portfolio views used by reporting.",
+    keywords: ["reporting", "refresh", "portfolio"],
+    disabled: !onRefreshLivePortfolioViews,
+    disabledReason: onRefreshLivePortfolioViews ? null : "Live portfolio refresh is not available here.",
+    run: () => handleRefreshLivePortfolioViews("manual")
+  }]);
 
   async function handleRefreshLivePortfolioViews(trigger: "manual" | "auto" = "manual") {
     if (!onRefreshLivePortfolioViews || livePortfolioRefreshInFlight.current) {

@@ -3,6 +3,10 @@ import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { Combobox } from "@/components/ui/combobox";
+import { narrowInlineAccountOptions } from "@/lib/operating-scope/fund-scope-narrowing";
+import { useFundAccountScopeSelection } from "@/lib/operating-scope/scope-picker-context";
+import { UNAVAILABLE_SCOPE_STRUCTURE } from "@/lib/operating-scope/structure-options";
 import { listIntegrationBooks, listIntegrationPeriods } from "@/lib/api/accounting-integration.api";
 import type { LedgerBook } from "@/types";
 import type { AccountingIntegrationScope, AccountingPeriodOption } from "@/types/accounting-integration";
@@ -31,6 +35,7 @@ export function IntegrationScopePicker({ onSelect, accountRequired = true }: {
   const [loadVersion, setLoadVersion] = useState(0);
   const selectedBook = books.find(book => book.ledgerBookId === bookId);
   const selectedPeriod = periods.find(period => period.periodId === periodId && period.ledgerBookId === bookId);
+  const accountOptions = useScopedFundAccountOptions(accountId);
 
   useEffect(() => {
     setBookId(requestedBook); setPeriodId(requestedPeriod); setAccountId(requestedAccount);
@@ -80,13 +85,41 @@ export function IntegrationScopePicker({ onSelect, accountRequired = true }: {
           {periods.map(period => <option key={period.periodId} value={period.periodId}>{period.label} · {period.status}</option>)}
         </Select>
       </label>
-      {accountRequired ? <label htmlFor={`${uid}-account`} className="space-y-1 text-xs">Financial account ID
+      {accountRequired && accountOptions.options.length > 0 ? <div className="space-y-1 text-xs">
+        <Combobox id={`${uid}-account`} label="Financial account" aria-describedby={`${uid}-account-help`}
+          options={accountOptions.options} value={accountId} placeholder="Choose a fund account"
+          emptyText="No fund account in this scope matches." onChange={value => setAccountId(value.trim())} />
+        <span id={`${uid}-account-help`} className="text-muted-foreground">{accountOptions.help ?? "Accounts in the current operating scope. Ownership is verified by the server."}</span>
+      </div> : null}
+      {accountRequired && accountOptions.options.length === 0 ? <label htmlFor={`${uid}-account`} className="space-y-1 text-xs">Financial account ID
         <Input id={`${uid}-account`} aria-label="Financial account ID" value={accountId} autoComplete="off" spellCheck={false}
           onChange={event => setAccountId(event.target.value.trim())} aria-describedby={`${uid}-account-help`} />
-        <span id={`${uid}-account-help`} className="text-muted-foreground">Exact account UUID; ownership is verified by the server.</span>
+        <span id={`${uid}-account-help`} className="text-muted-foreground">The fund account list is not available here, so enter the exact account UUID. Ownership is verified by the server.</span>
       </label> : null}
     </div>
     {error ? <p role="alert" className="text-sm text-danger">{error}</p> : null}
     {loadVersion > 0 && !busy && !error && books.length === 0 ? <p className="text-sm text-muted-foreground">No retained ledger books are available in this scope.</p> : null}
   </div>;
+}
+
+/**
+ * Fund accounts the operator can choose for the three-way comparison: the shell's known accounts,
+ * narrowed by the chosen entity and fund, keeping only UUIDs (the endpoint takes a fund-account GUID).
+ * Empty where no shell is mounted or no account is known; the picker then falls back to typed entry.
+ */
+function useScopedFundAccountOptions(currentAccountId: string): { options: { value: string; label: string }[]; help: string | null } {
+  const selection = useFundAccountScopeSelection();
+  if (!selection) return { options: [], help: null };
+  const narrowing = narrowInlineAccountOptions(
+    selection.options,
+    selection.structure ?? UNAVAILABLE_SCOPE_STRUCTURE,
+    { entityId: selection.scope?.entityId, fundId: selection.scope?.fundId }
+  );
+  const options = narrowing.options
+    .filter(option => isGuid(option.id))
+    .map(option => ({ value: option.id, label: option.label && option.label !== option.id ? `${option.label} · ${option.id}` : option.id }));
+  if (options.length > 0 && isGuid(currentAccountId) && !options.some(option => option.value === currentAccountId)) {
+    options.unshift({ value: currentAccountId, label: `${currentAccountId} (from the link)` });
+  }
+  return { options, help: narrowing.help ?? null };
 }

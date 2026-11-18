@@ -6,6 +6,43 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountingBasisProjectionService
+
+Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingBasisProjectionService</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:365](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L365).
+
+Builds accounting-basis projections using the resolved accounting policy.
+
+```csharp
+public sealed class AccountingBasisProjectionService(IAccountingPolicyService accountingPolicyService) : IAccountingBasisProjectionService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;AccountingBasisProjectionResult&gt; ProjectAsync(AccountingBasisProjectionRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:370](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L370) |  |
+
+## AccountingBasisProjectionSetService
+
+Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingBasisProjectionSetService</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingBasisProjectionSetService.cs:19](../../../../src/Meridian.FinancialOperations/Ledger/AccountingBasisProjectionSetService.cs#L19).
+
+Uses the candidate service to assemble projections for multiple accounting bases.
+
+```csharp
+public sealed class AccountingBasisProjectionSetService : IAccountingBasisProjectionSetService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public AccountingBasisProjectionSetService(IAccountingPostingCandidateService candidateService);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingBasisProjectionSetService.cs:23](../../../../src/Meridian.FinancialOperations/Ledger/AccountingBasisProjectionSetService.cs#L23) |  |
+| <code>public async Task&lt;AccountingBasisProjectionSetDto&gt; BuildProjectionSetAsync(AccountingBasisProjectionSetRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingBasisProjectionSetService.cs:28](../../../../src/Meridian.FinancialOperations/Ledger/AccountingBasisProjectionSetService.cs#L28) |  |
+
 ## AccountingJournalDraftLineRequest
 
 Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingJournalDraftLineRequest</code>. Kind: `record`.
@@ -302,19 +339,19 @@ Declared public members:
 
 Qualified name: <code>Meridian.FinancialOperations.Ledger.BondIncomePreparationService</code>. Kind: `class`.
 
-Source: [src/Meridian.FinancialOperations/Ledger/BondIncomePreparationService.cs:12](../../../../src/Meridian.FinancialOperations/Ledger/BondIncomePreparationService.cs#L12).
+Source: [src/Meridian.FinancialOperations/Ledger/BondIncomePreparationService.cs:19](../../../../src/Meridian.FinancialOperations/Ledger/BondIncomePreparationService.cs#L19).
 
 Retains the reviewed calculation source, then uses the existing governed event/draft path.
 
 ```csharp
-public sealed class BondIncomePreparationService(IBondIncomeService income, ILedgerJournalStore ledger, IInstrumentPositionProjectionStore positions, IAccountingPolicyService policies, IAssetAccountingEventSpineService spine, IBondIncomePreparationEvidenceStore evidence)
+public sealed class BondIncomePreparationService(IBondIncomeService income, ILedgerJournalStore ledger, IInstrumentPositionProjectionStore positions, IAccountingPolicyService policies, IAssetAccountingEventSpineService spine, IBondIncomePreparationEvidenceStore evidence) : IBondIncomePreparationService
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;BondIncomePreviewDto&gt; PrepareAsync(BondIncomePreparationRequestDto request, string tenantId, string companyId, string actor, DateTimeOffset preparedAtUtc, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/BondIncomePreparationService.cs:16](../../../../src/Meridian.FinancialOperations/Ledger/BondIncomePreparationService.cs#L16) |  |
+| <code>public async Task&lt;BondIncomePreviewDto&gt; PrepareAsync(BondIncomePreparationRequestDto request, string tenantId, string companyId, string actor, DateTimeOffset preparedAtUtc, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/BondIncomePreparationService.cs:23](../../../../src/Meridian.FinancialOperations/Ledger/BondIncomePreparationService.cs#L23) |  |
 
 ## BondIncomeService
 
@@ -666,6 +703,24 @@ Declared public members:
 | <code>Task&lt;AssetAccountingEventSpineAppendResultDto&gt; ReprepareUnpostedFactorPaydownAsync(ProjectAssetAccountingEventRequestDto request, AssetLotMutationInstructionDto lotMutation, long expectedSpineVersion, string expectedCanonicalFingerprint, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs:35](../../../../src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs#L35) |  |
 | <code>Task&lt;AssetAccountingEventSpineAppendResultDto&gt; AppendLifecycleStageAsync(AppendAssetAccountingLifecycleStageRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs:43](../../../../src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs#L43) |  |
 
+## IBondIncomePreparationService
+
+Qualified name: <code>Meridian.FinancialOperations.Ledger.IBondIncomePreparationService</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Ledger/BondIncomePreparationService.cs:12](../../../../src/Meridian.FinancialOperations/Ledger/BondIncomePreparationService.cs#L12).
+
+Prepares adopted bond carrying-value income through the governed event/draft path.
+
+```csharp
+public interface IBondIncomePreparationService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;BondIncomePreviewDto&gt; PrepareAsync(BondIncomePreparationRequestDto request, string tenantId, string companyId, string actor, DateTimeOffset preparedAtUtc, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/BondIncomePreparationService.cs:14](../../../../src/Meridian.FinancialOperations/Ledger/BondIncomePreparationService.cs#L14) |  |
+
 ## ShortCarryPostingGuard
 
 Qualified name: <code>Meridian.FinancialOperations.Ledger.ShortCarryPostingGuard</code>. Kind: `class`.
@@ -903,52 +958,3 @@ An immutable archived delivery-log entry: one file, one recipient, one outcome. 
 ```csharp
 public sealed record FileDeliveryRecord(string DeliveryId, string DistributionId, string FileName, string ContentSha256, long ContentLength, DistributionRecipient Recipient, FileDeliveryStatus Status, DateTimeOffset DeliveredAtUtc, string DistributedBy, string? FailureReason = null);
 ```
-
-## FileDeliveryStatus
-
-Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.FileDeliveryStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:312](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L312).
-
-Terminal delivery outcome for one recipient.
-
-```csharp
-public enum FileDeliveryStatus
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Delivered</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:314](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L314) |  |
-| <code>Failed</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:315](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L315) |  |
-
-## FileDistributionRequest
-
-Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.FileDistributionRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:300](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L300).
-
-Request to distribute one normalized file to a set of recipients. ContentLocation is the durable, retrievable location of the deliverable — a storage handle or URI into the platform&#x27;s secure-distribution artifact store. A production transport fetches the bytes from there and verifies them against ContentSha256 before dispatch, so the archived delivery evidence reflects a real transfer of an identified artifact rather than metadata alone.
-
-```csharp
-public sealed record FileDistributionRequest(string FileName, string ContentType, string ContentSha256, long ContentLength, string ContentLocation, IReadOnlyList<DistributionRecipient> Recipients, string DistributedBy, string? SubjectId = null, DateTimeOffset? DistributedAtUtc = null);
-```
-
-## IFileDistributionTransport
-
-Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.IFileDistributionTransport</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:344](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L344).
-
-Transport seam that actually dispatches a distributed file to one recipient. A production transport retrieves the deliverable from FileDistributionRequest.ContentLocation, verifies it against FileDistributionRequest.ContentSha256, and dispatches it over the recipient&#x27;s channel. The middle-office service records Delivered only when the transport reports success, so a real (SFTP/email/portal) transport injected in production yields honest delivery evidence.
-
-```csharp
-public interface IFileDistributionTransport
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>FileDeliveryOutcome Deliver(DistributionRecipient recipient, FileDistributionRequest request);</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:346](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L346) |  |

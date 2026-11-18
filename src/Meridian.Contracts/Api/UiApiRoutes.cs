@@ -270,6 +270,8 @@ public static class UiApiRoutes
     public const string QualityComparison = "/api/quality/comparison/{symbol}";
     public const string QualityComparisonDiscrepancies = "/api/quality/comparison/discrepancies";
     public const string QualityComparisonStatistics = "/api/quality/comparison/statistics";
+    public const string QualityCrossProviderPolicy = "/api/quality/cross-provider/policy";
+    public const string QualityCrossProviderPreview = "/api/quality/cross-provider/preview";
     public const string QualityReportsDaily = "/api/quality/reports/daily";
     public const string QualityReportsWeekly = "/api/quality/reports/weekly";
     public const string QualityReportsExport = "/api/quality/reports/export";
@@ -497,6 +499,9 @@ public static class UiApiRoutes
 
     // Structured-credit reclassification report (ADR-022, report first)
     public const string SecurityMasterStructuredCreditReclassificationReport = "/api/security-master/structured-credit-reclassification/report";
+
+    // Classification drift report (taxonomy revisions; report only, retained events are append-only)
+    public const string SecurityMasterClassificationDriftReport = "/api/security-master/classification-drift/report";
 
     // CustomAsset profile promotion report (ADR-022, report first; promotion is an envelope amendment)
     public const string SecurityMasterProfilePromotionReport = "/api/security-master/profile-promotion/{profileId}/report";
