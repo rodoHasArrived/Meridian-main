@@ -19,6 +19,7 @@ import {
   subscribeNotificationPreferences,
   type NotificationPreferences
 } from "@/lib/notification-preferences";
+import { PreferenceSyncStatus } from "@/screens/settings-screen.preference-sync-status";
 
 export function useNotificationPreferences(): NotificationPreferences {
   return useSyncExternalStore(subscribeNotificationPreferences, getNotificationPreferences, getNotificationPreferences);
@@ -89,6 +90,7 @@ export function SettingsNotificationsSection({ now = () => new Date() }: { now?:
         <CardDescription className="mt-2">
           Choose which pop-ups you see and when to hold them. These choices follow you to other browsers and the desktop app.
         </CardDescription>
+        <PreferenceSyncStatus />
       </CardHeader>
       <CardContent className="grid gap-5 md:grid-cols-2">
         <div className="grid gap-3">
@@ -163,7 +165,7 @@ export function SettingsNotificationsSection({ now = () => new Date() }: { now?:
           {windowError ? <p id={windowErrorId} role="alert" className="text-xs leading-5 text-danger">{windowError}</p> : null}
           <div className="flex flex-wrap items-center gap-3">
             <Button type="button" variant="outline" size="sm" onClick={sendTest}>Send test notification</Button>
-            {testStatus ? <p role="status" className="text-xs leading-5 text-muted-foreground">{testStatus}</p> : null}
+            {testStatus ? <p role="status" aria-label="Test notification result" className="text-xs leading-5 text-muted-foreground">{testStatus}</p> : null}
           </div>
         </div>
       </CardContent>

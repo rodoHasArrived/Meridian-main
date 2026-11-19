@@ -9,7 +9,9 @@
 //
 // A failed read (no session, an older host without the endpoint, or no network) leaves the
 // browser-only behaviour in place and saves nothing. A failed save keeps the local change and is
-// retried with the next change. The values are display-only and never change stored data.
+// retried with the next change. Either failure shows in Settings, through the sync status in
+// operator-preference-events, with "Retry now". The values are display-only and never change
+// stored data.
 
 import { getOperatorPreferences, saveOperatorPreferences } from "@/lib/api/operator-workstation.api";
 import { readSectionDescriptionsHidden, setSectionDescriptionsHidden } from "@/components/ui/section-description";
@@ -23,7 +25,15 @@ import {
   setNotificationPreferences,
   type NotificationPreferences
 } from "@/lib/notification-preferences";
-import { notifyOperatorPreferencesApplied, onOperatorPreferenceChanged } from "@/lib/operator-preference-events";
+import {
+  getOperatorPreferenceSyncStatus,
+  notifyOperatorPreferencesApplied,
+  onOperatorPreferenceChanged,
+  registerOperatorPreferenceSyncRetry,
+  resetOperatorPreferenceSyncStatus,
+  setOperatorPreferenceSyncStatus,
+  type OperatorPreferenceSyncStatus
+} from "@/lib/operator-preference-events";
 import { applyAppearance, isAppearance, readStoredAppearance, writeStoredAppearance, type Appearance } from "@/lib/theme";
 import type { OperatorPreferences, OperatorPreferenceValues } from "@/types/operator-preferences";
 
@@ -150,20 +160,38 @@ export function startOperatorPreferenceSync({
 }: OperatorPreferenceSyncOptions): () => void {
   const controller = new AbortController();
   let lastSaved: LocalOperatorPreferences | null = null;
+  let lastSavedAt: string | null = null;
   let timer: ReturnType<typeof setTimeout> | null = null;
   let saving: Promise<void> = Promise.resolve();
   let unsubscribe: (() => void) | null = null;
+  let loaded = false;
+
+  const setStatus = (status: OperatorPreferenceSyncStatus) => {
+    if (!controller.signal.aborted) {
+      setOperatorPreferenceSyncStatus(status);
+    }
+  };
 
   const persist = (set: LocalOperatorPreferences) => {
     saving = saving.then(async () => {
-      if (controller.signal.aborted || (lastSaved && sameSet(lastSaved, set))) {
+      if (controller.signal.aborted) {
         return;
       }
+      if (lastSaved && sameSet(lastSaved, set)) {
+        if (getOperatorPreferenceSyncStatus().state === "saving") {
+          setStatus({ state: "synced", lastSavedAt });
+        }
+        return;
+      }
+      setStatus({ state: "saving", lastSavedAt });
       try {
-        await save(toWire(set), controller.signal);
+        const saved = await save(toWire(set), controller.signal);
         lastSaved = set;
+        lastSavedAt = saved?.updatedAt ?? new Date().toISOString();
+        setStatus({ state: "synced", lastSavedAt });
       } catch {
-        // Keep the local change; the next change retries the whole set.
+        // Keep the local change; the next change, or "Retry now" in Settings, retries the whole set.
+        setStatus({ state: "failed", lastSavedAt, reason: "save" });
       }
     });
   };
@@ -181,20 +209,50 @@ export function startOperatorPreferenceSync({
     }, debounceMs);
   };
 
-  void load(controller.signal)
-    .then((host) => {
-      if (controller.signal.aborted) {
-        return;
-      }
-      const merged = mergeOperatorPreferences(host, readLocalOperatorPreferences(operatorKey));
-      applyOperatorPreferences(merged, operatorKey);
-      lastSaved = hostHolds(host, merged) ? merged : null;
-      persist(merged);
-      unsubscribe = onOperatorPreferenceChanged(scheduleSave);
-    })
-    .catch(() => {
-      // No session, an older host or no network: preferences stay browser-only for this visit.
-    });
+  const loadAndApply = () => {
+    setStatus({ state: "loading" });
+    void load(controller.signal)
+      .then((host) => {
+        if (controller.signal.aborted || loaded) {
+          return;
+        }
+        loaded = true;
+        const merged = mergeOperatorPreferences(host, readLocalOperatorPreferences(operatorKey));
+        applyOperatorPreferences(merged, operatorKey);
+        if (hostHolds(host, merged)) {
+          lastSaved = merged;
+          lastSavedAt = host.updatedAt ?? null;
+          setStatus({ state: "synced", lastSavedAt });
+        } else {
+          lastSaved = null;
+        }
+        persist(merged);
+        unsubscribe = onOperatorPreferenceChanged(scheduleSave);
+      })
+      .catch(() => {
+        // No session, an older host or no network: preferences stay browser-only until a retry.
+        setStatus({ state: "failed", lastSavedAt, reason: "load" });
+      });
+  };
+
+  const retry = () => {
+    if (controller.signal.aborted) {
+      return;
+    }
+    if (!loaded) {
+      loadAndApply();
+      return;
+    }
+    if (timer !== null) {
+      clearTimeout(timer);
+      timer = null;
+    }
+    lastSaved = null;
+    persist(readLocalOperatorPreferences(operatorKey));
+  };
+
+  const unregisterRetry = registerOperatorPreferenceSyncRetry(retry);
+  loadAndApply();
 
   return () => {
     controller.abort();
@@ -202,5 +260,7 @@ export function startOperatorPreferenceSync({
       clearTimeout(timer);
     }
     unsubscribe?.();
+    unregisterRetry();
+    resetOperatorPreferenceSyncStatus();
   };
 }
