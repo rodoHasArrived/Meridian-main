@@ -55,6 +55,10 @@ public sealed record IntercompanyBreakDto(Guid ProposalId, Guid AccountingArrang
 public sealed record LinkIntercompanyCounterpartRequest(Guid RequestId, Guid TargetBookId,
     Guid TargetJournalId, string Reason);
 
+/// <summary>A posted journal in an approved destination book that currently reciprocates the proposal's source.</summary>
+public sealed record IntercompanyCounterpartCandidateDto(Guid JournalEntryId, DateOnly EffectiveDate, string Description,
+    decimal Amount, string Currency);
+
 public sealed record RetryIntercompanyProposalRequest(Guid RequestId, string Reason);
 public sealed record IntercompanyRefreshPreviewDto(ManualJournalEntryDraftDto Draft, string Fingerprint,
     ManualJournalEntryDraftDto? CurrentDraft = null);
@@ -72,4 +76,5 @@ public sealed record RefreshIntercompanyProposalRequest(Guid RequestId, int Expe
 [JsonSerializable(typeof(IntercompanyRefreshPreviewDto))]
 [JsonSerializable(typeof(RefreshIntercompanyProposalRequest))]
 [JsonSerializable(typeof(IntercompanyCounterpartLinkDto))]
+[JsonSerializable(typeof(IntercompanyCounterpartCandidateDto[]))]
 public partial class IntercompanyProposalJsonContext : JsonSerializerContext;

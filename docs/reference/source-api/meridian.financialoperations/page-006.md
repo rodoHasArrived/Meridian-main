@@ -6,6 +6,95 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## Camt053StatementConnector
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.Camt.Camt053StatementConnector</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/Camt/Camt053StatementConnector.cs:26](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Camt/Camt053StatementConnector.cs#L26).
+
+ISO 20022 camt.053 (Bank-to-Customer Statement) connector. Ingests the closing booked balance and every booked entry from each Stmt, signing amounts by CdtDbtInd, so institutional bank cash statements reconcile without hand-conversion to CSV. The format carries fixed semantics, so it maps directly to canonical records rather than through a column mapping profile. XML is read with DTD processing prohibited and no external resolver to avoid XXE.
+
+```csharp
+public sealed class Camt053StatementConnector : IStatementConnector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ConnectorId = &quot;camt053&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Camt/Camt053StatementConnector.cs:28](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Camt/Camt053StatementConnector.cs#L28) |  |
+| <code>public Camt053StatementConnector() : this(StatementIngressLimits.Default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Camt/Camt053StatementConnector.cs:33](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Camt/Camt053StatementConnector.cs#L33) |  |
+| <code>public Camt053StatementConnector(StatementIngressLimits limits) : this(limits, StatementBalanceRole.Closing);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Camt/Camt053StatementConnector.cs:38](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Camt/Camt053StatementConnector.cs#L38) |  |
+| <code>public Camt053StatementConnector(StatementIngressLimits limits, StatementBalanceRole balanceRole);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Camt/Camt053StatementConnector.cs:47](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Camt/Camt053StatementConnector.cs#L47) | Creates a connector that emits the closing booked balance (CLBD, the default used by every reconciliation run) or, only when explicitly requested, the opening booked balance (OPBD). |
+| <code>public StatementConnectorDescriptor Descriptor { get; } = new (ConnectorId, &quot;ISO 20022 camt.053 bank statement&quot;, [&quot;.xml&quot;, &quot;.camt&quot;, &quot;.053&quot;], SupportsFileImport : true, SupportsRemoteFetch : false, RequiresMappingProfile : false, DefaultProfileId : null);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Camt/Camt053StatementConnector.cs:59](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Camt/Camt053StatementConnector.cs#L59) |  |
+| <code>public bool CanHandle(StatementSourceDocument document);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Camt/Camt053StatementConnector.cs:68](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Camt/Camt053StatementConnector.cs#L68) |  |
+| <code>public Task&lt;StatementParseResult&gt; ParseAsync(StatementSourceDocument document, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Camt/Camt053StatementConnector.cs:77](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Camt/Camt053StatementConnector.cs#L77) |  |
+
+## CsvLineSplitter
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.CsvLineSplitter</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvLineSplitter.cs:10](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvLineSplitter.cs#L10).
+
+RFC-4180 style CSV line splitting with a configurable delimiter and quote character. Shared by the statement connectors; the legacy positional statement paths keep their existing parsing untouched.
+
+```csharp
+public static class CsvLineSplitter
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;string&gt; Split(string line, char delimiter = &#x27;,&#x27;, char quote = &#x27;&quot;&#x27;);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvLineSplitter.cs:14](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvLineSplitter.cs#L14) |  |
+| <code>public static IReadOnlyList&lt;string&gt; SplitLines(string content) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvLineSplitter.cs:77](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvLineSplitter.cs#L77) | Splits statement text into logical lines, tolerating \r\n and \r endings and a UTF-8 BOM. Blank lines are preserved so callers keep stable row numbers. |
+| <code>public static IReadOnlyList&lt;string&gt; SplitLines(string content, int maxLines) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvLineSplitter.cs:93](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvLineSplitter.cs#L93) | Splits statement text into logical lines, stopping once maxLines lines have been produced. Semantics are identical to the unbounded overload for any content inside the bound, including the trailing empty segment a terminating newline produces. |
+| <code>public static IReadOnlyList&lt;string&gt; SplitLines(string content, int maxLines, int maxLineLength, out bool lineTooLong);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvLineSplitter.cs:113](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvLineSplitter.cs#L113) | As SplitLines(string, int), and additionally reports through lineTooLong whether any discovered line exceeded maxLineLength. Discovery stops at the first such line, so a caller never pays to split its fields. |
+
+## CsvStatementConnector
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.CsvStatementConnector</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvStatementConnector.cs:13](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvStatementConnector.cs#L13).
+
+Declarative, profile-driven CSV connector. Any custodian or broker CSV layout can be onboarded by authoring a mapping-profile document — no code change required. Handles RFC-4180 quoting, delimiter variants, BOMs, header aliases with per-column confidence, and mixed-kind files (positions, transactions, cash balances, fees, dividends in one statement).
+
+```csharp
+public sealed class CsvStatementConnector(StatementMappingProfileCatalog catalog, StatementIngressLimits? ingressLimits = null) : IStatementConnector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ConnectorId = &quot;csv-mapped&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvStatementConnector.cs:19](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvStatementConnector.cs#L19) |  |
+| <code>public StatementConnectorDescriptor Descriptor { get; } = new (ConnectorId, &quot;Custodian/Broker CSV (mapping profile)&quot;, [&quot;.csv&quot;, &quot;.txt&quot;], SupportsFileImport : true, SupportsRemoteFetch : false, RequiresMappingProfile : true, DefaultProfileId : StatementMappingProfileRegistry.CanonicalCsvV1ProfileId);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvStatementConnector.cs:23](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvStatementConnector.cs#L23) |  |
+| <code>public bool CanHandle(StatementSourceDocument document);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvStatementConnector.cs:42](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvStatementConnector.cs#L42) |  |
+| <code>public async Task&lt;StatementParseResult&gt; ParseAsync(StatementSourceDocument document, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvStatementConnector.cs:49](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/CsvStatementConnector.cs#L49) |  |
+
+## FileStatementFetchScheduleStore
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.FileStatementFetchScheduleStore</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs:66](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs#L66).
+
+File-backed schedule store using the versioned-snapshot pattern with atomic writes. Schedules drive the statement fetch scheduler; duplicate-key idempotency downstream makes overlapping or repeated runs safe.
+
+```csharp
+public sealed class FileStatementFetchScheduleStore : JsonFileSnapshotStore<StatementFetchScheduleSnapshot>, IStatementFetchScheduleStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileStatementFetchScheduleStore(string dataRoot, ILogger&lt;FileStatementFetchScheduleStore&gt;? logger = null) : base(GetSnapshotPath(dataRoot), StatementFetchScheduleJsonContext.Default.StatementFetchScheduleSnapshot);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs:73](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs#L73) |  |
+| <code>public Task&lt;IReadOnlyList&lt;StatementFetchSchedule&gt;&gt; ListAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs:80](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs#L80) |  |
+| <code>public async Task&lt;StatementFetchSchedule&gt; UpsertAsync(StatementFetchSchedule schedule, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs:83](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs#L83) |  |
+| <code>public async Task&lt;bool&gt; DeleteAsync(string scheduleId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs:122](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs#L122) |  |
+| <code>public async Task RecordRunAsync(string scheduleId, DateTimeOffset ranAtUtc, string status, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs:136](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs#L136) |  |
+| <code>public async Task RecordFailureAsync(string scheduleId, DateTimeOffset attemptedAtUtc, string status, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs:163](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs#L163) |  |
+
 ## FileStatementMappingProfileStore
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.FileStatementMappingProfileStore</code>. Kind: `class`.
@@ -818,68 +907,4 @@ Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMap
 
 ```csharp
 public sealed record StatementProfileCsvOptions(string Delimiter = ",", string Quote = "\"", bool HasHeader = true);
-```
-
-## StatementProfileFieldMapping
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementProfileFieldMapping</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileDocument.cs:37](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementMappingProfileDocument.cs#L37).
-
-Maps one canonical field to a source column (or OFX tag). Aliases let a single profile absorb the header spellings a custodian rotates through without operator edits.
-
-```csharp
-public sealed record StatementProfileFieldMapping(string CanonicalField, string SourceColumn, IReadOnlyList<string>? Aliases = null, bool Required = false);
-```
-
-## StatementRecordKind
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementRecordKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:85](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L85).
-
-The kind of statement data a canonical record carries. Mirrors the Domain StatementRowKind taxonomy so mixed statements (positions + transactions + cash + fees + dividends) classify identically across every connector.
-
-```csharp
-public enum StatementRecordKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Position</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:87](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L87) |  |
-| <code>CashBalance</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:88](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L88) |  |
-| <code>Transaction</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:89](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L89) |  |
-| <code>Fee</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:90](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L90) |  |
-| <code>Dividend</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:91](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L91) |  |
-
-## StatementRecordKindResolver
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementRecordKindResolver</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:242](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L242).
-
-Maps canonical activity types (position, cash, cashbalance, trade, fee, dividend, div) to record kinds with the same semantics as the downstream reconciliation row classifier, so every connector buckets mixed-kind statements identically.
-
-```csharp
-public static class StatementRecordKindResolver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static StatementRecordKind Resolve(string canonicalActivityType);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:244](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L244) |  |
-
-## StatementSourceDocument
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementSourceDocument</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:22](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L22).
-
-A statement source handed to a connector: either an operator upload or the retained document produced by a remote fetch.
-
-```csharp
-public sealed record StatementSourceDocument(string FileName, ReadOnlyMemory<byte> Content, string? MappingProfileId = null, string? ExternalAccountId = null);
 ```

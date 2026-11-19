@@ -71,6 +71,24 @@
                               Style="{StaticResource FormComboBoxStyle}" Width="420" Margin="0,3,12,10" AutomationProperties.Name="Confirmation accounting profile" /></StackPanel>
                 <Button Content="Pin current balances" Command="{Binding ProposeCommand}" VerticalAlignment="Center" />
             </WrapPanel>
+            <TextBlock Text="Confirmation close policy" FontWeight="SemiBold" Margin="0,10,0,0" />
+            <TextBlock Text="{Binding ClosePolicyText}" TextWrapping="Wrap" AutomationProperties.Name="Confirmation close policy status" AutomationProperties.LiveSetting="Polite" />
+            <TextBlock Text="Findings that block close (proposal)" Margin="0,6,0,0" />
+            <ItemsControl ItemsSource="{Binding BlockingCodeChoices}" AutomationProperties.Name="Close policy blocking findings">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <CheckBox Content="{Binding Label}" IsChecked="{Binding IsSelected}" Margin="0,2,0,2" AutomationProperties.Name="{Binding Label}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <WrapPanel>
+                <StackPanel><TextBlock Text="Close policy reason" /><TextBox Text="{Binding ClosePolicyReason, UpdateSourceTrigger=PropertyChanged}" Width="420" AutomationProperties.Name="Close policy reason" /></StackPanel>
+                <Button Content="Propose close policy" Command="{Binding ProposeClosePolicyCommand}" VerticalAlignment="Center" />
+                <Button Content="Approve close policy" Command="{Binding ApproveClosePolicyCommand}" VerticalAlignment="Center" />
+                <Button Content="Reject close policy" Command="{Binding RejectClosePolicyCommand}" VerticalAlignment="Center" />
+                <Button Content="Disable close policy" Command="{Binding DisableClosePolicyCommand}" VerticalAlignment="Center" />
+            </WrapPanel>
+            <TextBlock Text="The person who proposed a policy cannot approve it; the server enforces this." TextWrapping="Wrap" />
         </StackPanel>
     </ScrollViewer>
 </UserControl>

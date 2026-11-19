@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "ac42ac5ad789263dfefa76e51ae86a6b9f36c2e83279ce9f520307248ec9e612",
+  "database_fingerprint": "6e3469c2d83b2a9a69786ff17e6ee4f1dc8bd8c5ff6f0deb8da5b32fe6716d5e",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -4394,6 +4394,30 @@
       "target_schema": "ledger"
     },
     {
+      "fingerprint": "e3d063404369beeede6c3313eb050e3a272f3dab6921a893bc73d6583a22422d",
+      "kind": "normal",
+      "source": "ledger.intercompany_confirmation_close_policies_tenant_id_check on ledger.intercompany_confirmation_close_policies",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.intercompany_confirmation_close_policies.tenant_id",
+      "target_kind": "table column",
+      "target_name": "intercompany_confirmation_close_policies",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "cfd5357c7432304e7b3bb1bf8a11dd4e68f73280f0bbba7b62fcf488494604f9",
+      "kind": "normal",
+      "source": "ledger.intercompany_confirmation_close_policies_version_check on ledger.intercompany_confirmation_close_policies",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.intercompany_confirmation_close_policies.version",
+      "target_kind": "table column",
+      "target_name": "intercompany_confirmation_close_policies",
+      "target_schema": "ledger"
+    },
+    {
       "fingerprint": "06018ea21cad2987ecec11827d5070dd9c8f87f57fd1da2f017897c60817fdd4",
       "kind": "normal",
       "source": "ledger.intercompany_counterpart_reservations_proposal_id_fkey on ledger.intercompany_counterpart_reservations",
@@ -5015,6 +5039,54 @@
       "target": "ledger.legacy_intercompany_attributions.tenant_id",
       "target_kind": "table column",
       "target_name": "legacy_intercompany_attributions",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "470262cd7fbe46ddc8da12a8a8468c07a9699546c87f669139953c678f01e394",
+      "kind": "normal",
+      "source": "ledger.manual_journal_entry_drafts_company_key_check on ledger.manual_journal_entry_drafts",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.manual_journal_entry_drafts.company_key",
+      "target_kind": "table column",
+      "target_name": "manual_journal_entry_drafts",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "2499c34a72e054b7e008360152b0757d4ab73f9ff8514ac9c25b49dfe4cb3dfb",
+      "kind": "normal",
+      "source": "ledger.manual_journal_entry_drafts_fund_key_check on ledger.manual_journal_entry_drafts",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.manual_journal_entry_drafts.fund_key",
+      "target_kind": "table column",
+      "target_name": "manual_journal_entry_drafts",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "d63e35e8b9e7179892e964039a4ee940ee86901adf52d5d9c20781dbef517dc5",
+      "kind": "normal",
+      "source": "ledger.manual_journal_entry_drafts_tenant_key_check on ledger.manual_journal_entry_drafts",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.manual_journal_entry_drafts.tenant_key",
+      "target_kind": "table column",
+      "target_name": "manual_journal_entry_drafts",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "74f69a91b86a94413bf0a3fb330bafbf71dbba90df400fda30ab07f63894e3cf",
+      "kind": "normal",
+      "source": "ledger.manual_journal_mutation_receipts_command_key_check on ledger.manual_journal_mutation_receipts",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.manual_journal_mutation_receipts.command_key",
+      "target_kind": "table column",
+      "target_name": "manual_journal_mutation_receipts",
       "target_schema": "ledger"
     },
     {
@@ -17151,6 +17223,38 @@
       "object": "column:ledger.intercompany_balance_confirmations.version"
     },
     {
+      "fingerprint": "364452d73e50dda478dd920de54b462d53af73db3a445eae080f45b68e29beb4",
+      "object": "column:ledger.intercompany_confirmation_close_policies.company_id"
+    },
+    {
+      "fingerprint": "941dac865bb67b9323c2d345cf266966718425b9943af40e3d3645bad9bbcda1",
+      "object": "column:ledger.intercompany_confirmation_close_policies.ledger_book_id"
+    },
+    {
+      "fingerprint": "1c1787b5d97cda2158c4f74af4e3dda466f532ad1ef4f7bfa08016e6ad02993e",
+      "object": "column:ledger.intercompany_confirmation_close_policies.payload"
+    },
+    {
+      "fingerprint": "26b750ffc38909c7ef9225f7a4a262071fd40a5d9818a496f95d1d5eaa44eeab",
+      "object": "column:ledger.intercompany_confirmation_close_policies.policy_id"
+    },
+    {
+      "fingerprint": "1225abadcfc987d043c90661f0f75e72cf1e63e0dccdda8719e200200dff658a",
+      "object": "column:ledger.intercompany_confirmation_close_policies.recorded_at"
+    },
+    {
+      "fingerprint": "eaa47b53c8288a3d83ac7fa39aa392a71e89628ba5d028793327ad13ca42e7d5",
+      "object": "column:ledger.intercompany_confirmation_close_policies.status"
+    },
+    {
+      "fingerprint": "06149a255b2b0f090670b3758a4e42ae6300569f0112b450fdd40c37923c1146",
+      "object": "column:ledger.intercompany_confirmation_close_policies.tenant_id"
+    },
+    {
+      "fingerprint": "80d93d5d46995c55b204733af221fcfa619955aaaca0cb34d576a8c01c36fe1b",
+      "object": "column:ledger.intercompany_confirmation_close_policies.version"
+    },
+    {
       "fingerprint": "02cf0ee4ca355972e63e94bbb1833c67c5324f8f54406a5d01e5ff1e9fd2de16",
       "object": "column:ledger.intercompany_counterpart_reservations.proposal_id"
     },
@@ -17913,6 +18017,78 @@
     {
       "fingerprint": "b325576ac5c9f5f4a15213fcd796be6268442a4b9924ca0be82cd5f9f879d265",
       "object": "column:ledger.legacy_intercompany_attributions.tenant_id"
+    },
+    {
+      "fingerprint": "1600ab9afe8f06285622e40b301528a791ef895867c239fad47b78fccdf65d5d",
+      "object": "column:ledger.manual_journal_entry_drafts.company_id"
+    },
+    {
+      "fingerprint": "5ece0d8366ced28bf4b1ec22234eb3a859f5a2c413fb19df213c3f99538e4f40",
+      "object": "column:ledger.manual_journal_entry_drafts.company_key"
+    },
+    {
+      "fingerprint": "6c7803366f8ba79f86c7a14a7715a2d08b545468b71d5a0e821b1caf5eb698b3",
+      "object": "column:ledger.manual_journal_entry_drafts.fund_key"
+    },
+    {
+      "fingerprint": "b36f063fa2d89dfc396fa611847ca2dba01ac1af75c56211f28a969869d3f527",
+      "object": "column:ledger.manual_journal_entry_drafts.fund_profile_id"
+    },
+    {
+      "fingerprint": "3169ef85209c68007b1061895fbe3551b058f574dda387492416bb5f5869ae4b",
+      "object": "column:ledger.manual_journal_entry_drafts.journal_entry_id"
+    },
+    {
+      "fingerprint": "58510f0e6168e8ac8e29394993f1f69ee16316d1f19a1f7f3f5e0b33be4fee26",
+      "object": "column:ledger.manual_journal_entry_drafts.ledger_book_id"
+    },
+    {
+      "fingerprint": "386fb98b51c4d67a93c62dc86ec16d5b15f07f4411937e6eeb6112359c238bdf",
+      "object": "column:ledger.manual_journal_entry_drafts.payload"
+    },
+    {
+      "fingerprint": "42a5fa392465eeb4e345e86c2530fad9853931c3ecd22b09c98feb0236c1fe4a",
+      "object": "column:ledger.manual_journal_entry_drafts.recorded_at"
+    },
+    {
+      "fingerprint": "cae0ad7d643110f93c08691e6890b6e11d8f899249c1b2f9c5fefe48197c72de",
+      "object": "column:ledger.manual_journal_entry_drafts.tenant_id"
+    },
+    {
+      "fingerprint": "3622eea5ad5d89132bfc360d5c74f0ec1d98cbbbc96ce643aec2f4a6fb1a46ab",
+      "object": "column:ledger.manual_journal_entry_drafts.tenant_key"
+    },
+    {
+      "fingerprint": "deab3bc554db1ed6f273b6da10d2849ea5566708b1e9f34b2fecba1fe3e818ca",
+      "object": "column:ledger.manual_journal_entry_drafts.updated_at_utc"
+    },
+    {
+      "fingerprint": "7020c23c1b40c8803a724381f8f18e829fe5b5b9b2db297f5f8507d017b6e561",
+      "object": "column:ledger.manual_journal_entry_drafts.version"
+    },
+    {
+      "fingerprint": "ff50a8c3984986b4120e60393f592b51d0bb115288b11c74bc35ebe5878c2cc9",
+      "object": "column:ledger.manual_journal_mutation_receipts.command_key"
+    },
+    {
+      "fingerprint": "7255d48efffaa8191d3b57664add92d27fb249cdf0fb27c4566db3d645bb5277",
+      "object": "column:ledger.manual_journal_mutation_receipts.completed"
+    },
+    {
+      "fingerprint": "6a7e7aeab1607278074b47899b11a21a93a60ce3f18737db2e6f5fa2780a4735",
+      "object": "column:ledger.manual_journal_mutation_receipts.completed_at_utc"
+    },
+    {
+      "fingerprint": "a85295408cc904c852852c650fafbd268912a829dbcfddfa2dc20237070484db",
+      "object": "column:ledger.manual_journal_mutation_receipts.digest"
+    },
+    {
+      "fingerprint": "849f963d6ce6d36036c03bc5fdfb46bc26040e46d4d6790cf071a5cac1dd83ce",
+      "object": "column:ledger.manual_journal_mutation_receipts.payload"
+    },
+    {
+      "fingerprint": "05e663a913cf9e98ebdf7d0bad03bd6b9d3c48c3ec6277a3d499ccdf7333a154",
+      "object": "column:ledger.manual_journal_mutation_receipts.recorded_at"
     },
     {
       "fingerprint": "004384db083f764caa218b743f80c29947b747d61e5c80b1bd2ce4a0c8ef6e16",
@@ -27143,6 +27319,18 @@
       "object": "constraint:ledger.intercompany_balance_confirmations.intercompany_balance_confirmations_version_check"
     },
     {
+      "fingerprint": "a1c36ca52845ab0c5586b25d43c79271e152c41eedfda6c2ff86a7c9074807ab",
+      "object": "constraint:ledger.intercompany_confirmation_close_policies.intercompany_confirmation_close_policies_pkey"
+    },
+    {
+      "fingerprint": "e94190db5c42e8a470b10ce8d11bd28b94180564241b393f861d544737a32795",
+      "object": "constraint:ledger.intercompany_confirmation_close_policies.intercompany_confirmation_close_policies_tenant_id_check"
+    },
+    {
+      "fingerprint": "7f525469fd4d33c6d450bdedb68df265914e93dfd567714dd7a2c3c021039d00",
+      "object": "constraint:ledger.intercompany_confirmation_close_policies.intercompany_confirmation_close_policies_version_check"
+    },
+    {
       "fingerprint": "fd233f022ebf8527171adba288d95890a15f94db48eb5a64bb2bf438e692adfa",
       "object": "constraint:ledger.intercompany_counterpart_reservations.intercompany_counterpart_reservations_pkey"
     },
@@ -27465,6 +27653,30 @@
     {
       "fingerprint": "9fc32a7aacd4140b0bac5338794046626b6e591e06b240de56fe222f16fc2385",
       "object": "constraint:ledger.legacy_intercompany_attributions.legacy_intercompany_attributions_tenant_id_check"
+    },
+    {
+      "fingerprint": "8ebb58392c5b5c18d9c7ffac7d84cb0f8961cceb8386f2897b23fc5a836ae80a",
+      "object": "constraint:ledger.manual_journal_entry_drafts.manual_journal_entry_drafts_company_key_check"
+    },
+    {
+      "fingerprint": "02d9cb52867e1b4c88677fa4a9c5b79f2e8addf07029eb9f1fa20ffe8d195474",
+      "object": "constraint:ledger.manual_journal_entry_drafts.manual_journal_entry_drafts_fund_key_check"
+    },
+    {
+      "fingerprint": "ec83e12eaf5af8c2f5ec544d47362b225b400f8c72ea23614b743b84ed97cc57",
+      "object": "constraint:ledger.manual_journal_entry_drafts.manual_journal_entry_drafts_pkey"
+    },
+    {
+      "fingerprint": "041004d4e288f577a2f546e3f8468ef562697a443fc04907e146406f4d808176",
+      "object": "constraint:ledger.manual_journal_entry_drafts.manual_journal_entry_drafts_tenant_key_check"
+    },
+    {
+      "fingerprint": "080349296a7d4e403739be50978b6cf694c048b268b33ca2a57accbbfa95314d",
+      "object": "constraint:ledger.manual_journal_mutation_receipts.manual_journal_mutation_receipts_command_key_check"
+    },
+    {
+      "fingerprint": "bedd3ea6066d6bdb7fd190edd1290b02b014e8d3601ef73514077442ee2aa090",
+      "object": "constraint:ledger.manual_journal_mutation_receipts.manual_journal_mutation_receipts_pkey"
     },
     {
       "fingerprint": "f95cae23f8d949201eb9439e6ecf51a50fd588545d38d70d7562e21894a34957",
@@ -31607,6 +31819,14 @@
       "object": "dependency:ledger.intercompany_balance_confirmations_version_check on ledger.intercompany_balance_confirmations->ledger.intercompany_balance_confirmations.version:normal"
     },
     {
+      "fingerprint": "e3d063404369beeede6c3313eb050e3a272f3dab6921a893bc73d6583a22422d",
+      "object": "dependency:ledger.intercompany_confirmation_close_policies_tenant_id_check on ledger.intercompany_confirmation_close_policies->ledger.intercompany_confirmation_close_policies.tenant_id:normal"
+    },
+    {
+      "fingerprint": "cfd5357c7432304e7b3bb1bf8a11dd4e68f73280f0bbba7b62fcf488494604f9",
+      "object": "dependency:ledger.intercompany_confirmation_close_policies_version_check on ledger.intercompany_confirmation_close_policies->ledger.intercompany_confirmation_close_policies.version:normal"
+    },
+    {
       "fingerprint": "06018ea21cad2987ecec11827d5070dd9c8f87f57fd1da2f017897c60817fdd4",
       "object": "dependency:ledger.intercompany_counterpart_reservations_proposal_id_fkey on ledger.intercompany_counterpart_reservations->ledger.intercompany_proposals.proposal_id:normal"
     },
@@ -31813,6 +32033,22 @@
     {
       "fingerprint": "0d7a67defa7ad3d638cbfaffe5caf0282be956ac9014171e02d909340841e648",
       "object": "dependency:ledger.legacy_intercompany_attributions_tenant_id_check on ledger.legacy_intercompany_attributions->ledger.legacy_intercompany_attributions.tenant_id:normal"
+    },
+    {
+      "fingerprint": "470262cd7fbe46ddc8da12a8a8468c07a9699546c87f669139953c678f01e394",
+      "object": "dependency:ledger.manual_journal_entry_drafts_company_key_check on ledger.manual_journal_entry_drafts->ledger.manual_journal_entry_drafts.company_key:normal"
+    },
+    {
+      "fingerprint": "2499c34a72e054b7e008360152b0757d4ab73f9ff8514ac9c25b49dfe4cb3dfb",
+      "object": "dependency:ledger.manual_journal_entry_drafts_fund_key_check on ledger.manual_journal_entry_drafts->ledger.manual_journal_entry_drafts.fund_key:normal"
+    },
+    {
+      "fingerprint": "d63e35e8b9e7179892e964039a4ee940ee86901adf52d5d9c20781dbef517dc5",
+      "object": "dependency:ledger.manual_journal_entry_drafts_tenant_key_check on ledger.manual_journal_entry_drafts->ledger.manual_journal_entry_drafts.tenant_key:normal"
+    },
+    {
+      "fingerprint": "74f69a91b86a94413bf0a3fb330bafbf71dbba90df400fda30ab07f63894e3cf",
+      "object": "dependency:ledger.manual_journal_mutation_receipts_command_key_check on ledger.manual_journal_mutation_receipts->ledger.manual_journal_mutation_receipts.command_key:normal"
     },
     {
       "fingerprint": "1b07c7a48366b05e56813f73d0f6d2a39f587fce3480cc1e01cafcd759bdc513",
@@ -34811,6 +35047,10 @@
       "object": "function:ledger.protect_private_capital_authority()"
     },
     {
+      "fingerprint": "936419cbfaefcefccc774453c3b8ac66366cc7a9e1314b60c9d4c5595a37287c",
+      "object": "function:ledger.refuse_completed_manual_journal_receipt_rewrite()"
+    },
+    {
       "fingerprint": "a022a8c05e8e15b42e733b235855e6446b4538919978de080103ccd54784e176",
       "object": "function:ledger.refuse_intercompany_account_binding_rewrite()"
     },
@@ -34821,6 +35061,10 @@
     {
       "fingerprint": "1012f1ae2e60cb62e3d382a8759d1f4ea42f364846d1654fc400504cf620e7bc",
       "object": "function:ledger.refuse_intercompany_balance_confirmation_rewrite()"
+    },
+    {
+      "fingerprint": "9274272dd7057c9f2a61bd34b5682bfb9261bb2c6a4c02b6e3f8d28d3d4e9bba",
+      "object": "function:ledger.refuse_intercompany_confirmation_close_policy_rewrite()"
     },
     {
       "fingerprint": "e72094e0fdc87f482a7de14afe2ade90b0c851747e1af5e4e63fa199c96763af",
@@ -35651,6 +35895,10 @@
       "object": "index:ledger.intercompany_balance_confirmations_pkey"
     },
     {
+      "fingerprint": "a9402801cb547a991718e658556d0b0fe80e7fda754b292773cfb16a07f06eca",
+      "object": "index:ledger.intercompany_confirmation_close_policies_pkey"
+    },
+    {
       "fingerprint": "885939ea1523da991f4bf88e80b76c7396718f5f01c5f25837aecf1f8f2b777c",
       "object": "index:ledger.intercompany_counterpart_reservations_pkey"
     },
@@ -35757,6 +36005,10 @@
     {
       "fingerprint": "dc77e2ec1f4f9172a19b97835d8b804c2b48c3d8028805825abee828bdb21c93",
       "object": "index:ledger.ix_intercompany_accrual_schedule_book"
+    },
+    {
+      "fingerprint": "ec63f997a267862be7f212c651ab85f9d769b0e8ff6030bd192d381e1a4eecd7",
+      "object": "index:ledger.ix_intercompany_confirmation_close_policy_book"
     },
     {
       "fingerprint": "a6d55f5d1298610d2483cdf30c7a50edbb2346f52860c526b08f0baeda48943a",
@@ -35885,6 +36137,18 @@
     {
       "fingerprint": "eea2b53b6f7af8e0135ee8ba329854f0dfd9703ff6be986b6254bcaba5b7ab0d",
       "object": "index:ledger.ix_legacy_intercompany_attribution_scope"
+    },
+    {
+      "fingerprint": "4bc40ce3eab2e5d5e81b5f4cc67ec2e08269595ef5ed0cfebb7080764da5391f",
+      "object": "index:ledger.ix_manual_journal_entry_drafts_book"
+    },
+    {
+      "fingerprint": "c78fb6fa86aedd54b5e0183d60e62a86f35573f9f6a7374545b653f93a713660",
+      "object": "index:ledger.ix_manual_journal_entry_drafts_updated"
+    },
+    {
+      "fingerprint": "45a05d37395bf5b30101351d341c20c9f965109a91104962b45a3d9ce308763f",
+      "object": "index:ledger.ix_manual_journal_mutation_receipts_pending"
     },
     {
       "fingerprint": "66c5647b179d5a4efc247be82ebea1aaf24fc096ceb41e470282973ca2453ec8",
@@ -36067,6 +36331,14 @@
       "object": "index:ledger.legacy_intercompany_attributions_pkey"
     },
     {
+      "fingerprint": "f18e7d77ee7ad5415622ad9170a0e403ad6b60963925705f483fe39bfae142df",
+      "object": "index:ledger.manual_journal_entry_drafts_pkey"
+    },
+    {
+      "fingerprint": "98638427e0952334f812fa4e8f443f21aec89b8edc7682786b9dbca6fd86f35c",
+      "object": "index:ledger.manual_journal_mutation_receipts_pkey"
+    },
+    {
       "fingerprint": "3a5266ecc888e1f412737d4871007ccbe59a4f756cde64ffc947a9520133d2e3",
       "object": "index:ledger.onboarding_workspaces_pkey"
     },
@@ -36185,6 +36457,10 @@
     {
       "fingerprint": "5da122d44ffe764e75464397e3015f1746da1ab7bd86affeb0b9cbecd0650df4",
       "object": "index:ledger.ux_intercompany_balance_confirmation_scope_version"
+    },
+    {
+      "fingerprint": "22cb9fe038b1da383d614f76e1c21227c571ebf72f216dd51fb7547d306b2511",
+      "object": "index:ledger.ux_intercompany_confirmation_close_policy_identity"
     },
     {
       "fingerprint": "9f8f3fb38f33dfff8dda06f1bc2016824ba16dd185795ec92b828d842c29c528",
@@ -38151,6 +38427,10 @@
       "object": "rls:ledger.intercompany_balance_confirmations"
     },
     {
+      "fingerprint": "89a47acf682cd30cc8ababbdf738a4f9bf244d4845901f806dac9a5ea22794e7",
+      "object": "rls:ledger.intercompany_confirmation_close_policies"
+    },
+    {
       "fingerprint": "2582d7e6b8f35bd770120b98db7be3d75f600e78c0d1e6615a734b3948a0d7eb",
       "object": "rls:ledger.intercompany_counterpart_reservations"
     },
@@ -38225,6 +38505,14 @@
     {
       "fingerprint": "efaccf012e861d777806a90ff0552c289ba15f9be4e56b885ae7862b1fd0f766",
       "object": "rls:ledger.legacy_intercompany_attributions"
+    },
+    {
+      "fingerprint": "b87c88c089a17fff183aba2df73a2b93024a696f82e055fefd01b22e39face09",
+      "object": "rls:ledger.manual_journal_entry_drafts"
+    },
+    {
+      "fingerprint": "64bf3f1135f843c8b3ff24da4abcff1bb545f71fce86703d4c7da100a20f236c",
+      "object": "rls:ledger.manual_journal_mutation_receipts"
     },
     {
       "fingerprint": "92f4fbd2755e7282183cb0404ac5ac75a6e24d1b46976d3d47e24df1cc53ae56",
@@ -38947,7 +39235,7 @@
       "object": "schema:identity_access"
     },
     {
-      "fingerprint": "9c9f7e61355927687032e13149f95577309e5fa7f6b5fd729618a0847dbb6caf",
+      "fingerprint": "af1c809d079c330d8ad3301c8d8406c16c5cb77e3def35383077c2d896c60543",
       "object": "schema:ledger"
     },
     {
@@ -39327,6 +39615,10 @@
       "object": "table:ledger.intercompany_balance_confirmations"
     },
     {
+      "fingerprint": "4577933da0dd5deafc9242778399da9d8db64ca8ce43258af96b55a93ebc7047",
+      "object": "table:ledger.intercompany_confirmation_close_policies"
+    },
+    {
       "fingerprint": "7f7b9018c0372444326b37cbeb8b6e100206f7b811eecbdf0d0109238788dfac",
       "object": "table:ledger.intercompany_counterpart_reservations"
     },
@@ -39401,6 +39693,14 @@
     {
       "fingerprint": "8d2f22a66d016b26ab4f8a034550c2ef1a472a67f4a812c5eae4cfeb58388b62",
       "object": "table:ledger.legacy_intercompany_attributions"
+    },
+    {
+      "fingerprint": "b746657afe817e591496c822aad7231d1a3c05072691b148b1aeadb56cefc47a",
+      "object": "table:ledger.manual_journal_entry_drafts"
+    },
+    {
+      "fingerprint": "c0c6bfcf13e6a8dc51a13a4c2eb89f97a0c23934b4d3fe72856ee42b8a9c72e2",
+      "object": "table:ledger.manual_journal_mutation_receipts"
     },
     {
       "fingerprint": "acfe80b52d06b8ef8b55f0c1a6ffa91cad2db3b837af3c2c886100712e4953df",
@@ -40291,6 +40591,14 @@
       "object": "trigger:ledger.intercompany_balance_confirmations.tr_intercompany_balance_confirmation_no_truncate"
     },
     {
+      "fingerprint": "1d0a587027b767699b56b852580625349a41669bbd484935c8c32cfcc254a250",
+      "object": "trigger:ledger.intercompany_confirmation_close_policies.tr_intercompany_confirmation_close_policy_immutable"
+    },
+    {
+      "fingerprint": "58c2976b3f0680a7b3c3a7508934b218f8c793f219e7acdb2e0a0781eb56a93d",
+      "object": "trigger:ledger.intercompany_confirmation_close_policies.tr_intercompany_confirmation_close_policy_no_truncate"
+    },
+    {
       "fingerprint": "782532e96967d90a0022eacf39127c7af942ef285358ec7f908e77f4b078e46c",
       "object": "trigger:ledger.intercompany_counterpart_reservations.intercompany_reservations_no_truncate"
     },
@@ -40409,6 +40717,10 @@
     {
       "fingerprint": "46f1150d8122ca0456a131ca682a2568b26dc920a736b6042735abb451fd37c9",
       "object": "trigger:ledger.legacy_intercompany_attributions.tr_legacy_intercompany_attribution_no_truncate"
+    },
+    {
+      "fingerprint": "bfc0fa0a108656c46910aa6e234d4d166841531b28821e3b1f20bd25895d4a22",
+      "object": "trigger:ledger.manual_journal_mutation_receipts.tr_manual_journal_receipt_completed_immutable"
     },
     {
       "fingerprint": "e5db3d63574ef12d9ca8aadbaa15a5fdbd43edaa8e3484b4c672a94ee6f635dc",
@@ -86336,6 +86648,30 @@
           "target_schema": "ledger"
         },
         {
+          "fingerprint": "e3d063404369beeede6c3313eb050e3a272f3dab6921a893bc73d6583a22422d",
+          "kind": "normal",
+          "source": "ledger.intercompany_confirmation_close_policies_tenant_id_check on ledger.intercompany_confirmation_close_policies",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.intercompany_confirmation_close_policies.tenant_id",
+          "target_kind": "table column",
+          "target_name": "intercompany_confirmation_close_policies",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "cfd5357c7432304e7b3bb1bf8a11dd4e68f73280f0bbba7b62fcf488494604f9",
+          "kind": "normal",
+          "source": "ledger.intercompany_confirmation_close_policies_version_check on ledger.intercompany_confirmation_close_policies",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.intercompany_confirmation_close_policies.version",
+          "target_kind": "table column",
+          "target_name": "intercompany_confirmation_close_policies",
+          "target_schema": "ledger"
+        },
+        {
           "fingerprint": "06018ea21cad2987ecec11827d5070dd9c8f87f57fd1da2f017897c60817fdd4",
           "kind": "normal",
           "source": "ledger.intercompany_counterpart_reservations_proposal_id_fkey on ledger.intercompany_counterpart_reservations",
@@ -86957,6 +87293,54 @@
           "target": "ledger.legacy_intercompany_attributions.tenant_id",
           "target_kind": "table column",
           "target_name": "legacy_intercompany_attributions",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "470262cd7fbe46ddc8da12a8a8468c07a9699546c87f669139953c678f01e394",
+          "kind": "normal",
+          "source": "ledger.manual_journal_entry_drafts_company_key_check on ledger.manual_journal_entry_drafts",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.manual_journal_entry_drafts.company_key",
+          "target_kind": "table column",
+          "target_name": "manual_journal_entry_drafts",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "2499c34a72e054b7e008360152b0757d4ab73f9ff8514ac9c25b49dfe4cb3dfb",
+          "kind": "normal",
+          "source": "ledger.manual_journal_entry_drafts_fund_key_check on ledger.manual_journal_entry_drafts",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.manual_journal_entry_drafts.fund_key",
+          "target_kind": "table column",
+          "target_name": "manual_journal_entry_drafts",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "d63e35e8b9e7179892e964039a4ee940ee86901adf52d5d9c20781dbef517dc5",
+          "kind": "normal",
+          "source": "ledger.manual_journal_entry_drafts_tenant_key_check on ledger.manual_journal_entry_drafts",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.manual_journal_entry_drafts.tenant_key",
+          "target_kind": "table column",
+          "target_name": "manual_journal_entry_drafts",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "74f69a91b86a94413bf0a3fb330bafbf71dbba90df400fda30ab07f63894e3cf",
+          "kind": "normal",
+          "source": "ledger.manual_journal_mutation_receipts_command_key_check on ledger.manual_journal_mutation_receipts",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.manual_journal_mutation_receipts.command_key",
+          "target_kind": "table column",
+          "target_name": "manual_journal_mutation_receipts",
           "target_schema": "ledger"
         },
         {
@@ -88188,7 +88572,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "9c9f7e61355927687032e13149f95577309e5fa7f6b5fd729618a0847dbb6caf",
+      "fingerprint": "af1c809d079c330d8ad3301c8d8406c16c5cb77e3def35383077c2d896c60543",
       "foreign_tables": [],
       "functions": [
         {
@@ -88734,6 +89118,37 @@
             }
           ],
           "comment": null,
+          "definition_hash": "f1ef82941fddf7873aec2ad4aac0dc67adabaca5d6212aadfbd003bb2b6b8ba3",
+          "fingerprint": "936419cbfaefcefccc774453c3b8ac66366cc7a9e1314b60c9d4c5595a37287c",
+          "kind": "function",
+          "language": "plpgsql",
+          "name": "refuse_completed_manual_journal_receipt_rewrite",
+          "owner": "meridian",
+          "parallel_safety": "unsafe",
+          "result_type": "trigger",
+          "schema": "ledger",
+          "security_definer": false,
+          "security_labels": [],
+          "signature": "refuse_completed_manual_journal_receipt_rewrite()",
+          "strict": false,
+          "volatility": "volatile"
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "PUBLIC",
+              "grantor": "meridian",
+              "privilege": "execute"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "execute"
+            }
+          ],
+          "comment": null,
           "definition_hash": "8537d5c306bb84700bdb4dd8937a1a68becf99299a7aae933c4796906faf2edb",
           "fingerprint": "a022a8c05e8e15b42e733b235855e6446b4538919978de080103ccd54784e176",
           "kind": "function",
@@ -88808,6 +89223,37 @@
           "security_definer": false,
           "security_labels": [],
           "signature": "refuse_intercompany_balance_confirmation_rewrite()",
+          "strict": false,
+          "volatility": "volatile"
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "PUBLIC",
+              "grantor": "meridian",
+              "privilege": "execute"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "execute"
+            }
+          ],
+          "comment": null,
+          "definition_hash": "cdc7f5db26703b5ab6c61266a01495c4fe153486d55b95cb6b265aeff0c55eb3",
+          "fingerprint": "9274272dd7057c9f2a61bd34b5682bfb9261bb2c6a4c02b6e3f8d28d3d4e9bba",
+          "kind": "function",
+          "language": "plpgsql",
+          "name": "refuse_intercompany_confirmation_close_policy_rewrite",
+          "owner": "meridian",
+          "parallel_safety": "unsafe",
+          "result_type": "trigger",
+          "schema": "ledger",
+          "security_definer": false,
+          "security_labels": [],
+          "signature": "refuse_intercompany_confirmation_close_policy_rewrite()",
           "strict": false,
           "volatility": "volatile"
         },
@@ -98930,6 +99376,373 @@
           ],
           "columns": [
             {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "26b750ffc38909c7ef9225f7a4a262071fd40a5d9818a496f95d1d5eaa44eeab",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "policy_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "80d93d5d46995c55b204733af221fcfa619955aaaca0cb34d576a8c01c36fe1b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "version",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "06149a255b2b0f090670b3758a4e42ae6300569f0112b450fdd40c37923c1146",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "364452d73e50dda478dd920de54b462d53af73db3a445eae080f45b68e29beb4",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "company_id",
+              "nullable": true,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "941dac865bb67b9323c2d345cf266966718425b9943af40e3d3645bad9bbcda1",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "ledger_book_id",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "eaa47b53c8288a3d83ac7fa39aa392a71e89628ba5d028793327ad13ca42e7d5",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "status",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "1c1787b5d97cda2158c4f74af4e3dda466f532ad1ef4f7bfa08016e6ad02993e",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "payload",
+              "nullable": false,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": "now()",
+              "fingerprint": "1225abadcfc987d043c90661f0f75e72cf1e63e0dccdda8719e200200dff658a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "recorded_at",
+              "nullable": false,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "tenant_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (length(btrim(tenant_id)) > 0 AND lower(btrim(tenant_id)) <> 'all'::text)",
+              "delete_action": null,
+              "fingerprint": "e94190db5c42e8a470b10ce8d11bd28b94180564241b393f861d544737a32795",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "intercompany_confirmation_close_policies_tenant_id_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "version"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (version > 0)",
+              "delete_action": null,
+              "fingerprint": "7f525469fd4d33c6d450bdedb68df265914e93dfd567714dd7a2c3c021039d00",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "intercompany_confirmation_close_policies_version_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "policy_id",
+                "version"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (policy_id, version)",
+              "delete_action": null,
+              "fingerprint": "a1c36ca52845ab0c5586b25d43c79271e152c41eedfda6c2ff86a7c9074807ab",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "intercompany_confirmation_close_policies_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "4577933da0dd5deafc9242778399da9d8db64ca8ce43258af96b55a93ebc7047",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX intercompany_confirmation_close_policies_pkey ON ledger.intercompany_confirmation_close_policies USING btree (policy_id, version)",
+              "expression": null,
+              "fingerprint": "a9402801cb547a991718e658556d0b0fe80e7fda754b292773cfb16a07f06eca",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "policy_id",
+                "version"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "intercompany_confirmation_close_policies_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_intercompany_confirmation_close_policy_book ON ledger.intercompany_confirmation_close_policies USING btree (tenant_id, ledger_book_id, policy_id, version)",
+              "expression": null,
+              "fingerprint": "ec63f997a267862be7f212c651ab85f9d769b0e8ff6030bd192d381e1a4eecd7",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "tenant_id",
+                "ledger_book_id",
+                "policy_id",
+                "version"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_intercompany_confirmation_close_policy_book",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX ux_intercompany_confirmation_close_policy_identity ON ledger.intercompany_confirmation_close_policies USING btree (policy_id) WHERE (version = 1)",
+              "expression": null,
+              "fingerprint": "22cb9fe038b1da383d614f76e1c21227c571ebf72f216dd51fb7547d306b2511",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "policy_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ux_intercompany_confirmation_close_policy_identity",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "version = 1",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "intercompany_confirmation_close_policies",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "ledger",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER tr_intercompany_confirmation_close_policy_immutable BEFORE DELETE OR UPDATE ON ledger.intercompany_confirmation_close_policies FOR EACH ROW EXECUTE FUNCTION ledger.refuse_intercompany_confirmation_close_policy_rewrite()",
+              "definition_hash": "202fe4b216bd7fa496ced16f231276497e0150ace9d40baf916566cfe40f64b2",
+              "enabled": "origin",
+              "events": [
+                "delete",
+                "update"
+              ],
+              "fingerprint": "1d0a587027b767699b56b852580625349a41669bbd484935c8c32cfcc254a250",
+              "function_schema": "ledger",
+              "function_signature": "refuse_intercompany_confirmation_close_policy_rewrite()",
+              "level": "row",
+              "name": "tr_intercompany_confirmation_close_policy_immutable",
+              "relation": "intercompany_confirmation_close_policies",
+              "schema": "ledger",
+              "timing": "before"
+            },
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER tr_intercompany_confirmation_close_policy_no_truncate BEFORE TRUNCATE ON ledger.intercompany_confirmation_close_policies FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_intercompany_confirmation_close_policy_rewrite()",
+              "definition_hash": "8e2ac01702c48af1d8e4d34786fcc278acd52de713f868bb33afb2eae37be073",
+              "enabled": "origin",
+              "events": [
+                "truncate"
+              ],
+              "fingerprint": "58c2976b3f0680a7b3c3a7508934b218f8c793f219e7acdb2e0a0781eb56a93d",
+              "function_schema": "ledger",
+              "function_signature": "refuse_intercompany_confirmation_close_policy_rewrite()",
+              "level": "statement",
+              "name": "tr_intercompany_confirmation_close_policy_no_truncate",
+              "relation": "intercompany_confirmation_close_policies",
+              "schema": "ledger",
+              "timing": "before"
+            }
+          ]
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
               "collation": "pg_catalog.default",
               "comment": null,
               "data_type": "text",
@@ -107106,6 +107919,696 @@
               "level": "statement",
               "name": "tr_legacy_intercompany_attribution_no_truncate",
               "relation": "legacy_intercompany_attributions",
+              "schema": "ledger",
+              "timing": "before"
+            }
+          ]
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "6c7803366f8ba79f86c7a14a7715a2d08b545468b71d5a0e821b1caf5eb698b3",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "fund_key",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "3622eea5ad5d89132bfc360d5c74f0ec1d98cbbbc96ce643aec2f4a6fb1a46ab",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_key",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "5ece0d8366ced28bf4b1ec22234eb3a859f5a2c413fb19df213c3f99538e4f40",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "company_key",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "3169ef85209c68007b1061895fbe3551b058f574dda387492416bb5f5869ae4b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "journal_entry_id",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "b36f063fa2d89dfc396fa611847ca2dba01ac1af75c56211f28a969869d3f527",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "fund_profile_id",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "cae0ad7d643110f93c08691e6890b6e11d8f899249c1b2f9c5fefe48197c72de",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": true,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "1600ab9afe8f06285622e40b301528a791ef895867c239fad47b78fccdf65d5d",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "company_id",
+              "nullable": true,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "58510f0e6168e8ac8e29394993f1f69ee16316d1f19a1f7f3f5e0b33be4fee26",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "ledger_book_id",
+              "nullable": true,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "integer",
+              "default": null,
+              "fingerprint": "7020c23c1b40c8803a724381f8f18e829fe5b5b9b2db297f5f8507d017b6e561",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "version",
+              "nullable": false,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "int4",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "deab3bc554db1ed6f273b6da10d2849ea5566708b1e9f34b2fecba1fe3e818ca",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "updated_at_utc",
+              "nullable": false,
+              "ordinal_position": 10,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "386fb98b51c4d67a93c62dc86ec16d5b15f07f4411937e6eeb6112359c238bdf",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "payload",
+              "nullable": false,
+              "ordinal_position": 11,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": "now()",
+              "fingerprint": "42a5fa392465eeb4e345e86c2530fad9853931c3ecd22b09c98feb0236c1fe4a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "recorded_at",
+              "nullable": false,
+              "ordinal_position": 12,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "company_key"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (length(company_key) > 0)",
+              "delete_action": null,
+              "fingerprint": "8ebb58392c5b5c18d9c7ffac7d84cb0f8961cceb8386f2897b23fc5a836ae80a",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "manual_journal_entry_drafts_company_key_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "fund_key"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (length(fund_key) > 0)",
+              "delete_action": null,
+              "fingerprint": "02d9cb52867e1b4c88677fa4a9c5b79f2e8addf07029eb9f1fa20ffe8d195474",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "manual_journal_entry_drafts_fund_key_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "tenant_key"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (length(tenant_key) > 0)",
+              "delete_action": null,
+              "fingerprint": "041004d4e288f577a2f546e3f8468ef562697a443fc04907e146406f4d808176",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "manual_journal_entry_drafts_tenant_key_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "fund_key",
+                "tenant_key",
+                "company_key",
+                "journal_entry_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (fund_key, tenant_key, company_key, journal_entry_id)",
+              "delete_action": null,
+              "fingerprint": "ec83e12eaf5af8c2f5ec544d47362b225b400f8c72ea23614b743b84ed97cc57",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "manual_journal_entry_drafts_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "b746657afe817e591496c822aad7231d1a3c05072691b148b1aeadb56cefc47a",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_manual_journal_entry_drafts_book ON ledger.manual_journal_entry_drafts USING btree (fund_key, ledger_book_id)",
+              "expression": null,
+              "fingerprint": "4bc40ce3eab2e5d5e81b5f4cc67ec2e08269595ef5ed0cfebb7080764da5391f",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "fund_key",
+                "ledger_book_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_manual_journal_entry_drafts_book",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_manual_journal_entry_drafts_updated ON ledger.manual_journal_entry_drafts USING btree (fund_key, updated_at_utc DESC, journal_entry_id)",
+              "expression": null,
+              "fingerprint": "c78fb6fa86aedd54b5e0183d60e62a86f35573f9f6a7374545b653f93a713660",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "fund_key",
+                "updated_at_utc",
+                "journal_entry_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_manual_journal_entry_drafts_updated",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX manual_journal_entry_drafts_pkey ON ledger.manual_journal_entry_drafts USING btree (fund_key, tenant_key, company_key, journal_entry_id)",
+              "expression": null,
+              "fingerprint": "f18e7d77ee7ad5415622ad9170a0e403ad6b60963925705f483fe39bfae142df",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "fund_key",
+                "tenant_key",
+                "company_key",
+                "journal_entry_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "manual_journal_entry_drafts_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "manual_journal_entry_drafts",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "ledger",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "ff50a8c3984986b4120e60393f592b51d0bb115288b11c74bc35ebe5878c2cc9",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "command_key",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "boolean",
+              "default": null,
+              "fingerprint": "7255d48efffaa8191d3b57664add92d27fb249cdf0fb27c4566db3d645bb5277",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "completed",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "bool",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "6a7e7aeab1607278074b47899b11a21a93a60ce3f18737db2e6f5fa2780a4735",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "completed_at_utc",
+              "nullable": true,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "a85295408cc904c852852c650fafbd268912a829dbcfddfa2dc20237070484db",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "digest",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "849f963d6ce6d36036c03bc5fdfb46bc26040e46d4d6790cf071a5cac1dd83ce",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "payload",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": "now()",
+              "fingerprint": "05e663a913cf9e98ebdf7d0bad03bd6b9d3c48c3ec6277a3d499ccdf7333a154",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "recorded_at",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "command_key"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (command_key ~ '^[0-9a-fA-F]{64}$'::text)",
+              "delete_action": null,
+              "fingerprint": "080349296a7d4e403739be50978b6cf694c048b268b33ca2a57accbbfa95314d",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "manual_journal_mutation_receipts_command_key_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "command_key"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (command_key)",
+              "delete_action": null,
+              "fingerprint": "bedd3ea6066d6bdb7fd190edd1290b02b014e8d3601ef73514077442ee2aa090",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "manual_journal_mutation_receipts_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "c0c6bfcf13e6a8dc51a13a4c2eb89f97a0c23934b4d3fe72856ee42b8a9c72e2",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_manual_journal_mutation_receipts_pending ON ledger.manual_journal_mutation_receipts USING btree (command_key) WHERE (NOT completed)",
+              "expression": null,
+              "fingerprint": "45a05d37395bf5b30101351d341c20c9f965109a91104962b45a3d9ce308763f",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "command_key"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_manual_journal_mutation_receipts_pending",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "NOT completed",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX manual_journal_mutation_receipts_pkey ON ledger.manual_journal_mutation_receipts USING btree (command_key)",
+              "expression": null,
+              "fingerprint": "98638427e0952334f812fa4e8f443f21aec89b8edc7682786b9dbca6fd86f35c",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "command_key"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "manual_journal_mutation_receipts_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "manual_journal_mutation_receipts",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "ledger",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER tr_manual_journal_receipt_completed_immutable BEFORE DELETE OR UPDATE ON ledger.manual_journal_mutation_receipts FOR EACH ROW EXECUTE FUNCTION ledger.refuse_completed_manual_journal_receipt_rewrite()",
+              "definition_hash": "b42ce29811c59306b048e59d4a5f9a0eb04b57d40bc0b4b7168f32e68ec09a22",
+              "enabled": "origin",
+              "events": [
+                "delete",
+                "update"
+              ],
+              "fingerprint": "bfc0fa0a108656c46910aa6e234d4d166841531b28821e3b1f20bd25895d4a22",
+              "function_schema": "ledger",
+              "function_signature": "refuse_completed_manual_journal_receipt_rewrite()",
+              "level": "row",
+              "name": "tr_manual_journal_receipt_completed_immutable",
+              "relation": "manual_journal_mutation_receipts",
               "schema": "ledger",
               "timing": "before"
             }
@@ -115968,6 +117471,14 @@
         },
         {
           "enabled": false,
+          "fingerprint": "89a47acf682cd30cc8ababbdf738a4f9bf244d4845901f806dac9a5ea22794e7",
+          "forced": false,
+          "policies": [],
+          "relation": "intercompany_confirmation_close_policies",
+          "schema": "ledger"
+        },
+        {
+          "enabled": false,
           "fingerprint": "2582d7e6b8f35bd770120b98db7be3d75f600e78c0d1e6615a734b3948a0d7eb",
           "forced": false,
           "policies": [],
@@ -116116,6 +117627,22 @@
           "forced": false,
           "policies": [],
           "relation": "legacy_intercompany_attributions",
+          "schema": "ledger"
+        },
+        {
+          "enabled": false,
+          "fingerprint": "b87c88c089a17fff183aba2df73a2b93024a696f82e055fefd01b22e39face09",
+          "forced": false,
+          "policies": [],
+          "relation": "manual_journal_entry_drafts",
+          "schema": "ledger"
+        },
+        {
+          "enabled": false,
+          "fingerprint": "64bf3f1135f843c8b3ff24da4abcff1bb545f71fce86703d4c7da100a20f236c",
+          "forced": false,
+          "policies": [],
+          "relation": "manual_journal_mutation_receipts",
           "schema": "ledger"
         },
         {
@@ -125955,6 +127482,373 @@
           ],
           "columns": [
             {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "26b750ffc38909c7ef9225f7a4a262071fd40a5d9818a496f95d1d5eaa44eeab",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "policy_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "80d93d5d46995c55b204733af221fcfa619955aaaca0cb34d576a8c01c36fe1b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "version",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "06149a255b2b0f090670b3758a4e42ae6300569f0112b450fdd40c37923c1146",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "364452d73e50dda478dd920de54b462d53af73db3a445eae080f45b68e29beb4",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "company_id",
+              "nullable": true,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "941dac865bb67b9323c2d345cf266966718425b9943af40e3d3645bad9bbcda1",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "ledger_book_id",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "eaa47b53c8288a3d83ac7fa39aa392a71e89628ba5d028793327ad13ca42e7d5",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "status",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "1c1787b5d97cda2158c4f74af4e3dda466f532ad1ef4f7bfa08016e6ad02993e",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "payload",
+              "nullable": false,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": "now()",
+              "fingerprint": "1225abadcfc987d043c90661f0f75e72cf1e63e0dccdda8719e200200dff658a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "recorded_at",
+              "nullable": false,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "tenant_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (length(btrim(tenant_id)) > 0 AND lower(btrim(tenant_id)) <> 'all'::text)",
+              "delete_action": null,
+              "fingerprint": "e94190db5c42e8a470b10ce8d11bd28b94180564241b393f861d544737a32795",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "intercompany_confirmation_close_policies_tenant_id_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "version"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (version > 0)",
+              "delete_action": null,
+              "fingerprint": "7f525469fd4d33c6d450bdedb68df265914e93dfd567714dd7a2c3c021039d00",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "intercompany_confirmation_close_policies_version_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "policy_id",
+                "version"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (policy_id, version)",
+              "delete_action": null,
+              "fingerprint": "a1c36ca52845ab0c5586b25d43c79271e152c41eedfda6c2ff86a7c9074807ab",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "intercompany_confirmation_close_policies_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "4577933da0dd5deafc9242778399da9d8db64ca8ce43258af96b55a93ebc7047",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX intercompany_confirmation_close_policies_pkey ON ledger.intercompany_confirmation_close_policies USING btree (policy_id, version)",
+              "expression": null,
+              "fingerprint": "a9402801cb547a991718e658556d0b0fe80e7fda754b292773cfb16a07f06eca",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "policy_id",
+                "version"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "intercompany_confirmation_close_policies_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_intercompany_confirmation_close_policy_book ON ledger.intercompany_confirmation_close_policies USING btree (tenant_id, ledger_book_id, policy_id, version)",
+              "expression": null,
+              "fingerprint": "ec63f997a267862be7f212c651ab85f9d769b0e8ff6030bd192d381e1a4eecd7",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "tenant_id",
+                "ledger_book_id",
+                "policy_id",
+                "version"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_intercompany_confirmation_close_policy_book",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX ux_intercompany_confirmation_close_policy_identity ON ledger.intercompany_confirmation_close_policies USING btree (policy_id) WHERE (version = 1)",
+              "expression": null,
+              "fingerprint": "22cb9fe038b1da383d614f76e1c21227c571ebf72f216dd51fb7547d306b2511",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "policy_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ux_intercompany_confirmation_close_policy_identity",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "version = 1",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "intercompany_confirmation_close_policies",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "ledger",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER tr_intercompany_confirmation_close_policy_immutable BEFORE DELETE OR UPDATE ON ledger.intercompany_confirmation_close_policies FOR EACH ROW EXECUTE FUNCTION ledger.refuse_intercompany_confirmation_close_policy_rewrite()",
+              "definition_hash": "202fe4b216bd7fa496ced16f231276497e0150ace9d40baf916566cfe40f64b2",
+              "enabled": "origin",
+              "events": [
+                "delete",
+                "update"
+              ],
+              "fingerprint": "1d0a587027b767699b56b852580625349a41669bbd484935c8c32cfcc254a250",
+              "function_schema": "ledger",
+              "function_signature": "refuse_intercompany_confirmation_close_policy_rewrite()",
+              "level": "row",
+              "name": "tr_intercompany_confirmation_close_policy_immutable",
+              "relation": "intercompany_confirmation_close_policies",
+              "schema": "ledger",
+              "timing": "before"
+            },
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER tr_intercompany_confirmation_close_policy_no_truncate BEFORE TRUNCATE ON ledger.intercompany_confirmation_close_policies FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_intercompany_confirmation_close_policy_rewrite()",
+              "definition_hash": "8e2ac01702c48af1d8e4d34786fcc278acd52de713f868bb33afb2eae37be073",
+              "enabled": "origin",
+              "events": [
+                "truncate"
+              ],
+              "fingerprint": "58c2976b3f0680a7b3c3a7508934b218f8c793f219e7acdb2e0a0781eb56a93d",
+              "function_schema": "ledger",
+              "function_signature": "refuse_intercompany_confirmation_close_policy_rewrite()",
+              "level": "statement",
+              "name": "tr_intercompany_confirmation_close_policy_no_truncate",
+              "relation": "intercompany_confirmation_close_policies",
+              "schema": "ledger",
+              "timing": "before"
+            }
+          ]
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
               "collation": "pg_catalog.default",
               "comment": null,
               "data_type": "text",
@@ -133880,6 +135774,696 @@
               "level": "statement",
               "name": "tr_legacy_intercompany_attribution_no_truncate",
               "relation": "legacy_intercompany_attributions",
+              "schema": "ledger",
+              "timing": "before"
+            }
+          ]
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "6c7803366f8ba79f86c7a14a7715a2d08b545468b71d5a0e821b1caf5eb698b3",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "fund_key",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "3622eea5ad5d89132bfc360d5c74f0ec1d98cbbbc96ce643aec2f4a6fb1a46ab",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_key",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "5ece0d8366ced28bf4b1ec22234eb3a859f5a2c413fb19df213c3f99538e4f40",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "company_key",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "3169ef85209c68007b1061895fbe3551b058f574dda387492416bb5f5869ae4b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "journal_entry_id",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "b36f063fa2d89dfc396fa611847ca2dba01ac1af75c56211f28a969869d3f527",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "fund_profile_id",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "cae0ad7d643110f93c08691e6890b6e11d8f899249c1b2f9c5fefe48197c72de",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": true,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "1600ab9afe8f06285622e40b301528a791ef895867c239fad47b78fccdf65d5d",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "company_id",
+              "nullable": true,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "58510f0e6168e8ac8e29394993f1f69ee16316d1f19a1f7f3f5e0b33be4fee26",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "ledger_book_id",
+              "nullable": true,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "integer",
+              "default": null,
+              "fingerprint": "7020c23c1b40c8803a724381f8f18e829fe5b5b9b2db297f5f8507d017b6e561",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "version",
+              "nullable": false,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "int4",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "deab3bc554db1ed6f273b6da10d2849ea5566708b1e9f34b2fecba1fe3e818ca",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "updated_at_utc",
+              "nullable": false,
+              "ordinal_position": 10,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "386fb98b51c4d67a93c62dc86ec16d5b15f07f4411937e6eeb6112359c238bdf",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "payload",
+              "nullable": false,
+              "ordinal_position": 11,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": "now()",
+              "fingerprint": "42a5fa392465eeb4e345e86c2530fad9853931c3ecd22b09c98feb0236c1fe4a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "recorded_at",
+              "nullable": false,
+              "ordinal_position": 12,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "company_key"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (length(company_key) > 0)",
+              "delete_action": null,
+              "fingerprint": "8ebb58392c5b5c18d9c7ffac7d84cb0f8961cceb8386f2897b23fc5a836ae80a",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "manual_journal_entry_drafts_company_key_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "fund_key"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (length(fund_key) > 0)",
+              "delete_action": null,
+              "fingerprint": "02d9cb52867e1b4c88677fa4a9c5b79f2e8addf07029eb9f1fa20ffe8d195474",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "manual_journal_entry_drafts_fund_key_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "tenant_key"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (length(tenant_key) > 0)",
+              "delete_action": null,
+              "fingerprint": "041004d4e288f577a2f546e3f8468ef562697a443fc04907e146406f4d808176",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "manual_journal_entry_drafts_tenant_key_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "fund_key",
+                "tenant_key",
+                "company_key",
+                "journal_entry_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (fund_key, tenant_key, company_key, journal_entry_id)",
+              "delete_action": null,
+              "fingerprint": "ec83e12eaf5af8c2f5ec544d47362b225b400f8c72ea23614b743b84ed97cc57",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "manual_journal_entry_drafts_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "b746657afe817e591496c822aad7231d1a3c05072691b148b1aeadb56cefc47a",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_manual_journal_entry_drafts_book ON ledger.manual_journal_entry_drafts USING btree (fund_key, ledger_book_id)",
+              "expression": null,
+              "fingerprint": "4bc40ce3eab2e5d5e81b5f4cc67ec2e08269595ef5ed0cfebb7080764da5391f",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "fund_key",
+                "ledger_book_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_manual_journal_entry_drafts_book",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_manual_journal_entry_drafts_updated ON ledger.manual_journal_entry_drafts USING btree (fund_key, updated_at_utc DESC, journal_entry_id)",
+              "expression": null,
+              "fingerprint": "c78fb6fa86aedd54b5e0183d60e62a86f35573f9f6a7374545b653f93a713660",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "fund_key",
+                "updated_at_utc",
+                "journal_entry_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_manual_journal_entry_drafts_updated",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX manual_journal_entry_drafts_pkey ON ledger.manual_journal_entry_drafts USING btree (fund_key, tenant_key, company_key, journal_entry_id)",
+              "expression": null,
+              "fingerprint": "f18e7d77ee7ad5415622ad9170a0e403ad6b60963925705f483fe39bfae142df",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "fund_key",
+                "tenant_key",
+                "company_key",
+                "journal_entry_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "manual_journal_entry_drafts_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "manual_journal_entry_drafts",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "ledger",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "ff50a8c3984986b4120e60393f592b51d0bb115288b11c74bc35ebe5878c2cc9",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "command_key",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "boolean",
+              "default": null,
+              "fingerprint": "7255d48efffaa8191d3b57664add92d27fb249cdf0fb27c4566db3d645bb5277",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "completed",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "bool",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "6a7e7aeab1607278074b47899b11a21a93a60ce3f18737db2e6f5fa2780a4735",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "completed_at_utc",
+              "nullable": true,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "a85295408cc904c852852c650fafbd268912a829dbcfddfa2dc20237070484db",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "digest",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "849f963d6ce6d36036c03bc5fdfb46bc26040e46d4d6790cf071a5cac1dd83ce",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "payload",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": "now()",
+              "fingerprint": "05e663a913cf9e98ebdf7d0bad03bd6b9d3c48c3ec6277a3d499ccdf7333a154",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "recorded_at",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "command_key"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (command_key ~ '^[0-9a-fA-F]{64}$'::text)",
+              "delete_action": null,
+              "fingerprint": "080349296a7d4e403739be50978b6cf694c048b268b33ca2a57accbbfa95314d",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "manual_journal_mutation_receipts_command_key_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "command_key"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (command_key)",
+              "delete_action": null,
+              "fingerprint": "bedd3ea6066d6bdb7fd190edd1290b02b014e8d3601ef73514077442ee2aa090",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "manual_journal_mutation_receipts_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "c0c6bfcf13e6a8dc51a13a4c2eb89f97a0c23934b4d3fe72856ee42b8a9c72e2",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_manual_journal_mutation_receipts_pending ON ledger.manual_journal_mutation_receipts USING btree (command_key) WHERE (NOT completed)",
+              "expression": null,
+              "fingerprint": "45a05d37395bf5b30101351d341c20c9f965109a91104962b45a3d9ce308763f",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "command_key"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_manual_journal_mutation_receipts_pending",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "NOT completed",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX manual_journal_mutation_receipts_pkey ON ledger.manual_journal_mutation_receipts USING btree (command_key)",
+              "expression": null,
+              "fingerprint": "98638427e0952334f812fa4e8f443f21aec89b8edc7682786b9dbca6fd86f35c",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "command_key"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "manual_journal_mutation_receipts_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "manual_journal_mutation_receipts",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "ledger",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER tr_manual_journal_receipt_completed_immutable BEFORE DELETE OR UPDATE ON ledger.manual_journal_mutation_receipts FOR EACH ROW EXECUTE FUNCTION ledger.refuse_completed_manual_journal_receipt_rewrite()",
+              "definition_hash": "b42ce29811c59306b048e59d4a5f9a0eb04b57d40bc0b4b7168f32e68ec09a22",
+              "enabled": "origin",
+              "events": [
+                "delete",
+                "update"
+              ],
+              "fingerprint": "bfc0fa0a108656c46910aa6e234d4d166841531b28821e3b1f20bd25895d4a22",
+              "function_schema": "ledger",
+              "function_signature": "refuse_completed_manual_journal_receipt_rewrite()",
+              "level": "row",
+              "name": "tr_manual_journal_receipt_completed_immutable",
+              "relation": "manual_journal_mutation_receipts",
               "schema": "ledger",
               "timing": "before"
             }
@@ -142951,6 +145535,41 @@
         },
         {
           "comment": null,
+          "definition": "CREATE TRIGGER tr_intercompany_confirmation_close_policy_immutable BEFORE DELETE OR UPDATE ON ledger.intercompany_confirmation_close_policies FOR EACH ROW EXECUTE FUNCTION ledger.refuse_intercompany_confirmation_close_policy_rewrite()",
+          "definition_hash": "202fe4b216bd7fa496ced16f231276497e0150ace9d40baf916566cfe40f64b2",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "1d0a587027b767699b56b852580625349a41669bbd484935c8c32cfcc254a250",
+          "function_schema": "ledger",
+          "function_signature": "refuse_intercompany_confirmation_close_policy_rewrite()",
+          "level": "row",
+          "name": "tr_intercompany_confirmation_close_policy_immutable",
+          "relation": "intercompany_confirmation_close_policies",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER tr_intercompany_confirmation_close_policy_no_truncate BEFORE TRUNCATE ON ledger.intercompany_confirmation_close_policies FOR EACH STATEMENT EXECUTE FUNCTION ledger.refuse_intercompany_confirmation_close_policy_rewrite()",
+          "definition_hash": "8e2ac01702c48af1d8e4d34786fcc278acd52de713f868bb33afb2eae37be073",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "58c2976b3f0680a7b3c3a7508934b218f8c793f219e7acdb2e0a0781eb56a93d",
+          "function_schema": "ledger",
+          "function_signature": "refuse_intercompany_confirmation_close_policy_rewrite()",
+          "level": "statement",
+          "name": "tr_intercompany_confirmation_close_policy_no_truncate",
+          "relation": "intercompany_confirmation_close_policies",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
           "definition": "CREATE TRIGGER intercompany_reservations_no_truncate BEFORE TRUNCATE ON ledger.intercompany_counterpart_reservations FOR EACH STATEMENT EXECUTE FUNCTION ledger.protect_intercompany_proposal_links()",
           "definition_hash": "bd73c9a10559a7899bfd4d07f8278813eb5f26e35e86a6a54cb4d813db5af6e6",
           "enabled": "origin",
@@ -143469,6 +146088,24 @@
           "level": "statement",
           "name": "tr_legacy_intercompany_attribution_no_truncate",
           "relation": "legacy_intercompany_attributions",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER tr_manual_journal_receipt_completed_immutable BEFORE DELETE OR UPDATE ON ledger.manual_journal_mutation_receipts FOR EACH ROW EXECUTE FUNCTION ledger.refuse_completed_manual_journal_receipt_rewrite()",
+          "definition_hash": "b42ce29811c59306b048e59d4a5f9a0eb04b57d40bc0b4b7168f32e68ec09a22",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "bfc0fa0a108656c46910aa6e234d4d166841531b28821e3b1f20bd25895d4a22",
+          "function_schema": "ledger",
+          "function_signature": "refuse_completed_manual_journal_receipt_rewrite()",
+          "level": "row",
+          "name": "tr_manual_journal_receipt_completed_immutable",
+          "relation": "manual_journal_mutation_receipts",
           "schema": "ledger",
           "timing": "before"
         },

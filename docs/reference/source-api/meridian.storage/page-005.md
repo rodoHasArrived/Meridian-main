@@ -461,6 +461,26 @@ Declared public members:
 | <code>public async Task&lt;IntercompanyBalanceConfirmationDto?&gt; FindAsync(Guid accountingArrangementId, DateOnly asOf, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs:25](../../../../src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs#L25) |  |
 | <code>public async Task&lt;IntercompanyBalanceConfirmationDto&gt; AppendAsync(IntercompanyBalanceConfirmationDto next, long expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs:32](../../../../src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs#L32) |  |
 
+## FileIntercompanyConfirmationClosePolicyStore
+
+Qualified name: <code>Meridian.Storage.Ledger.FileIntercompanyConfirmationClosePolicyStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/FileIntercompanyConfirmationClosePolicyStore.cs:9](../../../../src/Meridian.Storage/Ledger/FileIntercompanyConfirmationClosePolicyStore.cs#L9).
+
+Local durable close-policy history: every version of every policy, published atomically in one file.
+
+```csharp
+public sealed class FileIntercompanyConfirmationClosePolicyStore(string path, IFundScopeTenantAccessor tenants) : IIntercompanyConfirmationClosePolicyStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IntercompanyConfirmationClosePolicyDto?&gt; GetAsync(string tenantId, Guid policyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileIntercompanyConfirmationClosePolicyStore.cs:14](../../../../src/Meridian.Storage/Ledger/FileIntercompanyConfirmationClosePolicyStore.cs#L14) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;IntercompanyConfirmationClosePolicyDto&gt;&gt; ListAsync(string tenantId, Guid? ledgerBookId = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileIntercompanyConfirmationClosePolicyStore.cs:21](../../../../src/Meridian.Storage/Ledger/FileIntercompanyConfirmationClosePolicyStore.cs#L21) |  |
+| <code>public async Task&lt;IntercompanyConfirmationClosePolicyDto&gt; AppendAsync(IntercompanyConfirmationClosePolicyDto next, long expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileIntercompanyConfirmationClosePolicyStore.cs:29](../../../../src/Meridian.Storage/Ledger/FileIntercompanyConfirmationClosePolicyStore.cs#L29) |  |
+
 ## FileLedgerJournalLog
 
 Qualified name: <code>Meridian.Storage.Ledger.FileLedgerJournalLog</code>. Kind: `class`.
@@ -931,24 +951,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task ValidateEntityPostingControlsAsync(LedgerJournalEntryWrite write, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:23](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L23) |  |
-
-## ILedgerJournalLog
-
-Qualified name: <code>Meridian.Storage.Ledger.ILedgerJournalLog</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs:26](../../../../src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs#L26).
-
-An append-only, hash-chained journal of posted JournalEntry records.
-
-```csharp
-public interface ILedgerJournalLog : IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>string ScopeId { get; }</code> | [src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs:29](../../../../src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs#L29) | The run, session or book the journal belongs to. |
-| <code>Task AppendAsync(JournalEntry entry, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs:35](../../../../src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs#L35) | Durably appends entry. Re-appending an entry id with identical content is a no-op; the same id with different content is rejected, because posted history never changes. |
-| <code>Task&lt;global::Meridian.Ledger.Ledger&gt; LoadLedgerAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs:39](../../../../src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs#L39) | Verifies the chain and returns every entry re-posted into a ledger bound to the log&#x27;s policy. |
-| <code>Task&lt;LedgerJournalChainVerification&gt; VerifyAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs:42](../../../../src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs#L42) | Re-verifies the chain from its genesis record without throwing on a break. |

@@ -36,6 +36,14 @@ public sealed partial class IntercompanyNativeControlSmokeTests
                 Assert.Contains("Advisory only; close eligibility is unchanged.", Named<TextBlock>(control, "Balance confirmation summary").Text);
                 var confirm = Button(control, "Confirm this book's balance");
                 Assert.False(confirm.IsEnabled);
+                // Without an active close policy the book stays advisory; a proposal needs a reason.
+                Assert.StartsWith("No active close policy", Named<TextBlock>(control, "Confirmation close policy status").Text);
+                Assert.Equal(5, Named<ItemsControl>(control, "Close policy blocking findings").Items.Count);
+                var proposePolicy = Button(control, "Propose close policy");
+                Assert.False(proposePolicy.IsEnabled);
+                SetText(Named<TextBox>(control, "Close policy reason"), "Disputes block month-end close.");
+                await ArrangeAsync(window, control);
+                Assert.True(proposePolicy.IsEnabled);
 
                 grid.SelectedItem = workspace.Confirmations[0];
                 await ArrangeAsync(window, control);
@@ -57,6 +65,8 @@ public sealed partial class IntercompanyNativeControlSmokeTests
     /// <summary>Synthetic confirmation transport; asserts UI state only, never the accounting.</summary>
     private sealed class ConfirmationClient : IWorkstationIntercompanyAgreementApiClient
     {
+        public Task<ApiResponse<IntercompanyConfirmationClosePolicyDto[]>> GetConfirmationClosePoliciesAsync(Guid ledgerBookId, CancellationToken ct = default)
+            => Task.FromResult(ApiResponse<IntercompanyConfirmationClosePolicyDto[]>.Ok([]));
         private readonly Guid _confirmation = Guid.NewGuid();
         public Guid BookId { get; } = Guid.NewGuid();
         public IntercompanyBalanceConfirmationActionRequest? LastAction { get; private set; }

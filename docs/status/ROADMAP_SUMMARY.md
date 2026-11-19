@@ -77,15 +77,15 @@ Snapshot date: 2026-11-12
 | W12-CREDIT-001 | DirectLoan operations and evidence reconciliation | planned | green | medium | Accounting and Ledger |
 | W12-ENTITY-001 | Effective entity lifecycle and audited book-control migration | accepted | green | high | Accounting and Ledger |
 | W12-FINRPT-001 | Ledger-backed financial statement control pack | planned | green | medium | Accounting and Ledger |
-| W12-ICACCRUAL-001 | Governed intercompany loan-interest accrual from structured terms | in_progress | yellow | high | Accounting and Ledger |
+| W12-ICACCRUAL-001 | Governed intercompany loan-interest accrual from structured terms | ready_for_acceptance | green | high | Accounting and Ledger |
 | W12-ICAGREE-001 | Intercompany accounting profiles and legacy attribution | accepted | green | high | Accounting and Ledger |
-| W12-ICCOMPOUND-001 | Periodic compounding of governed intercompany interest on posted accruals | in_progress | yellow | medium | Accounting and Ledger |
-| W12-ICCONFIRM-001 | Reciprocal intercompany balance confirmation, advisory | in_progress | yellow | high | Accounting and Ledger |
-| W12-ICFEE-001 | Governed fixed intercompany management fees from declared terms | in_progress | yellow | high | Accounting and Ledger |
-| W12-ICFLOAT-001 | Floating-rate intercompany loan interest from reviewed fixings | in_progress | yellow | high | Accounting and Ledger |
+| W12-ICCOMPOUND-001 | Periodic compounding of governed intercompany interest on posted accruals | ready_for_acceptance | green | medium | Accounting and Ledger |
+| W12-ICCONFIRM-001 | Reciprocal intercompany balance confirmation, advisory | ready_for_acceptance | green | high | Accounting and Ledger |
+| W12-ICFEE-001 | Governed fixed intercompany management fees from declared terms | ready_for_acceptance | green | high | Accounting and Ledger |
+| W12-ICFLOAT-001 | Floating-rate intercompany loan interest from reviewed fixings | ready_for_acceptance | green | high | Accounting and Ledger |
 | W12-ICINCOME-001 | Policy-governed intercompany revenue and expense elimination | accepted | green | medium | Accounting and Ledger |
 | W12-ICPAIR-001 | Durable reviewed counterpart proposals and aged intercompany breaks | accepted | green | high | Accounting and Ledger |
-| W12-ICSCHEDULE-001 | Opt-in, reviewed intercompany accrual schedules | in_progress | yellow | medium | Accounting and Ledger |
+| W12-ICSCHEDULE-001 | Opt-in, reviewed intercompany accrual schedules | ready_for_acceptance | green | medium | Accounting and Ledger |
 | W12-YEND-001 | Fiscal year-end close and opening-balance roll-forward | in_progress | green | medium | Accounting and Ledger |
 | W13-OMS-001 | Governed order management and broker execution workbench | planned | green | medium | Execution and Fund Accounts |
 | W13-STRAT-001 | Governed strategy formulation and execution lifecycle | planned | green | medium | Strategy Analytics |

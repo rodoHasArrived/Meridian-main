@@ -116,7 +116,8 @@ internal sealed class IntercompanyCloseAdvisorySource(IServiceProvider services)
     }
 
     // Reciprocal balance confirmation status joins the same advisory list. Close readiness attaches the advisory
-    // after deciding eligibility, so these findings inform the controller and never block close.
+    // after deciding eligibility, so these findings never change it; a book's reviewed confirmation close policy
+    // (ADR-032, IIntercompanyConfirmationCloseGate) is the separate, opt-in path that can block close.
     private async Task<IntercompanyObligationMonitorDto> WithConfirmationFindingsAsync(IntercompanyObligationMonitorDto advisory,
         string tenantId, string companyId, Guid bookId, DateOnly periodEnd, CancellationToken ct)
     {
@@ -137,13 +138,6 @@ internal sealed class IntercompanyCloseAdvisorySource(IServiceProvider services)
         return added.Count == 0 ? advisory : advisory with { Findings = [.. advisory.Findings, .. added] };
     }
 
-    private static string ConfirmationCode(string code) => "intercompany.confirmation." + code switch
-    {
-        "NotProposed" => "not-proposed",
-        "AwaitingConfirmation" => "awaiting-confirmation",
-        "Disputed" => "disputed",
-        "BalancesChanged" => "balances-changed",
-        "ResolvedAwaitingProposal" => "resolved-awaiting-proposal",
-        _ => "unavailable"
-    };
+    private static string ConfirmationCode(string code)
+        => "intercompany.confirmation." + Meridian.FinancialOperations.Intercompany.IntercompanyConfirmationClosePolicyRules.Code(code);
 }

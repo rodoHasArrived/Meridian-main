@@ -165,10 +165,17 @@ terms. A confirmation is one record per tenant, company, profile and date, retai
 - Every step pins the version and balance digest it acted on. Balances that move after pinning are
   reported as changed, and a fresh proposal voids earlier sign-offs.
 
-Confirmation status is advisory. It joins the intercompany close advisory as
-`intercompany.confirmation.*` warnings and never changes close eligibility; an unreadable status is
-reported as unavailable, not treated as confirmed. Policy-governed close blocking and pairs that span
-two companies of one tenant are not implemented.
+Confirmation status is advisory by default. It joins the intercompany close advisory as
+`intercompany.confirmation.*` warnings, which never change close eligibility; an unreadable status is
+reported as unavailable, not treated as confirmed.
+
+A book may adopt one reviewed **confirmation close policy** (ADR-032, proposed decision
+`DEC-IC-CONFIRM-002`). It names which findings block close: `not-proposed`, `awaiting-confirmation`,
+`disputed`, `balances-changed` or `resolved-awaiting-proposal`. One person proposes it and someone else
+approves it; it can be rejected or disabled with a reason. While it is active, a listed finding at the
+close period end adds an `intercompany-confirmation` close-readiness blocker, and confirmation that
+cannot be read makes the close decision incomplete. Pairs that span two companies of one tenant are not
+implemented.
 
 ## Reporting perimeter and implementation owners
 

@@ -2,8 +2,8 @@
   "counts": {
     "error": 0,
     "info": 0,
-    "total": 309,
-    "warning": 309
+    "total": 312,
+    "warning": 312
   },
   "failed": false,
   "findings": [
@@ -700,6 +700,16 @@
     {
       "details": {
         "schema": "ledger",
+        "table": "intercompany_confirmation_close_policies"
+      },
+      "message": "Business table ledger.intercompany_confirmation_close_policies does not have a table comment.",
+      "object": "ledger.intercompany_confirmation_close_policies",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
         "table": "intercompany_counterpart_reservations"
       },
       "message": "Business table ledger.intercompany_counterpart_reservations does not have a table comment.",
@@ -834,6 +844,26 @@
       },
       "message": "Business table ledger.legacy_intercompany_attributions does not have a table comment.",
       "object": "ledger.legacy_intercompany_attributions",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "manual_journal_entry_drafts"
+      },
+      "message": "Business table ledger.manual_journal_entry_drafts does not have a table comment.",
+      "object": "ledger.manual_journal_entry_drafts",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "manual_journal_mutation_receipts"
+      },
+      "message": "Business table ledger.manual_journal_mutation_receipts does not have a table comment.",
+      "object": "ledger.manual_journal_mutation_receipts",
       "rule_id": "business-table-must-have-comment",
       "severity": "warning"
     },
@@ -3448,5 +3478,5 @@
       "severity": "warning"
     }
   ],
-  "fingerprint": "87b1f01978d1694c9d09d5401cf4f3e91056107aa04b46746a54172c0bb7132a"
+  "fingerprint": "608caa574e46deab33225d287b3ccb879ea729a3d8907fbc8ddca7a9188cc085"
 }
