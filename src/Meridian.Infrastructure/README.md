@@ -742,9 +742,10 @@ Do not add an Infrastructure to Application dependency. Provider abstractions sh
 
 ## Related docs
 
-- `docs/providers/`
+- `docs/development/provider-implementation.md`
+- `docs/reference/provider-capability-matrix.md`
 - `docs/architecture/module-map.md`
-- `docs/status/provider-validation-matrix.md`
+- `docs/reference/provider-validation-matrix.md`
 
 Alpaca statement activity snapshots retain a completeness cursor after successful pagination,
 including newest activity ID, timestamp watermark, page count and retained record count. Failed or

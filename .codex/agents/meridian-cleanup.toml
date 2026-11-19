@@ -257,7 +257,7 @@ public sealed class MyProviderClient : IMarketDataClient { ... }\r
 - Abstract base classes (`BaseHistoricalDataProvider`, etc.) — attributes belong\r
   on concrete implementations only\r
 - Test doubles, fakes, and mocks in `tests/`\r
-- The template scaffolding in `Adapters/_Template/`\r
+- The template scaffolding in `docs/examples/provider-template/`\r
 \r
 ---\r
 \r

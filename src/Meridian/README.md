@@ -166,6 +166,6 @@ Route orchestration changes through `src/Meridian.Application` and shared contra
 
 ## Related docs
 
-- `docs/developer/build-test-run.md`
+- `docs/start/README.md`
 - `docs/architecture/module-map.md`
 - `docs/source/generated/source-module-index.md`
