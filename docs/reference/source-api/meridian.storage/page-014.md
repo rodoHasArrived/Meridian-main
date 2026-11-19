@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LineageReport
+
+Qualified name: <code>Meridian.Storage.Services.LineageReport</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/DataLineageService.cs:465](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L465).
+
+```csharp
+public sealed record LineageReport(DateTime GeneratedAtUtc, int TotalTrackedFiles, int ActiveFiles, int DeletedFiles, int TotalIngestions, int TotalTransformations, int TotalMigrations, Dictionary<string, int> SourceDistribution, Dictionary<string, int> TransformationTypes);
+```
+
 ## MaintenanceJob
 
 Qualified name: <code>Meridian.Storage.Services.MaintenanceJob</code>. Kind: `record`.
@@ -725,14 +735,4 @@ Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1653](../../../..
 
 ```csharp
 public sealed record ScheduledJob(string Id, MaintenanceJob Job, DateTimeOffset ScheduledStart, JobStatus Status, DateTimeOffset CreatedAt);
-```
-
-## ScheduleOptions
-
-Qualified name: <code>Meridian.Storage.Services.ScheduleOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1661](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1661).
-
-```csharp
-public sealed record ScheduleOptions(bool AllowImmediate = true, TimeSpan MaxWaitTime = default);
 ```

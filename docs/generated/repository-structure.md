@@ -2215,7 +2215,8 @@ Meridian-main
 │   │   │   │   ├── page-001.md
 │   │   │   │   ├── page-002.md
 │   │   │   │   ├── page-003.md
-│   │   │   │   └── page-004.md
+│   │   │   │   ├── page-004.md
+│   │   │   │   └── page-005.md
 │   │   │   ├── meridian.execution.sdk
 │   │   │   │   ├── page-001.md
 │   │   │   │   ├── page-002.md
@@ -6683,6 +6684,7 @@ Meridian-main
 │   │   ├── Events
 │   │   │   ├── AutomatedTradeFillAccountingService.cs
 │   │   │   ├── CanonicalPaperPortfolioBootstrapper.cs
+│   │   │   ├── FileTradeFillLedger.cs
 │   │   │   ├── IRetainedTradeEventPublisher.cs
 │   │   │   ├── ITradeEventPublisher.cs
 │   │   │   ├── LedgerPostingConsumer.cs
@@ -8354,6 +8356,7 @@ Meridian-main
 │   │   │   ├── FileLedgerJournalLog.cs
 │   │   │   ├── FileLedgerJournalLogFactory.cs
 │   │   │   ├── FileLegacyIntercompanyAttributionStore.cs
+│   │   │   ├── FileTradeFillLedgerJournalStore.cs
 │   │   │   ├── GeneralLedgerExportBuilder.cs
 │   │   │   ├── GeneralLedgerSymbolPnlBuilder.cs
 │   │   │   ├── GovernedLedgerPostingTarget.cs
@@ -13423,6 +13426,7 @@ Meridian-main
 │   │   │   │   ├── EventDrivenDecouplingTests.CashFlow.cs
 │   │   │   │   ├── EventDrivenDecouplingTests.CompletedEvidenceReplay.cs
 │   │   │   │   ├── EventDrivenDecouplingTests.cs
+│   │   │   │   ├── EventDrivenDecouplingTests.FileLedger.cs
 │   │   │   │   ├── EventDrivenDecouplingTests.LegacyCashFlowReplay.cs
 │   │   │   │   ├── EventDrivenDecouplingTests.PreCoverAccountingReplay.cs
 │   │   │   │   ├── EventDrivenDecouplingTests.SharedChart.cs
@@ -14672,6 +14676,7 @@ Meridian-main
 │   │   │   ├── FileLedgerJournalLogTests.cs
 │   │   │   ├── FileMaintenanceServiceTests.cs
 │   │   │   ├── FilePermissionsServiceTests.cs
+│   │   │   ├── FileTradeFillLedgerJournalStoreTests.cs
 │   │   │   ├── FiscalYearClosePlanPostgresTests.cs
 │   │   │   ├── FundAccountTenantColumnMigrationTests.cs
 │   │   │   ├── FundScopedWriteTenantGateTests.cs

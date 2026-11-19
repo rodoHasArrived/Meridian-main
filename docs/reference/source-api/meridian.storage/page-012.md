@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterDbMapper
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityMasterDbMapper</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs:8](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs#L8).
+
+Maps persisted Security Master projections to public security summary and detail contracts.
+
+```csharp
+public static class SecurityMasterDbMapper
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static SecuritySummaryDto ToSummary(SecurityProjectionRecord record) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs:10](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs#L10) |  |
+| <code>public static SecurityDetailDto ToDetail(SecurityProjectionRecord record) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs:20](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs#L20) |  |
+
 ## SecurityMasterMigrationRunner
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityMasterMigrationRunner</code>. Kind: `class`.
@@ -783,14 +802,4 @@ Source: [src/Meridian.Storage/Services/StorageSearchService.cs:809](../../../../
 
 ```csharp
 public sealed record FacetedSearchResult(int TotalMatches, int FileCount, Dictionary<string, Dictionary<string, int>> Facets, IReadOnlyList<FileSearchResult> Results);
-```
-
-## FileCompressionOptions
-
-Qualified name: <code>Meridian.Storage.Services.FileCompressionOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs:426](../../../../src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs#L426).
-
-```csharp
-public sealed record FileCompressionOptions(bool DryRun = false, bool BackupBeforeCompression = true, string? BackupPath = null, string[]? Paths = null, TimeSpan MinimumQuietPeriod = default, bool OnlyClosedPeriods = true);
 ```

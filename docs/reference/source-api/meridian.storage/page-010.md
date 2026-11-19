@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FileBondProviderResponseStore
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.FileBondProviderResponseStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/FileBondProviderResponseStore.cs:10](../../../../src/Meridian.Storage/SecurityMaster/FileBondProviderResponseStore.cs#L10).
+
+Immutable exact-response evidence. Content-addressed publication is atomic across processes.
+
+```csharp
+public sealed class FileBondProviderResponseStore(string dataRoot) : IBondProviderResponseStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;BondProviderResponseDto&gt; RetainAsync(string tenantId, string companyId, string providerId, string rawResponseJson, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/FileBondProviderResponseStore.cs:15](../../../../src/Meridian.Storage/SecurityMaster/FileBondProviderResponseStore.cs#L15) |  |
+| <code>public async Task&lt;BondProviderResponseDto?&gt; GetAsync(string tenantId, string companyId, string contentSha256, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/FileBondProviderResponseStore.cs:59](../../../../src/Meridian.Storage/SecurityMaster/FileBondProviderResponseStore.cs#L59) |  |
+
 ## FileEdgarReferenceDataStore
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.FileEdgarReferenceDataStore</code>. Kind: `class`.
@@ -941,16 +960,4 @@ OtcCollateral / MarginCallIssued.
 
 ```csharp
 public sealed record OtcMarginCallIssuedPayload(OtcMarginCallPayload Call, OtcMarginCallSnapshotReferencePayload Snapshot) : ISecurityGovernancePayload;
-```
-
-## OtcMarginCallPayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.OtcMarginCallPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:174](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L174).
-
-A margin call as the OtcCollateral stream records it.
-
-```csharp
-public sealed record OtcMarginCallPayload(Guid CallId, Guid NettingSetId, Guid CollateralAgreementId, Guid SnapshotId, string Kind, string Mover, string Currency, decimal AmountCalled, decimal? AmountAgreed, string Status, DateOnly IssuedOn, DateOnly? DueOn, string? DisputeReason, DateOnly? SettledOn, decimal? SettledAmount, string? Notes, long Version, string UpdatedBy, DateTimeOffset UpdatedAt);
 ```

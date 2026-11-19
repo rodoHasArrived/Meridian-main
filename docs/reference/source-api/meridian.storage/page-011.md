@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OtcMarginCallPayload
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.OtcMarginCallPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:174](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L174).
+
+A margin call as the OtcCollateral stream records it.
+
+```csharp
+public sealed record OtcMarginCallPayload(Guid CallId, Guid NettingSetId, Guid CollateralAgreementId, Guid SnapshotId, string Kind, string Mover, string Currency, decimal AmountCalled, decimal? AmountAgreed, string Status, DateOnly IssuedOn, DateOnly? DueOn, string? DisputeReason, DateOnly? SettledOn, decimal? SettledAmount, string? Notes, long Version, string UpdatedBy, DateTimeOffset UpdatedAt);
+```
+
 ## OtcMarginCallSnapshotReferencePayload
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.OtcMarginCallSnapshotReferencePayload</code>. Kind: `record`.
@@ -1240,22 +1252,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public bool IsHistoryAvailable =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs:64](../../../../src/Meridian.Storage/SecurityMaster/ISecurityIdentifierHistoryStore.cs#L64) | False when the cutoff precedes the migrated baseline, so rows that already existed then cannot be reported. True when no baseline applies or the cutoff is at or after it. |
-
-## SecurityMasterDbMapper
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityMasterDbMapper</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs:8](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs#L8).
-
-Maps persisted Security Master projections to public security summary and detail contracts.
-
-```csharp
-public static class SecurityMasterDbMapper
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static SecuritySummaryDto ToSummary(SecurityProjectionRecord record) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs:10](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs#L10) |  |
-| <code>public static SecurityDetailDto ToDetail(SecurityProjectionRecord record) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs:20](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs#L20) |  |

@@ -97,6 +97,35 @@ source identity, exact book/period scope and changed-content refusal. Session re
 pending assessments before exposing rebuilt cash and journals. An unresolved assessment blocks
 further fills, settlements and close. Account-level charges have no inferred strategy allocation.
 
+### File-backed trade-fill journal (no Postgres)
+
+Set `Execution:TradeFillLedgerPosting:Store` to `File` to post paper fills without Postgres.
+`Postgres`, the default, keeps the behavior described above. File mode needs `Enabled`,
+`AggregateId`, `PeriodId`, `LedgerBookId` and an `ExpectedPeriodVersion`; use `0` when there is no
+Postgres period. Fills still flow through `LedgerPostingConsumer`, the WAL handoff store and the
+same `DurableLedgerPostingTarget` → `GovernedTradeFillLedgerPostingTarget` chain, so
+posting-identity collisions, equivalent retries and replay comparison behave as they do on
+Postgres. `FileTradeFillLedgerJournalStore` keeps each posting scope under
+`{DataRoot}/execution/trade-fill-ledger/file-ledger/{sha256(scope)}/` in two parts:
+
+- `journal/` is a hash-chained `FileLedgerJournalLog` of the journal entries.
+- `envelopes/` is an fsynced WAL holding each entry's aggregate, period, command, policy, rule and
+  source identities. Each envelope is bound to its entry by the SHA-256 of the entry's journal
+  JSON. The envelope is written first, so a crash between the two writes leaves only an orphan
+  envelope. The orphan is superseded when the fill is replayed.
+
+Before the host starts, `FileTradeFillLedger.VerifyBeforeHostStartupAsync` rebuilds and verifies
+the journal and its envelopes. A broken chain or a missing or mismatched envelope stops startup.
+File mode has these limits:
+
+- It supports only the journal-only protocol (v1). `CanonicalAccounting` is refused at
+  configuration time.
+- It posts to an unbound ledger: journals must balance and have unique IDs, but no per-line currency
+  detail is required. This matches what the Postgres store accepts for v1.
+- Paper financing accruals are not posted, because they validate against Postgres periods and books.
+- The store is not registered as the host `ILedgerJournalStore`. Book, period, tax-lot and scoped
+  query features stay Postgres-only, and so do the run-ledger read APIs below.
+
 `POST /api/portfolio/import-runs` retains an immutable broker snapshot before subscription effects
 and optionally prepares one opening-balance draft. Reusing the run ID resumes its checkpoints;
 different content under that ID is refused. Opening balances require complete cash, quantity,

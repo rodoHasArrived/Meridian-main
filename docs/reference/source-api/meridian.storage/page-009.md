@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FileStatistics
+
+Qualified name: <code>Meridian.Storage.Replay.FileStatistics</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:500](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L500).
+
+Statistics about files in a directory.
+
+```csharp
+public readonly record struct FileStatistics(int TotalFiles, long TotalBytes, int CompressedFiles, int UncompressedFiles);
+```
+
 ## JsonlReplayer
 
 Qualified name: <code>Meridian.Storage.Replay.JsonlReplayer</code>. Kind: `class`.
@@ -881,22 +893,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public async Task&lt;BondMarketImportResult&gt; AppendAsync(string tenantId, IReadOnlyList&lt;BondMarketObservationDto&gt; observations, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/FileBondMarketDataStore.cs:15](../../../../src/Meridian.Storage/SecurityMaster/FileBondMarketDataStore.cs#L15) |  |
 | <code>public Task&lt;IReadOnlyList&lt;BondMarketObservationDto&gt;&gt; ReadAsync(string tenantId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/FileBondMarketDataStore.cs:60](../../../../src/Meridian.Storage/SecurityMaster/FileBondMarketDataStore.cs#L60) |  |
-
-## FileBondProviderResponseStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.FileBondProviderResponseStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/FileBondProviderResponseStore.cs:10](../../../../src/Meridian.Storage/SecurityMaster/FileBondProviderResponseStore.cs#L10).
-
-Immutable exact-response evidence. Content-addressed publication is atomic across processes.
-
-```csharp
-public sealed class FileBondProviderResponseStore(string dataRoot) : IBondProviderResponseStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;BondProviderResponseDto&gt; RetainAsync(string tenantId, string companyId, string providerId, string rawResponseJson, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/FileBondProviderResponseStore.cs:15](../../../../src/Meridian.Storage/SecurityMaster/FileBondProviderResponseStore.cs#L15) |  |
-| <code>public async Task&lt;BondProviderResponseDto?&gt; GetAsync(string tenantId, string companyId, string contentSha256, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/FileBondProviderResponseStore.cs:59](../../../../src/Meridian.Storage/SecurityMaster/FileBondProviderResponseStore.cs#L59) |  |

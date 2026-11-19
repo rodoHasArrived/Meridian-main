@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MeridianDatabaseEnvironment
+
+Qualified name: <code>Meridian.Storage.MeridianDatabaseEnvironment</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/MeridianDatabaseEnvironment.cs:20](../../../../src/Meridian.Storage/MeridianDatabaseEnvironment.cs#L20).
+
+Unified database configuration for every money-path store. Setting the single MERIDIAN_DATABASE_URL environment variable enables PostgreSQL persistence for all domains at once; each per-domain MERIDIAN_*_CONNECTION_STRING variable remains supported and always wins over the unified value, so split-database deployments keep working.
+
+```csharp
+public static class MeridianDatabaseEnvironment
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string UnifiedVariable = &quot;MERIDIAN_DATABASE_URL&quot;;</code> | [src/Meridian.Storage/MeridianDatabaseEnvironment.cs:22](../../../../src/Meridian.Storage/MeridianDatabaseEnvironment.cs#L22) |  |
+| <code>public static readonly IReadOnlyList&lt;string&gt; PropagatedConnectionStringVariables = [&quot;MERIDIAN_LEDGER_CONNECTION_STRING&quot;, &quot;MERIDIAN_SECURITY_MASTER_CONNECTION_STRING&quot;, &quot;MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING&quot;, &quot;MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING&quot;, &quot;MERIDIAN_ASSET_OPERATIONS_CONNECTION_STRING&quot;, &quot;MERIDIAN_BANKING_CONNECTION_STRING&quot;, &quot;MERIDIAN_MONEY_MARKET_CONNECTION_STRING&quot;, &quot;MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING&quot;];</code> | [src/Meridian.Storage/MeridianDatabaseEnvironment.cs:27](../../../../src/Meridian.Storage/MeridianDatabaseEnvironment.cs#L27) | Per-domain connection-string variables that inherit UnifiedVariable when unset. |
+| <code>public static IReadOnlyList&lt;string&gt; ApplyUnifiedDatabaseUrl();</code> | [src/Meridian.Storage/MeridianDatabaseEnvironment.cs:46](../../../../src/Meridian.Storage/MeridianDatabaseEnvironment.cs#L46) | Propagates MERIDIAN_DATABASE_URL into every unset per-domain connection-string variable. Idempotent and safe to call from every composition root; explicitly set per-domain variables are never overwritten. Returns the variables populated by this call. |
+| <code>public static string NormalizeToConnectionString(string value);</code> | [src/Meridian.Storage/MeridianDatabaseEnvironment.cs:82](../../../../src/Meridian.Storage/MeridianDatabaseEnvironment.cs#L82) | Converts a postgres:// / postgresql:// URL into Npgsql keyword form (Host=...;Port=...;Database=...). Values already in keyword form pass through unchanged. Query parameters are forwarded as keywords; sslmode maps to SSL Mode. |
+
 ## MigrationDriftPolicy
 
 Qualified name: <code>Meridian.Storage.Migrations.MigrationDriftPolicy</code>. Kind: `enum`.
@@ -1146,15 +1167,3 @@ Declared public members:
 | <code>public Dictionary&lt;string, StorageQuota&gt;? PerSymbol { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:393](../../../../src/Meridian.Storage/StorageOptions.cs#L393) | Per-symbol quotas. |
 | <code>public Dictionary&lt;string, StorageQuota&gt;? PerEventType { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:396](../../../../src/Meridian.Storage/StorageOptions.cs#L396) | Per-event-type quotas. |
 | <code>public DynamicQuotaConfig? Dynamic { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:399](../../../../src/Meridian.Storage/StorageOptions.cs#L399) | Dynamic quota configuration. |
-
-## FileStatistics
-
-Qualified name: <code>Meridian.Storage.Replay.FileStatistics</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:500](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L500).
-
-Statistics about files in a directory.
-
-```csharp
-public readonly record struct FileStatistics(int TotalFiles, long TotalBytes, int CompressedFiles, int UncompressedFiles);
-```

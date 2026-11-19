@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ILedgerJournalLog
+
+Qualified name: <code>Meridian.Storage.Ledger.ILedgerJournalLog</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs:26](../../../../src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs#L26).
+
+An append-only, hash-chained journal of posted JournalEntry records.
+
+```csharp
+public interface ILedgerJournalLog : IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>string ScopeId { get; }</code> | [src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs:29](../../../../src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs#L29) | The run, session or book the journal belongs to. |
+| <code>Task AppendAsync(JournalEntry entry, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs:35](../../../../src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs#L35) | Durably appends entry. Re-appending an entry id with identical content is a no-op; the same id with different content is rejected, because posted history never changes. |
+| <code>Task&lt;global::Meridian.Ledger.Ledger&gt; LoadLedgerAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs:39](../../../../src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs#L39) | Verifies the chain and returns every entry re-posted into a ledger bound to the log&#x27;s policy. |
+| <code>Task&lt;LedgerJournalChainVerification&gt; VerifyAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs:42](../../../../src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs#L42) | Re-verifies the chain from its genesis record without throwing on a break. |
+
 ## ILedgerJournalLogFactory
 
 Qualified name: <code>Meridian.Storage.Ledger.ILedgerJournalLogFactory</code>. Kind: `interface`.
@@ -857,22 +878,3 @@ Source: [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:42](../..
 ```csharp
 public sealed record LedgerReportingInventoryCoverageBlocker(LedgerAccount Account, string Reason);
 ```
-
-## LedgerReportingOpenPositions
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerReportingOpenPositions</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:30](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L30).
-
-```csharp
-public sealed record LedgerReportingOpenPositions(DateOnly AsOf, IReadOnlyList<LedgerTaxLotRecord> Lots, IReadOnlyList<string> Blockers)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DateTimeOffset? CutoffUtc { get; init; }</code> | [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:34](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L34) | Optional exact occurrence cutoff used for intraday journal/lot agreement. |
-| <code>public IReadOnlyList&lt;LedgerTaxLotRecord&gt; ClosedLots { get; init; } = [];</code> | [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:36](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L36) | Canonical zero-quantity after-snapshots prove closure without inferring absent holdings. |
-| <code>public IReadOnlyList&lt;LedgerReportingInventoryCoverageBlocker&gt; CoverageBlockers { get; init; } = [];</code> | [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:38](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L38) | Financial account-specific inventory coverage failures; unrelated subledgers do not block each other. |
-| <code>public IReadOnlySet&lt;LedgerAccount&gt; HistoricalLotAccounts { get; init; } = new HashSet&lt;LedgerAccount&gt;();</code> | [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:39](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L39) |  |

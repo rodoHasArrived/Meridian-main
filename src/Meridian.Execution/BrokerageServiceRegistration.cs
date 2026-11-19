@@ -277,6 +277,16 @@ public sealed class TradeFillLedgerPostingOptions
     public TimeSpan? CancellationTimeout { get; set; }
 }
 
+/// <summary>Authoritative journal store for execution trade-fill postings.</summary>
+public enum TradeFillLedgerStoreKind
+{
+    /// <summary>Governed Postgres ledger journal store.</summary>
+    Postgres,
+
+    /// <summary>File-backed, hash-chained journal under the data root; no database required.</summary>
+    File
+}
+
 /// <summary>
 /// Configuration-owned exact ledger scope for the production execution host. A period or book
 /// rollover requires updated values and a host restart so retained fills can never cross scopes.
@@ -286,6 +296,14 @@ public sealed class TradeFillLedgerPostingHostOptions
     public const string SectionKey = "Execution:TradeFillLedgerPosting";
 
     public bool Enabled { get; set; }
+
+    /// <summary>
+    /// Where accepted fills are journaled. <see cref="TradeFillLedgerStoreKind.Postgres"/> (the
+    /// default) posts to the governed Postgres ledger. <see cref="TradeFillLedgerStoreKind.File"/>
+    /// posts to a hash-chained, append-only journal under the data root and needs no database; it
+    /// supports only the legacy journal-only protocol (no <see cref="CanonicalAccounting"/>).
+    /// </summary>
+    public TradeFillLedgerStoreKind Store { get; set; } = TradeFillLedgerStoreKind.Postgres;
 
     public Guid AggregateId { get; set; }
 
@@ -321,6 +339,9 @@ public sealed class TradeFillLedgerPostingHostOptions
         if (!ExpectedPeriodVersion.HasValue || ExpectedPeriodVersion.Value < 0)
             throw new InvalidOperationException(
                 "Execution trade-fill posting requires the authoritative ExpectedPeriodVersion.");
+        if (Store == TradeFillLedgerStoreKind.File && CanonicalAccounting is not null)
+            throw new InvalidOperationException(
+                $"{SectionKey}:Store=File supports only journal-only posting; CanonicalAccounting requires the Postgres ledger store.");
 
         return new TradeFillLedgerPostingContext(
             $"ledger-book/{LedgerBookId:D}/period/{PeriodId:D}/aggregate/{AggregateId:D}" + (CanonicalAccounting is null ? "" : "/v2"),

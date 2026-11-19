@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerReportingOpenPositions
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerReportingOpenPositions</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:30](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L30).
+
+```csharp
+public sealed record LedgerReportingOpenPositions(DateOnly AsOf, IReadOnlyList<LedgerTaxLotRecord> Lots, IReadOnlyList<string> Blockers)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DateTimeOffset? CutoffUtc { get; init; }</code> | [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:34](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L34) | Optional exact occurrence cutoff used for intraday journal/lot agreement. |
+| <code>public IReadOnlyList&lt;LedgerTaxLotRecord&gt; ClosedLots { get; init; } = [];</code> | [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:36](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L36) | Canonical zero-quantity after-snapshots prove closure without inferring absent holdings. |
+| <code>public IReadOnlyList&lt;LedgerReportingInventoryCoverageBlocker&gt; CoverageBlockers { get; init; } = [];</code> | [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:38](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L38) | Financial account-specific inventory coverage failures; unrelated subledgers do not block each other. |
+| <code>public IReadOnlySet&lt;LedgerAccount&gt; HistoricalLotAccounts { get; init; } = new HashSet&lt;LedgerAccount&gt;();</code> | [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:39](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L39) |  |
+
 ## LedgerReportingSnapshot
 
 Qualified name: <code>Meridian.Storage.Ledger.LedgerReportingSnapshot</code>. Kind: `record`.
@@ -1510,24 +1529,3 @@ Summary of a specific schedule&#x27;s execution history.
 ```csharp
 public sealed record ScheduleExecutionSummary(string ScheduleId, string ScheduleName, int TotalExecutions, int SuccessfulExecutions, int FailedExecutions, double SuccessRate, TimeSpan AverageDuration, DateTimeOffset? LastExecutionAt, MaintenanceExecutionStatus? LastStatus, DateTimeOffset? NextScheduledAt, List<MaintenanceExecution> RecentExecutions);
 ```
-
-## MeridianDatabaseEnvironment
-
-Qualified name: <code>Meridian.Storage.MeridianDatabaseEnvironment</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/MeridianDatabaseEnvironment.cs:20](../../../../src/Meridian.Storage/MeridianDatabaseEnvironment.cs#L20).
-
-Unified database configuration for every money-path store. Setting the single MERIDIAN_DATABASE_URL environment variable enables PostgreSQL persistence for all domains at once; each per-domain MERIDIAN_*_CONNECTION_STRING variable remains supported and always wins over the unified value, so split-database deployments keep working.
-
-```csharp
-public static class MeridianDatabaseEnvironment
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string UnifiedVariable = &quot;MERIDIAN_DATABASE_URL&quot;;</code> | [src/Meridian.Storage/MeridianDatabaseEnvironment.cs:22](../../../../src/Meridian.Storage/MeridianDatabaseEnvironment.cs#L22) |  |
-| <code>public static readonly IReadOnlyList&lt;string&gt; PropagatedConnectionStringVariables = [&quot;MERIDIAN_LEDGER_CONNECTION_STRING&quot;, &quot;MERIDIAN_SECURITY_MASTER_CONNECTION_STRING&quot;, &quot;MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING&quot;, &quot;MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING&quot;, &quot;MERIDIAN_ASSET_OPERATIONS_CONNECTION_STRING&quot;, &quot;MERIDIAN_BANKING_CONNECTION_STRING&quot;, &quot;MERIDIAN_MONEY_MARKET_CONNECTION_STRING&quot;, &quot;MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING&quot;];</code> | [src/Meridian.Storage/MeridianDatabaseEnvironment.cs:27](../../../../src/Meridian.Storage/MeridianDatabaseEnvironment.cs#L27) | Per-domain connection-string variables that inherit UnifiedVariable when unset. |
-| <code>public static IReadOnlyList&lt;string&gt; ApplyUnifiedDatabaseUrl();</code> | [src/Meridian.Storage/MeridianDatabaseEnvironment.cs:46](../../../../src/Meridian.Storage/MeridianDatabaseEnvironment.cs#L46) | Propagates MERIDIAN_DATABASE_URL into every unset per-domain connection-string variable. Idempotent and safe to call from every composition root; explicitly set per-domain variables are never overwritten. Returns the variables populated by this call. |
-| <code>public static string NormalizeToConnectionString(string value);</code> | [src/Meridian.Storage/MeridianDatabaseEnvironment.cs:82](../../../../src/Meridian.Storage/MeridianDatabaseEnvironment.cs#L82) | Converts a postgres:// / postgresql:// URL into Npgsql keyword form (Host=...;Port=...;Database=...). Values already in keyword form pass through unchanged. Query parameters are forwarded as keywords; sslmode maps to SSL Mode. |

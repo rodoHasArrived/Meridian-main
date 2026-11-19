@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ScheduleOptions
+
+Qualified name: <code>Meridian.Storage.Services.ScheduleOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1661](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1661).
+
+```csharp
+public sealed record ScheduleOptions(bool AllowImmediate = true, TimeSpan MaxWaitTime = default);
+```
+
 ## ScheduleSlot
 
 Qualified name: <code>Meridian.Storage.Services.ScheduleSlot</code>. Kind: `record`.
@@ -975,15 +985,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static async Task&lt;TenantCutoverReadiness&gt; InspectAsync(FundStructureStoreOptions? fund, LedgerJournalStoreOptions? ledger, FundAccountStoreOptions? accounts, CancellationToken ct = default);</code> | [src/Meridian.Storage/Tenancy/PostgresTenantCutoverInspector.cs:44](../../../../src/Meridian.Storage/Tenancy/PostgresTenantCutoverInspector.cs#L44) |  |
 | <code>public static TenantCutoverReadiness Evaluate(IReadOnlyList&lt;TenantCutoverRecord&gt; rows);</code> | [src/Meridian.Storage/Tenancy/PostgresTenantCutoverInspector.cs:126](../../../../src/Meridian.Storage/Tenancy/PostgresTenantCutoverInspector.cs#L126) | Pure readiness policy; known references must resolve to exactly one matching owner. |
-
-## TenantCutoverFinding
-
-Qualified name: <code>Meridian.Storage.Tenancy.TenantCutoverFinding</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Tenancy/PostgresTenantCutoverInspector.cs:11](../../../../src/Meridian.Storage/Tenancy/PostgresTenantCutoverInspector.cs#L11).
-
-Counts only: startup diagnostics must not expose retained records or credentials.
-
-```csharp
-public sealed record TenantCutoverFinding(string Store, string Table, string Reason, int Count);
-```

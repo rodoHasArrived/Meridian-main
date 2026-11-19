@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TenantCutoverFinding
+
+Qualified name: <code>Meridian.Storage.Tenancy.TenantCutoverFinding</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Tenancy/PostgresTenantCutoverInspector.cs:11](../../../../src/Meridian.Storage/Tenancy/PostgresTenantCutoverInspector.cs#L11).
+
+Counts only: startup diagnostics must not expose retained records or credentials.
+
+```csharp
+public sealed record TenantCutoverFinding(string Store, string Table, string Reason, int Count);
+```
+
 ## TenantCutoverReadiness
 
 Qualified name: <code>Meridian.Storage.Tenancy.TenantCutoverReadiness</code>. Kind: `record`.
