@@ -834,6 +834,8 @@ Meridian-main
 │   └── pre-commit
 ├── .github
 │   ├── actions
+│   │   ├── close-superseded-refresh-prs
+│   │   │   └── action.yml
 │   │   ├── install-playwright-chromium
 │   │   │   └── action.yml
 │   │   └── setup-dotnet-nuget
@@ -9764,6 +9766,7 @@ Meridian-main
 │   │   │   │   │   ├── dense-table-virtualization.ts
 │   │   │   │   │   ├── dense-virtualization.test.ts
 │   │   │   │   │   ├── dense-virtualization.ts
+│   │   │   │   │   ├── density.test.ts
 │   │   │   │   │   ├── density.ts
 │   │   │   │   │   ├── dev-fixtures.test.ts
 │   │   │   │   │   ├── dev-fixtures.trading-risk.ts
@@ -15348,6 +15351,7 @@ Meridian-main
 │   │   │   ├── WorkstationStatementCaseworkAuthorityEndpointTests.cs
 │   │   │   ├── WorkstationStatementReconciliationEndpointTests.cs
 │   │   │   ├── WorkstationStreamEndpointTests.cs
+│   │   │   ├── WorkstationTableViewRegistrationTests.cs
 │   │   │   ├── WorkstationTenantContextTests.cs
 │   │   │   └── WorkstationWorkflowSummaryFinancialOperationsTests.cs
 │   │   ├── UiServices
