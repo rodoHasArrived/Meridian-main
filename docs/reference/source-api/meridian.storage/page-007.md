@@ -847,7 +847,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Ledger.PostgresManualJournalEntryDraftStore</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs:13](../../../../src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs#L13).
+Source: [src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs:14](../../../../src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs#L14).
 
 PostgreSQL manual journal drafts (ledger migration 077). Mirrors FileManualJournalEntryDraftStore: the same normalization, scope key, filters and ordering. Each row retains the complete draft DTO so init-only, server-held fields round-trip exactly. Optimistic version checks belong to the workbench.
 
@@ -859,13 +859,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public PostgresManualJournalEntryDraftStore(LedgerJournalStoreOptions options);</code> | [src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs:19](../../../../src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs#L19) |  |
-| <code>public LedgerJournalStoreOptions Options =&gt; …;</code> | [src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs:30](../../../../src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs#L30) | The schema whose drafts and command receipts this store shares. |
-| <code>public async Task&lt;IReadOnlyList&lt;string&gt;&gt; ListFundProfileIdsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs:32](../../../../src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs#L32) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ManualJournalEntryDraftDto&gt;&gt; ListAsync(string fundProfileId, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null) =&gt; …;</code> | [src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs:51](../../../../src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs#L51) |  |
-| <code>public async Task&lt;ManualJournalEntryDraftDto?&gt; GetAsync(string fundProfileId, Guid journalEntryId, CancellationToken ct = default, string? tenantId = null, string? companyId = null) =&gt; …;</code> | [src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs:59](../../../../src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs#L59) |  |
-| <code>public Task SaveAsync(ManualJournalEntryDraftDto draft, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs:68](../../../../src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs#L68) |  |
-| <code>public async Task SaveBatchAsync(IReadOnlyList&lt;ManualJournalEntryDraftDto&gt; drafts, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs:71](../../../../src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs#L71) |  |
+| <code>public PostgresManualJournalEntryDraftStore(LedgerJournalStoreOptions options);</code> | [src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs:20](../../../../src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs#L20) |  |
+| <code>public LedgerJournalStoreOptions Options =&gt; …;</code> | [src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs:31](../../../../src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs#L31) | The schema whose drafts and command receipts this store shares. |
+| <code>public async Task&lt;IReadOnlyList&lt;string&gt;&gt; ListFundProfileIdsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs:33](../../../../src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs#L33) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ManualJournalEntryDraftDto&gt;&gt; ListAsync(string fundProfileId, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null) =&gt; …;</code> | [src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs:52](../../../../src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs#L52) |  |
+| <code>public async Task&lt;ManualJournalEntryDraftDto?&gt; GetAsync(string fundProfileId, Guid journalEntryId, CancellationToken ct = default, string? tenantId = null, string? companyId = null) =&gt; …;</code> | [src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs:60](../../../../src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs#L60) |  |
+| <code>public Task SaveAsync(ManualJournalEntryDraftDto draft, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs:69](../../../../src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs#L69) |  |
+| <code>public async Task SaveBatchAsync(IReadOnlyList&lt;ManualJournalEntryDraftDto&gt; drafts, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs:72](../../../../src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs#L72) |  |
 
 ## PostgresPrivateCapitalStore
 
