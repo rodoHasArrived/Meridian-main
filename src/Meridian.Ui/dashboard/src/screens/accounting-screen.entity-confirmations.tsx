@@ -10,6 +10,7 @@ import type {
   IntercompanyBalanceConfirmation, IntercompanyConfirmationAction, IntercompanyConfirmationParty, IntercompanyConfirmationSummary
 } from "@/types/intercompany-confirmations";
 import { EntityOperationTable, MutationFeedback, OperationError, OperationField, today, useEntityData, useEntityMutation } from "./accounting-screen.entity-operations.shared";
+import { EntityConfirmationClosePolicy } from "./accounting-screen.entity-confirmation-close-policy";
 
 const statusText: Record<IntercompanyBalanceConfirmation["status"], string> = {
   Proposed: "Awaiting both sides", ConfirmedByPartyOne: "Party one confirmed", ConfirmedByPartyTwo: "Party two confirmed",
@@ -18,7 +19,8 @@ const statusText: Record<IntercompanyBalanceConfirmation["status"], string> = {
 
 /**
  * Reciprocal balance confirmation for the selected book. Both sides' balances are pinned from posted journals by the
- * server; this book's operator confirms or disputes only this book's side. Advisory: close readiness is unchanged.
+ * server; this book's operator confirms or disputes only this book's side. Advisory unless the book adopts a reviewed
+ * confirmation close policy (ADR-032), shown below the confirmations.
  */
 export function EntityBalanceConfirmations({ scope }: { scope: EntityOperationScope }) {
   const [asOf, setAsOf] = useState(today());
@@ -56,7 +58,7 @@ export function EntityBalanceConfirmations({ scope }: { scope: EntityOperationSc
   }
 
   return <section className="space-y-4" aria-label="Reciprocal balance confirmation"><h3 className="font-semibold">Reciprocal balance confirmation</h3>
-    <p className="text-sm text-muted-foreground">Each side confirms the due-to/due-from balance the other side holds, from posted journals only. Confirmation status is advisory: it appears in close readiness and never blocks close or posting.</p>
+    <p className="text-sm text-muted-foreground">Each side confirms the due-to/due-from balance the other side holds, from posted journals only. Confirmation status appears in close readiness. It never blocks posting, and blocks close only for the findings named by this book's approved confirmation close policy.</p>
     <form onSubmit={(event) => { event.preventDefault(); load(); }} className="space-y-3"><FormGrid columns={3}>
       <OperationField label="Confirmation as of" value={asOf} onChange={(value) => { setAsOf(value); setRequest(null); }} type="date" required />
       <p className="self-center text-sm">{scope.book.displayName} · {scope.book.baseCurrency}</p></FormGrid>
@@ -65,7 +67,7 @@ export function EntityBalanceConfirmations({ scope }: { scope: EntityOperationSc
     <OperationError error={summary.error} />{summary.loading ? <p role="status">Reading posted balances and retained confirmations…</p> : null}
     {summary.data ? <>
       <StatusBanner title={summary.data.findings.length ? `${summary.data.findings.length} advisory finding(s)` : "All agreement balances confirmed"}
-        tone={summary.data.findings.length ? "warning" : "info"} detail={`As of ${summary.data.asOf} · advisory only; close eligibility is unchanged.`} />
+        tone={summary.data.findings.length ? "warning" : "info"} detail={`As of ${summary.data.asOf} · close eligibility changes only through an active confirmation close policy.`} />
       {summary.data.findings.length ? <ul className="space-y-2" aria-label="Balance confirmation findings">{summary.data.findings.map((finding) =>
         <li key={`${finding.code}:${finding.accountingArrangementId}`} className="rounded border border-border p-3 text-sm"><p className="font-semibold">{finding.message}</p><p className="break-all text-muted-foreground">{finding.code} · accounting profile {finding.accountingArrangementId}</p></li>)}</ul> : null}
       <EntityOperationTable label="Reciprocal balance confirmations" rows={summary.data.confirmations} getRowId={(row) => row.confirmationId}
@@ -97,5 +99,6 @@ export function EntityBalanceConfirmations({ scope }: { scope: EntityOperationSc
       </div> : null}
       <MutationFeedback state={mutation} />
     </> : !request ? <p className="text-sm text-muted-foreground">Choose a date and load the confirmations for this book.</p> : null}
+    <EntityConfirmationClosePolicy scope={scope} />
   </section>;
 }

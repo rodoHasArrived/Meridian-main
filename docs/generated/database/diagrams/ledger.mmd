@@ -285,6 +285,16 @@ erDiagram
         jsonb payload
         timestamp_with_time_zone recorded_at
     }
+    ledger_intercompany_confirmation_close_policies {
+        uuid policy_id PK
+        bigint version PK
+        text tenant_id
+        text company_id
+        uuid ledger_book_id
+        text status
+        jsonb payload
+        timestamp_with_time_zone recorded_at
+    }
     ledger_intercompany_counterpart_reservations {
         text tenant_id PK
         uuid target_book_id PK
@@ -518,6 +528,28 @@ erDiagram
         text tenant_id
         text company_id
         jsonb payload
+    }
+    ledger_manual_journal_entry_drafts {
+        text fund_key PK
+        text tenant_key PK
+        text company_key PK
+        uuid journal_entry_id PK
+        text fund_profile_id
+        text tenant_id
+        text company_id
+        uuid ledger_book_id
+        integer version
+        timestamp_with_time_zone updated_at_utc
+        text payload
+        timestamp_with_time_zone recorded_at
+    }
+    ledger_manual_journal_mutation_receipts {
+        text command_key PK
+        boolean completed
+        timestamp_with_time_zone completed_at_utc
+        text digest
+        text payload
+        timestamp_with_time_zone recorded_at
     }
     ledger_onboarding_workspaces {
         text workspace_id PK

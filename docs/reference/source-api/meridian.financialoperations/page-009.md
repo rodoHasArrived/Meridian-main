@@ -6,6 +6,67 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementMatchingEngine
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementMatchingEngine</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.ConfiguredRules.cs:3](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.ConfiguredRules.cs#L3).
+
+```csharp
+public sealed partial class StatementMatchingEngine
+```
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:11](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L11).
+
+Matches normalized broker statement positions, cash balances, and transactions against Meridian&#x27;s internal portfolio, cash, and ledger views using deterministic staged rules. Pair selection routes through ReconciliationMatchKernel.SelectDeterministicAssignment{TPair} with side-qualified member keys, and transactions additionally get bounded one-to-many / many-to-one split matching over the kernel&#x27;s split search, so identical populations produce identical results regardless of input enumeration order.
+
+```csharp
+public sealed partial class StatementMatchingEngine
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StatementMatchingResult Run(StatementMatchingRequest request);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:29](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L29) |  |
+
+## StatementMatchingRequest
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementMatchingRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:863](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L863).
+
+```csharp
+public sealed record StatementMatchingRequest(IReadOnlyList<NormalizedStatementPosition> StatementPositions, IReadOnlyList<NormalizedStatementCashBalance> StatementCashBalances, IReadOnlyList<NormalizedStatementTransaction> StatementTransactions, IReadOnlyList<InternalPortfolioPosition> InternalPositions, IReadOnlyList<InternalCashBalance> InternalCashBalances, IReadOnlyList<InternalLedgerTransaction> InternalLedgerTransactions, StatementMatchingToleranceProfile ToleranceProfile);
+```
+
+## StatementMatchingResult
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementMatchingResult</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:993](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L993).
+
+```csharp
+public sealed record StatementMatchingResult(IReadOnlyList<StatementMatchResult> Results);
+```
+
+## StatementMatchingToleranceProfile
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementMatchingToleranceProfile</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:872](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L872).
+
+```csharp
+public sealed record StatementMatchingToleranceProfile(decimal PositionQuantity, decimal PositionMarketValue, decimal CashBalance, decimal TransactionQuantity, decimal TransactionNetAmount, int CandidateDateWindowDays = 2)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StatementToleranceProfile? Rules { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:881](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L881) | Complete policy, evaluated in declared order after exact matches. |
+| <code>public static StatementMatchingToleranceProfile FromProfile(StatementToleranceProfile profile) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:883](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L883) |  |
+
 ## StatementMatchKind
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementMatchKind</code>. Kind: `enum`.

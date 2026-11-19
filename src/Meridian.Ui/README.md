@@ -352,6 +352,13 @@ See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
 - No registry-backed TODOs are open for this module.
 <!-- source-todos:end -->
 
+### Intercompany journal drafts, counterpart picking and confirmation close policy
+
+The served Accounting bundle picks the existing counterpart journal from
+`/api/ledger/intercompany/proposals/{id}/counterpart-candidates` and includes the confirmation close-policy panel
+over `/api/ledger/intercompany/confirmation-close-policies`. See
+[ADR-032](../../docs/adr/032-intercompany-confirmation-close-policy.md).
+
 ## Validation
 
 ```bash

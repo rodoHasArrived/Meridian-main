@@ -251,6 +251,31 @@ public static class IntercompanyOperationsEndpoints
           .RequireAnyPermission(UserPermission.ManageLedgerReports, UserPermission.AdminMaintenance)
           .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
+        // Posted journals in an approved destination book that would pass the link check. Read-only; the link
+        // POST re-checks the chosen journal under the journal mutation lease.
+        app.MapGet("/api/ledger/intercompany/proposals/{proposalId:guid}/counterpart-candidates", async (Guid proposalId,
+            Guid targetBookId, HttpContext context) =>
+        {
+            var delivery = context.RequestServices.GetService<IntercompanyProposalDeliveryService>();
+            var store = context.RequestServices.GetService<IIntercompanyProposalStore>();
+            if (delivery is null || store is null)
+                return Unavailable();
+            var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var proposal = await store.GetAsync(tenant.TenantId!, proposalId, context.RequestAborted).ConfigureAwait(false);
+            if (proposal is null || !await BookAllowedAsync(context, proposal.Source.SourceBookId).ConfigureAwait(false)
+                || !await BookAllowedAsync(context, targetBookId).ConfigureAwait(false))
+                return EndpointHelpers.Forbidden();
+            try
+            {
+                var candidates = await delivery.ListCounterpartCandidatesAsync(tenant.TenantId!, proposalId, targetBookId,
+                    context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(candidates.ToArray(), options);
+            }
+            catch (UnauthorizedAccessException) { return EndpointHelpers.Forbidden(); }
+            catch (InvalidOperationException error) { return Results.Conflict(new { error = error.Message }); }
+        }).RequireAuthenticatedSession().RequireWorkstationTenantCompanyScope()
+          .RequireAnyPermission(UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports, UserPermission.AdminMaintenance);
+
         app.MapPost("/api/ledger/intercompany/proposals/{proposalId:guid}/link", async (Guid proposalId,
             LinkIntercompanyCounterpartRequest request, HttpContext context) =>
         {

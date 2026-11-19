@@ -34,6 +34,10 @@ public sealed record IntercompanyChoice(string Id, string Label)
     internal static IntercompanyChoice Book(LedgerBookDto book)
         => new(book.LedgerBookId.ToString("D"), $"{book.DisplayName} · {book.BaseCurrency} · {book.LedgerBookId:D}");
 
+    internal static IntercompanyChoice Journal(IntercompanyCounterpartCandidateDto candidate)
+        => new(candidate.JournalEntryId.ToString("D"),
+            $"{candidate.EffectiveDate:yyyy-MM-dd} · {candidate.Description} · {IntercompanyExactAmount.Text(candidate.Amount, candidate.Currency)} · {candidate.JournalEntryId:D}");
+
     internal static IntercompanyChoice Profile(ResolvedIntercompanyAccountingArrangementDto profile)
         => new(profile.ArrangementId.ToString("D"),
             $"{profile.ArrangementReference} · {profile.TemplateKind} · {profile.Currency} · legal v{profile.CanonicalAgreementVersion} · {profile.ArrangementId:D}");

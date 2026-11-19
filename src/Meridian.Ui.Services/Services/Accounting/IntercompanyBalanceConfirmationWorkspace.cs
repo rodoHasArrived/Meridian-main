@@ -11,7 +11,8 @@ namespace Meridian.Ui.Services.Services.Accounting;
 /// <summary>
 /// Desktop state for reciprocal intercompany balance confirmation over the routes the browser uses. Balances are
 /// pinned by the server from posted journals; this book's operator confirms or disputes only this book's side.
-/// Advisory only: nothing here changes close eligibility, and nothing is calculated here.
+/// Confirmation is advisory unless the book adopts a reviewed close policy (ADR-032, see the ClosePolicy part); nothing
+/// is calculated here.
 /// </summary>
 public sealed partial class IntercompanyBalanceConfirmationWorkspace : ObservableObject, IDisposable
 {
@@ -32,6 +33,8 @@ public sealed partial class IntercompanyBalanceConfirmationWorkspace : Observabl
     {
         _client = client;
         LoadCommand = new AsyncRelayCommand(LoadAsync, () => !IsBusy && !string.IsNullOrWhiteSpace(LedgerBook) && !string.IsNullOrWhiteSpace(AsOf));
+        foreach (var choice in BlockingCodeChoices)
+            choice.PropertyChanged += (_, _) => NotifyClosePolicyCommands();
         ProposeCommand = new AsyncRelayCommand(ProposeAsync, () => !IsBusy && CanManageLedger && Loaded && !string.IsNullOrWhiteSpace(SelectedProfile));
         ConfirmCommand = new AsyncRelayCommand(() => ActAsync(IntercompanyBalanceConfirmationActionDto.Confirm),
             () => Actionable && SelectedConfirmation!.CanConfirm);
@@ -96,6 +99,7 @@ public sealed partial class IntercompanyBalanceConfirmationWorkspace : Observabl
         _loadedBook = book;
         _loadedAsOf = date;
         Show(summary);
+        await LoadClosePolicyAsync(book, token);
         if (CanManageLedger)
         {
             var profiles = await _client.GetCoverageProfilesAsync(book, date, token);
@@ -159,6 +163,7 @@ public sealed partial class IntercompanyBalanceConfirmationWorkspace : Observabl
         Profiles.Clear();
         SelectedConfirmation = null;
         SummaryText = "";
+        ClearClosePolicy();
         RetireIdentity();
     }
 
@@ -244,6 +249,7 @@ public sealed partial class IntercompanyBalanceConfirmationWorkspace : Observabl
         ConfirmCommand?.NotifyCanExecuteChanged();
         DisputeCommand?.NotifyCanExecuteChanged();
         ResolveCommand?.NotifyCanExecuteChanged();
+        NotifyClosePolicyCommands();
     }
 }
 

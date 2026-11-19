@@ -1121,9 +1121,12 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IManualJournalEntryDraftStore>(sp =>
             new FileManualJournalEntryDraftStore(
                 Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "manual-journal-drafts.json")));
+        // Command receipts and the mutation lease must live beside the drafts they serialize.
         services.TryAddSingleton<IManualJournalMutationRecoveryStore>(sp =>
-            new FileManualJournalMutationRecoveryStore(
-                Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "manual-journal-drafts.json.mutations")));
+            sp.GetRequiredService<IManualJournalEntryDraftStore>() is PostgresManualJournalEntryDraftStore postgresDrafts
+                ? new PostgresManualJournalMutationRecoveryStore(postgresDrafts.Options)
+                : new FileManualJournalMutationRecoveryStore(
+                    Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "manual-journal-drafts.json.mutations")));
         services.TryAddSingleton<FileDailyValuationPortfolioSource>(sp =>
             new FileDailyValuationPortfolioSource(
                 Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "daily-valuation-schedules.json")));
@@ -1440,7 +1443,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<IAccountingCloseManagementService>(),
                 sp.GetService<ICloseReadinessSubjectSource>(),
                 sp.GetService<IIntercompanyCloseAdvisorySource>(),
-                () => sp.GetService<IBookOfRecordGuard>()));
+                () => sp.GetService<IBookOfRecordGuard>(),
+                sp.GetService<IIntercompanyConfirmationCloseGate>()));
         services.TryAddSingleton<SecurityMasterExceptionSlaConfig>();
         services.TryAddSingleton<IReconciliationSlaPolicyProvider>(sp =>
             new SecurityMasterReconciliationSlaPolicyProvider(

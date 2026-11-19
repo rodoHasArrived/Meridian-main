@@ -6,6 +6,35 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerReportingInventoryCoverageBlocker
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerReportingInventoryCoverageBlocker</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:42](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L42).
+
+```csharp
+public sealed record LedgerReportingInventoryCoverageBlocker(LedgerAccount Account, string Reason);
+```
+
+## LedgerReportingOpenPositions
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerReportingOpenPositions</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:30](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L30).
+
+```csharp
+public sealed record LedgerReportingOpenPositions(DateOnly AsOf, IReadOnlyList<LedgerTaxLotRecord> Lots, IReadOnlyList<string> Blockers)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DateTimeOffset? CutoffUtc { get; init; }</code> | [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:34](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L34) | Optional exact occurrence cutoff used for intraday journal/lot agreement. |
+| <code>public IReadOnlyList&lt;LedgerTaxLotRecord&gt; ClosedLots { get; init; } = [];</code> | [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:36](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L36) | Canonical zero-quantity after-snapshots prove closure without inferring absent holdings. |
+| <code>public IReadOnlyList&lt;LedgerReportingInventoryCoverageBlocker&gt; CoverageBlockers { get; init; } = [];</code> | [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:38](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L38) | Financial account-specific inventory coverage failures; unrelated subledgers do not block each other. |
+| <code>public IReadOnlySet&lt;LedgerAccount&gt; HistoricalLotAccounts { get; init; } = new HashSet&lt;LedgerAccount&gt;();</code> | [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:39](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L39) |  |
+
 ## LedgerReportingSnapshot
 
 Qualified name: <code>Meridian.Storage.Ledger.LedgerReportingSnapshot</code>. Kind: `record`.
@@ -308,6 +337,27 @@ Declared public members:
 | <code>public async Task&lt;IntercompanyBalanceConfirmationDto?&gt; GetAsync(Guid confirmationId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs:27](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs#L27) |  |
 | <code>public async Task&lt;IntercompanyBalanceConfirmationDto?&gt; FindAsync(Guid accountingArrangementId, DateOnly asOf, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs:35](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs#L35) |  |
 | <code>public async Task&lt;IntercompanyBalanceConfirmationDto&gt; AppendAsync(IntercompanyBalanceConfirmationDto next, long expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs:46](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyBalanceConfirmationStore.cs#L46) |  |
+
+## PostgresIntercompanyConfirmationClosePolicyStore
+
+Qualified name: <code>Meridian.Storage.Ledger.PostgresIntercompanyConfirmationClosePolicyStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/PostgresIntercompanyConfirmationClosePolicyStore.cs:10](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyConfirmationClosePolicyStore.cs#L10).
+
+Append-only confirmation close-policy versions (ledger migration 078), serialized per policy.
+
+```csharp
+public sealed class PostgresIntercompanyConfirmationClosePolicyStore : IIntercompanyConfirmationClosePolicyStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PostgresIntercompanyConfirmationClosePolicyStore(LedgerJournalStoreOptions options, IFundScopeTenantAccessor tenants);</code> | [src/Meridian.Storage/Ledger/PostgresIntercompanyConfirmationClosePolicyStore.cs:16](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyConfirmationClosePolicyStore.cs#L16) |  |
+| <code>public async Task&lt;IntercompanyConfirmationClosePolicyDto?&gt; GetAsync(string tenantId, Guid policyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresIntercompanyConfirmationClosePolicyStore.cs:25](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyConfirmationClosePolicyStore.cs#L25) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;IntercompanyConfirmationClosePolicyDto&gt;&gt; ListAsync(string tenantId, Guid? ledgerBookId = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresIntercompanyConfirmationClosePolicyStore.cs:37](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyConfirmationClosePolicyStore.cs#L37) |  |
+| <code>public async Task&lt;IntercompanyConfirmationClosePolicyDto&gt; AppendAsync(IntercompanyConfirmationClosePolicyDto next, long expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresIntercompanyConfirmationClosePolicyStore.cs:49](../../../../src/Meridian.Storage/Ledger/PostgresIntercompanyConfirmationClosePolicyStore.cs#L49) |  |
 
 ## PostgresIntercompanyProposalStore
 
@@ -880,6 +930,30 @@ Declared public members:
 | <code>public async Task&lt;LegacyIntercompanyAttributionDto&gt; AppendAsync(LegacyIntercompanyAttributionDto attribution, Guid? expectedPreviousAttributionId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLegacyIntercompanyAttributionStore.cs:42](../../../../src/Meridian.Storage/Ledger/PostgresLegacyIntercompanyAttributionStore.cs#L42) |  |
 | <code>public async Task&lt;IAsyncDisposable&gt; AcquireAuthorityLeaseAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLegacyIntercompanyAttributionStore.cs:88](../../../../src/Meridian.Storage/Ledger/PostgresLegacyIntercompanyAttributionStore.cs#L88) |  |
 
+## PostgresManualJournalEntryDraftStore
+
+Qualified name: <code>Meridian.Storage.Ledger.PostgresManualJournalEntryDraftStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs:14](../../../../src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs#L14).
+
+PostgreSQL manual journal drafts (ledger migration 077). Mirrors FileManualJournalEntryDraftStore: the same normalization, scope key, filters and ordering. Each row retains the complete draft DTO so init-only, server-held fields round-trip exactly. Optimistic version checks belong to the workbench.
+
+```csharp
+public sealed class PostgresManualJournalEntryDraftStore : IManualJournalEntryDraftStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PostgresManualJournalEntryDraftStore(LedgerJournalStoreOptions options);</code> | [src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs:20](../../../../src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs#L20) |  |
+| <code>public LedgerJournalStoreOptions Options =&gt; …;</code> | [src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs:31](../../../../src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs#L31) | The schema whose drafts and command receipts this store shares. |
+| <code>public async Task&lt;IReadOnlyList&lt;string&gt;&gt; ListFundProfileIdsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs:33](../../../../src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs#L33) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ManualJournalEntryDraftDto&gt;&gt; ListAsync(string fundProfileId, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null) =&gt; …;</code> | [src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs:52](../../../../src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs#L52) |  |
+| <code>public async Task&lt;ManualJournalEntryDraftDto?&gt; GetAsync(string fundProfileId, Guid journalEntryId, CancellationToken ct = default, string? tenantId = null, string? companyId = null) =&gt; …;</code> | [src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs:60](../../../../src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs#L60) |  |
+| <code>public Task SaveAsync(ManualJournalEntryDraftDto draft, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs:69](../../../../src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs#L69) |  |
+| <code>public async Task SaveBatchAsync(IReadOnlyList&lt;ManualJournalEntryDraftDto&gt; drafts, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs:72](../../../../src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs#L72) |  |
+
 ## PostgresPrivateCapitalStore
 
 Qualified name: <code>Meridian.Storage.Ledger.PostgresPrivateCapitalStore</code>. Kind: `class`.
@@ -1443,91 +1517,3 @@ Declared public members:
 | <code>public bool TruncateCorrupted { get; set; } = true;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:325](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L325) |  |
 | <code>public int? OverrideRetentionDays { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:328](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L328) |  |
 | <code>public bool SkipCriticalData { get; set; } = true;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:329](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L329) |  |
-
-## MaintenanceTaskType
-
-Qualified name: <code>Meridian.Storage.Maintenance.MaintenanceTaskType</code>. Kind: `enum`.
-
-Source: [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:209](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L209).
-
-Type of maintenance operation.
-
-```csharp
-public enum MaintenanceTaskType : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>HealthCheck</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:214](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L214) | Run health checks on storage files. |
-| <code>Cleanup</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:219](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L219) | Clean up orphaned and temporary files. |
-| <code>Defragmentation</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:224](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L224) | Defragment small files into larger chunks. |
-| <code>TierMigration</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:229](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L229) | Migrate files between storage tiers based on age. |
-| <code>Compression</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:234](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L234) | Recompress files with optimal compression settings. |
-| <code>Repair</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:239](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L239) | Repair corrupted or truncated files. |
-| <code>FullMaintenance</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:244](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L244) | Full maintenance: health check, cleanup, defrag, and tier migration. |
-| <code>IntegrityCheck</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:249](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L249) | Verify and repair file integrity (checksums). |
-| <code>Archival</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:254](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L254) | Archive old data to cold storage. |
-| <code>RetentionEnforcement</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:259](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L259) | Enforce retention policies and delete expired data. |
-
-## ScheduledArchiveMaintenanceService
-
-Qualified name: <code>Meridian.Storage.Maintenance.ScheduledArchiveMaintenanceService</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs:15](../../../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs#L15).
-
-Background service that schedules and executes archive maintenance tasks. Integrates with FileMaintenanceService and TierMigrationService for actual operations.
-
-```csharp
-public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArchiveMaintenanceService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public event EventHandler&lt;MaintenanceExecution&gt;? ExecutionStarted;</code> | [src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs:34](../../../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs#L34) |  |
-| <code>public event EventHandler&lt;MaintenanceExecution&gt;? ExecutionCompleted;</code> | [src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs:35](../../../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs#L35) |  |
-| <code>public event EventHandler&lt;MaintenanceExecution&gt;? ExecutionFailed;</code> | [src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs:36](../../../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs#L36) |  |
-| <code>public bool IsRunning =&gt; …;</code> | [src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs:38](../../../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs#L38) |  |
-| <code>public int QueuedExecutions =&gt; …;</code> | [src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs:39](../../../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs#L39) |  |
-| <code>public MaintenanceExecution? CurrentExecution =&gt; …;</code> | [src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs:40](../../../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs#L40) |  |
-| <code>public ScheduledArchiveMaintenanceService(ILogger&lt;ScheduledArchiveMaintenanceService&gt; logger, ArchiveMaintenanceScheduleManager scheduleManager, IFileMaintenanceService fileMaintenanceService, ITierMigrationService tierMigrationService, StorageOptions storageOptions);</code> | [src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs:44](../../../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs#L44) |  |
-| <code>public async Task&lt;MaintenanceExecution&gt; ExecuteMaintenanceAsync(MaintenanceTaskType taskType, MaintenanceTaskOptions? options = null, string[]? targetPaths = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs:1203](../../../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs#L1203) |  |
-| <code>public async Task&lt;MaintenanceExecution&gt; TriggerScheduleAsync(string scheduleId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs:1293](../../../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs#L1293) |  |
-| <code>public Task&lt;bool&gt; CancelExecutionAsync(string executionId);</code> | [src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs:1333](../../../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs#L1333) |  |
-| <code>public MaintenanceServiceStatus GetStatus();</code> | [src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs:1356](../../../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs#L1356) |  |
-
-## ScheduleExecutionSummary
-
-Qualified name: <code>Meridian.Storage.Maintenance.ScheduleExecutionSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:647](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L647).
-
-Summary of a specific schedule&#x27;s execution history.
-
-```csharp
-public sealed record ScheduleExecutionSummary(string ScheduleId, string ScheduleName, int TotalExecutions, int SuccessfulExecutions, int FailedExecutions, double SuccessRate, TimeSpan AverageDuration, DateTimeOffset? LastExecutionAt, MaintenanceExecutionStatus? LastStatus, DateTimeOffset? NextScheduledAt, List<MaintenanceExecution> RecentExecutions);
-```
-
-## MeridianDatabaseEnvironment
-
-Qualified name: <code>Meridian.Storage.MeridianDatabaseEnvironment</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/MeridianDatabaseEnvironment.cs:20](../../../../src/Meridian.Storage/MeridianDatabaseEnvironment.cs#L20).
-
-Unified database configuration for every money-path store. Setting the single MERIDIAN_DATABASE_URL environment variable enables PostgreSQL persistence for all domains at once; each per-domain MERIDIAN_*_CONNECTION_STRING variable remains supported and always wins over the unified value, so split-database deployments keep working.
-
-```csharp
-public static class MeridianDatabaseEnvironment
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string UnifiedVariable = &quot;MERIDIAN_DATABASE_URL&quot;;</code> | [src/Meridian.Storage/MeridianDatabaseEnvironment.cs:22](../../../../src/Meridian.Storage/MeridianDatabaseEnvironment.cs#L22) |  |
-| <code>public static readonly IReadOnlyList&lt;string&gt; PropagatedConnectionStringVariables = [&quot;MERIDIAN_LEDGER_CONNECTION_STRING&quot;, &quot;MERIDIAN_SECURITY_MASTER_CONNECTION_STRING&quot;, &quot;MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING&quot;, &quot;MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING&quot;, &quot;MERIDIAN_ASSET_OPERATIONS_CONNECTION_STRING&quot;, &quot;MERIDIAN_BANKING_CONNECTION_STRING&quot;, &quot;MERIDIAN_MONEY_MARKET_CONNECTION_STRING&quot;, &quot;MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING&quot;];</code> | [src/Meridian.Storage/MeridianDatabaseEnvironment.cs:27](../../../../src/Meridian.Storage/MeridianDatabaseEnvironment.cs#L27) | Per-domain connection-string variables that inherit UnifiedVariable when unset. |
-| <code>public static IReadOnlyList&lt;string&gt; ApplyUnifiedDatabaseUrl();</code> | [src/Meridian.Storage/MeridianDatabaseEnvironment.cs:46](../../../../src/Meridian.Storage/MeridianDatabaseEnvironment.cs#L46) | Propagates MERIDIAN_DATABASE_URL into every unset per-domain connection-string variable. Idempotent and safe to call from every composition root; explicitly set per-domain variables are never overwritten. Returns the variables populated by this call. |
-| <code>public static string NormalizeToConnectionString(string value);</code> | [src/Meridian.Storage/MeridianDatabaseEnvironment.cs:82](../../../../src/Meridian.Storage/MeridianDatabaseEnvironment.cs#L82) | Converts a postgres:// / postgresql:// URL into Npgsql keyword form (Host=...;Port=...;Database=...). Values already in keyword form pass through unchanged. Query parameters are forwarded as keywords; sslmode maps to SSL Mode. |

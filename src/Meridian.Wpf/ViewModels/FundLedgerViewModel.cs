@@ -131,6 +131,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         _authenticationSession = authenticationSession;
         Agreements = intercompanyAgreementClient is null ? null : new IntercompanyAgreementWorkspace(intercompanyAgreementClient);
         CounterpartProposals = intercompanyAgreementClient is null ? null : new IntercompanyCounterpartQueueWorkspace(intercompanyAgreementClient);
+        if (CounterpartProposals is not null)
+            CounterpartProposals.JournalOpener = OpenCounterpartJournal;
         InterestAccrual = intercompanyAgreementClient is null ? null : new IntercompanyInterestAccrualWorkspace(intercompanyAgreementClient);
         InitializeIntercompanyOperations(intercompanyAgreementClient);
         if (_authenticationSession is not null)
@@ -1022,6 +1024,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
                 UpdateAccountingRecordWorkbenchPresentation();
                 UpdateReportPackWorkbenchPresentation();
                 ApplyPrivateCapitalCloseCockpit(privateCapitalCloseCockpit);
+                FocusRequestedJournalEntry(context);
             }).Task.Unwrap();
         }
         else
@@ -1046,6 +1049,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             UpdateAccountingRecordWorkbenchPresentation();
             UpdateReportPackWorkbenchPresentation();
             ApplyPrivateCapitalCloseCockpit(privateCapitalCloseCockpit);
+            FocusRequestedJournalEntry(context);
         }
     }
 
