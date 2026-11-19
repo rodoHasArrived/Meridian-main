@@ -2,8 +2,8 @@
   "counts": {
     "error": 0,
     "info": 0,
-    "total": 309,
-    "warning": 309
+    "total": 311,
+    "warning": 311
   },
   "failed": false,
   "findings": [
@@ -834,6 +834,26 @@
       },
       "message": "Business table ledger.legacy_intercompany_attributions does not have a table comment.",
       "object": "ledger.legacy_intercompany_attributions",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "manual_journal_entry_drafts"
+      },
+      "message": "Business table ledger.manual_journal_entry_drafts does not have a table comment.",
+      "object": "ledger.manual_journal_entry_drafts",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "manual_journal_mutation_receipts"
+      },
+      "message": "Business table ledger.manual_journal_mutation_receipts does not have a table comment.",
+      "object": "ledger.manual_journal_mutation_receipts",
       "rule_id": "business-table-must-have-comment",
       "severity": "warning"
     },
@@ -3448,5 +3468,5 @@
       "severity": "warning"
     }
   ],
-  "fingerprint": "87b1f01978d1694c9d09d5401cf4f3e91056107aa04b46746a54172c0bb7132a"
+  "fingerprint": "2bd5d798bffef13d1d7fa9c0c4633c3f51e4b25ecb4b72330f34bcb23178b20b"
 }

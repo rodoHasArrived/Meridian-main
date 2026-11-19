@@ -2316,7 +2316,10 @@ fallback stores under the resolved workstation data root. `FileAccountingConfigu
 persists chart accounts, templates, posting rules, saved rule test cases, and accounting action audit events at
 `workstation/accounting/accounting-configuration.json`, while `FileManualJournalEntryDraftStore`
 persists draft and submitted manual journal records at
-`workstation/accounting/manual-journal-drafts.json`. `FileAccountingMigrationRunArtifactStore`
+`workstation/accounting/manual-journal-drafts.json`. When `MERIDIAN_LEDGER_CONNECTION_STRING` is
+configured, `PostgresManualJournalEntryDraftStore` (ledger migration 077) holds those drafts instead,
+paired with `PostgresManualJournalMutationRecoveryStore` so journal commands are serialized across
+hosts. `FileAccountingMigrationRunArtifactStore`
 persists retained accounting migration run evidence at
 `workstation/accounting/migration-run-artifacts.json`, `FileAccountingMigrationRunWorkerPlanStore`
 persists retained migration worker plans at

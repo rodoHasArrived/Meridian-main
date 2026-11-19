@@ -137,6 +137,8 @@ schedule's numeric JSON and fingerprint remain unchanged; clients must not reser
 monitor response to manufacture a canonical schedule hash.
 PostgreSQL is the governed multi-resource commit authority. File stores are durable local/demo
 counterparts and do not establish production certification or cross-process transactional fencing.
+With a ledger database configured, journal drafts and their command receipts are also kept in
+PostgreSQL (ledger migration 077), so two hosts cannot change the same draft at once.
 
 Canonical legal-reference postings require the ledger-owned standalone transaction or the
 sealed native producer that retains authority through its outer commit. Generic caller-owned

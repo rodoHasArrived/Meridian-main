@@ -2,9 +2,9 @@
 
 # `ledger` schema
 
-- Relations: 60
-- Functions/procedures: 35
-- Triggers: 68
+- Relations: 62
+- Functions/procedures: 36
+- Triggers: 69
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -531,6 +531,28 @@ erDiagram
         text company_id
         jsonb payload
     }
+    ledger_manual_journal_entry_drafts {
+        text fund_key PK
+        text tenant_key PK
+        text company_key PK
+        uuid journal_entry_id PK
+        text fund_profile_id
+        text tenant_id
+        text company_id
+        uuid ledger_book_id
+        integer version
+        timestamp_with_time_zone updated_at_utc
+        text payload
+        timestamp_with_time_zone recorded_at
+    }
+    ledger_manual_journal_mutation_receipts {
+        text command_key PK
+        boolean completed
+        timestamp_with_time_zone completed_at_utc
+        text digest
+        text payload
+        timestamp_with_time_zone recorded_at
+    }
     ledger_onboarding_workspaces {
         text workspace_id PK
         text tenant_id
@@ -903,6 +925,8 @@ erDiagram
 | `ledger_event_audit_head` | table | 6 | `chain_id` | 0 | 1 | - |
 | `ledger_journal_schema_migrations` | table | 3 | `filename` | 0 | 1 | - |
 | `legacy_intercompany_attributions` | table | 8 | `attribution_id` | 1 | 3 | - |
+| `manual_journal_entry_drafts` | table | 12 | `fund_key`, `tenant_key`, `company_key`, `journal_entry_id` | 0 | 3 | - |
+| `manual_journal_mutation_receipts` | table | 6 | `command_key` | 0 | 2 | - |
 | `onboarding_workspaces` | table | 9 | `workspace_id` | 0 | 4 | Retained bounded onboarding workspaces, including shadow-mode designation, certificates and promotion (W11-SHADOW-001). |
 | `open_lot_backfill_evidence` | table | 11 | `evidence_record_id` | 2 | 1 | - |
 | `open_lot_backfill_exceptions` | table | 9 | `tax_lot_record_id` | 3 | 2 | - |

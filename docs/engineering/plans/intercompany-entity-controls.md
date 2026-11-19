@@ -119,9 +119,11 @@ In the PostgreSQL run every store the accrual touches is durable (updated 2026-1
   lifecycle history are in a fund-structure schema of the same database. The loan is created,
   submitted and approved by different people through `IntercompanyAgreementService`, and both
   profiles pin that exact approved revision.
-- Journal drafts are in `FileManualJournalEntryDraftStore`, the store the workstation host
-  registers. There is no PostgreSQL draft store. The run reopens the file to show the reviewed
-  source and delivered counterpart survive a restart.
+- Journal drafts are in `PostgresManualJournalEntryDraftStore` (ledger migration 077), the store
+  a host with a ledger database registers since 2026-11-18. The run reopens the draft table to show
+  the reviewed source and delivered counterpart, with their server-held proposal identity and
+  digest, survive a restart. Hosts without a ledger database, and the desktop app, keep
+  `FileManualJournalEntryDraftStore`.
 
 `IntercompanyLedgerPostingAuthority`, `PostgresIntercompanyAgreementPostingAuthority` and
 `LifecycleLedgerPostingAuthority` (over `PostgresFundStructureService` and the graph store's
@@ -137,7 +139,21 @@ counterparts by direct append and did not reach this. The workbench now treats t
 retained counterpart as a classification: it is kept as the posting's source event type and is not
 written as treasury fund-event metadata. The exemption needs the server-retained proposal identity
 and applies only when no fund event identity, capital account or investor is stated; the ledger
-guard is unchanged. `IntercompanyProposalDeliveryRetryTests` covers this in memory.
+guard is unchanged. `IntercompanyProposalDeliveryRetryTests` covers this in memory, and
+`IntercompanyAccrualPostAndDeliverPostgresTests` covers it over PostgreSQL drafts.
+
+### PostgreSQL journal draft store (2026-11-18)
+
+Manual journal drafts now have a PostgreSQL store, like every other governed store in this area.
+
+| Part | Behaviour | Evidence |
+| --- | --- | --- |
+| Draft table | `V_ledger_077` keys each draft by fund, tenant, company and journal ID, compared case-insensitively, exactly as the file store does. Each row retains the complete draft, so server-held fields such as the intercompany proposal identity and source digest round-trip unchanged. Save and batch save are one transaction. | `ManualJournalEntryDraftStoreContract`, run against the file store and PostgreSQL |
+| Cross-host serialization | `PostgresManualJournalMutationRecoveryStore` holds one PostgreSQL session advisory lock per ledger schema for each whole journal command and retains command receipts in the same migration. The database refuses to rewrite or remove a completed receipt. | `PostgresManualJournalEntryDraftStoreTests`; `AccountingConfigurationServiceTests.PostgresDrafts_ConcurrentEditsFromTwoHosts_OneWinsAndTheOtherIsRefusedAsStale` |
+| Registration | `AddIntercompanyEntityServices` registers the PostgreSQL draft store when `MERIDIAN_LEDGER_CONNECTION_STRING` is configured; the workstation pairs it with the PostgreSQL receipt store. Otherwise the file stores remain. The desktop app is unchanged. | Composition code |
+
+Completed PostgreSQL receipts are retained in place; unlike the file store they are not archived
+or pruned. Optimistic draft version checks stay in the workbench service.
 
 ### Fixed management-fee extension (2026-11-17)
 

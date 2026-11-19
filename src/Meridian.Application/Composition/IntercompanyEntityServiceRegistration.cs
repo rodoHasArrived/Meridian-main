@@ -57,6 +57,9 @@ public static class IntercompanyEntityServiceRegistration
             services.TryAddSingleton<IIntercompanyProposalStore, PostgresIntercompanyProposalStore>();
             services.TryAddSingleton<IIntercompanyBalanceConfirmationStore, PostgresIntercompanyBalanceConfirmationStore>();
             services.TryAddSingleton<IIntercompanyAccrualScheduleStore, PostgresIntercompanyAccrualScheduleStore>();
+            // Manual journal drafts join the other governed ledger stores in PostgreSQL; hosts without a
+            // ledger database keep the file store registered by the workstation composition.
+            services.TryAddSingleton<IManualJournalEntryDraftStore, PostgresManualJournalEntryDraftStore>();
             services.TryAddSingleton<ILedgerBookControlStore>(sp => sp.GetService<ILedgerJournalStore>() as ILedgerBookControlStore ?? null!);
             services.TryAddSingleton<IControlledCloseAuthorizationStore>(sp => sp.GetService<ILedgerJournalStore>() as IControlledCloseAuthorizationStore ?? null!);
         }

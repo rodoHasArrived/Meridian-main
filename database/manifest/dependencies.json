@@ -62051,6 +62051,30 @@
     {
       "kind": "normal",
       "label": "",
+      "source": "database:ledger.manual_journal_entry_drafts_company_key_check on ledger.manual_journal_entry_drafts",
+      "target": "database:ledger.manual_journal_entry_drafts.company_key"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.manual_journal_entry_drafts_fund_key_check on ledger.manual_journal_entry_drafts",
+      "target": "database:ledger.manual_journal_entry_drafts.fund_key"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.manual_journal_entry_drafts_tenant_key_check on ledger.manual_journal_entry_drafts",
+      "target": "database:ledger.manual_journal_entry_drafts.tenant_key"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.manual_journal_mutation_receipts_command_key_check on ledger.manual_journal_mutation_receipts",
+      "target": "database:ledger.manual_journal_mutation_receipts.command_key"
+    },
+    {
+      "kind": "normal",
+      "label": "",
       "source": "database:ledger.onboarding_workspaces_company_id_check on ledger.onboarding_workspaces",
       "target": "database:ledger.onboarding_workspaces.company_id"
     },
@@ -68101,6 +68125,18 @@
       "kind": "contains",
       "label": "",
       "source": "schema:ledger",
+      "target": "database:ledger.manual_journal_entry_drafts"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.manual_journal_mutation_receipts"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
       "target": "database:ledger.onboarding_workspaces"
     },
     {
@@ -69255,7 +69291,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "28a9c585595f9553a925949141298a2e353236e0bf33ae3d815d257c3303dfad",
+  "fingerprint": "e5b917e21a8bc504fbb8b7ba8d4b71826135c011ee852deeac15b73d644bed86",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -95897,6 +95933,58 @@
       "label": "ledger.legacy_intercompany_attributions_tenant_id_check on ledger.legacy_intercompany_attributions"
     },
     {
+      "id": "database:ledger.manual_journal_entry_drafts",
+      "kind": "database-table",
+      "label": "ledger.manual_journal_entry_drafts",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.manual_journal_entry_drafts.company_key",
+      "kind": "database-object",
+      "label": "ledger.manual_journal_entry_drafts.company_key"
+    },
+    {
+      "id": "database:ledger.manual_journal_entry_drafts.fund_key",
+      "kind": "database-object",
+      "label": "ledger.manual_journal_entry_drafts.fund_key"
+    },
+    {
+      "id": "database:ledger.manual_journal_entry_drafts.tenant_key",
+      "kind": "database-object",
+      "label": "ledger.manual_journal_entry_drafts.tenant_key"
+    },
+    {
+      "id": "database:ledger.manual_journal_entry_drafts_company_key_check on ledger.manual_journal_entry_drafts",
+      "kind": "database-object",
+      "label": "ledger.manual_journal_entry_drafts_company_key_check on ledger.manual_journal_entry_drafts"
+    },
+    {
+      "id": "database:ledger.manual_journal_entry_drafts_fund_key_check on ledger.manual_journal_entry_drafts",
+      "kind": "database-object",
+      "label": "ledger.manual_journal_entry_drafts_fund_key_check on ledger.manual_journal_entry_drafts"
+    },
+    {
+      "id": "database:ledger.manual_journal_entry_drafts_tenant_key_check on ledger.manual_journal_entry_drafts",
+      "kind": "database-object",
+      "label": "ledger.manual_journal_entry_drafts_tenant_key_check on ledger.manual_journal_entry_drafts"
+    },
+    {
+      "id": "database:ledger.manual_journal_mutation_receipts",
+      "kind": "database-table",
+      "label": "ledger.manual_journal_mutation_receipts",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.manual_journal_mutation_receipts.command_key",
+      "kind": "database-object",
+      "label": "ledger.manual_journal_mutation_receipts.command_key"
+    },
+    {
+      "id": "database:ledger.manual_journal_mutation_receipts_command_key_check on ledger.manual_journal_mutation_receipts",
+      "kind": "database-object",
+      "label": "ledger.manual_journal_mutation_receipts_command_key_check on ledger.manual_journal_mutation_receipts"
+    },
+    {
       "id": "database:ledger.onboarding_workspaces",
       "kind": "database-table",
       "label": "ledger.onboarding_workspaces",
@@ -101721,9 +101809,9 @@
   "summary": {
     "contract_references": 4262,
     "contract_set_memberships": 5582,
-    "edges": 11505,
+    "edges": 11511,
     "foreign_keys": 208,
     "logical_references": 6,
-    "nodes": 5644
+    "nodes": 5654
   }
 }

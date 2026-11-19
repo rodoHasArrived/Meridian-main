@@ -301,6 +301,12 @@
       "review_after": "2027-05-17"
     },
     {
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_077__manual_journal_entry_drafts.sql",
+      "rule_id": "migration-drop-object",
+      "reason": "The single DROP TRIGGER IF EXISTS is immediately followed by recreation of the same named trigger on the same table, making the new completed manual-journal command-receipt protection reapply-idempotent. The migration runner executes the DDL and migration-ledger change in its transaction under the advisory migration lock, so failed recreation restores the prior protection. No table, column, row, retained receipt or draft is removed. This exact path/rule exception follows V_ledger_030/V_ledger_031's drop-and-recreate idiom and does not authorize omission of the replacement trigger.",
+      "review_after": "2027-05-18"
+    },
+    {
       "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_069__automated_posting_grants.sql",
       "rule_id": "migration-drop-table-member",
       "reason": "Scoped schema review exception for automatic synthetic fill accounting: replaces only ledger_event_audit_events_subject_kind_check with a strict superset preserving journal and period and admitting automation-grant. The migration runner performs drop and replacement within one transaction; no rows, columns, audit events or immutability triggers are removed. Failure rolls back the original constraint. PostgreSQL tests verify existing audit coverage and actor-attributed grant activation/revocation. Independent human schema/storage review remains pending before production activation; never narrow this check while grant audit events exist.",
