@@ -6,6 +6,91 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ScheduleSlot
+
+Qualified name: <code>Meridian.Storage.Services.ScheduleSlot</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1645](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1645).
+
+```csharp
+public sealed record ScheduleSlot(DateTimeOffset Start, DateTimeOffset End, MaintenanceWindow Window, ResourceLimits Limits, int AvailableConcurrencySlots);
+```
+
+## SearchResult (generic arity 1)
+
+Qualified name: <code>Meridian.Storage.Services.SearchResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/StorageSearchService.cs:784](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L784).
+
+```csharp
+public sealed record SearchResult<T>(int TotalMatches, IReadOnlyList<T> Results);
+```
+
+## SortField
+
+Qualified name: <code>Meridian.Storage.Services.SortField</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/Services/StorageSearchService.cs:781](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L781).
+
+```csharp
+public enum SortField : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Date</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:781](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L781) |  |
+| <code>Size</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:781](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L781) |  |
+| <code>Symbol</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:781](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L781) |  |
+| <code>QualityScore</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:781](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L781) |  |
+
+## SourceCandidate
+
+Qualified name: <code>Meridian.Storage.Services.SourceCandidate</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/DataQualityScoringService.cs:481](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L481).
+
+```csharp
+public sealed record SourceCandidate(string FilePath, string Source, double QualityScore, long FileSize, QualityAssessment Assessment);
+```
+
+## SourceRanking
+
+Qualified name: <code>Meridian.Storage.Services.SourceRanking</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/DataQualityService.cs:1178](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L1178).
+
+```csharp
+public sealed record SourceRanking(string Source, double QualityScore, long EventCount, int GapCount, double Latency, bool IsRecommended);
+```
+
+## SourceRegistry
+
+Qualified name: <code>Meridian.Storage.Services.SourceRegistry</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/SourceRegistry.cs:11](../../../../src/Meridian.Storage/Services/SourceRegistry.cs#L11).
+
+In-memory implementation of source and symbol registry with JSON persistence.
+
+```csharp
+public sealed class SourceRegistry : ISourceRegistry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SourceRegistry(string? persistencePath = null) : this(persistencePath, static (path, content) =&gt; AtomicFileWriter.Write(path, content));</code> | [src/Meridian.Storage/Services/SourceRegistry.cs:18](../../../../src/Meridian.Storage/Services/SourceRegistry.cs#L18) |  |
+| <code>public SourceInfo? GetSourceInfo(string sourceId);</code> | [src/Meridian.Storage/Services/SourceRegistry.cs:60](../../../../src/Meridian.Storage/Services/SourceRegistry.cs#L60) |  |
+| <code>public SymbolInfo? GetSymbolInfo(string symbol);</code> | [src/Meridian.Storage/Services/SourceRegistry.cs:66](../../../../src/Meridian.Storage/Services/SourceRegistry.cs#L66) |  |
+| <code>public IReadOnlyList&lt;SourceInfo&gt; GetAllSources();</code> | [src/Meridian.Storage/Services/SourceRegistry.cs:81](../../../../src/Meridian.Storage/Services/SourceRegistry.cs#L81) |  |
+| <code>public IReadOnlyList&lt;SymbolInfo&gt; GetAllSymbols();</code> | [src/Meridian.Storage/Services/SourceRegistry.cs:90](../../../../src/Meridian.Storage/Services/SourceRegistry.cs#L90) |  |
+| <code>public void RegisterSource(SourceInfo source);</code> | [src/Meridian.Storage/Services/SourceRegistry.cs:99](../../../../src/Meridian.Storage/Services/SourceRegistry.cs#L99) |  |
+| <code>public void RegisterSymbol(SymbolInfo symbol);</code> | [src/Meridian.Storage/Services/SourceRegistry.cs:105](../../../../src/Meridian.Storage/Services/SourceRegistry.cs#L105) |  |
+| <code>public string ResolveSymbolAlias(string alias);</code> | [src/Meridian.Storage/Services/SourceRegistry.cs:111](../../../../src/Meridian.Storage/Services/SourceRegistry.cs#L111) |  |
+| <code>public string[] GetSourcePriorityOrder();</code> | [src/Meridian.Storage/Services/SourceRegistry.cs:120](../../../../src/Meridian.Storage/Services/SourceRegistry.cs#L120) |  |
+
 ## SourceSelectionStrategy
 
 Qualified name: <code>Meridian.Storage.Services.SourceSelectionStrategy</code>. Kind: `enum`.
@@ -902,112 +987,3 @@ Counts only: startup diagnostics must not expose retained records or credentials
 ```csharp
 public sealed record TenantCutoverFinding(string Store, string Table, string Reason, int Count);
 ```
-
-## TenantCutoverReadiness
-
-Qualified name: <code>Meridian.Storage.Tenancy.TenantCutoverReadiness</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Tenancy/PostgresTenantCutoverInspector.cs:13](../../../../src/Meridian.Storage/Tenancy/PostgresTenantCutoverInspector.cs#L13).
-
-```csharp
-public sealed record TenantCutoverReadiness(IReadOnlyList<TenantCutoverFinding> Findings)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsReady =&gt; …;</code> | [src/Meridian.Storage/Tenancy/PostgresTenantCutoverInspector.cs:15](../../../../src/Meridian.Storage/Tenancy/PostgresTenantCutoverInspector.cs#L15) |  |
-
-## TenantCutoverRecord
-
-Qualified name: <code>Meridian.Storage.Tenancy.TenantCutoverRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Tenancy/PostgresTenantCutoverInspector.cs:19](../../../../src/Meridian.Storage/Tenancy/PostgresTenantCutoverInspector.cs#L19).
-
-A retained row and the owning rows its persisted references require to agree.
-
-```csharp
-public sealed record TenantCutoverRecord(string Store, string Table, string Identity, string? TenantId, IReadOnlyList<string> OwnerReferences, bool RequiresOwner = false);
-```
-
-## TierConfig
-
-Qualified name: <code>Meridian.Storage.TierConfig</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/StorageOptions.cs:357](../../../../src/Meridian.Storage/StorageOptions.cs#L357).
-
-Configuration for a single storage tier.
-
-```csharp
-public sealed class TierConfig
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Name { get; init; } = &quot;&quot;;</code> | [src/Meridian.Storage/StorageOptions.cs:360](../../../../src/Meridian.Storage/StorageOptions.cs#L360) | Tier name (hot, warm, cold, archive). |
-| <code>public string Path { get; init; } = &quot;&quot;;</code> | [src/Meridian.Storage/StorageOptions.cs:363](../../../../src/Meridian.Storage/StorageOptions.cs#L363) | Storage path for this tier. |
-| <code>public int? MaxAgeDays { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:366](../../../../src/Meridian.Storage/StorageOptions.cs#L366) | Maximum age in days before migration to next tier. |
-| <code>public long? MaxSizeGb { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:369](../../../../src/Meridian.Storage/StorageOptions.cs#L369) | Maximum size in GB for this tier. |
-| <code>public string Format { get; init; } = &quot;jsonl&quot;;</code> | [src/Meridian.Storage/StorageOptions.cs:372](../../../../src/Meridian.Storage/StorageOptions.cs#L372) | File format for this tier (jsonl, jsonl.gz, parquet). |
-| <code>public CompressionCodec? Compression { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:375](../../../../src/Meridian.Storage/StorageOptions.cs#L375) | Compression for this tier. |
-| <code>public string? StorageClass { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:378](../../../../src/Meridian.Storage/StorageOptions.cs#L378) | S3 storage class for cloud tiers. |
-
-## TieringOptions
-
-Qualified name: <code>Meridian.Storage.TieringOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/StorageOptions.cs:339](../../../../src/Meridian.Storage/StorageOptions.cs#L339).
-
-Tiering configuration for multi-tier storage.
-
-```csharp
-public sealed class TieringOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Enabled { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:342](../../../../src/Meridian.Storage/StorageOptions.cs#L342) | Whether tiering is enabled. |
-| <code>public List&lt;TierConfig&gt; Tiers { get; init; } = new ();</code> | [src/Meridian.Storage/StorageOptions.cs:345](../../../../src/Meridian.Storage/StorageOptions.cs#L345) | Tier configurations. |
-| <code>public string? MigrationSchedule { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:348](../../../../src/Meridian.Storage/StorageOptions.cs#L348) | Cron schedule for migration (e.g., &quot;0 2 * * *&quot;). |
-| <code>public int ParallelMigrations { get; init; } = 4;</code> | [src/Meridian.Storage/StorageOptions.cs:351](../../../../src/Meridian.Storage/StorageOptions.cs#L351) | Number of parallel migrations. |
-
-## FileOperatorTriageStore
-
-Qualified name: <code>Meridian.Storage.Workstation.FileOperatorTriageStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Workstation/FileOperatorTriageStore.cs:9](../../../../src/Meridian.Storage/Workstation/FileOperatorTriageStore.cs#L9).
-
-Deterministic, durable synthetic-host adapter. Production uses PostgreSQL.
-
-```csharp
-public sealed class FileOperatorTriageStore(string root) : IOperatorTriageStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;OperatorTriageState&gt; GetAsync(OperatorTriageScope scope, string workItemId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Workstation/FileOperatorTriageStore.cs:13](../../../../src/Meridian.Storage/Workstation/FileOperatorTriageStore.cs#L13) |  |
-| <code>public async Task&lt;OperatorTriageState&gt; UpdateAsync(OperatorTriageScope scope, string workItemId, Func&lt;OperatorTriageState, CancellationToken, Task&lt;OperatorTriageState&gt;&gt; update, CancellationToken ct = default);</code> | [src/Meridian.Storage/Workstation/FileOperatorTriageStore.cs:20](../../../../src/Meridian.Storage/Workstation/FileOperatorTriageStore.cs#L20) |  |
-
-## OperatorTriageStoreOptions
-
-Qualified name: <code>Meridian.Storage.Workstation.OperatorTriageStoreOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Workstation/OperatorTriageStoreOptions.cs:3](../../../../src/Meridian.Storage/Workstation/OperatorTriageStoreOptions.cs#L3).
-
-```csharp
-public sealed class OperatorTriageStoreOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public required string ConnectionString { get; init; }</code> | [src/Meridian.Storage/Workstation/OperatorTriageStoreOptions.cs:5](../../../../src/Meridian.Storage/Workstation/OperatorTriageStoreOptions.cs#L5) |  |
-| <code>public string Schema { get; init; } = &quot;operator_triage&quot;;</code> | [src/Meridian.Storage/Workstation/OperatorTriageStoreOptions.cs:6](../../../../src/Meridian.Storage/Workstation/OperatorTriageStoreOptions.cs#L6) |  |

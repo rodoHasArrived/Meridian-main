@@ -87,6 +87,43 @@ public sealed class StandardChartOfAccounts : IChartOfAccounts
         return definition.Account with { Symbol = normalizedSymbol, FinancialAccountId = accountId };
     }
 
+    /// <inheritdoc />
+    public bool TryGetRegistered(LedgerAccount account, out LedgerAccountRole role)
+    {
+        ArgumentNullException.ThrowIfNull(account);
+        foreach (var (candidate, definition) in Definitions)
+        {
+            if (!string.Equals(definition.Account.Name, account.Name, StringComparison.Ordinal) ||
+                definition.Account.AccountType != account.AccountType)
+                continue;
+
+            if (!IsCanonicalOptional(account.Symbol, upper: true) ||
+                !IsCanonicalOptional(account.FinancialAccountId, upper: false))
+                continue;
+
+            var symbolAccepted = definition.SymbolScope switch
+            {
+                SymbolScope.Required => account.Symbol is not null,
+                SymbolScope.None => account.Symbol is null,
+                _ => true
+            };
+            if (!symbolAccepted || (definition.RequiresFinancialAccount && account.FinancialAccountId is null))
+                continue;
+
+            role = candidate;
+            return true;
+        }
+
+        role = default;
+        return false;
+    }
+
+    // Resolve() trims scope values and upper-cases symbols, so only that canonical form is registered.
+    private static bool IsCanonicalOptional(string? value, bool upper)
+        => value is null ||
+           (!string.IsNullOrWhiteSpace(value) && value == value.Trim() &&
+            (!upper || value == value.ToUpperInvariant()));
+
     private static AccountDefinition Loan(string name, LedgerAccountType type) =>
         new(new LedgerAccount(name, type), SymbolScope.Optional, RequiresFinancialAccount: true);
 

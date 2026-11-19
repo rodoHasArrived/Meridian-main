@@ -1,0 +1,62 @@
+name: Close superseded refresh PRs
+description: >
+  Close open same-repository refresh PRs whose head branch is the given prefix
+  (the legacy fixed branch) or the prefix plus a "-<suffix>", except the PR
+  this run just opened, and try to delete their head branches. Refresh
+  workflows publish each run on a fresh branch because repository rules forbid
+  force-pushing a shared automation branch; this keeps only the newest
+  refresh PR open. Failures are reported as warnings: the new PR is already
+  open, and a stale one left open is harmless.
+
+inputs:
+  branch-prefix:
+    description: Head-branch prefix shared by every refresh PR of this workflow.
+    required: true
+  keep-pr-number:
+    description: Number of the refresh PR this run opened or updated; never closed.
+    required: true
+  token:
+    description: Token with pull-requests and contents write.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Close superseded refresh PRs
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        REPO: ${{ github.repository }}
+        PREFIX: ${{ inputs.branch-prefix }}
+        KEEP_PR: ${{ inputs.keep-pr-number }}
+      run: |
+        set -uo pipefail
+        if ! [[ "$KEEP_PR" =~ ^[0-9]+$ ]]; then
+          echo "::warning::No refresh PR number to keep ('$KEEP_PR'); not closing anything."
+          exit 0
+        fi
+
+        if ! stale="$(gh pr list --repo "$REPO" --state open --limit 200 \
+          --json number,headRefName,isCrossRepository \
+          --jq '.[]
+            | select(.isCrossRepository | not)
+            | select(.headRefName == $ENV.PREFIX or (.headRefName | startswith($ENV.PREFIX + "-")))
+            | select(.number != ($ENV.KEEP_PR | tonumber))
+            | "\(.number) \(.headRefName)"')"; then
+          echo "::warning::Could not list open refresh PRs; superseded PRs were left open."
+          exit 0
+        fi
+
+        while read -r number branch; do
+          [ -n "${number:-}" ] || continue
+          branch="${branch%$'\r'}"
+          echo "Closing superseded refresh PR #${number} (${branch})."
+          if ! gh pr close "$number" --repo "$REPO" \
+            --comment "Superseded by #${KEEP_PR}, a newer screenshot catalog refresh."; then
+            echo "::warning::Could not close superseded refresh PR #${number}."
+            continue
+          fi
+          if ! gh api -X DELETE "repos/${REPO}/git/refs/heads/${branch}" >/dev/null; then
+            echo "::warning::Closed #${number} but could not delete branch '${branch}'."
+          fi
+        done <<< "$stale"

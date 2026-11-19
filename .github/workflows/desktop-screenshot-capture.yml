@@ -21,11 +21,11 @@ permissions:
   pull-requests: write
 
 concurrency:
-  # The workflow always checks out the default branch and writes the fixed
-  # automation/desktop-screenshot-capture branch, so every dispatch must share
-  # one concurrency lane regardless of the ref it was dispatched from. A per-ref
-  # group would let cross-branch dispatches race and reopen the shared screenshot
-  # PR. Runs serialize (no cancellation) so an in-flight capture still finishes.
+  # The workflow always checks out the default branch and opens a refresh PR on
+  # a per-run automation/desktop-screenshot-capture-* branch, closing older
+  # refresh PRs, so every dispatch must share one concurrency lane regardless of
+  # the ref it was dispatched from. A per-ref group would let cross-branch
+  # dispatches race and close each other's refresh PRs. Runs serialize (no cancellation) so an in-flight capture still finishes.
   group: desktop-screenshot-capture
   cancel-in-progress: false
 
@@ -52,7 +52,7 @@ jobs:
         with:
           # Always capture and propose the refresh from the canonical default branch so a
           # dispatch from a feature branch cannot publish that branch's commits into the
-          # automation/desktop-screenshot-capture PR alongside the screenshots.
+          # automation/desktop-screenshot-capture-* PR alongside the screenshots.
           ref: ${{ github.event.repository.default_branch }}
           persist-credentials: false
           fetch-depth: 1
@@ -205,6 +205,7 @@ jobs:
           Copy-Item -Path (Join-Path $env:CAPTURE_DIR '*.png') -Destination $env:OUTPUT_DIR -Force
 
       - name: Open screenshot refresh pull request
+        id: refresh_pr
         if: ${{ success() && (inputs.create_pr || github.event_name == 'schedule') }}
         uses: peter-evans/create-pull-request@3ffccacd46053766916f087ce41d627c0b8cf2d1 # v8
         with:
@@ -213,7 +214,10 @@ jobs:
           # (a GitHub App or fine-grained token with contents and pull-requests
           # write) lets them run; without it the PR still opens, unchecked.
           token: ${{ secrets.SCREENSHOT_PR_TOKEN || github.token }}
-          branch: automation/desktop-screenshot-capture
+          # Each run publishes on its own branch: create-pull-request rebuilds
+          # its branch from the base, so a fixed branch needs a force-push, which
+          # repository rules forbid. The next step closes older refresh PRs.
+          branch: automation/desktop-screenshot-capture-${{ github.run_id }}-${{ github.run_attempt }}
           base: ${{ github.event.repository.default_branch }}
           title: "chore: refresh desktop workstation screenshot catalog"
           commit-message: "chore: refresh desktop workstation screenshot catalog"
@@ -228,3 +232,11 @@ jobs:
           add-paths: |
             ${{ steps.validate_output_dir.outputs.safe_output_dir }}/*.png
           delete-branch: true
+
+      - name: Close superseded screenshot refresh PRs
+        if: ${{ steps.refresh_pr.outputs.pull-request-number != '' }}
+        uses: ./.github/actions/close-superseded-refresh-prs
+        with:
+          branch-prefix: automation/desktop-screenshot-capture
+          keep-pr-number: ${{ steps.refresh_pr.outputs.pull-request-number }}
+          token: ${{ secrets.SCREENSHOT_PR_TOKEN || github.token }}

@@ -6,6 +6,86 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerReportingSnapshot
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerReportingSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:50](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L50).
+
+Captured journals, their tax-lot history, corporate-action successor batches and the requested report period in the exact ledger book. Calculations and checkpoint evidence retain these facts rather than reading live state. A null successor history means the source cannot capture it, so retained corporate-action journals cannot be certified from this snapshot.
+
+```csharp
+public sealed record LedgerReportingSnapshot(IReadOnlyList<LedgerJournalEntryRecord> Journals, IReadOnlyList<LedgerTaxLotDisposalHistoryRecord> TaxLotDisposalHistory, LedgerAccountingPeriod? Period = null, IReadOnlyList<AtomicTaxLotJournalResult>? OpenLotSuccessorHistory = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public LedgerReportingOpenPositions? OpenPositions { get; init; }</code> | [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:56](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L56) |  |
+
+## LedgerSecurityEntitlementInventorySnapshot
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerSecurityEntitlementInventorySnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerSecurityEntitlementInventory.cs:21](../../../../src/Meridian.Storage/Ledger/ILedgerSecurityEntitlementInventory.cs#L21).
+
+```csharp
+public sealed record LedgerSecurityEntitlementInventorySnapshot(string TenantId, string CompanyId, LedgerBookRecord Book, Guid SecurityId, DateOnly AsOfDate, int InspectedBookLotCount, IReadOnlyList<LedgerTaxLotRecord> HeldLots, string SnapshotJson, string SnapshotHash);
+```
+
+## LedgerStoreExtensions
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerStoreExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/LedgerStoreExtensions.cs:11](../../../../src/Meridian.Storage/Ledger/LedgerStoreExtensions.cs#L11).
+
+Registers the PostgreSQL ledger journal store and its dependencies with dependency injection.
+
+```csharp
+public static class LedgerStoreExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IServiceCollection AddLedgerJournalStore(this IServiceCollection services, string connStr);</code> | [src/Meridian.Storage/Ledger/LedgerStoreExtensions.cs:13](../../../../src/Meridian.Storage/Ledger/LedgerStoreExtensions.cs#L13) |  |
+
+## LedgerTaxLotDisposalHistoryRecord
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerTaxLotDisposalHistoryRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLotDisposalHistory.cs:18](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLotDisposalHistory.cs#L18).
+
+A retained disposal as durable history, without the two facts that live on the journal rather than in tax-lot storage: the sale&#x27;s effective date and the gain or loss actually booked. The caller supplies those from the journal entries it already holds, which keeps the rebuilt rows tied to the same journals a report pack was certified over. PolicyRevision is the exact revision recorded on the batch, never today&#x27;s account policy. RecordedAt is the atomic retention time, not proof that a later replacement window was re-evaluated or finalized.
+
+```csharp
+public sealed record LedgerTaxLotDisposalHistoryRecord(Guid MutationBatchId, Guid JournalEntryId, LedgerAccount Account, LedgerTaxLotReliefMethod ReliefMethod, IReadOnlyList<LedgerTaxLotDisposalHistoryLot> Lots, IReadOnlyList<WashSaleBasisIncrease> WashSaleBasisIncreases, decimal MatchedReplacementQuantity, IReadOnlyList<OpenLotDto>? CanonicalLots = null, IReadOnlyList<OpenLotDto>? PoolLots = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] int? ProceedsAllocationVersion = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] decimal? SalePrice = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? PolicyRevision = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] DateTimeOffset? RecordedAt = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<LedgerTaxLotDisposalRecipientEvidence>? DeferralRecipients = null);
+```
+
+## LedgerTaxLotDisposalRecipientEvidence
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerTaxLotDisposalRecipientEvidence</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLotDisposalHistory.cs:43](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLotDisposalHistory.cs#L43).
+
+Durable replacement identity and basis attribution, in the same order as the retained wash-sale increases. Missing evidence must not be inferred from an unrelated asset debit in the disposal journal.
+
+```csharp
+public sealed record LedgerTaxLotDisposalRecipientEvidence(Guid ReplacementTaxLotRecordId, string ReplacementLotId, LedgerAccount Account, Guid SecurityId, Guid BookPositionId, decimal DeferredLoss);
+```
+
+## LedgerTaxLotDisposalSelection
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerTaxLotDisposalSelection</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:488](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L488).
+
+```csharp
+public sealed record LedgerTaxLotDisposalSelection(Guid TaxLotRecordId, string LotId, long ExpectedVersion, decimal ExpectedOpenQuantity, decimal Quantity, int SelectionOrdinal, string SelectionEvidenceId, decimal ExpectedUnitCost = 0m, decimal ExpectedCostBasis = 0m);
+```
+
 ## LedgerTaxLotFaceValueTerms
 
 Qualified name: <code>Meridian.Storage.Ledger.LedgerTaxLotFaceValueTerms</code>. Kind: `class`.
@@ -1451,136 +1531,3 @@ Declared public members:
 | <code>public static readonly IReadOnlyList&lt;string&gt; PropagatedConnectionStringVariables = [&quot;MERIDIAN_LEDGER_CONNECTION_STRING&quot;, &quot;MERIDIAN_SECURITY_MASTER_CONNECTION_STRING&quot;, &quot;MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING&quot;, &quot;MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING&quot;, &quot;MERIDIAN_ASSET_OPERATIONS_CONNECTION_STRING&quot;, &quot;MERIDIAN_BANKING_CONNECTION_STRING&quot;, &quot;MERIDIAN_MONEY_MARKET_CONNECTION_STRING&quot;, &quot;MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING&quot;];</code> | [src/Meridian.Storage/MeridianDatabaseEnvironment.cs:27](../../../../src/Meridian.Storage/MeridianDatabaseEnvironment.cs#L27) | Per-domain connection-string variables that inherit UnifiedVariable when unset. |
 | <code>public static IReadOnlyList&lt;string&gt; ApplyUnifiedDatabaseUrl();</code> | [src/Meridian.Storage/MeridianDatabaseEnvironment.cs:46](../../../../src/Meridian.Storage/MeridianDatabaseEnvironment.cs#L46) | Propagates MERIDIAN_DATABASE_URL into every unset per-domain connection-string variable. Idempotent and safe to call from every composition root; explicitly set per-domain variables are never overwritten. Returns the variables populated by this call. |
 | <code>public static string NormalizeToConnectionString(string value);</code> | [src/Meridian.Storage/MeridianDatabaseEnvironment.cs:82](../../../../src/Meridian.Storage/MeridianDatabaseEnvironment.cs#L82) | Converts a postgres:// / postgresql:// URL into Npgsql keyword form (Host=...;Port=...;Database=...). Values already in keyword form pass through unchanged. Query parameters are forwarded as keywords; sslmode maps to SSL Mode. |
-
-## MigrationDriftPolicy
-
-Qualified name: <code>Meridian.Storage.Migrations.MigrationDriftPolicy</code>. Kind: `enum`.
-
-Source: [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:89](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L89).
-
-Behavior when an applied migration script&#x27;s content no longer matches its checksum.
-
-```csharp
-public enum MigrationDriftPolicy
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Throw</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:92](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L92) | Fail startup: applied scripts are immutable (append-only convention). |
-| <code>Reapply</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:99](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L99) | Re-apply a changed script and update the ledger checksum. Unchanged scripts run again only when their filename is listed in PostgresMigrationRunnerOptions.RepeatableMigrationFileNames. |
-
-## PostgresMigrationRunner
-
-Qualified name: <code>Meridian.Storage.Migrations.PostgresMigrationRunner</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Migrations/PostgresMigrationRunner.cs:16](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunner.cs#L16).
-
-Shared PostgreSQL SQL-file migration runner used by every feature schema in Meridian.Storage. Applies *.sql scripts from a directory under AppContext.BaseDirectory in filename order, records applied scripts (with a SHA-256 checksum) in a durable per-schema migration ledger, and serializes concurrent starters with a transaction-scoped advisory lock. The whole run executes inside a single transaction so a failing script never leaves the schema half-migrated.
-
-```csharp
-public sealed class PostgresMigrationRunner
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostgresMigrationRunner(PostgresMigrationRunnerOptions options);</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunner.cs:20](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunner.cs#L20) |  |
-| <code>public async Task EnsureMigratedAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunner.cs:29](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunner.cs#L29) |  |
-| <code>public async Task ResetSchemaAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunner.cs:113](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunner.cs#L113) |  |
-
-## PostgresMigrationRunnerOptions
-
-Qualified name: <code>Meridian.Storage.Migrations.PostgresMigrationRunnerOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:10](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L10).
-
-Configuration for PostgresMigrationRunner. Feature-specific migration runners translate their own options into this shape so every schema shares one migration engine while keeping its historical ledger table layout and script conventions.
-
-```csharp
-public sealed class PostgresMigrationRunnerOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public required string ConnectionString { get; init; }</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:20](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L20) | PostgreSQL connection string for the target database. |
-| <code>public required string Schema { get; init; }</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:23](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L23) | Schema that owns the feature&#x27;s tables and migration ledger. |
-| <code>public required string ScriptsSubdirectory { get; init; }</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:29](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L29) | Directory containing the feature&#x27;s *.sql scripts, relative to AppContext.BaseDirectory (for example Banking/Migrations). |
-| <code>public required string DisplayName { get; init; }</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:32](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L32) | Human-readable feature name used in error messages. |
-| <code>public required string LockScopeName { get; init; }</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:38](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L38) | Stable slug used to build the advisory-lock scope (meridian.{LockScopeName}.migrations.{Schema}) that serializes concurrent starters. |
-| <code>public required string ConnectionStringSettingName { get; init; }</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:44](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L44) | Setting name reported when ConnectionString is missing (for example BankingStoreOptions.ConnectionString). |
-| <code>public string LedgerTableName { get; init; } = &quot;schema_migrations&quot;;</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:47](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L47) | Migration ledger table name inside Schema. |
-| <code>public string LedgerKeyColumn { get; init; } = &quot;filename&quot;;</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:50](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L50) | Primary-key column of the migration ledger. |
-| <code>public bool TrackOrdinals { get; init; }</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:58](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L58) | When true, script filenames must begin with a unique numeric ordinal prefix that is stored alongside the filename (Security Master convention). Ordinal-tracked sets are append-only: the runner refuses to start when an unapplied script&#x27;s ordinal is below the highest applied ordinal, so a retired or skipped number can never be filled in after later migrations ran. |
-| <code>public bool QuoteSchemaInScripts { get; init; }</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:65](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L65) | When true, __SCHEMA__ renders as a quoted identifier; otherwise the raw validated schema name is used. Existing schemas must keep their historical quoting so identifier case-folding does not change. |
-| <code>public bool ChecksumRequired { get; init; }</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:71](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L71) | When true, a freshly created ledger declares its checksum column not null (Asset Operations convention). |
-| <code>public bool ThrowWhenScriptsDirectoryMissing { get; init; } = true;</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:74](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L74) | Whether a missing scripts directory is an error or an empty migration set. |
-| <code>public IReadOnlySet&lt;string&gt; RepeatableMigrationFileNames { get; init; } = new HashSet&lt;string&gt;(StringComparer.Ordinal);</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:81](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L81) | Applied script filenames that must run again on every startup. These scripts must be idempotent and are typically used for guarded backfills that can repair legacy rows after new ownership data becomes available. |
-| <code>public MigrationDriftPolicy DriftPolicy { get; init; } = MigrationDriftPolicy.Throw;</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:85](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L85) | How a checksum mismatch on an already-applied script is handled. |
-
-## IMoneyMarketFundAuxStore
-
-Qualified name: <code>Meridian.Storage.MoneyMarket.IMoneyMarketFundAuxStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/MoneyMarket/IMoneyMarketFundAuxStore.cs:9](../../../../src/Meridian.Storage/MoneyMarket/IMoneyMarketFundAuxStore.cs#L9).
-
-Persistence contract for the Money Market Fund auxiliary store. Stores fund records, per-fund liquidity overrides, and rebuild checkpoints.
-
-```csharp
-public interface IMoneyMarketFundAuxStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task UpsertFundAsync(Guid securityId, string displayName, string currency, string? fundFamily, bool isSweepEligible, int? weightedAverageMaturityDays, bool hasLiquidityFee, bool isActive, DateTimeOffset effectiveFrom, DateTimeOffset? effectiveTo, long version, CancellationToken ct = default);</code> | [src/Meridian.Storage/MoneyMarket/IMoneyMarketFundAuxStore.cs:13](../../../../src/Meridian.Storage/MoneyMarket/IMoneyMarketFundAuxStore.cs#L13) |  |
-| <code>Task&lt;(Guid SecurityId, string DisplayName, string Currency, string? FundFamily, bool IsSweepEligible, int? WeightedAverageMaturityDays, bool HasLiquidityFee, bool IsActive, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, long Version)?&gt; GetFundAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/MoneyMarket/IMoneyMarketFundAuxStore.cs:27](../../../../src/Meridian.Storage/MoneyMarket/IMoneyMarketFundAuxStore.cs#L27) |  |
-| <code>Task&lt;IReadOnlyList&lt;(Guid SecurityId, string DisplayName, string Currency, string? FundFamily, bool IsSweepEligible, int? WeightedAverageMaturityDays, bool HasLiquidityFee, bool IsActive, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, long Version)&gt;&gt; GetAllFundsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/MoneyMarket/IMoneyMarketFundAuxStore.cs:33](../../../../src/Meridian.Storage/MoneyMarket/IMoneyMarketFundAuxStore.cs#L33) |  |
-| <code>Task UpsertLiquidityOverrideAsync(Guid securityId, MmfLiquidityState state, CancellationToken ct = default);</code> | [src/Meridian.Storage/MoneyMarket/IMoneyMarketFundAuxStore.cs:40](../../../../src/Meridian.Storage/MoneyMarket/IMoneyMarketFundAuxStore.cs#L40) |  |
-| <code>Task&lt;IReadOnlyDictionary&lt;Guid, MmfLiquidityState&gt;&gt; GetAllLiquidityOverridesAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/MoneyMarket/IMoneyMarketFundAuxStore.cs:41](../../../../src/Meridian.Storage/MoneyMarket/IMoneyMarketFundAuxStore.cs#L41) |  |
-| <code>Task UpsertRebuildCheckpointAsync(MmfRebuildCheckpointDto checkpoint, CancellationToken ct = default);</code> | [src/Meridian.Storage/MoneyMarket/IMoneyMarketFundAuxStore.cs:45](../../../../src/Meridian.Storage/MoneyMarket/IMoneyMarketFundAuxStore.cs#L45) |  |
-| <code>Task&lt;IReadOnlyList&lt;MmfRebuildCheckpointDto&gt;&gt; GetRebuildCheckpointsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/MoneyMarket/IMoneyMarketFundAuxStore.cs:46](../../../../src/Meridian.Storage/MoneyMarket/IMoneyMarketFundAuxStore.cs#L46) |  |
-| <code>Task&lt;bool&gt; IsEmptyAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/MoneyMarket/IMoneyMarketFundAuxStore.cs:50](../../../../src/Meridian.Storage/MoneyMarket/IMoneyMarketFundAuxStore.cs#L50) |  |
-
-## MoneyMarketMigrationRunner
-
-Qualified name: <code>Meridian.Storage.MoneyMarket.MoneyMarketMigrationRunner</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/MoneyMarket/MoneyMarketMigrationRunner.cs:8](../../../../src/Meridian.Storage/MoneyMarket/MoneyMarketMigrationRunner.cs#L8).
-
-Applies pending SQL migrations for the MoneyMarket schema.
-
-```csharp
-public sealed class MoneyMarketMigrationRunner
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public MoneyMarketMigrationRunner(MoneyMarketStoreOptions options);</code> | [src/Meridian.Storage/MoneyMarket/MoneyMarketMigrationRunner.cs:12](../../../../src/Meridian.Storage/MoneyMarket/MoneyMarketMigrationRunner.cs#L12) |  |
-| <code>public Task EnsureMigratedAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/MoneyMarket/MoneyMarketMigrationRunner.cs:31](../../../../src/Meridian.Storage/MoneyMarket/MoneyMarketMigrationRunner.cs#L31) | Creates the schema and applies all outstanding migrations in version order. Idempotent — safe to call on every startup. |
-
-## MoneyMarketStoreOptions
-
-Qualified name: <code>Meridian.Storage.MoneyMarket.MoneyMarketStoreOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/MoneyMarket/MoneyMarketStoreOptions.cs:6](../../../../src/Meridian.Storage/MoneyMarket/MoneyMarketStoreOptions.cs#L6).
-
-Configuration for the PostgreSQL-backed money market fund store.
-
-```csharp
-public sealed class MoneyMarketStoreOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ConnectionString { get; set; } = string.Empty;</code> | [src/Meridian.Storage/MoneyMarket/MoneyMarketStoreOptions.cs:9](../../../../src/Meridian.Storage/MoneyMarket/MoneyMarketStoreOptions.cs#L9) | Full Npgsql connection string. |
-| <code>public string Schema { get; set; } = &quot;money_market&quot;;</code> | [src/Meridian.Storage/MoneyMarket/MoneyMarketStoreOptions.cs:12](../../../../src/Meridian.Storage/MoneyMarket/MoneyMarketStoreOptions.cs#L12) | PostgreSQL schema name. Defaults to &quot;money_market&quot;. |

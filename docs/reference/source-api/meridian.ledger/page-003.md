@@ -752,6 +752,28 @@ Declared public members:
 | <code>public decimal AllocationComponentsVariance =&gt; …;</code> | [src/Meridian.Ledger/LedgerPartnersCapitalStatement.cs:74](../../../../src/Meridian.Ledger/LedgerPartnersCapitalStatement.cs#L74) | Difference between the aggregate AllocatedResult and its income/expense/fee decomposition. Zero when the breakout ties to the net allocated result. |
 | <code>public bool IsReconciled =&gt; …;</code> | [src/Meridian.Ledger/LedgerPartnersCapitalStatement.cs:78](../../../../src/Meridian.Ledger/LedgerPartnersCapitalStatement.cs#L78) | True when the aggregate roll-forward ties to ending capital. |
 
+## LedgerPolicy
+
+Qualified name: <code>Meridian.Ledger.LedgerPolicy</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/LedgerPolicy.cs:9](../../../../src/Meridian.Ledger/LedgerPolicy.cs#L9).
+
+Posting rules bound to a Ledger at construction. A bound ledger accepts only accounts registered in Chart and only lines that carry explicit currency detail in FunctionalCurrency. Unknown accounts and missing or mismatched currencies are hard errors; nothing is inferred from an account name, number or symbol.
+
+```csharp
+public sealed record LedgerPolicy
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public LedgerPolicy(IChartOfAccounts chart, string functionalCurrency);</code> | [src/Meridian.Ledger/LedgerPolicy.cs:11](../../../../src/Meridian.Ledger/LedgerPolicy.cs#L11) |  |
+| <code>public IChartOfAccounts Chart { get; }</code> | [src/Meridian.Ledger/LedgerPolicy.cs:26](../../../../src/Meridian.Ledger/LedgerPolicy.cs#L26) | The only registry of accounts this ledger may post to. |
+| <code>public string FunctionalCurrency { get; }</code> | [src/Meridian.Ledger/LedgerPolicy.cs:29](../../../../src/Meridian.Ledger/LedgerPolicy.cs#L29) | The ISO 4217 currency every line&#x27;s functional amounts are stated in. |
+| <code>public static LedgerPolicy Trading(string functionalCurrency = &quot;USD&quot;, IChartOfAccounts? chart = null) =&gt; …;</code> | [src/Meridian.Ledger/LedgerPolicy.cs:35](../../../../src/Meridian.Ledger/LedgerPolicy.cs#L35) | The policy used by the trading paths (backtest, paper, execution posting): the standard posting chart in the given functional currency. |
+| <code>public LedgerEntryCurrency FunctionalAmount(decimal debit, decimal credit) =&gt; …;</code> | [src/Meridian.Ledger/LedgerPolicy.cs:39](../../../../src/Meridian.Ledger/LedgerPolicy.cs#L39) | Currency detail for an amount already stated in the functional currency. |
+
 ## LedgerQuery
 
 Qualified name: <code>Meridian.Ledger.LedgerQuery</code>. Kind: `record`.
@@ -1081,21 +1103,3 @@ A titled, tabular section of a financial report, shared by every renderer.
 ```csharp
 public sealed record LedgerReportTable(string Title, IReadOnlyList<string> Headers, IReadOnlyList<IReadOnlyList<string>> Rows);
 ```
-
-## LedgerScheduledReportExportPackageBuilder
-
-Qualified name: <code>Meridian.Ledger.LedgerScheduledReportExportPackageBuilder</code>. Kind: `class`.
-
-Source: [src/Meridian.Ledger/LedgerScheduledReportExportPackageBuilder.cs:12](../../../../src/Meridian.Ledger/LedgerScheduledReportExportPackageBuilder.cs#L12).
-
-Builds export-delivery artifacts for a scheduled ledger report occurrence.
-
-```csharp
-public static class LedgerScheduledReportExportPackageBuilder
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;LedgerReportPackArtifact&gt; Build(LedgerFinancialReportPack reportPack, LedgerReportScheduledExport scheduledExport, ILedgerReportBinaryRenderer? binaryRenderer = null);</code> | [src/Meridian.Ledger/LedgerScheduledReportExportPackageBuilder.cs:14](../../../../src/Meridian.Ledger/LedgerScheduledReportExportPackageBuilder.cs#L14) |  |

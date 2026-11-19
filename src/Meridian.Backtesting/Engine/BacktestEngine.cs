@@ -9,6 +9,7 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Core.Serialization;
 using Meridian.Domain.Events;
+using Meridian.Storage.Ledger;
 using Meridian.Storage.Replay;
 using Meridian.Storage.Services;
 
@@ -47,6 +48,12 @@ public sealed class BacktestEngine(
 
     /// <summary>Optional authoritative action source; aggregate-query callers also receive the built-in bridge.</summary>
     public IBacktestAssetEventSource? AssetEventSource { get; init; }
+
+    /// <summary>
+    /// Optional durable journal store. When set, runs whose request names a
+    /// <see cref="BacktestRequest.LedgerJournalScopeId"/> write every posted journal to it as they go.
+    /// </summary>
+    public ILedgerJournalLogFactory? LedgerJournals { get; init; }
 
     /// <summary>
     /// Runs a complete backtest, replaying all events in the requested date/symbol range.
@@ -184,7 +191,12 @@ public sealed class BacktestEngine(
 
         // 3. Set up portfolio, fill models, context
         var commissionModel = FaceValueQuotedCommissionModel.Wrap(BuildCommissionModel(request), lotConventions);
-        var ledger = new BacktestLedger();
+        // Backtest books are bound to the posting chart: unknown accounts and lines without
+        // functional-currency detail are hard errors rather than silently accepted postings.
+        var ledger = new BacktestLedger(LedgerPolicy.Trading());
+        // Stream the books to a durable, hash-chained journal while the run posts them, so a run
+        // that crashes still leaves auditable books. Disposal on failure keeps what was written.
+        await using var journalStream = OpenLedgerJournalStream(request, ledger);
         var startTimestamp = new DateTimeOffset(request.From.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
         var accounts = request.ResolveAccounts();
         var portfolio = new SimulatedPortfolio(accounts, request.DefaultBrokerageAccountId, commissionModel, ledger, startTimestamp, lotConventions)
@@ -333,6 +345,10 @@ public sealed class BacktestEngine(
             biasDisclosure = WithLedgerIntegrityDisclosure(biasDisclosure, ledgerIntegrityBreaks);
         }
 
+        // A run whose books could not be stored must not complete as if they were.
+        if (journalStream is not null)
+            await journalStream.CompleteAsync(ct).ConfigureAwait(false);
+
         return new BacktestResult(request, universe, allSnapshots, allCashFlows, allFills, metrics, ledger, sw.Elapsed, eventsProcessed, tradeTickets, tcaReport, BiasDisclosure: biasDisclosure)
         {
             LedgerIntegrityBreaks = ledgerIntegrityBreaks,
@@ -341,6 +357,15 @@ public sealed class BacktestEngine(
     }
 
     // ── Private helpers ──────────────────────────────────────────────────────
+
+    private LedgerJournalStream? OpenLedgerJournalStream(BacktestRequest request, BacktestLedger ledger)
+    {
+        if (LedgerJournals is null || string.IsNullOrWhiteSpace(request.LedgerJournalScopeId))
+            return null;
+
+        var log = LedgerJournals.Open(request.LedgerJournalScopeId, ledger.Policy);
+        return LedgerJournalStream.Attach(ledger, log);
+    }
 
     private static IReadOnlyList<string> ResolveReplaySymbolOrder(
         IReadOnlySet<string> universe,

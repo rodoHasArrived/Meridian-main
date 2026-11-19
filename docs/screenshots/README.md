@@ -55,8 +55,10 @@ fixture-backed wait evidence together when adding a new browser page.
 Run **Web Screenshot Capture** from GitHub Actions to refresh the full browser catalog.
 Dispatch captures the default branch; pull requests that change the dashboard or capture harness
 render the proposed head commit without publishing. Set `create_pr` to `false` for an artifact-only
-manual run. Its default is `true`, which opens or updates `automation/web-screenshot-capture` only
-after capture and image validation both pass. A failure to open the refresh PR fails the job.
+manual run. Its default is `true`, which opens a refresh PR on a per-run
+`automation/web-screenshot-capture-<run>-<attempt>` branch only after capture and image validation
+both pass, then closes older open refresh PRs. Repository rules forbid force-pushes, so a run never
+reuses an existing branch. A failure to open the refresh PR fails the job.
 
 Each job retains one 14-day archive containing `captures/*.png`, `manifest.json`, and `summary.md`.
 The Actions job summary reports capture, validation, and refresh-PR outcomes, the checked-out commit,

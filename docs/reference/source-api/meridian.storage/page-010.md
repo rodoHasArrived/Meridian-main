@@ -6,6 +6,116 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FileEdgarReferenceDataStore
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.FileEdgarReferenceDataStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs:11](../../../../src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs#L11).
+
+Local-first file store for EDGAR reference data under the configured storage root.
+
+```csharp
+public sealed class FileEdgarReferenceDataStore : IEdgarReferenceDataStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileEdgarReferenceDataStore(StorageOptions storageOptions);</code> | [src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs:20](../../../../src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs#L20) |  |
+| <code>public async Task SaveTickerAssociationsAsync(IReadOnlyList&lt;EdgarTickerAssociation&gt; associations, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs:25](../../../../src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs#L25) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;EdgarTickerAssociation&gt;&gt; LoadTickerAssociationsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs:45](../../../../src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs#L45) |  |
+| <code>public async Task SaveFilerAsync(EdgarFilerRecord record, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs:67](../../../../src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs#L67) |  |
+| <code>public async Task&lt;EdgarFilerRecord?&gt; LoadFilerAsync(string cik, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs:84](../../../../src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs#L84) |  |
+| <code>public async Task SaveFactsAsync(EdgarFactsRecord record, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs:102](../../../../src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs#L102) |  |
+| <code>public async Task&lt;EdgarFactsRecord?&gt; LoadFactsAsync(string cik, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs:119](../../../../src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs#L119) |  |
+| <code>public async Task SaveSecurityDataAsync(EdgarSecurityDataRecord record, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs:137](../../../../src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs#L137) |  |
+| <code>public async Task&lt;EdgarSecurityDataRecord?&gt; LoadSecurityDataAsync(string cik, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs:157](../../../../src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs#L157) |  |
+
+## FutureProjectionRow
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.FutureProjectionRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IFutureReferenceProjectionStore.cs:12](../../../../src/Meridian.Storage/SecurityMaster/IFutureReferenceProjectionStore.cs#L12).
+
+```csharp
+public sealed record FutureProjectionRow(Guid SecurityId, string DisplayName, string Currency, string RootSymbol, string ContractMonth, DateOnly ExpiryDate, decimal Multiplier, string? SettlementType, bool IsRollTarget, int? RollWindowDays, DateOnly? LastTradingDate, DateOnly? FirstNoticeDate, DateOnly? DeliveryMonthDate, string? DeliveryLocationCode, string LifecycleStat, string PrimaryIdentifierValue, long Version);
+```
+
+## FxSpotProjectionRow
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.FxSpotProjectionRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IFxSpotReferenceProjectionStore.cs:13](../../../../src/Meridian.Storage/SecurityMaster/IFxSpotReferenceProjectionStore.cs#L13).
+
+```csharp
+public sealed record FxSpotProjectionRow(Guid SecurityId, string DisplayName, string BaseCurrency, string QuoteCurrency, string PairCode, string PrimaryIdentifierValue, long Version);
+```
+
+## IBondReferenceProjectionStore
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.IBondReferenceProjectionStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs:8](../../../../src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs#L8).
+
+Queries bond reference projections, lifecycle facts, and accrual conventions by security identity.
+
+```csharp
+public interface IBondReferenceProjectionStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;BondProjectionRow?&gt; GetBondAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs:10](../../../../src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs#L10) |  |
+| <code>Task&lt;BondLifecycleProjectionRow?&gt; GetLifecycleAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs:11](../../../../src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs#L11) |  |
+| <code>Task&lt;BondAccrualConventionProjectionRow?&gt; GetAccrualConventionAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs:12](../../../../src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs#L12) |  |
+| <code>Task&lt;IReadOnlyList&lt;BondProjectionRow&gt;&gt; GetIssuerLadderAsync(string issuerName, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs:13](../../../../src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs#L13) |  |
+| <code>Task&lt;IReadOnlyList&lt;BondProjectionRow&gt;&gt; GetMaturityLadderAsync(DateOnly from, DateOnly to, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs:14](../../../../src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs#L14) |  |
+| <code>Task&lt;IReadOnlyList&lt;BondProjectionRow&gt;&gt; GetIssuerLadderPageAsync(string issuerName, int pageSize, DateOnly? afterMaturity, Guid? afterSecurityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs:17](../../../../src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs#L17) | Returns at most pageSize plus one rows, using a maturity/security-id keyset. |
+| <code>Task&lt;IReadOnlyList&lt;BondProjectionRow&gt;&gt; GetMaturityLadderPageAsync(DateOnly from, DateOnly to, int pageSize, DateOnly? afterMaturity, Guid? afterSecurityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs:22](../../../../src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs#L22) | Returns at most pageSize plus one rows, using a maturity/security-id keyset. |
+
+## ICertificateOfDepositReferenceProjectionStore
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.ICertificateOfDepositReferenceProjectionStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/SecurityMaster/ICertificateOfDepositReferenceProjectionStore.cs:6](../../../../src/Meridian.Storage/SecurityMaster/ICertificateOfDepositReferenceProjectionStore.cs#L6).
+
+Queries certificate of deposit reference projections by security, issuer, and maturity.
+
+```csharp
+public interface ICertificateOfDepositReferenceProjectionStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;CertificateOfDepositProjectionRow?&gt; GetCertificateOfDepositAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICertificateOfDepositReferenceProjectionStore.cs:8](../../../../src/Meridian.Storage/SecurityMaster/ICertificateOfDepositReferenceProjectionStore.cs#L8) |  |
+| <code>Task&lt;IReadOnlyList&lt;CertificateOfDepositProjectionRow&gt;&gt; GetByIssuerAsync(string issuerName, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICertificateOfDepositReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/ICertificateOfDepositReferenceProjectionStore.cs#L9) |  |
+| <code>Task&lt;IReadOnlyList&lt;CertificateOfDepositProjectionRow&gt;&gt; GetMaturingBeforeAsync(DateOnly beforeDate, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICertificateOfDepositReferenceProjectionStore.cs:10](../../../../src/Meridian.Storage/SecurityMaster/ICertificateOfDepositReferenceProjectionStore.cs#L10) |  |
+
+## ICommodityReferenceProjectionStore
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.ICommodityReferenceProjectionStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.cs:6](../../../../src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.cs#L6).
+
+Queries commodity reference projections by security, commodity type, and exchange.
+
+```csharp
+public interface ICommodityReferenceProjectionStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;CommodityProjectionRow?&gt; GetCommodityAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.cs:8](../../../../src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.cs#L8) |  |
+| <code>Task&lt;IReadOnlyList&lt;CommodityProjectionRow&gt;&gt; GetByCommodityTypeAsync(string commodityType, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.cs#L9) |  |
+| <code>Task&lt;IReadOnlyList&lt;CommodityProjectionRow&gt;&gt; GetByExchangeAsync(string exchangeCode, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.cs:10](../../../../src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.cs#L10) |  |
+
 ## ICorporateActionCashDividendAccountingStore
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.ICorporateActionCashDividendAccountingStore</code>. Kind: `interface`.
@@ -844,114 +954,3 @@ A margin call as the OtcCollateral stream records it.
 ```csharp
 public sealed record OtcMarginCallPayload(Guid CallId, Guid NettingSetId, Guid CollateralAgreementId, Guid SnapshotId, string Kind, string Mover, string Currency, decimal AmountCalled, decimal? AmountAgreed, string Status, DateOnly IssuedOn, DateOnly? DueOn, string? DisputeReason, DateOnly? SettledOn, decimal? SettledAmount, string? Notes, long Version, string UpdatedBy, DateTimeOffset UpdatedAt);
 ```
-
-## OtcMarginCallSnapshotReferencePayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.OtcMarginCallSnapshotReferencePayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:196](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L196).
-
-The exposure snapshot a margin call was issued from.
-
-```csharp
-public sealed record OtcMarginCallSnapshotReferencePayload(Guid SnapshotId, int Version, DateOnly AsOfDate, string PayloadSha256);
-```
-
-## OtcMarginCallTransitionedPayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.OtcMarginCallTransitionedPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:208](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L208).
-
-OtcCollateral / MarginCallAgreed, MarginCallDisputed, MarginCallSettled or MarginCallCancelled.
-
-```csharp
-public sealed record OtcMarginCallTransitionedPayload(OtcMarginCallPayload Call, OtcMarginCallPayload Previous, string Action, string? Reason) : ISecurityGovernancePayload;
-```
-
-## PassthroughSecurityMasterCanonicalWriteScope
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.PassthroughSecurityMasterCanonicalWriteScope</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityMasterCanonicalWriteScope.cs:22](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterCanonicalWriteScope.cs#L22).
-
-Runs the operation directly; used where the stores have no shared transaction.
-
-```csharp
-public sealed class PassthroughSecurityMasterCanonicalWriteScope : ISecurityMasterCanonicalWriteScope
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static PassthroughSecurityMasterCanonicalWriteScope Instance { get; } = new ();</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterCanonicalWriteScope.cs:24](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterCanonicalWriteScope.cs#L24) |  |
-| <code>public bool IsAtomic =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterCanonicalWriteScope.cs:26](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterCanonicalWriteScope.cs#L26) |  |
-| <code>public Task&lt;T&gt; ExecuteAsync&lt;T&gt;(Guid securityId, Func&lt;Task&lt;T&gt;&gt; operation, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterCanonicalWriteScope.cs:28](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterCanonicalWriteScope.cs#L28) |  |
-
-## PostgresBondReferenceProjectionStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresBondReferenceProjectionStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs:16](../../../../src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs#L16).
-
-Reads the bond projection: the parent row joined to the securities spine and the issuer, lifecycle and accrual-convention satellite projections that the Bond descriptor in SecurityTermsProjectionRegistry writes. The parent table predates the registry&#x27;s identity spine and carries neither display name nor primary identifier, so this store joins securities for them; it shares the connection, command and reader plumbing through PostgresReferenceProjectionReader like every other reference-projection store.
-
-```csharp
-public sealed class PostgresBondReferenceProjectionStore : IBondReferenceProjectionStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostgresBondReferenceProjectionStore(SecurityMasterOptions options);</code> | [src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs:20](../../../../src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs#L20) |  |
-| <code>public Task&lt;BondProjectionRow?&gt; GetBondAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs:25](../../../../src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs#L25) |  |
-| <code>public Task&lt;BondLifecycleProjectionRow?&gt; GetLifecycleAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs:35](../../../../src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs#L35) |  |
-| <code>public Task&lt;BondAccrualConventionProjectionRow?&gt; GetAccrualConventionAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs:60](../../../../src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs#L60) |  |
-| <code>public Task&lt;IReadOnlyList&lt;BondProjectionRow&gt;&gt; GetIssuerLadderAsync(string issuerName, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs:79](../../../../src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs#L79) |  |
-| <code>public Task&lt;IReadOnlyList&lt;BondProjectionRow&gt;&gt; GetMaturityLadderAsync(DateOnly from, DateOnly to, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs:90](../../../../src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs#L90) |  |
-| <code>public Task&lt;IReadOnlyList&lt;BondProjectionRow&gt;&gt; GetIssuerLadderPageAsync(string issuerName, int pageSize, DateOnly? afterMaturity, Guid? afterSecurityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs:101](../../../../src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs#L101) |  |
-| <code>public Task&lt;IReadOnlyList&lt;BondProjectionRow&gt;&gt; GetMaturityLadderPageAsync(DateOnly from, DateOnly to, int pageSize, DateOnly? afterMaturity, Guid? afterSecurityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs:120](../../../../src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs#L120) |  |
-
-## PostgresCertificateOfDepositReferenceProjectionStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresCertificateOfDepositReferenceProjectionStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/PostgresCertificateOfDepositReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/PostgresCertificateOfDepositReferenceProjectionStore.cs#L9).
-
-Reads certificate of deposit reference projections from PostgreSQL by security, issuer, and maturity.
-
-```csharp
-public sealed class PostgresCertificateOfDepositReferenceProjectionStore : ICertificateOfDepositReferenceProjectionStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostgresCertificateOfDepositReferenceProjectionStore(SecurityMasterOptions options);</code> | [src/Meridian.Storage/SecurityMaster/PostgresCertificateOfDepositReferenceProjectionStore.cs:27](../../../../src/Meridian.Storage/SecurityMaster/PostgresCertificateOfDepositReferenceProjectionStore.cs#L27) |  |
-| <code>public Task&lt;CertificateOfDepositProjectionRow?&gt; GetCertificateOfDepositAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCertificateOfDepositReferenceProjectionStore.cs:35](../../../../src/Meridian.Storage/SecurityMaster/PostgresCertificateOfDepositReferenceProjectionStore.cs#L35) |  |
-| <code>public Task&lt;IReadOnlyList&lt;CertificateOfDepositProjectionRow&gt;&gt; GetByIssuerAsync(string issuerName, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCertificateOfDepositReferenceProjectionStore.cs:38](../../../../src/Meridian.Storage/SecurityMaster/PostgresCertificateOfDepositReferenceProjectionStore.cs#L38) |  |
-| <code>public Task&lt;IReadOnlyList&lt;CertificateOfDepositProjectionRow&gt;&gt; GetMaturingBeforeAsync(DateOnly beforeDate, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCertificateOfDepositReferenceProjectionStore.cs:41](../../../../src/Meridian.Storage/SecurityMaster/PostgresCertificateOfDepositReferenceProjectionStore.cs#L41) |  |
-
-## PostgresCommodityReferenceProjectionStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresCommodityReferenceProjectionStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs#L9).
-
-Reads commodity reference projections from PostgreSQL by security, type, and exchange.
-
-```csharp
-public sealed class PostgresCommodityReferenceProjectionStore : ICommodityReferenceProjectionStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostgresCommodityReferenceProjectionStore(SecurityMasterOptions options);</code> | [src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs:27](../../../../src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs#L27) |  |
-| <code>public Task&lt;CommodityProjectionRow?&gt; GetCommodityAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs:35](../../../../src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs#L35) |  |
-| <code>public Task&lt;IReadOnlyList&lt;CommodityProjectionRow&gt;&gt; GetByCommodityTypeAsync(string commodityType, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs:38](../../../../src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs#L38) |  |
-| <code>public Task&lt;IReadOnlyList&lt;CommodityProjectionRow&gt;&gt; GetByExchangeAsync(string exchangeCode, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs:41](../../../../src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs#L41) |  |

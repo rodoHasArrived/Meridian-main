@@ -163,6 +163,15 @@ public sealed record BacktestRequest(
     public bool ApplyStoredCorporateActions { get; init; } = true;
 
     /// <summary>
+    /// When set, and the engine has a ledger journal store, every journal the run posts is written
+    /// as it happens to an append-only, hash-chained journal under this id (normally the run id),
+    /// so the run's books survive a crash and can be re-verified later. Operational only: it does
+    /// not change the numbers a run produces, so it is excluded from serialized run identity.
+    /// </summary>
+    [JsonIgnore]
+    public string? LedgerJournalScopeId { get; init; }
+
+    /// <summary>
     /// Captures every setting on this request that changes what numbers the run produces, so run
     /// identity can account for execution realism rather than strategy inputs alone.
     /// </summary>
