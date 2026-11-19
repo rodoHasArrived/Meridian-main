@@ -215,5 +215,5 @@ Do not introduce references from Core to Application, Infrastructure, Domain orc
 ## Related docs
 
 - `docs/architecture/module-map.md`
-- `docs/developer/build-test-run.md`
+- `docs/start/README.md`
 - `docs/source/generated/source-module-index.md`

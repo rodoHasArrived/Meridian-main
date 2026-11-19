@@ -1840,7 +1840,7 @@ infrastructure details when an abstraction already exists.
 ## Related docs
 
 - `docs/architecture/module-map.md`
-- `docs/developer/build-test-run.md`
+- `docs/start/README.md`
 - `docs/source/generated/source-module-index.md`
 
 ### Cash-flow and price readiness
