@@ -10449,6 +10449,8 @@ Meridian-main
 │   │   │   │   │   ├── settings-screen.operations-control.ts
 │   │   │   │   │   ├── settings-screen.operations-form-options.ts
 │   │   │   │   │   ├── settings-screen.operations-section.tsx
+│   │   │   │   │   ├── settings-screen.preference-sync-status.test.tsx
+│   │   │   │   │   ├── settings-screen.preference-sync-status.tsx
 │   │   │   │   │   ├── settings-screen.profile-sections.tsx
 │   │   │   │   │   ├── settings-screen.provider-section.tsx
 │   │   │   │   │   ├── settings-screen.scoped-access-section.tsx
