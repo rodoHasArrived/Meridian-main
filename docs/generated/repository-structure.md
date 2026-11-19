@@ -2434,69 +2434,70 @@ Meridian-main
 │   │   │   ├── shared-enums.v1.schema.json
 │   │   │   └── stage-gates.v1.schema.json
 │   │   ├── snapshots
-│   │   │   └── status-prose-2026-11-14
-│   │   │       ├── program-active-scope.md
-│   │   │       ├── W1-DATA-001.md
-│   │   │       ├── W10-BOND-001.md
-│   │   │       ├── W10-CONSOL-001.md
-│   │   │       ├── W10-DEBT-001.md
-│   │   │       ├── W10-JRNL-001.md
-│   │   │       ├── W10-LOT-002.md
-│   │   │       ├── W10-MARK-001.md
-│   │   │       ├── W10-PERF-001.md
-│   │   │       ├── W10-PROV-001.md
-│   │   │       ├── W10-RECON-001.md
-│   │   │       ├── W10-RECON-002.md
-│   │   │       ├── W10-RECON-003.md
-│   │   │       ├── W10-RECON-004.md
-│   │   │       ├── W10-SEAM-001.md
-│   │   │       ├── W10-TAX-001.md
-│   │   │       ├── W11-COVER-001.md
-│   │   │       ├── W11-EXEC-001.md
-│   │   │       ├── W11-PACK-001.md
-│   │   │       ├── W11-PASSPORT-001.md
-│   │   │       ├── W11-SHADOW-001.md
-│   │   │       ├── W11-STAKE-001.md
-│   │   │       ├── W12-BOOK-001.md
-│   │   │       ├── W12-CAPITAL-001.md
-│   │   │       ├── W12-CREDIT-001.md
-│   │   │       ├── W12-ENTITY-001.md
-│   │   │       ├── W12-FINRPT-001.md
-│   │   │       ├── W12-ICAGREE-001.md
-│   │   │       ├── W12-ICINCOME-001.md
-│   │   │       ├── W12-ICPAIR-001.md
-│   │   │       ├── W12-YEND-001.md
-│   │   │       ├── W13-OMS-001.md
-│   │   │       ├── W13-STRAT-001.md
-│   │   │       ├── W14-ATTEST-001.md
-│   │   │       ├── W2-PROMO-001.md
-│   │   │       ├── W2-TRD-001.md
-│   │   │       ├── W3-CONT-001.md
-│   │   │       ├── W4-RECON-001.md
-│   │   │       ├── W4-RPT-001.md
-│   │   │       ├── W5-ACCT-001.md
-│   │   │       ├── W5-MASSET-001.md
-│   │   │       ├── W5X-CONNECT-001.md
-│   │   │       ├── W5X-EVIDENCE-001.md
-│   │   │       ├── W5X-FINOPS-001.md
-│   │   │       ├── W5X-FREX-001.md
-│   │   │       ├── W5X-OEG-001.md
-│   │   │       ├── W5X-STMT-ONBOARD-001.md
-│   │   │       ├── W6-BTSTUDIO-001.md
-│   │   │       ├── W7-LIVE-001.md
-│   │   │       ├── W8-UX-CONSOL-001.md
-│   │   │       ├── W8-WPF-PARITY-001.md
-│   │   │       ├── W9-ALPACA-004.md
-│   │   │       ├── W9-ASSET-010.md
-│   │   │       ├── W9-CORPACT-011.md
-│   │   │       ├── W9-DEMO-002.md
-│   │   │       ├── W9-GOV-008.md
-│   │   │       ├── W9-INGEST-009.md
-│   │   │       ├── W9-NAV-006.md
-│   │   │       ├── W9-PAPER-003.md
-│   │   │       ├── W9-REPORT-005.md
-│   │   │       ├── W9-SAFETY-007.md
-│   │   │       └── W9-TRUTH-001.md
+│   │   │   ├── status-prose-2026-11-14
+│   │   │   │   ├── program-active-scope.md
+│   │   │   │   ├── W1-DATA-001.md
+│   │   │   │   ├── W10-BOND-001.md
+│   │   │   │   ├── W10-CONSOL-001.md
+│   │   │   │   ├── W10-DEBT-001.md
+│   │   │   │   ├── W10-JRNL-001.md
+│   │   │   │   ├── W10-LOT-002.md
+│   │   │   │   ├── W10-MARK-001.md
+│   │   │   │   ├── W10-PERF-001.md
+│   │   │   │   ├── W10-PROV-001.md
+│   │   │   │   ├── W10-RECON-001.md
+│   │   │   │   ├── W10-RECON-002.md
+│   │   │   │   ├── W10-RECON-003.md
+│   │   │   │   ├── W10-RECON-004.md
+│   │   │   │   ├── W10-SEAM-001.md
+│   │   │   │   ├── W10-TAX-001.md
+│   │   │   │   ├── W11-COVER-001.md
+│   │   │   │   ├── W11-EXEC-001.md
+│   │   │   │   ├── W11-PACK-001.md
+│   │   │   │   ├── W11-PASSPORT-001.md
+│   │   │   │   ├── W11-SHADOW-001.md
+│   │   │   │   ├── W11-STAKE-001.md
+│   │   │   │   ├── W12-BOOK-001.md
+│   │   │   │   ├── W12-CAPITAL-001.md
+│   │   │   │   ├── W12-CREDIT-001.md
+│   │   │   │   ├── W12-ENTITY-001.md
+│   │   │   │   ├── W12-FINRPT-001.md
+│   │   │   │   ├── W12-ICAGREE-001.md
+│   │   │   │   ├── W12-ICINCOME-001.md
+│   │   │   │   ├── W12-ICPAIR-001.md
+│   │   │   │   ├── W12-YEND-001.md
+│   │   │   │   ├── W13-OMS-001.md
+│   │   │   │   ├── W13-STRAT-001.md
+│   │   │   │   ├── W14-ATTEST-001.md
+│   │   │   │   ├── W2-PROMO-001.md
+│   │   │   │   ├── W2-TRD-001.md
+│   │   │   │   ├── W3-CONT-001.md
+│   │   │   │   ├── W4-RECON-001.md
+│   │   │   │   ├── W4-RPT-001.md
+│   │   │   │   ├── W5-ACCT-001.md
+│   │   │   │   ├── W5-MASSET-001.md
+│   │   │   │   ├── W5X-CONNECT-001.md
+│   │   │   │   ├── W5X-EVIDENCE-001.md
+│   │   │   │   ├── W5X-FINOPS-001.md
+│   │   │   │   ├── W5X-FREX-001.md
+│   │   │   │   ├── W5X-OEG-001.md
+│   │   │   │   ├── W5X-STMT-ONBOARD-001.md
+│   │   │   │   ├── W6-BTSTUDIO-001.md
+│   │   │   │   ├── W7-LIVE-001.md
+│   │   │   │   ├── W8-UX-CONSOL-001.md
+│   │   │   │   ├── W8-WPF-PARITY-001.md
+│   │   │   │   ├── W9-ALPACA-004.md
+│   │   │   │   ├── W9-ASSET-010.md
+│   │   │   │   ├── W9-CORPACT-011.md
+│   │   │   │   ├── W9-DEMO-002.md
+│   │   │   │   ├── W9-GOV-008.md
+│   │   │   │   ├── W9-INGEST-009.md
+│   │   │   │   ├── W9-NAV-006.md
+│   │   │   │   ├── W9-PAPER-003.md
+│   │   │   │   ├── W9-REPORT-005.md
+│   │   │   │   ├── W9-SAFETY-007.md
+│   │   │   │   └── W9-TRUTH-001.md
+│   │   │   └── 2026-11-19-w12-ic-acceptance-pack.md
 │   │   ├── generated-doc-policy.md
 │   │   ├── README.md
 │   │   ├── roadmap-governance.md
