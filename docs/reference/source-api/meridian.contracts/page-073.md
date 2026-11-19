@@ -6,6 +6,58 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SinglePrincipalAttestationScopeDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SinglePrincipalAttestationScopeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:17](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L17).
+
+```csharp
+public sealed record SinglePrincipalAttestationScopeDto(string TenantId, string CompanyId, Guid? LedgerBookId = null);
+```
+
+## SinglePrincipalAttestationStateDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SinglePrincipalAttestationStateDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:112](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L112).
+
+```csharp
+public sealed record SinglePrincipalAttestationStateDto(SinglePrincipalAttestationScopeDto Scope, bool PolicyEnabled, string PolicyVersion, string PolicyHash, string Disclosure, string Confirmation, IReadOnlyList<string> AllowedActions, SinglePrincipalDeclarationDto? Declaration, IReadOnlyList<SinglePrincipalDeclarationDto> DeclarationHistory, IReadOnlyList<PreparerAttestationReceiptDto> Receipts, IReadOnlyList<PreparerAttestationRevocationDto> Revocations, IReadOnlyList<SinglePrincipalAttestationAuditEventDto> AuditTrail);
+```
+
+## SinglePrincipalAttestationSubjectSnapshotDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SinglePrincipalAttestationSubjectSnapshotDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:136](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L136).
+
+Server-resolved target revision and source identity; it is not an authority grant.
+
+```csharp
+public sealed record SinglePrincipalAttestationSubjectSnapshotDto(string SubjectKind, string SubjectId, string Revision, string Hash, string SourceArtifactId, string SourceHash, string? SourceActor, string SourceProvenance, bool Eligible, IReadOnlyList<string> Checks, string? SourceSubjectKind = null, string? SourceSubjectId = null, string? SubjectSnapshotJson = null, [property : System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] string? PreparedBy = null, [property : System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] string? Confirmation = null);
+```
+
+## SinglePrincipalAttestationWorkspaceDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SinglePrincipalAttestationWorkspaceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:126](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L126).
+
+```csharp
+public sealed record SinglePrincipalAttestationWorkspaceDto(SinglePrincipalAttestationStateDto State, string Actor, bool CanAdministerDeclaration, bool CanAttest, bool CanRevoke, bool CanAttestDrafts = false, bool CanRevokeDrafts = false);
+```
+
+## SinglePrincipalDeclarationDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SinglePrincipalDeclarationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:50](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L50).
+
+```csharp
+public sealed record SinglePrincipalDeclarationDto(Guid DeclarationId, long Revision, SinglePrincipalAttestationScopeDto Scope, bool Enabled, string PrincipalId, string PolicyVersion, string PolicyHash, string ChangedBy, DateTimeOffset RecordedAt, string Reason);
+```
+
 ## StarterWorkspaceDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StarterWorkspaceDto</code>. Kind: `record`.
@@ -615,63 +667,3 @@ Enum declarations:
 | <code>Completed = 7</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:18](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L18) |  |
 | <code>Failed = 8</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L19) |  |
 | <code>Canceled = 9</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:20](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L20) |  |
-
-## StatementRunSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementRunSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:325](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L325).
-
-Lightweight statement-run index row returned by the workstation reconciliation API.
-
-```csharp
-public sealed record StatementRunSummaryDto(string RunId, string ImportId, StatementRunStatus Status, DateTimeOffset StartedAtUtc, DateTimeOffset? CompletedAtUtc, int PositionMatches, int CashMatches, int TransactionMatches, int OpenExceptionCount);
-```
-
-## StatementRunValidationDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementRunValidationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:339](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L339).
-
-Validation envelope for a statement reconciliation run.
-
-```csharp
-public sealed record StatementRunValidationDto(string RunId, IReadOnlyList<StatementValidationIssueDto> Issues, bool IsBlocked);
-```
-
-## StatementSourceDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementSourceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:76](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L76).
-
-Source metadata for a broker, custodian, or administrator statement payload.
-
-```csharp
-public sealed record StatementSourceDto(string? SourceId, string? SourceKind, string? SourceSystem, string? AccountId, string? AccountName, string? Currency, DateOnly? PeriodStart, DateOnly? PeriodEnd, DateTimeOffset? StatementAsOfUtc = null, string? CustodianId = null, string? ExternalAccountId = null);
-```
-
-## StatementToReportArtifactDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementToReportArtifactDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:328](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L328).
-
-Source-compatibility artifact contract for pre-rename clients.
-
-```csharp
-public sealed record StatementToReportArtifactDto(string ArtifactId, string ArtifactKind, string FileName, string ContentType, long ByteLength, string ContentHashSha256, string DownloadRoute, DateTimeOffset RetainedAtUtc);
-```
-
-## StatementToReportWorkflowDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementToReportWorkflowDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:343](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L343).
-
-Source-compatibility workflow contract for pre-rename clients. Legacy HTTP routes project this wire shape directly over the canonical statement reconciliation report operation.
-
-```csharp
-public sealed record StatementToReportWorkflowDto(string WorkflowId, StatementToReportWorkflowStatusDto Status, long Version, string TenantId, string? CompanyId, string SourceInstitution, string FundAccountId, string ExternalAccountId, DateOnly PeriodStart, DateOnly PeriodEnd, string? StatementRunId, EvidenceVaultIdentityDto? EvidenceVaultIdentity, IReadOnlyList<StatementToReportArtifactDto> RetainedArtifacts, IReadOnlyList<string> EvidenceReferences, int BreakCount, int CaseCount, DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc, DateTimeOffset? CompletedAtUtc, string? FailureReason, string? RecoveryAction, string StatusRoute, string ResumeRoute);
-```

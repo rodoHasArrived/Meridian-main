@@ -6,6 +6,49 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingReleasedArtifactIntegrityGate
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingReleasedArtifactIntegrityGate</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs:239](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs#L239).
+
+Re-reads every immutable artifact immediately before queueing and again immediately before a claimed delivery is sent. A governance receipt alone is therefore insufficient when retained bytes or catalog metadata are missing, corrupt, or no longer match the released manifest.
+
+```csharp
+public sealed class ReportingReleasedArtifactIntegrityGate
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportingReleasedArtifactIntegrityGate(IReportingArtifactCatalog catalog, IReportingArtifactStore artifactStore);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs:244](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs#L244) |  |
+| <code>public async Task&lt;ReportingReleaseAuthorizationResult&gt; VerifyAsync(ReportingDeliveryReleaseAuthorization authorization, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs:252](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs#L252) |  |
+
+## ReportingRenderedArtifact
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRenderedArtifact</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:12](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L12).
+
+Exact rendered bytes supplied by the reporting renderer. The vault clones these bytes before hashing or awaiting so caller-owned buffers cannot change during retention.
+
+```csharp
+public sealed record ReportingRenderedArtifact(string ArtifactId, string FileName, string ContentType, ReadOnlyMemory<byte> Content);
+```
+
+## ReportingRestatementCertificationInput
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRestatementCertificationInput</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:168](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L168).
+
+Inputs from server-owned read models used to certify a replacement snapshot. Dataset rows, source identity, template metadata, and access context must not be populated from an HTTP body.
+
+```csharp
+public sealed record ReportingRestatementCertificationInput(ReportingTemplateMetadata Template, ReportingRunReadinessDto Readiness, ReportAccessQueryContext AccessContext);
+```
+
 ## ReportingRetainedManifestArtifactDescriptor
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRetainedManifestArtifactDescriptor</code>. Kind: `record`.
@@ -930,38 +973,4 @@ Source: [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:1842](../../.
 
 ```csharp
 public sealed record RiskRuleRuntimeSnapshot(decimal MaxDrawdownPercent, int MaxOrdersPerMinute, DateTimeOffset UpdatedAt, string UpdatedBy, string? Reason, decimal? MaxGrossExposure = null, decimal? MaxSymbolConcentrationPercent = null, decimal? MaxOrderNotional = null, decimal? EscalateOrderNotional = null, decimal? MaxOrderQuantity = null, decimal? MaxPriceDeviationPercent = null, decimal? PriceCollarPercent = null);
-```
-
-## RiskRuleStatusDto
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RiskRuleStatusDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:64](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L64).
-
-```csharp
-public sealed record RiskRuleStatusDto(string RuleName, string State, string Summary, bool IsBreached, string Threshold, string CurrentValue, DateTimeOffset AsOf, IReadOnlyList<string> RecentViolations, decimal? UtilizationPercent = null, string? Severity = null);
-```
-
-## RunCapitalCallDefaultInterestDraftIntakeRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RunCapitalCallDefaultInterestDraftIntakeRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs:28](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs#L28).
-
-Accrue default interest on the unfunded part of a posted capital call through a date.
-
-```csharp
-public sealed record RunCapitalCallDefaultInterestDraftIntakeRequest(string FundProfileId, string Currency, string Actor, string CallId, DateOnly AccrueThrough, IReadOnlyList<CapitalCallDefaultTermsInput> Defaults, Guid? LedgerBookId = null, string? PeriodId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null, DateTimeOffset? AsOf = null);
-```
-
-## RunCapitalCallFundingDraftIntakeRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RunCapitalCallFundingDraftIntakeRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CapitalCallFundingIntake.cs:30](../../../../src/Meridian.Ui.Shared/Services/CapitalCallFundingIntake.cs#L30).
-
-Request to record LP cash receipts against an issued capital call and land the per-LP funding drafts (Dr Cash / Cr Capital Call Receivable) in the manual journal workbench queue. Drafts flow through the same governed submit → approve → post lifecycle as every other automated intake lane; this run never posts anything, and partial funding leaves the receivable open.
-
-```csharp
-public sealed record RunCapitalCallFundingDraftIntakeRequest(string FundProfileId, string Currency, string Actor, string CallId, DateOnly ReceivedDate, IReadOnlyList<CapitalCallFundingInput> Fundings, Guid? LedgerBookId = null, string? PeriodId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null, DateTimeOffset? AsOf = null);
 ```

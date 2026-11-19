@@ -2,11 +2,71 @@
 
 # `ledger-contracts` data objects - page 7 of 7
 
-Objects 481-488 of 488. References crossing pages remain available in the dependency manifest.
+Objects 481-493 of 493. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_RuleDryRunRequestDto["RuleDryRunRequestDto"] {
+        +string Actor
+        +string? CompanyId
+        +string? CorrelationId
+        +string? CounterpartyId
+        +string Currency
+        +LedgerDimensionSetDto? Dimensions
+        +DateOnly EffectiveDate
+        +decimal EventAmount
+        +string FundProfileId
+        +string? InstrumentSymbol
+        +Guid? LedgerBookId
+        +IReadOnlyDictionary~string__decimal~? LotMutationComponents
+    }
+    class Meridian_Contracts_Ledger_RuleDryRunResultDto["RuleDryRunResultDto"] {
+        +string Currency
+        +DateOnly EffectiveDate
+        +decimal EventAmount
+        +string FundProfileId
+        +IReadOnlyList~AccountingJournalPreviewLineDto~ GeneratedLines
+        +IReadOnlyList~GeneratedPostingLineDto~ GeneratedPostingLines
+        +bool IsPostingBalanced
+        +Guid? LedgerBookId
+        +IReadOnlyList~AccountingRuleDryRunMatchDto~ RuleMatches
+        +string? SelectedRuleId
+        +string SourceEventType
+        +IReadOnlyList~AccountingConfigurationValidationIssueDto~ ValidationIssues
+    }
+    class Meridian_Contracts_Ledger_RulePromotionApprovalDto["RulePromotionApprovalDto"] {
+        +string ApprovalId
+        +ManualJournalEntryStatusDto ApprovalState
+        +DateTimeOffset? ApprovedAtUtc
+        +string? ApprovedBy
+        +IReadOnlyList~string~ EvidenceLinks
+        +string? Notes
+        +DateTimeOffset RequestedAtUtc
+        +string RequestedBy
+    }
+    class Meridian_Contracts_Ledger_SaveManualJournalEntryDraftRequest["SaveManualJournalEntryDraftRequest"] {
+        +string Actor
+        +string? CompanyId
+        +string? CorrelationId
+        +ManualJournalEntryDraftDto Draft
+        +IReadOnlyList~string~? EvidenceLinks
+        +Guid? LedgerBookId
+        +bool PeriodIsLocked
+        +IReadOnlyList~string~? ReportGroupPrincipalIds
+        +string? TenantId
+    }
+    class Meridian_Contracts_Ledger_SignOffCloseTaskRequestDto["SignOffCloseTaskRequestDto"] {
+        +OperationsActionOriginDto ActionOrigin
+        +string Actor
+        +string? CorrelationId
+        +ManualJournalEntryStatusDto Decision
+        +IReadOnlyList~string~ EvidenceLinks
+        +string Notes
+        +string Role
+        +string TaskId
+        +Guid WorkflowId
+    }
     class Meridian_Contracts_Ledger_SubmitManualJournalEntryApprovalRequest["SubmitManualJournalEntryApprovalRequest"] {
         +OperationsActionOriginDto ActionOrigin
         +string Actor

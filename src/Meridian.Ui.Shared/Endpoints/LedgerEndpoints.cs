@@ -43,6 +43,7 @@ public static partial class LedgerEndpoints
         MapPostedPeriodComparisonEndpoints(app, jsonOptions);
         MapExecutionJournalLineageEndpoint(app, jsonOptions);
         MapCloseSnapshotEndpoints(app);
+        MapFiscalYearCloseEndpoints(app, jsonOptions);
         app.MapGet(UiApiRoutes.LedgerBooks, async (
             string? fundProfileId,
             Guid? fundStructureNodeId,

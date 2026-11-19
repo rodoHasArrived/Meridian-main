@@ -994,44 +994,38 @@ Declared public members:
 | <code>public async Task&lt;FirstRunStatusDto&gt; CompleteAsync(string username, CompleteFirstRunRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs:43](../../../../src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs#L43) |  |
 | <code>public async Task&lt;FirstRunStatusDto&gt; CompleteOutcomeAsync(string username, string key, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs:90](../../../../src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs#L90) |  |
 
-## FixedAssetDepreciationCalculation
+## FiscalYearClosePlanBuilder
 
-Qualified name: <code>Meridian.Ui.Shared.Services.FixedAssetDepreciationCalculation</code>. Kind: `class`.
+Qualified name: <code>Meridian.Ui.Shared.Services.FiscalYearClosePlanBuilder</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:316](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L316).
+Source: [src/Meridian.Ui.Shared/Services/FiscalYearClosePlanBuilder.cs:28](../../../../src/Meridian.Ui.Shared/Services/FiscalYearClosePlanBuilder.cs#L28).
 
-Depreciation of every asset the fixed-asset register holds for the fund book: the scheduled charges whose period end falls inside the accrual window, in one draft. Each scheduled period belongs to exactly one window, so an asset&#x27;s life is depreciated once. Units-of-production assets need period output that the register does not hold, so they block the occurrence.
+Builds the read-only fiscal-year close plan (W12-YEND-001 slice 1) from retained hard-close snapshots. The final period&#x27;s snapshot already retains the book&#x27;s full journal population up to the fiscal year end, so the plan never reads live journals that may have been restated since.
 
 ```csharp
-public sealed class FixedAssetDepreciationCalculation(IFixedAssetRegister? register = null) : IRecurringJournalCalculation
+public static class FiscalYearClosePlanBuilder
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string CalculationKind = &quot;fixed-asset-depreciation&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:318](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L318) |  |
-| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:321](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L321) |  |
-| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:323](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L323) |  |
+| <code>public static FiscalYearClosePlanDto Build(Guid ledgerBookId, int fiscalYear, IReadOnlyList&lt;LedgerAccountingPeriod&gt; bookPeriods, IReadOnlyDictionary&lt;Guid, FiscalYearCloseSnapshotRead&gt; snapshots);</code> | [src/Meridian.Ui.Shared/Services/FiscalYearClosePlanBuilder.cs:32](../../../../src/Meridian.Ui.Shared/Services/FiscalYearClosePlanBuilder.cs#L32) |  |
 
-## FixedIncomeAccrualCalculation
+## FiscalYearClosePlanService
 
-Qualified name: <code>Meridian.Ui.Shared.Services.FixedIncomeAccrualCalculation</code>. Kind: `class`.
+Qualified name: <code>Meridian.Ui.Shared.Services.FiscalYearClosePlanService</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:19](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L19).
+Source: [src/Meridian.Ui.Shared/Services/FiscalYearClosePlanService.cs:10](../../../../src/Meridian.Ui.Shared/Services/FiscalYearClosePlanService.cs#L10).
 
-Coupon accrual and premium/discount amortization for one Bond or StructuredCredit position, from the Security Master cash-flow projection and the position&#x27;s open lots. Each occurrence drafts the day-count share of every coupon period that falls inside its accrual window, and the premium or discount amortized over the same days. Projected principal paydowns are not drafted here: they are cash movements and arrive through cash activity. Inputs: securityId, ticker, optional financialAccountId.
+Loads a book&#x27;s periods and the retained hard-close snapshot of each constituent period, then builds the read-only fiscal-year close plan. Reading the plan never posts or changes state.
 
 ```csharp
-public sealed class FixedIncomeAccrualCalculation(IRecurringJournalCalculationInputs inputs, ISecurityMasterAmortizationLedgerBridge? bridge = null, ISecurityMasterCashFlowService? cashFlows = null, ISecurityMasterQueryService? securities = null) : IRecurringJournalCalculation
+public static class FiscalYearClosePlanService
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string CalculationKind = &quot;fixed-income-accrual&quot;;</code> | [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:25](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L25) |  |
-| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:28](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L28) |  |
-| <code>public bool ReadsClosingState =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:30](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L30) |  |
-| <code>public IReadOnlyList&lt;string&gt; RequiredInputs =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:34](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L34) |  |
-| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:36](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L36) |  |
+| <code>public static async Task&lt;FiscalYearClosePlanDto&gt; BuildAsync(ILedgerJournalStore store, Guid ledgerBookId, int fiscalYear, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FiscalYearClosePlanService.cs:12](../../../../src/Meridian.Ui.Shared/Services/FiscalYearClosePlanService.cs#L12) |  |

@@ -289,6 +289,83 @@ Declared public members:
 | <code>public IReadOnlyList&lt;ReportLineProvenanceDto&gt; LineProvenance { get; init; } = LineProvenance??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:801](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L801) |  |
 | <code>public LedgerDimensionSetDto Dimensions { get; init; } = Dimensions?? new LedgerDimensionSetDto(FundId : FundProfileId, BookId : LedgerBookId?.ToString(&quot;D&quot;));</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:804](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L804) |  |
 
+## FiscalYearCloseBalanceDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.FiscalYearCloseBalanceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:44](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L44).
+
+One account and dimensional scope in a close-plan section, with normal-balance sign.
+
+```csharp
+public sealed record FiscalYearCloseBalanceDto(string AccountName, string AccountType, string? Symbol, string? FinancialAccountId, LedgerDimensionSetDto? Dimensions, decimal DebitTotal, decimal CreditTotal, decimal Balance);
+```
+
+## FiscalYearCloseBlockerCodes
+
+Qualified name: <code>Meridian.Contracts.Ledger.FiscalYearCloseBlockerCodes</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:55](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L55).
+
+Stable blocker codes for the fiscal-year close plan.
+
+```csharp
+public static class FiscalYearCloseBlockerCodes
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string NoPeriods = &quot;no-periods&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:57](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L57) |  |
+| <code>public const string CoverageGap = &quot;coverage-gap&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:58](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L58) |  |
+| <code>public const string PeriodNotHardClosed = &quot;period-not-hard-closed&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:59](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L59) |  |
+| <code>public const string PriorYearNotClosed = &quot;prior-year-not-closed&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:60](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L60) |  |
+| <code>public const string SnapshotMissing = &quot;snapshot-missing&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:61](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L61) |  |
+| <code>public const string SnapshotStale = &quot;snapshot-stale&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:62](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L62) |  |
+| <code>public const string SnapshotIntegrity = &quot;snapshot-integrity&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:63](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L63) |  |
+| <code>public const string FinalSnapshotSuperseded = &quot;final-snapshot-superseded&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:64](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L64) |  |
+| <code>public const string UnknownJournalPeriod = &quot;unknown-journal-period&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:65](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L65) |  |
+| <code>public const string LaterYearJournal = &quot;later-year-journal&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:66](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L66) |  |
+| <code>public const string Unbalanced = &quot;unbalanced&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:67](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L67) |  |
+| <code>public const string IncomeNotPreserved = &quot;income-not-preserved&quot;;</code> | [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:68](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L68) |  |
+
+## FiscalYearCloseBlockerDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.FiscalYearCloseBlockerDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:29](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L29).
+
+One named reason the fiscal year cannot be closed yet.
+
+```csharp
+public sealed record FiscalYearCloseBlockerDto(string Code, string Message, Guid? PeriodId = null);
+```
+
+## FiscalYearClosePeriodEvidenceDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.FiscalYearClosePeriodEvidenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:32](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L32).
+
+A constituent period and the retained close snapshot the plan relied on.
+
+```csharp
+public sealed record FiscalYearClosePeriodEvidenceDto(Guid PeriodId, int PeriodNo, string Label, DateOnly StartDate, DateOnly EndDate, string Status, long PeriodVersion, long? SnapshotVersion, string? SnapshotHashSha256);
+```
+
+## FiscalYearClosePlanDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.FiscalYearClosePlanDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs:9](../../../../src/Meridian.Contracts/Ledger/FiscalYearClosePlanDtos.cs#L9).
+
+Read-only fiscal-year close plan for one ledger book (W12-YEND-001 slice 1). It is derived only from retained hard-close snapshots and never posts, reopens or changes period state. When any blocker is present the plan is not ready, carries no balances and no plan hash, so an incomplete year can never be read as a closeable or empty one.
+
+```csharp
+public sealed record FiscalYearClosePlanDto(Guid LedgerBookId, int FiscalYear, DateOnly? FiscalYearStart, DateOnly? FiscalYearEnd, bool IsReady, IReadOnlyList<FiscalYearCloseBlockerDto> Blockers, IReadOnlyList<FiscalYearClosePeriodEvidenceDto> Periods, IReadOnlyList<FiscalYearCloseBalanceDto> PreClosingTrialBalance, IReadOnlyList<FiscalYearCloseBalanceDto> PostedClosingTransfers, IReadOnlyList<FiscalYearCloseBalanceDto> ProposedClosingTransfers, IReadOnlyList<FiscalYearCloseBalanceDto> PostClosingTrialBalance, IReadOnlyList<FiscalYearCloseBalanceDto> NextYearOpeningBalances, decimal ReportedNetIncome, decimal OpeningEquity, decimal PreClosingEquity, decimal PostClosingEquity, string? PlanHashSha256);
+```
+
 ## GeneratedPostingLineDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.GeneratedPostingLineDto</code>. Kind: `record`.
@@ -767,95 +844,4 @@ Source: [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:73](../../../.
 
 ```csharp
 public partial class IntercompanyAccountContractsJsonContext : JsonSerializerContext;
-```
-
-## IntercompanyAccountRoleDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAccountRoleDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:6](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L6).
-
-```csharp
-public enum IntercompanyAccountRoleDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Receivable = 0</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:8](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L8) |  |
-| <code>Payable = 1</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:9](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L9) |  |
-| <code>Revenue = 2</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:10](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L10) |  |
-| <code>Expense = 3</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:11](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L11) |  |
-| <code>TranslationReserve = 4</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:12](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L12) |  |
-
-## IntercompanyAccrualCompoundingEvidenceDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAccrualCompoundingEvidenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs:49](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs#L49).
-
-The posted accrued-interest balance of the loan-interest profile (same shape as principal evidence), the posted accrual windows that prove every earlier day was accrued, and the first principal date coverage starts from.
-
-```csharp
-public sealed record IntercompanyAccrualCompoundingEvidenceDto(IntercompanyAccrualPrincipalEvidenceDto? AccruedInterest, IReadOnlyList<IntercompanyAccrualWindowDto> PostedWindows, DateOnly FirstPrincipalDate, DateOnly BalanceFrom);
-```
-
-## IntercompanyAccrualEvidenceDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAccrualEvidenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs:30](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs#L30).
-
-Everything that determined one accrual amount: the legal version and profile revision of every slice, the principal journals, the calendars and kernel, and any governed FX conversion. Retained on the draft and carried onto the posted journal; a client resave cannot replace it.
-
-```csharp
-public sealed record IntercompanyAccrualEvidenceDto(string RuleVersion, Guid DraftId, string TenantId, Guid SourceBookId, Guid SourceEntityId, Guid CounterpartyEntityId, Guid AccountingArrangementId, Guid PostingArrangementRevisionId, Guid AgreementId, int PostingAgreementVersion, string PostingAgreementPayloadHash, string TransactionId, DateOnly PostingDate, IntercompanyAccountRoleDto SourceRole, string MonetaryAccountNodeId, string OperatingAccountNodeId, string FunctionalCurrency, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal FunctionalAmount, IntercompanyAccrualPreviewDto Computation, IntercompanyAccrualPrincipalEvidenceDto Principal, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] ConsolidationFxAmountDto? Fx = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IntercompanyAccrualCompoundingEvidenceDto? Compounding { get; init; }</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs:42](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs#L42) | Compounding loans (rule v3): the posted accrued-interest facts the base was read from. Absent otherwise. |
-
-## IntercompanyAccrualEvidenceGuard
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAccrualEvidenceGuard</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs:63](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs#L63).
-
-Retained accrual provenance stays bound to the financial lines through review and posting.
-
-```csharp
-public static class IntercompanyAccrualEvidenceGuard
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string EvidenceTag = &quot;intercompany.accrualEvidence.v1&quot;;</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs:65](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs#L65) |  |
-| <code>public const string DigestTag = &quot;intercompany.accrualEvidence.sha256&quot;;</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs:66](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs#L66) |  |
-| <code>public const string TransactionPrefix = &quot;loan-interest:&quot;;</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs:67](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs#L67) |  |
-| <code>public const string CounterpartOriginTag = &quot;intercompany.proposalId&quot;;</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs:70](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs#L70) | Tag the workbench puts on a journal posted from a counterpart proposal draft. |
-| <code>public static string CorrectionKey(Guid postedJournalEntryId, Guid correctionJournalEntryId) =&gt; …;</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs:73](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs#L73) | A correction is a different journal and needs its own retry-stable posting identity. |
-| <code>public static string TransactionId(DateOnly accrualFrom, DateOnly accrualTo, int generation = 0) =&gt; …;</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs:80](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs#L80) | A recomputation after a reversal is a new economic event of the same window: its generation suffix keeps counterpart delivery from mistaking the reversed original&#x27;s counterpart for an existing booking. |
-| <code>public static bool TryParseWindow(string? transactionId, out DateOnly accrualFrom, out DateOnly accrualTo);</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs:85](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs#L85) | Recovers the half-open accrual window a retained transaction identity declares. |
-| <code>public static IntercompanyAccrualEvidenceDto? Deserialize(string evidenceJson) =&gt; …;</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs:97](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs#L97) |  |
-| <code>public static string Serialize(IntercompanyAccrualPrincipalEvidenceDto principal) =&gt; …;</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs:100](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs#L100) | Canonical text of the principal facts, for comparing a rebuilt reading with the retained one. |
-| <code>public static string Serialize(IntercompanyAccrualEvidenceDto evidence) =&gt; …;</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs:102](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs#L102) |  |
-| <code>public static string Digest(string evidenceJson) =&gt; …;</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs:104](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs#L104) |  |
-| <code>public static bool IsAccrualDraft(ManualJournalEntryDraftDto draft) =&gt; …;</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs:106](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs#L106) |  |
-| <code>public static bool IsOriginalAccrualDraft(ManualJournalEntryDraftDto draft);</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs:113](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs#L113) | True only for the draft the computation was retained for. A reversal or rebook clones the provenance under a new journal identity and is a correction, not a new accrual of the window. |
-| <code>public static string? Validate(ManualJournalEntryDraftDto draft);</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs:145](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs#L145) | Null when the draft still states exactly the retained computation; otherwise the refusal. |
-
-## IntercompanyAccrualJsonContext
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAccrualJsonContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs:229](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs#L229).
-
-```csharp
-public partial class IntercompanyAccrualJsonContext : JsonSerializerContext;
 ```

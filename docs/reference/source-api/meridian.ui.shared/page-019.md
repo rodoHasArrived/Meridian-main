@@ -6,6 +6,61 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ThreeWayReconciliationOptions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayReconciliationOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:14](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L14).
+
+```csharp
+public sealed class ThreeWayReconciliationOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string SectionKey = &quot;Reconciliation:ThreeWay&quot;;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:16](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L16) |  |
+| <code>public const string SupportedBasisConvention = &quot;GrossTradeValueFeesExpensed&quot;;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:17](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L17) |  |
+| <code>public string RootDirectory { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:18](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L18) |  |
+| <code>public TimeSpan MaximumSourceAge { get; set; } = TimeSpan.FromMinutes(30);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:19](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L19) |  |
+| <code>public TimeSpan MaximumSourceDrift { get; set; } = TimeSpan.FromMinutes(5);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:20](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L20) |  |
+| <code>public string BrokerCostBasisConvention { get; set; } = &quot;Unknown&quot;;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:22](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L22) |  |
+| <code>public string CashAccountPath { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:23](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L23) |  |
+| <code>public string FeeExpenseAccountPath { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:24](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L24) |  |
+| <code>public TimeOnly DailyRunAfterUtc { get; set; } = new (0, 15);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:25](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L25) |  |
+| <code>public IReadOnlyList&lt;ThreeWayReconciliationSchedule&gt; Schedules { get; set; } = [];</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:26](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L26) |  |
+
+## ThreeWayReconciliationSchedule
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayReconciliationSchedule</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:6](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L6).
+
+Explicit daily scope configuration; no account or authority is discovered implicitly.
+
+```csharp
+public sealed record ThreeWayReconciliationSchedule(string TenantId, string CompanyId, Guid FinancialAccountId, Guid LedgerBookId, Guid AccountingPeriodId, bool Enabled = false);
+```
+
+## ThreeWayReconciliationScheduleRunner
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayReconciliationScheduleRunner</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs:35](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs#L35).
+
+Uses the existing shared scheduler tick; retains one operation per configured scope/day.
+
+```csharp
+public sealed class ThreeWayReconciliationScheduleRunner(IThreeWayReconciliationSourceReader sources, ThreeWayReconciliationService reconciliation, ThreeWayReconciliationOptions options, ILogger<ThreeWayReconciliationScheduleRunner> logger)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;int&gt; RunDueAsync(DateTimeOffset nowUtc, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs:41](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs#L41) |  |
+
 ## ThreeWayReconciliationService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayReconciliationService</code>. Kind: `class`.
@@ -887,63 +942,3 @@ Declared public members:
 | <code>public const string DataOpenQueueOverview = &quot;workflow.data.open-queue-overview&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:56](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L56) |  |
 | <code>public const string DataReviewSecurityMaster = &quot;workflow.data.review-security-master&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:57](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L57) |  |
 | <code>public const string SettingsOpen = &quot;workflow.settings.open&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:59](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L59) |  |
-
-## WorkflowLibraryService
-
-Qualified name: <code>Meridian.Ui.Shared.Workflows.WorkflowLibraryService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Workflows/WorkflowLibraryService.cs:8](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowLibraryService.cs#L8).
-
-Builds the shared workflow library payload exposed to hosts and desktop UI.
-
-```csharp
-public sealed class WorkflowLibraryService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WorkflowLibraryService(IWorkflowActionCatalog catalog);</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowLibraryService.cs:12](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowLibraryService.cs#L12) |  |
-| <code>public WorkflowLibraryDto GetLibrary() =&gt; …;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowLibraryService.cs:17](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowLibraryService.cs#L17) |  |
-
-## WorkflowPresetMutationResult
-
-Qualified name: <code>Meridian.Ui.Shared.Workflows.WorkflowPresetMutationResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs:291](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs#L291).
-
-```csharp
-public sealed record WorkflowPresetMutationResult(bool Success, WorkflowPresetDto? Preset, string? Error, bool NotFound)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static WorkflowPresetMutationResult Ok(WorkflowPresetDto preset) =&gt; …;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs:297](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs#L297) |  |
-| <code>public static WorkflowPresetMutationResult Fail(string error) =&gt; …;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs:300](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs#L300) |  |
-| <code>public static WorkflowPresetMutationResult Missing(string presetId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs:303](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs#L303) |  |
-
-## WorkflowPresetService
-
-Qualified name: <code>Meridian.Ui.Shared.Workflows.WorkflowPresetService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs:9](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs#L9).
-
-Validates and manages operator-saved workflow presets on top of the workflow catalog.
-
-```csharp
-public sealed class WorkflowPresetService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WorkflowPresetService(IWorkflowActionCatalog catalog, IWorkflowPresetStore store);</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs:21](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs#L21) |  |
-| <code>public async Task&lt;WorkflowPresetLibraryDto&gt; GetLibraryAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs:27](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs#L27) |  |
-| <code>public async Task&lt;WorkflowPresetMutationResult&gt; SaveAsync(WorkflowPresetSaveRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs:35](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs#L35) |  |
-| <code>public async Task&lt;WorkflowPresetMutationResult&gt; SetPinnedAsync(string presetId, bool isPinned, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs:77](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs#L77) |  |
-| <code>public async Task&lt;WorkflowPresetMutationResult&gt; MarkUsedAsync(string presetId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs:111](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs#L111) |  |
-| <code>public async Task&lt;bool&gt; DeleteAsync(string presetId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs:143](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs#L143) |  |

@@ -6,6 +6,109 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IIntercompanyAgreementService
+
+Qualified name: <code>Meridian.Contracts.Services.IIntercompanyAgreementService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs:5](../../../../src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs#L5).
+
+```csharp
+public interface IIntercompanyAgreementService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IntercompanyAgreementListDto&gt; ListAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementQueryDto query, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs:7](../../../../src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs#L7) |  |
+| <code>Task&lt;IntercompanyAgreementDetailDto?&gt; GetAsync(IntercompanyAgreementCallContext context, Guid agreementId, DateOnly? asOf = null, DateTimeOffset? knownAtUtc = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs:8](../../../../src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs#L8) |  |
+| <code>Task&lt;IntercompanyAgreementCommandResultDto&gt; CreateAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs:9](../../../../src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs#L9) |  |
+| <code>Task&lt;IntercompanyAgreementCommandResultDto&gt; CreateProposalAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs:10](../../../../src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs#L10) |  |
+| <code>Task&lt;IntercompanyAgreementCommandResultDto&gt; SaveDraftAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs:11](../../../../src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs#L11) |  |
+| <code>Task&lt;IntercompanyAgreementCommandResultDto&gt; SubmitAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs:12](../../../../src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs#L12) |  |
+| <code>Task&lt;IntercompanyAgreementCommandResultDto&gt; ApproveAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs:13](../../../../src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs#L13) |  |
+| <code>Task&lt;IntercompanyAgreementCommandResultDto&gt; RejectAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs:14](../../../../src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs#L14) |  |
+| <code>Task&lt;IntercompanyAgreementCommandResultDto&gt; WithdrawAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs:15](../../../../src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs#L15) |  |
+
+## IOperationalScheduler
+
+Qualified name: <code>Meridian.Contracts.Services.IOperationalScheduler</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Services/IOperationalScheduler.cs:136](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L136).
+
+Centralized operational scheduler for coordinating maintenance tasks, backfill operations, and other scheduled activities with trading hours.
+
+```csharp
+public interface IOperationalScheduler
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ScheduleDecision&gt; CanExecuteAsync(OperationType operationType, ResourceRequirements? requirements = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:145](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L145) | Checks if an operation can execute now based on current conditions. |
+| <code>Task&lt;ScheduleSlot?&gt; FindNextAvailableSlotAsync(OperationType operationType, TimeSpan minDuration, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:157](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L157) | Finds the next available slot for an operation. |
+| <code>bool IsWithinTradingHours { get; }</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:165](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L165) | Gets whether we are currently within trading hours for any market. |
+| <code>bool IsWithinMaintenanceWindow { get; }</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:170](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L170) | Gets whether we are currently within a maintenance window. |
+| <code>TradingSession? GetCurrentTradingSession();</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:176](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L176) | Gets the current trading session if any. |
+| <code>TradingSession? GetNextTradingSession();</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:182](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L182) | Gets the next trading session. |
+| <code>MaintenanceWindow? GetCurrentMaintenanceWindow();</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:188](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L188) | Gets the current maintenance window if any. |
+| <code>MaintenanceWindow? GetNextMaintenanceWindow();</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:194](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L194) | Gets the next maintenance window. |
+| <code>void RegisterMaintenanceWindow(MaintenanceWindow window);</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:200](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L200) | Registers a maintenance window. |
+| <code>void RemoveMaintenanceWindow(string windowName);</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:206](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L206) | Removes a maintenance window. |
+
+## IOperationalTradingCalendar
+
+Qualified name: <code>Meridian.Contracts.Services.IOperationalTradingCalendar</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Services/IOperationalScheduler.cs:213](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L213).
+
+Provides the deterministic trading-calendar policy used by local operational scheduling. This is intentionally separate from provider-supplied calendar data.
+
+```csharp
+public interface IOperationalTradingCalendar
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>bool IsTradingDay(DateOnly date, string market = &quot;US&quot;);</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:221](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L221) | Checks if a specific date is a trading day. |
+| <code>IReadOnlyList&lt;TradingSession&gt; GetTradingSessions(DateOnly date, string market = &quot;US&quot;);</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:229](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L229) | Gets trading hours for a specific date. |
+| <code>DateOnly GetNextTradingDay(DateOnly after, string market = &quot;US&quot;);</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:237](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L237) | Gets the next trading day. |
+| <code>IReadOnlyList&lt;DateOnly&gt; GetHolidays(int year, string market = &quot;US&quot;);</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:245](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L245) | Gets market holidays for a year. |
+
+## ISecurityValidationGateService
+
+Qualified name: <code>Meridian.Contracts.Services.ISecurityValidationGateService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Services/ISecurityValidationGateService.cs:8](../../../../src/Meridian.Contracts/Services/ISecurityValidationGateService.cs#L8).
+
+Workflow-facing Security Master validation gate.
+
+```csharp
+public interface ISecurityValidationGateService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;SecurityValidationGateResultDto&gt; ValidateSymbolAsync(string symbol, SecurityValidationWorkflowDto workflow, string? workflowReference = null, string? actor = null, bool persistSnapshot = false, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/ISecurityValidationGateService.cs:13](../../../../src/Meridian.Contracts/Services/ISecurityValidationGateService.cs#L13) | Validates Security Master identity and policy posture for a symbol-scoped workflow. |
+| <code>Task&lt;SecurityValidationGateResultDto&gt; ValidateSecurityAsync(Guid securityId, SecurityValidationWorkflowDto workflow, string? workflowReference = null, string? actor = null, bool persistSnapshot = false, string? symbol = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/ISecurityValidationGateService.cs:24](../../../../src/Meridian.Contracts/Services/ISecurityValidationGateService.cs#L24) | Validates Security Master identity and policy posture for a known security. |
+
+## ITradingCalendarProvider
+
+Qualified name: <code>Meridian.Contracts.Services.ITradingCalendarProvider</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Services/IOperationalScheduler.cs:256](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L256).
+
+Compatibility alias for the former local scheduling calendar contract. New local scheduling code must use IOperationalTradingCalendar; provider adapters must use Meridian.ProviderSdk.ITradingCalendarProvider so their calendar output retains provider provenance.
+
+```csharp
+public interface ITradingCalendarProvider : IOperationalTradingCalendar
+```
+
 ## MaintenanceWindow
 
 Qualified name: <code>Meridian.Contracts.Services.MaintenanceWindow</code>. Kind: `record`.
@@ -826,80 +929,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public TenantScopeRejectedException(string readDescription) : base($&quot;A tenant-scoped caller is required to read {readDescription}.&quot;);</code> | [src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs:120](../../../../src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs#L120) |  |
 | <code>public string ReadDescription { get; }</code> | [src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs:127](../../../../src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs#L127) | What the caller was trying to read, for the operator-facing message. |
-
-## TextPrimitives
-
-Qualified name: <code>Meridian.Contracts.Text.TextPrimitives</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Text/TextPrimitives.cs:33](../../../../src/Meridian.Contracts/Text/TextPrimitives.cs#L33).
-
-The shared home for the trivial string helpers that were previously redeclared as private static in hundreds of files.
-
-```csharp
-public static class TextPrimitives
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static string? NormalizeOptional(string? value) =&gt; …;</code> | [src/Meridian.Contracts/Text/TextPrimitives.cs:43](../../../../src/Meridian.Contracts/Text/TextPrimitives.cs#L43) | Returns value trimmed, or null when it is null, empty, or entirely white space. |
-| <code>public static string RequireText(string? value, [CallerArgumentExpression(nameof(value))] string? paramName = null);</code> | [src/Meridian.Contracts/Text/TextPrimitives.cs:58](../../../../src/Meridian.Contracts/Text/TextPrimitives.cs#L58) | Returns value trimmed, throwing when it is null, empty, or entirely white space. |
-| <code>public static string? FirstNonBlank(params string?[] values);</code> | [src/Meridian.Contracts/Text/TextPrimitives.cs:74](../../../../src/Meridian.Contracts/Text/TextPrimitives.cs#L74) | Returns the first entry of values that is not null, empty, or entirely white space, trimmed; or null when every entry is blank. |
-
-## MmfDetailDto
-
-Qualified name: <code>Meridian.Contracts.Treasury.MmfDetailDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:25](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L25).
-
-Full reference record for a money market fund, including canonical identity, sweep eligibility, weighted-average maturity, and liquidity-fee metadata.
-
-```csharp
-public sealed record MmfDetailDto(Guid SecurityId, string DisplayName, string Currency, string? FundFamily, bool IsSweepEligible, int? WeightedAverageMaturityDays, bool HasLiquidityFee, string Status, long Version, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo);
-```
-
-## MmfFundFamilyDto
-
-Qualified name: <code>Meridian.Contracts.Treasury.MmfFundFamilyDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:63](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L63).
-
-Fund-family grouping projection. Normalised family name is upper-case; members are the canonical security IDs of all active MMFs sharing that family lineage.
-
-```csharp
-public sealed record MmfFundFamilyDto(string NormalizedFamilyName, IReadOnlyList<Guid> MemberSecurityIds, int MemberCount, DateTimeOffset AsOf);
-```
-
-## MmfLiquidityDto
-
-Qualified name: <code>Meridian.Contracts.Treasury.MmfLiquidityDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:41](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L41).
-
-Liquidity projection for a money market fund derived from WAM and operational state.
-
-```csharp
-public sealed record MmfLiquidityDto(Guid SecurityId, MmfLiquidityState State, int? WeightedAverageMaturityDays, DateTimeOffset AsOf);
-```
-
-## MmfLiquidityState
-
-Qualified name: <code>Meridian.Contracts.Treasury.MmfLiquidityState</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:13](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L13).
-
-Operational liquidity state of a money market fund. Liquid funds are within standard WAM limits and fully operational. Restricted funds have elevated WAM or suspended redemptions. Suspended funds are under regulatory or operational hold. Inactive funds have been deactivated in the security master.
-
-```csharp
-public enum MmfLiquidityState
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Liquid</code> | [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:15](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L15) |  |
-| <code>Restricted</code> | [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:16](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L16) |  |
-| <code>Suspended</code> | [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:17](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L17) |  |
-| <code>Inactive</code> | [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:18](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L18) |  |
