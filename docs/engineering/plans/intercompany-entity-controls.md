@@ -207,12 +207,25 @@ row `W12-ICCONFIRM-001` carries its status. Semantics are in the
 | Rules | `IntercompanyBalanceConfirmationRules`: proposal, confirm, dispute, resolve and advisory findings over a pinned balance digest. | `IntercompanyBalanceConfirmationRulesTests` |
 | Storage | `V_ledger_073__intercompany_balance_confirmations.sql` (append-only, one confirmation per tenant, company, profile and date) behind `PostgresIntercompanyBalanceConfirmationStore`; `FileIntercompanyBalanceConfirmationStore` for hosts without a ledger database. | `IntercompanyBalanceConfirmationStoreTests` (file and PostgreSQL) |
 | Service and routes | `IntercompanyBalanceConfirmationService` reads each side from the balance schedule and checks each side's book; `/api/ledger/intercompany/confirmations` (summary, propose, actions) sends exact decimal strings. | `IntercompanyBalanceConfirmationServiceTests`, `IntercompanyBalanceConfirmationEndpointTests` |
-| Close readiness | Findings join the existing intercompany close advisory as `intercompany.confirmation.*` warnings, after eligibility is decided. | `IntercompanyCloseAdvisoryAuthorizationTests` |
+| Close readiness | Findings join the existing intercompany close advisory as `intercompany.confirmation.*` warnings, after eligibility is decided. A book's approved confirmation close policy is the separate path that can block close (next section). | `IntercompanyCloseAdvisoryAuthorizationTests` |
 | Browser | "Balance confirmation" tab in Accounting's entity operations (`accounting-screen.entity-confirmations.tsx`). | `accounting-screen.entity-confirmations.test.tsx` |
 | Desktop | Balance confirmation tab on the Fund Ledger page (`IntercompanyBalanceConfirmationControl.xaml` over `IntercompanyBalanceConfirmationWorkspace`). The ledger book is a typed ID, as on the other desktop intercompany tabs; profiles are chosen from a list. | `IntercompanyBalanceConfirmationWorkspaceTests`, `WorkstationIntercompanyAgreementApiClientTests` (Linux); `IntercompanyNativeControlSmokeTests.BalanceConfirmationControl_*` runs only on Windows |
 
-Not in this slice: opt-in close blocking (needs its own decision and a reviewed policy revision),
-pairs spanning two companies of one tenant, and posting adjustments from a dispute.
+Not in this slice: pairs spanning two companies of one tenant, and posting adjustments from a dispute.
+Opt-in close blocking was added on 2026-11-18; see the next section.
+
+### Opt-in confirmation close policy (2026-11-18)
+
+ADR-032 and the proposed decision `DEC-IC-CONFIRM-002` (awaiting owner acceptance) let one ledger book
+adopt a reviewed confirmation close policy. Books without one keep advisory-only confirmation.
+
+| Piece | What exists | Verification |
+| --- | --- | --- |
+| Rules and storage | `IntercompanyConfirmationClosePolicyRules` (propose, approve by someone else, reject or disable with a reason; evaluation that fails closed on unreadable balances). `V_ledger_078__intercompany_confirmation_close_policies.sql` (append-only, update/delete/truncate refused) behind `PostgresIntercompanyConfirmationClosePolicyStore`; `FileIntercompanyConfirmationClosePolicyStore` otherwise. | `IntercompanyConfirmationClosePolicyRulesTests`, `IntercompanyConfirmationClosePolicyStoreContract` (file and PostgreSQL) |
+| Close readiness | `IntercompanyConfirmationCloseGate` adds the `intercompany-confirmation` contributor only for a book with an active policy: `Blocked` for a listed finding at the period end, `Ready` otherwise, `Unavailable` when the period or confirmation cannot be read. The advisory list is unchanged. | `IntercompanyConfirmationCloseGateTests`, `FinancialOperationsCommandCenterReadServiceTests.ConfirmationClosePolicy_*`, `IntercompanyCloseAdvisoryTests` (unchanged) |
+| Routes | `/api/ledger/intercompany/confirmation-close-policies`: list, propose and decide, scoped to a book the caller's tenant and company own. | `IntercompanyConfirmationClosePolicyEndpointTests` |
+| Browser | Close-policy panel on the balance-confirmation screen (`accounting-screen.entity-confirmation-close-policy.tsx`). | `accounting-screen.entity-confirmations.test.tsx` |
+| Desktop | Close-policy section on the Balance confirmation tab (`IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs`). | `IntercompanyBalanceConfirmationWorkspaceTests` (Linux); `IntercompanyNativeControlSmokeTests.BalanceConfirmationControl_*` builds on Linux and runs only on Windows |
 
 ### Periodic compounding extension (2026-11-17)
 

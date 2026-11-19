@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingLineageProjection
+
+Qualified name: <code>Meridian.Ui.Services.Services.Reporting.ReportingLineageProjection</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs:5](../../../../src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs#L5).
+
+```csharp
+public sealed record ReportingLineageProjection(string SectionId, string DatasetSnapshotId, string DatasetSnapshotHash, string ReconciliationCheckpointId);
+```
+
 ## ReportingStatusProjection
 
 Qualified name: <code>Meridian.Ui.Services.Services.Reporting.ReportingStatusProjection</code>. Kind: `record`.
@@ -1136,24 +1146,3 @@ Declared public members:
 | <code>public int RecommendedDateRange { get; set; } = 365;</code> | [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:606](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L606) |  |
 | <code>public string? Reason { get; set; }</code> | [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:607](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L607) |  |
 | <code>public string? Category { get; set; }</code> | [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:608](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L608) |  |
-
-## SwitchProviderResponse
-
-Qualified name: <code>Meridian.Ui.Services.SwitchProviderResponse</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/ProviderManagementService.cs:705](../../../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs#L705).
-
-Carries API provider-switch success, previous and new providers, and an explanatory message.
-
-```csharp
-public sealed class SwitchProviderResponse
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderManagementService.cs:707](../../../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs#L707) |  |
-| <code>public string? PreviousProvider { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderManagementService.cs:708](../../../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs#L708) |  |
-| <code>public string? NewProvider { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderManagementService.cs:709](../../../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs#L709) |  |
-| <code>public string? Message { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderManagementService.cs:710](../../../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs#L710) |  |

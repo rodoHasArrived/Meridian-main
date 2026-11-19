@@ -588,6 +588,24 @@ Declared public members:
 | --- | --- | --- |
 | <code>LegalEntityReadAuthorityProof? StructureAuthorityProof { get; }</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:11](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L11) |  |
 
+## IIntercompanyBalanceConfirmationSummarySource
+
+Qualified name: <code>Meridian.FinancialOperations.Intercompany.IIntercompanyBalanceConfirmationSummarySource</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyConfirmationCloseGate.cs:8](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyConfirmationCloseGate.cs#L8).
+
+The confirmation position of one book at a date, as the balance confirmation service reports it.
+
+```csharp
+public interface IIntercompanyBalanceConfirmationSummarySource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IntercompanyBalanceConfirmationSummaryDto&gt; SummaryAsync(string tenant, string? company, Guid ledgerBookId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyConfirmationCloseGate.cs:10](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyConfirmationCloseGate.cs#L10) |  |
+
 ## IIntercompanyBalanceScheduleSource
 
 Qualified name: <code>Meridian.FinancialOperations.Intercompany.IIntercompanyBalanceScheduleSource</code>. Kind: `interface`.
@@ -715,22 +733,22 @@ Declared public members:
 
 Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyBalanceConfirmationService</code>. Kind: `class`.
 
-Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs:14](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs#L14).
+Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs:15](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs#L15).
 
-Reciprocal intercompany balance confirmation. Each side&#x27;s balance is summed from its own book&#x27;s posted balance schedule for the approved accounting profile; nothing is entered by an operator. Each side is confirmed or disputed only by a caller whose scope holds that side&#x27;s book. Advisory only: no result gates close.
+Reciprocal intercompany balance confirmation. Each side&#x27;s balance is summed from its own book&#x27;s posted balance schedule for the approved accounting profile; nothing is entered by an operator. Each side is confirmed or disputed only by a caller whose scope holds that side&#x27;s book. Advisory unless the book adopts a reviewed confirmation close policy (ADR-032), which IntercompanyConfirmationCloseGate evaluates.
 
 ```csharp
-public sealed class IntercompanyBalanceConfirmationService(IIntercompanyBalanceConfirmationStore store, IIntercompanyBalanceScheduleSource schedules, IntercompanyAccountingArrangementService profiles, IIntercompanyAccountingArrangementStore profileStore, ILedgerJournalStore journals, IFundProfileTenancyRegistry owners, TimeProvider? clock = null)
+public sealed class IntercompanyBalanceConfirmationService(IIntercompanyBalanceConfirmationStore store, IIntercompanyBalanceScheduleSource schedules, IntercompanyAccountingArrangementService profiles, IIntercompanyAccountingArrangementStore profileStore, ILedgerJournalStore journals, IFundProfileTenancyRegistry owners, TimeProvider? clock = null) : IIntercompanyBalanceConfirmationSummarySource
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public Task&lt;IntercompanyBalanceConfirmationDto?&gt; GetAsync(string tenant, string? company, Guid confirmationId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs:21](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs#L21) |  |
-| <code>public async Task&lt;IntercompanyBalanceConfirmationDto&gt; ProposeAsync(string tenant, string? company, string actor, ProposeIntercompanyBalanceConfirmationRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs:25](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs#L25) | Pins both sides&#x27; current posted balances for the profile at the date. |
-| <code>public async Task&lt;IntercompanyBalanceConfirmationDto&gt; ActAsync(string tenant, string? company, string actor, Guid confirmationId, IntercompanyBalanceConfirmationActionRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs:42](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs#L42) | Confirms, disputes or resolves the exact retained version the caller saw. |
-| <code>public async Task&lt;IntercompanyBalanceConfirmationSummaryDto&gt; SummaryAsync(string tenant, string? company, Guid ledgerBookId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs:67](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs#L67) | The confirmation position for every approved profile that maps the book at the date. Advisory findings only; a profile whose balances cannot be read reports Unavailable rather than being treated as confirmed. |
+| <code>public Task&lt;IntercompanyBalanceConfirmationDto?&gt; GetAsync(string tenant, string? company, Guid confirmationId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs:22](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs#L22) |  |
+| <code>public async Task&lt;IntercompanyBalanceConfirmationDto&gt; ProposeAsync(string tenant, string? company, string actor, ProposeIntercompanyBalanceConfirmationRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs:26](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs#L26) | Pins both sides&#x27; current posted balances for the profile at the date. |
+| <code>public async Task&lt;IntercompanyBalanceConfirmationDto&gt; ActAsync(string tenant, string? company, string actor, Guid confirmationId, IntercompanyBalanceConfirmationActionRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs:43](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs#L43) | Confirms, disputes or resolves the exact retained version the caller saw. |
+| <code>public async Task&lt;IntercompanyBalanceConfirmationSummaryDto&gt; SummaryAsync(string tenant, string? company, Guid ledgerBookId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs:68](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceConfirmationService.cs#L68) | The confirmation position for every approved profile that maps the book at the date. Advisory findings only; a profile whose balances cannot be read reports Unavailable rather than being treated as confirmed. |
 
 ## IntercompanyBalanceScheduleService
 
@@ -750,6 +768,68 @@ Declared public members:
 | --- | --- | --- |
 | <code>public async Task&lt;IntercompanyBalanceScheduleDto&gt; GetAsync(string? tenantId, string? companyId, string? fundProfileId, Guid? ledgerBookId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceScheduleService.cs:25](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceScheduleService.cs#L25) |  |
 | <code>public async Task&lt;IntercompanyBalanceScheduleDto&gt; GetForCloseAsync(string? tenant, string? company, string? fund, Guid? book, string? periodId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceScheduleService.cs:235](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceScheduleService.cs#L235) |  |
+
+## IntercompanyConfirmationCloseGate
+
+Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyConfirmationCloseGate</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyConfirmationCloseGate.cs:23](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyConfirmationCloseGate.cs#L23).
+
+Opt-in close blocking from reciprocal balance confirmation (ADR-032). With no active policy for the scope&#x27;s book it returns null and close readiness is unchanged. With one, it evaluates confirmation at the selected period end and fails closed: a missing period, an unreadable confirmation or a conflicting policy history is Unavailable.
+
+```csharp
+public sealed class IntercompanyConfirmationCloseGate(IIntercompanyConfirmationClosePolicyStore policies, IIntercompanyBalanceConfirmationSummarySource? confirmations, ILedgerJournalStore? journals) : IIntercompanyConfirmationCloseGate
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IntercompanyConfirmationCloseGateResultDto?&gt; EvaluateAsync(CloseReadinessScopeDto scope, string? tenantId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyConfirmationCloseGate.cs:26](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyConfirmationCloseGate.cs#L26) |  |
+
+## IntercompanyConfirmationClosePolicyRules
+
+Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyConfirmationClosePolicyRules</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyConfirmationClosePolicyRules.cs:9](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyConfirmationClosePolicyRules.cs#L9).
+
+Pure transitions of an intercompany confirmation close policy (ADR-032). A policy blocks nothing until someone other than its proposer approves it; disabling it restores advisory-only confirmation for the book.
+
+```csharp
+public static class IntercompanyConfirmationClosePolicyRules
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int MaximumReasonLength = 500;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyConfirmationClosePolicyRules.cs:11](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyConfirmationClosePolicyRules.cs#L11) |  |
+| <code>public static readonly IReadOnlyList&lt;string&gt; BlockableCodes = [&quot;not-proposed&quot;, &quot;awaiting-confirmation&quot;, &quot;disputed&quot;, &quot;balances-changed&quot;, &quot;resolved-awaiting-proposal&quot;];</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyConfirmationClosePolicyRules.cs:14](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyConfirmationClosePolicyRules.cs#L14) | Confirmation finding codes a policy may make blocking, without the intercompany.confirmation. prefix. |
+| <code>public static IntercompanyConfirmationClosePolicyDto Propose(string tenantId, string? companyId, string actor, ProposeIntercompanyConfirmationClosePolicyRequest request, DateTimeOffset at);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyConfirmationClosePolicyRules.cs:17](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyConfirmationClosePolicyRules.cs#L17) |  |
+| <code>public static IntercompanyConfirmationClosePolicyDto Decide(IntercompanyConfirmationClosePolicyDto current, string actor, DecideIntercompanyConfirmationClosePolicyRequest request, DateTimeOffset at);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyConfirmationClosePolicyRules.cs:31](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyConfirmationClosePolicyRules.cs#L31) |  |
+| <code>public static bool IsReplay(IntercompanyConfirmationClosePolicyDto? current, Guid requestId, IntercompanyConfirmationClosePolicyActionDto action);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyConfirmationClosePolicyRules.cs:69](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyConfirmationClosePolicyRules.cs#L69) | True when this request already produced a step of the policy; a reused identity for another step conflicts. |
+| <code>public static (string Status, IReadOnlyList&lt;string&gt; Records, string Message) Evaluate(IntercompanyConfirmationClosePolicyDto policy, IReadOnlyList&lt;IntercompanyBalanceConfirmationFindingDto&gt; findings, DateOnly periodEnd);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyConfirmationClosePolicyRules.cs:81](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyConfirmationClosePolicyRules.cs#L81) | The contributor result for one active policy over the confirmation findings at the close period end. Findings use the confirmation service&#x27;s raw codes; any unreadable pair makes the decision incomplete instead of being ignored. |
+| <code>public static string Code(string code) =&gt; …;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyConfirmationClosePolicyRules.cs:100](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyConfirmationClosePolicyRules.cs#L100) | Maps a confirmation service finding code to the published intercompany.confirmation.* suffix. |
+
+## IntercompanyConfirmationClosePolicyService
+
+Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyConfirmationClosePolicyService</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyConfirmationClosePolicyService.cs:9](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyConfirmationClosePolicyService.cs#L9).
+
+Maker-checker lifecycle of intercompany confirmation close policies (ADR-032). A book has at most one proposed or active policy; book ownership is checked by the calling route before any command reaches this service.
+
+```csharp
+public sealed class IntercompanyConfirmationClosePolicyService(IIntercompanyConfirmationClosePolicyStore store, TimeProvider? clock = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;IReadOnlyList&lt;IntercompanyConfirmationClosePolicyDto&gt;&gt; ListAsync(string tenantId, Guid ledgerBookId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyConfirmationClosePolicyService.cs:13](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyConfirmationClosePolicyService.cs#L13) |  |
+| <code>public async Task&lt;IntercompanyConfirmationClosePolicyDto&gt; ProposeAsync(string tenantId, string? companyId, string actor, ProposeIntercompanyConfirmationClosePolicyRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyConfirmationClosePolicyService.cs:16](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyConfirmationClosePolicyService.cs#L16) |  |
+| <code>public async Task&lt;IntercompanyConfirmationClosePolicyDto&gt; DecideAsync(string tenantId, string? companyId, string actor, Guid policyId, DecideIntercompanyConfirmationClosePolicyRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyConfirmationClosePolicyService.cs:34](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyConfirmationClosePolicyService.cs#L34) |  |
 
 ## IntercompanyCounterpartReversalBuilder
 
@@ -853,61 +933,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;IntercompanyObligationMonitorDto&gt; EvaluateAsync(IntercompanyAgreementCallContext context, string? companyId, IntercompanyObligationMonitorRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyObligationMonitorService.cs:23](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyObligationMonitorService.cs#L23) |  |
-
-## IntercompanyProposalDraftBuilder
-
-Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyProposalDraftBuilder</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyProposalDraftBuilder.cs:8](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyProposalDraftBuilder.cs#L8).
-
-Creates a balanced proposal from retained source facts, never a posting instruction.
-
-```csharp
-public static class IntercompanyProposalDraftBuilder
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string MirrorFundEventType = &quot;IntercompanyMirror&quot;;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyProposalDraftBuilder.cs:14](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyProposalDraftBuilder.cs#L14) | Classifies a generated counterpart&#x27;s treasury context. It is a label, not a private-capital fund event: a counterpart carries no fund event identity or capital account. |
-| <code>public static ManualJournalEntryDraftDto Build(IntercompanyProposalDto proposal, ResolvedIntercompanyAccountingArrangementDto agreement, LedgerBookRecord target, LedgerAccountingPeriod period, IReadOnlyList&lt;IntercompanyAccountBindingDto&gt; sourceBindings, IReadOnlyList&lt;IntercompanyAccountBindingDto&gt; targetBindings, IReadOnlyList&lt;ChartOfAccountsNodeDto&gt; chart, ConsolidationFxAmountDto? fx, DateTimeOffset now, IReadOnlyList&lt;ChartOfAccountsNodeDto&gt;? sourceChart = null);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyProposalDraftBuilder.cs:16](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyProposalDraftBuilder.cs#L16) |  |
-
-## AccountingAutomaticPostingPolicyValidator
-
-Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingAutomaticPostingPolicyValidator</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs:31](../../../../src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs#L31).
-
-```csharp
-public sealed class AccountingAutomaticPostingPolicyValidator(IAccountingPolicyService policies) : IAccountingAutomaticPostingPolicyValidator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IAsyncDisposable&gt; AcquireRetainedAuthorityAsync(AccountingPolicyDto snapshot, DateOnly effectiveDate, IReadOnlyList&lt;string&gt; sourceEventTypes, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs:33](../../../../src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs#L33) |  |
-| <code>public async Task&lt;IAsyncDisposable&gt; AcquireAuthorityAsync(string policyId, string policyVersion, AccountingBasisKindDto basis, DateOnly effectiveDate, IReadOnlyList&lt;string&gt; sourceEventTypes, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs:52](../../../../src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs#L52) |  |
-| <code>public async Task ValidateAsync(string policyId, string policyVersion, AccountingBasisKindDto basis, DateOnly effectiveDate, IReadOnlyList&lt;string&gt; sourceEventTypes, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs:64](../../../../src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs#L64) |  |
-| <code>public async Task&lt;AccountingPolicyRuleDto&gt; ResolveRuleAsync(string policyId, string policyVersion, AccountingBasisKindDto basis, DateOnly effectiveDate, string sourceEventType, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs:71](../../../../src/Meridian.FinancialOperations/Ledger/ConfiguredLedgerAccountResolver.cs#L71) |  |
-
-## AccountingBasisProjectionRequest
-
-Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingBasisProjectionRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:40](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L40).
-
-```csharp
-public sealed record AccountingBasisProjectionRequest(JournalEntry SourceEntry, Guid AggregateId, Guid PeriodId, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, DateOnly? EffectiveDate = null, Guid? CommandId = null, Guid? CorrelationId = null, Guid? SourceEventId = null, Guid? SourceJournalEntryId = null, string? FundProfileId = null, Guid? FundStructureNodeId = null, string? InstrumentId = null, string? PolicyId = null, string? RuleId = null, string? RuleVersion = null, LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating, LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null, Guid? LedgerBookId = null, AccountingPostingCommandDto? PostingCommand = null, string? PolicyVersion = null);
-```
-
-## AccountingBasisProjectionResult
-
-Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingBasisProjectionResult</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:62](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L62).
-
-```csharp
-public sealed record AccountingBasisProjectionResult(AccountingPolicyDto Policy, LedgerJournalEntryWrite Write);
-```

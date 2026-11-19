@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SwitchProviderResponse
+
+Qualified name: <code>Meridian.Ui.Services.SwitchProviderResponse</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/ProviderManagementService.cs:705](../../../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs#L705).
+
+Carries API provider-switch success, previous and new providers, and an explanatory message.
+
+```csharp
+public sealed class SwitchProviderResponse
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderManagementService.cs:707](../../../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs#L707) |  |
+| <code>public string? PreviousProvider { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderManagementService.cs:708](../../../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs#L708) |  |
+| <code>public string? NewProvider { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderManagementService.cs:709](../../../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs#L709) |  |
+| <code>public string? Message { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderManagementService.cs:710](../../../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs#L710) |  |
+
 ## SwitchProviderResult
 
 Qualified name: <code>Meridian.Ui.Services.SwitchProviderResult</code>. Kind: `class`.
@@ -1184,24 +1205,3 @@ Declared public members:
 | <code>public List&lt;string&gt;? Symbols { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:178](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L178) |  |
 | <code>public List&lt;string&gt;? EventTypes { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:179](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L179) |  |
 | <code>public bool DryRun { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:180](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L180) |  |
-
-## TierMigrationResponse
-
-Qualified name: <code>Meridian.Ui.Services.TierMigrationResponse</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:199](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L199).
-
-HTTP response payload for tier migration.
-
-```csharp
-public sealed class TierMigrationResponse
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int FilesProcessed { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:201](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L201) |  |
-| <code>public long BytesMigrated { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:202](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L202) |  |
-| <code>public long SpaceSavedBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:203](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L203) |  |
-| <code>public string[]? Errors { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:204](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L204) |  |

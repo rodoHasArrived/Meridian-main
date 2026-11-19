@@ -6,6 +6,61 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MemoryMappedReaderOptions
+
+Qualified name: <code>Meridian.Storage.Replay.MemoryMappedReaderOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:16](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L16).
+
+Configuration options for memory-mapped file reading.
+
+```csharp
+public sealed class MemoryMappedReaderOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int ChunkSize { get; init; } = 4 * 1024 * 1024;</code> | [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:22](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L22) | Size of chunks to process at a time (in bytes). Default is 4MB for optimal memory/performance balance. |
+| <code>public int BatchSize { get; init; } = 1000;</code> | [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:28](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L28) | Number of events to batch before yielding. Default is 1000 events. |
+| <code>public long MinFileSizeForMapping { get; init; } = 1024 * 1024;</code> | [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:34](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L34) | Minimum file size to use memory mapping (smaller files use regular streaming). Default is 1MB. |
+| <code>public bool UseParallelDeserialization { get; init; } = true;</code> | [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:40](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L40) | Whether to use parallel deserialization for large batches. Default is true. |
+| <code>public int ParallelDeserializationThreshold { get; init; } = 100;</code> | [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:46](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L46) | Threshold for parallel deserialization (number of lines). Default is 100. |
+| <code>public static MemoryMappedReaderOptions Default =&gt; …;</code> | [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:51](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L51) | Default options. |
+| <code>public static MemoryMappedReaderOptions HighThroughput =&gt; …;</code> | [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:56](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L56) | High throughput options with larger chunks. |
+| <code>public static MemoryMappedReaderOptions LowMemory =&gt; …;</code> | [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:66](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L66) | Low memory options with smaller chunks. |
+
+## IReportingDeploymentProbe
+
+Qualified name: <code>Meridian.Storage.Reporting.IReportingDeploymentProbe</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs:11](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs#L11).
+
+Exposes a read-only probe of reporting storage liveness and schema readiness.
+
+```csharp
+public interface IReportingDeploymentProbe
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ReportingDeploymentProbeResult Probe();</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs:13](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs#L13) |  |
+
+## LegacyReportingReconciliationEvidenceReceipt
+
+Qualified name: <code>Meridian.Storage.Reporting.LegacyReportingReconciliationEvidenceReceipt</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Reporting/ReportingReconciliationEvidenceJsonContext.cs:27](../../../../src/Meridian.Storage/Reporting/ReportingReconciliationEvidenceJsonContext.cs#L27).
+
+The exact v1 persisted receipt shape. Its omission of break evidence is intentional and must remain distinct from the current receipt so integrity verification cannot manufacture evidence.
+
+```csharp
+public sealed record LegacyReportingReconciliationEvidenceReceipt(string TenantId, string OrganizationId, string? CompanyId, string FundId, string LedgerBookId, string AccountingPeriodId, string AccountingBasis, DateOnly AsOfDate, string SourceCheckpointId, string SourceCheckpointHash, string ReconciliationCheckpointId, string ReconciliationCheckpointHash, DateTimeOffset ReconciledAtUtc, bool HasOpenBreaks, ImmutableArray<string> EvidenceIds, string? CompletionCheckpointId = null, string? CompletionCheckpointHash = null);
+```
+
 ## PostgresReportingAccessGrantStore
 
 Qualified name: <code>Meridian.Storage.Reporting.PostgresReportingAccessGrantStore</code>. Kind: `class`.
@@ -831,57 +886,3 @@ Source: [src/Meridian.Storage/SecurityMaster/IFutureReferenceProjectionStore.cs:
 ```csharp
 public sealed record FutureProjectionRow(Guid SecurityId, string DisplayName, string Currency, string RootSymbol, string ContractMonth, DateOnly ExpiryDate, decimal Multiplier, string? SettlementType, bool IsRollTarget, int? RollWindowDays, DateOnly? LastTradingDate, DateOnly? FirstNoticeDate, DateOnly? DeliveryMonthDate, string? DeliveryLocationCode, string LifecycleStat, string PrimaryIdentifierValue, long Version);
 ```
-
-## FxSpotProjectionRow
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.FxSpotProjectionRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IFxSpotReferenceProjectionStore.cs:13](../../../../src/Meridian.Storage/SecurityMaster/IFxSpotReferenceProjectionStore.cs#L13).
-
-```csharp
-public sealed record FxSpotProjectionRow(Guid SecurityId, string DisplayName, string BaseCurrency, string QuoteCurrency, string PairCode, string PrimaryIdentifierValue, long Version);
-```
-
-## IBondReferenceProjectionStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.IBondReferenceProjectionStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs:8](../../../../src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs#L8).
-
-Queries bond reference projections, lifecycle facts, and accrual conventions by security identity.
-
-```csharp
-public interface IBondReferenceProjectionStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;BondProjectionRow?&gt; GetBondAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs:10](../../../../src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs#L10) |  |
-| <code>Task&lt;BondLifecycleProjectionRow?&gt; GetLifecycleAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs:11](../../../../src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs#L11) |  |
-| <code>Task&lt;BondAccrualConventionProjectionRow?&gt; GetAccrualConventionAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs:12](../../../../src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs#L12) |  |
-| <code>Task&lt;IReadOnlyList&lt;BondProjectionRow&gt;&gt; GetIssuerLadderAsync(string issuerName, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs:13](../../../../src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs#L13) |  |
-| <code>Task&lt;IReadOnlyList&lt;BondProjectionRow&gt;&gt; GetMaturityLadderAsync(DateOnly from, DateOnly to, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs:14](../../../../src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs#L14) |  |
-| <code>Task&lt;IReadOnlyList&lt;BondProjectionRow&gt;&gt; GetIssuerLadderPageAsync(string issuerName, int pageSize, DateOnly? afterMaturity, Guid? afterSecurityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs:17](../../../../src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs#L17) | Returns at most pageSize plus one rows, using a maturity/security-id keyset. |
-| <code>Task&lt;IReadOnlyList&lt;BondProjectionRow&gt;&gt; GetMaturityLadderPageAsync(DateOnly from, DateOnly to, int pageSize, DateOnly? afterMaturity, Guid? afterSecurityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs:22](../../../../src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs#L22) | Returns at most pageSize plus one rows, using a maturity/security-id keyset. |
-
-## ICertificateOfDepositReferenceProjectionStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.ICertificateOfDepositReferenceProjectionStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/SecurityMaster/ICertificateOfDepositReferenceProjectionStore.cs:6](../../../../src/Meridian.Storage/SecurityMaster/ICertificateOfDepositReferenceProjectionStore.cs#L6).
-
-Queries certificate of deposit reference projections by security, issuer, and maturity.
-
-```csharp
-public interface ICertificateOfDepositReferenceProjectionStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;CertificateOfDepositProjectionRow?&gt; GetCertificateOfDepositAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICertificateOfDepositReferenceProjectionStore.cs:8](../../../../src/Meridian.Storage/SecurityMaster/ICertificateOfDepositReferenceProjectionStore.cs#L8) |  |
-| <code>Task&lt;IReadOnlyList&lt;CertificateOfDepositProjectionRow&gt;&gt; GetByIssuerAsync(string issuerName, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICertificateOfDepositReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/ICertificateOfDepositReferenceProjectionStore.cs#L9) |  |
-| <code>Task&lt;IReadOnlyList&lt;CertificateOfDepositProjectionRow&gt;&gt; GetMaturingBeforeAsync(DateOnly beforeDate, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICertificateOfDepositReferenceProjectionStore.cs:10](../../../../src/Meridian.Storage/SecurityMaster/ICertificateOfDepositReferenceProjectionStore.cs#L10) |  |

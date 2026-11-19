@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PerformanceReturnFigures
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PerformanceReturnFigures</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs:11](../../../../src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs#L11).
+
+Maps the shared F# return kernel (ReturnMeasurement) onto the workstation contract, and supplies the brokerage seam&#x27;s choice of which cash activity is external capital. Fund, share-class, and investor lanes reuse ToDto with their own source label.
+
+```csharp
+public static class PerformanceReturnFigures
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string BrokerageSource = &quot;brokerage-balance-snapshots&quot;;</code> | [src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs:14](../../../../src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs#L14) | Source label for figures measured from synced brokerage balance snapshots. |
+| <code>public static PerformanceReturnFigureDto ToDto(ReturnFigure figure, string source);</code> | [src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs:23](../../../../src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs#L23) |  |
+| <code>public static IReadOnlyList&lt;PerformanceReturnFigureDto&gt; MeasureBrokerage(IEnumerable&lt;(DateOnly AsOf, decimal Equity, string Currency)&gt; valuations, IEnumerable&lt;BrokerageCashFlowEntryDto&gt; cashEntries, string currency);</code> | [src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs:49](../../../../src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs#L49) | Time-weighted and money-weighted figures for a brokerage account from its balance snapshots and categorized cash activity. Snapshot equity is end-of-day; deposits, withdrawals, and transfers are the only external flows. Any cash transaction the categorizer could not classify makes every figure review-required, because an unrecognized deposit would otherwise be reported as performance. |
+
 ## PeriodAdjustmentPreparationService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.PeriodAdjustmentPreparationService</code>. Kind: `class`.
@@ -887,21 +907,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static RecurringJournalCalculationResult NothingDue(string reason) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:68](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L68) |  |
-
-## RecurringJournalPeriodAuthority
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalPeriodAuthority</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs:20](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs#L20).
-
-The existing PostgreSQL ledger remains the sole authority for locks and reopens.
-
-```csharp
-public sealed class RecurringJournalPeriodAuthority(ILedgerJournalStore? journalStore = null, IFundProfileTenancyRegistry? tenancy = null, IRecurringJournalSubjectAuthority? subjects = null) : IRecurringJournalPeriodAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;RecurringJournalPeriodState&gt; ResolveAsync(RecurringJournalScope scope, DateOnly date, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs:25](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs#L25) |  |

@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DailyQualityRecord
+
+Qualified name: <code>Meridian.Ui.Services.Services.DailyQualityRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Services/Services/QualityArchiveStore.cs:12](../../../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs#L12).
+
+Daily quality record with symbol, date, and completeness score.
+
+```csharp
+public sealed record DailyQualityRecord(string Symbol, DateOnly Date, double CompletenessScore);
+```
+
 ## DataGapInfo
 
 Qualified name: <code>Meridian.Ui.Services.Services.DataGapInfo</code>. Kind: `class`.
@@ -1144,13 +1156,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>ReportingStatusProjection Project(ReportingOutputManifest manifest, IReadOnlyList&lt;ReportingRunAuditEntry&gt; audit);</code> | [src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs:37](../../../../src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs#L37) |  |
 | <code>IReadOnlyList&lt;ReportingTemplateProjection&gt; ProjectTemplates(IReportingTemplateCatalog catalog);</code> | [src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs:38](../../../../src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs#L38) |  |
-
-## ReportingLineageProjection
-
-Qualified name: <code>Meridian.Ui.Services.Services.Reporting.ReportingLineageProjection</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs:5](../../../../src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs#L5).
-
-```csharp
-public sealed record ReportingLineageProjection(string SectionId, string DatasetSnapshotId, string DatasetSnapshotHash, string ReconciliationCheckpointId);
-```

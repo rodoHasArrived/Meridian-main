@@ -6,6 +6,72 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterNodeIdentity
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityMasterNodeIdentity</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityProjectionChangeNotification.cs:14](../../../../src/Meridian.Storage/SecurityMaster/SecurityProjectionChangeNotification.cs#L14).
+
+Identifies one Security Master service graph — a store and the projection cache its writes upsert — as a &quot;node&quot; for projection-cache notifications. A node ignores the notifications it emitted itself, because its own write path already upserted its cache. The identity is scoped to the graph, not the process: two graphs in one process (the desktop shell&#x27;s parent and feature containers) own separate caches and must each see the other&#x27;s writes.
+
+```csharp
+public sealed class SecurityMasterNodeIdentity
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static SecurityMasterNodeIdentity CreateNew() =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityProjectionChangeNotification.cs:17](../../../../src/Meridian.Storage/SecurityMaster/SecurityProjectionChangeNotification.cs#L17) | Creates a fresh identity for a new service graph. |
+| <code>public SecurityMasterNodeIdentity(Guid nodeId);</code> | [src/Meridian.Storage/SecurityMaster/SecurityProjectionChangeNotification.cs:19](../../../../src/Meridian.Storage/SecurityMaster/SecurityProjectionChangeNotification.cs#L19) |  |
+| <code>public Guid NodeId { get; }</code> | [src/Meridian.Storage/SecurityMaster/SecurityProjectionChangeNotification.cs:29](../../../../src/Meridian.Storage/SecurityMaster/SecurityProjectionChangeNotification.cs#L29) |  |
+
+## SecurityMasterProjectionCache
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs:35](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs#L35).
+
+Per-process warm-read cache over the durable projection store. The durable store remains the authority — the cache is a latency optimisation, and consumers fall back to the database on a miss. ReplaceAll swaps in a fully-populated replacement dictionary ATOMICALLY: the previous clear-then-fill implementation exposed an empty master to any reader that arrived between the clear and the repopulation, so a full re-warm looked like a mass delisting. An Upsert accepted while the replacement is being built is captured and replayed by version into the map the replacement installs, so a security persisted by create, amend, or a published rebuild cannot be discarded by a concurrent warm; and an upsert older than the record a rebuild installed does not downgrade it. Multi-node deployments: each node upserts its own writes directly, and every committed projection write also emits a PostgreSQL NOTIFY from inside its transaction (PostgresSecurityMasterStore, channel SecurityProjectionChangeNotification.ChannelFor), so it is delivered only on commit and never for a rolled-back write. Every other node&#x27;s SecurityMasterProjectionChangeListener re-reads the announced security from the durable store and applies it through the version-guarded Upsert (or Remove when it is gone), ignoring its own node&#x27;s notifications. Cross-node staleness is therefore bounded by notification delivery, not by a timer. PostgreSQL does not replay notifications to a disconnected listener, so after the listener reconnects it re-synchronises the whole cache; the periodic re-warm (SecurityMasterOptions.ProjectionCacheRefreshMinutes, run by SecurityMasterProjectionWarmupService) remains a backstop, and SecurityMasterOptions.ProjectionCacheNotificationsEnabled = false falls back to it alone. Reads that must be authoritative (governed workflows) still go to the durable store, not this cache.
+
+```csharp
+public sealed class SecurityMasterProjectionCache
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SemaphoreSlim RefreshGate { get; } = new (1, 1);</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs:55](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs#L55) | Orders &quot;reread the durable projection, then upsert it&quot; refreshes against each other. Alias writes keep the projection version and Upsert accepts an equal version, so two refreshes of the same security — a local alias write and a remote notification, or two local writes — must not interleave, or an earlier reread can land last. Every such refresh path holds this gate across its reread and upsert. |
+| <code>public int Count =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs:61](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs#L61) |  |
+| <code>public SecurityProjectionRecord? Get(Guid securityId) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs:63](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs#L63) |  |
+| <code>public bool Remove(Guid securityId);</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs:133](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs#L133) | Evicts one security (e.g. after a purge); a no-op when it was not cached. |
+| <code>public void ReplaceAll(IEnumerable&lt;SecurityProjectionRecord&gt; records);</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs:169](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs#L169) | Replaces the cached master with records as a single reference swap. |
+| <code>public async Task&lt;IReadOnlyList&lt;SecurityProjectionRecord&gt;&gt; ReplaceAllAsync(Func&lt;CancellationToken, Task&lt;IReadOnlyList&lt;SecurityProjectionRecord&gt;&gt;&gt; buildReplacement, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs:199](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs#L199) | Builds the replacement with buildReplacement and installs it as ReplaceAll does, but opens the upsert capture BEFORE the build reads its source. A local create or amend whose cache upsert lands while a warm is still reading or rebuilding is therefore replayed into the replacement even when the warm&#x27;s read preceded that write&#x27;s commit, instead of being dropped or downgraded by the swap. |
+| <code>public IReadOnlyCollection&lt;SecurityProjectionRecord&gt; Snapshot() =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs:292](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs#L292) |  |
+
+## SecurityMasterStreamVersionConflictException
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityMasterStreamVersionConflictException</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:17](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L17).
+
+Thrown when an append was made against a stream version other than the one observed under the stream lock — most often because the security already exists and a caller tried to create it again at version 0.
+
+```csharp
+public sealed class SecurityMasterStreamVersionConflictException : InvalidOperationException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterStreamVersionConflictException(Guid securityId, long expectedVersion, long currentVersion) : base($&quot;Security stream version conflict for {securityId}. Expected {expectedVersion}, actual {currentVersion}.&quot;);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:19](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L19) |  |
+| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:27](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L27) |  |
+| <code>public long ExpectedVersion { get; }</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:28](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L28) |  |
+| <code>public long CurrentVersion { get; }</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:29](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L29) |  |
+| <code>public bool IsAlreadyCreated =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:35](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L35) | True when the append tried to CREATE a stream that already had events — the shape a repeated ingest of the same security takes. |
+
 ## SecurityMasterTermsCapabilityFloor
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityMasterTermsCapabilityFloor</code>. Kind: `record`.
@@ -745,49 +811,3 @@ Declared public members:
 | <code>public async Task&lt;RepairResult&gt; RepairAsync(RepairOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:122](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L122) |  |
 | <code>public async Task&lt;DefragResult&gt; DefragmentAsync(DefragOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:232](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L232) |  |
 | <code>public Task&lt;OrphanReport&gt; FindOrphansAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:422](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L422) |  |
-
-## FileMetadata
-
-Qualified name: <code>Meridian.Storage.Services.FileMetadata</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/StorageSearchService.cs:843](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L843).
-
-```csharp
-public sealed record FileMetadata(string FilePath, string Symbol, string EventType, string Source, DateTimeOffset Date, long SizeBytes, long EventCount, double QualityScore, DateTime CreatedAt, DateTime ModifiedAt);
-```
-
-## FileMetadataRecord
-
-Qualified name: <code>Meridian.Storage.Services.FileMetadataRecord</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Services/MetadataTagService.cs:578](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L578).
-
-Full metadata record for a stored data file.
-
-```csharp
-public sealed class FileMetadataRecord
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonRequired] public string FilePath { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:581](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L581) |  |
-| <code>public DateTime CreatedUtc { get; set; }</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:582](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L582) |  |
-| <code>public DateTime LastModifiedUtc { get; set; }</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:583](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L583) |  |
-| <code>[JsonRequired] public Dictionary&lt;string, string&gt; Tags { get; set; } = new ();</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:585](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L585) |  |
-| <code>[JsonRequired] public List&lt;LineageEntry&gt; Lineage { get; set; } = new ();</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:587](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L587) |  |
-| <code>[JsonRequired] public Dictionary&lt;string, DataInsight&gt; Insights { get; set; } = new ();</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:589](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L589) |  |
-| <code>public double QualityScore { get; set; } = 1.0;</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:590](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L590) |  |
-| <code>public string? QualityScoredBy { get; set; }</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:591](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L591) |  |
-| <code>public DateTime? QualityScoredAtUtc { get; set; }</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:592](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L592) |  |
-
-## FileMigrationResult
-
-Qualified name: <code>Meridian.Storage.Services.FileMigrationResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:633](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L633).
-
-```csharp
-public sealed record FileMigrationResult(string SourcePath, string TargetPath, long OriginalSize, long NewSize);
-```

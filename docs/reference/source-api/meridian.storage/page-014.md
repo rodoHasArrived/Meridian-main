@@ -6,6 +6,61 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MaintenanceType
+
+Qualified name: <code>Meridian.Storage.Services.MaintenanceType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1589](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1589).
+
+```csharp
+public enum MaintenanceType : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>All</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1591](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1591) |  |
+| <code>HealthCheck</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1592](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1592) |  |
+| <code>IntegrityValidation</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1593](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1593) |  |
+| <code>Backfill</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1594](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1594) |  |
+| <code>Compaction</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1595](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1595) |  |
+| <code>TierMigration</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1596](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1596) |  |
+| <code>IndexRebuild</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1597](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1597) |  |
+| <code>Archival</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1598](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1598) |  |
+| <code>Backup</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1599](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1599) |  |
+| <code>Reconciliation</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1600](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1600) |  |
+| <code>QualityScoring</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1601](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1601) |  |
+
+## MaintenanceWindow
+
+Qualified name: <code>Meridian.Storage.Services.MaintenanceWindow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1573](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1573).
+
+```csharp
+public sealed record MaintenanceWindow(string Name, TimeSpan Start, TimeSpan End, DayOfWeek[] Days, MaintenanceType[] AllowedOperations, int MaxConcurrentJobs = 4, ResourceLimits Limits = null !);
+```
+
+## MarketEventBuffer
+
+Qualified name: <code>Meridian.Storage.Services.MarketEventBuffer</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/EventBuffer.cs:231](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L231).
+
+Specialized event buffer for MarketEvent types.
+
+```csharp
+public sealed class MarketEventBuffer : EventBuffer<MarketEvent>
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public MarketEventBuffer(int initialCapacity = 1000) : base(initialCapacity);</code> | [src/Meridian.Storage/Services/EventBuffer.cs:259](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L259) |  |
+| <code>public IReadOnlyList&lt;MarketEvent&gt; DrainBySymbol(string symbol);</code> | [src/Meridian.Storage/Services/EventBuffer.cs:273](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L273) | Drain events for a specific symbol in a single lock acquisition. Non-matching events remain in the buffer and preserve their original ordering. |
+
 ## MetadataTagService
 
 Qualified name: <code>Meridian.Storage.Services.MetadataTagService</code>. Kind: `class`.
@@ -660,43 +715,4 @@ Source: [src/Meridian.Storage/Services/StorageSearchService.cs:784](../../../../
 
 ```csharp
 public sealed record SearchResult<T>(int TotalMatches, IReadOnlyList<T> Results);
-```
-
-## SortField
-
-Qualified name: <code>Meridian.Storage.Services.SortField</code>. Kind: `enum`.
-
-Source: [src/Meridian.Storage/Services/StorageSearchService.cs:781](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L781).
-
-```csharp
-public enum SortField : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Date</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:781](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L781) |  |
-| <code>Size</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:781](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L781) |  |
-| <code>Symbol</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:781](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L781) |  |
-| <code>QualityScore</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:781](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L781) |  |
-
-## SourceCandidate
-
-Qualified name: <code>Meridian.Storage.Services.SourceCandidate</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/DataQualityScoringService.cs:481](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L481).
-
-```csharp
-public sealed record SourceCandidate(string FilePath, string Source, double QualityScore, long FileSize, QualityAssessment Assessment);
-```
-
-## SourceRanking
-
-Qualified name: <code>Meridian.Storage.Services.SourceRanking</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/DataQualityService.cs:1178](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L1178).
-
-```csharp
-public sealed record SourceRanking(string Source, double QualityScore, long EventCount, int GapCount, double Latency, bool IsRecommended);
 ```

@@ -6,6 +6,81 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PostgresMigrationRunnerOptions
+
+Qualified name: <code>Meridian.Storage.Migrations.PostgresMigrationRunnerOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:10](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L10).
+
+Configuration for PostgresMigrationRunner. Feature-specific migration runners translate their own options into this shape so every schema shares one migration engine while keeping its historical ledger table layout and script conventions.
+
+```csharp
+public sealed class PostgresMigrationRunnerOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public required string ConnectionString { get; init; }</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:20](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L20) | PostgreSQL connection string for the target database. |
+| <code>public required string Schema { get; init; }</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:23](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L23) | Schema that owns the feature&#x27;s tables and migration ledger. |
+| <code>public required string ScriptsSubdirectory { get; init; }</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:29](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L29) | Directory containing the feature&#x27;s *.sql scripts, relative to AppContext.BaseDirectory (for example Banking/Migrations). |
+| <code>public required string DisplayName { get; init; }</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:32](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L32) | Human-readable feature name used in error messages. |
+| <code>public required string LockScopeName { get; init; }</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:38](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L38) | Stable slug used to build the advisory-lock scope (meridian.{LockScopeName}.migrations.{Schema}) that serializes concurrent starters. |
+| <code>public required string ConnectionStringSettingName { get; init; }</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:44](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L44) | Setting name reported when ConnectionString is missing (for example BankingStoreOptions.ConnectionString). |
+| <code>public string LedgerTableName { get; init; } = &quot;schema_migrations&quot;;</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:47](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L47) | Migration ledger table name inside Schema. |
+| <code>public string LedgerKeyColumn { get; init; } = &quot;filename&quot;;</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:50](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L50) | Primary-key column of the migration ledger. |
+| <code>public bool TrackOrdinals { get; init; }</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:58](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L58) | When true, script filenames must begin with a unique numeric ordinal prefix that is stored alongside the filename (Security Master convention). Ordinal-tracked sets are append-only: the runner refuses to start when an unapplied script&#x27;s ordinal is below the highest applied ordinal, so a retired or skipped number can never be filled in after later migrations ran. |
+| <code>public bool QuoteSchemaInScripts { get; init; }</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:65](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L65) | When true, __SCHEMA__ renders as a quoted identifier; otherwise the raw validated schema name is used. Existing schemas must keep their historical quoting so identifier case-folding does not change. |
+| <code>public bool ChecksumRequired { get; init; }</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:71](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L71) | When true, a freshly created ledger declares its checksum column not null (Asset Operations convention). |
+| <code>public bool ThrowWhenScriptsDirectoryMissing { get; init; } = true;</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:74](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L74) | Whether a missing scripts directory is an error or an empty migration set. |
+| <code>public IReadOnlySet&lt;string&gt; RepeatableMigrationFileNames { get; init; } = new HashSet&lt;string&gt;(StringComparer.Ordinal);</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:81](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L81) | Applied script filenames that must run again on every startup. These scripts must be idempotent and are typically used for guarded backfills that can repair legacy rows after new ownership data becomes available. |
+| <code>public MigrationDriftPolicy DriftPolicy { get; init; } = MigrationDriftPolicy.Throw;</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:85](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L85) | How a checksum mismatch on an already-applied script is handled. |
+
+## IMoneyMarketFundAuxStore
+
+Qualified name: <code>Meridian.Storage.MoneyMarket.IMoneyMarketFundAuxStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/MoneyMarket/IMoneyMarketFundAuxStore.cs:9](../../../../src/Meridian.Storage/MoneyMarket/IMoneyMarketFundAuxStore.cs#L9).
+
+Persistence contract for the Money Market Fund auxiliary store. Stores fund records, per-fund liquidity overrides, and rebuild checkpoints.
+
+```csharp
+public interface IMoneyMarketFundAuxStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task UpsertFundAsync(Guid securityId, string displayName, string currency, string? fundFamily, bool isSweepEligible, int? weightedAverageMaturityDays, bool hasLiquidityFee, bool isActive, DateTimeOffset effectiveFrom, DateTimeOffset? effectiveTo, long version, CancellationToken ct = default);</code> | [src/Meridian.Storage/MoneyMarket/IMoneyMarketFundAuxStore.cs:13](../../../../src/Meridian.Storage/MoneyMarket/IMoneyMarketFundAuxStore.cs#L13) |  |
+| <code>Task&lt;(Guid SecurityId, string DisplayName, string Currency, string? FundFamily, bool IsSweepEligible, int? WeightedAverageMaturityDays, bool HasLiquidityFee, bool IsActive, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, long Version)?&gt; GetFundAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/MoneyMarket/IMoneyMarketFundAuxStore.cs:27](../../../../src/Meridian.Storage/MoneyMarket/IMoneyMarketFundAuxStore.cs#L27) |  |
+| <code>Task&lt;IReadOnlyList&lt;(Guid SecurityId, string DisplayName, string Currency, string? FundFamily, bool IsSweepEligible, int? WeightedAverageMaturityDays, bool HasLiquidityFee, bool IsActive, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, long Version)&gt;&gt; GetAllFundsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/MoneyMarket/IMoneyMarketFundAuxStore.cs:33](../../../../src/Meridian.Storage/MoneyMarket/IMoneyMarketFundAuxStore.cs#L33) |  |
+| <code>Task UpsertLiquidityOverrideAsync(Guid securityId, MmfLiquidityState state, CancellationToken ct = default);</code> | [src/Meridian.Storage/MoneyMarket/IMoneyMarketFundAuxStore.cs:40](../../../../src/Meridian.Storage/MoneyMarket/IMoneyMarketFundAuxStore.cs#L40) |  |
+| <code>Task&lt;IReadOnlyDictionary&lt;Guid, MmfLiquidityState&gt;&gt; GetAllLiquidityOverridesAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/MoneyMarket/IMoneyMarketFundAuxStore.cs:41](../../../../src/Meridian.Storage/MoneyMarket/IMoneyMarketFundAuxStore.cs#L41) |  |
+| <code>Task UpsertRebuildCheckpointAsync(MmfRebuildCheckpointDto checkpoint, CancellationToken ct = default);</code> | [src/Meridian.Storage/MoneyMarket/IMoneyMarketFundAuxStore.cs:45](../../../../src/Meridian.Storage/MoneyMarket/IMoneyMarketFundAuxStore.cs#L45) |  |
+| <code>Task&lt;IReadOnlyList&lt;MmfRebuildCheckpointDto&gt;&gt; GetRebuildCheckpointsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/MoneyMarket/IMoneyMarketFundAuxStore.cs:46](../../../../src/Meridian.Storage/MoneyMarket/IMoneyMarketFundAuxStore.cs#L46) |  |
+| <code>Task&lt;bool&gt; IsEmptyAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/MoneyMarket/IMoneyMarketFundAuxStore.cs:50](../../../../src/Meridian.Storage/MoneyMarket/IMoneyMarketFundAuxStore.cs#L50) |  |
+
+## MoneyMarketMigrationRunner
+
+Qualified name: <code>Meridian.Storage.MoneyMarket.MoneyMarketMigrationRunner</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/MoneyMarket/MoneyMarketMigrationRunner.cs:8](../../../../src/Meridian.Storage/MoneyMarket/MoneyMarketMigrationRunner.cs#L8).
+
+Applies pending SQL migrations for the MoneyMarket schema.
+
+```csharp
+public sealed class MoneyMarketMigrationRunner
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public MoneyMarketMigrationRunner(MoneyMarketStoreOptions options);</code> | [src/Meridian.Storage/MoneyMarket/MoneyMarketMigrationRunner.cs:12](../../../../src/Meridian.Storage/MoneyMarket/MoneyMarketMigrationRunner.cs#L12) |  |
+| <code>public Task EnsureMigratedAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/MoneyMarket/MoneyMarketMigrationRunner.cs:31](../../../../src/Meridian.Storage/MoneyMarket/MoneyMarketMigrationRunner.cs#L31) | Creates the schema and applies all outstanding migrations in version order. Idempotent — safe to call on every startup. |
+
 ## MoneyMarketStoreOptions
 
 Qualified name: <code>Meridian.Storage.MoneyMarket.MoneyMarketStoreOptions</code>. Kind: `class`.
@@ -1094,58 +1169,3 @@ Declared public members:
 | <code>public async IAsyncEnumerable&lt;MarketEvent&gt; ReadEventsInRangeAsync(DateTimeOffset from, DateTimeOffset to, [EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:444](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L444) | Reads events from a specific time range. |
 | <code>public async IAsyncEnumerable&lt;MarketEvent&gt; ReadEventsForSymbolsAsync(IReadOnlySet&lt;string&gt; symbols, [EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:461](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L461) | Reads events for specific symbols only. |
 | <code>public FileStatistics GetFileStatistics();</code> | [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:477](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L477) | Gets statistics about the files in the root directory. |
-
-## MemoryMappedReaderOptions
-
-Qualified name: <code>Meridian.Storage.Replay.MemoryMappedReaderOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:16](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L16).
-
-Configuration options for memory-mapped file reading.
-
-```csharp
-public sealed class MemoryMappedReaderOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int ChunkSize { get; init; } = 4 * 1024 * 1024;</code> | [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:22](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L22) | Size of chunks to process at a time (in bytes). Default is 4MB for optimal memory/performance balance. |
-| <code>public int BatchSize { get; init; } = 1000;</code> | [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:28](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L28) | Number of events to batch before yielding. Default is 1000 events. |
-| <code>public long MinFileSizeForMapping { get; init; } = 1024 * 1024;</code> | [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:34](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L34) | Minimum file size to use memory mapping (smaller files use regular streaming). Default is 1MB. |
-| <code>public bool UseParallelDeserialization { get; init; } = true;</code> | [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:40](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L40) | Whether to use parallel deserialization for large batches. Default is true. |
-| <code>public int ParallelDeserializationThreshold { get; init; } = 100;</code> | [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:46](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L46) | Threshold for parallel deserialization (number of lines). Default is 100. |
-| <code>public static MemoryMappedReaderOptions Default =&gt; …;</code> | [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:51](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L51) | Default options. |
-| <code>public static MemoryMappedReaderOptions HighThroughput =&gt; …;</code> | [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:56](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L56) | High throughput options with larger chunks. |
-| <code>public static MemoryMappedReaderOptions LowMemory =&gt; …;</code> | [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:66](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L66) | Low memory options with smaller chunks. |
-
-## IReportingDeploymentProbe
-
-Qualified name: <code>Meridian.Storage.Reporting.IReportingDeploymentProbe</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs:11](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs#L11).
-
-Exposes a read-only probe of reporting storage liveness and schema readiness.
-
-```csharp
-public interface IReportingDeploymentProbe
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>ReportingDeploymentProbeResult Probe();</code> | [src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs:13](../../../../src/Meridian.Storage/Reporting/PostgresReportingDeploymentProbe.cs#L13) |  |
-
-## LegacyReportingReconciliationEvidenceReceipt
-
-Qualified name: <code>Meridian.Storage.Reporting.LegacyReportingReconciliationEvidenceReceipt</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Reporting/ReportingReconciliationEvidenceJsonContext.cs:27](../../../../src/Meridian.Storage/Reporting/ReportingReconciliationEvidenceJsonContext.cs#L27).
-
-The exact v1 persisted receipt shape. Its omission of break evidence is intentional and must remain distinct from the current receipt so integrity verification cannot manufacture evidence.
-
-```csharp
-public sealed record LegacyReportingReconciliationEvidenceReceipt(string TenantId, string OrganizationId, string? CompanyId, string FundId, string LedgerBookId, string AccountingPeriodId, string AccountingBasis, DateOnly AsOfDate, string SourceCheckpointId, string SourceCheckpointHash, string ReconciliationCheckpointId, string ReconciliationCheckpointHash, DateTimeOffset ReconciledAtUtc, bool HasOpenBreaks, ImmutableArray<string> EvidenceIds, string? CompletionCheckpointId = null, string? CompletionCheckpointHash = null);
-```

@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkflowPresetMutationResult
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.WorkflowPresetMutationResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs:291](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs#L291).
+
+```csharp
+public sealed record WorkflowPresetMutationResult(bool Success, WorkflowPresetDto? Preset, string? Error, bool NotFound)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static WorkflowPresetMutationResult Ok(WorkflowPresetDto preset) =&gt; …;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs:297](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs#L297) |  |
+| <code>public static WorkflowPresetMutationResult Fail(string error) =&gt; …;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs:300](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs#L300) |  |
+| <code>public static WorkflowPresetMutationResult Missing(string presetId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs:303](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs#L303) |  |
+
 ## WorkflowPresetService
 
 Qualified name: <code>Meridian.Ui.Shared.Workflows.WorkflowPresetService</code>. Kind: `class`.

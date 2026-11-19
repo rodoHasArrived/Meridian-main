@@ -6,6 +6,112 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportLineProvenanceDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.ReportLineProvenanceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:713](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L713).
+
+```csharp
+public sealed record ReportLineProvenanceDto(string StatementId, string LineId, string LineLabel, string SourceKind, decimal Amount, string Currency, LedgerDimensionSetDto Dimensions, IReadOnlyList<string>? EvidenceLinks = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:723](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L723) |  |
+
+## RestatementWorkflowDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.RestatementWorkflowDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:700](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L700).
+
+```csharp
+public sealed record RestatementWorkflowDto(string RestatementId, string PriorPackageId, string ReasonCode, ManualJournalEntryStatusDto ApprovalState, string RequestedBy, DateTimeOffset RequestedAtUtc, IReadOnlyList<string>? EvidenceLinks = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:709](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L709) |  |
+
+## RetainPrivateCapitalCallRequest
+
+Qualified name: <code>Meridian.Contracts.Ledger.RetainPrivateCapitalCallRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/PrivateCapitalLifecycleDtos.cs:156](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalLifecycleDtos.cs#L156).
+
+Retain exactly the preview the operator reviewed.
+
+```csharp
+public sealed record RetainPrivateCapitalCallRequest(PreviewPrivateCapitalCallRequest Preview, string ExpectedPlanHash);
+```
+
+## RetryIntercompanyProposalRequest
+
+Qualified name: <code>Meridian.Contracts.Ledger.RetryIntercompanyProposalRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:62](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L62).
+
+```csharp
+public sealed record RetryIntercompanyProposalRequest(Guid RequestId, string Reason);
+```
+
+## ReviewCloseEvidenceRequestDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.ReviewCloseEvidenceRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:384](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L384).
+
+```csharp
+public sealed record ReviewCloseEvidenceRequestDto(Guid WorkflowId, string IssueCode, string? TargetId, string Actor, string Notes, IReadOnlyList<string>? EvidenceLinks = null, string? CorrelationId = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:394](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L394) |  |
+
+## ReviewLateAdjustmentRequestDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.ReviewLateAdjustmentRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:325](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L325).
+
+```csharp
+public sealed record ReviewLateAdjustmentRequestDto(Guid WorkflowId, string RequestId, ManualJournalEntryStatusDto Decision, string Actor, string Notes, IReadOnlyList<string>? EvidenceLinks = null, string? CorrelationId = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:335](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L335) |  |
+
+## RevokeAutomatedPostingGrantRequest
+
+Qualified name: <code>Meridian.Contracts.Ledger.RevokeAutomatedPostingGrantRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AutomatedPostingGrantDtos.cs:31](../../../../src/Meridian.Contracts/Ledger/AutomatedPostingGrantDtos.cs#L31).
+
+```csharp
+public sealed record RevokeAutomatedPostingGrantRequest(long ExpectedVersion, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
+```
+
+## RuleDryRunRequestDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.RuleDryRunRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:913](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L913).
+
+```csharp
+public sealed record RuleDryRunRequestDto(string FundProfileId, string SourceEventType, decimal EventAmount, string Currency, DateOnly EffectiveDate, string Actor, Guid? LedgerBookId = null, LedgerDimensionSetDto? Dimensions = null, string? CounterpartyId = null, string? InstrumentSymbol = null, string? CorrelationId = null, string? TenantId = null, string? CompanyId = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyDictionary<string, decimal>? LotMutationComponents = null);
+```
+
 ## RuleDryRunResultDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.RuleDryRunResultDto</code>. Kind: `record`.
@@ -825,164 +931,3 @@ Declared public members:
 | <code>public const string Pending = &quot;Pending&quot;;</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:109](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L109) | Indicates verification has not yet been performed. |
 | <code>public const string Verified = &quot;Verified&quot;;</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:114](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L114) | Indicates verification completed successfully. |
 | <code>public const string Failed = &quot;Failed&quot;;</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:119](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L119) | Indicates verification failed. |
-
-## MoneyMarketFundReferenceDto
-
-Qualified name: <code>Meridian.Contracts.MoneyMarketFunds.MoneyMarketFundReferenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/MoneyMarketFunds/MoneyMarketFundReferenceDtos.cs:3](../../../../src/Meridian.Contracts/MoneyMarketFunds/MoneyMarketFundReferenceDtos.cs#L3).
-
-```csharp
-public sealed record MoneyMarketFundReferenceDto(Guid SecurityId, string DisplayName, string Currency, string? FundFamily, bool SweepEligible, int? WeightedAverageMaturityDays, bool LiquidityFeeEligible, string PrimaryIdentifier, long Version);
-```
-
-## IEventMetrics
-
-Qualified name: <code>Meridian.Contracts.Monitoring.IEventMetrics</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:8](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L8).
-
-Abstraction over event pipeline counters so that hot-path metrics can be injected rather than accessed through a static class. Default implementations should preserve zero-allocation / thread-safe behavior on the hot path.
-
-```csharp
-public interface IEventMetrics
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>long Published { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:10](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L10) |  |
-| <code>long Dropped { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:11](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L11) |  |
-| <code>long Integrity { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:12](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L12) |  |
-| <code>long Trades { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:13](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L13) |  |
-| <code>long DepthUpdates { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:14](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L14) |  |
-| <code>long Quotes { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:15](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L15) |  |
-| <code>long HistoricalBars { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:16](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L16) |  |
-| <code>double EventsPerSecond { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:17](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L17) |  |
-| <code>double DropRate { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:18](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L18) |  |
-| <code>void IncPublished();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:20](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L20) |  |
-| <code>void IncDropped();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:21](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L21) |  |
-| <code>void IncIntegrity();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:22](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L22) |  |
-| <code>void IncTrades();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:23](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L23) |  |
-| <code>void IncDepthUpdates();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:24](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L24) |  |
-| <code>void IncQuotes();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:25](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L25) |  |
-| <code>void IncHistoricalBars();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:26](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L26) |  |
-| <code>void RecordLatency(long startTimestamp);</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:27](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L27) |  |
-| <code>void Reset();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:29](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L29) |  |
-| <code>MetricsSnapshot GetSnapshot();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:30](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L30) |  |
-
-## IMonitoringWebhookSink
-
-Qualified name: <code>Meridian.Contracts.Monitoring.IMonitoringWebhookSink</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Monitoring/IMonitoringWebhookSink.cs:8](../../../../src/Meridian.Contracts/Monitoring/IMonitoringWebhookSink.cs#L8).
-
-Contract for delivery services that can publish monitoring alert messages.
-
-```csharp
-public interface IMonitoringWebhookSink
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task SendMonitoringMessageAsync(string message, string? title = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Monitoring/IMonitoringWebhookSink.cs:13](../../../../src/Meridian.Contracts/Monitoring/IMonitoringWebhookSink.cs#L13) | Sends a monitoring message to the configured notification destinations. |
-
-## MetricsSnapshot
-
-Qualified name: <code>Meridian.Contracts.Monitoring.MetricsSnapshot</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Contracts/Monitoring/MetricsSnapshot.cs:6](../../../../src/Meridian.Contracts/Monitoring/MetricsSnapshot.cs#L6).
-
-Immutable snapshot of event-pipeline metrics at a point in time.
-
-```csharp
-public readonly record struct MetricsSnapshot(long Published, long Dropped, long Integrity, long Trades, long DepthUpdates, long Quotes, long HistoricalBars, double EventsPerSecond, double TradesPerSecond, double DepthUpdatesPerSecond, double HistoricalBarsPerSecond, double DropRate, double AverageLatencyUs, double MinLatencyUs, double MaxLatencyUs, long LatencySampleCount, long Gc0Collections, long Gc1Collections, long Gc2Collections, long Gc0Delta, long Gc1Delta, long Gc2Delta, double MemoryUsageMb, double HeapSizeMb, DateTimeOffset Timestamp);
-```
-
-## DataProvenance
-
-Qualified name: <code>Meridian.Contracts.Operations.DataProvenance</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Operations/DataProvenance.cs:13](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L13).
-
-Origin classification carried by any figure or read model that can be produced from something other than real operational data. The point of the signal is fail-closed honesty: no operator, on either client, may mistake simulated, seeded, or sample output for real data. Every read model that can originate from non-real data carries this signal and propagates it outward; surfaces that only ever show real data may default to Real.
-
-```csharp
-public enum DataProvenance : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Real = 0</code> | [src/Meridian.Contracts/Operations/DataProvenance.cs:16](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L16) | Real operational data captured from a durable production source. |
-| <code>Simulated = 1</code> | [src/Meridian.Contracts/Operations/DataProvenance.cs:22](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L22) | Deterministically generated by a simulation, paper, or backtest path (e.g. a synthetic streaming source or a shadow-book valuation). Numbers move, but none of it is real. |
-| <code>Seeded = 2</code> | [src/Meridian.Contracts/Operations/DataProvenance.cs:28](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L28) | Deterministically seeded fixture data shipped so a new operator can explore the product without credentials (e.g. demo-mode market snapshots). |
-| <code>Sample = 3</code> | [src/Meridian.Contracts/Operations/DataProvenance.cs:31](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L31) | Illustrative sample or placeholder data with no operational meaning. |
-
-## DataProvenanceBadge
-
-Qualified name: <code>Meridian.Contracts.Operations.DataProvenanceBadge</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Operations/DataProvenance.cs:197](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L197).
-
-A persistent, non-dismissable provenance badge both clients render identically. Constructed only for non-real provenance; TryCreate returns null for real data so a real surface renders no badge at all.
-
-```csharp
-public sealed record DataProvenanceBadge(DataProvenance Provenance, string Label, string Detail)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Dismissable =&gt; …;</code> | [src/Meridian.Contracts/Operations/DataProvenance.cs:203](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L203) | Provenance badges are always persistent and can never be dismissed by the operator. |
-| <code>public static DataProvenanceBadge? TryCreate(DataProvenance provenance, string? detail = null);</code> | [src/Meridian.Contracts/Operations/DataProvenance.cs:208](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L208) | Builds the badge for a non-real provenance, or null for DataProvenance.Real. |
-
-## DataProvenanceExtensions
-
-Qualified name: <code>Meridian.Contracts.Operations.DataProvenanceExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Operations/DataProvenance.cs:38](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L38).
-
-Shared helpers for reasoning about and rendering a DataProvenance signal. Kept in the contracts layer so both clients, the API endpoints, and the DI policy render one label.
-
-```csharp
-public static class DataProvenanceExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static bool IsNonReal(this DataProvenance provenance) =&gt; …;</code> | [src/Meridian.Contracts/Operations/DataProvenance.cs:41](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L41) | True for anything other than real operational data. |
-| <code>public static bool RequiresBadge(this DataProvenance provenance) =&gt; …;</code> | [src/Meridian.Contracts/Operations/DataProvenance.cs:46](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L46) | True when the provenance must be surfaced as a persistent, non-dismissable operator badge. |
-| <code>public static string? Label(this DataProvenance provenance) =&gt; …;</code> | [src/Meridian.Contracts/Operations/DataProvenance.cs:52](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L52) | Short, uppercase operator-facing label (e.g. SIMULATED). Returns null for real data so callers can treat &quot;no label&quot; and &quot;real&quot; identically. |
-| <code>public static string Token(this DataProvenance provenance) =&gt; …;</code> | [src/Meridian.Contracts/Operations/DataProvenance.cs:61](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L61) | Lower-case token used on the wire and by clients (e.g. simulated). |
-| <code>public static DataProvenance ParseTokenOrSimulated(string? token) =&gt; …;</code> | [src/Meridian.Contracts/Operations/DataProvenance.cs:74](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L74) | Parses a loose provenance token (case-insensitive). Unknown tokens fall back to DataProvenance.Simulated — never DataProvenance.Real — so an unrecognized value can never be silently upgraded into &quot;real&quot;. |
-| <code>public static DataProvenance Strongest(IEnumerable&lt;DataProvenance&gt; provenances);</code> | [src/Meridian.Contracts/Operations/DataProvenance.cs:94](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L94) | Folds many origins into the one a derived figure must carry: the strongest non-real provenance among the inputs, or DataProvenance.Real only when every input is real. A derived figure — a valuation draft, a NAV, a report pack — is never more real than its least-real input, so this is the single rule every derivation uses. |
-| <code>public static bool IsSimulatedOriginToken(string? value);</code> | [src/Meridian.Contracts/Operations/DataProvenance.cs:136](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L136) | True when a source-system or source-type value is, exactly, one of the structured simulated-origin tokens. |
-| <code>public static bool CarriesSimulatedOriginToken(string? value);</code> | [src/Meridian.Contracts/Operations/DataProvenance.cs:163](../../../../src/Meridian.Contracts/Operations/DataProvenance.cs#L163) | True when the value is, exactly, a simulated-origin token — or when any colon-delimited segment of a structured reference is one, so an evidence string like daily-close:AAPL:2026-08-18:synthetic declares its fabricated origin even though the whole string is not a bare token. Splitting only on : keeps free-text values like &quot;Sample Custodian&quot; and hyphenated names like &quot;fixture-bank&quot; from matching: those are whole values, not structured segments, and remain the exact-equality rule&#x27;s concern. |
-
-## HumanOperatorRequiredException
-
-Qualified name: <code>Meridian.Contracts.Operations.HumanOperatorRequiredException</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Operations/OperationsOriginGuard.cs:14](../../../../src/Meridian.Contracts/Operations/OperationsOriginGuard.cs#L14).
-
-Raised when an operation that requires a human operator is attempted by reviewed automation.
-
-```csharp
-public sealed class HumanOperatorRequiredException : InvalidOperationException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public HumanOperatorRequiredException(string action) : base(OperationsOriginGuard.RefusalMessage(action)) =&gt; …;</code> | [src/Meridian.Contracts/Operations/OperationsOriginGuard.cs:16](../../../../src/Meridian.Contracts/Operations/OperationsOriginGuard.cs#L16) |  |
-| <code>public HumanOperatorRequiredException(string action, string message) : base(message) =&gt; …;</code> | [src/Meridian.Contracts/Operations/OperationsOriginGuard.cs:20](../../../../src/Meridian.Contracts/Operations/OperationsOriginGuard.cs#L20) |  |
-| <code>public string Action { get; }</code> | [src/Meridian.Contracts/Operations/OperationsOriginGuard.cs:25](../../../../src/Meridian.Contracts/Operations/OperationsOriginGuard.cs#L25) | The action that was refused, in the phrasing used by the refusal message. |

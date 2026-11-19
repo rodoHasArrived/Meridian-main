@@ -461,6 +461,26 @@ Declared public members:
 | <code>public async Task&lt;IntercompanyBalanceConfirmationDto?&gt; FindAsync(Guid accountingArrangementId, DateOnly asOf, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs:25](../../../../src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs#L25) |  |
 | <code>public async Task&lt;IntercompanyBalanceConfirmationDto&gt; AppendAsync(IntercompanyBalanceConfirmationDto next, long expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs:32](../../../../src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs#L32) |  |
 
+## FileIntercompanyConfirmationClosePolicyStore
+
+Qualified name: <code>Meridian.Storage.Ledger.FileIntercompanyConfirmationClosePolicyStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/FileIntercompanyConfirmationClosePolicyStore.cs:9](../../../../src/Meridian.Storage/Ledger/FileIntercompanyConfirmationClosePolicyStore.cs#L9).
+
+Local durable close-policy history: every version of every policy, published atomically in one file.
+
+```csharp
+public sealed class FileIntercompanyConfirmationClosePolicyStore(string path, IFundScopeTenantAccessor tenants) : IIntercompanyConfirmationClosePolicyStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IntercompanyConfirmationClosePolicyDto?&gt; GetAsync(string tenantId, Guid policyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileIntercompanyConfirmationClosePolicyStore.cs:14](../../../../src/Meridian.Storage/Ledger/FileIntercompanyConfirmationClosePolicyStore.cs#L14) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;IntercompanyConfirmationClosePolicyDto&gt;&gt; ListAsync(string tenantId, Guid? ledgerBookId = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileIntercompanyConfirmationClosePolicyStore.cs:21](../../../../src/Meridian.Storage/Ledger/FileIntercompanyConfirmationClosePolicyStore.cs#L21) |  |
+| <code>public async Task&lt;IntercompanyConfirmationClosePolicyDto&gt; AppendAsync(IntercompanyConfirmationClosePolicyDto next, long expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileIntercompanyConfirmationClosePolicyStore.cs:29](../../../../src/Meridian.Storage/Ledger/FileIntercompanyConfirmationClosePolicyStore.cs#L29) |  |
+
 ## FileLegacyIntercompanyAttributionStore
 
 Qualified name: <code>Meridian.Storage.Ledger.FileLegacyIntercompanyAttributionStore</code>. Kind: `class`.
@@ -937,21 +957,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;IReadOnlyList&lt;AtomicTaxLotJournalResult&gt;&gt; GetOpenLotSuccessorHistoryAsync(Guid ledgerBookId, IReadOnlyList&lt;Guid&gt; journalEntryIds, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.CorporateAction.cs:17](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.CorporateAction.cs#L17) |  |
-
-## ILedgerOpenPositionReportingSnapshotSource
-
-Qualified name: <code>Meridian.Storage.Ledger.ILedgerOpenPositionReportingSnapshotSource</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:24](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L24).
-
-Opt-in capture of historical open-lot basis alongside the exact reporting journal transaction.
-
-```csharp
-public interface ILedgerOpenPositionReportingSnapshotSource : ILedgerReportingSnapshotSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;LedgerReportingSnapshot&gt; CaptureOpenPositionReportingSnapshotAsync(LedgerJournalEntryQuery query, Guid accountingPeriodId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:26](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L26) |  |

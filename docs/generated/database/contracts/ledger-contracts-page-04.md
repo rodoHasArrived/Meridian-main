@@ -2,11 +2,25 @@
 
 # `ledger-contracts` data objects - page 4 of 7
 
-Objects 241-320 of 489. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 497. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_ExternalGlExportLineDto["ExternalGlExportLineDto"] {
+        +string AccountName
+        +decimal Credit
+        +string Currency
+        +decimal Debit
+        +IReadOnlyList~string~ EvidenceLinks
+        +string ExportLineId
+        +string ExternalAccountId
+        +LedgerDimensionSetDto? ExternalDimensions
+        +string MeridianAccountCode
+        +LedgerDimensionSetDto? MeridianDimensions
+        +decimal NetAmount
+        +string ReconciliationRowId
+    }
     class Meridian_Contracts_Ledger_ExternalGlExportPackageDto["ExternalGlExportPackageDto"] {
         +ExternalGlExportCertificationDto? Certification
         +string? CompanyId
@@ -107,6 +121,8 @@ classDiagram
     class Meridian_Contracts_Ledger_IIntercompanyAccrualScheduleStore["IIntercompanyAccrualScheduleStore"] {
     }
     class Meridian_Contracts_Ledger_IIntercompanyBalanceConfirmationStore["IIntercompanyBalanceConfirmationStore"] {
+    }
+    class Meridian_Contracts_Ledger_IIntercompanyConfirmationClosePolicyStore["IIntercompanyConfirmationClosePolicyStore"] {
     }
     class Meridian_Contracts_Ledger_IIntercompanyObligationMonitorService["IIntercompanyObligationMonitorService"] {
     }
@@ -355,6 +371,31 @@ classDiagram
         +Guid SourceJournalId
         +Guid? TargetJournalId
     }
+    class Meridian_Contracts_Ledger_IntercompanyConfirmationClosePolicyActionDto["IntercompanyConfirmationClosePolicyActionDto"] {
+    }
+    class Meridian_Contracts_Ledger_IntercompanyConfirmationClosePolicyDto["IntercompanyConfirmationClosePolicyDto"] {
+        +DateOnly? ActiveFrom
+        +IReadOnlyList~string~ BlockingCodes
+        +string? CompanyId
+        +IReadOnlyList~IntercompanyConfirmationClosePolicyEventDto~ Events
+        +Guid LedgerBookId
+        +Guid PolicyId
+        +IntercompanyConfirmationClosePolicyStatusDto Status
+        +string TenantId
+        +long Version
+    }
+    class Meridian_Contracts_Ledger_IntercompanyConfirmationClosePolicyEventDto["IntercompanyConfirmationClosePolicyEventDto"] {
+        +IntercompanyConfirmationClosePolicyActionDto Action
+        +string Actor
+        +Guid EventId
+        +string? Reason
+        +DateTimeOffset RecordedAt
+        +Guid RequestId
+    }
+    class Meridian_Contracts_Ledger_IntercompanyConfirmationClosePolicyJsonContext["IntercompanyConfirmationClosePolicyJsonContext"] {
+    }
+    class Meridian_Contracts_Ledger_IntercompanyConfirmationClosePolicyStatusDto["IntercompanyConfirmationClosePolicyStatusDto"] {
+    }
     class Meridian_Contracts_Ledger_IntercompanyCounterpartCandidateDto["IntercompanyCounterpartCandidateDto"] {
         +decimal Amount
         +string Currency
@@ -405,61 +446,9 @@ classDiagram
         +Guid FeeArrangementId
         +Guid SourceBookId
     }
-    class Meridian_Contracts_Ledger_IntercompanyObligationFindingDto["IntercompanyObligationFindingDto"] {
-        +Guid? AgreementId
-        +int? AgreementVersion
-        +string Code
-        +string? DrillThrough
-        +Guid? EntityId
-        +Guid? JournalEntryId
-        +Guid? LedgerBookId
-        +string Message
-        +string Severity
-    }
-    class Meridian_Contracts_Ledger_IntercompanyObligationMonitorDto["IntercompanyObligationMonitorDto"] {
-        +DateOnly AsOf
-        +IntercompanyBalanceScheduleDto? BalanceSchedule
-        +DateTimeOffset EvaluatedAtUtc
-        +int ExpiryHorizonDays
-        +IReadOnlyList~IntercompanyObligationFindingDto~ Findings
-        +IReadOnlyList~IntercompanyAgreementDetailDto~ Guarantees
-        +bool IsComplete
-        +string SourceFingerprint
-        +IReadOnlyList~IntercompanyObligationSourceVersionDto~ SourceVersions
-        +string Status
-    }
-    class Meridian_Contracts_Ledger_IntercompanyObligationMonitorJsonContext["IntercompanyObligationMonitorJsonContext"] {
-    }
-    class Meridian_Contracts_Ledger_IntercompanyObligationMonitorRequestDto["IntercompanyObligationMonitorRequestDto"] {
-        +DateOnly AsOf
-        +Guid? EntityId
-        +int ExpiryHorizonDays
-        +string? FundProfileId
-        +Guid? LedgerBookId
-    }
-    class Meridian_Contracts_Ledger_IntercompanyObligationSourceVersionDto["IntercompanyObligationSourceVersionDto"] {
-        +string ContentHash
-        +string SourceId
-        +string SourceKind
-        +string Version
-    }
-    class Meridian_Contracts_Ledger_IntercompanyProposalDto["IntercompanyProposalDto"] {
-        +int Attempts
-        +string? ClaimToken
-        +DateOnly? DueDate
-        +string? LastError
-        +IntercompanyCounterpartLinkDto? LatestLink
-        +DateTimeOffset? LeaseUntil
-        +DateTimeOffset RecordedAt
-        +IntercompanyProposalSourceDto Source
-        +string SourceDigest
-        +IntercompanyProposalStatusDto Status
-        +Guid? TargetBookId
-        +Guid? TargetJournalId
-    }
-    class Meridian_Contracts_Ledger_IntercompanyProposalJsonContext["IntercompanyProposalJsonContext"] {
-    }
+    Meridian_Contracts_Ledger_ExternalGlExportPackageDto --> Meridian_Contracts_Ledger_ExternalGlExportLineDto
     Meridian_Contracts_Ledger_ExternalGlExportPackageDto --> Meridian_Contracts_Ledger_ExternalGlExportReconciliationSafeguardStateDto
+    Meridian_Contracts_Ledger_ExternalGlExportPackageManifestDto --> Meridian_Contracts_Ledger_ExternalGlExportLineDto
     Meridian_Contracts_Ledger_ExternalGlExportPackageManifestDto --> Meridian_Contracts_Ledger_ExternalGlExportReconciliationSafeguardStateDto
     Meridian_Contracts_Ledger_IntercompanyAccountBindingDto --> Meridian_Contracts_Ledger_IntercompanyAccountRoleDto
     Meridian_Contracts_Ledger_IntercompanyAccrualCompoundingEvidenceDto --> Meridian_Contracts_Ledger_IntercompanyAccrualPrincipalEvidenceDto
@@ -487,10 +476,9 @@ classDiagram
     Meridian_Contracts_Ledger_IntercompanyBalanceScheduleDto --> Meridian_Contracts_Ledger_IntercompanyBalanceScheduleIssueDto
     Meridian_Contracts_Ledger_IntercompanyBalanceScheduleDto --> Meridian_Contracts_Ledger_IntercompanyBalanceScheduleRowDto
     Meridian_Contracts_Ledger_IntercompanyBalanceScheduleRowDto --> Meridian_Contracts_Ledger_IntercompanyAccountRoleDto
+    Meridian_Contracts_Ledger_IntercompanyConfirmationClosePolicyDto --> Meridian_Contracts_Ledger_IntercompanyConfirmationClosePolicyEventDto
+    Meridian_Contracts_Ledger_IntercompanyConfirmationClosePolicyDto --> Meridian_Contracts_Ledger_IntercompanyConfirmationClosePolicyStatusDto
+    Meridian_Contracts_Ledger_IntercompanyConfirmationClosePolicyEventDto --> Meridian_Contracts_Ledger_IntercompanyConfirmationClosePolicyActionDto
     Meridian_Contracts_Ledger_IntercompanyFeeAccrualEvidenceDto --> Meridian_Contracts_Ledger_IntercompanyAccountRoleDto
     Meridian_Contracts_Ledger_IntercompanyFeeAccrualProposalDto --> Meridian_Contracts_Ledger_IntercompanyFeeAccrualEvidenceDto
-    Meridian_Contracts_Ledger_IntercompanyObligationMonitorDto --> Meridian_Contracts_Ledger_IntercompanyBalanceScheduleDto
-    Meridian_Contracts_Ledger_IntercompanyObligationMonitorDto --> Meridian_Contracts_Ledger_IntercompanyObligationFindingDto
-    Meridian_Contracts_Ledger_IntercompanyObligationMonitorDto --> Meridian_Contracts_Ledger_IntercompanyObligationSourceVersionDto
-    Meridian_Contracts_Ledger_IntercompanyProposalDto --> Meridian_Contracts_Ledger_IntercompanyCounterpartLinkDto
 ```

@@ -2,7 +2,7 @@
 
 # `ledger-contracts` data objects - page 3 of 7
 
-Objects 161-240 of 489. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 497. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -635,6 +635,12 @@ classDiagram
         +string? Reason
         +Guid RequestId
     }
+    class Meridian_Contracts_Ledger_DecideIntercompanyConfirmationClosePolicyRequest["DecideIntercompanyConfirmationClosePolicyRequest"] {
+        +IntercompanyConfirmationClosePolicyActionDto Action
+        +long ExpectedVersion
+        +string? Reason
+        +Guid RequestId
+    }
     class Meridian_Contracts_Ledger_DimensionMappingProfileDto["DimensionMappingProfileDto"] {
         +AccountingCertificationStateDto CertificationState
         +string DisplayName
@@ -660,20 +666,6 @@ classDiagram
         +DateTimeOffset RecordedAtUtc
         +AccountingCertificationStateDto State
         +string Summary
-    }
-    class Meridian_Contracts_Ledger_ExternalGlExportLineDto["ExternalGlExportLineDto"] {
-        +string AccountName
-        +decimal Credit
-        +string Currency
-        +decimal Debit
-        +IReadOnlyList~string~ EvidenceLinks
-        +string ExportLineId
-        +string ExternalAccountId
-        +LedgerDimensionSetDto? ExternalDimensions
-        +string MeridianAccountCode
-        +LedgerDimensionSetDto? MeridianDimensions
-        +decimal NetAmount
-        +string ReconciliationRowId
     }
     Meridian_Contracts_Ledger_CloseDeadlineRuleDto --> Meridian_Contracts_Ledger_CloseDeadlineAdjustmentDto
     Meridian_Contracts_Ledger_CloseDeadlineRuleDto --> Meridian_Contracts_Ledger_CloseDeadlineAnchorDto

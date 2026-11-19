@@ -669,6 +669,24 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static void MapIntercompanyBalanceConfirmationEndpoints(this WebApplication app, JsonSerializerOptions endpointOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/IntercompanyBalanceConfirmationEndpoints.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/IntercompanyBalanceConfirmationEndpoints.cs#L20) |  |
 
+## IntercompanyConfirmationClosePolicyEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.IntercompanyConfirmationClosePolicyEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/IntercompanyConfirmationClosePolicyEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/IntercompanyConfirmationClosePolicyEndpoints.cs#L16).
+
+Opt-in, reviewed confirmation close policies (ADR-032). Every route is scoped to a book the caller&#x27;s tenant and company own. A policy blocks close only once someone other than its proposer approves it.
+
+```csharp
+public static class IntercompanyConfirmationClosePolicyEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapIntercompanyConfirmationClosePolicyEndpoints(this WebApplication app, JsonSerializerOptions options);</code> | [src/Meridian.Ui.Shared/Endpoints/IntercompanyConfirmationClosePolicyEndpoints.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/IntercompanyConfirmationClosePolicyEndpoints.cs#L20) |  |
+
 ## IntercompanyObligationEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.IntercompanyObligationEndpoints</code>. Kind: `class`.
@@ -1201,22 +1219,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static bool IsExempt(string path) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/MonitoringEndpointExemptions.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/MonitoringEndpointExemptions.cs#L15) |  |
-
-## MutationAuthorizationGuardMiddleware
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.MutationAuthorizationGuardMiddleware</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/MutationAuthorizationGuardMiddleware.cs:36](../../../../src/Meridian.Ui.Shared/Endpoints/MutationAuthorizationGuardMiddleware.cs#L36).
-
-Enforces every mutating route&#x27;s declared authorization from in front of minimal-API argument binding, and refuses a mutating route that declares nothing. The endpoint filters attached by RequirePermission/RequireAnyPermission run only after binding has parsed the request body and resolved the handler&#x27;s services, so a caller holding zero permissions could learn validation outcomes (a binding 400) or trip service resolution before authorization was ever consulted. This middleware reads the same EndpointAuthorizationMetadata those filters record and answers 401/403 before any body byte is deserialized, mirroring the filters&#x27; own response bodies exactly. The filters stay attached as the declarative, host-independent layer, which means a host composed without this guard still fails closed once binding completes. Omission fails closed: a mutating route carrying no authorization declaration at all is refused outright unless it explicitly states why it needs none — EndpointPermissionlessMutationMetadata for deliberately permissionless seams (login, the first-account bootstrap, 410 Gone tombstones) or EndpointIndependentAuthenticationMetadata for routes that authenticate their caller by their own mechanism (provider webhooks, the portal grant exchange, the loopback lifecycle token). An empty-permission declaration (the RequireAuthenticatedSession family) passes through to its own filter, which owns the session-kind nuance a permission snapshot cannot express. Reads are deliberately out of scope; their posture is owned by the read-declaration lane.
-
-```csharp
-public sealed class MutationAuthorizationGuardMiddleware
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public MutationAuthorizationGuardMiddleware(RequestDelegate next) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/MutationAuthorizationGuardMiddleware.cs:40](../../../../src/Meridian.Ui.Shared/Endpoints/MutationAuthorizationGuardMiddleware.cs#L40) |  |
-| <code>public async Task InvokeAsync(HttpContext context);</code> | [src/Meridian.Ui.Shared/Endpoints/MutationAuthorizationGuardMiddleware.cs:42](../../../../src/Meridian.Ui.Shared/Endpoints/MutationAuthorizationGuardMiddleware.cs#L42) |  |

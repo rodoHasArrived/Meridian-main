@@ -1443,7 +1443,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<IAccountingCloseManagementService>(),
                 sp.GetService<ICloseReadinessSubjectSource>(),
                 sp.GetService<IIntercompanyCloseAdvisorySource>(),
-                () => sp.GetService<IBookOfRecordGuard>()));
+                () => sp.GetService<IBookOfRecordGuard>(),
+                sp.GetService<IIntercompanyConfirmationCloseGate>()));
         services.TryAddSingleton<SecurityMasterExceptionSlaConfig>();
         services.TryAddSingleton<IReconciliationSlaPolicyProvider>(sp =>
             new SecurityMasterReconciliationSlaPolicyProvider(

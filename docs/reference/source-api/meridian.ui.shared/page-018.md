@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RunCapitalCallDefaultInterestDraftIntakeRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RunCapitalCallDefaultInterestDraftIntakeRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs:28](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs#L28).
+
+Accrue default interest on the unfunded part of a posted capital call through a date.
+
+```csharp
+public sealed record RunCapitalCallDefaultInterestDraftIntakeRequest(string FundProfileId, string Currency, string Actor, string CallId, DateOnly AccrueThrough, IReadOnlyList<CapitalCallDefaultTermsInput> Defaults, Guid? LedgerBookId = null, string? PeriodId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null, DateTimeOffset? AsOf = null);
+```
+
 ## RunCapitalCallFundingDraftIntakeRequest
 
 Qualified name: <code>Meridian.Ui.Shared.Services.RunCapitalCallFundingDraftIntakeRequest</code>. Kind: `record`.
@@ -853,15 +865,3 @@ Declared public members:
 | <code>public string FeeExpenseAccountPath { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:24](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L24) |  |
 | <code>public TimeOnly DailyRunAfterUtc { get; set; } = new (0, 15);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:25](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L25) |  |
 | <code>public IReadOnlyList&lt;ThreeWayReconciliationSchedule&gt; Schedules { get; set; } = [];</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:26](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L26) |  |
-
-## ThreeWayReconciliationSchedule
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayReconciliationSchedule</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs:6](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationOptions.cs#L6).
-
-Explicit daily scope configuration; no account or authority is discovered implicitly.
-
-```csharp
-public sealed record ThreeWayReconciliationSchedule(string TenantId, string CompanyId, Guid FinancialAccountId, Guid LedgerBookId, Guid AccountingPeriodId, bool Enabled = false);
-```

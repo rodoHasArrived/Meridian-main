@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ILedgerOpenPositionReportingSnapshotSource
+
+Qualified name: <code>Meridian.Storage.Ledger.ILedgerOpenPositionReportingSnapshotSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:24](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L24).
+
+Opt-in capture of historical open-lot basis alongside the exact reporting journal transaction.
+
+```csharp
+public interface ILedgerOpenPositionReportingSnapshotSource : ILedgerReportingSnapshotSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;LedgerReportingSnapshot&gt; CaptureOpenPositionReportingSnapshotAsync(LedgerJournalEntryQuery query, Guid accountingPeriodId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:26](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L26) |  |
+
 ## ILedgerPostingAuthority
 
 Qualified name: <code>Meridian.Storage.Ledger.ILedgerPostingAuthority</code>. Kind: `interface`.
@@ -209,6 +227,28 @@ Declared public members:
 | <code>public IReadOnlyList&lt;IntercompanyAgreementPostingLine&gt; Lines { get; }</code> | [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:48](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L48) |  |
 | <code>public bool IsVerifiedSourceReversal { get; }</code> | [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:49](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L49) |  |
 | <code>public LegalEntityReadAuthorityProof? StructureAuthorityProof { get; internal set; }</code> | [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:50](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L50) |  |
+
+## IntercompanyConfirmationClosePolicyStoreRules
+
+Qualified name: <code>Meridian.Storage.Ledger.IntercompanyConfirmationClosePolicyStoreRules</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/IntercompanyConfirmationClosePolicyStoreRules.cs:7](../../../../src/Meridian.Storage/Ledger/IntercompanyConfirmationClosePolicyStoreRules.cs#L7).
+
+Append-only checks shared by the file and PostgreSQL confirmation close-policy stores.
+
+```csharp
+public static class IntercompanyConfirmationClosePolicyStoreRules
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string Tenant(string tenantId) =&gt; …;</code> | [src/Meridian.Storage/Ledger/IntercompanyConfirmationClosePolicyStoreRules.cs:9](../../../../src/Meridian.Storage/Ledger/IntercompanyConfirmationClosePolicyStoreRules.cs#L9) |  |
+| <code>public static bool IsIdenticalRetry(IntercompanyConfirmationClosePolicyDto? current, IntercompanyConfirmationClosePolicyDto next, long expectedVersion);</code> | [src/Meridian.Storage/Ledger/IntercompanyConfirmationClosePolicyStoreRules.cs:14](../../../../src/Meridian.Storage/Ledger/IntercompanyConfirmationClosePolicyStoreRules.cs#L14) | True for an identical retry of the current version; otherwise next must append exactly one step. |
+| <code>public static void RequireTenant(string tenant, IntercompanyConfirmationClosePolicyDto policy);</code> | [src/Meridian.Storage/Ledger/IntercompanyConfirmationClosePolicyStoreRules.cs:29](../../../../src/Meridian.Storage/Ledger/IntercompanyConfirmationClosePolicyStoreRules.cs#L29) |  |
+| <code>public static string Serialize(IntercompanyConfirmationClosePolicyDto policy) =&gt; …;</code> | [src/Meridian.Storage/Ledger/IntercompanyConfirmationClosePolicyStoreRules.cs:35](../../../../src/Meridian.Storage/Ledger/IntercompanyConfirmationClosePolicyStoreRules.cs#L35) |  |
+| <code>public static IntercompanyConfirmationClosePolicyDto Deserialize(string json) =&gt; …;</code> | [src/Meridian.Storage/Ledger/IntercompanyConfirmationClosePolicyStoreRules.cs:38](../../../../src/Meridian.Storage/Ledger/IntercompanyConfirmationClosePolicyStoreRules.cs#L38) |  |
 
 ## IntercompanyJournalCorrectionEvidence
 
@@ -808,26 +848,4 @@ A retained disposal as durable history, without the two facts that live on the j
 
 ```csharp
 public sealed record LedgerTaxLotDisposalHistoryRecord(Guid MutationBatchId, Guid JournalEntryId, LedgerAccount Account, LedgerTaxLotReliefMethod ReliefMethod, IReadOnlyList<LedgerTaxLotDisposalHistoryLot> Lots, IReadOnlyList<WashSaleBasisIncrease> WashSaleBasisIncreases, decimal MatchedReplacementQuantity, IReadOnlyList<OpenLotDto>? CanonicalLots = null, IReadOnlyList<OpenLotDto>? PoolLots = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] int? ProceedsAllocationVersion = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] decimal? SalePrice = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? PolicyRevision = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] DateTimeOffset? RecordedAt = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<LedgerTaxLotDisposalRecipientEvidence>? DeferralRecipients = null);
-```
-
-## LedgerTaxLotDisposalRecipientEvidence
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerTaxLotDisposalRecipientEvidence</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLotDisposalHistory.cs:43](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLotDisposalHistory.cs#L43).
-
-Durable replacement identity and basis attribution, in the same order as the retained wash-sale increases. Missing evidence must not be inferred from an unrelated asset debit in the disposal journal.
-
-```csharp
-public sealed record LedgerTaxLotDisposalRecipientEvidence(Guid ReplacementTaxLotRecordId, string ReplacementLotId, LedgerAccount Account, Guid SecurityId, Guid BookPositionId, decimal DeferredLoss);
-```
-
-## LedgerTaxLotDisposalSelection
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerTaxLotDisposalSelection</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:488](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L488).
-
-```csharp
-public sealed record LedgerTaxLotDisposalSelection(Guid TaxLotRecordId, string LotId, long ExpectedVersion, decimal ExpectedOpenQuantity, decimal Quantity, int SelectionOrdinal, string SelectionEvidenceId, decimal ExpectedUnitCost = 0m, decimal ExpectedCostBasis = 0m);
 ```

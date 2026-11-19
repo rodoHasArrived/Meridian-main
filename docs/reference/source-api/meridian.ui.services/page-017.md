@@ -6,6 +6,34 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationLayoutState
+
+Qualified name: <code>Meridian.Ui.Services.WorkstationLayoutState</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:132](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L132).
+
+Persisted docking and pane composition for a workstation workspace.
+
+```csharp
+public sealed class WorkstationLayoutState
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string LayoutId { get; set; } = &quot;default&quot;;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:134](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L134) |  |
+| <code>public string DisplayName { get; set; } = &quot;Default Layout&quot;;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:135](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L135) |  |
+| <code>public string ActivePaneId { get; set; } = &quot;pane-1&quot;;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:136](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L136) |  |
+| <code>public string? OperatingContextKey { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:137](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L137) |  |
+| <code>public BoundedWindowMode WindowMode { get; set; } = BoundedWindowMode.DockFloat;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:138](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L138) |  |
+| <code>public string? LayoutPresetId { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:139](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L139) |  |
+| <code>public string? DockLayoutXml { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:140](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L140) |  |
+| <code>public List&lt;WorkstationPaneState&gt; Panes { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:141](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L141) |  |
+| <code>public List&lt;FloatingWorkspaceWindowState&gt; FloatingWindows { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:142](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L142) |  |
+| <code>public Dictionary&lt;string, string&gt; LayoutContext { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:143](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L143) |  |
+| <code>public DateTime SavedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:144](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L144) |  |
+
 ## WorkstationPaneState
 
 Qualified name: <code>Meridian.Ui.Services.WorkstationPaneState</code>. Kind: `class`.

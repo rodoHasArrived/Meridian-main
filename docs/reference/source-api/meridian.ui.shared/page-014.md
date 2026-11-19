@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IStatementReconciliationIntakeAuthority
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IStatementReconciliationIntakeAuthority</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs:41](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs#L41).
+
+Resolves accounting scope and publishes retained statement intake to governed reconciliation workflows.
+
+```csharp
+public interface IStatementReconciliationIntakeAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;StatementAccountingScope&gt; ResolveAccountingScopeAsync(StatementReconciliationIntakeScopeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs:43](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs#L43) |  |
+| <code>Task&lt;StatementReconciliationIntakeReceipt&gt; PublishAsync(string statementWorkflowId, StatementImportCommitResultDto import, StatementAccountingScope accountingScope, string tenantId, string companyId, string actor, string sourceInstitution, IReadOnlyList&lt;string&gt; evidenceReferences, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs:47](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs#L47) |  |
+
 ## IThreeWayReconciliationSourceReader
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IThreeWayReconciliationSourceReader</code>. Kind: `interface`.
@@ -998,23 +1017,3 @@ Declared public members:
 | <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:245](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L245) |  |
 | <code>public bool DependsOnPostedHistory =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:247](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L247) |  |
 | <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:249](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L249) |  |
-
-## PerformanceReturnFigures
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PerformanceReturnFigures</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs:11](../../../../src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs#L11).
-
-Maps the shared F# return kernel (ReturnMeasurement) onto the workstation contract, and supplies the brokerage seam&#x27;s choice of which cash activity is external capital. Fund, share-class, and investor lanes reuse ToDto with their own source label.
-
-```csharp
-public static class PerformanceReturnFigures
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string BrokerageSource = &quot;brokerage-balance-snapshots&quot;;</code> | [src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs:14](../../../../src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs#L14) | Source label for figures measured from synced brokerage balance snapshots. |
-| <code>public static PerformanceReturnFigureDto ToDto(ReturnFigure figure, string source);</code> | [src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs:23](../../../../src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs#L23) |  |
-| <code>public static IReadOnlyList&lt;PerformanceReturnFigureDto&gt; MeasureBrokerage(IEnumerable&lt;(DateOnly AsOf, decimal Equity, string Currency)&gt; valuations, IEnumerable&lt;BrokerageCashFlowEntryDto&gt; cashEntries, string currency);</code> | [src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs:49](../../../../src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs#L49) | Time-weighted and money-weighted figures for a brokerage account from its balance snapshots and categorized cash activity. Snapshot equity is end-of-day; deposits, withdrawals, and transfers are the only external flows. Any cash transaction the categorizer could not classify makes every figure review-required, because an unrecognized deposit would otherwise be reported as performance. |

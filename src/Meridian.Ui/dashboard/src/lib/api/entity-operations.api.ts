@@ -28,6 +28,10 @@ export const entityOperationEndpoints = {
   confirmations: "/api/ledger/intercompany/confirmations",
   confirmationSummary: (bookId: string, asOf: string) => `/api/ledger/intercompany/confirmations?${new URLSearchParams({ ledgerBookId: bookId, asOf })}`,
   confirmationActions: (confirmationId: string) => `/api/ledger/intercompany/confirmations/${encodeURIComponent(confirmationId)}/actions`,
+  confirmationClosePolicies: "/api/ledger/intercompany/confirmation-close-policies",
+  confirmationClosePolicyList: (bookId: string) => `/api/ledger/intercompany/confirmation-close-policies?${new URLSearchParams({ ledgerBookId: bookId })}`,
+  confirmationClosePolicyDecisions: (policyId: string, bookId: string) =>
+    `/api/ledger/intercompany/confirmation-close-policies/${encodeURIComponent(policyId)}/decisions?${new URLSearchParams({ ledgerBookId: bookId })}`,
   accrualSchedules: "/api/ledger/intercompany/accrual-schedules",
   accrualScheduleList: (bookId: string) => `/api/ledger/intercompany/accrual-schedules?${new URLSearchParams({ ledgerBookId: bookId })}`,
   accrualScheduleDecisions: (scheduleId: string, bookId: string) =>
