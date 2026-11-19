@@ -96,6 +96,13 @@ two may converge once canonical units are approved.
 conversions call it. Ranges, sign policy and error text stay per domain and still wait for the
 canonical-unit decision.
 
+**2026-11-19:** the Bond validator no longer refuses a negative `spreadBps`, which
+`SecurityRateFieldUnits` declares signed (a floating bond at index − 10bp now validates).
+`SecurityRateFieldUnitsValidatorParityTests` fails when a hand-written validator rule and the unit
+table disagree on a rate field's sign or fraction range. Three known disagreements are listed in that
+test, not fixed, pending the negative-rate ruling: `Deposit.interestRate`, `Repo.repoRate` and
+`CashSweep.yieldRate` are declared signed but validated as non-negative.
+
 ## Slice 5 — Audit evidence contracts before storage/serialization changes
 
 **Evidence:** D7. Classify each mutable row (cash-flow source, entitlement, field provenance and
