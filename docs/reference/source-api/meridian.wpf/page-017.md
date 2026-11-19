@@ -347,7 +347,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Views.AccountingWorkspaceShellPageBase</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:350](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L350).
+Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:400](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L400).
 
 Binds derived pages to the accounting workspace shell definition.
 
@@ -992,7 +992,7 @@ public partial class DataSourcesPage : Page
 
 Qualified name: <code>Meridian.Wpf.Views.DataWorkspaceShellPageBase</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:336](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L336).
+Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:386](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L386).
 
 Binds derived pages to the data workspace shell definition.
 

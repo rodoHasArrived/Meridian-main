@@ -26,12 +26,39 @@ export function readStoredDensity(
   }
 }
 
+// A density applied for this page session only (a restored saved layout). It is never written to
+// browser storage or announced, so it can't reach the host as the operator's preference. Any write
+// of the stored preference (an operator choice or a host sync) replaces it.
+let sessionDensity: Density | null = null;
+
+/** Applies a density for this page session without changing the operator's stored preference. */
+export function applySessionDensity(
+  value: Density,
+  el: HTMLElement | null = typeof document === "undefined" ? null : document.body
+) {
+  sessionDensity = value;
+  applyDensity(value, el);
+}
+
+/** The density on screen: a session override when one is active, otherwise the stored preference. */
+export function readEffectiveDensity(storage: Storage | null = getLocalStorage()): Density {
+  return sessionDensity ?? readStoredDensity(DENSITY_STORAGE_KEY, storage);
+}
+
+/** Drops the session override; the stored preference applies again. */
+export function clearSessionDensity() {
+  sessionDensity = null;
+}
+
 export function writeStoredDensity(
   value: Density,
   key: string = DENSITY_STORAGE_KEY,
   storage: Storage | null = getLocalStorage(),
   announce = true
 ) {
+  if (key === DENSITY_STORAGE_KEY) {
+    sessionDensity = null;
+  }
   try {
     storage?.setItem(key, value);
   } catch {
