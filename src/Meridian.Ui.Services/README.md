@@ -337,6 +337,15 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 - No registry-backed TODOs are open for this module.
 <!-- source-todos:end -->
 
+### Intercompany journal drafts, counterpart picking and confirmation close policy
+
+`IntercompanyCounterpartQueueWorkspace` loads `TargetJournalChoices` from the counterpart-candidate read when the
+target book changes and exposes `OpenTargetJournalCommand` through a host-supplied `JournalOpener`.
+`IntercompanyBalanceConfirmationWorkspace.ClosePolicy` shows the book's confirmation close policy and proposes,
+approves, rejects or disables it over `/api/ledger/intercompany/confirmation-close-policies`; an unreadable policy is
+reported, never shown as none. The matching `WorkstationIntercompanyAgreementApiClient` partials check that each
+response belongs to the requested proposal, book and request.
+
 ## Validation
 
 ```bash

@@ -4165,6 +4165,15 @@ See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
 | `TODO-SRC-UI-SHARED-001` | Complete W5 shared read-model visibility for close-package and provenance timelines | done | high |
 <!-- source-todos:end -->
 
+### Intercompany journal drafts, counterpart picking and confirmation close policy
+
+`IntercompanyOperationsEndpoints` adds `GET /api/ledger/intercompany/proposals/{id}/counterpart-candidates`,
+backed by `IntercompanyProposalDeliveryService.ListCounterpartCandidatesAsync`, which shares the link check so the
+list and the link cannot drift; the link still re-checks under the journal mutation lease.
+`IntercompanyConfirmationClosePolicyEndpoints` maps `/api/ledger/intercompany/confirmation-close-policies` (list,
+propose, decide) for owned books. `PostgresManualJournalMutationRecoveryStore` holds one PostgreSQL session lock per
+ledger schema for each journal command when drafts are in PostgreSQL.
+
 ## Validation
 
 Execution endpoint and session regressions live in `Meridian.Tests`; retained workflow and

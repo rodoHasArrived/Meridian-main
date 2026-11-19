@@ -1369,6 +1369,13 @@ When telemetry, latency, order-flow, or preview data is unavailable, show an exp
 unavailable state rather than seeded sample numbers or plausible-looking derived metrics.
 Use `Controls/EmptyStatePanel` for reusable missing-data states; it supports title, explanation, severity, and up to two actions for provider setup, import, selection, freshness, reconciliation, reporting, and fixture-data recovery paths.
 
+### Intercompany journal drafts, counterpart picking and confirmation close policy
+
+The Balance confirmation tab includes the book's confirmation close policy (ADR-032) through
+`IntercompanyBalanceConfirmationWorkspace.ClosePolicy`: choose the findings that block close, propose with a reason,
+and approve, reject or disable. The close-readiness advisory text points to the separate `intercompany-confirmation`
+requirement when a policy applies.
+
 ## Related docs
 
 - `docs/status/wpf-screen-development-tracker.md` - generated WPF screen Gantt chart and automated per-screen TODO checklist derived from the shell registry, desktop screenshot index, and WPF test references.
