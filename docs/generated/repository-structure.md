@@ -1162,6 +1162,7 @@ Meridian-main
 │       │   ├── check-sample-config-datasources.py
 │       │   ├── check-store-concurrency-posture.py
 │       │   ├── check-test-skip-register.py
+│       │   ├── check-unimplemented-surfaces.py
 │       │   ├── check-warning-suppressions.py
 │       │   ├── check-workflow-hygiene.py
 │       │   ├── check-workstation-assets.py
@@ -1193,6 +1194,7 @@ Meridian-main
 │       │   ├── summarize-ci-artifacts.py
 │       │   ├── summarize-repair-outcomes.py
 │       │   ├── test_evidence.py
+│       │   ├── unimplemented-surface-baseline.json
 │       │   ├── validate-monitoring-deployment.py
 │       │   ├── validate-npm-audit.py
 │       │   ├── validate-observability-contract.py
@@ -15864,6 +15866,7 @@ Meridian-main
 │   │   ├── test_check_status_delivery_claims.py
 │   │   ├── test_check_store_concurrency_posture.py
 │   │   ├── test_check_test_skip_register.py
+│   │   ├── test_check_unimplemented_surfaces.py
 │   │   ├── test_check_workflow_docs_parity.py
 │   │   ├── test_ci_evidence_controls.py
 │   │   ├── test_ci_metrics.py

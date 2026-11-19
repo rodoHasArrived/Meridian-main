@@ -882,9 +882,9 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public void Register(IServiceCollection services);</code> | [src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs:50](../../../../src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs#L50) |  |
-| <code>public IReadOnlyList&lt;ShellPageDescriptor&gt; DescribePages() =&gt; …;</code> | [src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs:92](../../../../src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs#L92) |  |
-| <code>public IReadOnlyList&lt;FeatureCapabilityDescriptor&gt; DeclareCapabilities() =&gt; …;</code> | [src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs:94](../../../../src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs#L94) |  |
-| <code>public WorkspaceCapabilityDescriptor DescribeWorkspace() =&gt; …;</code> | [src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs:97](../../../../src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs#L97) |  |
+| <code>public IReadOnlyList&lt;ShellPageDescriptor&gt; DescribePages() =&gt; …;</code> | [src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs:97](../../../../src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs#L97) |  |
+| <code>public IReadOnlyList&lt;FeatureCapabilityDescriptor&gt; DeclareCapabilities() =&gt; …;</code> | [src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs:99](../../../../src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs#L99) |  |
+| <code>public WorkspaceCapabilityDescriptor DescribeWorkspace() =&gt; …;</code> | [src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs:102](../../../../src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs#L102) |  |
 
 ## ISettingsWorkspaceShellPresentationService
 

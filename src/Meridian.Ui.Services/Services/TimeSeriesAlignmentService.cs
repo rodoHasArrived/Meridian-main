@@ -12,6 +12,12 @@ namespace Meridian.Ui.Services;
 public sealed class TimeSeriesAlignmentService
 {
     private static readonly Lazy<TimeSeriesAlignmentService> _instance = new(() => new TimeSeriesAlignmentService());
+    /// <summary>
+    /// The host answers 501 when it has no alignment execution service (see
+    /// <c>HistoricalEndpoints.MapAlignmentEndpoints</c>); that is a capability gap, not a run failure.
+    /// </summary>
+    private const int NotImplementedStatusCode = 501;
+
     private readonly ApiClientService _apiClient;
 
     public static TimeSeriesAlignmentService Instance => _instance.Value;
@@ -73,6 +79,7 @@ public sealed class TimeSeriesAlignmentService
         return new AlignmentResult
         {
             Success = false,
+            IsServiceUnavailable = response.StatusCode == NotImplementedStatusCode,
             Error = response.ErrorMessage ?? "Alignment failed"
         };
     }
@@ -328,6 +335,7 @@ public sealed class TimeSeriesAlignmentService
         return new AlignmentPreview
         {
             Success = false,
+            IsServiceUnavailable = response.StatusCode == NotImplementedStatusCode,
             Error = response.ErrorMessage ?? "Alignment preview unavailable"
         };
     }
@@ -461,6 +469,13 @@ public sealed class AlignmentOptions
 public sealed class AlignmentResult
 {
     public bool Success { get; set; }
+
+    /// <summary>
+    /// True when the host reported that alignment is not implemented (HTTP 501), so retrying
+    /// with different options cannot succeed.
+    /// </summary>
+    public bool IsServiceUnavailable { get; set; }
+
     public string? Error { get; set; }
     public string? OutputPath { get; set; }
     public long TotalSourceRecords { get; set; }
@@ -537,6 +552,13 @@ public sealed class AlignmentPreset
 public sealed class AlignmentPreview
 {
     public bool Success { get; set; }
+
+    /// <summary>
+    /// True when the host reported that alignment is not implemented (HTTP 501), so retrying
+    /// with different options cannot succeed.
+    /// </summary>
+    public bool IsServiceUnavailable { get; set; }
+
     public string? Error { get; set; }
     public long TotalSourceRecords { get; set; }
     public long ExpectedOutputRecords { get; set; }

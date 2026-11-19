@@ -1,7 +1,11 @@
 flowchart LR
   W1_DATA_001["W1-DATA-001\nW1 - done / green"]
+  W1_DATA_ALIGN_001["W1-DATA-ALIGN-001\nW1 - planned / yellow"]
+  W1_DATA_001 --> W1_DATA_ALIGN_001
+  W1_DATA_DEDUP_001["W1-DATA-DEDUP-001\nW1 - planned / yellow"]
+  W1_DATA_ALIGN_001 --> W1_DATA_DEDUP_001
   W2_PROMO_001["W2-PROMO-001\nW2 - done / green"]
-  W1_DATA_001 --> W2_PROMO_001
+  W1_DATA_DEDUP_001 --> W2_PROMO_001
   W2_TRD_001["W2-TRD-001\nW2 - done / green"]
   W2_PROMO_001 --> W2_TRD_001
   W3_CONT_001["W3-CONT-001\nW3 - done / green"]

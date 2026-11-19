@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Timers;
+using Meridian.Ui.Services.Contracts;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -8,17 +9,15 @@ namespace Meridian.Ui.Services;
 /// <summary>
 /// Background service that automatically refreshes OAuth tokens before they expire.
 /// Monitors credential metadata and proactively refreshes tokens based on configured thresholds.
+/// Construct it with the host's real <see cref="ICredentialService"/>; the shared no-op
+/// <see cref="CredentialService"/> never yields a token to refresh.
 /// </summary>
 public sealed class OAuthRefreshService : IDisposable
 {
-    private static readonly Lazy<OAuthRefreshService> _instance = new(() => new OAuthRefreshService());
+    private const string RefreshTokenSuffix = ".refresh";
     private static readonly TimeSpan WrapperFailureLogThrottleWindow = TimeSpan.FromMinutes(1);
-    /// <summary>
-    /// Gets the singleton instance of the OAuth refresh service.
-    /// </summary>
-    public static OAuthRefreshService Instance => _instance.Value;
 
-    private readonly CredentialService _credentialService;
+    private readonly ICredentialService _credentialService;
     private readonly ILogger<OAuthRefreshService> _logger;
     private readonly System.Timers.Timer _refreshTimer;
     private readonly System.Timers.Timer _expirationCheckTimer;
@@ -62,12 +61,7 @@ public sealed class OAuthRefreshService : IDisposable
     /// </summary>
     public int WrapperFailureCount => Volatile.Read(ref _wrapperFailureCount);
 
-    private OAuthRefreshService()
-        : this(CredentialService.Instance)
-    {
-    }
-
-    internal OAuthRefreshService(CredentialService credentialService, ILogger<OAuthRefreshService>? logger = null)
+    public OAuthRefreshService(ICredentialService credentialService, ILogger<OAuthRefreshService>? logger = null)
     {
         ArgumentNullException.ThrowIfNull(credentialService);
         _credentialService = credentialService;
@@ -121,7 +115,9 @@ public sealed class OAuthRefreshService : IDisposable
 
         foreach (var cred in credentials.Where(c => c.IsOAuthToken))
         {
-            var providerId = cred.Resource.Replace($"{CredentialService.OAuthTokenResource}.", "");
+            if (!TryGetProviderId(cred.Resource, out var providerId))
+                continue;
+
             var now = DateTime.UtcNow;
             var isExpired = cred.ExpiresAt.HasValue && cred.ExpiresAt.Value <= now;
             var isExpiringSoon = cred.ExpiresAt.HasValue &&
@@ -186,7 +182,7 @@ public sealed class OAuthRefreshService : IDisposable
     /// </summary>
     public async Task SetAutoRefreshAsync(string providerId, bool enabled, CancellationToken ct = default)
     {
-        var resource = $"{CredentialService.OAuthTokenResource}.{providerId}";
+        var resource = $"{_credentialService.OAuthTokenResourcePrefix}.{providerId}";
         await _credentialService.UpdateMetadataAsync(resource, m => m.AutoRefreshEnabled = enabled, ct);
     }
 
@@ -300,9 +296,9 @@ public sealed class OAuthRefreshService : IDisposable
                 continue;
 
             var remaining = token.ExpiresAt.Value - DateTime.UtcNow;
-            if (remaining.TotalMinutes <= RefreshThresholdMinutes && remaining.TotalSeconds > 0)
+            if (remaining.TotalMinutes <= RefreshThresholdMinutes && remaining.TotalSeconds > 0
+                && TryGetProviderId(token.Resource, out var providerId))
             {
-                var providerId = token.Resource.Replace($"{CredentialService.OAuthTokenResource}.", "");
                 try
                 {
                     var result = await _credentialService.RefreshOAuthTokenAsync(providerId, ct);
@@ -343,9 +339,9 @@ public sealed class OAuthRefreshService : IDisposable
             var remaining = token.ExpiresAt.Value - DateTime.UtcNow;
 
             // Warn about tokens expiring in less than 1 hour that can't auto-refresh
-            if (remaining.TotalHours <= 1 && remaining.TotalSeconds > 0 && !token.CanAutoRefresh)
+            if (remaining.TotalHours <= 1 && remaining.TotalSeconds > 0 && !token.CanAutoRefresh
+                && TryGetProviderId(token.Resource, out var providerId))
             {
-                var providerId = token.Resource.Replace($"{CredentialService.OAuthTokenResource}.", "");
                 TokenExpirationWarning?.Invoke(this, new TokenExpirationWarningEventArgs(
                     providerId,
                     token.ExpiresAt.Value,
@@ -359,9 +355,8 @@ public sealed class OAuthRefreshService : IDisposable
     private void OnCredentialExpiring(object? sender, CredentialExpirationEventArgs e)
     {
         // Handle credential expiration notifications from the credential service
-        if (e.Resource.Contains(CredentialService.OAuthTokenResource))
+        if (TryGetProviderId(e.Resource, out var providerId))
         {
-            var providerId = e.Resource.Replace($"{CredentialService.OAuthTokenResource}.", "");
             var metadata = _credentialService.GetMetadata(e.Resource);
 
             TokenExpirationWarning?.Invoke(this, new TokenExpirationWarningEventArgs(
@@ -369,6 +364,25 @@ public sealed class OAuthRefreshService : IDisposable
                 e.ExpiresAt,
                 metadata?.AutoRefreshEnabled ?? false));
         }
+    }
+
+    /// <summary>
+    /// Maps a stored OAuth token resource (<c>{prefix}.{providerId}</c>) to its provider id.
+    /// Resources outside the prefix and companion refresh-token entries are not tokens to manage.
+    /// </summary>
+    private bool TryGetProviderId(string resource, out string providerId)
+    {
+        providerId = string.Empty;
+        var prefix = _credentialService.OAuthTokenResourcePrefix + ".";
+        if (string.IsNullOrEmpty(resource)
+            || !resource.StartsWith(prefix, StringComparison.Ordinal)
+            || resource.EndsWith(RefreshTokenSuffix, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        providerId = resource[prefix.Length..];
+        return providerId.Length > 0;
     }
 
     public void Dispose()
