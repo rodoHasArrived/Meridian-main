@@ -14,6 +14,11 @@ last_reviewed: 2026-11-17
 Enabled trade-fill ledger composition also supplies the scope-bound paper financing source
 outbox and governed posting target. The human administrator assessment route uses that same
 book/period authority; absent scope binding or unresolved source delivery fails closed.
+With `Execution:TradeFillLedgerPosting:Store=File`, the host instead composes a scope-bound
+`FileTradeFillLedgerJournalStore` under `{DataRoot}/execution/trade-fill-ledger/file-ledger/`,
+skips the Postgres connection requirement, and registers no paper financing posting service (the
+financing endpoints return 503). It verifies that journal before `StartAsync`, and a broken chain
+or a missing or mismatched envelope stops startup.
 Shared workstation composition owns optional daily reconciliation and scheduled mark-reversal
 draft preparation. These workers retain the ordinary tenant, period and approval controls.
 

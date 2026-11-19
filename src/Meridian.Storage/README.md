@@ -49,6 +49,18 @@ compiled by `Meridian.Storage.Accounting`, keeping the primitives assembly indep
 The business adapters in the linked FundStructure and Ledger folders compile into
 `Meridian.Storage.Accounting`; generic storage primitives remain in `Meridian.Storage`.
 
+`Ledger/FileTradeFillLedgerJournalStore` is the file-backed journal for execution trade-fill postings
+when no Postgres ledger is configured (`Execution:TradeFillLedgerPosting:Store=File`). It holds
+journal entries in a hash-chained `FileLedgerJournalLog`, and each entry's posting envelope (aggregate,
+period, command, policy, rule and source identities) in a separate fsynced write-ahead log. Each
+envelope is bound to its entry by the SHA-256 of the entry's journal JSON. The envelope is written
+first, so a crash between the two writes leaves an orphan envelope that is ignored on load and
+superseded on replay. The store implements only the append, aggregate and period reads, and
+posting-identity collision lookup that `DurableLedgerPostingTarget` uses. Books, periods, tax lots
+and adjustment approvals throw `NotSupportedException`, and the store is never registered as the
+host `ILedgerJournalStore`. See
+[the reference](../../docs/reference/ledger-journal-store.md#file-backed-trade-fill-journal-no-postgres).
+
 The linked ledger adapter commits immutable native balance checkpoints with governed book
 hard-close events and their audited digests. Its as-of balance capability combines the retained
 prefix with a verified journal tail in one repeatable-read transaction, preserving reopened and

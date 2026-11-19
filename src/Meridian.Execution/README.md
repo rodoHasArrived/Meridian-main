@@ -601,6 +601,13 @@ deployment enables the production composition with
 `MERIDIAN_LEDGER_CONNECTION_STRING`, and composes the governed target, WAL store, independent
 handoff-failure store, and OMS together. Changing book or period requires updating that scope and
 restarting the host rather than replaying retained fills into a new accounting context.
+Setting `Execution:TradeFillLedgerPosting:Store=File` removes the Postgres requirement for the
+journal-only (v1) protocol. `FileTradeFillLedger.CreatePostingTarget` wraps a
+`FileTradeFillLedgerJournalStore` in the same `DurableLedgerPostingTarget` →
+`GovernedTradeFillLedgerPostingTarget` chain, so identity collisions, equivalent retries and
+replay comparison behave as on Postgres. `FileTradeFillLedger.VerifyBeforeHostStartupAsync`
+rebuilds and verifies the journal before host start. `BuildContext` refuses `Store=File` with
+`CanonicalAccounting`.
 The independent `ITradeFillHandoffFailureStore` must declare the same exact posting scope as the
 ledger consumer; composition fails before startup when the scopes differ, so restart recovery cannot
 route a prior book or period's fill into the current ledger. Exact identities compare the scope label,
