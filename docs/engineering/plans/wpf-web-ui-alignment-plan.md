@@ -66,6 +66,23 @@ WPF changes in this delta were compile-checked with the full WPF build; WPF test
 | Fund-account picker for the three-way comparison; fund-profile picker for NAV vs prior period | Not ported. WPF NAV comparison still takes the fund profile from the Fund Operations selection. |
 | Exceptions page lists each break once, in the break queue | Not ported; no WPF equivalent page duplicates it today. |
 
+## Workspace, layout and saved-view fixes — 2026-11-18
+
+| Change | Browser | WPF |
+| --- | --- | --- |
+| Workspace export then import keeps the workspace | — | Fixed: `WorkspaceService.ImportWorkspaceAsync` reads with the same `DesktopJsonOptions.PrettyPrint` options the export writes (camelCase, case-insensitive), so older PascalCase files still import. A file without a workspace name is refused instead of importing an empty workspace. |
+| Reset layout in every workspace shell | — | Ported: the command bar's **More** menu ends with **Reset layout** (`WorkspaceCommandBarControl.ResetLayoutCommand`, bound to `WorkspaceShellPageBase.ResetLayoutCommand`) in Trading, Portfolio, Accounting, Reporting, Data and Settings. Strategy keeps its own Reset action. All seven save the default panes for the current workspace and layout scope, so the reset survives a restart. Other workspaces keep their layouts. |
+| Restoring a saved layout leaves global density alone | Fixed: a layout's density applies to the session only (`applySessionDensity`). It is not stored or synced as the operator's preference. Choosing a density in Settings replaces it. | Not applicable (WPF dock layouts carry no density). |
+| Saving a table view under an existing name replaces it | Fixed: the button reads "Replace “Name”", and the list keeps one entry. | Same host behaviour, because the personal-view store saves by name (tenant, operator and table). |
+| Restore says which saved columns were skipped, and refuses a view with none left | Fixed in `TableWorkbench`. | Not ported. |
+| Saved views on `execution-journal`, `portfolio-nav-comparison`, `portfolio-cash-ladder-comparison`, `portfolio-attribution-period-comparison` and `accounting-period-closing-balance-comparison` | Fixed: registered in the host's table permission map (`WorkstationEndpoints.WorkstationTablePermissions`), each mirroring its data endpoint's permission. A ratchet test (`WorkstationTableViewRegistrationTests`) fails if a dashboard `workbenchId` is added without an entry. A 403 or 501 now disables saving with the reason. | Shared host change. |
+
+Deferred, not done:
+- rename, delete and default table views (new endpoints);
+- host-stored layouts that follow the operator, with a "keep as my default" density;
+- team-published presets;
+- a versioned workspace file format with an import preview.
+
 This plan operationalizes the v0.25 design-charter decision to reactivate the WPF desktop
 workstation as an active, co-equal operator UI lane and bring it up to parity with the browser
 workstation. It is the working companion to roadmap item `W8-WPF-PARITY-001`.

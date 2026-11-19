@@ -6,6 +6,62 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IReportTemplateGovernanceStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportTemplateGovernanceStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:98](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L98).
+
+Loads and saves reporting template governance records.
+
+```csharp
+public interface IReportTemplateGovernanceStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>IReadOnlyList&lt;ReportTemplateGovernanceRecordDto&gt; Load();</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:100](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L100) |  |
+| <code>void Save(IReadOnlyList&lt;ReportTemplateGovernanceRecordDto&gt; records);</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:101](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L101) |  |
+
+## IStatementCaseworkCommitFaultInjector
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IStatementCaseworkCommitFaultInjector</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:1285](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L1285).
+
+Provides fault-injection callbacks at retained statement casework commit boundaries.
+
+```csharp
+public interface IStatementCaseworkCommitFaultInjector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task OnPointAsync(StatementCaseworkCommitFaultPoint point, string commandId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:1287](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L1287) |  |
+
+## IStatementReconciliationCaseworkHandoffService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IStatementReconciliationCaseworkHandoffService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:16](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L16).
+
+Applies single or bulk casework changes and hands their results back to statement-owned workflows.
+
+```csharp
+public interface IStatementReconciliationCaseworkHandoffService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ReconciliationBreakQueueTransitionResult&gt; ApplyAsync(ReconciliationBreakQueueScope scope, ReconciliationCaseworkCommand command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:18](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L18) |  |
+| <code>Task&lt;ReconciliationBulkCaseworkResult&gt; ApplyBulkAsync(ReconciliationBreakQueueScope scope, ReconciliationBulkCaseworkRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:23](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L23) |  |
+
 ## IStatementReconciliationIntakeAuthority
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IStatementReconciliationIntakeAuthority</code>. Kind: `interface`.
@@ -967,53 +1023,3 @@ A server-resolved source-to-book binding, never a caller&#x27;s assertion of acc
 ```csharp
 public sealed record PaperSessionAccountingBinding(string SessionId, Guid AggregateId, Guid LedgerBookId, Guid PeriodId, string FinancialAccountId);
 ```
-
-## PaperSessionAccountingSourceReader
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PaperSessionAccountingSourceReader</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:304](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L304).
-
-Reads full retained fills from every session sharing the exact account posting scope, not the compacting pending-fill WAL. The anchor binding must come from trusted retained session metadata. Closed sessions remain part of the population. Variation-margin populations need retained realized-P&amp;L/settlement policy and remain explicitly incomplete here.
-
-```csharp
-public sealed class PaperSessionAccountingSourceReader(IPaperSessionStore store, PaperSessionAccountingBinding binding) : ILedgerAccountingSourceReader
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LedgerAccountingSourceKind SourceKind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:308](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L308) |  |
-| <code>public async Task&lt;LedgerAccountingSourcePopulation&gt; ReadAsync(LedgerAccountingCompletenessQuery query, LedgerAccountingPeriod period, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:310](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L310) |  |
-
-## PaymentInstruction
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PaymentInstruction</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:27](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L27).
-
-```csharp
-public sealed record PaymentInstruction(string InstructionId, string AccountId, string Counterparty, string Currency, decimal Amount, DateOnly ValueDate, string Purpose, string Status);
-```
-
-## PerformanceFeeAccrualCalculation
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PerformanceFeeAccrualCalculation</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:241](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L241).
-
-Performance fee accrued to its cumulative amount above the high-water mark and hurdle. Net asset value before the fee is the ledger&#x27;s net assets plus the performance fee already accrued and payable, and only the change from that accrued amount is drafted. Terms: performanceFeeRate, highWaterMark, hurdleAmount, crystallize (0 or 1). After a fee is crystallized and settled, register a new schedule version with the new mark.
-
-```csharp
-public sealed class PerformanceFeeAccrualCalculation(IRecurringJournalCalculationInputs inputs) : IRecurringJournalCalculation
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string CalculationKind = &quot;performance-fee-accrual&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:243](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L243) |  |
-| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:245](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L245) |  |
-| <code>public bool DependsOnPostedHistory =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:247](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L247) |  |
-| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:249](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L249) |  |

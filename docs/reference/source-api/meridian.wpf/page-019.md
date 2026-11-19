@@ -430,7 +430,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Views.SettingsWorkspaceShellPageBase</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:364](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L364).
+Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:414](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L414).
 
 Binds derived pages to the settings workspace shell definition.
 
@@ -653,7 +653,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Views.StrategyWorkspaceShellPageBase</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:308](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L308).
+Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:358](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L358).
 
 Binds derived pages to the strategy workspace shell definition.
 
@@ -846,7 +846,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Views.TradingWorkspaceShellPageBase</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:322](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L322).
+Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:372](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L372).
 
 Binds derived pages to the trading workspace shell definition.
 
@@ -959,11 +959,13 @@ Declared public members:
 | <code>public static readonly DependencyProperty CommandGroupProperty = DependencyProperty.Register(nameof(CommandGroup), typeof(WorkspaceCommandGroup), typeof(WorkspaceCommandBarControl), new PropertyMetadata(new WorkspaceCommandGroup(), OnCommandGroupChanged));</code> | [src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs:27](../../../../src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs#L27) |  |
 | <code>public static readonly DependencyProperty IsCompactSurfaceProperty = DependencyProperty.Register(nameof(IsCompactSurface), typeof(bool), typeof(WorkspaceCommandBarControl), new PropertyMetadata(false));</code> | [src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs:34](../../../../src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs#L34) |  |
 | <code>public static readonly DependencyProperty CommandInvokedCommandProperty = DependencyProperty.Register(nameof(CommandInvokedCommand), typeof(ICommand), typeof(WorkspaceCommandBarControl));</code> | [src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs:41](../../../../src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs#L41) |  |
-| <code>public WorkspaceCommandBarControl();</code> | [src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs:47](../../../../src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs#L47) |  |
-| <code>public event EventHandler&lt;WorkspaceCommandInvokedEventArgs&gt;? CommandInvoked;</code> | [src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs:53](../../../../src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs#L53) |  |
-| <code>public WorkspaceCommandGroup CommandGroup { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs:55](../../../../src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs#L55) |  |
-| <code>public bool IsCompactSurface { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs:61](../../../../src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs#L61) |  |
-| <code>public ICommand? CommandInvokedCommand { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs:67](../../../../src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs#L67) |  |
+| <code>public static readonly DependencyProperty ResetLayoutCommandProperty = DependencyProperty.Register(nameof(ResetLayoutCommand), typeof(ICommand), typeof(WorkspaceCommandBarControl), new PropertyMetadata(null, OnResetLayoutCommandChanged));</code> | [src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs:51](../../../../src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs#L51) | When set, the More menu ends with &quot;Reset layout&quot;, which runs this command. Workspace shells bind it to their pane-layout reset so every shell offers the same recovery path. |
+| <code>public WorkspaceCommandBarControl();</code> | [src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs:61](../../../../src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs#L61) |  |
+| <code>public event EventHandler&lt;WorkspaceCommandInvokedEventArgs&gt;? CommandInvoked;</code> | [src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs:67](../../../../src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs#L67) |  |
+| <code>public WorkspaceCommandGroup CommandGroup { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs:69](../../../../src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs#L69) |  |
+| <code>public bool IsCompactSurface { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs:75](../../../../src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs#L75) |  |
+| <code>public ICommand? CommandInvokedCommand { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs:81](../../../../src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs#L81) |  |
+| <code>public ICommand? ResetLayoutCommand { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs:87](../../../../src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs#L87) |  |
 
 ## WorkspaceCommandInvokedEventArgs
 

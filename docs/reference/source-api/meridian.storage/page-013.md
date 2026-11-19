@@ -6,6 +6,101 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EventSearchResult
+
+Qualified name: <code>Meridian.Storage.Services.EventSearchResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/StorageSearchService.cs:800](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L800).
+
+```csharp
+public sealed record EventSearchResult(DateTimeOffset Timestamp, string Symbol, string EventType, long Sequence, string Source, object? Payload);
+```
+
+## FacetedSearchQuery
+
+Qualified name: <code>Meridian.Storage.Services.FacetedSearchQuery</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/StorageSearchService.cs:770](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L770).
+
+```csharp
+public sealed record FacetedSearchQuery(string[]? Symbols = null, MarketEventType[]? Types = null, string[]? Sources = null, DateTimeOffset? From = null, DateTimeOffset? To = null, int MaxResults = 100);
+```
+
+## FacetedSearchResult
+
+Qualified name: <code>Meridian.Storage.Services.FacetedSearchResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/StorageSearchService.cs:809](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L809).
+
+```csharp
+public sealed record FacetedSearchResult(int TotalMatches, int FileCount, Dictionary<string, Dictionary<string, int>> Facets, IReadOnlyList<FileSearchResult> Results);
+```
+
+## FileCompressionOptions
+
+Qualified name: <code>Meridian.Storage.Services.FileCompressionOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs:426](../../../../src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs#L426).
+
+```csharp
+public sealed record FileCompressionOptions(bool DryRun = false, bool BackupBeforeCompression = true, string? BackupPath = null, string[]? Paths = null, TimeSpan MinimumQuietPeriod = default, bool OnlyClosedPeriods = true);
+```
+
+## FileCompressionResult
+
+Qualified name: <code>Meridian.Storage.Services.FileCompressionResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs:434](../../../../src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs#L434).
+
+```csharp
+public sealed record FileCompressionResult(int FilesProcessed, int FilesCompressed, IReadOnlyList<string> Errors, bool DryRun, IReadOnlyList<string>? PlannedActions = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt; RecoveryCopies { get; init; } = [];</code> | [src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs:441](../../../../src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs#L441) |  |
+| <code>public IReadOnlyList&lt;string&gt; Deferred { get; init; } = [];</code> | [src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs:443](../../../../src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs#L443) | Files left plain because they may still receive appends; informational, never a failure. |
+| <code>public long BytesBefore { get; init; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs:444](../../../../src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs#L444) |  |
+| <code>public long BytesAfter { get; init; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs:445](../../../../src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs#L445) |  |
+| <code>public int FilesUncompressed =&gt; …;</code> | [src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs:446](../../../../src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs#L446) |  |
+| <code>public bool Success =&gt; …;</code> | [src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs:447](../../../../src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs#L447) |  |
+
+## FileMaintenanceService
+
+Qualified name: <code>Meridian.Storage.Services.FileMaintenanceService</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs:10](../../../../src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs#L10).
+
+```csharp
+public sealed partial class FileMaintenanceService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;FileCompressionResult&gt; CompressAsync(FileCompressionOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs:13](../../../../src/Meridian.Storage/Services/FileMaintenanceService.Compression.cs#L13) | Losslessly gzip healthy plain JSONL archives without claiming to repair their contents. |
+
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:16](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L16).
+
+Service for file health monitoring, self-healing, and maintenance operations.
+
+```csharp
+public sealed partial class FileMaintenanceService : IFileMaintenanceService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileMaintenanceService(StorageOptions options, ISourceRegistry? sourceRegistry = null);</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:23](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L23) |  |
+| <code>public async Task&lt;HealthReport&gt; RunHealthCheckAsync(HealthCheckOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:29](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L29) |  |
+| <code>public async Task&lt;RepairResult&gt; RepairAsync(RepairOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:122](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L122) |  |
+| <code>public async Task&lt;DefragResult&gt; DefragmentAsync(DefragOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:232](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L232) |  |
+| <code>public Task&lt;OrphanReport&gt; FindOrphansAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:422](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L422) |  |
+
 ## FileMetadata
 
 Qualified name: <code>Meridian.Storage.Services.FileMetadata</code>. Kind: `record`.
@@ -826,102 +921,3 @@ Source: [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:480](../../../..
 ```csharp
 public sealed record LifecycleState(StorageTier CurrentTier, TimeSpan FileAge, DataClassification Classification);
 ```
-
-## LifecycleTierInfo
-
-Qualified name: <code>Meridian.Storage.Services.LifecycleTierInfo</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:485](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L485).
-
-```csharp
-public sealed record LifecycleTierInfo(int FileCount, long TotalBytes, TimeSpan OldestFileAge, TimeSpan NewestFileAge);
-```
-
-## LineageEntry
-
-Qualified name: <code>Meridian.Storage.Services.LineageEntry</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/MetadataTagService.cs:598](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L598).
-
-A lineage entry tracking the provenance of data.
-
-```csharp
-public sealed record LineageEntry(DateTime TimestampUtc, string Operation, string? SourcePath, string? SourceProvider, string? TransformationType, string? Description, IReadOnlyDictionary<string, string>? Parameters = null);
-```
-
-## LineageGraph
-
-Qualified name: <code>Meridian.Storage.Services.LineageGraph</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Services/DataLineageService.cs:419](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L419).
-
-Captures a file&#x27;s ingestion, transformation, migration, and upstream or downstream lineage.
-
-```csharp
-public sealed class LineageGraph
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonRequired] public string FilePath { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Services/DataLineageService.cs:422](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L422) |  |
-| <code>public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Storage/Services/DataLineageService.cs:423](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L423) |  |
-| <code>public DateTime LastUpdatedUtc { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Storage/Services/DataLineageService.cs:424](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L424) |  |
-| <code>public DateTime? DeletedAtUtc { get; set; }</code> | [src/Meridian.Storage/Services/DataLineageService.cs:425](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L425) |  |
-| <code>public string? DeletionReason { get; set; }</code> | [src/Meridian.Storage/Services/DataLineageService.cs:426](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L426) |  |
-| <code>[JsonRequired] public List&lt;string&gt; Upstream { get; set; } = new ();</code> | [src/Meridian.Storage/Services/DataLineageService.cs:428](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L428) |  |
-| <code>[JsonRequired] public List&lt;string&gt; Downstream { get; set; } = new ();</code> | [src/Meridian.Storage/Services/DataLineageService.cs:430](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L430) |  |
-| <code>[JsonRequired] public List&lt;IngestionRecord&gt; Ingestions { get; set; } = new ();</code> | [src/Meridian.Storage/Services/DataLineageService.cs:432](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L432) |  |
-| <code>[JsonRequired] public List&lt;TransformationRecord&gt; Transformations { get; set; } = new ();</code> | [src/Meridian.Storage/Services/DataLineageService.cs:434](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L434) |  |
-| <code>[JsonRequired] public List&lt;MigrationRecord&gt; Migrations { get; set; } = new ();</code> | [src/Meridian.Storage/Services/DataLineageService.cs:436](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L436) |  |
-
-## LineageReport
-
-Qualified name: <code>Meridian.Storage.Services.LineageReport</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/DataLineageService.cs:465](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L465).
-
-```csharp
-public sealed record LineageReport(DateTime GeneratedAtUtc, int TotalTrackedFiles, int ActiveFiles, int DeletedFiles, int TotalIngestions, int TotalTransformations, int TotalMigrations, Dictionary<string, int> SourceDistribution, Dictionary<string, int> TransformationTypes);
-```
-
-## MaintenanceJob
-
-Qualified name: <code>Meridian.Storage.Services.MaintenanceJob</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1605](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1605).
-
-```csharp
-public sealed record MaintenanceJob(string Id, MaintenanceType Type, JobPriority Priority, string Description, ResourceRequirements Requirements, TimeSpan EstimatedDuration, string[] TargetPaths, Dictionary<string, object>? Parameters = null, bool Interruptible = true, int MaxRetries = 3);
-```
-
-## MaintenanceScheduler
-
-Qualified name: <code>Meridian.Storage.Services.MaintenanceScheduler</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:17](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L17).
-
-Service for scheduling and coordinating maintenance operations with trading hours awareness.
-
-```csharp
-public sealed class MaintenanceScheduler : IMaintenanceScheduler, IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public MaintenanceScheduler(OperationalScheduleConfig config, IFileMaintenanceService fileMaintenanceService, ITierMigrationService tierMigrationService, IDataQualityService dataQualityService, IStorageSearchService? storageSearchService = null, IOperationalCaseHistoryStore? caseHistoryStore = null, TimeProvider? timeProvider = null);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:44](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L44) |  |
-| <code>public void Start();</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:62](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L62) |  |
-| <code>public Task&lt;ScheduleDecision&gt; CanRunNowAsync(MaintenanceType operation, ResourceRequirements requirements, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:67](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L67) |  |
-| <code>public Task&lt;ScheduleSlot?&gt; FindNextWindowAsync(MaintenanceType operation, TimeSpan estimatedDuration, ResourceRequirements requirements, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:123](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L123) |  |
-| <code>public async Task&lt;ScheduledJob&gt; ScheduleAsync(MaintenanceJob job, ScheduleOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:158](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L158) |  |
-| <code>public async Task&lt;OperationalState&gt; GetStateAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:180](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L180) |  |
-| <code>public bool IsRealTimeCollectionActive();</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:198](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L198) |  |
-| <code>public TimeSpan? GetTimeUntilCollectionEnds();</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:205](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L205) |  |
-| <code>public async Task&lt;JobExecutionStatus&gt; ExecuteJobAsync(MaintenanceJob job, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:217](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L217) |  |
-| <code>public IReadOnlyList&lt;ScheduledJob&gt; GetPendingJobs() =&gt; …;</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:410](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L410) |  |
-| <code>public IReadOnlyList&lt;ScheduledJob&gt; GetRunningJobs() =&gt; …;</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:412](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L412) |  |
-| <code>public JobExecutionStatus? GetJobStatus(string jobId);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:414](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L414) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1461](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1461) |  |

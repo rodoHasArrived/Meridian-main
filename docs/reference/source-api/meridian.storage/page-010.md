@@ -6,6 +6,100 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DirectLoanProjectionRow
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.DirectLoanProjectionRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs:32](../../../../src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs#L32).
+
+```csharp
+public sealed record DirectLoanProjectionRow(Guid SecurityId, string DisplayName, string Currency, string Borrower, DateOnly? MaturityDate, string? ReferenceIndex, decimal? SpreadBps, decimal? CurrentCouponRate, string? ResetFrequency, string? PricingSource, string PrimaryIdentifierValue, long Version);
+```
+
+## EquityProjectionRow
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.EquityProjectionRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IEquityReferenceProjectionStore.cs:13](../../../../src/Meridian.Storage/SecurityMaster/IEquityReferenceProjectionStore.cs#L13).
+
+```csharp
+public sealed record EquityProjectionRow(Guid SecurityId, string DisplayName, string Currency, string? ShareClass, string? VotingRightsCat, string? Classification, string? ExchangeCode, string? CountryOfRisk, string? IssuerName, string PrimaryIdentifierValue, long Version);
+```
+
+## FileBondMarketDataStore
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.FileBondMarketDataStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/FileBondMarketDataStore.cs:11](../../../../src/Meridian.Storage/SecurityMaster/FileBondMarketDataStore.cs#L11).
+
+Atomic host-local observation history, partitioned by authenticated tenant and locked across processes.
+
+```csharp
+public sealed class FileBondMarketDataStore(string dataRoot) : IBondMarketDataStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;BondMarketImportResult&gt; AppendAsync(string tenantId, IReadOnlyList&lt;BondMarketObservationDto&gt; observations, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/FileBondMarketDataStore.cs:15](../../../../src/Meridian.Storage/SecurityMaster/FileBondMarketDataStore.cs#L15) |  |
+| <code>public Task&lt;IReadOnlyList&lt;BondMarketObservationDto&gt;&gt; ReadAsync(string tenantId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/FileBondMarketDataStore.cs:60](../../../../src/Meridian.Storage/SecurityMaster/FileBondMarketDataStore.cs#L60) |  |
+
+## FileBondProviderResponseStore
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.FileBondProviderResponseStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/FileBondProviderResponseStore.cs:10](../../../../src/Meridian.Storage/SecurityMaster/FileBondProviderResponseStore.cs#L10).
+
+Immutable exact-response evidence. Content-addressed publication is atomic across processes.
+
+```csharp
+public sealed class FileBondProviderResponseStore(string dataRoot) : IBondProviderResponseStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;BondProviderResponseDto&gt; RetainAsync(string tenantId, string companyId, string providerId, string rawResponseJson, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/FileBondProviderResponseStore.cs:15](../../../../src/Meridian.Storage/SecurityMaster/FileBondProviderResponseStore.cs#L15) |  |
+| <code>public async Task&lt;BondProviderResponseDto?&gt; GetAsync(string tenantId, string companyId, string contentSha256, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/FileBondProviderResponseStore.cs:59](../../../../src/Meridian.Storage/SecurityMaster/FileBondProviderResponseStore.cs#L59) |  |
+
+## FileEdgarReferenceDataStore
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.FileEdgarReferenceDataStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs:11](../../../../src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs#L11).
+
+Local-first file store for EDGAR reference data under the configured storage root.
+
+```csharp
+public sealed class FileEdgarReferenceDataStore : IEdgarReferenceDataStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileEdgarReferenceDataStore(StorageOptions storageOptions);</code> | [src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs:20](../../../../src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs#L20) |  |
+| <code>public async Task SaveTickerAssociationsAsync(IReadOnlyList&lt;EdgarTickerAssociation&gt; associations, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs:25](../../../../src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs#L25) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;EdgarTickerAssociation&gt;&gt; LoadTickerAssociationsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs:45](../../../../src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs#L45) |  |
+| <code>public async Task SaveFilerAsync(EdgarFilerRecord record, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs:67](../../../../src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs#L67) |  |
+| <code>public async Task&lt;EdgarFilerRecord?&gt; LoadFilerAsync(string cik, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs:84](../../../../src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs#L84) |  |
+| <code>public async Task SaveFactsAsync(EdgarFactsRecord record, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs:102](../../../../src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs#L102) |  |
+| <code>public async Task&lt;EdgarFactsRecord?&gt; LoadFactsAsync(string cik, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs:119](../../../../src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs#L119) |  |
+| <code>public async Task SaveSecurityDataAsync(EdgarSecurityDataRecord record, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs:137](../../../../src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs#L137) |  |
+| <code>public async Task&lt;EdgarSecurityDataRecord?&gt; LoadSecurityDataAsync(string cik, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs:157](../../../../src/Meridian.Storage/SecurityMaster/FileEdgarReferenceDataStore.cs#L157) |  |
+
+## FutureProjectionRow
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.FutureProjectionRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IFutureReferenceProjectionStore.cs:12](../../../../src/Meridian.Storage/SecurityMaster/IFutureReferenceProjectionStore.cs#L12).
+
+```csharp
+public sealed record FutureProjectionRow(Guid SecurityId, string DisplayName, string Currency, string RootSymbol, string ContractMonth, DateOnly ExpiryDate, decimal Multiplier, string? SettlementType, bool IsRollTarget, int? RollWindowDays, DateOnly? LastTradingDate, DateOnly? FirstNoticeDate, DateOnly? DeliveryMonthDate, string? DeliveryLocationCode, string LifecycleStat, string PrimaryIdentifierValue, long Version);
+```
+
 ## FxSpotProjectionRow
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.FxSpotProjectionRow</code>. Kind: `record`.
@@ -869,76 +963,4 @@ A collateral balance as the OtcCollateral stream records it.
 
 ```csharp
 public sealed record OtcCollateralBalancePayload(Guid BalanceId, Guid CollateralAgreementId, string Direction, string Kind, string EligibleCollateralDescription, Guid? SecurityId, string Currency, decimal Quantity, decimal UnitValue, decimal ValuedAmount, decimal HaircutPercent, DateOnly ValuedAsOf, string? Reference, string? Notes, long Version, string UpdatedBy, DateTimeOffset UpdatedAt);
-```
-
-## OtcCollateralMovementPayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.OtcCollateralMovementPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:126](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L126).
-
-A collateral movement inside an exposure-snapshot payload.
-
-```csharp
-public sealed record OtcCollateralMovementPayload(string Kind, string Mover, decimal Amount, string Currency);
-```
-
-## OtcExposureSnapshotRecordedPayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.OtcExposureSnapshotRecordedPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:129](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L129).
-
-OtcCollateral / ExposureSnapshotRecorded.
-
-```csharp
-public sealed record OtcExposureSnapshotRecordedPayload(Guid SnapshotId, Guid NettingSetId, Guid? CollateralAgreementId, DateOnly AsOfDate, int Version, string Status, string NettingBasis, string Provenance, string Currency, decimal NetExposure, decimal GrossPositive, decimal GrossNegative, IReadOnlyList<OtcCollateralMovementPayload> Movements, int BlockerCount, string PayloadSha256) : ISecurityGovernancePayload;
-```
-
-## OtcMarginCallIssuedPayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.OtcMarginCallIssuedPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:203](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L203).
-
-OtcCollateral / MarginCallIssued.
-
-```csharp
-public sealed record OtcMarginCallIssuedPayload(OtcMarginCallPayload Call, OtcMarginCallSnapshotReferencePayload Snapshot) : ISecurityGovernancePayload;
-```
-
-## OtcMarginCallPayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.OtcMarginCallPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:174](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L174).
-
-A margin call as the OtcCollateral stream records it.
-
-```csharp
-public sealed record OtcMarginCallPayload(Guid CallId, Guid NettingSetId, Guid CollateralAgreementId, Guid SnapshotId, string Kind, string Mover, string Currency, decimal AmountCalled, decimal? AmountAgreed, string Status, DateOnly IssuedOn, DateOnly? DueOn, string? DisputeReason, DateOnly? SettledOn, decimal? SettledAmount, string? Notes, long Version, string UpdatedBy, DateTimeOffset UpdatedAt);
-```
-
-## OtcMarginCallSnapshotReferencePayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.OtcMarginCallSnapshotReferencePayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:196](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L196).
-
-The exposure snapshot a margin call was issued from.
-
-```csharp
-public sealed record OtcMarginCallSnapshotReferencePayload(Guid SnapshotId, int Version, DateOnly AsOfDate, string PayloadSha256);
-```
-
-## OtcMarginCallTransitionedPayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.OtcMarginCallTransitionedPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:208](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L208).
-
-OtcCollateral / MarginCallAgreed, MarginCallDisputed, MarginCallSettled or MarginCallCancelled.
-
-```csharp
-public sealed record OtcMarginCallTransitionedPayload(OtcMarginCallPayload Call, OtcMarginCallPayload Previous, string Action, string? Reason) : ISecurityGovernancePayload;
 ```

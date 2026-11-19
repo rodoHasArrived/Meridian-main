@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerScheduledReportExportPackageBuilder
+
+Qualified name: <code>Meridian.Ledger.LedgerScheduledReportExportPackageBuilder</code>. Kind: `class`.
+
+Source: [src/Meridian.Ledger/LedgerScheduledReportExportPackageBuilder.cs:12](../../../../src/Meridian.Ledger/LedgerScheduledReportExportPackageBuilder.cs#L12).
+
+Builds export-delivery artifacts for a scheduled ledger report occurrence.
+
+```csharp
+public static class LedgerScheduledReportExportPackageBuilder
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;LedgerReportPackArtifact&gt; Build(LedgerFinancialReportPack reportPack, LedgerReportScheduledExport scheduledExport, ILedgerReportBinaryRenderer? binaryRenderer = null);</code> | [src/Meridian.Ledger/LedgerScheduledReportExportPackageBuilder.cs:14](../../../../src/Meridian.Ledger/LedgerScheduledReportExportPackageBuilder.cs#L14) |  |
+
 ## LedgerSnapshot
 
 Qualified name: <code>Meridian.Ledger.LedgerSnapshot</code>. Kind: `record`.
@@ -946,21 +964,3 @@ One trial-balance row feeding period-close projection: an account, its normal-ba
 ```csharp
 public sealed record PeriodCloseAccountBalance(LedgerAccount Account, decimal Balance, LedgerLineDimensionSet? Dimensions = null);
 ```
-
-## PeriodCloseDraftBuilder
-
-Qualified name: <code>Meridian.Ledger.PeriodCloseDraftBuilder</code>. Kind: `class`.
-
-Source: [src/Meridian.Ledger/PeriodCloseDraftBuilder.cs:11](../../../../src/Meridian.Ledger/PeriodCloseDraftBuilder.cs#L11).
-
-Converts a PeriodCloseProjection into a governed AutomatedJournalDraft so closing entries flow through AutomatedJournalApproval before posting.
-
-```csharp
-public static class PeriodCloseDraftBuilder
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static AutomatedJournalDraft? BuildDraft(PeriodCloseProjection projection);</code> | [src/Meridian.Ledger/PeriodCloseDraftBuilder.cs:17](../../../../src/Meridian.Ledger/PeriodCloseDraftBuilder.cs#L17) | Builds a balanced closing-entry draft. Returns null when the period had no temporary-account balances to close. |

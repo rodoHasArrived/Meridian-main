@@ -1,11 +1,11 @@
 {
-  "total_files": 1289,
+  "total_files": 1290,
   "orphaned_count": 396,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 303,
   "health_score": 85,
-  "signal_digest": "sha256:190db2f9a80f75971be3a51c38ed544f5c988265835062499b45308ba18bb1d4",
+  "signal_digest": "sha256:276a7bb5a69b126d18ec36d747fb07df4c7d9e7949217011348c752b2de59c39",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -2237,6 +2237,13 @@
     },
     {
       "path": "docs/domain/credit-support.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/domain/fiscal-year-close.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

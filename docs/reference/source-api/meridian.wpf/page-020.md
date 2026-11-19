@@ -245,7 +245,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ICommand RefreshCommand =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:46](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L46) | The shell Refresh control (toolbar button and F5) reloads the workspace shell and every docked page in place instead of rebuilding the shell by re-navigation. |
+| <code>public ICommand RefreshCommand =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:47](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L47) | The shell Refresh control (toolbar button and F5) reloads the workspace shell and every docked page in place instead of rebuilding the shell by re-navigation. |
+| <code>public ICommand ResetLayoutCommand =&gt; …;</code> | [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:60](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L60) | Bound to the workspace command bar&#x27;s &quot;Reset layout&quot; entry. After confirmation it restores this workspace&#x27;s default panes and saves them for the current workspace and fund context, so a broken arrangement does not come back on restart. Other workspaces are not touched. |
 
 ## AsyncCommandViewModel
 

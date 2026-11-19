@@ -271,6 +271,9 @@ nullable value, oldest first) with a `HistoryBasis`; a null value is a day the s
 `LedgerJournalEntryDto.Execution` (`LedgerJournalExecutionLineageDto`) carries the order, fill and
 strategy run a posting recorded; absent for entries not posted from an execution. The execution
 journal-entries route returns the same DTO for a book's postings from a given fill or order.
+`Ledger/FiscalYearClosePlanDtos.cs` carries the read-only fiscal-year close plan: named blockers,
+per-period snapshot evidence, pre/post-closing trial balances, posted and proposed closing transfers,
+next-year openings and the plan hash (see `docs/domain/fiscal-year-close.md`).
 
 `AutomatedPostingGrantReferenceDto` binds deterministic synthetic fill posting to an operator's
 retained tenant/account/book/period/policy/mapping delegation. `AuthorizedSystem` is distinct

@@ -6,6 +6,38 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CredentialServiceRefusedException
+
+Qualified name: <code>Meridian.Ui.Services.Services.CredentialServiceRefusedException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:764](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L764).
+
+Credential configuration state for a provider.
+
+```csharp
+public sealed class CredentialServiceRefusedException(string message) : InvalidOperationException(message);
+```
+
+## CredentialState
+
+Qualified name: <code>Meridian.Ui.Services.Services.CredentialState</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:766](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L766).
+
+```csharp
+public enum CredentialState : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>NotRequired</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:768](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L768) |  |
+| <code>Configured</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:769](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L769) |  |
+| <code>Partial</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:770](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L770) |  |
+| <code>Missing</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:771](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L771) |  |
+| <code>Unavailable</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:772](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L772) |  |
+
 ## DailyQualityRecord
 
 Qualified name: <code>Meridian.Ui.Services.Services.DailyQualityRecord</code>. Kind: `record`.
@@ -1115,44 +1147,3 @@ Declared public members:
 | <code>public DateTime DateFrom { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:52](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L52) |  |
 | <code>public DateTime DateTo { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:53](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L53) |  |
 | <code>public DateTime LastAnalyzed { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:54](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L54) |  |
-
-## QualityTrendData
-
-Qualified name: <code>Meridian.Ui.Services.Services.QualityTrendData</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:146](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L146).
-
-Groups overall and symbol-specific quality trends for a time window.
-
-```csharp
-public sealed class QualityTrendData
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public List&lt;TrendDataPoint&gt; OverallTrend { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:148](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L148) |  |
-| <code>public Dictionary&lt;string, List&lt;TrendDataPoint&gt;&gt; BySymbol { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:149](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L149) |  |
-| <code>public string TimeWindow { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:150](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L150) |  |
-| <code>public double AverageScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:151](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L151) |  |
-| <code>public double TrendDirection { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:152](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L152) |  |
-
-## IReportingStatusProjectionService
-
-Qualified name: <code>Meridian.Ui.Services.Services.Reporting.IReportingStatusProjectionService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs:35](../../../../src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs#L35).
-
-Projects reporting manifests, audit entries, and templates into workstation read models.
-
-```csharp
-public interface IReportingStatusProjectionService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>ReportingStatusProjection Project(ReportingOutputManifest manifest, IReadOnlyList&lt;ReportingRunAuditEntry&gt; audit);</code> | [src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs:37](../../../../src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs#L37) |  |
-| <code>IReadOnlyList&lt;ReportingTemplateProjection&gt; ProjectTemplates(IReportingTemplateCatalog catalog);</code> | [src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs:38](../../../../src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs#L38) |  |

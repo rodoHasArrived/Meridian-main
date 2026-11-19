@@ -10306,6 +10306,36 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.FiscalYearCloseBalanceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.FiscalYearCloseBlockerCodes"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.FiscalYearCloseBlockerDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.FiscalYearClosePeriodEvidenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.FiscalYearClosePlanDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.GeneratePrivateCapitalNoticeRequest"
     },
     {
@@ -28396,6 +28426,36 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.FiscalYearCloseBalanceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.FiscalYearCloseBlockerCodes"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.FiscalYearCloseBlockerDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.FiscalYearClosePeriodEvidenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.FiscalYearClosePlanDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.GeneratePrivateCapitalNoticeRequest"
     },
     {
@@ -44381,6 +44441,30 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.FinancialStatementPackageDto",
       "target": "contract:Meridian.Contracts.Ledger.RestatementWorkflowDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.FiscalYearCloseBalanceDto",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerDimensionSetDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.FiscalYearClosePlanDto",
+      "target": "contract:Meridian.Contracts.Ledger.FiscalYearCloseBalanceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.FiscalYearClosePlanDto",
+      "target": "contract:Meridian.Contracts.Ledger.FiscalYearCloseBlockerDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.FiscalYearClosePlanDto",
+      "target": "contract:Meridian.Contracts.Ledger.FiscalYearClosePeriodEvidenceDto"
     },
     {
       "kind": "contract-reference",
@@ -69453,7 +69537,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "40c859a518b5c9c404cf6aef87b5d0d2774960febe7e523e5eb6965cfee3afbf",
+  "fingerprint": "99c4f8258e61caae3fc621a9bee9da58d95c27b3820caad961959616924307b5",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -79807,6 +79891,36 @@
       "id": "contract:Meridian.Contracts.Ledger.FinancialStatementPackageDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.FinancialStatementPackageDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.FiscalYearCloseBalanceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.FiscalYearCloseBalanceDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Ledger.FiscalYearCloseBlockerCodes",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.FiscalYearCloseBlockerCodes"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.FiscalYearCloseBlockerDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.FiscalYearCloseBlockerDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.FiscalYearClosePeriodEvidenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.FiscalYearClosePeriodEvidenceDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.FiscalYearClosePlanDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.FiscalYearClosePlanDto"
     },
     {
       "classification": "request",
@@ -102061,11 +102175,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4266,
-    "contract_set_memberships": 5602,
-    "edges": 11538,
+    "contract_references": 4270,
+    "contract_set_memberships": 5612,
+    "edges": 11552,
     "foreign_keys": 208,
     "logical_references": 6,
-    "nodes": 5670
+    "nodes": 5675
   }
 }

@@ -6,6 +6,58 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RunPortfolioDrillInSummary
+
+Qualified name: <code>Meridian.Contracts.Workstation.RunPortfolioDrillInSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1009](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1009).
+
+Composite portfolio drill-in payload that keeps attribution, drawdown, cash-flow, and trade slices aligned under one additive, versioned contract.
+
+```csharp
+public sealed record RunPortfolioDrillInSummary(string SchemaVersion, string RunId, DateTimeOffset AsOf, string Currency, StrategyRunMode Mode, RunAttributionSummary? Attribution, EquityCurveSummary? DrawdownProfile, RunCashFlowSummary? CashFlow, RunFillSummary? Trades);
+```
+
+## RunReconciliation
+
+Qualified name: <code>Meridian.Contracts.Workstation.RunReconciliation</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:26](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L26).
+
+```csharp
+public sealed record RunReconciliation(Guid WorkflowId, FundWorkflowCommandMetadata Metadata);
+```
+
+## SampleArtifactDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SampleArtifactDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:56](../../../../src/Meridian.Contracts/Workstation/FirstRunDtos.cs#L56).
+
+```csharp
+public sealed record SampleArtifactDto(string Name, string Status, string Detail, string Route);
+```
+
+## SampleBreakDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SampleBreakDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:47](../../../../src/Meridian.Contracts/Workstation/FirstRunDtos.cs#L47).
+
+```csharp
+public sealed record SampleBreakDto(string Id, string Title, string Category, string Severity, decimal Variance, string Summary, string Route);
+```
+
+## SampleHighlightDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SampleHighlightDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:60](../../../../src/Meridian.Contracts/Workstation/FirstRunDtos.cs#L60).
+
+```csharp
+public sealed record SampleHighlightDto(string Label, string Value, string Detail, string Route);
+```
+
 ## SampleHoldingDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.SampleHoldingDto</code>. Kind: `record`.
@@ -565,79 +617,3 @@ Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:
 ```csharp
 public sealed record SecurityMasterScheduleSummaryDto(bool SupportsCashflowSchedule, bool SupportsFactorHistory, bool HasEconomicScheduleTerms, decimal? CurrentFactor, DateOnly? CurrentFactorDate, DateOnly? NextLifecycleDate, string SourceSummary, string Summary, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] SecurityMasterDeclaredExerciseOutcomeDto? DeclaredExercise = null);
 ```
-
-## SecurityMasterSchemaCompatibilityDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterSchemaCompatibilityDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:200](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L200).
-
-```csharp
-public sealed record SecurityMasterSchemaCompatibilityDto(string AssetClass, int LegacyAssetSpecificTermsSchemaVersion, int EconomicTermsSchemaVersion, bool HasLegacyAssetSpecificTerms, bool HasEconomicTerms, bool HasClassificationPayload, string Summary);
-```
-
-## SecurityMasterSourceCandidateDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterSourceCandidateDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:148](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L148).
-
-```csharp
-public sealed record SecurityMasterSourceCandidateDto(Guid? ConflictId, string FieldPath, string SourceSystem, string DisplayValue, bool IsWinningSource, DateTimeOffset? AsOf, string? UpdatedBy, string? Reason, string? SourceRecordId = null, SecurityMasterImpactSeverity ImpactSeverity = SecurityMasterImpactSeverity.None);
-```
-
-## SecurityMasterTrustPostureDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterTrustPostureDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:134](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L134).
-
-```csharp
-public sealed record SecurityMasterTrustPostureDto(SecurityMasterTrustTone Tone, int TrustScore, string Summary, string GoldenCopySource, string GoldenCopyRule, string TradingParametersStatus, string CorporateActionReadiness, bool HasOpenConflicts, int OpenConflictCount, bool TradingParametersComplete, bool HasUpcomingCorporateActions, bool CorporateActionsTrusted);
-```
-
-## SecurityMasterTrustSnapshotDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterTrustSnapshotDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:49](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L49).
-
-```csharp
-public sealed record SecurityMasterTrustSnapshotDto(Guid SecurityId, SecurityMasterWorkstationDto Security, SecurityIdentityDrillInDto Identity, SecurityMasterEconomicDefinitionDrillInDto EconomicDefinition, SecurityMasterTrustPostureDto TrustPosture, IReadOnlyList<SecurityMasterSourceCandidateDto> ProvenanceCandidates, IReadOnlyList<SecurityMasterConflictAssessmentDto> ConflictAssessments, SecurityMasterDownstreamImpactDto DownstreamImpact, IReadOnlyList<SecurityMasterRecommendedActionDto> RecommendedActions, IReadOnlyList<SecurityMasterEventEnvelope> History, IReadOnlyList<CorporateActionDto> CorporateActions, DateTimeOffset RetrievedAtUtc)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityValidationReportDto? ValidationReport { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:63](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L63) |  |
-| <code>public SecurityMasterIdentifierSummaryDto? IdentifierSummary { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:64](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L64) |  |
-| <code>public SecurityMasterSchemaCompatibilityDto? SchemaCompatibility { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:65](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L65) |  |
-| <code>public IReadOnlyList&lt;SecurityMasterChangeHistoryItemDto&gt;? ChangeHistory { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:66](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L66) |  |
-| <code>public SecurityMasterScheduleSummaryDto? ScheduleSummary { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:67](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L67) |  |
-| <code>public SecurityMasterLotModelDto? LotModel { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:68](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L68) |  |
-| <code>public SecurityMasterScheduleBookDto? ScheduleBook { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:69](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L69) |  |
-| <code>public SecurityMasterOpenLotReadModelDto? OpenLotReadModel { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:70](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L70) |  |
-| <code>public InstrumentPassportDto? InstrumentPassport { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:71](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L71) |  |
-| <code>public IReadOnlyList&lt;CorporateActionDescriptorDto&gt;? CorporateActionDescriptors { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:72](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L72) |  |
-| <code>public SecurityMasterGovernanceDto? Governance { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:74](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L74) | The host&#x27;s effective requirements, including profile latching and ignored configuration. |
-| <code>public SecurityMasterScheduleBlockerDto? CashFlowBlocker { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:76](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L76) | Base calculation refusal on the selected terms at RetrievedAtUtc; distinct from exercise-date resolution. |
-
-## SecurityMasterTrustTone
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterTrustTone</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:7](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L7).
-
-```csharp
-public enum SecurityMasterTrustTone
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unknown = 0</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:9](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L9) |  |
-| <code>Blocked = 1</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L10) |  |
-| <code>Review = 2</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L11) |  |
-| <code>Trusted = 3</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L12) |  |

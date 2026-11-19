@@ -6,6 +6,83 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportWriterChartRenderDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterChartRenderDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1536](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1536).
+
+```csharp
+public sealed record ReportWriterChartRenderDto(ReportWriterChartTypeDto Type, string Title, string CategoryField, IReadOnlyList<string> Categories, IReadOnlyList<ReportWriterChartSeriesDto> Series, IReadOnlyList<string> Warnings);
+```
+
+## ReportWriterChartSeriesDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterChartSeriesDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1531](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1531).
+
+```csharp
+public sealed record ReportWriterChartSeriesDto(string Key, string Label, IReadOnlyList<decimal> Values);
+```
+
+## ReportWriterChartTypeDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterChartTypeDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1516](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1516).
+
+```csharp
+public enum ReportWriterChartTypeDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Bar = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1518](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1518) |  |
+| <code>StackedBar = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1519](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1519) |  |
+| <code>Line = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1520](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1520) |  |
+| <code>Area = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1521](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1521) |  |
+| <code>Pie = 4</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1522](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1522) |  |
+
+## ReportWriterDiffDirectionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterDiffDirectionDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1615](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1615).
+
+```csharp
+public enum ReportWriterDiffDirectionDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Flat = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1617](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1617) |  |
+| <code>Up = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1618](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1618) |  |
+| <code>Down = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1619](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1619) |  |
+
+## ReportWriterDiffRowStateDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterDiffRowStateDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1606](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1606).
+
+```csharp
+public enum ReportWriterDiffRowStateDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unchanged = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1608](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1608) |  |
+| <code>Changed = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1609](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1609) |  |
+| <code>Added = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1610](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1610) |  |
+| <code>Removed = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1611](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1611) |  |
+
 ## ReportWriterFilterDefinitionDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterFilterDefinitionDto</code>. Kind: `record`.
@@ -528,56 +605,4 @@ Lot history for a single strategy run, optionally filtered to one symbol.
 
 ```csharp
 public sealed record RunLotSummary(string RunId, int TotalOpenLots, int TotalClosedLots, decimal TotalRealizedPnl, IReadOnlyList<OpenLotSummary> OpenLots, IReadOnlyList<ClosedLotSummary> ClosedLots);
-```
-
-## RunPortfolioDrillInSummary
-
-Qualified name: <code>Meridian.Contracts.Workstation.RunPortfolioDrillInSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1009](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1009).
-
-Composite portfolio drill-in payload that keeps attribution, drawdown, cash-flow, and trade slices aligned under one additive, versioned contract.
-
-```csharp
-public sealed record RunPortfolioDrillInSummary(string SchemaVersion, string RunId, DateTimeOffset AsOf, string Currency, StrategyRunMode Mode, RunAttributionSummary? Attribution, EquityCurveSummary? DrawdownProfile, RunCashFlowSummary? CashFlow, RunFillSummary? Trades);
-```
-
-## RunReconciliation
-
-Qualified name: <code>Meridian.Contracts.Workstation.RunReconciliation</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:26](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L26).
-
-```csharp
-public sealed record RunReconciliation(Guid WorkflowId, FundWorkflowCommandMetadata Metadata);
-```
-
-## SampleArtifactDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SampleArtifactDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:56](../../../../src/Meridian.Contracts/Workstation/FirstRunDtos.cs#L56).
-
-```csharp
-public sealed record SampleArtifactDto(string Name, string Status, string Detail, string Route);
-```
-
-## SampleBreakDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SampleBreakDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:47](../../../../src/Meridian.Contracts/Workstation/FirstRunDtos.cs#L47).
-
-```csharp
-public sealed record SampleBreakDto(string Id, string Title, string Category, string Severity, decimal Variance, string Summary, string Route);
-```
-
-## SampleHighlightDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SampleHighlightDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:60](../../../../src/Meridian.Contracts/Workstation/FirstRunDtos.cs#L60).
-
-```csharp
-public sealed record SampleHighlightDto(string Label, string Value, string Detail, string Route);
 ```

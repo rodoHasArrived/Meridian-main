@@ -6,6 +6,98 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## JsonFileSnapshotStore (generic arity 1)
+
+Qualified name: <code>Meridian.Storage.Store.JsonFileSnapshotStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Store/JsonFileSnapshotStore.cs:16](../../../../src/Meridian.Storage/Store/JsonFileSnapshotStore.cs#L16).
+
+Base class for whole-file JSON snapshot stores: state lives in a single JSON document that is loaded on demand, mutated in memory, and persisted with AtomicFileWriter so the file is never left partially written. A SemaphoreSlim serializes read-modify-write cycles. Derived stores supply the empty snapshot, choose reflection- or source-generated serialization via the constructor, and can override the corrupt-snapshot and post-load hooks to keep their historical recovery semantics (propagate, log-and-start-fresh, or fail fast).
+
+```csharp
+public abstract class JsonFileSnapshotStore<TSnapshot> where TSnapshot : class
+```
+
+## JsonlMarketDataStore
+
+Qualified name: <code>Meridian.Storage.Store.JsonlMarketDataStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Store/JsonlMarketDataStore.cs:27](../../../../src/Meridian.Storage/Store/JsonlMarketDataStore.cs#L27).
+
+IMarketDataStore implementation backed by JSONL (optionally compressed) files. Enumerates all *.jsonl files under the configured root — including any compression suffix the storage policy can emit (.gz/.gzip/.zst/.lz4/.br) — deserialises each line, and applies the MarketDataQuery predicate in-process. Concurrency posture: read-only. This type never writes, appends, or deletes — it opens each file with FileAccess.Read and shares write and delete so a concurrent writer or an archival replace does not fault the read. Writes to this JSONL tree are owned by the storage sink, so there is no mutation posture to declare here (#2697).
+
+```csharp
+public sealed class JsonlMarketDataStore : IMarketDataStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public JsonlMarketDataStore(string root);</code> | [src/Meridian.Storage/Store/JsonlMarketDataStore.cs:49](../../../../src/Meridian.Storage/Store/JsonlMarketDataStore.cs#L49) |  |
+| <code>public long MalformedLinesSkipped =&gt; …;</code> | [src/Meridian.Storage/Store/JsonlMarketDataStore.cs:58](../../../../src/Meridian.Storage/Store/JsonlMarketDataStore.cs#L58) | Number of malformed JSONL lines this store instance has skipped while reading. A non-zero value means query results are incomplete relative to the bytes on disk. |
+| <code>public long TruncatedTailsDetected =&gt; …;</code> | [src/Meridian.Storage/Store/JsonlMarketDataStore.cs:65](../../../../src/Meridian.Storage/Store/JsonlMarketDataStore.cs#L65) | Number of truncated compressed file tails this store instance has stopped at while reading. Each one means a file&#x27;s final block was torn (e.g. by a crash mid-append) and events past the tear were unrecoverable. |
+| <code>public async IAsyncEnumerable&lt;MarketEvent&gt; QueryAsync(MarketDataQuery query, [EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Storage/Store/JsonlMarketDataStore.cs:68](../../../../src/Meridian.Storage/Store/JsonlMarketDataStore.cs#L68) |  |
+
+## PostgresTenantCutoverInspector
+
+Qualified name: <code>Meridian.Storage.Tenancy.PostgresTenantCutoverInspector</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Tenancy/PostgresTenantCutoverInspector.cs:26](../../../../src/Meridian.Storage/Tenancy/PostgresTenantCutoverInspector.cs#L26).
+
+Read-only upgrade guard over every nullable tenant column affected by the strict posture. It neither invents tenant attribution nor changes records while the host starts.
+
+```csharp
+public static class PostgresTenantCutoverInspector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static async Task&lt;TenantCutoverReadiness&gt; InspectAsync(FundStructureStoreOptions? fund, LedgerJournalStoreOptions? ledger, FundAccountStoreOptions? accounts, CancellationToken ct = default);</code> | [src/Meridian.Storage/Tenancy/PostgresTenantCutoverInspector.cs:44](../../../../src/Meridian.Storage/Tenancy/PostgresTenantCutoverInspector.cs#L44) |  |
+| <code>public static TenantCutoverReadiness Evaluate(IReadOnlyList&lt;TenantCutoverRecord&gt; rows);</code> | [src/Meridian.Storage/Tenancy/PostgresTenantCutoverInspector.cs:126](../../../../src/Meridian.Storage/Tenancy/PostgresTenantCutoverInspector.cs#L126) | Pure readiness policy; known references must resolve to exactly one matching owner. |
+
+## TenantCutoverFinding
+
+Qualified name: <code>Meridian.Storage.Tenancy.TenantCutoverFinding</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Tenancy/PostgresTenantCutoverInspector.cs:11](../../../../src/Meridian.Storage/Tenancy/PostgresTenantCutoverInspector.cs#L11).
+
+Counts only: startup diagnostics must not expose retained records or credentials.
+
+```csharp
+public sealed record TenantCutoverFinding(string Store, string Table, string Reason, int Count);
+```
+
+## TenantCutoverReadiness
+
+Qualified name: <code>Meridian.Storage.Tenancy.TenantCutoverReadiness</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Tenancy/PostgresTenantCutoverInspector.cs:13](../../../../src/Meridian.Storage/Tenancy/PostgresTenantCutoverInspector.cs#L13).
+
+```csharp
+public sealed record TenantCutoverReadiness(IReadOnlyList<TenantCutoverFinding> Findings)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsReady =&gt; …;</code> | [src/Meridian.Storage/Tenancy/PostgresTenantCutoverInspector.cs:15](../../../../src/Meridian.Storage/Tenancy/PostgresTenantCutoverInspector.cs#L15) |  |
+
+## TenantCutoverRecord
+
+Qualified name: <code>Meridian.Storage.Tenancy.TenantCutoverRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Tenancy/PostgresTenantCutoverInspector.cs:19](../../../../src/Meridian.Storage/Tenancy/PostgresTenantCutoverInspector.cs#L19).
+
+A retained row and the owning rows its persisted references require to agree.
+
+```csharp
+public sealed record TenantCutoverRecord(string Store, string Table, string Identity, string? TenantId, IReadOnlyList<string> OwnerReferences, bool RequiresOwner = false);
+```
+
 ## TierConfig
 
 Qualified name: <code>Meridian.Storage.TierConfig</code>. Kind: `class`.

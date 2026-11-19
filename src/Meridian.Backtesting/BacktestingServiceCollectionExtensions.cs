@@ -4,6 +4,7 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Instruments.AssetOperations;
 using Meridian.Storage;
+using Meridian.Storage.Ledger;
 using Meridian.Storage.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -55,6 +56,7 @@ public static class BacktestingServiceCollectionExtensions
                     sp.GetService<IBacktestAssetEventSource>() ?? CreateSecurityMasterAssetEventSource(sp))
                 {
                     CanonicalCorporateActionQueries = actions,
+                    LedgerJournals = sp.GetService<ILedgerJournalLogFactory>(),
                     AssetEventSource = sp.GetService<IBacktestAssetEventSource>() ??
                         (identity is not null && actions is not null
                             ? new SecurityMasterBacktestAssetEventSource(identity, actions, aggregate)

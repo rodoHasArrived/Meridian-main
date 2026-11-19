@@ -6,6 +6,133 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MaintenanceTaskType
+
+Qualified name: <code>Meridian.Storage.Maintenance.MaintenanceTaskType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:209](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L209).
+
+Type of maintenance operation.
+
+```csharp
+public enum MaintenanceTaskType : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>HealthCheck</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:214](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L214) | Run health checks on storage files. |
+| <code>Cleanup</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:219](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L219) | Clean up orphaned and temporary files. |
+| <code>Defragmentation</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:224](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L224) | Defragment small files into larger chunks. |
+| <code>TierMigration</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:229](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L229) | Migrate files between storage tiers based on age. |
+| <code>Compression</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:234](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L234) | Recompress files with optimal compression settings. |
+| <code>Repair</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:239](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L239) | Repair corrupted or truncated files. |
+| <code>FullMaintenance</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:244](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L244) | Full maintenance: health check, cleanup, defrag, and tier migration. |
+| <code>IntegrityCheck</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:249](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L249) | Verify and repair file integrity (checksums). |
+| <code>Archival</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:254](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L254) | Archive old data to cold storage. |
+| <code>RetentionEnforcement</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:259](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L259) | Enforce retention policies and delete expired data. |
+
+## ScheduledArchiveMaintenanceService
+
+Qualified name: <code>Meridian.Storage.Maintenance.ScheduledArchiveMaintenanceService</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs:15](../../../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs#L15).
+
+Background service that schedules and executes archive maintenance tasks. Integrates with FileMaintenanceService and TierMigrationService for actual operations.
+
+```csharp
+public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArchiveMaintenanceService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public event EventHandler&lt;MaintenanceExecution&gt;? ExecutionStarted;</code> | [src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs:34](../../../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs#L34) |  |
+| <code>public event EventHandler&lt;MaintenanceExecution&gt;? ExecutionCompleted;</code> | [src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs:35](../../../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs#L35) |  |
+| <code>public event EventHandler&lt;MaintenanceExecution&gt;? ExecutionFailed;</code> | [src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs:36](../../../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs#L36) |  |
+| <code>public bool IsRunning =&gt; …;</code> | [src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs:38](../../../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs#L38) |  |
+| <code>public int QueuedExecutions =&gt; …;</code> | [src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs:39](../../../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs#L39) |  |
+| <code>public MaintenanceExecution? CurrentExecution =&gt; …;</code> | [src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs:40](../../../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs#L40) |  |
+| <code>public ScheduledArchiveMaintenanceService(ILogger&lt;ScheduledArchiveMaintenanceService&gt; logger, ArchiveMaintenanceScheduleManager scheduleManager, IFileMaintenanceService fileMaintenanceService, ITierMigrationService tierMigrationService, StorageOptions storageOptions);</code> | [src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs:44](../../../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs#L44) |  |
+| <code>public async Task&lt;MaintenanceExecution&gt; ExecuteMaintenanceAsync(MaintenanceTaskType taskType, MaintenanceTaskOptions? options = null, string[]? targetPaths = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs:1203](../../../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs#L1203) |  |
+| <code>public async Task&lt;MaintenanceExecution&gt; TriggerScheduleAsync(string scheduleId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs:1293](../../../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs#L1293) |  |
+| <code>public Task&lt;bool&gt; CancelExecutionAsync(string executionId);</code> | [src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs:1333](../../../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs#L1333) |  |
+| <code>public MaintenanceServiceStatus GetStatus();</code> | [src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs:1356](../../../../src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs#L1356) |  |
+
+## ScheduleExecutionSummary
+
+Qualified name: <code>Meridian.Storage.Maintenance.ScheduleExecutionSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:647](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L647).
+
+Summary of a specific schedule&#x27;s execution history.
+
+```csharp
+public sealed record ScheduleExecutionSummary(string ScheduleId, string ScheduleName, int TotalExecutions, int SuccessfulExecutions, int FailedExecutions, double SuccessRate, TimeSpan AverageDuration, DateTimeOffset? LastExecutionAt, MaintenanceExecutionStatus? LastStatus, DateTimeOffset? NextScheduledAt, List<MaintenanceExecution> RecentExecutions);
+```
+
+## MeridianDatabaseEnvironment
+
+Qualified name: <code>Meridian.Storage.MeridianDatabaseEnvironment</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/MeridianDatabaseEnvironment.cs:20](../../../../src/Meridian.Storage/MeridianDatabaseEnvironment.cs#L20).
+
+Unified database configuration for every money-path store. Setting the single MERIDIAN_DATABASE_URL environment variable enables PostgreSQL persistence for all domains at once; each per-domain MERIDIAN_*_CONNECTION_STRING variable remains supported and always wins over the unified value, so split-database deployments keep working.
+
+```csharp
+public static class MeridianDatabaseEnvironment
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string UnifiedVariable = &quot;MERIDIAN_DATABASE_URL&quot;;</code> | [src/Meridian.Storage/MeridianDatabaseEnvironment.cs:22](../../../../src/Meridian.Storage/MeridianDatabaseEnvironment.cs#L22) |  |
+| <code>public static readonly IReadOnlyList&lt;string&gt; PropagatedConnectionStringVariables = [&quot;MERIDIAN_LEDGER_CONNECTION_STRING&quot;, &quot;MERIDIAN_SECURITY_MASTER_CONNECTION_STRING&quot;, &quot;MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING&quot;, &quot;MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING&quot;, &quot;MERIDIAN_ASSET_OPERATIONS_CONNECTION_STRING&quot;, &quot;MERIDIAN_BANKING_CONNECTION_STRING&quot;, &quot;MERIDIAN_MONEY_MARKET_CONNECTION_STRING&quot;, &quot;MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING&quot;];</code> | [src/Meridian.Storage/MeridianDatabaseEnvironment.cs:27](../../../../src/Meridian.Storage/MeridianDatabaseEnvironment.cs#L27) | Per-domain connection-string variables that inherit UnifiedVariable when unset. |
+| <code>public static IReadOnlyList&lt;string&gt; ApplyUnifiedDatabaseUrl();</code> | [src/Meridian.Storage/MeridianDatabaseEnvironment.cs:46](../../../../src/Meridian.Storage/MeridianDatabaseEnvironment.cs#L46) | Propagates MERIDIAN_DATABASE_URL into every unset per-domain connection-string variable. Idempotent and safe to call from every composition root; explicitly set per-domain variables are never overwritten. Returns the variables populated by this call. |
+| <code>public static string NormalizeToConnectionString(string value);</code> | [src/Meridian.Storage/MeridianDatabaseEnvironment.cs:82](../../../../src/Meridian.Storage/MeridianDatabaseEnvironment.cs#L82) | Converts a postgres:// / postgresql:// URL into Npgsql keyword form (Host=...;Port=...;Database=...). Values already in keyword form pass through unchanged. Query parameters are forwarded as keywords; sslmode maps to SSL Mode. |
+
+## MigrationDriftPolicy
+
+Qualified name: <code>Meridian.Storage.Migrations.MigrationDriftPolicy</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:89](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L89).
+
+Behavior when an applied migration script&#x27;s content no longer matches its checksum.
+
+```csharp
+public enum MigrationDriftPolicy
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Throw</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:92](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L92) | Fail startup: applied scripts are immutable (append-only convention). |
+| <code>Reapply</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:99](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L99) | Re-apply a changed script and update the ledger checksum. Unchanged scripts run again only when their filename is listed in PostgresMigrationRunnerOptions.RepeatableMigrationFileNames. |
+
+## PostgresMigrationRunner
+
+Qualified name: <code>Meridian.Storage.Migrations.PostgresMigrationRunner</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Migrations/PostgresMigrationRunner.cs:16](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunner.cs#L16).
+
+Shared PostgreSQL SQL-file migration runner used by every feature schema in Meridian.Storage. Applies *.sql scripts from a directory under AppContext.BaseDirectory in filename order, records applied scripts (with a SHA-256 checksum) in a durable per-schema migration ledger, and serializes concurrent starters with a transaction-scoped advisory lock. The whole run executes inside a single transaction so a failing script never leaves the schema half-migrated.
+
+```csharp
+public sealed class PostgresMigrationRunner
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PostgresMigrationRunner(PostgresMigrationRunnerOptions options);</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunner.cs:20](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunner.cs#L20) |  |
+| <code>public async Task EnsureMigratedAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunner.cs:29](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunner.cs#L29) |  |
+| <code>public async Task ResetSchemaAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunner.cs:113](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunner.cs#L113) |  |
+
 ## PostgresMigrationRunnerOptions
 
 Qualified name: <code>Meridian.Storage.Migrations.PostgresMigrationRunnerOptions</code>. Kind: `class`.
@@ -1046,126 +1173,3 @@ Declared public members:
 | <code>public RetainedDataQueryStore(DataQueryOptions options, string queryableRoot, TimeProvider? clock = null);</code> | [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:42](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L42) |  |
 | <code>public async Task&lt;IDataQueryResultSink&gt; CreateAsync(DataQueryOwner owner, CancellationToken ct = default);</code> | [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:70](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L70) |  |
 | <code>public async Task&lt;RetainedDataQuerySnapshot&gt; ReadAsync(DataQueryOwner owner, string executionId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:95](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L95) |  |
-
-## SqlStatementGuard
-
-Qualified name: <code>Meridian.Storage.Query.SqlStatementGuard</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Query/DuckDbQueryService.cs:248](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L248).
-
-Validates that a statement is a single, read-only SELECT-family query. The first token must be a query verb and no write/config verb may appear anywhere — DuckDB&#x27;s in-memory session cannot mutate the store through queries, but COPY/EXPORT/ATTACH/INSTALL can touch the filesystem or network, so they are rejected outright.
-
-```csharp
-public static partial class SqlStatementGuard
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static string? Validate(string? sql, int maxSqlLength);</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:262](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L262) | Returns an error message, or null when the statement is allowed. |
-
-## QuotaEnforcementPolicy
-
-Qualified name: <code>Meridian.Storage.QuotaEnforcementPolicy</code>. Kind: `enum`.
-
-Source: [src/Meridian.Storage/StorageOptions.cs:259](../../../../src/Meridian.Storage/StorageOptions.cs#L259).
-
-Quota enforcement policy.
-
-```csharp
-public enum QuotaEnforcementPolicy : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Warn</code> | [src/Meridian.Storage/StorageOptions.cs:262](../../../../src/Meridian.Storage/StorageOptions.cs#L262) | Log warning, continue writing. |
-| <code>SoftLimit</code> | [src/Meridian.Storage/StorageOptions.cs:264](../../../../src/Meridian.Storage/StorageOptions.cs#L264) | Start cleanup, continue writing. |
-| <code>HardLimit</code> | [src/Meridian.Storage/StorageOptions.cs:266](../../../../src/Meridian.Storage/StorageOptions.cs#L266) | Stop writing until cleanup completes. |
-| <code>DropOldest</code> | [src/Meridian.Storage/StorageOptions.cs:268](../../../../src/Meridian.Storage/StorageOptions.cs#L268) | Delete oldest to make room. |
-
-## QuotaOptions
-
-Qualified name: <code>Meridian.Storage.QuotaOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/StorageOptions.cs:384](../../../../src/Meridian.Storage/StorageOptions.cs#L384).
-
-Quota configuration for capacity management.
-
-```csharp
-public sealed class QuotaOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StorageQuota? Global { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:387](../../../../src/Meridian.Storage/StorageOptions.cs#L387) | Global storage quota. |
-| <code>public Dictionary&lt;string, StorageQuota&gt;? PerSource { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:390](../../../../src/Meridian.Storage/StorageOptions.cs#L390) | Per-source quotas. |
-| <code>public Dictionary&lt;string, StorageQuota&gt;? PerSymbol { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:393](../../../../src/Meridian.Storage/StorageOptions.cs#L393) | Per-symbol quotas. |
-| <code>public Dictionary&lt;string, StorageQuota&gt;? PerEventType { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:396](../../../../src/Meridian.Storage/StorageOptions.cs#L396) | Per-event-type quotas. |
-| <code>public DynamicQuotaConfig? Dynamic { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:399](../../../../src/Meridian.Storage/StorageOptions.cs#L399) | Dynamic quota configuration. |
-
-## FileStatistics
-
-Qualified name: <code>Meridian.Storage.Replay.FileStatistics</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:500](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L500).
-
-Statistics about files in a directory.
-
-```csharp
-public readonly record struct FileStatistics(int TotalFiles, long TotalBytes, int CompressedFiles, int UncompressedFiles);
-```
-
-## JsonlReplayer
-
-Qualified name: <code>Meridian.Storage.Replay.JsonlReplayer</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Replay/JsonlReplayer.cs:16](../../../../src/Meridian.Storage/Replay/JsonlReplayer.cs#L16).
-
-Reads previously captured JSONL events (optionally compressed) from a file or directory and replays them as MarketEvent objects in deterministic timestamp order.
-
-```csharp
-public sealed class JsonlReplayer
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public JsonlReplayer(string path) : this(path, SortRunRecordLimit, MaxMergeReaders);</code> | [src/Meridian.Storage/Replay/JsonlReplayer.cs:43](../../../../src/Meridian.Storage/Replay/JsonlReplayer.cs#L43) |  |
-| <code>public JsonlReplayer(string path, IReadOnlyDictionary&lt;string, int&gt; symbolOrder) : this(path);</code> | [src/Meridian.Storage/Replay/JsonlReplayer.cs:49](../../../../src/Meridian.Storage/Replay/JsonlReplayer.cs#L49) | Replays only these effective symbols, using their ranks for equal timestamps. |
-| <code>public async IAsyncEnumerable&lt;MarketEvent&gt; ReadEventsAsync([EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Storage/Replay/JsonlReplayer.cs:69](../../../../src/Meridian.Storage/Replay/JsonlReplayer.cs#L69) |  |
-
-## MemoryMappedJsonlReader
-
-Qualified name: <code>Meridian.Storage.Replay.MemoryMappedJsonlReader</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:79](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L79).
-
-High-performance JSONL reader using memory-mapped files for large file reading. Provides significantly faster reads for large files by mapping directly into virtual memory. Falls back to streaming for compressed files and small files.
-
-```csharp
-public sealed class MemoryMappedJsonlReader
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public long FilesRead =&gt; …;</code> | [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:95](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L95) | Total files read. |
-| <code>public long BytesRead =&gt; …;</code> | [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:100](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L100) | Total bytes read. |
-| <code>public long EventsRead =&gt; …;</code> | [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:105](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L105) | Total events successfully deserialized. |
-| <code>public long MemoryMappedFilesUsed =&gt; …;</code> | [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:110](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L110) | Number of files read using memory mapping. |
-| <code>public long CorruptedLines =&gt; …;</code> | [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:115](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L115) | Number of JSONL lines that failed to deserialize and were skipped during replay. |
-| <code>public MemoryMappedJsonlReader(string root) : this(root, MemoryMappedReaderOptions.Default);</code> | [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:120](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L120) | Creates a new MemoryMappedJsonlReader with default options. |
-| <code>public MemoryMappedJsonlReader(string root, MemoryMappedReaderOptions options);</code> | [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:128](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L128) | Creates a new MemoryMappedJsonlReader with custom options. |
-| <code>public async IAsyncEnumerable&lt;MarketEvent&gt; ReadEventsAsync([EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:138](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L138) | Reads all events from JSONL files in the root directory. Uses memory-mapped files for large uncompressed files. |
-| <code>public async IAsyncEnumerable&lt;MarketEvent&gt; ReadFileAsync(string file, [EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:159](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L159) | Reads events from a single file using the most efficient method. |
-| <code>public async IAsyncEnumerable&lt;IReadOnlyList&lt;MarketEvent&gt;&gt; ReadEventsBatchedAsync(int batchSize = 1000, [EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:187](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L187) | Reads events from JSONL files in batches for better memory efficiency. |
-| <code>public async IAsyncEnumerable&lt;MarketEvent&gt; ReadEventsInRangeAsync(DateTimeOffset from, DateTimeOffset to, [EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:444](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L444) | Reads events from a specific time range. |
-| <code>public async IAsyncEnumerable&lt;MarketEvent&gt; ReadEventsForSymbolsAsync(IReadOnlySet&lt;string&gt; symbols, [EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:461](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L461) | Reads events for specific symbols only. |
-| <code>public FileStatistics GetFileStatistics();</code> | [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:477](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L477) | Gets statistics about the files in the root directory. |

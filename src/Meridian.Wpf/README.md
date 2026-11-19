@@ -659,6 +659,8 @@ fund-event, capital-account, investor, payment, and settlement references.
 Accounting composition supplies the complete Security Master store to the shared event spine
 for reviewed successor hash validation. Economic-date and retained-lot-label checks remain
 shared service rules, including when desktop composition runs independently.
+The module also registers the shared `IWorkstationFiscalYearCloseApiClient`; no WPF close-plan
+screen consumes it yet.
 Registration stays feature-owned in `Features/Accounting/AccountingFeatureModule.cs`; the
 desktop fallback stores configuration/audit state in `workstation/accounting/accounting-configuration.json`
 manual journal drafts in `workstation/accounting/manual-journal-drafts.json`, and retained migration

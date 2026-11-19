@@ -659,7 +659,10 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
                 Symbols: new[] { request.UnderlyingSymbol.Trim().ToUpperInvariant() },
                 InitialCash: request.InitialCash,
                 DataRoot: dataRoot,
-                RiskFreeRate: request.RiskFreeRate);
+                RiskFreeRate: request.RiskFreeRate)
+            {
+                LedgerJournalScopeId = runId
+            };
 
             var engine = _engineFactory(backtestRequest);
 

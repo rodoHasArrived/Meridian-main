@@ -976,7 +976,7 @@ public sealed partial class FinancialRecordExplorerReadService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FinancialRecordExplorerSavedViewRecord</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs:209](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs#L209).
+Source: [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs:222](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs#L222).
 
 ```csharp
 public sealed record FinancialRecordExplorerSavedViewRecord(string TenantId, string ExplorerId, FinancialRecordExplorerSavedViewDto SavedView);
@@ -986,7 +986,7 @@ public sealed record FinancialRecordExplorerSavedViewRecord(string TenantId, str
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FinancialRecordExplorerSavedViewSnapshot</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs:214](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs#L214).
+Source: [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs:227](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs#L227).
 
 ```csharp
 public sealed record FinancialRecordExplorerSavedViewSnapshot(int Version, IReadOnlyList<FinancialRecordExplorerSavedViewRecord> Views, IReadOnlyList<WorkstationPersonalTableViewRecord>? PersonalViews = null);
@@ -1013,22 +1013,20 @@ Declared public members:
 | <code>public async Task&lt;FirstRunStatusDto&gt; CompleteAsync(string username, CompleteFirstRunRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs:43](../../../../src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs#L43) |  |
 | <code>public async Task&lt;FirstRunStatusDto&gt; CompleteOutcomeAsync(string username, string key, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs:90](../../../../src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs#L90) |  |
 
-## FixedAssetDepreciationCalculation
+## FiscalYearClosePlanBuilder
 
-Qualified name: <code>Meridian.Ui.Shared.Services.FixedAssetDepreciationCalculation</code>. Kind: `class`.
+Qualified name: <code>Meridian.Ui.Shared.Services.FiscalYearClosePlanBuilder</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:316](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L316).
+Source: [src/Meridian.Ui.Shared/Services/FiscalYearClosePlanBuilder.cs:28](../../../../src/Meridian.Ui.Shared/Services/FiscalYearClosePlanBuilder.cs#L28).
 
-Depreciation of every asset the fixed-asset register holds for the fund book: the scheduled charges whose period end falls inside the accrual window, in one draft. Each scheduled period belongs to exactly one window, so an asset&#x27;s life is depreciated once. Units-of-production assets need period output that the register does not hold, so they block the occurrence.
+Builds the read-only fiscal-year close plan (W12-YEND-001 slice 1) from retained hard-close snapshots. The final period&#x27;s snapshot already retains the book&#x27;s full journal population up to the fiscal year end, so the plan never reads live journals that may have been restated since.
 
 ```csharp
-public sealed class FixedAssetDepreciationCalculation(IFixedAssetRegister? register = null) : IRecurringJournalCalculation
+public static class FiscalYearClosePlanBuilder
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string CalculationKind = &quot;fixed-asset-depreciation&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:318](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L318) |  |
-| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:321](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L321) |  |
-| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:323](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L323) |  |
+| <code>public static FiscalYearClosePlanDto Build(Guid ledgerBookId, int fiscalYear, IReadOnlyList&lt;LedgerAccountingPeriod&gt; bookPeriods, IReadOnlyDictionary&lt;Guid, FiscalYearCloseSnapshotRead&gt; snapshots);</code> | [src/Meridian.Ui.Shared/Services/FiscalYearClosePlanBuilder.cs:32](../../../../src/Meridian.Ui.Shared/Services/FiscalYearClosePlanBuilder.cs#L32) |  |

@@ -6,6 +6,72 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionElectionCalendarDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionElectionCalendarDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionElectionCalendar.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionElectionCalendar.cs#L16).
+
+Read-only source facts, independent of case SLA, ex-date and accounting authority.
+
+```csharp
+public sealed record CorporateActionElectionCalendarDto(string EvidenceState, IReadOnlyList<CorporateActionElectionCutoffDto> Cutoffs, IReadOnlyList<string> Messages);
+```
+
+## CorporateActionElectionCutoffDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionElectionCutoffDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionElectionCalendar.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionElectionCalendar.cs#L8).
+
+An explicitly retained election cutoff. DeadlineAt preserves the source offset.
+
+```csharp
+public sealed record CorporateActionElectionCutoffDto(string Id, string Label, DateTimeOffset DeadlineAt, string Source, string EvidenceReference);
+```
+
+## CorporateActionElectionDeadlineDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionElectionDeadlineDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L8).
+
+A sourced operational cutoff. This is separate from corporate-action economics.
+
+```csharp
+public sealed record CorporateActionElectionDeadlineDto(Guid SeriesId, string Kind, string SourceParty, DateOnly? Date = null, [property : JsonConverter(typeof(CorporateActionDeadlineInstantConverter))] DateTimeOffset? At = null, string? TimeZoneId = null, string? FinancialAccountId = null, string? CustodyAccountId = null, Guid? SupersedesEvidenceId = null, bool Withdrawn = false, string? SourceText = null);
+```
+
+## CorporateActionEventTypeCount
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionEventTypeCount</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypeNormalization.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypeNormalization.cs#L22).
+
+A stored value that could not be resolved to a canonical event type.
+
+```csharp
+public sealed record CorporateActionEventTypeCount(string StoredValue, int RowCount);
+```
+
+## CorporateActionEventTypeNormalizationResult
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionEventTypeNormalizationResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypeNormalization.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypeNormalization.cs#L10).
+
+Outcome of the one-time stored-value normalization sweep over corporate-action EventType strings (e.g. legacy &quot;Split&quot; rows rewritten to &quot;StockSplit&quot;). Read paths normalize aliases permanently, so this sweep is cosmetic — it cleans raw exports and ad-hoc SQL. Values that do not normalize to a canonical name are reported in UnmappedValues and left untouched, never guessed.
+
+```csharp
+public sealed record CorporateActionEventTypeNormalizationResult(bool Applied, IReadOnlyList<CorporateActionEventTypeRename> Renames, IReadOnlyList<CorporateActionEventTypeCount> UnmappedValues)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static CorporateActionEventTypeNormalizationResult Empty { get; } = new (false, [], []);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypeNormalization.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionEventTypeNormalization.cs#L15) |  |
+
 ## CorporateActionEventTypeRename
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionEventTypeRename</code>. Kind: `record`.
@@ -860,100 +926,3 @@ Enum declarations:
 | <code>RefreshControl</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L14) |  |
 | <code>StalenessMonitor</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L15) |  |
 | <code>ExternalComparison</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L16) |  |
-
-## DataQualityRuleSeverity
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.DataQualityRuleSeverity</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L20).
-
-```csharp
-public enum DataQualityRuleSeverity
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Warning</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L22) |  |
-| <code>Error</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L23) |  |
-| <code>HardBlock</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L24) |  |
-
-## DataQualityRuleViolationDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.DataQualityRuleViolationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:27](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L27).
-
-```csharp
-public sealed record DataQualityRuleViolationDto(string RuleId, string RuleName, DataQualityRuleCategory Category, Guid SecurityId, string? FieldPath, string Message, DataQualityRuleSeverity Severity, DateTimeOffset DetectedAt);
-```
-
-## DataVendorDataType
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.DataVendorDataType</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L16).
-
-```csharp
-public enum DataVendorDataType
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Identifiers</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L18) |  |
-| <code>TermsAndConditions</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L19) |  |
-| <code>CreditRatings</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L20) |  |
-| <code>Pricing</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L21) |  |
-| <code>CashFlows</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L22) |  |
-| <code>FxRates</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L23) |  |
-| <code>CreditRisk</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L24) |  |
-| <code>Classification</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L25) |  |
-| <code>RateFixings</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L26) |  |
-| <code>InflationIndexes</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:27](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L27) |  |
-| <code>Curves</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L28) |  |
-| <code>Holdings</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L29) |  |
-
-## DataVendorEntitlementDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.DataVendorEntitlementDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:32](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L32).
-
-```csharp
-public sealed record DataVendorEntitlementDto(Guid EntitlementId, string VendorName, DataVendorDataType DataType, string? ContractReference, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, decimal? AumThresholdUsd, bool RequiresDirectClientContract, string? ContactEmail, int RenewalReminderDays, DataVendorEntitlementStatus Status, string CreatedBy, DateTimeOffset CreatedAt)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? ClientId { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:47](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L47) |  |
-| <code>public string? AccountId { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L48) |  |
-| <code>public string? FundProfileId { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L49) |  |
-| <code>public Guid? SecurityId { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L50) |  |
-| <code>public string? SourceCategory { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:51](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L51) |  |
-| <code>public string? ExpectedRefreshCadence { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:52](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L52) |  |
-| <code>public int? DefaultMaxDaysStale { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:53](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L53) |  |
-| <code>public string? OperatorMetadata { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:54](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L54) |  |
-
-## DataVendorEntitlementStatus
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.DataVendorEntitlementStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L7).
-
-```csharp
-public enum DataVendorEntitlementStatus
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Active</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L9) |  |
-| <code>ExpiringSoon</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L10) |  |
-| <code>Expired</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L11) |  |
-| <code>PendingRenewal</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L12) |  |

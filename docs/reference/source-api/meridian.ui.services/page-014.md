@@ -6,6 +6,47 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## QualityTrendData
+
+Qualified name: <code>Meridian.Ui.Services.Services.QualityTrendData</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:146](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L146).
+
+Groups overall and symbol-specific quality trends for a time window.
+
+```csharp
+public sealed class QualityTrendData
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public List&lt;TrendDataPoint&gt; OverallTrend { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:148](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L148) |  |
+| <code>public Dictionary&lt;string, List&lt;TrendDataPoint&gt;&gt; BySymbol { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:149](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L149) |  |
+| <code>public string TimeWindow { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:150](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L150) |  |
+| <code>public double AverageScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:151](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L151) |  |
+| <code>public double TrendDirection { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:152](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L152) |  |
+
+## IReportingStatusProjectionService
+
+Qualified name: <code>Meridian.Ui.Services.Services.Reporting.IReportingStatusProjectionService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs:35](../../../../src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs#L35).
+
+Projects reporting manifests, audit entries, and templates into workstation read models.
+
+```csharp
+public interface IReportingStatusProjectionService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ReportingStatusProjection Project(ReportingOutputManifest manifest, IReadOnlyList&lt;ReportingRunAuditEntry&gt; audit);</code> | [src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs:37](../../../../src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs#L37) |  |
+| <code>IReadOnlyList&lt;ReportingTemplateProjection&gt; ProjectTemplates(IReportingTemplateCatalog catalog);</code> | [src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs:38](../../../../src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs#L38) |  |
+
 ## ReportingLineageProjection
 
 Qualified name: <code>Meridian.Ui.Services.Services.Reporting.ReportingLineageProjection</code>. Kind: `record`.
@@ -1102,47 +1143,3 @@ Declared public members:
 | <code>public int EventCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:290](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L290) |  |
 | <code>public DateTime? LastEventAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:291](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L291) |  |
 | <code>public double EventsPerSecond { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:292](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L292) |  |
-
-## SubscriptionResult
-
-Qualified name: <code>Meridian.Ui.Services.SubscriptionResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/LiveDataService.cs:310](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L310).
-
-Reports subscription creation success, assigned identity, and an explanatory message.
-
-```csharp
-public sealed class SubscriptionResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:312](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L312) |  |
-| <code>public int SubscriptionId { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:313](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L313) |  |
-| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:314](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L314) |  |
-
-## SuggestedBackfill
-
-Qualified name: <code>Meridian.Ui.Services.SuggestedBackfill</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:600](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L600).
-
-A suggested backfill operation.
-
-```csharp
-public sealed class SuggestedBackfill
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Id { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:602](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L602) |  |
-| <code>public string Title { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:603](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L603) |  |
-| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:604](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L604) |  |
-| <code>public string[] Symbols { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:605](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L605) |  |
-| <code>public int RecommendedDateRange { get; set; } = 365;</code> | [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:606](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L606) |  |
-| <code>public string? Reason { get; set; }</code> | [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:607](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L607) |  |
-| <code>public string? Category { get; set; }</code> | [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:608](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L608) |  |

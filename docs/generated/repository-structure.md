@@ -1796,6 +1796,7 @@ Meridian-main
 │   │   ├── contractual-schedule.md
 │   │   ├── corporate-action-case.md
 │   │   ├── credit-support.md
+│   │   ├── fiscal-year-close.md
 │   │   ├── fund-event.md
 │   │   ├── intercompany-agreements-and-entity-lifecycle.md
 │   │   ├── intercompany-agreements.md
@@ -6074,6 +6075,7 @@ Meridian-main
 │   │   │   ├── ControlledCloseAuthorizationDtos.cs
 │   │   │   ├── CurrencyMinorUnits.cs
 │   │   │   ├── FactorPaydownPreparationDtos.cs
+│   │   │   ├── FiscalYearClosePlanDtos.cs
 │   │   │   ├── IConsolidationBookPolicyValidator.cs
 │   │   │   ├── IntercompanyAccountDtos.cs
 │   │   │   ├── IntercompanyAccrualEvidenceDtos.cs
@@ -7677,6 +7679,7 @@ Meridian-main
 │   │   ├── LedgerLineDimensionSetFields.cs
 │   │   ├── LedgerLineDimensionSetNormalizer.cs
 │   │   ├── LedgerPartnersCapitalStatement.cs
+│   │   ├── LedgerPolicy.cs
 │   │   ├── LedgerQuery.cs
 │   │   ├── LedgerReportExportFormat.cs
 │   │   ├── LedgerReportPackArtifact.cs
@@ -8357,6 +8360,8 @@ Meridian-main
 │   │   │   ├── FileIntercompanyAccrualScheduleStore.cs
 │   │   │   ├── FileIntercompanyBalanceConfirmationStore.cs
 │   │   │   ├── FileIntercompanyConfirmationClosePolicyStore.cs
+│   │   │   ├── FileLedgerJournalLog.cs
+│   │   │   ├── FileLedgerJournalLogFactory.cs
 │   │   │   ├── FileLegacyIntercompanyAttributionStore.cs
 │   │   │   ├── GeneralLedgerExportBuilder.cs
 │   │   │   ├── GeneralLedgerSymbolPnlBuilder.cs
@@ -8384,8 +8389,10 @@ Meridian-main
 │   │   │   ├── LedgerBookServiceException.cs
 │   │   │   ├── LedgerCurrencyBackfill.cs
 │   │   │   ├── LedgerDurableBalanceRule.cs
+│   │   │   ├── LedgerJournalLogJsonContext.cs
 │   │   │   ├── LedgerJournalStoreHydrationExtensions.cs
 │   │   │   ├── LedgerJournalStoreOptions.cs
+│   │   │   ├── LedgerJournalStream.cs
 │   │   │   ├── LedgerMigrationRunner.cs
 │   │   │   ├── LedgerOpenLotProjection.cs
 │   │   │   ├── LedgerPeriodCloseSnapshot.cs
@@ -9778,6 +9785,7 @@ Meridian-main
 │   │   │   │   │   ├── dense-table-virtualization.ts
 │   │   │   │   │   ├── dense-virtualization.test.ts
 │   │   │   │   │   ├── dense-virtualization.ts
+│   │   │   │   │   ├── density.test.ts
 │   │   │   │   │   ├── density.ts
 │   │   │   │   │   ├── dev-fixtures.test.ts
 │   │   │   │   │   ├── dev-fixtures.trading-risk.ts
@@ -10767,6 +10775,7 @@ Meridian-main
 │   │   │   │   ├── WorkstationAccountingCloseApiClient.cs
 │   │   │   │   ├── WorkstationEntityConsolidationApiClient.cs
 │   │   │   │   ├── WorkstationEntityConsolidationApiClient.Lifecycle.cs
+│   │   │   │   ├── WorkstationFiscalYearCloseApiClient.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.Accruals.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.AccrualSchedules.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.Choices.cs
@@ -11019,6 +11028,7 @@ Meridian-main
 │   │   │   ├── LedgerEndpoints.EntityControls.cs
 │   │   │   ├── LedgerEndpoints.Export.cs
 │   │   │   ├── LedgerEndpoints.FactorPaydown.cs
+│   │   │   ├── LedgerEndpoints.FiscalYearClose.cs
 │   │   │   ├── LedgerEndpoints.GeneralLedgerExport.cs
 │   │   │   ├── LedgerEndpoints.IntercompanyAccountBindings.cs
 │   │   │   ├── LedgerEndpoints.JournalAutomation.cs
@@ -11328,6 +11338,8 @@ Meridian-main
 │   │   │   ├── FinancialRecordExplorerReadService.SecurityRows.cs
 │   │   │   ├── FinancialRecordExplorerSavedViewStore.cs
 │   │   │   ├── FirstRunExperienceService.cs
+│   │   │   ├── FiscalYearClosePlanBuilder.cs
+│   │   │   ├── FiscalYearClosePlanService.cs
 │   │   │   ├── FixedIncomeAccrualCalculation.cs
 │   │   │   ├── FundAccountCloseReadinessService.cs
 │   │   │   ├── FundOperationsWorkspaceReadService.Accounts.cs
@@ -14002,6 +14014,7 @@ Meridian-main
 │   │   │   ├── DimensionSignatureBackwardCompatibilityTests.cs
 │   │   │   ├── EuropeanDistributionWaterfallTests.cs
 │   │   │   ├── FinancialReportDocumentRendererTests.cs
+│   │   │   ├── FiscalYearClosePlanBuilderTests.cs
 │   │   │   ├── FixedAssetDepreciationDraftBuilderTests.cs
 │   │   │   ├── FixedAssetDepreciationProjectorTests.cs
 │   │   │   ├── FundAdministrationEventLogTests.cs
@@ -14028,6 +14041,7 @@ Meridian-main
 │   │   │   ├── LedgerJournalReversalTests.cs
 │   │   │   ├── LedgerPartnersCapitalReconciliationTests.cs
 │   │   │   ├── LedgerPeriodStatementsTests.cs
+│   │   │   ├── LedgerPolicyStrictnessTests.cs
 │   │   │   ├── LedgerReportAccountScopeProvenanceTests.cs
 │   │   │   ├── LedgerReportCsvFormulaGuardTests.cs
 │   │   │   ├── LedgerReportDeterministicExportTests.cs
@@ -14674,8 +14688,10 @@ Meridian-main
 │   │   │   ├── EventBufferTests.cs
 │   │   │   ├── ExclusiveFileLockTests.cs
 │   │   │   ├── ExportValidatorTests.cs
+│   │   │   ├── FileLedgerJournalLogTests.cs
 │   │   │   ├── FileMaintenanceServiceTests.cs
 │   │   │   ├── FilePermissionsServiceTests.cs
+│   │   │   ├── FiscalYearClosePlanPostgresTests.cs
 │   │   │   ├── FundAccountTenantColumnMigrationTests.cs
 │   │   │   ├── FundScopedWriteTenantGateTests.cs
 │   │   │   ├── FundScopeTenantAuthorityTests.cs
@@ -15373,6 +15389,7 @@ Meridian-main
 │   │   │   ├── WorkstationStatementCaseworkAuthorityEndpointTests.cs
 │   │   │   ├── WorkstationStatementReconciliationEndpointTests.cs
 │   │   │   ├── WorkstationStreamEndpointTests.cs
+│   │   │   ├── WorkstationTableViewRegistrationTests.cs
 │   │   │   ├── WorkstationTenantContextTests.cs
 │   │   │   └── WorkstationWorkflowSummaryFinancialOperationsTests.cs
 │   │   ├── UiServices
@@ -15487,6 +15504,7 @@ Meridian-main
 │   │   │   ├── WatchlistServiceTests.cs
 │   │   │   ├── WorkstationAccountingCloseApiClientTests.cs
 │   │   │   ├── WorkstationEntityConsolidationApiClientTests.cs
+│   │   │   ├── WorkstationFiscalYearCloseApiClientTests.cs
 │   │   │   ├── WorkstationIntercompanyAgreementApiClientTests.Accruals.cs
 │   │   │   ├── WorkstationIntercompanyAgreementApiClientTests.AccrualSchedules.cs
 │   │   │   ├── WorkstationIntercompanyAgreementApiClientTests.Choices.cs

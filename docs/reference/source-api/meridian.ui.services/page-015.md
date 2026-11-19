@@ -6,6 +6,50 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SubscriptionResult
+
+Qualified name: <code>Meridian.Ui.Services.SubscriptionResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/LiveDataService.cs:310](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L310).
+
+Reports subscription creation success, assigned identity, and an explanatory message.
+
+```csharp
+public sealed class SubscriptionResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:312](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L312) |  |
+| <code>public int SubscriptionId { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:313](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L313) |  |
+| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:314](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L314) |  |
+
+## SuggestedBackfill
+
+Qualified name: <code>Meridian.Ui.Services.SuggestedBackfill</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:600](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L600).
+
+A suggested backfill operation.
+
+```csharp
+public sealed class SuggestedBackfill
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Id { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:602](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L602) |  |
+| <code>public string Title { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:603](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L603) |  |
+| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:604](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L604) |  |
+| <code>public string[] Symbols { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:605](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L605) |  |
+| <code>public int RecommendedDateRange { get; set; } = 365;</code> | [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:606](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L606) |  |
+| <code>public string? Reason { get; set; }</code> | [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:607](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L607) |  |
+| <code>public string? Category { get; set; }</code> | [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:608](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L608) |  |
+
 ## SwitchProviderResponse
 
 Qualified name: <code>Meridian.Ui.Services.SwitchProviderResponse</code>. Kind: `class`.
@@ -1162,46 +1206,3 @@ Declared public members:
 | <code>public List&lt;StorageTierConfig&gt; Tiers { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:144](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L144) |  |
 | <code>public bool AutoMigrationEnabled { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:145](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L145) |  |
 | <code>public string? MigrationSchedule { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:146](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L146) |  |
-
-## TierMigrationApiResult
-
-Qualified name: <code>Meridian.Ui.Services.TierMigrationApiResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1501](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1501).
-
-Response from /api/storage/tiers/migrate endpoint.
-
-```csharp
-public sealed class TierMigrationApiResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1503](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1503) |  |
-| <code>public int FilesMigrated { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1504](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1504) |  |
-| <code>public long BytesMigrated { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1505](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1505) |  |
-| <code>public TimeSpan Duration { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1506](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1506) |  |
-| <code>public List&lt;string&gt; Errors { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1507](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1507) |  |
-
-## TierMigrationOptions
-
-Qualified name: <code>Meridian.Ui.Services.TierMigrationOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:175](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L175).
-
-Options for tier migration.
-
-```csharp
-public sealed class TierMigrationOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DateOnly? OlderThan { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:177](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L177) |  |
-| <code>public List&lt;string&gt;? Symbols { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:178](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L178) |  |
-| <code>public List&lt;string&gt;? EventTypes { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:179](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L179) |  |
-| <code>public bool DryRun { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:180](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L180) |  |

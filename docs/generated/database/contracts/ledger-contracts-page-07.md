@@ -2,11 +2,62 @@
 
 # `ledger-contracts` data objects - page 7 of 7
 
-Objects 481-497 of 497. References crossing pages remain available in the dependency manifest.
+Objects 481-502 of 502. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_ReportExportArtifactDto["ReportExportArtifactDto"] {
+        +string ArtifactId
+        +string ArtifactKind
+        +AccountingCertificationStateDto CertificationState
+        +string ContentHash
+        +LedgerDimensionSetDto Dimensions
+        +ReportDimensionScopeDto? DimensionScope
+        +string DisplayName
+        +IReadOnlyList~string~ EvidenceLinks
+        +string Format
+        +DateTimeOffset GeneratedAtUtc
+        +Guid? LedgerBookId
+        +string Route
+    }
+    class Meridian_Contracts_Ledger_ReportExportArtifactManifestDto["ReportExportArtifactManifestDto"] {
+        +string ArtifactId
+        +string ArtifactKind
+        +AccountingCertificationStateDto CertificationState
+        +string ContentHash
+        +string ContentType
+        +LedgerDimensionSetDto Dimensions
+        +ReportDimensionScopeDto? DimensionScope
+        +string DisplayName
+        +IReadOnlyList~string~ EvidenceLinks
+        +bool ExternalPostingAllowed
+        +string FileName
+        +string Format
+    }
+    class Meridian_Contracts_Ledger_ReportLineProvenanceDto["ReportLineProvenanceDto"] {
+        +decimal Amount
+        +string Currency
+        +LedgerDimensionSetDto Dimensions
+        +IReadOnlyList~string~ EvidenceLinks
+        +string LineId
+        +string LineLabel
+        +string SourceKind
+        +string StatementId
+    }
+    class Meridian_Contracts_Ledger_RestatementWorkflowDto["RestatementWorkflowDto"] {
+        +ManualJournalEntryStatusDto ApprovalState
+        +IReadOnlyList~string~ EvidenceLinks
+        +string PriorPackageId
+        +string ReasonCode
+        +DateTimeOffset RequestedAtUtc
+        +string RequestedBy
+        +string RestatementId
+    }
+    class Meridian_Contracts_Ledger_RetainPrivateCapitalCallRequest["RetainPrivateCapitalCallRequest"] {
+        +string ExpectedPlanHash
+        +PreviewPrivateCapitalCallRequest Preview
+    }
     class Meridian_Contracts_Ledger_RetryIntercompanyProposalRequest["RetryIntercompanyProposalRequest"] {
         +string Reason
         +Guid RequestId

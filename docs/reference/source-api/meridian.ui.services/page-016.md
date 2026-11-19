@@ -6,6 +6,49 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TierMigrationApiResult
+
+Qualified name: <code>Meridian.Ui.Services.TierMigrationApiResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1501](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1501).
+
+Response from /api/storage/tiers/migrate endpoint.
+
+```csharp
+public sealed class TierMigrationApiResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1503](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1503) |  |
+| <code>public int FilesMigrated { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1504](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1504) |  |
+| <code>public long BytesMigrated { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1505](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1505) |  |
+| <code>public TimeSpan Duration { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1506](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1506) |  |
+| <code>public List&lt;string&gt; Errors { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1507](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1507) |  |
+
+## TierMigrationOptions
+
+Qualified name: <code>Meridian.Ui.Services.TierMigrationOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:175](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L175).
+
+Options for tier migration.
+
+```csharp
+public sealed class TierMigrationOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DateOnly? OlderThan { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:177](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L177) |  |
+| <code>public List&lt;string&gt;? Symbols { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:178](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L178) |  |
+| <code>public List&lt;string&gt;? EventTypes { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:179](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L179) |  |
+| <code>public bool DryRun { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:180](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L180) |  |
+
 ## TierMigrationResponse
 
 Qualified name: <code>Meridian.Ui.Services.TierMigrationResponse</code>. Kind: `class`.
@@ -1046,62 +1089,3 @@ Declared public members:
 | <code>public string Tone { get; set; } = &quot;default&quot;;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:226](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L226) | Visual tone: default, primary, success, warning, or danger. |
 | <code>public bool IsEnabled { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:229](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L229) | When false the action is rendered but not interactive (e.g. locked behind context). |
 | <code>public int Order { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:232](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L232) | Display order within the action list (lower = earlier). |
-
-## WorkspaceSummaryStats
-
-Qualified name: <code>Meridian.Ui.Services.WorkspaceSummaryStats</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:239](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L239).
-
-Lightweight workspace summary statistics surfaced in shell tiles, session restore hints, and the quick-action rail. Computed on demand from the active session; not persisted.
-
-```csharp
-public sealed class WorkspaceSummaryStats
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int ActiveRunCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:242](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L242) | Number of strategy runs currently in a running or paused state. |
-| <code>public int PendingReviewCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:245](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L245) | Number of runs flagged for review (failed, cancelled, or promotion pending). |
-| <code>public int PromotionCandidateCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:248](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L248) | Number of completed runs eligible for paper or live promotion. |
-| <code>public bool HasLedgerCoverage { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:251](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L251) | Whether at least one run in this workspace has a ledger reference. |
-| <code>public bool HasPortfolioCoverage { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:254](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L254) | Whether at least one run in this workspace has a portfolio reference. |
-| <code>public DateTimeOffset? LastActivityAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:257](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L257) | When the most recently active page in this workspace was last visited. |
-| <code>public string Digest { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:263](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L263) | Human-readable one-line digest e.g. &quot;3 active · 2 review · ledger covered&quot;. Produced by WorkspaceService.BuildSummaryDigest; empty when stats are all zero. |
-
-## WorkspaceTemplate
-
-Qualified name: <code>Meridian.Ui.Services.WorkspaceTemplate</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:9](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L9).
-
-Workspace template definition.
-
-```csharp
-public sealed class WorkspaceTemplate
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Id { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:11](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L11) |  |
-| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:12](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L12) |  |
-| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:13](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L13) |  |
-| <code>public string PreferredPageTag { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:14](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L14) |  |
-| <code>public WorkspaceCategory Category { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:15](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L15) |  |
-| <code>public bool IsBuiltIn { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:16](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L16) |  |
-| <code>public DateTime CreatedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:17](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L17) |  |
-| <code>public DateTime UpdatedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:18](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L18) |  |
-| <code>public DateTime? LastActivatedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:19](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L19) |  |
-| <code>public string? LastActivePageTag { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:20](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L20) |  |
-| <code>public List&lt;WorkspacePage&gt; Pages { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:21](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L21) |  |
-| <code>public List&lt;string&gt; RecentPageTags { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:22](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L22) |  |
-| <code>public Dictionary&lt;string, WidgetPosition&gt; WidgetLayout { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:23](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L23) |  |
-| <code>public Dictionary&lt;string, string&gt; Filters { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:24](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L24) |  |
-| <code>public Dictionary&lt;string, string&gt; Context { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:25](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L25) |  |
-| <code>public WindowBounds? WindowBounds { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:26](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L26) |  |
-| <code>public SessionState? SessionSnapshot { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:27](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L27) |  |
-| <code>public List&lt;WorkspaceQuickAction&gt; QuickActions { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:30](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L30) |  |

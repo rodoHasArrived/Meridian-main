@@ -6,6 +6,64 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## InMemoryAccountingMigrationRunWorkerPlanStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.InMemoryAccountingMigrationRunWorkerPlanStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs:39](../../../../src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs#L39).
+
+Stores accounting migration worker plans in process memory.
+
+```csharp
+public sealed class InMemoryAccountingMigrationRunWorkerPlanStore : IAccountingMigrationRunWorkerPlanWriter
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;IReadOnlyList&lt;AccountingMigrationRunWorkerPlanDto&gt;&gt; ListAsync(string? fundProfileId = null, Guid? ledgerBookId = null, AccountingMigrationRunKindDto? kind = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs:43](../../../../src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs#L43) |  |
+| <code>public Task&lt;AccountingMigrationRunWorkerPlanDto?&gt; GetAsync(string planId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs:62](../../../../src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs#L62) |  |
+| <code>public Task&lt;AccountingMigrationRunWorkerPlanDto&gt; UpsertAsync(AccountingMigrationRunWorkerPlanDto plan, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs:74](../../../../src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs#L74) |  |
+
+## InMemoryAccountingProductionCertificationProfileStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.InMemoryAccountingProductionCertificationProfileStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs:31](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs#L31).
+
+Stores accounting production certification profiles in process memory.
+
+```csharp
+public sealed class InMemoryAccountingProductionCertificationProfileStore : IAccountingProductionCertificationProfileStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;AccountingProductionCertificationProfileDto?&gt; GetAsync(string? tenantId, string? companyId, string? fundProfileId, Guid? ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs:35](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs#L35) |  |
+| <code>public Task&lt;AccountingProductionCertificationProfileDto&gt; UpsertAsync(AccountingProductionCertificationProfileUpsertRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs:47](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs#L47) |  |
+
+## InMemoryAccountingTenantAdministrationProfileStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.InMemoryAccountingTenantAdministrationProfileStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs:29](../../../../src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs#L29).
+
+Stores tenant accounting administration profiles in process memory.
+
+```csharp
+public sealed class InMemoryAccountingTenantAdministrationProfileStore : IAccountingTenantAdministrationProfileStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;AccountingTenantAdministrationProfileDto?&gt; GetAsync(string? tenantId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs:33](../../../../src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs#L33) |  |
+| <code>public Task&lt;AccountingTenantAdministrationProfileDto&gt; UpsertAsync(AccountingTenantAdministrationProfileUpsertRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs:43](../../../../src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs#L43) |  |
+
 ## InMemoryAutomatedJournalScheduleStore
 
 Qualified name: <code>Meridian.Ui.Shared.Services.InMemoryAutomatedJournalScheduleStore</code>. Kind: `class`.
@@ -908,59 +966,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>IReadOnlyList&lt;ReportPackWorkflowRecordDto&gt; Load();</code> | [src/Meridian.Ui.Shared/Services/ReportPackWorkflowRecordStore.cs:13](../../../../src/Meridian.Ui.Shared/Services/ReportPackWorkflowRecordStore.cs#L13) |  |
 | <code>void Save(IReadOnlyList&lt;ReportPackWorkflowRecordDto&gt; records);</code> | [src/Meridian.Ui.Shared/Services/ReportPackWorkflowRecordStore.cs:15](../../../../src/Meridian.Ui.Shared/Services/ReportPackWorkflowRecordStore.cs#L15) |  |
-
-## IReportTemplateGovernanceStore
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IReportTemplateGovernanceStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:98](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L98).
-
-Loads and saves reporting template governance records.
-
-```csharp
-public interface IReportTemplateGovernanceStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>IReadOnlyList&lt;ReportTemplateGovernanceRecordDto&gt; Load();</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:100](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L100) |  |
-| <code>void Save(IReadOnlyList&lt;ReportTemplateGovernanceRecordDto&gt; records);</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:101](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L101) |  |
-
-## IStatementCaseworkCommitFaultInjector
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IStatementCaseworkCommitFaultInjector</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:1285](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L1285).
-
-Provides fault-injection callbacks at retained statement casework commit boundaries.
-
-```csharp
-public interface IStatementCaseworkCommitFaultInjector
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task OnPointAsync(StatementCaseworkCommitFaultPoint point, string commandId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:1287](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L1287) |  |
-
-## IStatementReconciliationCaseworkHandoffService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IStatementReconciliationCaseworkHandoffService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:16](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L16).
-
-Applies single or bulk casework changes and hands their results back to statement-owned workflows.
-
-```csharp
-public interface IStatementReconciliationCaseworkHandoffService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;ReconciliationBreakQueueTransitionResult&gt; ApplyAsync(ReconciliationBreakQueueScope scope, ReconciliationCaseworkCommand command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:18](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L18) |  |
-| <code>Task&lt;ReconciliationBulkCaseworkResult&gt; ApplyBulkAsync(ReconciliationBreakQueueScope scope, ReconciliationBulkCaseworkRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:23](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L23) |  |

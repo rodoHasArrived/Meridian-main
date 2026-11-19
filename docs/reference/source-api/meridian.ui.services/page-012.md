@@ -466,6 +466,24 @@ Declared public members:
 | <code>Task&lt;EntityLifecycleReviewPreviewDto&gt; PreviewLifecycleReviewAsync(AppendEntityLifecycleRevisionRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs:9](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs#L9) |  |
 | <code>Task&lt;EntityLifecycleRevisionDto&gt; AppendLifecycleRevisionAsync(AppendEntityLifecycleRevisionRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs:11](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs#L11) |  |
 
+## IWorkstationFiscalYearCloseApiClient
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IWorkstationFiscalYearCloseApiClient</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationFiscalYearCloseApiClient.cs:11](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationFiscalYearCloseApiClient.cs#L11).
+
+Shared read of the governed fiscal-year close plan (W12-YEND-001). The server derives the plan from retained close snapshots; workstations present it and never recompute balances.
+
+```csharp
+public interface IWorkstationFiscalYearCloseApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;FiscalYearClosePlanDto&gt; GetClosePlanAsync(Guid ledgerBookId, int fiscalYear, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationFiscalYearCloseApiClient.cs:13](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationFiscalYearCloseApiClient.cs#L13) |  |
+
 ## IWorkstationIntercompanyAgreementApiClient
 
 Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IWorkstationIntercompanyAgreementApiClient</code>. Kind: `interface`.
@@ -874,6 +892,22 @@ Declared public members:
 | --- | --- | --- |
 | <code>public async Task&lt;EntityLifecycleReviewPreviewDto&gt; PreviewLifecycleReviewAsync(AppendEntityLifecycleRevisionRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs:17](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs#L17) |  |
 | <code>public async Task&lt;EntityLifecycleRevisionDto&gt; AppendLifecycleRevisionAsync(AppendEntityLifecycleRevisionRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs:19](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs#L19) |  |
+
+## WorkstationFiscalYearCloseApiClient
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.WorkstationFiscalYearCloseApiClient</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationFiscalYearCloseApiClient.cs:16](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationFiscalYearCloseApiClient.cs#L16).
+
+```csharp
+public sealed class WorkstationFiscalYearCloseApiClient(ApiClientService api) : IWorkstationFiscalYearCloseApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;FiscalYearClosePlanDto&gt; GetClosePlanAsync(Guid ledgerBookId, int fiscalYear, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationFiscalYearCloseApiClient.cs:18](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationFiscalYearCloseApiClient.cs#L18) |  |
 
 ## WorkstationIntercompanyAgreementApiClient
 
@@ -1530,35 +1564,3 @@ Declared public members:
 | <code>public void PauseAutoReconnect();</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:211](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L211) | Pauses auto-reconnection temporarily. |
 | <code>public void ResumeAutoReconnect();</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:224](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L224) | Resumes auto-reconnection. |
 | <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:524](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L524) |  |
-
-## CredentialServiceRefusedException
-
-Qualified name: <code>Meridian.Ui.Services.Services.CredentialServiceRefusedException</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:764](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L764).
-
-Credential configuration state for a provider.
-
-```csharp
-public sealed class CredentialServiceRefusedException(string message) : InvalidOperationException(message);
-```
-
-## CredentialState
-
-Qualified name: <code>Meridian.Ui.Services.Services.CredentialState</code>. Kind: `enum`.
-
-Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:766](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L766).
-
-```csharp
-public enum CredentialState : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>NotRequired</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:768](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L768) |  |
-| <code>Configured</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:769](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L769) |  |
-| <code>Partial</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:770](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L770) |  |
-| <code>Missing</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:771](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L771) |  |
-| <code>Unavailable</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:772](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L772) |  |

@@ -6,6 +6,56 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PaperSessionAccountingSourceReader
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PaperSessionAccountingSourceReader</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:304](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L304).
+
+Reads full retained fills from every session sharing the exact account posting scope, not the compacting pending-fill WAL. The anchor binding must come from trusted retained session metadata. Closed sessions remain part of the population. Variation-margin populations need retained realized-P&amp;L/settlement policy and remain explicitly incomplete here.
+
+```csharp
+public sealed class PaperSessionAccountingSourceReader(IPaperSessionStore store, PaperSessionAccountingBinding binding) : ILedgerAccountingSourceReader
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public LedgerAccountingSourceKind SourceKind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:308](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L308) |  |
+| <code>public async Task&lt;LedgerAccountingSourcePopulation&gt; ReadAsync(LedgerAccountingCompletenessQuery query, LedgerAccountingPeriod period, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:310](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L310) |  |
+
+## PaymentInstruction
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PaymentInstruction</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:27](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L27).
+
+```csharp
+public sealed record PaymentInstruction(string InstructionId, string AccountId, string Counterparty, string Currency, decimal Amount, DateOnly ValueDate, string Purpose, string Status);
+```
+
+## PerformanceFeeAccrualCalculation
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PerformanceFeeAccrualCalculation</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:241](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L241).
+
+Performance fee accrued to its cumulative amount above the high-water mark and hurdle. Net asset value before the fee is the ledger&#x27;s net assets plus the performance fee already accrued and payable, and only the change from that accrued amount is drafted. Terms: performanceFeeRate, highWaterMark, hurdleAmount, crystallize (0 or 1). After a fee is crystallized and settled, register a new schedule version with the new mark.
+
+```csharp
+public sealed class PerformanceFeeAccrualCalculation(IRecurringJournalCalculationInputs inputs) : IRecurringJournalCalculation
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string CalculationKind = &quot;performance-fee-accrual&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:243](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L243) |  |
+| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:245](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L245) |  |
+| <code>public bool DependsOnPostedHistory =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:247](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L247) |  |
+| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:249](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L249) |  |
+
 ## PerformanceReturnFigures
 
 Qualified name: <code>Meridian.Ui.Shared.Services.PerformanceReturnFigures</code>. Kind: `class`.
@@ -848,62 +898,3 @@ Declared public members:
 | <code>public async Task&lt;IReadOnlyList&lt;StatementBreakDto&gt;&gt; ListOpenStatementBreaksAsync(ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs:267](../../../../src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs#L267) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;ReconciliationCaseSummaryDto&gt;&gt; ListOpenCasesAsync(ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs:299](../../../../src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs#L299) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;ReconciliationQueueAccountStatusDto&gt;&gt; ListQueueStatusAsync(ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs:318](../../../../src/Meridian.Ui.Shared/Services/ReconciliationApiService.cs#L318) |  |
-
-## ReconciliationCaseworkAuthorityReadinessState
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReconciliationCaseworkAuthorityReadinessState</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:48](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L48).
-
-Process-local receipt that the canonical reconciliation queue was fully reloaded and passed its integrity checks during reporting startup.
-
-```csharp
-public sealed class ReconciliationCaseworkAuthorityReadinessState
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsReady =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:52](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L52) |  |
-
-## RecurringJournalCalculationContext
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalCalculationContext</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:19](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L19).
-
-Everything one calculated recurring occurrence may read. The accrual window is the inclusive date range this occurrence owns: it starts the day after the previous occurrence (or at the start of the covering accounting period for the first occurrence) and ends on the effective date, so consecutive occurrences never accrue the same day twice.
-
-```csharp
-public sealed record RecurringJournalCalculationContext(RecurringJournalScope Scope, string ScheduleId, DateOnly EffectiveDate, DateOnly? WindowStart, DateTimeOffset OccurredAtUtc, string PeriodId, IReadOnlyDictionary<string, decimal> Parameters, IReadOnlyDictionary<string, string> Inputs, IReadOnlyList<JournalEvidenceReference> Evidence)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DateOnly RequireWindowStart() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:31](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L31) | The first day of the accrual window; fails closed when the period has no start date. |
-| <code>public int WindowDays =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:36](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L36) | Inclusive number of days in the accrual window. |
-| <code>public decimal RequireParameter(string name) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:39](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L39) | A numeric schedule term. Terms are never defaulted: a missing term blocks the draft. |
-| <code>public string RequireInput(string name) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:44](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L44) |  |
-| <code>public string? OptionalInput(string name) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:49](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L49) |  |
-| <code>public int RequireYearBasisDays();</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:53](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L53) | An explicit day-count year basis; the accrual refuses to guess one. |
-
-## RecurringJournalCalculationResult
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalCalculationResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:66](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L66).
-
-The outcome of a posting calculation: a balanced draft for human approval, or a recorded reason why this occurrence has nothing to post.
-
-```csharp
-public sealed record RecurringJournalCalculationResult(AutomatedJournalDraft? Draft, string Summary)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static RecurringJournalCalculationResult NothingDue(string reason) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:68](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L68) |  |

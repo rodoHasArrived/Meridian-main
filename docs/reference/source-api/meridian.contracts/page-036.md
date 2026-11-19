@@ -6,6 +6,78 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyAccountBindingDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAccountBindingDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:19](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L19).
+
+An immutable, effective-dated assignment of a stable chart node to an intercompany role. Historical names identify old immutable journal legs; they must never be reused for another node.
+
+```csharp
+public sealed record IntercompanyAccountBindingDto(Guid BindingId, Guid RevisionId, long RevisionNumber, Guid LedgerBookId, string ChartAccountNodeId, IntercompanyAccountRoleDto Role, string AccountPath, string AccountName, string AccountType, DateOnly EffectiveFrom, DateOnly? EffectiveTo, IReadOnlyList<string> HistoricalNames, string TenantId, string? CompanyId, string RecordedBy, DateTimeOffset RecordedAt, string Reason, Guid? PreviousRevisionId = null, bool IsArchived = false);
+```
+
+## IntercompanyAccountContractsJsonContext
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAccountContractsJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:73](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L73).
+
+```csharp
+public partial class IntercompanyAccountContractsJsonContext : JsonSerializerContext;
+```
+
+## IntercompanyAccountRoleDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAccountRoleDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:6](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L6).
+
+```csharp
+public enum IntercompanyAccountRoleDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Receivable = 0</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:8](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L8) |  |
+| <code>Payable = 1</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:9](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L9) |  |
+| <code>Revenue = 2</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:10](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L10) |  |
+| <code>Expense = 3</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:11](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L11) |  |
+| <code>TranslationReserve = 4</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs:12](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccountDtos.cs#L12) |  |
+
+## IntercompanyAccrualCompoundingEvidenceDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAccrualCompoundingEvidenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs:49](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs#L49).
+
+The posted accrued-interest balance of the loan-interest profile (same shape as principal evidence), the posted accrual windows that prove every earlier day was accrued, and the first principal date coverage starts from.
+
+```csharp
+public sealed record IntercompanyAccrualCompoundingEvidenceDto(IntercompanyAccrualPrincipalEvidenceDto? AccruedInterest, IReadOnlyList<IntercompanyAccrualWindowDto> PostedWindows, DateOnly FirstPrincipalDate, DateOnly BalanceFrom);
+```
+
+## IntercompanyAccrualEvidenceDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAccrualEvidenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs:30](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs#L30).
+
+Everything that determined one accrual amount: the legal version and profile revision of every slice, the principal journals, the calendars and kernel, and any governed FX conversion. Retained on the draft and carried onto the posted journal; a client resave cannot replace it.
+
+```csharp
+public sealed record IntercompanyAccrualEvidenceDto(string RuleVersion, Guid DraftId, string TenantId, Guid SourceBookId, Guid SourceEntityId, Guid CounterpartyEntityId, Guid AccountingArrangementId, Guid PostingArrangementRevisionId, Guid AgreementId, int PostingAgreementVersion, string PostingAgreementPayloadHash, string TransactionId, DateOnly PostingDate, IntercompanyAccountRoleDto SourceRole, string MonetaryAccountNodeId, string OperatingAccountNodeId, string FunctionalCurrency, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal FunctionalAmount, IntercompanyAccrualPreviewDto Computation, IntercompanyAccrualPrincipalEvidenceDto Principal, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] ConsolidationFxAmountDto? Fx = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IntercompanyAccrualCompoundingEvidenceDto? Compounding { get; init; }</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs:42](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs#L42) | Compounding loans (rule v3): the posted accrued-interest facts the base was read from. Absent otherwise. |
+
 ## IntercompanyAccrualEvidenceGuard
 
 Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAccrualEvidenceGuard</code>. Kind: `class`.
@@ -655,76 +727,3 @@ Source: [src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs:42](
 ```csharp
 public partial class IntercompanyObligationMonitorJsonContext : JsonSerializerContext;
 ```
-
-## IntercompanyObligationMonitorRequestDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyObligationMonitorRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs:9](../../../../src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs#L9).
-
-Explicit observation scope. Amounts come only from the canonical posted balance schedule.
-
-```csharp
-public sealed record IntercompanyObligationMonitorRequestDto(string? FundProfileId, Guid? LedgerBookId, DateOnly AsOf, int ExpiryHorizonDays = 30, Guid? EntityId = null);
-```
-
-## IntercompanyObligationSourceVersionDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyObligationSourceVersionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs:18](../../../../src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs#L18).
-
-Retained source authority for this observation, separate from readiness or posting authority.
-
-```csharp
-public sealed record IntercompanyObligationSourceVersionDto(string SourceKind, string SourceId, string Version, string ContentHash);
-```
-
-## IntercompanyProposalDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyProposalDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:27](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L27).
-
-```csharp
-public sealed record IntercompanyProposalDto(IntercompanyProposalSourceDto Source, string SourceDigest, IntercompanyProposalStatusDto Status, int Attempts, DateTimeOffset RecordedAt, Guid? TargetBookId = null, Guid? TargetJournalId = null, string? LastError = null, string? ClaimToken = null, DateTimeOffset? LeaseUntil = null, DateOnly? DueDate = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IntercompanyCounterpartLinkDto? LatestLink { get; init; }</code> | [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:33](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L33) |  |
-| <code>public Guid? ResolvedTargetBookId =&gt; …;</code> | [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:34](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L34) |  |
-| <code>public Guid? ResolvedTargetJournalId =&gt; …;</code> | [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:35](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L35) |  |
-
-## IntercompanyProposalJsonContext
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyProposalJsonContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:80](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L80).
-
-```csharp
-public partial class IntercompanyProposalJsonContext : JsonSerializerContext;
-```
-
-## IntercompanyProposalSourceDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyProposalSourceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:13](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L13).
-
-Immutable source facts retained atomically with the source journal.
-
-```csharp
-public sealed record IntercompanyProposalSourceDto(Guid ProposalId, string TenantId, string? CompanyId, Guid SourceJournalId, Guid SourceBookId, Guid SourceEntityId, Guid CounterpartyEntityId, Guid AccountingArrangementId, Guid AccountingArrangementRevisionId, string TransactionId, DateOnly EffectiveDate, string SourceFunctionalCurrency, IReadOnlyList<IntercompanyProposalSourceLineDto> Lines, Guid? ReversesJournalId = null, string RuleVersion = "intercompany-mirror-v1")
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public bool RequiresSourceAllocation { get; init; }</code> | [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:21](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L21) | Unattributed contra legs cannot be allocated between multiple retained event groups. |
-| <code>public Guid IntercompanyAgreementId { get; init; }</code> | [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:22](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L22) |  |
-| <code>public int IntercompanyAgreementVersion { get; init; }</code> | [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:23](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L23) |  |
-| <code>public string IntercompanyAgreementPayloadHash { get; init; } = string.Empty;</code> | [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:24](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L24) |  |

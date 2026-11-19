@@ -688,7 +688,7 @@ Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.IBResults.cs:11](
 public static partial class WorkstationEndpoints
 ```
 
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Ledger.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Ledger.cs#L15).
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Ledger.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Ledger.cs#L16).
 
 ```csharp
 public static partial class WorkstationEndpoints

@@ -4,6 +4,7 @@ import {
   applyDensity as applyDensityToElement,
   DENSITY_STORAGE_KEY,
   isDensity,
+  readEffectiveDensity,
   readStoredDensity,
   writeStoredDensity,
   type Density
@@ -81,6 +82,10 @@ export function DensityToggle({
   const [internal, setInternal] = useState<Density>(() => {
     if (isControlled) {
       return controlled;
+    }
+    if (persist === DENSITY_STORAGE_KEY) {
+      // Show the density on screen, which may be a restored layout's session density.
+      return readEffectiveDensity();
     }
     if (persist) {
       try {

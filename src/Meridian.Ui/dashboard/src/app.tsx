@@ -54,7 +54,7 @@ import { LayoutSwitcher } from "@/components/meridian/layout-switcher";
 import { isCompanionPaneRoute, openCompanionPane } from "@/lib/companion-pane/pane-window";
 import { setOpenCompanionPaneIds } from "@/lib/companion-pane/open-registry";
 import { broadcastCompanionState } from "@/lib/companion-pane/opener-broadcast";
-import { applyDensity, writeStoredDensity } from "@/lib/density";
+import { applySessionDensity } from "@/lib/density";
 import {
   FundAccountScopeSelectionProvider,
   ScopePickerOpenerProvider,
@@ -640,8 +640,9 @@ function AppShell({
   // browser chooses and be dragged once — the arrangement otherwise restores whole.
   const handleRestoreLayout = (plan: LayoutRestorePlan) => {
     setLayoutRestoreSequence((sequence) => sequence + 1);
-    writeStoredDensity(plan.density);
-    applyDensity(plan.density);
+    // The layout's density applies to this session only. Writing it to the stored preference
+    // would announce it and sync it to the host as the operator's global density.
+    applySessionDensity(plan.density);
 
     const compacted = compactOperatingScope(plan.operatingScope);
     operatorChoseScopeRef.current = true;
