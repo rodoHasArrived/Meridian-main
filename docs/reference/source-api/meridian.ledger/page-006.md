@@ -6,6 +6,31 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ShortLotJournalProjector
+
+Qualified name: <code>Meridian.Ledger.ShortLotJournalProjector</code>. Kind: `class`.
+
+Source: [src/Meridian.Ledger/ShortLotJournalProjector.cs:11](../../../../src/Meridian.Ledger/ShortLotJournalProjector.cs#L11).
+
+Book accounting only: opening proceeds are a liability; a cover relieves that liability.
+
+```csharp
+public static class ShortLotJournalProjector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static decimal CoverCost(decimal coveredQuantity, decimal coverPrice);</code> | [src/Meridian.Ledger/ShortLotJournalProjector.cs:14](../../../../src/Meridian.Ledger/ShortLotJournalProjector.cs#L14) | Functional-currency cost of covering coveredQuantity at the explicit execution price, at ledger rounding. |
+| <code>public static bool MatchesExactly(IReadOnlyList&lt;(LedgerAccount account, decimal debit, decimal credit)&gt; expected, IReadOnlyList&lt;LedgerEntry&gt; actual);</code> | [src/Meridian.Ledger/ShortLotJournalProjector.cs:25](../../../../src/Meridian.Ledger/ShortLotJournalProjector.cs#L25) | True when the journal carries exactly the projected lines: the same count, and each expected account/debit/credit triple present exactly once. Extra, missing or inverted lines fail. |
+| <code>public static IReadOnlyList&lt;(LedgerAccount account, decimal debit, decimal credit)&gt; Open(LedgerAccount carryingAccount, decimal proceeds);</code> | [src/Meridian.Ledger/ShortLotJournalProjector.cs:34](../../../../src/Meridian.Ledger/ShortLotJournalProjector.cs#L34) |  |
+| <code>public static IReadOnlyList&lt;(LedgerAccount account, decimal debit, decimal credit)&gt; Cover(LedgerAccount carryingAccount, decimal relievedProceeds, decimal coverCost);</code> | [src/Meridian.Ledger/ShortLotJournalProjector.cs:41](../../../../src/Meridian.Ledger/ShortLotJournalProjector.cs#L41) |  |
+| <code>public static IReadOnlyList&lt;ShortCoverLine&gt; CoverInCurrency(LedgerAccount carryingAccount, ShortCoverTerms terms);</code> | [src/Meridian.Ledger/ShortLotJournalProjector.cs:66](../../../../src/Meridian.Ledger/ShortLotJournalProjector.cs#L66) | Cover in the transaction currency with execution fees. Cash is credited in the transaction currency at the cover FX; the liability relief stays at the retained acquisition FX; the book result is measured at acquisition FX and the FX movement on the cover cost is a separate realized FX result, so the two results add up to proceeds relieved less functional cash paid. Each amount is rounded to its currency&#x27;s minor units once; the functional cash credit is the sum of the rounded cost and fee legs so the journal always balances with no residue line. |
+| <code>public static bool MatchesExactly(IReadOnlyList&lt;ShortCoverLine&gt; expected, IReadOnlyList&lt;LedgerEntry&gt; actual);</code> | [src/Meridian.Ledger/ShortLotJournalProjector.cs:111](../../../../src/Meridian.Ledger/ShortLotJournalProjector.cs#L111) | True when the journal carries exactly the projected currency-aware lines: same count, and each expected account, functional debit/credit, transaction and functional currencies, transaction amounts and FX rate present exactly once. |
+| <code>[PostingCalculationNotYetConnected(&quot;Corrections are reversed by the journal workbench, which keeps line dimensions and currency; this tuple form drops both, so it should be retired or extended, not wired as is.&quot;)] public static IReadOnlyList&lt;(LedgerAccount account, decimal debit, decimal credit)&gt; Reverse(IReadOnlyList&lt;(LedgerAccount account, decimal debit, decimal credit)&gt; posted);</code> | [src/Meridian.Ledger/ShortLotJournalProjector.cs:125](../../../../src/Meridian.Ledger/ShortLotJournalProjector.cs#L125) | The exact inverse of a posted short opening or cover journal: every line&#x27;s sides swapped, nothing else. |
+| <code>public static IReadOnlyList&lt;(LedgerAccount account, decimal debit, decimal credit)&gt; Reverse(IReadOnlyList&lt;LedgerEntry&gt; posted);</code> | [src/Meridian.Ledger/ShortLotJournalProjector.cs:135](../../../../src/Meridian.Ledger/ShortLotJournalProjector.cs#L135) | The exact inverse of a posted journal, read back from its retained entries. |
+
 ## StalePriceAssessment
 
 Qualified name: <code>Meridian.Ledger.StalePriceAssessment</code>. Kind: `record`.
@@ -84,6 +109,7 @@ Declared public members:
 | <code>public static StandardChartOfAccounts Instance { get; } = new ();</code> | [src/Meridian.Ledger/StandardChartOfAccounts.cs:12](../../../../src/Meridian.Ledger/StandardChartOfAccounts.cs#L12) |  |
 | <code>public LedgerAccount GetDefinition(LedgerAccountRole role);</code> | [src/Meridian.Ledger/StandardChartOfAccounts.cs:61](../../../../src/Meridian.Ledger/StandardChartOfAccounts.cs#L61) |  |
 | <code>public LedgerAccount Resolve(LedgerAccountRole role, string? financialAccountId = null, string? symbol = null);</code> | [src/Meridian.Ledger/StandardChartOfAccounts.cs:70](../../../../src/Meridian.Ledger/StandardChartOfAccounts.cs#L70) |  |
+| <code>public bool TryGetRegistered(LedgerAccount account, out LedgerAccountRole role);</code> | [src/Meridian.Ledger/StandardChartOfAccounts.cs:91](../../../../src/Meridian.Ledger/StandardChartOfAccounts.cs#L91) |  |
 
 ## StructuredNoteAccountingTemplate
 

@@ -40,9 +40,43 @@ public sealed class Ledger : IReadOnlyLedger
     private long _ledgerLineSequence;
     private long _journalPostingSequence;
 
+    /// <summary>
+    /// Creates an unbound ledger that accepts any account and lines without currency detail.
+    /// </summary>
+    /// <remarks>
+    /// Transitional: fund, partnership, consolidation, lending and workbench callers still post
+    /// accounts outside the posting chart. New posting paths must use
+    /// <see cref="Ledger(LedgerPolicy)"/> so unknown accounts and missing currency fail closed.
+    /// </remarks>
     public Ledger()
     {
         _journalView = _journal.AsReadOnly();
+    }
+
+    /// <summary>
+    /// Creates a ledger bound to <paramref name="policy"/>: every line must use an account
+    /// registered in the policy's chart and carry currency detail in its functional currency.
+    /// </summary>
+    public Ledger(LedgerPolicy policy)
+        : this()
+    {
+        Policy = policy ?? throw new ArgumentNullException(nameof(policy));
+    }
+
+    /// <summary>The posting rules this ledger enforces, or <c>null</c> for a transitional unbound ledger.</summary>
+    public LedgerPolicy? Policy { get; }
+
+    private Action<JournalEntry>[] _postingObservers = [];
+
+    /// <summary>
+    /// Registers a callback that receives every journal entry after it has been validated and
+    /// posted, in posting order. Used to stream a ledger into a durable journal log. Observers run
+    /// synchronously on the posting thread, so they must hand work off rather than block on I/O.
+    /// </summary>
+    public void AddPostingObserver(Action<JournalEntry> observer)
+    {
+        ArgumentNullException.ThrowIfNull(observer);
+        _postingObservers = [.. _postingObservers, observer];
     }
 
     /// <summary>All journal entries in chronological posting order.</summary>
@@ -86,6 +120,9 @@ public sealed class Ledger : IReadOnlyLedger
         }
 
         AddPostingCountSnapshot(entry, postingSequence);
+
+        foreach (var observer in _postingObservers)
+            observer(entry);
     }
 
     /// <summary>Returns all individual ledger lines posted to <paramref name="account"/>.</summary>
@@ -509,7 +546,8 @@ public sealed class Ledger : IReadOnlyLedger
 
         var journalId = Guid.NewGuid();
         var entries = lines
-            .Select(l => new LedgerEntry(Guid.NewGuid(), journalId, timestamp, l.account, l.debit, l.credit, description))
+            .Select(l => new LedgerEntry(Guid.NewGuid(), journalId, timestamp, l.account, l.debit, l.credit, description,
+                currency: StampFunctionalCurrency(l.debit, l.credit)))
             .ToList();
 
         Post(new JournalEntry(journalId, timestamp, description, entries, metadata));
@@ -532,7 +570,8 @@ public sealed class Ledger : IReadOnlyLedger
 
         var journalId = Guid.NewGuid();
         var entries = lines
-            .Select(l => new LedgerEntry(Guid.NewGuid(), journalId, timestamp, l.account, l.debit, l.credit, description, l.dimensions))
+            .Select(l => new LedgerEntry(Guid.NewGuid(), journalId, timestamp, l.account, l.debit, l.credit, description, l.dimensions,
+                StampFunctionalCurrency(l.debit, l.credit)))
             .ToList();
 
         Post(new JournalEntry(journalId, timestamp, description, entries, metadata));
@@ -561,6 +600,14 @@ public sealed class Ledger : IReadOnlyLedger
 
         Post(new JournalEntry(journalId, timestamp, description, entries, metadata));
     }
+
+    // Lines posted without currency detail are stated in the bound functional currency. Stamping it
+    // here makes that explicit on the persisted line instead of leaving readers to infer it.
+    // Invalid amounts are left to LedgerEntry, so its validation message is unchanged.
+    private LedgerEntryCurrency? StampFunctionalCurrency(decimal debit, decimal credit)
+        => Policy is null || debit < 0m || credit < 0m || (debit == 0m) == (credit == 0m)
+            ? null
+            : Policy.FunctionalAmount(debit, credit);
 
     private static LedgerAccountSummary BuildAccountSummary(LedgerAccount account, AccountTotals totals)
         => new(
@@ -916,6 +963,36 @@ public sealed class Ledger : IReadOnlyLedger
         // evidence is carried by C# lines, so enforce its invariants before mutating indexes.
         if (!entry.IsBalanced)
             throw new LedgerValidationException("Journal entry does not balance in its declared currencies.");
+
+        if (Policy is not null)
+            ValidateAgainstPolicy(entry, Policy);
+    }
+
+    private static void ValidateAgainstPolicy(JournalEntry entry, LedgerPolicy policy)
+    {
+        foreach (var line in entry.Lines)
+        {
+            if (!policy.Chart.TryGetRegistered(line.Account, out _))
+            {
+                throw new LedgerValidationException(
+                    $"Ledger entry '{line.EntryId}' posts to account '{line.Account}' ({line.Account.AccountType}), " +
+                    "which is not registered in the chart of accounts.");
+            }
+
+            if (line.Currency is null)
+            {
+                throw new LedgerValidationException(
+                    $"Ledger entry '{line.EntryId}' has no currency; a bound ledger requires explicit " +
+                    $"{policy.FunctionalCurrency} currency detail on every line.");
+            }
+
+            if (!string.Equals(line.Currency.FunctionalCurrency, policy.FunctionalCurrency, StringComparison.Ordinal))
+            {
+                throw new LedgerValidationException(
+                    $"Ledger entry '{line.EntryId}' is stated in functional currency '{line.Currency.FunctionalCurrency}' " +
+                    $"but the ledger's functional currency is '{policy.FunctionalCurrency}'.");
+            }
+        }
     }
 
     private static bool MatchesFinancialAccount(LedgerAccount account, string? financialAccountId)
