@@ -6,6 +6,35 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IReportingStatusProjectionService
+
+Qualified name: <code>Meridian.Ui.Services.Services.Reporting.IReportingStatusProjectionService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs:35](../../../../src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs#L35).
+
+Projects reporting manifests, audit entries, and templates into workstation read models.
+
+```csharp
+public interface IReportingStatusProjectionService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ReportingStatusProjection Project(ReportingOutputManifest manifest, IReadOnlyList&lt;ReportingRunAuditEntry&gt; audit);</code> | [src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs:37](../../../../src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs#L37) |  |
+| <code>IReadOnlyList&lt;ReportingTemplateProjection&gt; ProjectTemplates(IReportingTemplateCatalog catalog);</code> | [src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs:38](../../../../src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs#L38) |  |
+
+## ReportingLineageProjection
+
+Qualified name: <code>Meridian.Ui.Services.Services.Reporting.ReportingLineageProjection</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs:5](../../../../src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs#L5).
+
+```csharp
+public sealed record ReportingLineageProjection(string SectionId, string DatasetSnapshotId, string DatasetSnapshotHash, string ReconciliationCheckpointId);
+```
+
 ## ReportingStatusProjection
 
 Qualified name: <code>Meridian.Ui.Services.Services.Reporting.ReportingStatusProjection</code>. Kind: `record`.
@@ -1112,48 +1141,3 @@ Declared public members:
 | <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:312](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L312) |  |
 | <code>public int SubscriptionId { get; set; }</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:313](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L313) |  |
 | <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/LiveDataService.cs:314](../../../../src/Meridian.Ui.Services/Services/LiveDataService.cs#L314) |  |
-
-## SuggestedBackfill
-
-Qualified name: <code>Meridian.Ui.Services.SuggestedBackfill</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:600](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L600).
-
-A suggested backfill operation.
-
-```csharp
-public sealed class SuggestedBackfill
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Id { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:602](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L602) |  |
-| <code>public string Title { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:603](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L603) |  |
-| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:604](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L604) |  |
-| <code>public string[] Symbols { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:605](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L605) |  |
-| <code>public int RecommendedDateRange { get; set; } = 365;</code> | [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:606](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L606) |  |
-| <code>public string? Reason { get; set; }</code> | [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:607](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L607) |  |
-| <code>public string? Category { get; set; }</code> | [src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs:608](../../../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs#L608) |  |
-
-## SwitchProviderResponse
-
-Qualified name: <code>Meridian.Ui.Services.SwitchProviderResponse</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/ProviderManagementService.cs:705](../../../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs#L705).
-
-Carries API provider-switch success, previous and new providers, and an explanatory message.
-
-```csharp
-public sealed class SwitchProviderResponse
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderManagementService.cs:707](../../../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs#L707) |  |
-| <code>public string? PreviousProvider { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderManagementService.cs:708](../../../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs#L708) |  |
-| <code>public string? NewProvider { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderManagementService.cs:709](../../../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs#L709) |  |
-| <code>public string? Message { get; set; }</code> | [src/Meridian.Ui.Services/Services/ProviderManagementService.cs:710](../../../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs#L710) |  |

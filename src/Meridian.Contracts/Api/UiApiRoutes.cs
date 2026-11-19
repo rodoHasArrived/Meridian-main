@@ -973,6 +973,7 @@ public static class UiApiRoutes
     public const string LedgerAutomationGrantRevoke = LedgerAutomationGrant + "/revoke";
     public const string LedgerBookRolloutAssessment = "/api/ledger/books/rollout-assessment";
     public const string LedgerBookById = "/api/ledger/books/{ledgerBookId:guid}";
+    public const string LedgerFiscalYearClosePlan = "/api/ledger/books/{ledgerBookId:guid}/fiscal-years/{fiscalYear:int}/close-plan";
     public const string LedgerAccountCashReconciliationRuns = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-reconciliation/runs";
     public const string LedgerAccountCashReconciliationReplay = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-reconciliation/runs/{runId}/replay";
     public const string LedgerAccountCashReconciliationCases = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-reconciliation/cases";

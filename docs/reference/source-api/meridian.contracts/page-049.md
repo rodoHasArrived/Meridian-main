@@ -6,6 +6,78 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OtcCreditEventData
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCreditEventData</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:38](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L38).
+
+An externally determined credit trigger. Recording it does not invent an auction price or settle the contract.
+
+```csharp
+public sealed record OtcCreditEventData([property : JsonRequired] OtcCreditEventKind CreditEvent, [property : JsonRequired] string ReferenceEntity, [property : JsonRequired] string DeterminationReference) : OtcContractLifecycleData;
+```
+
+## OtcCreditEventKind
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCreditEventKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L13).
+
+The contractual credit trigger determined by the external evidence.
+
+```csharp
+public enum OtcCreditEventKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Bankruptcy</code> | [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L15) |  |
+| <code>FailureToPay</code> | [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L15) |  |
+| <code>Restructuring</code> | [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L15) |  |
+| <code>ObligationAcceleration</code> | [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L15) |  |
+| <code>ObligationDefault</code> | [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L15) |  |
+| <code>RepudiationMoratorium</code> | [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L16) |  |
+| <code>GovernmentalIntervention</code> | [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L16) |  |
+
+## OtcCreditSupportSideDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCreditSupportSideDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:156](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L156).
+
+The credit support arithmetic from one party&#x27;s perspective as Secured Party, with the other party as Pledgor: exposure, the independent amounts and threshold that apply, the resulting credit support amount, what the Secured Party already holds, the raw delivery and return, and the movement after the minimum transfer amount and rounding.
+
+```csharp
+public sealed record OtcCreditSupportSideDto(OtcMovementParty SecuredParty, decimal Exposure, decimal IndependentAmountPledgor, decimal IndependentAmountSecuredParty, decimal ThresholdPledgor, decimal CreditSupportAmount, decimal Held, decimal DeliveryRaw, decimal ReturnRaw, OtcCollateralMovementDto? Movement);
+```
+
+## OtcEligibleCollateralDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcEligibleCollateralDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:74](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L74).
+
+A collateral type a credit support annex accepts, with the haircut applied to its value.
+
+```csharp
+public sealed record OtcEligibleCollateralDto(string Description, string? AssetClass, decimal HaircutPercent);
+```
+
+## OtcExposureInputVersionDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcExposureInputVersionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:169](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L169).
+
+The version of one record an exposure snapshot was computed from.
+
+```csharp
+public sealed record OtcExposureInputVersionDto(Guid Id, long Version);
+```
+
 ## OtcExposureRules
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcExposureRules</code>. Kind: `class`.
@@ -741,68 +813,4 @@ Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContract
 
 ```csharp
 public sealed record RecordCorporateActionSourceProposalRequestDto(CorporateActionDto ProposedAction, CorporateActionProviderEventIdentityDto ProviderIdentity, string Actor, Guid? ProposalId = null, Guid? SupersedesProposalId = null, string? Reason = null, string? CorrelationId = null, string? ClaimedEconomicFingerprint = null, CorporateActionSourceDisplayMetadataDto? DisplayMetadata = null);
-```
-
-## RecordRawPriceRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.RecordRawPriceRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:116](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L116).
-
-Request to record a raw price from a single source for golden copy evaluation.
-
-```csharp
-public sealed record RecordRawPriceRequest(Guid SecurityId, string SourceId, decimal Price, DateTimeOffset PriceAsOf, string RecordedBy, SecurityPriceUnit Unit = SecurityPriceUnit.Unspecified)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public SecurityPriceQuotationEvidence? Quotation { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:125](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L125) |  |
-
-## RedemptionCorporateActionTerms
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.RedemptionCorporateActionTerms</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:186](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L186).
-
-Principal redeemed at a price (call, maturity, put).
-
-```csharp
-public sealed record RedemptionCorporateActionTerms(string EventType, decimal? PricePercentOfPar, decimal? CashPerUnit, bool? IsPartial, bool? IsMakeWhole) : CorporateActionTerms(EventType);
-```
-
-## ReferenceChangeCorporateActionTerms
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ReferenceChangeCorporateActionTerms</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:209](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L209).
-
-Reference-data change with no cash or unit economics (symbol, name, delisting, expiry).
-
-```csharp
-public sealed record ReferenceChangeCorporateActionTerms(string EventType, Guid? SuccessorSecurityId, DateOnly? FinalTradingDate, string? Reason) : CorporateActionTerms(EventType);
-```
-
-## RejectCorporateActionSourceProposalRequestDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.RejectCorporateActionSourceProposalRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:613](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L613).
-
-```csharp
-public sealed record RejectCorporateActionSourceProposalRequestDto(Guid ProposalId, long ExpectedVersion, string IdempotencyKey, string Actor, string Reason, string? CorrelationId = null);
-```
-
-## ResolveConflictRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ResolveConflictRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:75](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L75).
-
-Request to resolve or dismiss a golden record conflict. ChosenWinnerSource records the operator-selected winning source so the resolution and its winner are captured atomically with the conflict&#x27;s open→resolved transition.
-
-```csharp
-public sealed record ResolveConflictRequest(Guid ConflictId, string Resolution, string ResolvedBy, string? Reason = null, string? ChosenWinnerSource = null);
 ```
