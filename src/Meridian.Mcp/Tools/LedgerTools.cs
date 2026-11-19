@@ -46,6 +46,37 @@ public sealed class LedgerTools(LedgerApiClient api)
         }
     }
 
+    [McpServerTool(Name = "get_run_ledger_integrity")]
+    [Description("Re-verify a strategy run's append-only, hash-chained ledger journal from its first record. Reports whether the chain is intact, how many journal entries were verified, the head hash, the functional currency, and the first broken record if any. Calls the configured Meridian workstation API, which applies run visibility; it never opens journal files itself.")]
+    public async Task<string> GetRunLedgerIntegrityAsync(
+        [Description("Retained strategy run identifier")] string runId,
+        CancellationToken ct = default)
+    {
+        LedgerApiClient.ValidateSegment(runId, nameof(runId));
+        if (runId.Any(char.IsControl))
+            throw new ArgumentException("Run identifier is invalid.", nameof(runId));
+        try
+        {
+            return await api.ReadAsync(runId.Trim(), "integrity", null, ct).ConfigureAwait(false);
+        }
+        catch (HttpRequestException error) when (error.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+        {
+            return "Ledger integrity access refused by the workstation API. Configure an authorized Meridian operator session.";
+        }
+        catch (HttpRequestException error) when (error.StatusCode == HttpStatusCode.NotFound)
+        {
+            return "Ledger integrity unavailable: the run is not visible or has no durable ledger journal.";
+        }
+        catch (HttpRequestException error) when (error.StatusCode.HasValue)
+        {
+            return $"Ledger integrity unavailable: workstation API returned HTTP {(int)error.StatusCode.Value}.";
+        }
+        catch (HttpRequestException)
+        {
+            return "Ledger integrity unavailable: cannot reach the configured workstation API.";
+        }
+    }
+
     [McpServerTool(Name = "get_posted_ledger_journal")]
     [Description("Read authoritative posted journal entries in an accessible accounting period, including policy, rule and source-event evidence.")]
     public Task<string> GetPostedJournalAsync(Guid periodId, CancellationToken ct = default) =>

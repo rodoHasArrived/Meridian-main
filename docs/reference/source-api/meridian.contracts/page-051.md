@@ -6,6 +6,69 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityAssetProfileDefinitionDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfileDefinitionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:78](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L78).
+
+```csharp
+public sealed record SecurityAssetProfileDefinitionDto(string ProfileId, int Version, string Name, string Category, string? SubType, SecurityAssetProfileStatusDto Status, IReadOnlyList<SecurityAssetProfileFieldDefinitionDto> Fields, IReadOnlyList<SecurityAssetProfileIdentifierPreferenceDto> IdentifierPreferences, IReadOnlyList<string> LifecycleStates, IReadOnlyList<SecurityAssetProfileAccountingImpactHintDto> AccountingImpactHints, IReadOnlyList<SecurityAssetProfileDateOrderRuleDto> DateOrderRules, DateOnly EffectiveFrom, DateOnly? EffectiveTo, string ApprovedBy, DateTimeOffset ApprovedAtUtc, string ChangeReason, string? ApprovalReference = null, string? DraftedBy = null);
+```
+
+## SecurityAssetProfileDraftRequestDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfileDraftRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:116](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L116).
+
+```csharp
+public sealed record SecurityAssetProfileDraftRequestDto(string ProfileId, string Name, string Category, string? SubType, IReadOnlyList<SecurityAssetProfileFieldDefinitionDto> Fields, IReadOnlyList<SecurityAssetProfileIdentifierPreferenceDto> IdentifierPreferences, IReadOnlyList<string> LifecycleStates, IReadOnlyList<SecurityAssetProfileAccountingImpactHintDto> AccountingImpactHints, IReadOnlyList<SecurityAssetProfileDateOrderRuleDto> DateOrderRules, string? RequestedBy, string Rationale, string? CorrelationId = null);
+```
+
+## SecurityAssetProfileFieldDefinitionDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfileFieldDefinitionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:55](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L55).
+
+```csharp
+public sealed record SecurityAssetProfileFieldDefinitionDto(string Key, string Label, SecurityAssetProfileFieldTypeDto FieldType, bool IsRequired, IReadOnlyList<string> AllowedValues, string? Description, decimal? MinValue, decimal? MaxValue, bool IsProjected, bool IsSearchable);
+```
+
+## SecurityAssetProfileFieldTypeDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfileFieldTypeDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L16).
+
+```csharp
+public enum SecurityAssetProfileFieldTypeDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Text</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L18) |  |
+| <code>Decimal</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L19) |  |
+| <code>Integer</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L20) |  |
+| <code>Boolean</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L21) |  |
+| <code>Date</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L22) |  |
+| <code>Enum</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L23) |  |
+| <code>CurrencyCode</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L24) |  |
+| <code>SecurityLink</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L25) |  |
+
+## SecurityAssetProfileGovernanceAuditEventDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfileGovernanceAuditEventDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:148](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L148).
+
+```csharp
+public sealed record SecurityAssetProfileGovernanceAuditEventDto(string AuditId, string EventType, DateTimeOffset OccurredAtUtc, string Actor, string Rationale, string CorrelationId, string ProfileId, int Version, SecurityAssetProfileStatusDto Status, int? PreviousVersion, string? ApprovalReference);
+```
+
 ## SecurityAssetProfileGovernanceResultDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfileGovernanceResultDto</code>. Kind: `record`.
@@ -735,103 +798,3 @@ An immutable review input. Corrections append a contiguous linked version.
 ```csharp
 public sealed record SecurityClosePriceSnapshotDto(Guid SnapshotId, string AccountId, string BookId, DateOnly ValuationDate, int Version, Guid? CorrectsSnapshotId, string? CorrectionRationale, DateTimeOffset EvaluatedAsOf, DateTimeOffset KnowledgeAsOf, decimal MaxSourceDispersionPercent, string CreatedBy, DateTimeOffset CreatedAt, IReadOnlyList<SecurityClosePriceLineDto> Lines, IReadOnlyList<SecurityClosePriceBlockerDto> Blockers, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? CreationCommandDigest = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] DateTimeOffset? RequestedKnowledgeAsOf = null);
 ```
-
-## SecurityCodecInputs
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCodecInputs</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:74](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L74).
-
-Inputs a class&#x27;s decode reads beyond the schema-bound terms.
-
-```csharp
-public enum SecurityCodecInputs
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>None = 0</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:76](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L76) |  |
-| <code>VersionedTerms = 1</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:78](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L78) | The row&#x27;s versioned-term decoding, for versioned containers inside a list entry. |
-| <code>EconomicSchedules = 2</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:80](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L80) | The parsed and validated economic schedules (principal, factor, step coupon). |
-| <code>ResolvedTermsDocument = 4</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:82](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L82) | The profile-resolved terms document, for a list read from it. |
-
-## SecurityComparisonPriceDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityComparisonPriceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:77](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L77).
-
-A price from one comparison source alongside its deviation from the golden copy.
-
-```csharp
-public sealed record SecurityComparisonPriceDto(string SourceId, decimal Price, DateTimeOffset PriceAsOf, decimal? PctDiffFromGoldenCopy, SecurityPriceUnit Unit = SecurityPriceUnit.Unspecified)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public SecurityPriceQuotationEvidence? Quotation { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:85](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L85) |  |
-
-## SecurityCouponKind
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCouponKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L6).
-
-The contractual coupon structure; absence never asserts a zero coupon.
-
-```csharp
-public enum SecurityCouponKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unknown</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L6) |  |
-| <code>Fixed</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L6) |  |
-| <code>Floating</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L6) |  |
-| <code>ZeroCoupon</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L6) |  |
-| <code>Step</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L6) |  |
-| <code>InflationLinked</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L6) |  |
-
-## SecurityCouponRateUnit
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCouponRateUnit</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L9).
-
-The declared unit of an annual rate, independently of its magnitude.
-
-```csharp
-public enum SecurityCouponRateUnit
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unspecified</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L9) |  |
-| <code>Percent</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L9) |  |
-| <code>Fraction</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L9) |  |
-
-## SecurityCurveDefinitionDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCurveDefinitionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:53](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L53).
-
-The write-once identity of a stored curve.
-
-```csharp
-public sealed record SecurityCurveDefinitionDto(Guid CurveId, string CurveKey, SecurityCurveKind Kind, string Currency, string? IndexName, string? Tenor, string DayCount, SecurityCurveInterpolation Interpolation, string Source, string? Description, string CreatedBy, DateTimeOffset CreatedAt)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public SecurityCurveRatePolicy RatePolicy { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:68](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L68) |  |

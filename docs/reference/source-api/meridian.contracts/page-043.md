@@ -6,6 +6,77 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IReconciliationApiService
+
+Qualified name: <code>Meridian.Contracts.Reconciliation.IReconciliationApiService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:22](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L22).
+
+Defines scope-authorized statement import, reconciliation-run, and casework API operations.
+
+```csharp
+public interface IReconciliationApiService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;StatementImportSummaryDto&gt;&gt; ListImportsAsync(ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:24](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L24) |  |
+| <code>Task&lt;IReadOnlyList&lt;StatementRunSummaryDto&gt;&gt; ListStatementRunsAsync(ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:28](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L28) |  |
+| <code>Task&lt;StatementRunDto?&gt; CreateStatementRunAsync(StatementRunCreateDto request, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:32](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L32) |  |
+| <code>Task&lt;bool&gt; OwnsStatementRunAsync(string runId, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:37](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L37) |  |
+| <code>Task&lt;ReconciliationFundAccountAuthorization?&gt; GetAuthorizedFundAccountAsync(Guid fundAccountId, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:47](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L47) | Resolves an exact fund-account owner for a tenant/company-scoped mutation. The default is deliberately unavailable so compatibility implementations cannot authorize a workflow by accident. |
+| <code>Task&lt;StatementReconciliationRunAuthorization?&gt; GetStatementRunAuthorizationAsync(string runId, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:57](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L57) | Resolves the immutable fund, ledger-book, accounting-period, and as-of authority retained on a statement run. The default is deliberately unavailable. |
+| <code>Task&lt;StatementRunDto?&gt; GetStatementRunAsync(string runId, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:63](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L63) |  |
+| <code>Task&lt;StatementRunValidationDto?&gt; GetStatementRunValidationAsync(string runId, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:68](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L68) |  |
+| <code>Task&lt;IReadOnlyList&lt;StatementRunBreakDto&gt;?&gt; ListStatementRunBreaksAsync(string runId, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:73](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L73) |  |
+| <code>Task&lt;StatementRunDto?&gt; ReconcileStatementRunAsync(string runId, StatementRunReconcileRequestDto request, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:78](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L78) |  |
+| <code>Task&lt;IReadOnlyList&lt;StatementRunExceptionDto&gt;&gt; ListOpenExceptionsAsync(ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:84](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L84) |  |
+| <code>Task&lt;IReadOnlyList&lt;StatementBreakDto&gt;&gt; ListOpenStatementBreaksAsync(ReconciliationBreakQueueScope accessScope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:88](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L88) |  |
+| <code>Task&lt;IReadOnlyList&lt;ReconciliationCaseSummaryDto&gt;&gt; ListOpenCasesAsync(ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:93](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L93) |  |
+| <code>Task&lt;IReadOnlyList&lt;ReconciliationQueueAccountStatusDto&gt;&gt; ListQueueStatusAsync(ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:97](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L97) |  |
+
+## ReconciliationCaseSummaryDto
+
+Qualified name: <code>Meridian.Contracts.Reconciliation.ReconciliationCaseSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs:11](../../../../src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs#L11).
+
+```csharp
+public sealed record ReconciliationCaseSummaryDto(string CaseId, string ImportId, string Status, string Reason, decimal Confidence, string Rationale, string CreatedAtUtc, string? Assignee = null, string Priority = "Normal", string? SlaPolicyId = null, string? SlaDueAtUtc = null, string? SlaWarningAtUtc = null, string? SlaBreachedAtUtc = null, string SlaState = "OnTrack", string? AgeBand = null, double BusinessAgeHours = 0, string? RootCauseCode = null, string? ResolutionCode = null, string? ResolutionNote = null, string? SignedOffBy = null, string? SignedOffAtUtc = null, string? ReopenedBy = null, string? ReopenedAtUtc = null, string? ReopenReason = null, long Version = 0);
+```
+
+## ReconciliationFundAccountAuthorization
+
+Qualified name: <code>Meridian.Contracts.Reconciliation.ReconciliationFundAccountAuthorization</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:5](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L5).
+
+```csharp
+public sealed record ReconciliationFundAccountAuthorization(Guid FundAccountId, string FundProfileId);
+```
+
+## ReconciliationQueueAccountStatusDto
+
+Qualified name: <code>Meridian.Contracts.Reconciliation.ReconciliationQueueAccountStatusDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs:38](../../../../src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs#L38).
+
+```csharp
+public sealed record ReconciliationQueueAccountStatusDto(Guid AccountId, string AccountCode, string QueueState, int UnresolvedBreakCount, bool SignOffReady, string NextBestAction, string BlockerReason, IReadOnlyList<string> EvidenceLinks);
+```
+
+## StatementImportSummaryDto
+
+Qualified name: <code>Meridian.Contracts.Reconciliation.StatementImportSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs:3](../../../../src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs#L3).
+
+```csharp
+public sealed record StatementImportSummaryDto(string ImportId, string Broker, string StatementDate, string ImportedAtUtc, int RawRowCount, int NormalizedRowCount);
+```
+
 ## StatementReconciliationRunAuthorization
 
 Qualified name: <code>Meridian.Contracts.Reconciliation.StatementReconciliationRunAuthorization</code>. Kind: `record`.
@@ -591,74 +662,4 @@ Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs:19](
 
 ```csharp
 public sealed record ApproveSecurityClosePriceSetRequest(string AccountId, string BookId, DateOnly ValuationDate, Guid SnapshotId, string Reviewer, string Rationale);
-```
-
-## AssetClassDepthRouteKind
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.AssetClassDepthRouteKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs:358](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs#L358).
-
-```csharp
-public enum AssetClassDepthRouteKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Provider</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs:360](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs#L360) |  |
-| <code>Ledger</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs:361](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs#L361) |  |
-| <code>Close</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs:362](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs#L362) |  |
-| <code>AssetProfiles</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs:363](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs#L363) |  |
-
-## AssetClassDepthTargetSpec
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.AssetClassDepthTargetSpec</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs:366](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs#L366).
-
-```csharp
-public sealed record AssetClassDepthTargetSpec(string KeySuffix, string TargetType, string Label, AssetClassDepthRouteKind RouteKind, string EvidenceCategory, string RequirementCategory, string Source, bool FallbackEvidenceToProvider = false, bool UseCloseEvidenceStatus = false);
-```
-
-## AssetOperationsCapabilitySet
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.AssetOperationsCapabilitySet</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1564](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1564).
-
-Groups the operational capabilities supported by different asset profiles.
-
-```csharp
-public static class AssetOperationsCapabilitySet
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly IReadOnlyList&lt;string&gt; IdentityOnly = [&quot;Identity&quot;, &quot;TermsHistory&quot;, &quot;Evidence&quot;, &quot;Readiness&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1566](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1566) |  |
-| <code>public static readonly IReadOnlyList&lt;string&gt; FixedIncome = [&quot;Identity&quot;, &quot;TermsHistory&quot;, &quot;LifecycleState&quot;, &quot;ProjectedCashFlows&quot;, &quot;ActualActivity&quot;, &quot;Reconciliation&quot;, &quot;LedgerProjection&quot;, &quot;Evidence&quot;, &quot;WorkflowAudit&quot;, &quot;Readiness&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1574](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1574) |  |
-| <code>public static readonly IReadOnlyList&lt;string&gt; DirectLending = [&quot;Identity&quot;, &quot;TermsHistory&quot;, &quot;LifecycleState&quot;, &quot;ProjectedCashFlows&quot;, &quot;ActualActivity&quot;, &quot;Reconciliation&quot;, &quot;LedgerProjection&quot;, &quot;Evidence&quot;, &quot;WorkflowAudit&quot;, &quot;Readiness&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1588](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1588) |  |
-| <code>public static readonly IReadOnlyList&lt;string&gt; AlternativeAssetOperations = [&quot;Identity&quot;, &quot;TermsHistory&quot;, &quot;LifecycleState&quot;, &quot;ProjectedCashFlows&quot;, &quot;ActualActivity&quot;, &quot;Reconciliation&quot;, &quot;LedgerProjection&quot;, &quot;Evidence&quot;, &quot;WorkflowAudit&quot;, &quot;Readiness&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1602](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1602) |  |
-
-## AssetPackAccountingRules
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.AssetPackAccountingRules</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs:889](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs#L889).
-
-```csharp
-public sealed record AssetPackAccountingRules(IReadOnlyList<string> JournalTemplateEvents, IReadOnlyList<AssetPackJournalTemplateRule> JournalTemplates, IReadOnlyList<string> AccountingBases, IReadOnlyList<string> Currencies, IReadOnlyList<string> EntityScopes);
-```
-
-## AssetPackAdmissionPolicy
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.AssetPackAdmissionPolicy</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs:855](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs#L855).
-
-```csharp
-public sealed record AssetPackAdmissionPolicy(bool AllowsWideCapture, bool RequiresJournalTemplateBeforeAutomatedPosting, string AccountingPostingPolicy, string EvidencePolicy, string CoreLedgerMutationPolicy, IReadOnlyList<string> AutomationEscalationTriggers);
 ```

@@ -317,6 +317,12 @@ immutable close population for the selected version (latest when omitted), after
 permission and exact tenant/company book ownership checks. A failed content hash returns 409;
 missing historical snapshots remain absent.
 
+`GET /api/ledger/books/{ledgerBookId}/fiscal-years/{fiscalYear}/close-plan` returns the read-only
+fiscal-year close plan (`FiscalYearClosePlanBuilder`) after the same read permission and book
+ownership checks. It is derived from retained hard-close snapshots only; missing, open, stale or
+tampered periods return a plan with named blockers, no balances and no hash. Reading never posts or
+closes. See [fiscal-year close](../../docs/domain/fiscal-year-close.md).
+
 `POST /api/ledger/period-adjustments/prepare` accepts `ledgerBookId`, `sourceJournalEntryId`,
 `targetPeriodId`, `accountingDate`, `intentId`, `reason` and optional `reversePeriodEndMark`.
 It resolves the posted source in the selected book, requires a hard-closed source and a later

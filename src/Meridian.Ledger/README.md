@@ -32,6 +32,14 @@ from authority to approve or post journals.
 
 ## Important workflows
 
+`Ledger(LedgerPolicy)` binds a ledger to `IChartOfAccounts` and a functional currency: unknown
+accounts, lines without currency and lines in another functional currency are rejected before
+anything is posted. `PostLines` overloads without currency stamp the functional currency. The
+backtest run ledger is bound with `LedgerPolicy.Trading()`; `new Ledger()` stays as a transitional,
+unbound ledger for callers outside the posting chart. Durable, hash-chained run journals live in
+`Meridian.Storage.Ledger.FileLedgerJournalLog`; see
+[ledger architecture](../../docs/architecture/ledger-architecture.md#bound-ledgers-ledgerpolicy).
+
 `LedgerJournalReversal` preserves explicit transaction/functional currency and acquisition FX
 while swapping both functional and transaction debit/credit amounts. A correction never drops the
 currency evidence from its immutable source.

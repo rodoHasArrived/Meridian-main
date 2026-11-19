@@ -6,6 +6,57 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PaymentInstruction
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PaymentInstruction</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:27](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L27).
+
+```csharp
+public sealed record PaymentInstruction(string InstructionId, string AccountId, string Counterparty, string Currency, decimal Amount, DateOnly ValueDate, string Purpose, string Status);
+```
+
+## PerformanceFeeAccrualCalculation
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PerformanceFeeAccrualCalculation</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:241](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L241).
+
+Performance fee accrued to its cumulative amount above the high-water mark and hurdle. Net asset value before the fee is the ledger&#x27;s net assets plus the performance fee already accrued and payable, and only the change from that accrued amount is drafted. Terms: performanceFeeRate, highWaterMark, hurdleAmount, crystallize (0 or 1). After a fee is crystallized and settled, register a new schedule version with the new mark.
+
+```csharp
+public sealed class PerformanceFeeAccrualCalculation(IRecurringJournalCalculationInputs inputs) : IRecurringJournalCalculation
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string CalculationKind = &quot;performance-fee-accrual&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:243](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L243) |  |
+| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:245](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L245) |  |
+| <code>public bool DependsOnPostedHistory =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:247](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L247) |  |
+| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:249](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L249) |  |
+
+## PerformanceReturnFigures
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PerformanceReturnFigures</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs:11](../../../../src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs#L11).
+
+Maps the shared F# return kernel (ReturnMeasurement) onto the workstation contract, and supplies the brokerage seam&#x27;s choice of which cash activity is external capital. Fund, share-class, and investor lanes reuse ToDto with their own source label.
+
+```csharp
+public static class PerformanceReturnFigures
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string BrokerageSource = &quot;brokerage-balance-snapshots&quot;;</code> | [src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs:14](../../../../src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs#L14) | Source label for figures measured from synced brokerage balance snapshots. |
+| <code>public static PerformanceReturnFigureDto ToDto(ReturnFigure figure, string source);</code> | [src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs:23](../../../../src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs#L23) |  |
+| <code>public static IReadOnlyList&lt;PerformanceReturnFigureDto&gt; MeasureBrokerage(IEnumerable&lt;(DateOnly AsOf, decimal Equity, string Currency)&gt; valuations, IEnumerable&lt;BrokerageCashFlowEntryDto&gt; cashEntries, string currency);</code> | [src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs:49](../../../../src/Meridian.Ui.Shared/Services/PerformanceReturnFigures.cs#L49) | Time-weighted and money-weighted figures for a brokerage account from its balance snapshots and categorized cash activity. Snapshot equity is end-of-day; deposits, withdrawals, and transfers are the only external flows. Any cash transaction the categorizer could not classify makes every figure review-required, because an unrecognized deposit would otherwise be reported as performance. |
+
 ## PeriodAdjustmentPreparationService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.PeriodAdjustmentPreparationService</code>. Kind: `class`.
@@ -850,49 +901,3 @@ Declared public members:
 | <code>public string RequireInput(string name) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:44](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L44) |  |
 | <code>public string? OptionalInput(string name) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:49](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L49) |  |
 | <code>public int RequireYearBasisDays();</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:53](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L53) | An explicit day-count year basis; the accrual refuses to guess one. |
-
-## RecurringJournalCalculationResult
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalCalculationResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:66](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L66).
-
-The outcome of a posting calculation: a balanced draft for human approval, or a recorded reason why this occurrence has nothing to post.
-
-```csharp
-public sealed record RecurringJournalCalculationResult(AutomatedJournalDraft? Draft, string Summary)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static RecurringJournalCalculationResult NothingDue(string reason) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:68](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L68) |  |
-
-## RecurringJournalPeriodAuthority
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalPeriodAuthority</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs:20](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs#L20).
-
-The existing PostgreSQL ledger remains the sole authority for locks and reopens.
-
-```csharp
-public sealed class RecurringJournalPeriodAuthority(ILedgerJournalStore? journalStore = null, IFundProfileTenancyRegistry? tenancy = null, IRecurringJournalSubjectAuthority? subjects = null) : IRecurringJournalPeriodAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;RecurringJournalPeriodState&gt; ResolveAsync(RecurringJournalScope scope, DateOnly date, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs:25](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs#L25) |  |
-
-## RecurringJournalPeriodState
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalPeriodState</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs:8](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs#L8).
-
-```csharp
-public sealed record RecurringJournalPeriodState(string PeriodId, long Version, bool IsOpen, string? LockOwner, string? ReopenPath, string? Blocker, DateOnly? StartDate = null, DateOnly? EndDate = null);
-```

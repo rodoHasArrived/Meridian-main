@@ -38,6 +38,11 @@ visibility remain enforced by the workstation API. The tool does not open ledger
 mutate books, or expose refused response bodies. Large responses direct callers to the export flow.
 Never commit session tokens.
 
+`get_run_ledger_integrity(runId)` reads `/api/workstation/runs/{runId}/ledger/integrity`, which
+re-verifies the run's append-only, hash-chained ledger journal from its first record and reports
+whether it is intact, the verified entry count, the head hash, the functional currency and the
+first broken record. It uses the same session flow and never opens journal files itself.
+
 ## Important workflows
 
 Use this module for MCP host behavior and AI-assisted tool/resource access.

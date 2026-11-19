@@ -6,6 +6,70 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RecordRawPriceRequest
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.RecordRawPriceRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:116](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L116).
+
+Request to record a raw price from a single source for golden copy evaluation.
+
+```csharp
+public sealed record RecordRawPriceRequest(Guid SecurityId, string SourceId, decimal Price, DateTimeOffset PriceAsOf, string RecordedBy, SecurityPriceUnit Unit = SecurityPriceUnit.Unspecified)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public SecurityPriceQuotationEvidence? Quotation { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:125](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L125) |  |
+
+## RedemptionCorporateActionTerms
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.RedemptionCorporateActionTerms</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:186](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L186).
+
+Principal redeemed at a price (call, maturity, put).
+
+```csharp
+public sealed record RedemptionCorporateActionTerms(string EventType, decimal? PricePercentOfPar, decimal? CashPerUnit, bool? IsPartial, bool? IsMakeWhole) : CorporateActionTerms(EventType);
+```
+
+## ReferenceChangeCorporateActionTerms
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ReferenceChangeCorporateActionTerms</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:209](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L209).
+
+Reference-data change with no cash or unit economics (symbol, name, delisting, expiry).
+
+```csharp
+public sealed record ReferenceChangeCorporateActionTerms(string EventType, Guid? SuccessorSecurityId, DateOnly? FinalTradingDate, string? Reason) : CorporateActionTerms(EventType);
+```
+
+## RejectCorporateActionSourceProposalRequestDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.RejectCorporateActionSourceProposalRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:613](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L613).
+
+```csharp
+public sealed record RejectCorporateActionSourceProposalRequestDto(Guid ProposalId, long ExpectedVersion, string IdempotencyKey, string Actor, string Reason, string? CorrelationId = null);
+```
+
+## ResolveConflictRequest
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ResolveConflictRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:75](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L75).
+
+Request to resolve or dismiss a golden record conflict. ChosenWinnerSource records the operator-selected winning source so the resolution and its winner are captured atomically with the conflict&#x27;s open→resolved transition.
+
+```csharp
+public sealed record ResolveConflictRequest(Guid ConflictId, string Resolution, string ResolvedBy, string? Reason = null, string? ChosenWinnerSource = null);
+```
+
 ## ResolveCorporateActionConflictRequestDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.ResolveCorporateActionConflictRequestDto</code>. Kind: `record`.
@@ -998,67 +1062,4 @@ Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:67](../.
 
 ```csharp
 public sealed record SecurityAssetProfileDateOrderRuleDto(string StartFieldKey, string EndFieldKey, string Code, string Message);
-```
-
-## SecurityAssetProfileDefinitionDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfileDefinitionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:78](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L78).
-
-```csharp
-public sealed record SecurityAssetProfileDefinitionDto(string ProfileId, int Version, string Name, string Category, string? SubType, SecurityAssetProfileStatusDto Status, IReadOnlyList<SecurityAssetProfileFieldDefinitionDto> Fields, IReadOnlyList<SecurityAssetProfileIdentifierPreferenceDto> IdentifierPreferences, IReadOnlyList<string> LifecycleStates, IReadOnlyList<SecurityAssetProfileAccountingImpactHintDto> AccountingImpactHints, IReadOnlyList<SecurityAssetProfileDateOrderRuleDto> DateOrderRules, DateOnly EffectiveFrom, DateOnly? EffectiveTo, string ApprovedBy, DateTimeOffset ApprovedAtUtc, string ChangeReason, string? ApprovalReference = null, string? DraftedBy = null);
-```
-
-## SecurityAssetProfileDraftRequestDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfileDraftRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:116](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L116).
-
-```csharp
-public sealed record SecurityAssetProfileDraftRequestDto(string ProfileId, string Name, string Category, string? SubType, IReadOnlyList<SecurityAssetProfileFieldDefinitionDto> Fields, IReadOnlyList<SecurityAssetProfileIdentifierPreferenceDto> IdentifierPreferences, IReadOnlyList<string> LifecycleStates, IReadOnlyList<SecurityAssetProfileAccountingImpactHintDto> AccountingImpactHints, IReadOnlyList<SecurityAssetProfileDateOrderRuleDto> DateOrderRules, string? RequestedBy, string Rationale, string? CorrelationId = null);
-```
-
-## SecurityAssetProfileFieldDefinitionDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfileFieldDefinitionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:55](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L55).
-
-```csharp
-public sealed record SecurityAssetProfileFieldDefinitionDto(string Key, string Label, SecurityAssetProfileFieldTypeDto FieldType, bool IsRequired, IReadOnlyList<string> AllowedValues, string? Description, decimal? MinValue, decimal? MaxValue, bool IsProjected, bool IsSearchable);
-```
-
-## SecurityAssetProfileFieldTypeDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfileFieldTypeDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L16).
-
-```csharp
-public enum SecurityAssetProfileFieldTypeDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Text</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L18) |  |
-| <code>Decimal</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L19) |  |
-| <code>Integer</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L20) |  |
-| <code>Boolean</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L21) |  |
-| <code>Date</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L22) |  |
-| <code>Enum</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L23) |  |
-| <code>CurrencyCode</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L24) |  |
-| <code>SecurityLink</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L25) |  |
-
-## SecurityAssetProfileGovernanceAuditEventDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfileGovernanceAuditEventDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:148](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L148).
-
-```csharp
-public sealed record SecurityAssetProfileGovernanceAuditEventDto(string AuditId, string EventType, DateTimeOffset OccurredAtUtc, string Actor, string Rationale, string CorrelationId, string ProfileId, int Version, SecurityAssetProfileStatusDto Status, int? PreviousVersion, string? ApprovalReference);
 ```

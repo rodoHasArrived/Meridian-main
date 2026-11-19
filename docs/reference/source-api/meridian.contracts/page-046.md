@@ -6,6 +6,113 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionEvidenceMutationResultDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionEvidenceMutationResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:718](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L718).
+
+```csharp
+public sealed record CorporateActionEvidenceMutationResultDto(CorporateActionProcessingCaseDto Case, CorporateActionEvidenceDto Evidence, bool Replayed);
+```
+
+## CorporateActionField
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionField</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:478](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L478).
+
+The CorporateActionDto fields a descriptor can require at append time.
+
+```csharp
+public enum CorporateActionField
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>DividendPerShare</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:480](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L480) |  |
+| <code>Currency</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:481](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L481) |  |
+| <code>SplitRatio</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:482](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L482) |  |
+| <code>NewSecurityId</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:483](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L483) |  |
+| <code>DistributionRatio</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:484](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L484) |  |
+| <code>AcquirerSecurityId</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:485](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L485) |  |
+| <code>ExchangeRatio</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:486](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L486) |  |
+| <code>SubscriptionPricePerShare</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:487](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L487) |  |
+| <code>RightsPerShare</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:488](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L488) |  |
+| <code>PayDate</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:489](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L489) |  |
+| <code>RedemptionPricePercentOfPar</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:490](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L490) |  |
+
+## CorporateActionIdempotencyConflictException
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionIdempotencyConflictException</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:876](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L876).
+
+Signals reuse of a corporate action idempotency key with different command data.
+
+```csharp
+public sealed class CorporateActionIdempotencyConflictException : CorporateActionOperationException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CorporateActionIdempotencyConflictException(Guid resourceId, string idempotencyKey) : base(CorporateActionProblemCodes.IdempotencyConflict, $&quot;Idempotency key &#x27;{idempotencyKey}&#x27; was already used for different corporate-action command data on &#x27;{resourceId:D}&#x27;.&quot;);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:878](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L878) |  |
+| <code>public Guid ResourceId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:887](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L887) |  |
+| <code>public string IdempotencyKey { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:888](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L888) |  |
+
+## CorporateActionLedgerPostingKind
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionLedgerPostingKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:507](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L507).
+
+Which ledger posting the Security Master ledger bridge produces for the event type.
+
+```csharp
+public enum CorporateActionLedgerPostingKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>None</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:509](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L509) |  |
+| <code>DividendDeclaration</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:510](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L510) |  |
+| <code>SplitMemo</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:511](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L511) |  |
+| <code>Distribution</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:512](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L512) |  |
+| <code>FactorPaydown</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:513](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L513) |  |
+| <code>RedemptionMemo</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:514](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L514) |  |
+| <code>DelistingMemo</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:515](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L515) |  |
+
+## CorporateActionLifecycleStates
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionLifecycleStates</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionLifecycleStates.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionLifecycleStates.cs#L12).
+
+Canonical corporate-action lifecycle vocabulary. Write-side states are limited to Announced, Confirmed, and Cancelled; the Ex and Paid phases are calendar facts derived at read time from ExDate/PayDate rather than provider assertions. A null stored state reads as Confirmed so events written before lifecycle support remain valid. Amendments and cancellations are superseding events (via CorporateActionDto.SupersedesCorpActId), never in-place mutations.
+
+```csharp
+public static class CorporateActionLifecycleStates
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Announced = &quot;Announced&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionLifecycleStates.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionLifecycleStates.cs#L14) |  |
+| <code>public const string Confirmed = &quot;Confirmed&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionLifecycleStates.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionLifecycleStates.cs#L15) |  |
+| <code>public const string Ex = &quot;Ex&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionLifecycleStates.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionLifecycleStates.cs#L16) |  |
+| <code>public const string Paid = &quot;Paid&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionLifecycleStates.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionLifecycleStates.cs#L17) |  |
+| <code>public const string Cancelled = &quot;Cancelled&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionLifecycleStates.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionLifecycleStates.cs#L18) |  |
+| <code>public static bool IsWriteable(string? state) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionLifecycleStates.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionLifecycleStates.cs#L21) | States accepted on appended events; Ex/Paid are derived, never written. |
+| <code>public static int Rank(string? state) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionLifecycleStates.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionLifecycleStates.cs#L29) | Monotonic ordering for supersede checks: a superseding event may not move the lifecycle backwards, except to Cancelled (which ranks above all progress states). Unknown states rank as -1 and are rejected by validation. |
+| <code>public static string Resolve(string? storedState, DateOnly exDate, DateOnly? payDate, DateTimeOffset asOf);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionLifecycleStates.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionLifecycleStates.cs#L41) | Resolves the effective display state, deriving Ex/Paid from dates. |
+
 ## CorporateActionNotFoundException
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionNotFoundException</code>. Kind: `class`.
@@ -840,92 +947,3 @@ One unadjusted notional coupon period, &#91;Start, End), that an Actual/Actual (
 ```csharp
 public readonly record struct DayCountReferencePeriod(DateOnly Start, DateOnly End);
 ```
-
-## DeactivateSecurityRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.DeactivateSecurityRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs:43](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs#L43).
-
-```csharp
-public sealed record DeactivateSecurityRequest(Guid SecurityId, long ExpectedVersion, DateTimeOffset EffectiveTo, string SourceSystem, string UpdatedBy, string? SourceRecordId, string? Reason);
-```
-
-## DeclaredScheduleRefusal
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.DeclaredScheduleRefusal</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:65](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L65).
-
-A refusal from ScheduleSpecFactory.
-
-```csharp
-public sealed record DeclaredScheduleRefusal(DeclaredScheduleRefusalCode Code, string Message);
-```
-
-## DeclaredScheduleRefusalCode
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.DeclaredScheduleRefusalCode</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L23).
-
-Why ScheduleSpecFactory refused a record&#x27;s declared schedule conventions.
-
-```csharp
-public enum DeclaredScheduleRefusalCode
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>TermsVersionUnreadable</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L26) | The record is stamped at an asset-class terms version this node does not read. |
-| <code>LegConventionsNotFollowed</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L29) | The conventions are declared on, or beside, leg-based terms, which declared mode does not follow yet. |
-| <code>EffectiveDateMissing</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:32](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L32) | The contractual issue date that anchors the schedule is not declared by the class or not carried by the record. |
-| <code>EffectiveDateNotBeforeTermination</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:35](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L35) | The issue date is not before the maturity, or the record carries no maturity. |
-| <code>CadenceUnavailable</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:38](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L38) | The payment frequency is missing or cannot drive a schedule (monthly or longer, or at maturity). |
-| <code>TermsAmbiguous</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L41) | A schedule anchor read at the payload root disagrees with what the cash-flow terms resolve. |
-| <code>ConventionUnrecognized</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L44) | A declared member&#x27;s spelling is not a recognized value. |
-| <code>ConventionConflict</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:47](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L47) | Declared members conflict with each other, or one would have no effect. |
-| <code>CalendarRequired</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L50) | A business-day convention or payment lag is declared without payment calendars. |
-| <code>CalendarSourceUnavailable</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:53](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L53) | Payment calendars are declared and no business-day calendar source is registered. |
-| <code>CalendarUnresolvable</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:56](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L56) | A declared payment calendar is not loaded on this node. |
-| <code>KernelRefused</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:59](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L59) | The schedule kernel refused the spec the conventions map to. |
-
-## DeclaredScheduleResolution
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.DeclaredScheduleResolution</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:72](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L72).
-
-The result of ScheduleSpecFactory.Resolve or ScheduleSpecFactory.ResolveShape.
-
-```csharp
-public sealed record DeclaredScheduleResolution(DeclaredScheduleStatus Status, ScheduleConventionTerms Conventions, ScheduleSpec? Spec, DeclaredScheduleRefusal? Refusal)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsDeclared =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:82](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L82) | Whether the record leaves the legacy path: it declares a schedule or is refused. Only an DeclaredScheduleStatus.Undeclared record keeps the legacy projection. |
-
-## DeclaredScheduleStatus
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.DeclaredScheduleStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L10).
-
-What ScheduleSpecFactory made of a security&#x27;s declared schedule conventions.
-
-```csharp
-public enum DeclaredScheduleStatus
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Undeclared</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L13) | The record declares no conventions this node decodes, so the legacy projection applies unchanged. |
-| <code>Declared</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L16) | The record declares conventions, and they map to a schedule spec. |
-| <code>Refused</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L19) | The record declares conventions, or cannot be read, and no schedule may be generated from it. |

@@ -99,6 +99,7 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.AddSingleton<IWorkstationAccountingApiClient, WorkstationAccountingApiClient>();
         services.AddSingleton<IWorkstationAccountingCloseApiClient, WorkstationAccountingCloseApiClient>();
         services.AddSingleton<IWorkstationEntityConsolidationApiClient, WorkstationEntityConsolidationApiClient>();
+        services.AddSingleton<IWorkstationFiscalYearCloseApiClient, WorkstationFiscalYearCloseApiClient>();
         services.AddSingleton<IWorkstationManualJournalApiClient, WorkstationManualJournalApiClient>();
         services.AddSingleton<IWorkstationIntercompanyAgreementApiClient, WorkstationIntercompanyAgreementApiClient>();
         // Shadow-mode onboarding (W11-SHADOW-001) uses the browser's shared onboarding routes; no desktop-local state.

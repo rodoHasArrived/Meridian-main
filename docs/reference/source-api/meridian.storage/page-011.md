@@ -6,6 +6,117 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OtcMarginCallSnapshotReferencePayload
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.OtcMarginCallSnapshotReferencePayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:196](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L196).
+
+The exposure snapshot a margin call was issued from.
+
+```csharp
+public sealed record OtcMarginCallSnapshotReferencePayload(Guid SnapshotId, int Version, DateOnly AsOfDate, string PayloadSha256);
+```
+
+## OtcMarginCallTransitionedPayload
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.OtcMarginCallTransitionedPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:208](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L208).
+
+OtcCollateral / MarginCallAgreed, MarginCallDisputed, MarginCallSettled or MarginCallCancelled.
+
+```csharp
+public sealed record OtcMarginCallTransitionedPayload(OtcMarginCallPayload Call, OtcMarginCallPayload Previous, string Action, string? Reason) : ISecurityGovernancePayload;
+```
+
+## PassthroughSecurityMasterCanonicalWriteScope
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.PassthroughSecurityMasterCanonicalWriteScope</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityMasterCanonicalWriteScope.cs:22](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterCanonicalWriteScope.cs#L22).
+
+Runs the operation directly; used where the stores have no shared transaction.
+
+```csharp
+public sealed class PassthroughSecurityMasterCanonicalWriteScope : ISecurityMasterCanonicalWriteScope
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static PassthroughSecurityMasterCanonicalWriteScope Instance { get; } = new ();</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterCanonicalWriteScope.cs:24](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterCanonicalWriteScope.cs#L24) |  |
+| <code>public bool IsAtomic =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterCanonicalWriteScope.cs:26](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterCanonicalWriteScope.cs#L26) |  |
+| <code>public Task&lt;T&gt; ExecuteAsync&lt;T&gt;(Guid securityId, Func&lt;Task&lt;T&gt;&gt; operation, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterCanonicalWriteScope.cs:28](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterCanonicalWriteScope.cs#L28) |  |
+
+## PostgresBondReferenceProjectionStore
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresBondReferenceProjectionStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs:16](../../../../src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs#L16).
+
+Reads the bond projection: the parent row joined to the securities spine and the issuer, lifecycle and accrual-convention satellite projections that the Bond descriptor in SecurityTermsProjectionRegistry writes. The parent table predates the registry&#x27;s identity spine and carries neither display name nor primary identifier, so this store joins securities for them; it shares the connection, command and reader plumbing through PostgresReferenceProjectionReader like every other reference-projection store.
+
+```csharp
+public sealed class PostgresBondReferenceProjectionStore : IBondReferenceProjectionStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PostgresBondReferenceProjectionStore(SecurityMasterOptions options);</code> | [src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs:20](../../../../src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs#L20) |  |
+| <code>public Task&lt;BondProjectionRow?&gt; GetBondAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs:25](../../../../src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs#L25) |  |
+| <code>public Task&lt;BondLifecycleProjectionRow?&gt; GetLifecycleAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs:35](../../../../src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs#L35) |  |
+| <code>public Task&lt;BondAccrualConventionProjectionRow?&gt; GetAccrualConventionAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs:60](../../../../src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs#L60) |  |
+| <code>public Task&lt;IReadOnlyList&lt;BondProjectionRow&gt;&gt; GetIssuerLadderAsync(string issuerName, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs:79](../../../../src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs#L79) |  |
+| <code>public Task&lt;IReadOnlyList&lt;BondProjectionRow&gt;&gt; GetMaturityLadderAsync(DateOnly from, DateOnly to, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs:90](../../../../src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs#L90) |  |
+| <code>public Task&lt;IReadOnlyList&lt;BondProjectionRow&gt;&gt; GetIssuerLadderPageAsync(string issuerName, int pageSize, DateOnly? afterMaturity, Guid? afterSecurityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs:101](../../../../src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs#L101) |  |
+| <code>public Task&lt;IReadOnlyList&lt;BondProjectionRow&gt;&gt; GetMaturityLadderPageAsync(DateOnly from, DateOnly to, int pageSize, DateOnly? afterMaturity, Guid? afterSecurityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs:120](../../../../src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs#L120) |  |
+
+## PostgresCertificateOfDepositReferenceProjectionStore
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresCertificateOfDepositReferenceProjectionStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/PostgresCertificateOfDepositReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/PostgresCertificateOfDepositReferenceProjectionStore.cs#L9).
+
+Reads certificate of deposit reference projections from PostgreSQL by security, issuer, and maturity.
+
+```csharp
+public sealed class PostgresCertificateOfDepositReferenceProjectionStore : ICertificateOfDepositReferenceProjectionStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PostgresCertificateOfDepositReferenceProjectionStore(SecurityMasterOptions options);</code> | [src/Meridian.Storage/SecurityMaster/PostgresCertificateOfDepositReferenceProjectionStore.cs:27](../../../../src/Meridian.Storage/SecurityMaster/PostgresCertificateOfDepositReferenceProjectionStore.cs#L27) |  |
+| <code>public Task&lt;CertificateOfDepositProjectionRow?&gt; GetCertificateOfDepositAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCertificateOfDepositReferenceProjectionStore.cs:35](../../../../src/Meridian.Storage/SecurityMaster/PostgresCertificateOfDepositReferenceProjectionStore.cs#L35) |  |
+| <code>public Task&lt;IReadOnlyList&lt;CertificateOfDepositProjectionRow&gt;&gt; GetByIssuerAsync(string issuerName, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCertificateOfDepositReferenceProjectionStore.cs:38](../../../../src/Meridian.Storage/SecurityMaster/PostgresCertificateOfDepositReferenceProjectionStore.cs#L38) |  |
+| <code>public Task&lt;IReadOnlyList&lt;CertificateOfDepositProjectionRow&gt;&gt; GetMaturingBeforeAsync(DateOnly beforeDate, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCertificateOfDepositReferenceProjectionStore.cs:41](../../../../src/Meridian.Storage/SecurityMaster/PostgresCertificateOfDepositReferenceProjectionStore.cs#L41) |  |
+
+## PostgresCommodityReferenceProjectionStore
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresCommodityReferenceProjectionStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs#L9).
+
+Reads commodity reference projections from PostgreSQL by security, type, and exchange.
+
+```csharp
+public sealed class PostgresCommodityReferenceProjectionStore : ICommodityReferenceProjectionStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PostgresCommodityReferenceProjectionStore(SecurityMasterOptions options);</code> | [src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs:27](../../../../src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs#L27) |  |
+| <code>public Task&lt;CommodityProjectionRow?&gt; GetCommodityAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs:35](../../../../src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs#L35) |  |
+| <code>public Task&lt;IReadOnlyList&lt;CommodityProjectionRow&gt;&gt; GetByCommodityTypeAsync(string commodityType, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs:38](../../../../src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs#L38) |  |
+| <code>public Task&lt;IReadOnlyList&lt;CommodityProjectionRow&gt;&gt; GetByExchangeAsync(string exchangeCode, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs:41](../../../../src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs#L41) |  |
+
 ## PostgresCorporateActionOperationsStore
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresCorporateActionOperationsStore</code>. Kind: `class`.
@@ -1148,119 +1259,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static SecuritySummaryDto ToSummary(SecurityProjectionRecord record) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs:10](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs#L10) |  |
 | <code>public static SecurityDetailDto ToDetail(SecurityProjectionRecord record) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs:20](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterDbMapper.cs#L20) |  |
-
-## SecurityMasterMigrationRunner
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityMasterMigrationRunner</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityMasterMigrationRunner.cs:15](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterMigrationRunner.cs#L15).
-
-Applies the Security Master schema migrations in ordinal order. Applied scripts are recorded in a durable schema_migrations ledger so each migration runs exactly once, and the runner refuses to start when two scripts collide on the same numeric ordinal — the ordering across scripts is then well-defined rather than decided by the rest of the filename. It also refuses an unapplied script whose ordinal is below the highest applied one, so retired ordinals (061 and 063, recorded in database/migration-reservations.json) and other gaps can never be filled in later.
-
-```csharp
-public sealed class SecurityMasterMigrationRunner
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterMigrationRunner(SecurityMasterOptions options);</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterMigrationRunner.cs:19](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterMigrationRunner.cs#L19) |  |
-| <code>public Task EnsureMigratedAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterMigrationRunner.cs:45](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterMigrationRunner.cs#L45) |  |
-| <code>public Task ResetSchemaAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterMigrationRunner.cs:47](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterMigrationRunner.cs#L47) |  |
-
-## SecurityMasterMutationConflictException
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityMasterMutationConflictException</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:229](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L229).
-
-Signals a concurrent change to a security&#x27;s governed mutation state.
-
-```csharp
-public sealed class SecurityMasterMutationConflictException(Guid securityId) : InvalidOperationException($"Security Master edits for '{securityId:D}' changed on another instance. Reload and retry.")
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Guid SecurityId { get; } = securityId;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:232](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L232) |  |
-
-## SecurityMasterNodeIdentity
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityMasterNodeIdentity</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityProjectionChangeNotification.cs:14](../../../../src/Meridian.Storage/SecurityMaster/SecurityProjectionChangeNotification.cs#L14).
-
-Identifies one Security Master service graph — a store and the projection cache its writes upsert — as a &quot;node&quot; for projection-cache notifications. A node ignores the notifications it emitted itself, because its own write path already upserted its cache. The identity is scoped to the graph, not the process: two graphs in one process (the desktop shell&#x27;s parent and feature containers) own separate caches and must each see the other&#x27;s writes.
-
-```csharp
-public sealed class SecurityMasterNodeIdentity
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static SecurityMasterNodeIdentity CreateNew() =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityProjectionChangeNotification.cs:17](../../../../src/Meridian.Storage/SecurityMaster/SecurityProjectionChangeNotification.cs#L17) | Creates a fresh identity for a new service graph. |
-| <code>public SecurityMasterNodeIdentity(Guid nodeId);</code> | [src/Meridian.Storage/SecurityMaster/SecurityProjectionChangeNotification.cs:19](../../../../src/Meridian.Storage/SecurityMaster/SecurityProjectionChangeNotification.cs#L19) |  |
-| <code>public Guid NodeId { get; }</code> | [src/Meridian.Storage/SecurityMaster/SecurityProjectionChangeNotification.cs:29](../../../../src/Meridian.Storage/SecurityMaster/SecurityProjectionChangeNotification.cs#L29) |  |
-
-## SecurityMasterProjectionCache
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs:35](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs#L35).
-
-Per-process warm-read cache over the durable projection store. The durable store remains the authority — the cache is a latency optimisation, and consumers fall back to the database on a miss. ReplaceAll swaps in a fully-populated replacement dictionary ATOMICALLY: the previous clear-then-fill implementation exposed an empty master to any reader that arrived between the clear and the repopulation, so a full re-warm looked like a mass delisting. An Upsert accepted while the replacement is being built is captured and replayed by version into the map the replacement installs, so a security persisted by create, amend, or a published rebuild cannot be discarded by a concurrent warm; and an upsert older than the record a rebuild installed does not downgrade it. Multi-node deployments: each node upserts its own writes directly, and every committed projection write also emits a PostgreSQL NOTIFY from inside its transaction (PostgresSecurityMasterStore, channel SecurityProjectionChangeNotification.ChannelFor), so it is delivered only on commit and never for a rolled-back write. Every other node&#x27;s SecurityMasterProjectionChangeListener re-reads the announced security from the durable store and applies it through the version-guarded Upsert (or Remove when it is gone), ignoring its own node&#x27;s notifications. Cross-node staleness is therefore bounded by notification delivery, not by a timer. PostgreSQL does not replay notifications to a disconnected listener, so after the listener reconnects it re-synchronises the whole cache; the periodic re-warm (SecurityMasterOptions.ProjectionCacheRefreshMinutes, run by SecurityMasterProjectionWarmupService) remains a backstop, and SecurityMasterOptions.ProjectionCacheNotificationsEnabled = false falls back to it alone. Reads that must be authoritative (governed workflows) still go to the durable store, not this cache.
-
-```csharp
-public sealed class SecurityMasterProjectionCache
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SemaphoreSlim RefreshGate { get; } = new (1, 1);</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs:55](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs#L55) | Orders &quot;reread the durable projection, then upsert it&quot; refreshes against each other. Alias writes keep the projection version and Upsert accepts an equal version, so two refreshes of the same security — a local alias write and a remote notification, or two local writes — must not interleave, or an earlier reread can land last. Every such refresh path holds this gate across its reread and upsert. |
-| <code>public int Count =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs:61](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs#L61) |  |
-| <code>public SecurityProjectionRecord? Get(Guid securityId) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs:63](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs#L63) |  |
-| <code>public bool Remove(Guid securityId);</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs:133](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs#L133) | Evicts one security (e.g. after a purge); a no-op when it was not cached. |
-| <code>public void ReplaceAll(IEnumerable&lt;SecurityProjectionRecord&gt; records);</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs:169](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs#L169) | Replaces the cached master with records as a single reference swap. |
-| <code>public async Task&lt;IReadOnlyList&lt;SecurityProjectionRecord&gt;&gt; ReplaceAllAsync(Func&lt;CancellationToken, Task&lt;IReadOnlyList&lt;SecurityProjectionRecord&gt;&gt;&gt; buildReplacement, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs:199](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs#L199) | Builds the replacement with buildReplacement and installs it as ReplaceAll does, but opens the upsert capture BEFORE the build reads its source. A local create or amend whose cache upsert lands while a warm is still reading or rebuilding is therefore replayed into the replacement even when the warm&#x27;s read preceded that write&#x27;s commit, instead of being dropped or downgraded by the swap. |
-| <code>public IReadOnlyCollection&lt;SecurityProjectionRecord&gt; Snapshot() =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs:292](../../../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs#L292) |  |
-
-## SecurityMasterStreamVersionConflictException
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityMasterStreamVersionConflictException</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:17](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L17).
-
-Thrown when an append was made against a stream version other than the one observed under the stream lock — most often because the security already exists and a caller tried to create it again at version 0.
-
-```csharp
-public sealed class SecurityMasterStreamVersionConflictException : InvalidOperationException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterStreamVersionConflictException(Guid securityId, long expectedVersion, long currentVersion) : base($&quot;Security stream version conflict for {securityId}. Expected {expectedVersion}, actual {currentVersion}.&quot;);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:19](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L19) |  |
-| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:27](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L27) |  |
-| <code>public long ExpectedVersion { get; }</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:28](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L28) |  |
-| <code>public long CurrentVersion { get; }</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:29](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L29) |  |
-| <code>public bool IsAlreadyCreated =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:35](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L35) | True when the append tried to CREATE a stream that already had events — the shape a repeated ingest of the same security takes. |
-
-## SecurityMasterTermsCapabilityFloor
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityMasterTermsCapabilityFloor</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/ISecurityMasterTermsCapabilityStore.cs:4](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterTermsCapabilityStore.cs#L4).
-
-The minimum declared-schedule capabilities activated for one Security Master database.
-
-```csharp
-public sealed record SecurityMasterTermsCapabilityFloor(string MinimumDeclaredMappingVersion, string MinimumKernelVersion, string ChangeRecord, string UpdatedBy, DateTimeOffset UpdatedAt);
-```

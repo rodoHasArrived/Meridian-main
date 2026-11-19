@@ -461,6 +461,54 @@ Declared public members:
 | <code>public async Task&lt;IntercompanyBalanceConfirmationDto?&gt; FindAsync(Guid accountingArrangementId, DateOnly asOf, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs:25](../../../../src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs#L25) |  |
 | <code>public async Task&lt;IntercompanyBalanceConfirmationDto&gt; AppendAsync(IntercompanyBalanceConfirmationDto next, long expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs:32](../../../../src/Meridian.Storage/Ledger/FileIntercompanyBalanceConfirmationStore.cs#L32) |  |
 
+## FileLedgerJournalLog
+
+Qualified name: <code>Meridian.Storage.Ledger.FileLedgerJournalLog</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs:56](../../../../src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs#L56).
+
+File-backed ILedgerJournalLog. Records live in a WriteAheadLog that is fsynced on every write and halts on a corrupt record. Each record holds the journal entry&#x27;s exact JSON and a SHA-256 hash chained to the previous record, so editing, reordering or dropping a record breaks the chain. A small chain-head.json, replaced atomically after each append, anchors the latest sequence and hash, so cutting records off the end of the log is also detected.
+
+```csharp
+public sealed class FileLedgerJournalLog : ILedgerJournalLog
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileLedgerJournalLog(string directory, string scopeId, LedgerPolicy? policy) : this(directory, scopeId, policy, adoptHeaderPolicyChart : null);</code> | [src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs:80](../../../../src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs#L80) |  |
+| <code>public string ScopeId { get; }</code> | [src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs:103](../../../../src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs#L103) |  |
+| <code>public static string GenesisHash(string scopeId) =&gt; …;</code> | [src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs:108](../../../../src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs#L108) | The hash every journal for scopeId chains its first entry to. |
+| <code>public async Task AppendAsync(JournalEntry entry, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs:111](../../../../src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs#L111) |  |
+| <code>public async Task&lt;global::Meridian.Ledger.Ledger&gt; LoadLedgerAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs:167](../../../../src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs#L167) |  |
+| <code>public async Task&lt;LedgerJournalChainVerification&gt; VerifyAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs:185](../../../../src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs#L185) |  |
+| <code>public static async Task&lt;LedgerJournalChainVerification?&gt; VerifyDirectoryAsync(string directory, string scopeId, IChartOfAccounts chart, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs:218](../../../../src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs#L218) | Verifies a journal directory without opening it for writes. Returns null when the directory holds no journal. |
+| <code>public static FileLedgerJournalLog? OpenReadOnly(string directory, string scopeId, IChartOfAccounts chart);</code> | [src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs:230](../../../../src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs#L230) | Opens an existing journal for verification and reads only, alongside its writer. Returns null when the directory holds no journal. The journal is checked under the functional currency in its own header, with chart as the account registry. |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs:463](../../../../src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs#L463) |  |
+
+## FileLedgerJournalLogFactory
+
+Qualified name: <code>Meridian.Storage.Ledger.FileLedgerJournalLogFactory</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/FileLedgerJournalLogFactory.cs:28](../../../../src/Meridian.Storage/Ledger/FileLedgerJournalLogFactory.cs#L28).
+
+Stores each scope&#x27;s journal in its own directory under {root}/{sha256(scope)}, so any scope id is a safe directory name and two scopes can never share a journal.
+
+```csharp
+public sealed class FileLedgerJournalLogFactory : ILedgerJournalLogFactory
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileLedgerJournalLogFactory(string root, IChartOfAccounts? chart = null);</code> | [src/Meridian.Storage/Ledger/FileLedgerJournalLogFactory.cs:35](../../../../src/Meridian.Storage/Ledger/FileLedgerJournalLogFactory.cs#L35) |  |
+| <code>public static string DefaultRoot(string storageRoot) =&gt; …;</code> | [src/Meridian.Storage/Ledger/FileLedgerJournalLogFactory.cs:43](../../../../src/Meridian.Storage/Ledger/FileLedgerJournalLogFactory.cs#L43) | Default location under a storage root: {storageRoot}/ledger/journals. |
+| <code>public ILedgerJournalLog Open(string scopeId, LedgerPolicy? policy) =&gt; …;</code> | [src/Meridian.Storage/Ledger/FileLedgerJournalLogFactory.cs:46](../../../../src/Meridian.Storage/Ledger/FileLedgerJournalLogFactory.cs#L46) |  |
+| <code>public Task&lt;LedgerJournalChainVerification?&gt; VerifyAsync(string scopeId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/FileLedgerJournalLogFactory.cs:50](../../../../src/Meridian.Storage/Ledger/FileLedgerJournalLogFactory.cs#L50) |  |
+| <code>public async Task&lt;IReadOnlyLedger?&gt; LoadAsync(string scopeId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileLedgerJournalLogFactory.cs:54](../../../../src/Meridian.Storage/Ledger/FileLedgerJournalLogFactory.cs#L54) |  |
+
 ## FileLegacyIntercompanyAttributionStore
 
 Qualified name: <code>Meridian.Storage.Ledger.FileLegacyIntercompanyAttributionStore</code>. Kind: `class`.
@@ -884,74 +932,23 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task ValidateEntityPostingControlsAsync(LedgerJournalEntryWrite write, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:23](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L23) |  |
 
-## ILedgerJournalStore
+## ILedgerJournalLog
 
-Qualified name: <code>Meridian.Storage.Ledger.ILedgerJournalStore</code>. Kind: `interface`.
+Qualified name: <code>Meridian.Storage.Ledger.ILedgerJournalLog</code>. Kind: `interface`.
 
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:15](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L15).
+Source: [src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs:26](../../../../src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs#L26).
 
-Appends and queries ledger journal entries and persists ledger books and periods.
+An append-only, hash-chained journal of posted JournalEntry records.
 
 ```csharp
-public interface ILedgerJournalStore
+public interface ILedgerJournalLog : IAsyncDisposable
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:17](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L17) |  |
-| <code>Task&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;&gt; QueryAsync(LedgerJournalEntryQuery query, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:23](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L23) |  |
-| <code>Task&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;&gt; GetByPeriodAsync(Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:29](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L29) |  |
-| <code>Task&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;&gt; GetByAggregateAsync(Guid aggregateId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:31](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L31) |  |
-| <code>Task&lt;LedgerAccountingPeriod?&gt; GetPeriodAsync(Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:33](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L33) |  |
-| <code>Task&lt;IReadOnlyList&lt;LedgerAccountingPeriod&gt;&gt; ListPeriodsAsync(Guid? ledgerBookId = null, string? status = null, string? fundProfileId = null, Guid? fundStructureNodeId = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:35](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L35) |  |
-| <code>Task&lt;LedgerAccountingPeriod&gt; SavePeriodAsync(LedgerAccountingPeriod period, long expectedVersion, PeriodCloseEventRecord? closeEvent = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:42](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L42) |  |
-| <code>Task&lt;LedgerBookRecord?&gt; GetLedgerBookAsync(Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:48](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L48) |  |
-| <code>Task&lt;IReadOnlyList&lt;LedgerBookRecord&gt;&gt; ListLedgerBooksAsync(string? fundProfileId = null, Guid? fundStructureNodeId = null, FundStructureNodeKindDto? fundStructureNodeKind = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:50](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L50) |  |
-| <code>Task&lt;LedgerBookRecord&gt; SaveLedgerBookAsync(LedgerBookRecord book, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:56](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L56) |  |
-| <code>Task&lt;LedgerAccountTaxLotPolicyRecord&gt; SaveTaxLotPolicyAsync(LedgerAccountTaxLotPolicyRecord policy, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:58](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L58) |  |
-| <code>Task&lt;IReadOnlyList&lt;LedgerAccountTaxLotPolicyRecord&gt;&gt; ListTaxLotPoliciesAsync(Guid ledgerBookId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:64](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L64) |  |
-| <code>Task&lt;LedgerTaxLotRecord&gt; SaveTaxLotAsync(LedgerTaxLotRecord lot, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:75](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L75) | Saves a non-atomic compatibility lot. Governed production stores reject this operation; use IAtomicTaxLotJournalStore for journal-backed lot mutations and the reviewed backfill workflow for retained legacy acquisition facts. |
-| <code>Task&lt;IReadOnlyList&lt;LedgerTaxLotRecord&gt;&gt; ListOpenTaxLotsAsync(Guid ledgerBookId, LedgerAccount account, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:81](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L81) |  |
-| <code>Task&lt;IReadOnlyList&lt;LedgerTaxLotRecord&gt;&gt; GetTaxLotsByIdsAsync(Guid ledgerBookId, IReadOnlyList&lt;Guid&gt; taxLotRecordIds, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:88](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L88) |  |
-| <code>Task&lt;IReadOnlyList&lt;LedgerTaxLotRecord&gt;&gt; GetTaxLotsByLotIdsAsync(Guid ledgerBookId, LedgerAccount account, IReadOnlyList&lt;string&gt; lotIds, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:96](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L96) | Finds retained labels across open and closed lots in the exact ledger book and account key. |
-| <code>Task&lt;IReadOnlyList&lt;LedgerTaxLotRecord&gt;&gt; ListOpenTaxLotsByAssetScopeAsync(Guid ledgerBookId, Guid securityId, Guid bookPositionId, DateOnly effectiveDate, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:117](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L117) | Lists the lots of record open under one (security, book position) scope and acquired on or before effectiveDate. Face-denominated economics -- principal paydown above all -- must be derived from the lots that actually held the position on the event&#x27;s date rather than from a caller-supplied quantity, and the account a lot sits under is not known at that point; this read is the asset-scoped seam that makes the lot of record reachable from the projection path. The acquisition bound matters because factors publish after the fact: a paydown is always posted with a lag, and a lot bought between the effective date and the posting would otherwise be paid down for a period it did not hold. Reconstructs open quantity at the end of that effective date from retained journal-backed mutations, including lots fully disposed since then. Missing or inconsistent historical quantity evidence fails closed; returned versions remain current concurrency tokens. |
-| <code>Task&lt;IReadOnlyList&lt;Meridian.Contracts.SecurityMaster.FaceValueAccrualHolding&gt;&gt; ListTaxLotAccrualSnapshotsAsync(Guid ledgerBookId, Guid securityId, Guid bookPositionId, DateOnly from, DateOnly through, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:133](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L133) | Reconstructs daily face-value accrual entitlements from retained mutation evidence in one scoped read. Closing acquisitions/disposals retain their existing timing; a same-day factor paydown follows interest, including the final day of a full paydown that closes the lot. Missing face terms or incomplete history refuses the whole read. Returned acquisition facts and current version tokens are evidence, not writable historical lot records. |
-| <code>Task&lt;AtomicTaxLotJournalResult?&gt; GetAtomicTaxLotPostingAsync(Guid mutationBatchId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:148](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L148) | Resolves one immutable atomic tax-lot posting batch together with its journal and mutation evidence. Public Posted projections use this read to prove that a supplied mutation-batch identity is durable authority rather than caller-provided lifecycle metadata. |
-
-## ILedgerOpenLotSuccessorHistory
-
-Qualified name: <code>Meridian.Storage.Ledger.ILedgerOpenLotSuccessorHistory</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.CorporateAction.cs:15](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.CorporateAction.cs#L15).
-
-Reads the committed journal, predecessor/successor snapshots and reviewed allocation together.
-
-```csharp
-public interface ILedgerOpenLotSuccessorHistory
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;AtomicTaxLotJournalResult&gt;&gt; GetOpenLotSuccessorHistoryAsync(Guid ledgerBookId, IReadOnlyList&lt;Guid&gt; journalEntryIds, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.CorporateAction.cs:17](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.CorporateAction.cs#L17) |  |
-
-## ILedgerOpenPositionReportingSnapshotSource
-
-Qualified name: <code>Meridian.Storage.Ledger.ILedgerOpenPositionReportingSnapshotSource</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:24](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L24).
-
-Opt-in capture of historical open-lot basis alongside the exact reporting journal transaction.
-
-```csharp
-public interface ILedgerOpenPositionReportingSnapshotSource : ILedgerReportingSnapshotSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;LedgerReportingSnapshot&gt; CaptureOpenPositionReportingSnapshotAsync(LedgerJournalEntryQuery query, Guid accountingPeriodId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs:26](../../../../src/Meridian.Storage/Ledger/ILedgerReportingSnapshotSource.cs#L26) |  |
+| <code>string ScopeId { get; }</code> | [src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs:29](../../../../src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs#L29) | The run, session or book the journal belongs to. |
+| <code>Task AppendAsync(JournalEntry entry, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs:35](../../../../src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs#L35) | Durably appends entry. Re-appending an entry id with identical content is a no-op; the same id with different content is rejected, because posted history never changes. |
+| <code>Task&lt;global::Meridian.Ledger.Ledger&gt; LoadLedgerAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs:39](../../../../src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs#L39) | Verifies the chain and returns every entry re-posted into a ledger bound to the log&#x27;s policy. |
+| <code>Task&lt;LedgerJournalChainVerification&gt; VerifyAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs:42](../../../../src/Meridian.Storage/Ledger/FileLedgerJournalLog.cs#L42) | Re-verifies the chain from its genesis record without throwing on a break. |

@@ -245,6 +245,13 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         // LifecyclePolicyEngine governs retention automatically (ADR-002 / ADR-007).
         services.AddSingleton<IPositionSnapshotStore, JsonlPositionSnapshotStore>();
 
+        // Posting-account registry shared by bound ledgers, and the append-only, hash-chained
+        // journal store that backtests stream their books into under {StorageRoot}/ledger/journals/.
+        services.TryAddSingleton<IChartOfAccounts>(StandardChartOfAccounts.Instance);
+        services.TryAddSingleton<ILedgerJournalLogFactory>(sp => new FileLedgerJournalLogFactory(
+            FileLedgerJournalLogFactory.DefaultRoot(sp.GetRequiredService<StorageOptions>().RootPath),
+            sp.GetRequiredService<IChartOfAccounts>()));
+
         if (configuration.IsConfigured(LedgerStartup.ConnectionStringVariable))
         {
             services.AddSingleton(ledgerOptions);

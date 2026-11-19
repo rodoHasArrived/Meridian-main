@@ -6,6 +6,117 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ISecurityMasterCashFlowService
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityMasterCashFlowService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs#L8).
+
+Manages security cash flow sources and retrieves current or historical scenario projections.
+
+```csharp
+public interface ISecurityMasterCashFlowService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;SecurityCashFlowSourceDto?&gt; GetCashFlowSourceAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs#L10) |  |
+| <code>Task UpsertCashFlowSourceAsync(UpsertCashFlowSourceRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs#L11) |  |
+| <code>Task&lt;StructuredCashFlowProjectionDto?&gt; GetProjectionAsync(Guid securityId, StructuredCashFlowScenario scenario, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs#L12) |  |
+| <code>Task&lt;StructuredCashFlowProjectionDto?&gt; GetProjectionAsOfAsync(Guid securityId, StructuredCashFlowScenario scenario, DateTimeOffset asOf, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs#L19) | The projection as of asOf rather than the wall clock: periods paying on or after its UTC date are projected, and floating legs read the forward curve in force on that date. GetProjectionAsync is this method at DateTimeOffset.UtcNow. |
+| <code>Task&lt;StructuredCashFlowProjectionDto?&gt; GetProjectionAsync(Guid securityId, StructuredCashFlowScenario scenario, BondCalculationContext context, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs#L22) | Calculates using explicit economic and recorded-information cutoffs. |
+| <code>Task&lt;StructuredCashFlowProjectionDto?&gt; GetProjectionAsync(SecurityDetailDto security, StructuredCashFlowScenario scenario, BondCalculationContext context, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs#L29) | Uses the supplied selected terms rather than rereading today&#x27;s Security Master. |
+| <code>Task&lt;SecurityCashFlowBlockerDto?&gt; GetProjectionBlockerAsync(SecurityDetailDto security, BondCalculationContext context, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs:37](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs#L37) | Reads the Base calculation&#x27;s capability refusal on the supplied selected terms and cutoffs. This passive read retains no calculation receipt and exposes no unretained receipt identity. An implementation without a read-only capability path must refuse rather than fall back to capture. |
+| <code>Task&lt;SecurityCashFlowCalculationReceipt?&gt; CaptureProjectionAsync(Guid securityId, StructuredCashFlowScenario scenario, BondCalculationContext context, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs#L41) | Captures selected inputs for callers to retain with their calculation evidence. |
+| <code>Task&lt;StructuredCashFlowProjectionDto&gt; ReplayProjectionAsync(SecurityCashFlowCalculationReceipt receipt, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs:45](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs#L45) | Recomputes a retained receipt, refusing changed or unavailable calendar evidence. |
+| <code>Task&lt;StructuredCashFlowProjectionDto?&gt; ReplayProjectionAsync(string contentSha256, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs#L50) | Replays evidence fetched from the configured immutable receipt store. |
+
+## ISecurityMasterClassificationDriftReportService
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityMasterClassificationDriftReportService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterClassificationDrift.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterClassificationDrift.cs#L41).
+
+Builds the classification drift report for the active Security Master population.
+
+```csharp
+public interface ISecurityMasterClassificationDriftReportService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;SecurityClassificationDriftReportDto&gt; BuildReportAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterClassificationDrift.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterClassificationDrift.cs#L44) | Scans active securities and compares each one&#x27;s retained classification with the current taxonomy. |
+
+## ISecurityMasterCorporateActionCommandService
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityMasterCorporateActionCommandService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs#L9).
+
+Application-owned port for appending corporate actions through a shared validation and audit path.
+
+```csharp
+public interface ISecurityMasterCorporateActionCommandService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;SecurityMasterCorporateActionAppendResultDto&gt; AppendAsync(SecurityMasterCorporateActionAppendRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCorporateActions.cs#L11) |  |
+
+## ISecurityMasterDataQualityService
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityMasterDataQualityService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/ISecurityMasterDataQualityService.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterDataQualityService.cs#L6).
+
+Runs Security Master quality checks and retrieves the latest retained quality report.
+
+```csharp
+public interface ISecurityMasterDataQualityService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;SecurityMasterQualityReportDto&gt; RunQualityChecksAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterDataQualityService.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterDataQualityService.cs#L8) |  |
+| <code>Task&lt;SecurityMasterQualityReportDto?&gt; GetLatestReportAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterDataQualityService.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterDataQualityService.cs#L9) |  |
+
+## ISecurityMasterPricingService
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityMasterPricingService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/ISecurityMasterPricingService.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterPricingService.cs#L8).
+
+Manages pricing hierarchies, raw price observations, and selected Security Master prices.
+
+```csharp
+public interface ISecurityMasterPricingService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;SecurityPricingHierarchyDto?&gt; GetPricingHierarchyAsync(Guid securityId, string? accountId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterPricingService.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterPricingService.cs#L10) |  |
+| <code>Task UpsertPricingHierarchyAsync(SecurityPricingHierarchyDto hierarchy, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterPricingService.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterPricingService.cs#L11) |  |
+| <code>Task RecordRawPriceAsync(RecordRawPriceRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterPricingService.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterPricingService.cs#L12) |  |
+| <code>Task&lt;SecurityPriceGoldenCopyDto?&gt; GetGoldenCopyPriceAsync(Guid securityId, string? accountId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterPricingService.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterPricingService.cs#L13) |  |
+| <code>Task&lt;SecurityPriceGoldenCopyDto?&gt; GetGoldenCopyPriceAsOfAsync(Guid securityId, string? accountId, DateTimeOffset asOf, CancellationToken ct = default, DateTimeOffset? knownAt = null);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterPricingService.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterPricingService.cs#L14) |  |
+| <code>Task&lt;SecurityPriceGoldenCopyDto?&gt; GetGoldenCopySelectionAsync(Guid securityId, string? accountId, Guid receiptId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterPricingService.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterPricingService.cs#L16) | Replays an exact retained selection; absent or differently scoped receipts return null. |
+| <code>Task&lt;IReadOnlyList&lt;SecurityPriceGoldenCopyDto&gt;&gt; GetObservationSelectionsAsync(Guid securityId, string? accountId, DateTimeOffset asOf, CancellationToken ct = default, DateTimeOffset? knownAt = null);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterPricingService.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterPricingService.cs#L18) | Retains one exact choice receipt per eligible source observation for an operator picker. |
+| <code>Task&lt;IReadOnlyList&lt;SecurityComparisonPriceDto&gt;&gt; GetComparisonPricesAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterPricingService.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterPricingService.cs#L20) |  |
+| <code>Task&lt;SecurityClosePriceSetDto&gt; CreateClosePriceSetAsync(CreateSecurityClosePriceSetRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterPricingService.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterPricingService.cs#L21) |  |
+| <code>Task&lt;SecurityClosePriceSetDto&gt; ApproveClosePriceSetAsync(ApproveSecurityClosePriceSetRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterPricingService.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterPricingService.cs#L22) |  |
+| <code>Task&lt;SecurityClosePriceSetDto?&gt; GetClosePriceSetAsync(string accountId, string bookId, DateOnly valuationDate, Guid snapshotId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterPricingService.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterPricingService.cs#L24) | Returns only the retained version in the exact account/book/date scope. |
+| <code>Task&lt;IReadOnlyList&lt;SecurityClosePriceSetDto&gt;&gt; GetClosePriceSetsAsync(string accountId, string bookId, DateOnly valuationDate, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterPricingService.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterPricingService.cs#L26) | Returns every retained version and approval in exact account/book/date scope, ordered by ascending version. |
+
 ## ISecurityMasterProfilePromotionService
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityMasterProfilePromotionService</code>. Kind: `interface`.
@@ -773,76 +884,4 @@ What to value: the contract, the date and the currency the exposure is computed 
 
 ```csharp
 public sealed record OtcContractValuationRequest(OtcContractDto Contract, DateOnly AsOfDate, string Currency, DateTimeOffset? KnowledgeAsOf = null);
-```
-
-## OtcCreditEventData
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCreditEventData</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:38](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L38).
-
-An externally determined credit trigger. Recording it does not invent an auction price or settle the contract.
-
-```csharp
-public sealed record OtcCreditEventData([property : JsonRequired] OtcCreditEventKind CreditEvent, [property : JsonRequired] string ReferenceEntity, [property : JsonRequired] string DeterminationReference) : OtcContractLifecycleData;
-```
-
-## OtcCreditEventKind
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCreditEventKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L13).
-
-The contractual credit trigger determined by the external evidence.
-
-```csharp
-public enum OtcCreditEventKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Bankruptcy</code> | [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L15) |  |
-| <code>FailureToPay</code> | [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L15) |  |
-| <code>Restructuring</code> | [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L15) |  |
-| <code>ObligationAcceleration</code> | [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L15) |  |
-| <code>ObligationDefault</code> | [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L15) |  |
-| <code>RepudiationMoratorium</code> | [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L16) |  |
-| <code>GovernmentalIntervention</code> | [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L16) |  |
-
-## OtcCreditSupportSideDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCreditSupportSideDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:156](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L156).
-
-The credit support arithmetic from one party&#x27;s perspective as Secured Party, with the other party as Pledgor: exposure, the independent amounts and threshold that apply, the resulting credit support amount, what the Secured Party already holds, the raw delivery and return, and the movement after the minimum transfer amount and rounding.
-
-```csharp
-public sealed record OtcCreditSupportSideDto(OtcMovementParty SecuredParty, decimal Exposure, decimal IndependentAmountPledgor, decimal IndependentAmountSecuredParty, decimal ThresholdPledgor, decimal CreditSupportAmount, decimal Held, decimal DeliveryRaw, decimal ReturnRaw, OtcCollateralMovementDto? Movement);
-```
-
-## OtcEligibleCollateralDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcEligibleCollateralDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:74](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L74).
-
-A collateral type a credit support annex accepts, with the haircut applied to its value.
-
-```csharp
-public sealed record OtcEligibleCollateralDto(string Description, string? AssetClass, decimal HaircutPercent);
-```
-
-## OtcExposureInputVersionDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcExposureInputVersionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:169](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L169).
-
-The version of one record an exposure snapshot was computed from.
-
-```csharp
-public sealed record OtcExposureInputVersionDto(Guid Id, long Version);
 ```

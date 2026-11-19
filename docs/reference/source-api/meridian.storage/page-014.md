@@ -6,6 +6,138 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MaintenanceJob
+
+Qualified name: <code>Meridian.Storage.Services.MaintenanceJob</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1605](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1605).
+
+```csharp
+public sealed record MaintenanceJob(string Id, MaintenanceType Type, JobPriority Priority, string Description, ResourceRequirements Requirements, TimeSpan EstimatedDuration, string[] TargetPaths, Dictionary<string, object>? Parameters = null, bool Interruptible = true, int MaxRetries = 3);
+```
+
+## MaintenanceScheduler
+
+Qualified name: <code>Meridian.Storage.Services.MaintenanceScheduler</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:17](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L17).
+
+Service for scheduling and coordinating maintenance operations with trading hours awareness.
+
+```csharp
+public sealed class MaintenanceScheduler : IMaintenanceScheduler, IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public MaintenanceScheduler(OperationalScheduleConfig config, IFileMaintenanceService fileMaintenanceService, ITierMigrationService tierMigrationService, IDataQualityService dataQualityService, IStorageSearchService? storageSearchService = null, IOperationalCaseHistoryStore? caseHistoryStore = null, TimeProvider? timeProvider = null);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:44](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L44) |  |
+| <code>public void Start();</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:62](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L62) |  |
+| <code>public Task&lt;ScheduleDecision&gt; CanRunNowAsync(MaintenanceType operation, ResourceRequirements requirements, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:67](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L67) |  |
+| <code>public Task&lt;ScheduleSlot?&gt; FindNextWindowAsync(MaintenanceType operation, TimeSpan estimatedDuration, ResourceRequirements requirements, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:123](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L123) |  |
+| <code>public async Task&lt;ScheduledJob&gt; ScheduleAsync(MaintenanceJob job, ScheduleOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:158](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L158) |  |
+| <code>public async Task&lt;OperationalState&gt; GetStateAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:180](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L180) |  |
+| <code>public bool IsRealTimeCollectionActive();</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:198](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L198) |  |
+| <code>public TimeSpan? GetTimeUntilCollectionEnds();</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:205](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L205) |  |
+| <code>public async Task&lt;JobExecutionStatus&gt; ExecuteJobAsync(MaintenanceJob job, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:217](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L217) |  |
+| <code>public IReadOnlyList&lt;ScheduledJob&gt; GetPendingJobs() =&gt; …;</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:410](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L410) |  |
+| <code>public IReadOnlyList&lt;ScheduledJob&gt; GetRunningJobs() =&gt; …;</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:412](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L412) |  |
+| <code>public JobExecutionStatus? GetJobStatus(string jobId);</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:414](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L414) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1461](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1461) |  |
+
+## MaintenanceType
+
+Qualified name: <code>Meridian.Storage.Services.MaintenanceType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1589](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1589).
+
+```csharp
+public enum MaintenanceType : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>All</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1591](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1591) |  |
+| <code>HealthCheck</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1592](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1592) |  |
+| <code>IntegrityValidation</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1593](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1593) |  |
+| <code>Backfill</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1594](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1594) |  |
+| <code>Compaction</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1595](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1595) |  |
+| <code>TierMigration</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1596](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1596) |  |
+| <code>IndexRebuild</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1597](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1597) |  |
+| <code>Archival</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1598](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1598) |  |
+| <code>Backup</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1599](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1599) |  |
+| <code>Reconciliation</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1600](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1600) |  |
+| <code>QualityScoring</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1601](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1601) |  |
+
+## MaintenanceWindow
+
+Qualified name: <code>Meridian.Storage.Services.MaintenanceWindow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1573](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1573).
+
+```csharp
+public sealed record MaintenanceWindow(string Name, TimeSpan Start, TimeSpan End, DayOfWeek[] Days, MaintenanceType[] AllowedOperations, int MaxConcurrentJobs = 4, ResourceLimits Limits = null !);
+```
+
+## MarketEventBuffer
+
+Qualified name: <code>Meridian.Storage.Services.MarketEventBuffer</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/EventBuffer.cs:231](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L231).
+
+Specialized event buffer for MarketEvent types.
+
+```csharp
+public sealed class MarketEventBuffer : EventBuffer<MarketEvent>
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public MarketEventBuffer(int initialCapacity = 1000) : base(initialCapacity);</code> | [src/Meridian.Storage/Services/EventBuffer.cs:259](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L259) |  |
+| <code>public IReadOnlyList&lt;MarketEvent&gt; DrainBySymbol(string symbol);</code> | [src/Meridian.Storage/Services/EventBuffer.cs:273](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L273) | Drain events for a specific symbol in a single lock acquisition. Non-matching events remain in the buffer and preserve their original ordering. |
+
+## MetadataTagService
+
+Qualified name: <code>Meridian.Storage.Services.MetadataTagService</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/MetadataTagService.cs:13](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L13).
+
+Service for managing rich metadata tags, insights, and lineage tracking on stored data files. Provides a flexible key-value tagging system with typed metadata, hierarchical taxonomy support, and file-level insights derived from content analysis.
+
+```csharp
+public sealed class MetadataTagService : IMetadataTagService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public MetadataTagService(string metadataStorePath) : this(metadataStorePath, static (path, content) =&gt; AtomicFileWriter.Write(path, content), static (path, content, ct) =&gt; AtomicFileWriter.WriteAsync(path, content, ct));</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:22](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L22) |  |
+| <code>public void SetTag(string filePath, string key, string value);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:42](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L42) |  |
+| <code>public void SetTags(string filePath, IReadOnlyDictionary&lt;string, string&gt; tags);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:54](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L54) |  |
+| <code>public string? GetTag(string filePath, string key);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:71](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L71) |  |
+| <code>public IReadOnlyDictionary&lt;string, string&gt; GetAllTags(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:80](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L80) |  |
+| <code>public bool RemoveTag(string filePath, string key);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:89](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L89) |  |
+| <code>public void RecordLineage(string filePath, LineageEntry entry);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:113](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L113) |  |
+| <code>public IReadOnlyList&lt;LineageEntry&gt; GetLineage(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:126](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L126) |  |
+| <code>public void SetInsight(string filePath, string insightKey, DataInsight insight);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:135](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L135) |  |
+| <code>public DataInsight? GetInsight(string filePath, string insightKey);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:148](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L148) |  |
+| <code>public IReadOnlyDictionary&lt;string, DataInsight&gt; GetAllInsights(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:157](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L157) |  |
+| <code>public void SetQualityScore(string filePath, double score, string? scoredBy = null);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:172](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L172) |  |
+| <code>public Task SetQualityAssessmentAsync(string filePath, double score, DataInsight insight, string? scoredBy = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:186](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L186) |  |
+| <code>public Task SetQualityAssessmentsAsync(IReadOnlyCollection&lt;QualityAssessmentMetadataUpdate&gt; assessments, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:208](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L208) |  |
+| <code>public double? GetQualityScore(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:240](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L240) |  |
+| <code>public IReadOnlyList&lt;string&gt; SearchByTag(string key, string? valuePattern = null);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:249](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L249) |  |
+| <code>public IReadOnlyList&lt;string&gt; SearchByQualityScore(double minScore, double maxScore = 1.0);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:267](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L267) |  |
+| <code>public FileMetadataRecord? GetFullMetadata(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:277](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L277) |  |
+| <code>public void RemoveMetadata(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:284](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L284) |  |
+| <code>public async Task SaveAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:290](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L290) |  |
+
 ## MigrationOptions
 
 Qualified name: <code>Meridian.Storage.Services.MigrationOptions</code>. Kind: `record`.
@@ -604,88 +736,3 @@ Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1661](../../../..
 ```csharp
 public sealed record ScheduleOptions(bool AllowImmediate = true, TimeSpan MaxWaitTime = default);
 ```
-
-## ScheduleSlot
-
-Qualified name: <code>Meridian.Storage.Services.ScheduleSlot</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1645](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1645).
-
-```csharp
-public sealed record ScheduleSlot(DateTimeOffset Start, DateTimeOffset End, MaintenanceWindow Window, ResourceLimits Limits, int AvailableConcurrencySlots);
-```
-
-## SearchResult (generic arity 1)
-
-Qualified name: <code>Meridian.Storage.Services.SearchResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/StorageSearchService.cs:784](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L784).
-
-```csharp
-public sealed record SearchResult<T>(int TotalMatches, IReadOnlyList<T> Results);
-```
-
-## SortField
-
-Qualified name: <code>Meridian.Storage.Services.SortField</code>. Kind: `enum`.
-
-Source: [src/Meridian.Storage/Services/StorageSearchService.cs:781](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L781).
-
-```csharp
-public enum SortField : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Date</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:781](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L781) |  |
-| <code>Size</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:781](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L781) |  |
-| <code>Symbol</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:781](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L781) |  |
-| <code>QualityScore</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:781](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L781) |  |
-
-## SourceCandidate
-
-Qualified name: <code>Meridian.Storage.Services.SourceCandidate</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/DataQualityScoringService.cs:481](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L481).
-
-```csharp
-public sealed record SourceCandidate(string FilePath, string Source, double QualityScore, long FileSize, QualityAssessment Assessment);
-```
-
-## SourceRanking
-
-Qualified name: <code>Meridian.Storage.Services.SourceRanking</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/DataQualityService.cs:1178](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L1178).
-
-```csharp
-public sealed record SourceRanking(string Source, double QualityScore, long EventCount, int GapCount, double Latency, bool IsRecommended);
-```
-
-## SourceRegistry
-
-Qualified name: <code>Meridian.Storage.Services.SourceRegistry</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Services/SourceRegistry.cs:11](../../../../src/Meridian.Storage/Services/SourceRegistry.cs#L11).
-
-In-memory implementation of source and symbol registry with JSON persistence.
-
-```csharp
-public sealed class SourceRegistry : ISourceRegistry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SourceRegistry(string? persistencePath = null) : this(persistencePath, static (path, content) =&gt; AtomicFileWriter.Write(path, content));</code> | [src/Meridian.Storage/Services/SourceRegistry.cs:18](../../../../src/Meridian.Storage/Services/SourceRegistry.cs#L18) |  |
-| <code>public SourceInfo? GetSourceInfo(string sourceId);</code> | [src/Meridian.Storage/Services/SourceRegistry.cs:60](../../../../src/Meridian.Storage/Services/SourceRegistry.cs#L60) |  |
-| <code>public SymbolInfo? GetSymbolInfo(string symbol);</code> | [src/Meridian.Storage/Services/SourceRegistry.cs:66](../../../../src/Meridian.Storage/Services/SourceRegistry.cs#L66) |  |
-| <code>public IReadOnlyList&lt;SourceInfo&gt; GetAllSources();</code> | [src/Meridian.Storage/Services/SourceRegistry.cs:81](../../../../src/Meridian.Storage/Services/SourceRegistry.cs#L81) |  |
-| <code>public IReadOnlyList&lt;SymbolInfo&gt; GetAllSymbols();</code> | [src/Meridian.Storage/Services/SourceRegistry.cs:90](../../../../src/Meridian.Storage/Services/SourceRegistry.cs#L90) |  |
-| <code>public void RegisterSource(SourceInfo source);</code> | [src/Meridian.Storage/Services/SourceRegistry.cs:99](../../../../src/Meridian.Storage/Services/SourceRegistry.cs#L99) |  |
-| <code>public void RegisterSymbol(SymbolInfo symbol);</code> | [src/Meridian.Storage/Services/SourceRegistry.cs:105](../../../../src/Meridian.Storage/Services/SourceRegistry.cs#L105) |  |
-| <code>public string ResolveSymbolAlias(string alias);</code> | [src/Meridian.Storage/Services/SourceRegistry.cs:111](../../../../src/Meridian.Storage/Services/SourceRegistry.cs#L111) |  |
-| <code>public string[] GetSourcePriorityOrder();</code> | [src/Meridian.Storage/Services/SourceRegistry.cs:120](../../../../src/Meridian.Storage/Services/SourceRegistry.cs#L120) |  |
