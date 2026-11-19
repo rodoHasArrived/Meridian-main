@@ -29,7 +29,10 @@ public sealed class SecurityRateFieldUnitsValidatorParityTests
         {
             [("Deposit", "interestRate")] = PendingNegativePolicyRuling,
             [("Repo", "repoRate")] = PendingNegativePolicyRuling,
-            [("CashSweep", "yieldRate")] = PendingNegativePolicyRuling
+            [("CashSweep", "yieldRate")] = PendingNegativePolicyRuling,
+            [("StructuredNote", "principalProtectionPct")] =
+                "The unit table leaves the protected share unbounded above; the validator caps it at 1. "
+                + "Pending the canonical-range ruling (remediation plan slice 4)."
         };
 
     [Fact]
