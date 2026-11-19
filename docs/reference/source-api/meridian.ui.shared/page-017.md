@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingRestatementCertificationInput
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRestatementCertificationInput</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:168](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L168).
+
+Inputs from server-owned read models used to certify a replacement snapshot. Dataset rows, source identity, template metadata, and access context must not be populated from an HTTP body.
+
+```csharp
+public sealed record ReportingRestatementCertificationInput(ReportingTemplateMetadata Template, ReportingRunReadinessDto Readiness, ReportAccessQueryContext AccessContext);
+```
+
 ## ReportingRetainedManifestArtifactDescriptor
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRetainedManifestArtifactDescriptor</code>. Kind: `record`.
@@ -952,16 +964,4 @@ Accrue default interest on the unfunded part of a posted capital call through a 
 
 ```csharp
 public sealed record RunCapitalCallDefaultInterestDraftIntakeRequest(string FundProfileId, string Currency, string Actor, string CallId, DateOnly AccrueThrough, IReadOnlyList<CapitalCallDefaultTermsInput> Defaults, Guid? LedgerBookId = null, string? PeriodId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null, DateTimeOffset? AsOf = null);
-```
-
-## RunCapitalCallFundingDraftIntakeRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RunCapitalCallFundingDraftIntakeRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CapitalCallFundingIntake.cs:30](../../../../src/Meridian.Ui.Shared/Services/CapitalCallFundingIntake.cs#L30).
-
-Request to record LP cash receipts against an issued capital call and land the per-LP funding drafts (Dr Cash / Cr Capital Call Receivable) in the manual journal workbench queue. Drafts flow through the same governed submit → approve → post lifecycle as every other automated intake lane; this run never posts anything, and partial funding leaves the receivable open.
-
-```csharp
-public sealed record RunCapitalCallFundingDraftIntakeRequest(string FundProfileId, string Currency, string Actor, string CallId, DateOnly ReceivedDate, IReadOnlyList<CapitalCallFundingInput> Fundings, Guid? LedgerBookId = null, string? PeriodId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null, DateTimeOffset? AsOf = null);
 ```

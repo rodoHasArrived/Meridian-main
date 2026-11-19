@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RunCapitalCallFundingDraftIntakeRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RunCapitalCallFundingDraftIntakeRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CapitalCallFundingIntake.cs:30](../../../../src/Meridian.Ui.Shared/Services/CapitalCallFundingIntake.cs#L30).
+
+Request to record LP cash receipts against an issued capital call and land the per-LP funding drafts (Dr Cash / Cr Capital Call Receivable) in the manual journal workbench queue. Drafts flow through the same governed submit → approve → post lifecycle as every other automated intake lane; this run never posts anything, and partial funding leaves the receivable open.
+
+```csharp
+public sealed record RunCapitalCallFundingDraftIntakeRequest(string FundProfileId, string Currency, string Actor, string CallId, DateOnly ReceivedDate, IReadOnlyList<CapitalCallFundingInput> Fundings, Guid? LedgerBookId = null, string? PeriodId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null, DateTimeOffset? AsOf = null);
+```
+
 ## RunCapitalCallIssuanceDraftIntakeRequest
 
 Qualified name: <code>Meridian.Ui.Shared.Services.RunCapitalCallIssuanceDraftIntakeRequest</code>. Kind: `record`.
@@ -853,21 +865,3 @@ Explicit daily scope configuration; no account or authority is discovered implic
 ```csharp
 public sealed record ThreeWayReconciliationSchedule(string TenantId, string CompanyId, Guid FinancialAccountId, Guid LedgerBookId, Guid AccountingPeriodId, bool Enabled = false);
 ```
-
-## ThreeWayReconciliationScheduleRunner
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayReconciliationScheduleRunner</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs:35](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs#L35).
-
-Uses the existing shared scheduler tick; retains one operation per configured scope/day.
-
-```csharp
-public sealed class ThreeWayReconciliationScheduleRunner(IThreeWayReconciliationSourceReader sources, ThreeWayReconciliationService reconciliation, ThreeWayReconciliationOptions options, ILogger<ThreeWayReconciliationScheduleRunner> logger)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;int&gt; RunDueAsync(DateTimeOffset nowUtc, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs:41](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs#L41) |  |

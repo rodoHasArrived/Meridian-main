@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ICommodityReferenceProjectionStore
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.ICommodityReferenceProjectionStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.cs:6](../../../../src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.cs#L6).
+
+Queries commodity reference projections by security, commodity type, and exchange.
+
+```csharp
+public interface ICommodityReferenceProjectionStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;CommodityProjectionRow?&gt; GetCommodityAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.cs:8](../../../../src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.cs#L8) |  |
+| <code>Task&lt;IReadOnlyList&lt;CommodityProjectionRow&gt;&gt; GetByCommodityTypeAsync(string commodityType, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.cs#L9) |  |
+| <code>Task&lt;IReadOnlyList&lt;CommodityProjectionRow&gt;&gt; GetByExchangeAsync(string exchangeCode, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.cs:10](../../../../src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.cs#L10) |  |
+
 ## ICorporateActionCashDividendAccountingStore
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.ICorporateActionCashDividendAccountingStore</code>. Kind: `interface`.
@@ -934,24 +954,3 @@ Declared public members:
 | <code>public Task&lt;CertificateOfDepositProjectionRow?&gt; GetCertificateOfDepositAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCertificateOfDepositReferenceProjectionStore.cs:35](../../../../src/Meridian.Storage/SecurityMaster/PostgresCertificateOfDepositReferenceProjectionStore.cs#L35) |  |
 | <code>public Task&lt;IReadOnlyList&lt;CertificateOfDepositProjectionRow&gt;&gt; GetByIssuerAsync(string issuerName, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCertificateOfDepositReferenceProjectionStore.cs:38](../../../../src/Meridian.Storage/SecurityMaster/PostgresCertificateOfDepositReferenceProjectionStore.cs#L38) |  |
 | <code>public Task&lt;IReadOnlyList&lt;CertificateOfDepositProjectionRow&gt;&gt; GetMaturingBeforeAsync(DateOnly beforeDate, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCertificateOfDepositReferenceProjectionStore.cs:41](../../../../src/Meridian.Storage/SecurityMaster/PostgresCertificateOfDepositReferenceProjectionStore.cs#L41) |  |
-
-## PostgresCommodityReferenceProjectionStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresCommodityReferenceProjectionStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs#L9).
-
-Reads commodity reference projections from PostgreSQL by security, type, and exchange.
-
-```csharp
-public sealed class PostgresCommodityReferenceProjectionStore : ICommodityReferenceProjectionStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostgresCommodityReferenceProjectionStore(SecurityMasterOptions options);</code> | [src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs:27](../../../../src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs#L27) |  |
-| <code>public Task&lt;CommodityProjectionRow?&gt; GetCommodityAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs:35](../../../../src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs#L35) |  |
-| <code>public Task&lt;IReadOnlyList&lt;CommodityProjectionRow&gt;&gt; GetByCommodityTypeAsync(string commodityType, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs:38](../../../../src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs#L38) |  |
-| <code>public Task&lt;IReadOnlyList&lt;CommodityProjectionRow&gt;&gt; GetByExchangeAsync(string exchangeCode, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs:41](../../../../src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs#L41) |  |

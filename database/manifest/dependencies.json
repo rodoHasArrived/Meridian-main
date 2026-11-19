@@ -10660,6 +10660,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyCounterpartCandidateDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.IntercompanyCounterpartLinkDto"
     },
     {
@@ -28679,6 +28685,12 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.IntercompanyBreakDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyCounterpartCandidateDto"
     },
     {
       "kind": "contract-set-member",
@@ -69291,7 +69303,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "e5b917e21a8bc504fbb8b7ba8d4b71826135c011ee852deeac15b73d644bed86",
+  "fingerprint": "8dbd816777d971141cb80713b455c36498380009338922f9e4b79ae1b139e7f0",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -79999,6 +80011,12 @@
       "id": "contract:Meridian.Contracts.Ledger.IntercompanyBreakDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.IntercompanyBreakDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyCounterpartCandidateDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyCounterpartCandidateDto"
     },
     {
       "classification": "dto",
@@ -101808,10 +101826,10 @@
   ],
   "summary": {
     "contract_references": 4262,
-    "contract_set_memberships": 5582,
-    "edges": 11511,
+    "contract_set_memberships": 5584,
+    "edges": 11513,
     "foreign_keys": 208,
     "logical_references": 6,
-    "nodes": 5654
+    "nodes": 5655
   }
 }

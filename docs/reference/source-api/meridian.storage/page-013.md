@@ -6,6 +6,34 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FilePermissionsDiagnostic
+
+Qualified name: <code>Meridian.Storage.Services.FilePermissionsDiagnostic</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/FilePermissionsService.cs:432](../../../../src/Meridian.Storage/Services/FilePermissionsService.cs#L432).
+
+Diagnostic information about directory permissions.
+
+```csharp
+public sealed class FilePermissionsDiagnostic
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string DirectoryPath { get; init; } = &quot;&quot;;</code> | [src/Meridian.Storage/Services/FilePermissionsService.cs:434](../../../../src/Meridian.Storage/Services/FilePermissionsService.cs#L434) |  |
+| <code>public bool Exists { get; init; }</code> | [src/Meridian.Storage/Services/FilePermissionsService.cs:435](../../../../src/Meridian.Storage/Services/FilePermissionsService.cs#L435) |  |
+| <code>public bool CanRead { get; set; }</code> | [src/Meridian.Storage/Services/FilePermissionsService.cs:436](../../../../src/Meridian.Storage/Services/FilePermissionsService.cs#L436) |  |
+| <code>public bool CanWrite { get; set; }</code> | [src/Meridian.Storage/Services/FilePermissionsService.cs:437](../../../../src/Meridian.Storage/Services/FilePermissionsService.cs#L437) |  |
+| <code>public string? UnixMode { get; set; }</code> | [src/Meridian.Storage/Services/FilePermissionsService.cs:438](../../../../src/Meridian.Storage/Services/FilePermissionsService.cs#L438) |  |
+| <code>public string Platform { get; init; } = &quot;&quot;;</code> | [src/Meridian.Storage/Services/FilePermissionsService.cs:439](../../../../src/Meridian.Storage/Services/FilePermissionsService.cs#L439) |  |
+| <code>public DateTime? CreationTime { get; set; }</code> | [src/Meridian.Storage/Services/FilePermissionsService.cs:440](../../../../src/Meridian.Storage/Services/FilePermissionsService.cs#L440) |  |
+| <code>public DateTime? LastWriteTime { get; set; }</code> | [src/Meridian.Storage/Services/FilePermissionsService.cs:441](../../../../src/Meridian.Storage/Services/FilePermissionsService.cs#L441) |  |
+| <code>public List&lt;string&gt; Issues { get; } = new ();</code> | [src/Meridian.Storage/Services/FilePermissionsService.cs:442](../../../../src/Meridian.Storage/Services/FilePermissionsService.cs#L442) |  |
+| <code>public bool HasIssues =&gt; …;</code> | [src/Meridian.Storage/Services/FilePermissionsService.cs:444](../../../../src/Meridian.Storage/Services/FilePermissionsService.cs#L444) |  |
+| <code>public override string ToString();</code> | [src/Meridian.Storage/Services/FilePermissionsService.cs:446](../../../../src/Meridian.Storage/Services/FilePermissionsService.cs#L446) |  |
+
 ## FilePermissionsOptions
 
 Qualified name: <code>Meridian.Storage.Services.FilePermissionsOptions</code>. Kind: `class`.
@@ -906,40 +934,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public MarketEventBuffer(int initialCapacity = 1000) : base(initialCapacity);</code> | [src/Meridian.Storage/Services/EventBuffer.cs:259](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L259) |  |
 | <code>public IReadOnlyList&lt;MarketEvent&gt; DrainBySymbol(string symbol);</code> | [src/Meridian.Storage/Services/EventBuffer.cs:273](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L273) | Drain events for a specific symbol in a single lock acquisition. Non-matching events remain in the buffer and preserve their original ordering. |
-
-## MetadataTagService
-
-Qualified name: <code>Meridian.Storage.Services.MetadataTagService</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Services/MetadataTagService.cs:13](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L13).
-
-Service for managing rich metadata tags, insights, and lineage tracking on stored data files. Provides a flexible key-value tagging system with typed metadata, hierarchical taxonomy support, and file-level insights derived from content analysis.
-
-```csharp
-public sealed class MetadataTagService : IMetadataTagService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public MetadataTagService(string metadataStorePath) : this(metadataStorePath, static (path, content) =&gt; AtomicFileWriter.Write(path, content), static (path, content, ct) =&gt; AtomicFileWriter.WriteAsync(path, content, ct));</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:22](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L22) |  |
-| <code>public void SetTag(string filePath, string key, string value);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:42](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L42) |  |
-| <code>public void SetTags(string filePath, IReadOnlyDictionary&lt;string, string&gt; tags);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:54](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L54) |  |
-| <code>public string? GetTag(string filePath, string key);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:71](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L71) |  |
-| <code>public IReadOnlyDictionary&lt;string, string&gt; GetAllTags(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:80](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L80) |  |
-| <code>public bool RemoveTag(string filePath, string key);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:89](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L89) |  |
-| <code>public void RecordLineage(string filePath, LineageEntry entry);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:113](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L113) |  |
-| <code>public IReadOnlyList&lt;LineageEntry&gt; GetLineage(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:126](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L126) |  |
-| <code>public void SetInsight(string filePath, string insightKey, DataInsight insight);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:135](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L135) |  |
-| <code>public DataInsight? GetInsight(string filePath, string insightKey);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:148](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L148) |  |
-| <code>public IReadOnlyDictionary&lt;string, DataInsight&gt; GetAllInsights(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:157](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L157) |  |
-| <code>public void SetQualityScore(string filePath, double score, string? scoredBy = null);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:172](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L172) |  |
-| <code>public Task SetQualityAssessmentAsync(string filePath, double score, DataInsight insight, string? scoredBy = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:186](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L186) |  |
-| <code>public Task SetQualityAssessmentsAsync(IReadOnlyCollection&lt;QualityAssessmentMetadataUpdate&gt; assessments, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:208](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L208) |  |
-| <code>public double? GetQualityScore(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:240](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L240) |  |
-| <code>public IReadOnlyList&lt;string&gt; SearchByTag(string key, string? valuePattern = null);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:249](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L249) |  |
-| <code>public IReadOnlyList&lt;string&gt; SearchByQualityScore(double minScore, double maxScore = 1.0);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:267](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L267) |  |
-| <code>public FileMetadataRecord? GetFullMetadata(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:277](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L277) |  |
-| <code>public void RemoveMetadata(string filePath);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:284](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L284) |  |
-| <code>public async Task SaveAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/MetadataTagService.cs:290](../../../../src/Meridian.Storage/Services/MetadataTagService.cs#L290) |  |

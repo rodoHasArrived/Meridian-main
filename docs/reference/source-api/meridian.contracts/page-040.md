@@ -6,6 +6,22 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RuleDryRunResultDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.RuleDryRunResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:942](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L942).
+
+```csharp
+public sealed record RuleDryRunResultDto(string FundProfileId, Guid? LedgerBookId, string SourceEventType, DateOnly EffectiveDate, decimal EventAmount, string Currency, bool IsPostingBalanced, string? SelectedRuleId, IReadOnlyList<AccountingRuleDryRunMatchDto> RuleMatches, IReadOnlyList<AccountingJournalPreviewLineDto> GeneratedLines, IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues, IReadOnlyList<GeneratedPostingLineDto>? GeneratedPostingLines = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;GeneratedPostingLineDto&gt; GeneratedPostingLines { get; init; } = GeneratedPostingLines??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:956](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L956) |  |
+
 ## RulePromotionApprovalDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.RulePromotionApprovalDto</code>. Kind: `record`.
@@ -970,22 +986,3 @@ Declared public members:
 | <code>public HumanOperatorRequiredException(string action) : base(OperationsOriginGuard.RefusalMessage(action)) =&gt; …;</code> | [src/Meridian.Contracts/Operations/OperationsOriginGuard.cs:16](../../../../src/Meridian.Contracts/Operations/OperationsOriginGuard.cs#L16) |  |
 | <code>public HumanOperatorRequiredException(string action, string message) : base(message) =&gt; …;</code> | [src/Meridian.Contracts/Operations/OperationsOriginGuard.cs:20](../../../../src/Meridian.Contracts/Operations/OperationsOriginGuard.cs#L20) |  |
 | <code>public string Action { get; }</code> | [src/Meridian.Contracts/Operations/OperationsOriginGuard.cs:25](../../../../src/Meridian.Contracts/Operations/OperationsOriginGuard.cs#L25) | The action that was refused, in the phrasing used by the refusal message. |
-
-## IOperationalCaseHistoryStore
-
-Qualified name: <code>Meridian.Contracts.Operations.IOperationalCaseHistoryStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Operations/IOperationalCaseHistoryStore.cs:6](../../../../src/Meridian.Contracts/Operations/IOperationalCaseHistoryStore.cs#L6).
-
-Append-only persistence boundary for hash-chained operational case history.
-
-```csharp
-public interface IOperationalCaseHistoryStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>ValueTask&lt;OperationalCaseHistoryRecord&gt; AppendAsync(OperationalCaseHistoryAppendRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.Contracts/Operations/IOperationalCaseHistoryStore.cs:8](../../../../src/Meridian.Contracts/Operations/IOperationalCaseHistoryStore.cs#L8) |  |
-| <code>ValueTask&lt;IReadOnlyList&lt;OperationalCaseHistoryRecord&gt;&gt; ReadAsync(OperationalCaseHistoryQuery query, CancellationToken cancellationToken = default);</code> | [src/Meridian.Contracts/Operations/IOperationalCaseHistoryStore.cs:12](../../../../src/Meridian.Contracts/Operations/IOperationalCaseHistoryStore.cs#L12) |  |

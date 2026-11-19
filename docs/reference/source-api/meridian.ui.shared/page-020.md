@@ -6,6 +6,29 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkflowPresetService
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.WorkflowPresetService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs:9](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs#L9).
+
+Validates and manages operator-saved workflow presets on top of the workflow catalog.
+
+```csharp
+public sealed class WorkflowPresetService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WorkflowPresetService(IWorkflowActionCatalog catalog, IWorkflowPresetStore store);</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs:21](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs#L21) |  |
+| <code>public async Task&lt;WorkflowPresetLibraryDto&gt; GetLibraryAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs:27](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs#L27) |  |
+| <code>public async Task&lt;WorkflowPresetMutationResult&gt; SaveAsync(WorkflowPresetSaveRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs:35](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs#L35) |  |
+| <code>public async Task&lt;WorkflowPresetMutationResult&gt; SetPinnedAsync(string presetId, bool isPinned, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs:77](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs#L77) |  |
+| <code>public async Task&lt;WorkflowPresetMutationResult&gt; MarkUsedAsync(string presetId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs:111](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs#L111) |  |
+| <code>public async Task&lt;bool&gt; DeleteAsync(string presetId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs:143](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs#L143) |  |
+
 ## WorkflowPresetSnapshot
 
 Qualified name: <code>Meridian.Ui.Shared.Workflows.WorkflowPresetSnapshot</code>. Kind: `record`.

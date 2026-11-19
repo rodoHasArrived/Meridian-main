@@ -800,6 +800,30 @@ Declared public members:
 | <code>public async Task&lt;LegacyIntercompanyAttributionDto&gt; AppendAsync(LegacyIntercompanyAttributionDto attribution, Guid? expectedPreviousAttributionId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLegacyIntercompanyAttributionStore.cs:42](../../../../src/Meridian.Storage/Ledger/PostgresLegacyIntercompanyAttributionStore.cs#L42) |  |
 | <code>public async Task&lt;IAsyncDisposable&gt; AcquireAuthorityLeaseAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLegacyIntercompanyAttributionStore.cs:88](../../../../src/Meridian.Storage/Ledger/PostgresLegacyIntercompanyAttributionStore.cs#L88) |  |
 
+## PostgresManualJournalEntryDraftStore
+
+Qualified name: <code>Meridian.Storage.Ledger.PostgresManualJournalEntryDraftStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs:13](../../../../src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs#L13).
+
+PostgreSQL manual journal drafts (ledger migration 077). Mirrors FileManualJournalEntryDraftStore: the same normalization, scope key, filters and ordering. Each row retains the complete draft DTO so init-only, server-held fields round-trip exactly. Optimistic version checks belong to the workbench.
+
+```csharp
+public sealed class PostgresManualJournalEntryDraftStore : IManualJournalEntryDraftStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PostgresManualJournalEntryDraftStore(LedgerJournalStoreOptions options);</code> | [src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs:19](../../../../src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs#L19) |  |
+| <code>public LedgerJournalStoreOptions Options =&gt; …;</code> | [src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs:30](../../../../src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs#L30) | The schema whose drafts and command receipts this store shares. |
+| <code>public async Task&lt;IReadOnlyList&lt;string&gt;&gt; ListFundProfileIdsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs:32](../../../../src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs#L32) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ManualJournalEntryDraftDto&gt;&gt; ListAsync(string fundProfileId, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null) =&gt; …;</code> | [src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs:51](../../../../src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs#L51) |  |
+| <code>public async Task&lt;ManualJournalEntryDraftDto?&gt; GetAsync(string fundProfileId, Guid journalEntryId, CancellationToken ct = default, string? tenantId = null, string? companyId = null) =&gt; …;</code> | [src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs:59](../../../../src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs#L59) |  |
+| <code>public Task SaveAsync(ManualJournalEntryDraftDto draft, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs:68](../../../../src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs#L68) |  |
+| <code>public async Task SaveBatchAsync(IReadOnlyList&lt;ManualJournalEntryDraftDto&gt; drafts, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs:71](../../../../src/Meridian.Storage/Ledger/PostgresManualJournalEntryDraftStore.cs#L71) |  |
+
 ## PostgresPrivateCapitalStore
 
 Qualified name: <code>Meridian.Storage.Ledger.PostgresPrivateCapitalStore</code>. Kind: `class`.
@@ -1565,22 +1589,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public MoneyMarketMigrationRunner(MoneyMarketStoreOptions options);</code> | [src/Meridian.Storage/MoneyMarket/MoneyMarketMigrationRunner.cs:12](../../../../src/Meridian.Storage/MoneyMarket/MoneyMarketMigrationRunner.cs#L12) |  |
 | <code>public Task EnsureMigratedAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/MoneyMarket/MoneyMarketMigrationRunner.cs:31](../../../../src/Meridian.Storage/MoneyMarket/MoneyMarketMigrationRunner.cs#L31) | Creates the schema and applies all outstanding migrations in version order. Idempotent — safe to call on every startup. |
-
-## MoneyMarketStoreOptions
-
-Qualified name: <code>Meridian.Storage.MoneyMarket.MoneyMarketStoreOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/MoneyMarket/MoneyMarketStoreOptions.cs:6](../../../../src/Meridian.Storage/MoneyMarket/MoneyMarketStoreOptions.cs#L6).
-
-Configuration for the PostgreSQL-backed money market fund store.
-
-```csharp
-public sealed class MoneyMarketStoreOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ConnectionString { get; set; } = string.Empty;</code> | [src/Meridian.Storage/MoneyMarket/MoneyMarketStoreOptions.cs:9](../../../../src/Meridian.Storage/MoneyMarket/MoneyMarketStoreOptions.cs#L9) | Full Npgsql connection string. |
-| <code>public string Schema { get; set; } = &quot;money_market&quot;;</code> | [src/Meridian.Storage/MoneyMarket/MoneyMarketStoreOptions.cs:12](../../../../src/Meridian.Storage/MoneyMarket/MoneyMarketStoreOptions.cs#L12) | PostgreSQL schema name. Defaults to &quot;money_market&quot;. |

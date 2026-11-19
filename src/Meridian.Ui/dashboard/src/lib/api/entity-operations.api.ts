@@ -16,6 +16,8 @@ export const entityOperationEndpoints = {
   controls: (bookId: string) => `/api/ledger/books/${encodeURIComponent(bookId)}/controls`,
   proposals: (bookId: string) => `/api/ledger/intercompany/proposals?sourceBookId=${encodeURIComponent(bookId)}`,
   breaks: (bookId: string) => `/api/ledger/intercompany/breaks?sourceBookId=${encodeURIComponent(bookId)}`,
+  counterpartCandidates: (proposalId: string, targetBookId: string) =>
+    `/api/ledger/intercompany/proposals/${encodeURIComponent(proposalId)}/counterpart-candidates?${new URLSearchParams({ targetBookId })}`,
   accrualPreview: "/api/ledger/intercompany/accruals/preview",
   accrualDrafts: "/api/ledger/intercompany/accruals/drafts",
   feePreview: "/api/ledger/intercompany/fees/preview",

@@ -2,7 +2,7 @@
 
 # `ledger-contracts` data objects - page 4 of 7
 
-Objects 241-320 of 488. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 489. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -355,6 +355,13 @@ classDiagram
         +Guid SourceJournalId
         +Guid? TargetJournalId
     }
+    class Meridian_Contracts_Ledger_IntercompanyCounterpartCandidateDto["IntercompanyCounterpartCandidateDto"] {
+        +decimal Amount
+        +string Currency
+        +string Description
+        +DateOnly EffectiveDate
+        +Guid JournalEntryId
+    }
     class Meridian_Contracts_Ledger_IntercompanyCounterpartLinkDto["IntercompanyCounterpartLinkDto"] {
         +string Actor
         +Guid ProposalId
@@ -452,20 +459,6 @@ classDiagram
     }
     class Meridian_Contracts_Ledger_IntercompanyProposalJsonContext["IntercompanyProposalJsonContext"] {
     }
-    class Meridian_Contracts_Ledger_IntercompanyProposalSourceDto["IntercompanyProposalSourceDto"] {
-        +Guid AccountingArrangementId
-        +Guid AccountingArrangementRevisionId
-        +string? CompanyId
-        +Guid CounterpartyEntityId
-        +DateOnly EffectiveDate
-        +Guid IntercompanyAgreementId
-        +string IntercompanyAgreementPayloadHash
-        +int IntercompanyAgreementVersion
-        +IReadOnlyList~IntercompanyProposalSourceLineDto~ Lines
-        +Guid ProposalId
-        +bool RequiresSourceAllocation
-        +Guid? ReversesJournalId
-    }
     Meridian_Contracts_Ledger_ExternalGlExportPackageDto --> Meridian_Contracts_Ledger_ExternalGlExportReconciliationSafeguardStateDto
     Meridian_Contracts_Ledger_ExternalGlExportPackageManifestDto --> Meridian_Contracts_Ledger_ExternalGlExportReconciliationSafeguardStateDto
     Meridian_Contracts_Ledger_IntercompanyAccountBindingDto --> Meridian_Contracts_Ledger_IntercompanyAccountRoleDto
@@ -500,5 +493,4 @@ classDiagram
     Meridian_Contracts_Ledger_IntercompanyObligationMonitorDto --> Meridian_Contracts_Ledger_IntercompanyObligationFindingDto
     Meridian_Contracts_Ledger_IntercompanyObligationMonitorDto --> Meridian_Contracts_Ledger_IntercompanyObligationSourceVersionDto
     Meridian_Contracts_Ledger_IntercompanyProposalDto --> Meridian_Contracts_Ledger_IntercompanyCounterpartLinkDto
-    Meridian_Contracts_Ledger_IntercompanyProposalDto --> Meridian_Contracts_Ledger_IntercompanyProposalSourceDto
 ```

@@ -6,6 +6,23 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperatorTriageStoreOptions
+
+Qualified name: <code>Meridian.Storage.Workstation.OperatorTriageStoreOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Workstation/OperatorTriageStoreOptions.cs:3](../../../../src/Meridian.Storage/Workstation/OperatorTriageStoreOptions.cs#L3).
+
+```csharp
+public sealed class OperatorTriageStoreOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public required string ConnectionString { get; init; }</code> | [src/Meridian.Storage/Workstation/OperatorTriageStoreOptions.cs:5](../../../../src/Meridian.Storage/Workstation/OperatorTriageStoreOptions.cs#L5) |  |
+| <code>public string Schema { get; init; } = &quot;operator_triage&quot;;</code> | [src/Meridian.Storage/Workstation/OperatorTriageStoreOptions.cs:6](../../../../src/Meridian.Storage/Workstation/OperatorTriageStoreOptions.cs#L6) |  |
+
 ## PostgresOperatorTriageStore
 
 Qualified name: <code>Meridian.Storage.Workstation.PostgresOperatorTriageStore</code>. Kind: `class`.

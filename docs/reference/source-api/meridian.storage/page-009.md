@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PostgresReportingAccessGrantStore
+
+Qualified name: <code>Meridian.Storage.Reporting.PostgresReportingAccessGrantStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Reporting/PostgresReportingAccessGrantStore.cs:12](../../../../src/Meridian.Storage/Reporting/PostgresReportingAccessGrantStore.cs#L12).
+
+Durable PostgreSQL access-grant store. Only SHA-256 token digests are accepted or retained; plaintext recipient bearer tokens never cross this persistence boundary.
+
+```csharp
+public sealed class PostgresReportingAccessGrantStore : IReportingAccessGrantStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PostgresReportingAccessGrantStore(ReportingArtifactStoreOptions options);</code> | [src/Meridian.Storage/Reporting/PostgresReportingAccessGrantStore.cs:17](../../../../src/Meridian.Storage/Reporting/PostgresReportingAccessGrantStore.cs#L17) |  |
+| <code>public async Task&lt;ReportingAccessGrantRecord?&gt; GetAsync(string grantId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingAccessGrantStore.cs:25](../../../../src/Meridian.Storage/Reporting/PostgresReportingAccessGrantStore.cs#L25) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ReportingAccessGrantRecord&gt;&gt; ListByPackageAsync(string tenantId, string packageId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingAccessGrantStore.cs:43](../../../../src/Meridian.Storage/Reporting/PostgresReportingAccessGrantStore.cs#L43) |  |
+| <code>public async Task&lt;bool&gt; TryCreateAsync(ReportingAccessGrantRecord grant, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingAccessGrantStore.cs:78](../../../../src/Meridian.Storage/Reporting/PostgresReportingAccessGrantStore.cs#L78) |  |
+| <code>public async Task&lt;bool&gt; TryUpdateAsync(string grantId, long expectedVersion, ReportingAccessGrantRecord updatedGrant, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingAccessGrantStore.cs:135](../../../../src/Meridian.Storage/Reporting/PostgresReportingAccessGrantStore.cs#L135) |  |
+
 ## PostgresReportingArtifactAuditStore
 
 Qualified name: <code>Meridian.Storage.Reporting.PostgresReportingArtifactAuditStore</code>. Kind: `class`.
@@ -863,23 +885,3 @@ Declared public members:
 | <code>Task&lt;CertificateOfDepositProjectionRow?&gt; GetCertificateOfDepositAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICertificateOfDepositReferenceProjectionStore.cs:8](../../../../src/Meridian.Storage/SecurityMaster/ICertificateOfDepositReferenceProjectionStore.cs#L8) |  |
 | <code>Task&lt;IReadOnlyList&lt;CertificateOfDepositProjectionRow&gt;&gt; GetByIssuerAsync(string issuerName, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICertificateOfDepositReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/ICertificateOfDepositReferenceProjectionStore.cs#L9) |  |
 | <code>Task&lt;IReadOnlyList&lt;CertificateOfDepositProjectionRow&gt;&gt; GetMaturingBeforeAsync(DateOnly beforeDate, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICertificateOfDepositReferenceProjectionStore.cs:10](../../../../src/Meridian.Storage/SecurityMaster/ICertificateOfDepositReferenceProjectionStore.cs#L10) |  |
-
-## ICommodityReferenceProjectionStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.ICommodityReferenceProjectionStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.cs:6](../../../../src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.cs#L6).
-
-Queries commodity reference projections by security, commodity type, and exchange.
-
-```csharp
-public interface ICommodityReferenceProjectionStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;CommodityProjectionRow?&gt; GetCommodityAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.cs:8](../../../../src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.cs#L8) |  |
-| <code>Task&lt;IReadOnlyList&lt;CommodityProjectionRow&gt;&gt; GetByCommodityTypeAsync(string commodityType, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.cs#L9) |  |
-| <code>Task&lt;IReadOnlyList&lt;CommodityProjectionRow&gt;&gt; GetByExchangeAsync(string exchangeCode, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.cs:10](../../../../src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.cs#L10) |  |

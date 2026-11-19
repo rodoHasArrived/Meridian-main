@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ThreeWayReconciliationScheduleRunner
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayReconciliationScheduleRunner</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs:35](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs#L35).
+
+Uses the existing shared scheduler tick; retains one operation per configured scope/day.
+
+```csharp
+public sealed class ThreeWayReconciliationScheduleRunner(IThreeWayReconciliationSourceReader sources, ThreeWayReconciliationService reconciliation, ThreeWayReconciliationOptions options, ILogger<ThreeWayReconciliationScheduleRunner> logger)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;int&gt; RunDueAsync(DateTimeOffset nowUtc, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs:41](../../../../src/Meridian.Ui.Shared/Services/ThreeWayReconciliationServiceRegistration.cs#L41) |  |
+
 ## ThreeWayReconciliationService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ThreeWayReconciliationService</code>. Kind: `class`.
@@ -313,7 +331,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:90](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L90) |  |
-| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1601](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1601) |  |
+| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1604](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1604) |  |
 
 ## WorkstationWorkflowReadScope
 
@@ -924,26 +942,3 @@ Declared public members:
 | <code>public static WorkflowPresetMutationResult Ok(WorkflowPresetDto preset) =&gt; …;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs:297](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs#L297) |  |
 | <code>public static WorkflowPresetMutationResult Fail(string error) =&gt; …;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs:300](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs#L300) |  |
 | <code>public static WorkflowPresetMutationResult Missing(string presetId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs:303](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs#L303) |  |
-
-## WorkflowPresetService
-
-Qualified name: <code>Meridian.Ui.Shared.Workflows.WorkflowPresetService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs:9](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs#L9).
-
-Validates and manages operator-saved workflow presets on top of the workflow catalog.
-
-```csharp
-public sealed class WorkflowPresetService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WorkflowPresetService(IWorkflowActionCatalog catalog, IWorkflowPresetStore store);</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs:21](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs#L21) |  |
-| <code>public async Task&lt;WorkflowPresetLibraryDto&gt; GetLibraryAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs:27](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs#L27) |  |
-| <code>public async Task&lt;WorkflowPresetMutationResult&gt; SaveAsync(WorkflowPresetSaveRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs:35](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs#L35) |  |
-| <code>public async Task&lt;WorkflowPresetMutationResult&gt; SetPinnedAsync(string presetId, bool isPinned, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs:77](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs#L77) |  |
-| <code>public async Task&lt;WorkflowPresetMutationResult&gt; MarkUsedAsync(string presetId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs:111](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs#L111) |  |
-| <code>public async Task&lt;bool&gt; DeleteAsync(string presetId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs:143](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowPresetService.cs#L143) |  |

@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MoneyMarketStoreOptions
+
+Qualified name: <code>Meridian.Storage.MoneyMarket.MoneyMarketStoreOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/MoneyMarket/MoneyMarketStoreOptions.cs:6](../../../../src/Meridian.Storage/MoneyMarket/MoneyMarketStoreOptions.cs#L6).
+
+Configuration for the PostgreSQL-backed money market fund store.
+
+```csharp
+public sealed class MoneyMarketStoreOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string ConnectionString { get; set; } = string.Empty;</code> | [src/Meridian.Storage/MoneyMarket/MoneyMarketStoreOptions.cs:9](../../../../src/Meridian.Storage/MoneyMarket/MoneyMarketStoreOptions.cs#L9) | Full Npgsql connection string. |
+| <code>public string Schema { get; set; } = &quot;money_market&quot;;</code> | [src/Meridian.Storage/MoneyMarket/MoneyMarketStoreOptions.cs:12](../../../../src/Meridian.Storage/MoneyMarket/MoneyMarketStoreOptions.cs#L12) | PostgreSQL schema name. Defaults to &quot;money_market&quot;. |
+
 ## PostgresMoneyMarketFundStore
 
 Qualified name: <code>Meridian.Storage.MoneyMarket.PostgresMoneyMarketFundStore</code>. Kind: `class`.
@@ -1130,25 +1149,3 @@ The exact v1 persisted receipt shape. Its omission of break evidence is intentio
 ```csharp
 public sealed record LegacyReportingReconciliationEvidenceReceipt(string TenantId, string OrganizationId, string? CompanyId, string FundId, string LedgerBookId, string AccountingPeriodId, string AccountingBasis, DateOnly AsOfDate, string SourceCheckpointId, string SourceCheckpointHash, string ReconciliationCheckpointId, string ReconciliationCheckpointHash, DateTimeOffset ReconciledAtUtc, bool HasOpenBreaks, ImmutableArray<string> EvidenceIds, string? CompletionCheckpointId = null, string? CompletionCheckpointHash = null);
 ```
-
-## PostgresReportingAccessGrantStore
-
-Qualified name: <code>Meridian.Storage.Reporting.PostgresReportingAccessGrantStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Reporting/PostgresReportingAccessGrantStore.cs:12](../../../../src/Meridian.Storage/Reporting/PostgresReportingAccessGrantStore.cs#L12).
-
-Durable PostgreSQL access-grant store. Only SHA-256 token digests are accepted or retained; plaintext recipient bearer tokens never cross this persistence boundary.
-
-```csharp
-public sealed class PostgresReportingAccessGrantStore : IReportingAccessGrantStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostgresReportingAccessGrantStore(ReportingArtifactStoreOptions options);</code> | [src/Meridian.Storage/Reporting/PostgresReportingAccessGrantStore.cs:17](../../../../src/Meridian.Storage/Reporting/PostgresReportingAccessGrantStore.cs#L17) |  |
-| <code>public async Task&lt;ReportingAccessGrantRecord?&gt; GetAsync(string grantId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingAccessGrantStore.cs:25](../../../../src/Meridian.Storage/Reporting/PostgresReportingAccessGrantStore.cs#L25) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ReportingAccessGrantRecord&gt;&gt; ListByPackageAsync(string tenantId, string packageId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingAccessGrantStore.cs:43](../../../../src/Meridian.Storage/Reporting/PostgresReportingAccessGrantStore.cs#L43) |  |
-| <code>public async Task&lt;bool&gt; TryCreateAsync(ReportingAccessGrantRecord grant, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingAccessGrantStore.cs:78](../../../../src/Meridian.Storage/Reporting/PostgresReportingAccessGrantStore.cs#L78) |  |
-| <code>public async Task&lt;bool&gt; TryUpdateAsync(string grantId, long expectedVersion, ReportingAccessGrantRecord updatedGrant, CancellationToken ct = default);</code> | [src/Meridian.Storage/Reporting/PostgresReportingAccessGrantStore.cs:135](../../../../src/Meridian.Storage/Reporting/PostgresReportingAccessGrantStore.cs#L135) |  |

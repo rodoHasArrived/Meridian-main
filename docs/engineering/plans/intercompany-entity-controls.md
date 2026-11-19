@@ -155,6 +155,14 @@ Manual journal drafts now have a PostgreSQL store, like every other governed sto
 Completed PostgreSQL receipts are retained in place; unlike the file store they are not archived
 or pruned. Optimistic draft version checks stay in the workbench service.
 
+### Counterpart journal picker and desktop journal link (2026-11-18)
+
+| Piece | What exists | Verification |
+| --- | --- | --- |
+| Shared read | `GET /api/ledger/intercompany/proposals/{id}/counterpart-candidates?targetBookId=` lists posted journals in an approved destination book that carry the source transaction's identity and pass the same check the link uses (`IntercompanyProposalDeliveryService.ListCounterpartCandidatesAsync`). It requires ledger-report view permission and access to both books. It is a convenience: the link still re-checks the chosen journal under the journal mutation lease. | `IntercompanyProposalResolutionTests.CounterpartCandidates_*` (Linux) |
+| Browser | The counterpart journal is chosen from that list once a counterpart book is selected; changing the book clears the choice. | `accounting-screen.entity-operations.test.tsx` (Linux) |
+| Desktop | The Counterpart proposals tab picks the journal from the same list. "Open journal" on a delivery record opens the Fund Ledger Journal tab for the book's fund profile, through a new optional `JournalEntryId` on `FundOperationsNavigationContext`, and selects the entry or says it is not in that fund's loaded view. | `IntercompanyCounterpartQueueWorkspaceTests`, `WorkstationIntercompanyAgreementApiClientTests` (Linux); `IntercompanyNativeControlSmokeTests.CounterpartProposalsControl_*` and `FundLedgerViewModelTests.LoadAsync_WithJournalDeepLink_*` build on Linux and run only on Windows |
+
 ### Fixed management-fee extension (2026-11-17)
 
 `DEC-IC-FEE-001` and [ADR-029](../../adr/029-governed-intercompany-fixed-management-fees.md) add rule

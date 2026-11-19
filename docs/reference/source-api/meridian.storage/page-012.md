@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterTermsCapabilityFloor
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityMasterTermsCapabilityFloor</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/ISecurityMasterTermsCapabilityStore.cs:4](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterTermsCapabilityStore.cs#L4).
+
+The minimum declared-schedule capabilities activated for one Security Master database.
+
+```csharp
+public sealed record SecurityMasterTermsCapabilityFloor(string MinimumDeclaredMappingVersion, string MinimumKernelVersion, string ChangeRecord, string UpdatedBy, DateTimeOffset UpdatedAt);
+```
+
 ## SecurityMasterTermsCapabilityState
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityMasterTermsCapabilityState</code>. Kind: `record`.
@@ -779,31 +791,3 @@ Source: [src/Meridian.Storage/Services/TierMigrationService.cs:633](../../../../
 ```csharp
 public sealed record FileMigrationResult(string SourcePath, string TargetPath, long OriginalSize, long NewSize);
 ```
-
-## FilePermissionsDiagnostic
-
-Qualified name: <code>Meridian.Storage.Services.FilePermissionsDiagnostic</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Services/FilePermissionsService.cs:432](../../../../src/Meridian.Storage/Services/FilePermissionsService.cs#L432).
-
-Diagnostic information about directory permissions.
-
-```csharp
-public sealed class FilePermissionsDiagnostic
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string DirectoryPath { get; init; } = &quot;&quot;;</code> | [src/Meridian.Storage/Services/FilePermissionsService.cs:434](../../../../src/Meridian.Storage/Services/FilePermissionsService.cs#L434) |  |
-| <code>public bool Exists { get; init; }</code> | [src/Meridian.Storage/Services/FilePermissionsService.cs:435](../../../../src/Meridian.Storage/Services/FilePermissionsService.cs#L435) |  |
-| <code>public bool CanRead { get; set; }</code> | [src/Meridian.Storage/Services/FilePermissionsService.cs:436](../../../../src/Meridian.Storage/Services/FilePermissionsService.cs#L436) |  |
-| <code>public bool CanWrite { get; set; }</code> | [src/Meridian.Storage/Services/FilePermissionsService.cs:437](../../../../src/Meridian.Storage/Services/FilePermissionsService.cs#L437) |  |
-| <code>public string? UnixMode { get; set; }</code> | [src/Meridian.Storage/Services/FilePermissionsService.cs:438](../../../../src/Meridian.Storage/Services/FilePermissionsService.cs#L438) |  |
-| <code>public string Platform { get; init; } = &quot;&quot;;</code> | [src/Meridian.Storage/Services/FilePermissionsService.cs:439](../../../../src/Meridian.Storage/Services/FilePermissionsService.cs#L439) |  |
-| <code>public DateTime? CreationTime { get; set; }</code> | [src/Meridian.Storage/Services/FilePermissionsService.cs:440](../../../../src/Meridian.Storage/Services/FilePermissionsService.cs#L440) |  |
-| <code>public DateTime? LastWriteTime { get; set; }</code> | [src/Meridian.Storage/Services/FilePermissionsService.cs:441](../../../../src/Meridian.Storage/Services/FilePermissionsService.cs#L441) |  |
-| <code>public List&lt;string&gt; Issues { get; } = new ();</code> | [src/Meridian.Storage/Services/FilePermissionsService.cs:442](../../../../src/Meridian.Storage/Services/FilePermissionsService.cs#L442) |  |
-| <code>public bool HasIssues =&gt; …;</code> | [src/Meridian.Storage/Services/FilePermissionsService.cs:444](../../../../src/Meridian.Storage/Services/FilePermissionsService.cs#L444) |  |
-| <code>public override string ToString();</code> | [src/Meridian.Storage/Services/FilePermissionsService.cs:446](../../../../src/Meridian.Storage/Services/FilePermissionsService.cs#L446) |  |

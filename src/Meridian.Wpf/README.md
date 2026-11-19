@@ -172,9 +172,12 @@ A Counterpart proposals tab (`Views/IntercompanyCounterpartProposalsControl.xaml
 `IntercompanyCounterpartQueueWorkspace`: delivery records and aged booking breaks for a source
 book, retained source lines and provenance, delivery retry, explicit FX repricing with a
 before-and-after preview, and linking an existing counterpart journal. The source book and the
-existing counterpart book are chosen from lists rather than typed; the counterpart journal ID is
-still entered, as in the browser. The desktop holds no proposal state and never posts; the same
-Windows-only validation boundary applies.
+existing counterpart book are chosen from lists rather than typed. Since 2026-11-18 the counterpart
+journal is also chosen from a list, as in the browser: the shared
+`/api/ledger/intercompany/proposals/{id}/counterpart-candidates` read returns only posted journals that
+the server's link check would accept, and linking re-checks the choice. "Open journal" on a delivery
+record opens the Fund Ledger Journal tab for that book's fund profile with the entry selected. The
+desktop holds no proposal state and never posts; the same Windows-only validation boundary applies.
 
 Fund Operations adds a Balance confirmation tab
 (`Views/IntercompanyBalanceConfirmationControl.xaml`) over the shared

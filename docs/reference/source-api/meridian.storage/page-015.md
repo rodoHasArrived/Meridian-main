@@ -6,6 +6,32 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SourceRegistry
+
+Qualified name: <code>Meridian.Storage.Services.SourceRegistry</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/SourceRegistry.cs:11](../../../../src/Meridian.Storage/Services/SourceRegistry.cs#L11).
+
+In-memory implementation of source and symbol registry with JSON persistence.
+
+```csharp
+public sealed class SourceRegistry : ISourceRegistry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SourceRegistry(string? persistencePath = null) : this(persistencePath, static (path, content) =&gt; AtomicFileWriter.Write(path, content));</code> | [src/Meridian.Storage/Services/SourceRegistry.cs:18](../../../../src/Meridian.Storage/Services/SourceRegistry.cs#L18) |  |
+| <code>public SourceInfo? GetSourceInfo(string sourceId);</code> | [src/Meridian.Storage/Services/SourceRegistry.cs:60](../../../../src/Meridian.Storage/Services/SourceRegistry.cs#L60) |  |
+| <code>public SymbolInfo? GetSymbolInfo(string symbol);</code> | [src/Meridian.Storage/Services/SourceRegistry.cs:66](../../../../src/Meridian.Storage/Services/SourceRegistry.cs#L66) |  |
+| <code>public IReadOnlyList&lt;SourceInfo&gt; GetAllSources();</code> | [src/Meridian.Storage/Services/SourceRegistry.cs:81](../../../../src/Meridian.Storage/Services/SourceRegistry.cs#L81) |  |
+| <code>public IReadOnlyList&lt;SymbolInfo&gt; GetAllSymbols();</code> | [src/Meridian.Storage/Services/SourceRegistry.cs:90](../../../../src/Meridian.Storage/Services/SourceRegistry.cs#L90) |  |
+| <code>public void RegisterSource(SourceInfo source);</code> | [src/Meridian.Storage/Services/SourceRegistry.cs:99](../../../../src/Meridian.Storage/Services/SourceRegistry.cs#L99) |  |
+| <code>public void RegisterSymbol(SymbolInfo symbol);</code> | [src/Meridian.Storage/Services/SourceRegistry.cs:105](../../../../src/Meridian.Storage/Services/SourceRegistry.cs#L105) |  |
+| <code>public string ResolveSymbolAlias(string alias);</code> | [src/Meridian.Storage/Services/SourceRegistry.cs:111](../../../../src/Meridian.Storage/Services/SourceRegistry.cs#L111) |  |
+| <code>public string[] GetSourcePriorityOrder();</code> | [src/Meridian.Storage/Services/SourceRegistry.cs:120](../../../../src/Meridian.Storage/Services/SourceRegistry.cs#L120) |  |
+
 ## SourceSelectionStrategy
 
 Qualified name: <code>Meridian.Storage.Services.SourceSelectionStrategy</code>. Kind: `enum`.
@@ -994,20 +1020,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public async Task&lt;OperatorTriageState&gt; GetAsync(OperatorTriageScope scope, string workItemId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Workstation/FileOperatorTriageStore.cs:13](../../../../src/Meridian.Storage/Workstation/FileOperatorTriageStore.cs#L13) |  |
 | <code>public async Task&lt;OperatorTriageState&gt; UpdateAsync(OperatorTriageScope scope, string workItemId, Func&lt;OperatorTriageState, CancellationToken, Task&lt;OperatorTriageState&gt;&gt; update, CancellationToken ct = default);</code> | [src/Meridian.Storage/Workstation/FileOperatorTriageStore.cs:20](../../../../src/Meridian.Storage/Workstation/FileOperatorTriageStore.cs#L20) |  |
-
-## OperatorTriageStoreOptions
-
-Qualified name: <code>Meridian.Storage.Workstation.OperatorTriageStoreOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Workstation/OperatorTriageStoreOptions.cs:3](../../../../src/Meridian.Storage/Workstation/OperatorTriageStoreOptions.cs#L3).
-
-```csharp
-public sealed class OperatorTriageStoreOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public required string ConnectionString { get; init; }</code> | [src/Meridian.Storage/Workstation/OperatorTriageStoreOptions.cs:5](../../../../src/Meridian.Storage/Workstation/OperatorTriageStoreOptions.cs#L5) |  |
-| <code>public string Schema { get; init; } = &quot;operator_triage&quot;;</code> | [src/Meridian.Storage/Workstation/OperatorTriageStoreOptions.cs:6](../../../../src/Meridian.Storage/Workstation/OperatorTriageStoreOptions.cs#L6) |  |

@@ -2,11 +2,22 @@
 
 # `ledger-contracts` data objects - page 7 of 7
 
-Objects 481-488 of 488. References crossing pages remain available in the dependency manifest.
+Objects 481-489 of 489. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_SignOffCloseTaskRequestDto["SignOffCloseTaskRequestDto"] {
+        +OperationsActionOriginDto ActionOrigin
+        +string Actor
+        +string? CorrelationId
+        +ManualJournalEntryStatusDto Decision
+        +IReadOnlyList~string~ EvidenceLinks
+        +string Notes
+        +string Role
+        +string TaskId
+        +Guid WorkflowId
+    }
     class Meridian_Contracts_Ledger_SubmitManualJournalEntryApprovalRequest["SubmitManualJournalEntryApprovalRequest"] {
         +OperationsActionOriginDto ActionOrigin
         +string Actor

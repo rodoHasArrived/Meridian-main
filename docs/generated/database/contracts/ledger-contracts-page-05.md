@@ -2,11 +2,25 @@
 
 # `ledger-contracts` data objects - page 5 of 7
 
-Objects 321-400 of 488. References crossing pages remain available in the dependency manifest.
+Objects 321-400 of 489. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_IntercompanyProposalSourceDto["IntercompanyProposalSourceDto"] {
+        +Guid AccountingArrangementId
+        +Guid AccountingArrangementRevisionId
+        +string? CompanyId
+        +Guid CounterpartyEntityId
+        +DateOnly EffectiveDate
+        +Guid IntercompanyAgreementId
+        +string IntercompanyAgreementPayloadHash
+        +int IntercompanyAgreementVersion
+        +IReadOnlyList~IntercompanyProposalSourceLineDto~ Lines
+        +Guid ProposalId
+        +bool RequiresSourceAllocation
+        +Guid? ReversesJournalId
+    }
     class Meridian_Contracts_Ledger_IntercompanyProposalSourceLineDto["IntercompanyProposalSourceLineDto"] {
         +string AccountName
         +string AccountType
@@ -658,16 +672,7 @@ classDiagram
     }
     class Meridian_Contracts_Ledger_OperationalFinanceScopeKindDto["OperationalFinanceScopeKindDto"] {
     }
-    class Meridian_Contracts_Ledger_OperationalFinanceTraceNodeDto["OperationalFinanceTraceNodeDto"] {
-        +LedgerDimensionSetDto? Dimensions
-        +string DisplayName
-        +IReadOnlyList~string~ EvidenceLinks
-        +string NodeId
-        +string? RecordId
-        +string? Route
-        +OperationalFinanceTraceStageDto Stage
-        +string Status
-    }
+    Meridian_Contracts_Ledger_IntercompanyProposalSourceDto --> Meridian_Contracts_Ledger_IntercompanyProposalSourceLineDto
     Meridian_Contracts_Ledger_IntercompanyRefreshPreviewDto --> Meridian_Contracts_Ledger_ManualJournalEntryDraftDto
     Meridian_Contracts_Ledger_InvestorCapitalStatementDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
     Meridian_Contracts_Ledger_JournalEntryLifecycleActionRequestDto --> Meridian_Contracts_Ledger_JournalEntryLifecycleActionDto
@@ -728,8 +733,6 @@ classDiagram
     Meridian_Contracts_Ledger_OperationalEventCommandContextDto --> Meridian_Contracts_Ledger_OperationalFinanceScopeDto
     Meridian_Contracts_Ledger_OperationalFinanceRecordTraceDto --> Meridian_Contracts_Ledger_ManualJournalEntryStatusDto
     Meridian_Contracts_Ledger_OperationalFinanceRecordTraceDto --> Meridian_Contracts_Ledger_OperationalEventCommandContextDto
-    Meridian_Contracts_Ledger_OperationalFinanceRecordTraceDto --> Meridian_Contracts_Ledger_OperationalFinanceTraceNodeDto
     Meridian_Contracts_Ledger_OperationalFinanceScopeDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
     Meridian_Contracts_Ledger_OperationalFinanceScopeDto --> Meridian_Contracts_Ledger_OperationalFinanceScopeKindDto
-    Meridian_Contracts_Ledger_OperationalFinanceTraceNodeDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
 ```

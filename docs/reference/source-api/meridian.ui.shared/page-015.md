@@ -285,6 +285,25 @@ Declared public members:
 | --- | --- | --- |
 | <code>public async Task&lt;IReadOnlyLedger?&gt; ReadAsync(StrategyRunEntry run, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PostedStrategyRunLedgerSource.cs:16](../../../../src/Meridian.Ui.Shared/Services/PostedStrategyRunLedgerSource.cs#L16) |  |
 
+## PostgresManualJournalMutationRecoveryStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PostgresManualJournalMutationRecoveryStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/PostgresManualJournalMutationRecoveryStore.cs:15](../../../../src/Meridian.Ui.Shared/Services/PostgresManualJournalMutationRecoveryStore.cs#L15).
+
+Command receipts and a cross-host lease for manual journals whose drafts live in PostgreSQL (ledger migration 077). Every host sharing the draft schema takes the same session advisory lock for the full command, so draft reads, validation, writes and audit are serialized across hosts as the file store&#x27;s exclusive lock does on one machine. Completed receipts are retained in place; the database refuses to rewrite or remove them.
+
+```csharp
+public sealed class PostgresManualJournalMutationRecoveryStore : IManualJournalMutationRecoveryStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PostgresManualJournalMutationRecoveryStore(LedgerJournalStoreOptions options, TimeProvider? clock = null);</code> | [src/Meridian.Ui.Shared/Services/PostgresManualJournalMutationRecoveryStore.cs:22](../../../../src/Meridian.Ui.Shared/Services/PostgresManualJournalMutationRecoveryStore.cs#L22) |  |
+| <code>public async Task&lt;IManualJournalMutationSession&gt; OpenSessionAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PostgresManualJournalMutationRecoveryStore.cs:34](../../../../src/Meridian.Ui.Shared/Services/PostgresManualJournalMutationRecoveryStore.cs#L34) |  |
+
 ## PreparePeriodAdjustmentRequest
 
 Qualified name: <code>Meridian.Ui.Shared.Services.PreparePeriodAdjustmentRequest</code>. Kind: `record`.
@@ -886,13 +905,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;RecurringJournalPeriodState&gt; ResolveAsync(RecurringJournalScope scope, DateOnly date, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs:25](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs#L25) |  |
-
-## RecurringJournalPeriodState
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalPeriodState</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs:8](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs#L8).
-
-```csharp
-public sealed record RecurringJournalPeriodState(string PeriodId, long Version, bool IsOpen, string? LockOwner, string? ReopenPath, string? Blocker, DateOnly? StartDate = null, DateOnly? EndDate = null);
-```

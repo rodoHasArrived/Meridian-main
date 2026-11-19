@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PostgresCommodityReferenceProjectionStore
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresCommodityReferenceProjectionStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs#L9).
+
+Reads commodity reference projections from PostgreSQL by security, type, and exchange.
+
+```csharp
+public sealed class PostgresCommodityReferenceProjectionStore : ICommodityReferenceProjectionStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PostgresCommodityReferenceProjectionStore(SecurityMasterOptions options);</code> | [src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs:27](../../../../src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs#L27) |  |
+| <code>public Task&lt;CommodityProjectionRow?&gt; GetCommodityAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs:35](../../../../src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs#L35) |  |
+| <code>public Task&lt;IReadOnlyList&lt;CommodityProjectionRow&gt;&gt; GetByCommodityTypeAsync(string commodityType, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs:38](../../../../src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs#L38) |  |
+| <code>public Task&lt;IReadOnlyList&lt;CommodityProjectionRow&gt;&gt; GetByExchangeAsync(string exchangeCode, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs:41](../../../../src/Meridian.Storage/SecurityMaster/PostgresCommodityReferenceProjectionStore.cs#L41) |  |
+
 ## PostgresCorporateActionOperationsStore
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresCorporateActionOperationsStore</code>. Kind: `class`.
@@ -1252,15 +1273,3 @@ Declared public members:
 | <code>public long ExpectedVersion { get; }</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:28](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L28) |  |
 | <code>public long CurrentVersion { get; }</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:29](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L29) |  |
 | <code>public bool IsAlreadyCreated =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:35](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L35) | True when the append tried to CREATE a stream that already had events — the shape a repeated ingest of the same security takes. |
-
-## SecurityMasterTermsCapabilityFloor
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityMasterTermsCapabilityFloor</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/ISecurityMasterTermsCapabilityStore.cs:4](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterTermsCapabilityStore.cs#L4).
-
-The minimum declared-schedule capabilities activated for one Security Master database.
-
-```csharp
-public sealed record SecurityMasterTermsCapabilityFloor(string MinimumDeclaredMappingVersion, string MinimumKernelVersion, string ChangeRecord, string UpdatedBy, DateTimeOffset UpdatedAt);
-```
