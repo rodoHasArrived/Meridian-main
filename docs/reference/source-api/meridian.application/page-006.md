@@ -6,6 +6,83 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DualPathEventPipeline
+
+Qualified name: <code>Meridian.Application.Pipeline.DualPathEventPipeline</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:77](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L77).
+
+A dual-path event pipeline that routes high-volume MarketEventType.Trade and MarketEventType.BboQuote events through a zero-allocation hot path (struct ring buffer), while routing all other event types through the standard record-based EventPipeline.
+
+```csharp
+public sealed class DualPathEventPipeline : IMarketEventPublisher, IBackpressureSignal, IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DualPathEventPipeline(EventPipeline slowPath, SymbolTable symbolTable, int ringBufferCapacity = 4_096, int batchDrainSize = 256, bool startConsumers = true, ILogger&lt;DualPathEventPipeline&gt;? logger = null, TimeSpan? shutdownTimeout = null);</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:162](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L162) | Creates a DualPathEventPipeline that wraps an existing EventPipeline slow path. |
+| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public bool TryPublish(in MarketEvent evt);</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:230](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L230) | Routes the event to the hot path (ring buffer) for trades and quotes, or to the slow path for all other event types. |
+| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public bool TryPublishTrade(in RawTradeEvent trade);</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:263](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L263) | Writes a RawTradeEvent struct directly into the trade ring buffer without any heap allocation on the calling (producer) thread. |
+| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public bool TryPublishQuote(in RawQuoteEvent quote);</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:291](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L291) | Writes a RawQuoteEvent struct directly into the quote ring buffer without any heap allocation on the calling (producer) thread. |
+| <code>public bool IsUnderPressure =&gt; …;</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:315](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L315) |  |
+| <code>public double QueueUtilization =&gt; …;</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:318](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L318) |  |
+| <code>public long HotTradePublished =&gt; …;</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:325](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L325) | Gets the total number of trade events written to the hot-path ring buffer. |
+| <code>public long HotTradeDropped =&gt; …;</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:328](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L328) | Gets the total number of trade events that were rejected or could not be handed off after hot-path acceptance. |
+| <code>public long HotTradeConsumed =&gt; …;</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:331](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L331) | Gets the total number of trade events drained from the ring buffer and accepted by the slow-path pipeline. |
+| <code>public long HotTradeFallbacks =&gt; …;</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:334](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L334) | Gets the number of trade events that bypassed the ring buffer and fell back to the slow path. |
+| <code>public long HotTradeInFlight =&gt; …;</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:337](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L337) | Gets the number of trade events currently owned by a consumer batch. |
+| <code>public long HotQuotePublished =&gt; …;</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:340](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L340) | Gets the total number of quote events written to the hot-path ring buffer. |
+| <code>public long HotQuoteDropped =&gt; …;</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:343](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L343) | Gets the total number of quote events that were rejected or could not be handed off after hot-path acceptance. |
+| <code>public long HotQuoteConsumed =&gt; …;</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:346](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L346) | Gets the total number of quote events drained from the ring buffer and accepted by the slow-path pipeline. |
+| <code>public long HotQuoteFallbacks =&gt; …;</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:349](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L349) | Gets the number of quote events that bypassed the ring buffer and fell back to the slow path. |
+| <code>public long HotQuoteInFlight =&gt; …;</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:352](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L352) | Gets the number of quote events currently owned by a consumer batch. |
+| <code>public int TradeBufferCount =&gt; …;</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:355](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L355) | Gets the current number of trade events waiting in the ring buffer. |
+| <code>public int QuoteBufferCount =&gt; …;</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:358](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L358) | Gets the current number of quote events waiting in the ring buffer. |
+| <code>public Task&lt;DualPathPipelineStopOutcome&gt; StopAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:374](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L374) | Closes producer admission and drains all events accepted by the hot path. |
+| <code>public async Task AwaitTerminalCleanupAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:399](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L399) | Waits until all pipeline-owned consumers and any publishers admitted before shutdown have stopped using the caller-owned slow path. |
+| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:417](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L417) |  |
+
+## DualPathPipelineStopOutcome
+
+Qualified name: <code>Meridian.Application.Pipeline.DualPathPipelineStopOutcome</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:28](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L28).
+
+Reports whether shutdown quiesced the hot-path consumers and accounts for every event that had already been accepted by a ring buffer.
+
+```csharp
+public sealed record DualPathPipelineStopOutcome(DualPathPipelineStopStatus Status, bool Quiesced, long TradeConsumed, long TradeDropped, long TradePending, long QuoteConsumed, long QuoteDropped, long QuotePending, Exception? Failure)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool Succeeded =&gt; …;</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:40](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L40) | Gets whether shutdown completed without cancellation, timeout, or publication failure. |
+
+## DualPathPipelineStopStatus
+
+Qualified name: <code>Meridian.Application.Pipeline.DualPathPipelineStopStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:16](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L16).
+
+Describes the terminal state reached by a dual-path pipeline shutdown.
+
+```csharp
+public enum DualPathPipelineStopStatus
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Succeeded</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:18](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L18) |  |
+| <code>Failed</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:19](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L19) |  |
+| <code>Cancelled</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:20](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L20) |  |
+| <code>TimedOut</code> | [src/Meridian.Application/Pipeline/DualPathEventPipeline.cs:21](../../../../src/Meridian.Application/Pipeline/DualPathEventPipeline.cs#L21) |  |
+
 ## EventPipeline
 
 Qualified name: <code>Meridian.Application.Pipeline.EventPipeline</code>. Kind: `class`.
@@ -949,90 +1026,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;IReadOnlyList&lt;InternalLedgerTransaction&gt;&gt; GetTransactionsAsync(InternalLedgerTransactionQuery query, CancellationToken ct = default);</code> | [src/Meridian.Application/Reconciliation/LedgerJournalInternalTransactionSource.cs:160](../../../../src/Meridian.Application/Reconciliation/LedgerJournalInternalTransactionSource.cs#L160) |  |
-
-## RetainedInternalReconciliationPopulationProvider
-
-Qualified name: <code>Meridian.Application.Reconciliation.RetainedInternalReconciliationPopulationProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Reconciliation/RetainedInternalReconciliationPopulationProvider.cs:56](../../../../src/Meridian.Application/Reconciliation/RetainedInternalReconciliationPopulationProvider.cs#L56).
-
-Resolves the internal book (positions, cash, and journal-projected ledger transactions) a statement run reconciles against from Meridian&#x27;s own retained records, replacing the fail-closed empty default so shipped imports actually reconcile instead of surfacing every external row as an unmatched break. Lives in the application layer so both the browser workstation service graph and the CLI command graph resolve the same retained-book provider over shared account, position, and ledger-journal stores.
-
-```csharp
-public sealed class RetainedInternalReconciliationPopulationProvider(IAccountQueryService? accounts = null, IPositionSnapshotStore? positionSnapshots = null, ILogger<RetainedInternalReconciliationPopulationProvider>? logger = null, IInternalLedgerTransactionSource? ledgerTransactionSource = null, Func<IAccountQueryService?>? accountQueryResolver = null, ILedgerJournalStore? ledgerStore = null, IFundProfileTenancyRegistry? tenancy = null) : IInternalReconciliationPopulationProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;InternalReconciliationPopulations&gt; GetPopulationsAsync(InternalReconciliationPopulationContext context, CancellationToken ct = default);</code> | [src/Meridian.Application/Reconciliation/RetainedInternalReconciliationPopulationProvider.cs:66](../../../../src/Meridian.Application/Reconciliation/RetainedInternalReconciliationPopulationProvider.cs#L66) |  |
-
-## BackfillExecutionHistory
-
-Qualified name: <code>Meridian.Application.Scheduling.BackfillExecutionHistory</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:262](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L262).
-
-Manager for querying and analyzing execution history.
-
-```csharp
-public sealed class BackfillExecutionHistory
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public BackfillExecutionHistory();</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:275](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L275) | Creates an in-memory history. Retained for focused tests and callers that do not opt into restart durability. |
-| <code>public BackfillExecutionHistory(string persistencePath);</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:282](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L282) | Creates a bounded history backed by an atomically replaced JSON snapshot. |
-| <code>public void AddExecution(BackfillExecutionLog execution);</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:294](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L294) | Add an execution to the history. |
-| <code>public void UpdateExecution(BackfillExecutionLog execution);</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:308](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L308) | Replaces and persists a previously added execution after mutable terminal fields change. |
-| <code>public BackfillExecutionLog? GetExecution(string executionId);</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:322](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L322) | Get an execution by ID. |
-| <code>public IReadOnlyList&lt;BackfillExecutionLog&gt; GetExecutionsForSchedule(string scheduleId, int limit = 50);</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:330](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L330) | Get all executions for a schedule. |
-| <code>public IReadOnlyList&lt;BackfillExecutionLog&gt; GetRecentExecutions(int limit = 50);</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:342](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L342) | Get recent executions across all schedules. |
-| <code>public IReadOnlyList&lt;BackfillExecutionLog&gt; GetFailedExecutions(int limit = 50);</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:353](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L353) | Get failed executions. |
-| <code>public IReadOnlyList&lt;BackfillExecutionLog&gt; GetExecutionsInRange(DateTimeOffset from, DateTimeOffset to, int limit = 100);</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:365](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L365) | Get executions within a time range. |
-| <code>public ScheduleExecutionSummary GetScheduleSummary(string scheduleId, int recentCount = 30);</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:380](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L380) | Get aggregate statistics for a schedule. |
-| <code>public SystemExecutionSummary GetSystemSummary(TimeSpan? period = null);</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:407](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L407) | Get overall system statistics. |
-
-## BackfillExecutionLog
-
-Qualified name: <code>Meridian.Application.Scheduling.BackfillExecutionLog</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:15](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L15).
-
-Records the execution history of scheduled backfill jobs. Provides visibility into past runs, successes, failures, and performance metrics.
-
-```csharp
-public sealed class BackfillExecutionLog
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ExecutionId { get; init; } = Guid.NewGuid().ToString(&quot;N&quot;)[..12];</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:20](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L20) | Unique identifier for this execution. |
-| <code>public string ScheduleId { get; init; } = string.Empty;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:25](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L25) | ID of the schedule that triggered this execution. |
-| <code>public string ScheduleName { get; init; } = string.Empty;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:30](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L30) | Name of the schedule for display purposes. |
-| <code>public string? JobId { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:35](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L35) | ID of the backfill job created for this execution. |
-| <code>public ExecutionTrigger Trigger { get; init; } = ExecutionTrigger.Scheduled;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:40](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L40) | How this execution was triggered. |
-| <code>public ExecutionStatus Status { get; set; } = ExecutionStatus.Pending;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:45](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L45) | Current status of the execution. |
-| <code>public DateTimeOffset ScheduledAt { get; init; } = DateTimeOffset.UtcNow;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:50](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L50) | When the execution was scheduled to run. |
-| <code>public DateTimeOffset? StartedAt { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:55](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L55) | When the execution actually started. |
-| <code>public DateTimeOffset? CompletedAt { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:60](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L60) | When the execution completed. |
-| <code>[JsonIgnore] public TimeSpan? Duration =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:66](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L66) | Duration of the execution. |
-| <code>public DateOnly FromDate { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:73](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L73) | Date range that was backfilled. |
-| <code>public DateOnly ToDate { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:78](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L78) | End date of the backfill range. |
-| <code>public List&lt;string&gt; Symbols { get; init; } = new ();</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:83](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L83) | Symbols that were processed. |
-| <code>public ExecutionStatistics Statistics { get; init; } = new ();</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:88](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L88) | Detailed statistics from the execution. |
-| <code>public string? ErrorMessage { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:93](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L93) | Error message if the execution failed. |
-| <code>public string? ErrorStackTrace { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:98](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L98) | Stack trace for debugging (only for failures). |
-| <code>public List&lt;string&gt; Warnings { get; init; } = new ();</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:103](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L103) | Warnings generated during execution. |
-| <code>public Dictionary&lt;string, ProviderUsageStats&gt; ProviderStats { get; init; } = new ();</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:108](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L108) | Provider usage breakdown. |
-| <code>public ConcurrentDictionary&lt;string, SymbolExecutionResult&gt; SymbolResults { get; init; } = new ();</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:113](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L113) | Per-symbol results. |
-| <code>public string? AutoRemediationTriggerReason { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:118](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L118) | Auto-remediation trigger reason when execution was system-triggered. |
-| <code>public int AutoRemediationAttemptCount { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:123](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L123) | Attempt count for the same auto-remediation idempotency key. |
-| <code>public string? AutoRemediationLastOutcome { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:128](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L128) | Last known remediation outcome used by observability surfaces. |
-| <code>public string? AutoRemediationIdempotencyKey { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:133](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L133) | Idempotency key (symbol+range+provider) used to suppress duplicates. |
-| <code>public BackfillRemediationSlaMetadata? AutoRemediationSla { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:140](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L140) | Typed SLA metadata when this execution was created by auto gap remediation. Null for non-remediation executions; legacy remediation entries carry the same data as key=value strings in Warnings instead. |

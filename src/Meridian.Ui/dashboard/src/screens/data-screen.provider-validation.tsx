@@ -225,8 +225,8 @@ export function ProviderValidationPanel({ providerId, providerName, fetchProfile
         <DialogHeader>
           <DialogTitle id={id + "-title"}>{reviewing ? "Confirm relaxation" : draft.reset ? "Reset to deployment default" : "Edit validation profile"}</DialogTitle>
           <DialogDescription id={id + "-impact"}>
-            New workstation historical backfills and gap repair that use {providerName} read the saved daily tolerance.
-            Queued backfill workers and applicable live ingestion use their startup profiles.
+            Workstation historical backfills and gap repair that use {providerName} read the saved daily tolerance at job start,
+            including jobs waiting in the queue. Deployment-scheduled backfills and applicable live ingestion use their startup profiles.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={event => void save(event)} className="space-y-3" aria-busy={saving}>

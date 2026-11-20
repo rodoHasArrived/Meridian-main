@@ -6,6 +6,71 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IProviderCredentialStore
+
+Qualified name: <code>Meridian.DataIntegration.Credentials.IProviderCredentialStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:6](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L6).
+
+Reads provider credential status and manages saved credentials through a credential vault.
+
+```csharp
+public interface IProviderCredentialStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>string VaultPath { get; }</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:8](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L8) |  |
+| <code>Task&lt;ProviderCredentialStoreStatus&gt; GetStatusAsync(string providerId, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:10](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L10) |  |
+| <code>Task SaveAsync(ProviderCredentialSaveRequest request, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:12](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L12) |  |
+| <code>Task SaveRotatedCredentialsAsync(ProviderCredentialSaveRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:15](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L15) | Save a complete rotated credential snapshot in both current and recovery generations. |
+| <code>Task&lt;string&gt; SaveRotatedCredentialsAsync(ProviderCredentialSaveRequest request, ProviderCredentialReadResult expectedConnection, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:19](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L19) | Atomically replace the expected connection and return its new credential generation. |
+| <code>Task&lt;ProviderCredentialReadResult?&gt; ReadForProviderAsync(string providerId, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:23](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L23) |  |
+| <code>Task DeleteAsync(string providerId, string? actor = null, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:25](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L25) |  |
+| <code>Task RecordVerificationAsync(ProviderCredentialVerificationUpdate update, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs:27](../../../../src/Meridian.DataIntegration/Credentials/IProviderCredentialStore.cs#L27) |  |
+
+## IProviderSetupHandler
+
+Qualified name: <code>Meridian.DataIntegration.Credentials.IProviderSetupHandler</code>. Kind: `interface`.
+
+Source: [src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs:9](../../../../src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs#L9).
+
+Validates provider setup input and derives credential and routing configuration for a supported provider.
+
+```csharp
+public interface IProviderSetupHandler
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ProviderSetupDescriptor Descriptor { get; }</code> | [src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs:11](../../../../src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs#L11) |  |
+| <code>bool CanHandle(string providerIdOrAlias);</code> | [src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs:12](../../../../src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs#L12) |  |
+| <code>ProviderSetupValidationResult Validate(ProviderSetupContext context);</code> | [src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs:13](../../../../src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs#L13) |  |
+| <code>ProviderSetupExecutionResult BuildExecution(ProviderSetupContext context, ProviderCredentialStoreStatus credentialStatus);</code> | [src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs:14](../../../../src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs#L14) |  |
+
+## IProviderSetupRegistry
+
+Qualified name: <code>Meridian.DataIntegration.Credentials.IProviderSetupRegistry</code>. Kind: `interface`.
+
+Source: [src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs:57](../../../../src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs#L57).
+
+Lists provider setup handlers and resolves a handler by provider identifier or alias.
+
+```csharp
+public interface IProviderSetupRegistry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>IReadOnlyList&lt;IProviderSetupHandler&gt; Handlers { get; }</code> | [src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs:59](../../../../src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs#L59) |  |
+| <code>IProviderSetupHandler? Find(string providerIdOrAlias);</code> | [src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs:60](../../../../src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs#L60) |  |
+
 ## IProviderVerificationHistoryReader
 
 Qualified name: <code>Meridian.DataIntegration.Credentials.IProviderVerificationHistoryReader</code>. Kind: `interface`.
@@ -850,64 +915,3 @@ Declared public members:
 | <code>public MarketEventTier? Tier { get; init; }</code> | [src/Meridian.DataIntegration/Filters/MarketEventFilter.cs:11](../../../../src/Meridian.DataIntegration/Filters/MarketEventFilter.cs#L11) |  |
 | <code>public bool Matches(in MarketEvent evt);</code> | [src/Meridian.DataIntegration/Filters/MarketEventFilter.cs:13](../../../../src/Meridian.DataIntegration/Filters/MarketEventFilter.cs#L13) |  |
 | <code>public static MarketEventFilter All =&gt; …;</code> | [src/Meridian.DataIntegration/Filters/MarketEventFilter.cs:27](../../../../src/Meridian.DataIntegration/Filters/MarketEventFilter.cs#L27) |  |
-
-## HistoricalBarPoint
-
-Qualified name: <code>Meridian.DataIntegration.Historical.HistoricalBarPoint</code>. Kind: `record`.
-
-Source: [src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs:1084](../../../../src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs#L1084).
-
-A single OHLCV bar. Source is the provenance label of the stored events aggregated into the bucket: the vendor label when every contributing event carries the same one, the documented MixedSources sentinel when the bucket folds together more than one provenance state (two different vendors, or labeled plus unlabeled events), and null when no contributing event was labeled — provenance unknown. IsAdjusted is the price-adjustment regime (HistoricalBar.IsAdjusted semantics): true/false only when every contributing event declares that same regime; any mixing or undeclared regime collapses to the honest null (unknown). There is deliberately no &quot;mixed&quot; sentinel for the regime — a bool? cannot express one honestly, so unknown and mixed share null.
-
-```csharp
-public sealed record HistoricalBarPoint(DateTimeOffset Start, decimal Open, decimal High, decimal Low, decimal Close, long Volume, decimal Vwap, int TradeCount, string? Source = null, bool? IsAdjusted = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string MixedSources = &quot;mixed&quot;;</code> | [src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs:1102](../../../../src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs#L1102) | Sentinel Source value for a bucket whose contributing events do not share a single provenance state (multiple vendors, or labeled mixed with unlabeled events). Distinct from null, which means no contributing event was labeled. |
-
-## HistoricalBarsQuery
-
-Qualified name: <code>Meridian.DataIntegration.Historical.HistoricalBarsQuery</code>. Kind: `record`.
-
-Source: [src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs:1058](../../../../src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs#L1058).
-
-Query parameters for aggregated OHLCV bars.
-
-```csharp
-public sealed record HistoricalBarsQuery(string Symbol, int IntervalMinutes, DateOnly? From = null, DateOnly? To = null, string? DataType = null, int? MaxBars = null);
-```
-
-## HistoricalBarsResult
-
-Qualified name: <code>Meridian.DataIntegration.Historical.HistoricalBarsResult</code>. Kind: `class`.
-
-Source: [src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs:1108](../../../../src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs#L1108).
-
-Result of a historical bars aggregation query.
-
-```csharp
-public sealed class HistoricalBarsResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs:1110](../../../../src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs#L1110) |  |
-| <code>public bool IsPartial { get; set; }</code> | [src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs:1112](../../../../src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs#L1112) | Recovered bars exist, but one or more source files failed. Success remains false. |
-| <code>public List&lt;HistoricalFileFailure&gt; FileFailures { get; set; } = new ();</code> | [src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs:1113](../../../../src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs#L1113) |  |
-| <code>public string? Message { get; set; }</code> | [src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs:1114](../../../../src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs#L1114) |  |
-| <code>public string? Symbol { get; set; }</code> | [src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs:1115](../../../../src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs#L1115) |  |
-| <code>public int IntervalMinutes { get; set; }</code> | [src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs:1116](../../../../src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs#L1116) |  |
-| <code>public DateOnly? From { get; set; }</code> | [src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs:1117](../../../../src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs#L1117) |  |
-| <code>public DateOnly? To { get; set; }</code> | [src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs:1118](../../../../src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs#L1118) |  |
-| <code>public int TotalBars { get; set; }</code> | [src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs:1119](../../../../src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs#L1119) |  |
-| <code>public int FilesProcessed { get; set; }</code> | [src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs:1120](../../../../src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs#L1120) |  |
-| <code>public int TotalFiles { get; set; }</code> | [src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs:1121](../../../../src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs#L1121) |  |
-| <code>public long QueryTimeMs { get; set; }</code> | [src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs:1122](../../../../src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs#L1122) |  |
-| <code>public List&lt;HistoricalBarPoint&gt; Bars { get; set; } = new ();</code> | [src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs:1123](../../../../src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs#L1123) |  |
-| <code>public List&lt;string&gt; Sources { get; set; } = new ();</code> | [src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs:1131](../../../../src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs#L1131) | Distinct provenance labels observed across the returned bars&#x27; contributing events, sorted case-insensitively. Unlabeled events contribute nothing here — the per-bar HistoricalBarPoint.Source nulls already disclose them — so an empty list with non-empty Bars means the series is entirely unattributed. |

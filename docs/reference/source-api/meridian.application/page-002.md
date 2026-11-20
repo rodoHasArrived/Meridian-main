@@ -6,6 +6,47 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## HistoricalBackfillService
+
+Qualified name: <code>Meridian.Application.Backfill.HistoricalBackfillService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:27](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L27).
+
+Orchestrates historical backfills from free/public data providers into the storage pipeline.
+
+```csharp
+public sealed class HistoricalBackfillService : IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public HistoricalBackfillService(IEnumerable&lt;IHistoricalDataProvider&gt; providers, ILogger? logger = null, IEventMetrics? metrics = null, BackfillJobsConfig? jobsConfig = null, BackfillStatusStore? checkpointStore = null, Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? symbolTimelineResolver = null, TimeZoneInfo? intradaySessionTimeZone = null, IReadOnlyDictionary&lt;string, ProviderValidationProfile&gt;? validationProfiles = null, IDisposable? ownedProvider = null);</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:40](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L40) |  |
+| <code>public IReadOnlyCollection&lt;IHistoricalDataProvider&gt; Providers =&gt; …;</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:64](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L64) |  |
+| <code>public Func&lt;string, DateOnly, DateOnly, CancellationToken, Task&lt;HistoricalSessionSchedule?&gt;&gt;? ResolveSessionsAsync { get; init; }</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:67](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L67) | Calendar evidence for instruments whose listing is known to the host. |
+| <code>public void Dispose() =&gt; …;</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:78](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L78) |  |
+| <code>public void ValidateRequest(BackfillRequest request);</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:88](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L88) |  |
+| <code>public async Task&lt;BackfillResult&gt; RunAsync(BackfillRequest request, EventPipeline pipeline, CancellationToken ct = default);</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:117](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L117) |  |
+
+## IBackfillExecutionGateway
+
+Qualified name: <code>Meridian.Application.Backfill.IBackfillExecutionGateway</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/Backfill/IBackfillExecutionGateway.cs:9](../../../../src/Meridian.Application/Backfill/IBackfillExecutionGateway.cs#L9).
+
+Abstraction over backfill execution so auto-remediation can be tested deterministically.
+
+```csharp
+public interface IBackfillExecutionGateway
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;BackfillResult&gt; RunAsync(BackfillRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Backfill/IBackfillExecutionGateway.cs:11](../../../../src/Meridian.Application/Backfill/IBackfillExecutionGateway.cs#L11) |  |
+
 ## IDataQualityGapRemediationService
 
 Qualified name: <code>Meridian.Application.Backfill.IDataQualityGapRemediationService</code>. Kind: `interface`.
@@ -50,13 +91,32 @@ public sealed record QualityAlertRemediationSignal(string Symbol, DateOnly From,
 
 Qualified name: <code>Meridian.Application.Backfill.SymbolPreview</code>. Kind: `record`.
 
-Source: [src/Meridian.Application/Backfill/BackfillPreview.cs:24](../../../../src/Meridian.Application/Backfill/BackfillPreview.cs#L24).
+Source: [src/Meridian.Application/Backfill/BackfillPreview.cs:29](../../../../src/Meridian.Application/Backfill/BackfillPreview.cs#L29).
 
 Preview information for a single symbol.
 
 ```csharp
 public sealed record SymbolPreview(string Symbol, string DateRange, int EstimatedBars, ExistingDataInfo ExistingData, bool WouldOverwrite);
 ```
+
+## WorkstationBackfillQueue
+
+Qualified name: <code>Meridian.Application.Backfill.WorkstationBackfillQueue</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Backfill/WorkstationBackfillQueue.cs:10](../../../../src/Meridian.Application/Backfill/WorkstationBackfillQueue.cs#L10).
+
+Retains one-off workstation jobs and executes them through the shared coordinator.
+
+```csharp
+public sealed class WorkstationBackfillQueue(BackfillCoordinator coordinator, BackfillExecutionHistory history, ILogger<WorkstationBackfillQueue> logger, TimeProvider? timeProvider = null) : BackgroundService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;BackfillSubmissionReceipt&gt; SubmitAsync(Guid submissionId, string tenantId, BackfillRequest request, DateTimeOffset? runAt, string? alternativeFor, CancellationToken ct = default);</code> | [src/Meridian.Application/Backfill/WorkstationBackfillQueue.cs:19](../../../../src/Meridian.Application/Backfill/WorkstationBackfillQueue.cs#L19) |  |
+| <code>public static string GetStatus(BackfillExecutionLog execution, DateTimeOffset now) =&gt; …;</code> | [src/Meridian.Application/Backfill/WorkstationBackfillQueue.cs:64](../../../../src/Meridian.Application/Backfill/WorkstationBackfillQueue.cs#L64) |  |
 
 ## CliArguments
 
@@ -938,85 +998,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IServiceCollection AddMarketDataServices(this IServiceCollection services, CompositionOptions? options = null);</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:74](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L74) | Registers all core services required by any host type. This is the minimum set of services needed for the application to function. |
-
-## ApplicationLifecycleCoordinator
-
-Qualified name: <code>Meridian.Application.Composition.Startup.ApplicationLifecycleCoordinator</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:55](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L55).
-
-Single process lifetime owner used by shared startup orchestration.
-
-```csharp
-public sealed class ApplicationLifecycleCoordinator : IApplicationLifecycleCoordinator, IRuntimeLifecycleControlPlane
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string LocalShutdownTokenEnvironmentVariable = &quot;MDC_SHUTDOWN_TOKEN&quot;;</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:57](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L57) |  |
-| <code>public DateTimeOffset StartedAtUtc { get; }</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:106](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L106) |  |
-| <code>public bool IsShutdownRequested =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:108](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L108) |  |
-| <code>public string? ShutdownReason { get; private set; }</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:110](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L110) |  |
-| <code>public CancellationToken ShutdownToken =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:116](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L116) | Compatibility token. New code should use StopWorkToken and TerminationToken explicitly. |
-| <code>public CancellationToken StopWorkToken =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:118](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L118) |  |
-| <code>public CancellationToken TerminationToken =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:120](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L120) |  |
-| <code>public string? LocalShutdownToken { get; }</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:122](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L122) |  |
-| <code>public RuntimeLifecycleSnapshotDto Snapshot { get; }</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:124](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L124) |  |
-| <code>public LifecycleShutdownOperationDto? ActiveShutdownOperation { get; }</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:135](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L135) |  |
-| <code>public LifecycleShutdownReceiptDto? LatestShutdownReceipt { get; }</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:146](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L146) |  |
-| <code>public static ApplicationLifecycleCoordinator Create(ILogger log, CancellationToken externalToken = default) =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:157](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L157) |  |
-| <code>public void TransitionTo(RuntimeLifecycleState state, string activePhase);</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:160](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L160) |  |
-| <code>public void UpdateReadiness(RuntimeReadinessStatus readiness, IReadOnlyList&lt;RuntimeLifecycleCheckDto&gt; checks);</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:189](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L189) |  |
-| <code>public Task RequestShutdownAsync(string reason, string? detail = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:222](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L222) |  |
-| <code>public ValueTask&lt;LifecycleShutdownAcceptedDto&gt; RequestShutdownAsync(LifecycleShutdownRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:236](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L236) |  |
-| <code>public void AdvanceShutdown(LifecycleShutdownStage stage, LifecycleShutdownOutcome outcome = LifecycleShutdownOutcome.Pending, string? message = null);</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:244](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L244) |  |
-| <code>public void CompleteShutdown(LifecycleShutdownReceiptDto receipt);</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:302](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L302) |  |
-| <code>public void SignalTermination();</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:346](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L346) |  |
-| <code>public void Dispose();</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:358](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L358) |  |
-
-## DelegateRuntimeReadinessCheck
-
-Qualified name: <code>Meridian.Application.Composition.Startup.DelegateRuntimeReadinessCheck</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Composition/Startup/RuntimeReadinessService.cs:33](../../../../src/Meridian.Application/Composition/Startup/RuntimeReadinessService.cs#L33).
-
-Adapts a readiness callback to a named runtime readiness check.
-
-```csharp
-public sealed class DelegateRuntimeReadinessCheck : IRuntimeReadinessCheck
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DelegateRuntimeReadinessCheck(string id, string displayName, LifecycleCheckRequirement requirement, Func&lt;CancellationToken, ValueTask&lt;RuntimeReadinessCheckResult&gt;&gt; check);</code> | [src/Meridian.Application/Composition/Startup/RuntimeReadinessService.cs:37](../../../../src/Meridian.Application/Composition/Startup/RuntimeReadinessService.cs#L37) |  |
-| <code>public string Id { get; }</code> | [src/Meridian.Application/Composition/Startup/RuntimeReadinessService.cs:53](../../../../src/Meridian.Application/Composition/Startup/RuntimeReadinessService.cs#L53) |  |
-| <code>public string DisplayName { get; }</code> | [src/Meridian.Application/Composition/Startup/RuntimeReadinessService.cs:54](../../../../src/Meridian.Application/Composition/Startup/RuntimeReadinessService.cs#L54) |  |
-| <code>public LifecycleCheckRequirement Requirement { get; }</code> | [src/Meridian.Application/Composition/Startup/RuntimeReadinessService.cs:55](../../../../src/Meridian.Application/Composition/Startup/RuntimeReadinessService.cs#L55) |  |
-| <code>public ValueTask&lt;RuntimeReadinessCheckResult&gt; CheckAsync(CancellationToken ct) =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/RuntimeReadinessService.cs:57](../../../../src/Meridian.Application/Composition/Startup/RuntimeReadinessService.cs#L57) |  |
-
-## EventPipelineShutdownParticipant
-
-Qualified name: <code>Meridian.Application.Composition.Startup.EventPipelineShutdownParticipant</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs:15](../../../../src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs#L15).
-
-Completes and flushes EventPipeline exactly once. The pipeline flush already drains its channel and flushes the underlying storage sink, so the sink must not be registered separately.
-
-```csharp
-public sealed class EventPipelineShutdownParticipant : IRuntimeShutdownParticipant
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public EventPipelineShutdownParticipant(EventPipeline pipeline, DualPathEventPipeline? hotPath = null);</code> | [src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs:20](../../../../src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs#L20) |  |
-| <code>public string Id =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs:26](../../../../src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs#L26) |  |
-| <code>public LifecycleShutdownStage Stage =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs:27](../../../../src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs#L27) |  |
-| <code>public int Order =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs:28](../../../../src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs#L28) |  |
-| <code>public bool IsCritical =&gt; …;</code> | [src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs:29](../../../../src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs#L29) |  |
-| <code>public async ValueTask ExecuteAsync(CancellationToken ct);</code> | [src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs:31](../../../../src/Meridian.Application/Composition/Startup/EventPipelineShutdownParticipant.cs#L31) |  |

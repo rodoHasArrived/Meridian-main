@@ -11,6 +11,10 @@ last_reviewed: 2026-11-17
 
 # src/Meridian.Ui/dashboard
 
+Data → Backfills previews the historical adapter's quota, observed budget, and expected cost.
+The same dialog queues, schedules, or previews a provider administrator-approved equivalent.
+Workstation backfill receipts show the submission estimate, waiting states, observed providers,
+and execution variance from the shared API. See [provider backfill operations](../../../docs/operators/provider-backfill-operations.md#workstation-quota-and-receipts).
 Native intercompany agreement editors capture structured terms without calculating charges.
 Externally reviewed attestations retain the operator and external reviewer separately. The entity
 workspace presents advisory obligation monitoring and reviewed legacy coverage corrections or
@@ -1169,20 +1173,27 @@ Fresh JSON test evidence is written under `artifacts/test-results/browser/` at r
 Missing results, zero passing discovery or missing selected files fail the run. Counts, skips,
 durations and stable test identity digests support the manual CI concurrency benchmark.
 
-`EvidenceAmount` opens an exact retained evidence subject in the shared sheet primitive. Manual
-journal detail debit/credit cells carry the entry and ledger-book identity; values without a supported
-retained subject are never assigned inferred provenance. Reads disable development fallback and
-show loading, unavailable, empty, stale and mismatched-subject states. Escape and focus restoration
-use the shared sheet behavior. Full evidence links retain the selected ledger book.
+`AmountPassportTrigger` opens the shared Amount passport rail from Ledger Explorer, posted journal
+detail, retained brokerage positions, and retained trial-balance amounts in governed reports. Each
+trigger passes its displayed value and the server-issued amount reference. The compact markers pair
+text with the proof icon for sourced, calculated, overridden, estimated, unavailable, stale and zero
+values. The rail preserves the work surface, supports keyboard resizing and restores focus on
+dismissal. Copy stable link uses the subject ID, declared scope, date and revision. Follow a
+contributing posting in the rail or open its guarded evidence in a new tab. Pin for comparison
+keeps the address of an amount while you open a second period or revision.
+
+The rail displays exact server values and component-level gaps. Metrics, chart readouts,
+reconciliation variances and factor previews can use the same interaction when their source only
+supplies display context. The rail identifies the missing retained address in those cases.
+`EvidenceAmount` still opens entry-level evidence for manual journal drafts.
 
 Statement import links to the exact retained Operations Continuity workflow, book, and period.
 An unavailable requested workflow fails closed. Close publication continues to require the full
 fund/account/entity/book/period scope and current server readiness; the import handoff alone
 does not supply that complete close authority.
 
-Ledger Explorer clears the selected amount when its tab becomes inactive, its book or period
-changes, or its posted journal no longer contains that amount. Returning to the prior scope
-requires a new amount click; a late evidence response cannot restore the previous drawer.
+Ledger Explorer closes the rail when its tab, book or period changes. A late response cannot reopen
+it. A copied link opens the originally declared amount independent of the current table selection.
 `finance-standard-pages-screen.test.tsx` covers tab, book and period round trips and late responses.
 Posted debits and credits render at the book currency's minor-unit precision (`$500.00`), the
 Journal ID column links with the journal ID itself, and posting rows leave Status blank rather than
@@ -3702,3 +3713,10 @@ previous scope's response. Missing book currency remains explicitly unavailable 
 defaulting to dollars. Legacy API callers that omit accounting basis retain an unfiltered read. The
 route helper lives in `src/lib/ledger-reports-api.ts` rather than `workstation-endpoints.ts`,
 which is at its file-size limit.
+
+### External GL posting
+
+The Accounting External GL workspace reviews exact journal export packages, mapping versions,
+scoped amounts, and provider receipts. The book policy defaults to optional confirmation.
+Operators certify and approve the reviewed payload, download its audit snapshot, and prepare
+corrective or reversal packages from retained outcomes.

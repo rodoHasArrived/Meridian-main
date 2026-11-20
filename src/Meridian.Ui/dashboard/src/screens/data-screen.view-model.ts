@@ -58,6 +58,9 @@ import type {
 import { buildDataUploadWorkbookReviewState } from "@/screens/data-screen.workbook-review";
 import type {
   BackfillPreviewResult,
+  BackfillProviderAlternative,
+  BackfillSubmissionReceipt,
+  BackfillSubmissionRequest,
   BackfillExecutionHistoryResponse,
   BackfillProviderProgressSnapshot,
   BackfillProgressResponse,
@@ -283,6 +286,7 @@ export interface BackfillRemediationQueueState {
 export interface BackfillTriggerServices {
   preview: (request: BackfillTriggerRequest) => Promise<BackfillPreviewResult>;
   run: (request: BackfillTriggerRequest) => Promise<BackfillTriggerResult>;
+  submit?: (request: BackfillSubmissionRequest) => Promise<BackfillSubmissionReceipt>;
   getProgress: (signal?: AbortSignal) => Promise<BackfillProgressResponse>;
   getExecutions?: (signal?: AbortSignal) => Promise<BackfillExecutionHistoryResponse>;
 }
@@ -791,6 +795,7 @@ export const BACKFILL_PROVIDER_OPTIONS: BackfillProviderOptionState[] = [
 const defaultBackfillServices: BackfillTriggerServices = {
   preview: (request) => workstationApi.previewBackfill(request),
   run: (request) => workstationApi.triggerBackfill(request),
+  submit: (request) => workstationApi.submitBackfill(request),
   getProgress: (signal) => workstationApi.getBackfillProgress({ signal }),
   getExecutions: (signal) => workstationApi.getBackfillExecutionHistory(100, { signal })
 };
@@ -998,6 +1003,11 @@ export function useDataViewModel(
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState<BackfillFormState>(defaultBackfillForm);
   const [preview, setPreview] = useState<BackfillPreviewResult | null>(null);
+  const [submission, setSubmission] = useState<BackfillSubmissionReceipt | null>(null);
+  const [scheduleForLater, setScheduleForLater] = useState(false);
+  const [scheduledStart, setScheduledStart] = useState("");
+  const [approvedAlternative, setApprovedAlternative] = useState<(BackfillProviderAlternative & { original: string }) | null>(null);
+  const submissionAttempt = useRef<{ key: string; id: string } | null>(null);
   const [result, setResult] = useState<BackfillTriggerResult | null>(null);
   const [liveProgress, setLiveProgress] = useState<BackfillProgressResponse | null>(null);
   const [remediationHistory, setRemediationHistory] = useState<BackfillExecutionHistoryResponse | null>(null);
@@ -1074,6 +1084,12 @@ export function useDataViewModel(
     () => data?.providers ?? [],
     [data?.providers]
   );
+  const approvedProvider: BackfillProviderOptionState | undefined = useMemo(() => approvedAlternative ? {
+    value: normalizeBackfillProviderValue(approvedAlternative.provider),
+    label: approvedAlternative.displayName,
+    description: `Provider administrator approved this equivalent for ${approvedAlternative.original}.`,
+    badge: "Approved equivalent"
+  } : undefined, [approvedAlternative]);
 
 
   const nextProviderSetupCommandRevision = useCallback(() => {
@@ -1097,14 +1113,14 @@ export function useDataViewModel(
 
   const workstream = useMemo(() => resolveDataWorkstream(pathname), [pathname]);
   const getBackfillExecutions = services.getExecutions;
-  const refreshRemediationHistory = useCallback(async (signal?: AbortSignal) => {
+  const refreshRemediationHistory = useCallback(async (signal?: AbortSignal, background = false) => {
     if (!getBackfillExecutions) {
       return;
     }
 
     const revision = remediationHistoryRevisionRef.current + 1;
     remediationHistoryRevisionRef.current = revision;
-    setRemediationHistoryLoading(true);
+    if (!background) setRemediationHistoryLoading(true);
     setRemediationHistoryError(null);
 
     try {
@@ -1135,6 +1151,25 @@ export function useDataViewModel(
 
     return () => controller.abort();
   }, [refreshRemediationHistory, workstream]);
+
+  const queuedBackfills = useMemo(
+    () => remediationHistory?.executions.filter((row) => row.submissionEstimate != null) ?? [],
+    [remediationHistory]
+  );
+  const hasOutstandingBackfills = queuedBackfills.some((row) => ["Scheduled", "Queued", "Running", "Throttled"].includes(row.status)) ||
+    (submission !== null && !queuedBackfills.some((row) => row.executionId === submission.executionId));
+  useEffect(() => {
+    if (workstream !== "backfills" || !hasOutstandingBackfills) return;
+    const controller = new AbortController();
+    const refresh = async () => {
+      while (!controller.signal.aborted) {
+        await waitForBackfillProgressPoll(3000, controller.signal);
+        if (!controller.signal.aborted) await refreshRemediationHistory(controller.signal, true);
+      }
+    };
+    void refresh();
+    return () => controller.abort();
+  }, [hasOutstandingBackfills, refreshRemediationHistory, workstream]);
 
   const remediationQueueState = useMemo(
     () => buildBackfillRemediationQueueState(remediationHistory, remediationQueueSort),
@@ -1211,9 +1246,10 @@ export function useDataViewModel(
       preview,
       result,
       configuredProviders: configuredBackfillProviders,
+      approvedProvider,
       requestStatus: backfillLifecycle.status
     }),
-    [backfillLifecycle.status, busy, configuredBackfillProviders, error, form, phase, preview, result]
+    [approvedProvider, backfillLifecycle.status, busy, configuredBackfillProviders, error, form, phase, preview, result]
   );
   const previewResultCard = useMemo(
     () => preview ? buildBackfillResultCardState(preview, "preview") : null,
@@ -1261,6 +1297,9 @@ export function useDataViewModel(
     setDialogOpen(true);
     setPreview(null);
     setResult(null);
+    setSubmission(null);
+    setScheduleForLater(false);
+    setScheduledStart("");
     setLiveProgress(null);
     setError(null);
     setBusy(false);
@@ -1269,7 +1308,7 @@ export function useDataViewModel(
 
   useEffect(() => {
     setForm((current) => {
-      const options = buildBackfillProviderOptions(current.provider, configuredBackfillProviders);
+      const options = buildBackfillProviderOptions(current.provider, configuredBackfillProviders, approvedProvider);
       if (options.length === 0) {
         return current.provider.length > 0 ? { ...current, provider: "" } : current;
       }
@@ -1282,7 +1321,7 @@ export function useDataViewModel(
 
       return { ...current, provider: options[0].value };
     });
-  }, [configuredBackfillProviders]);
+  }, [approvedProvider, configuredBackfillProviders]);
 
   const closeBackfillDialog = useCallback(() => {
     if (busy) {
@@ -1293,12 +1332,20 @@ export function useDataViewModel(
   }, [busy]);
 
   const updateBackfillForm = useCallback(<Field extends keyof BackfillFormState>(field: Field, value: BackfillFormState[Field]) => {
+    if (field === "provider" && value !== approvedProvider?.value) setApprovedAlternative(null);
     setForm((current) => ({ ...current, [field]: value }));
     setPreview(null);
     setResult(null);
+    setSubmission(null);
     setLiveProgress(null);
     setError(null);
-  }, []);
+  }, [approvedProvider?.value]);
+
+  const selectBackfillAlternative = useCallback((alternative: BackfillProviderAlternative) => {
+    if (!preview) return;
+    updateBackfillForm("provider", normalizeBackfillProviderValue(alternative.provider));
+    setApprovedAlternative({ ...alternative, original: preview.provider });
+  }, [preview, updateBackfillForm]);
 
   const selectUploadTemplate = useCallback((templateId: string) => {
     setSelectedUploadTemplateId(templateId);
@@ -1421,7 +1468,7 @@ export function useDataViewModel(
   ]);
 
   const previewBackfill = useCallback(async () => {
-    const validationError = validateBackfillForm(form, configuredBackfillProviders);
+    const validationError = validateBackfillForm(form, configuredBackfillProviders, approvedProvider);
     if (validationError) {
       setError(buildDataErrorState(validationError));
       return;
@@ -1457,10 +1504,10 @@ export function useDataViewModel(
       }
       backfillLifecycle.finish(token);
     }
-  }, [backfillLifecycle.fail, backfillLifecycle.finish, backfillLifecycle.markStale, backfillLifecycle.start, backfillLifecycle.succeed, configuredBackfillProviders, form, services]);
+  }, [approvedProvider, backfillLifecycle.fail, backfillLifecycle.finish, backfillLifecycle.markStale, backfillLifecycle.start, backfillLifecycle.succeed, configuredBackfillProviders, form, services]);
 
   const runBackfill = useCallback(async () => {
-    const validationError = validateBackfillForm(form, configuredBackfillProviders);
+    const validationError = validateBackfillForm(form, configuredBackfillProviders, approvedProvider);
     if (validationError) {
       setError(buildDataErrorState(validationError));
       return;
@@ -1471,12 +1518,53 @@ export function useDataViewModel(
       return;
     }
 
-    const token = backfillLifecycle.start({ runningMessage: "Running historical backfill request." });
+    const queuedSubmission = preview.quota && services.submit;
+    if (queuedSubmission && submission) return;
+    if (queuedSubmission && normalizeBackfillProviderValue(preview.provider) !== normalizeBackfillProviderValue(form.provider)) {
+      setError(buildDataErrorState("Preview again after changing the provider."));
+      return;
+    }
+
+    const scheduledTime = scheduleForLater ? new Date(`${scheduledStart}Z`).getTime() : null;
+    if (queuedSubmission && scheduledTime !== null && (!Number.isFinite(scheduledTime) || scheduledTime <= Date.now())) {
+      setError(buildDataErrorState("Choose a future UTC start time."));
+      return;
+    }
+
+    const token = backfillLifecycle.start({ runningMessage: queuedSubmission ? "Submitting historical backfill." : "Running historical backfill request." });
     if (!token) return;
     token.safeSetState(setBusy, true);
     token.safeSetState(setPhase, "running");
     token.safeSetState(setError, null);
     token.safeSetState(setLiveProgress, null);
+
+    if (queuedSubmission) {
+      try {
+        const request = {
+          ...buildBackfillRequest(form), provider: preview.provider, from: preview.from, to: preview.to,
+          executionPolicy: scheduledTime === null ? "queued" as const : "scheduled" as const,
+          scheduledAt: scheduledTime === null ? null : new Date(scheduledTime).toISOString(),
+          approvedAlternativeFor: approvedAlternative?.original
+        };
+        const key = JSON.stringify(request);
+        if (submissionAttempt.current?.key !== key) submissionAttempt.current = { key, id: crypto.randomUUID() };
+        const receipt = await queuedSubmission({ ...request, submissionId: submissionAttempt.current.id });
+        if (!token.isCurrent()) return;
+        token.safeSetState(setSubmission, receipt);
+        submissionAttempt.current = null;
+        backfillLifecycle.succeed(token, { message: `Backfill ${receipt.status.toLowerCase()}.` });
+        await refreshRemediationHistory(token.signal);
+      } catch (err) {
+        if (!token.isCurrent()) return;
+        token.safeSetState(setError, buildDataErrorState(err, "Backfill submission failed."));
+        backfillLifecycle.fail(token, err, { fallback: "Backfill submission failed." });
+      } finally {
+        token.safeSetState(setBusy, false);
+        token.safeSetState(setPhase, "idle");
+        backfillLifecycle.finish(token);
+      }
+      return;
+    }
 
     const pollingController = new AbortController();
     const abortPolling = () => pollingController.abort();
@@ -1535,7 +1623,7 @@ export function useDataViewModel(
       }
       backfillLifecycle.finish(token);
     }
-  }, [backfillLifecycle.fail, backfillLifecycle.finish, backfillLifecycle.markStale, backfillLifecycle.start, backfillLifecycle.succeed, configuredBackfillProviders, form, preview, refreshRemediationHistory, services]);
+  }, [approvedAlternative?.original, approvedProvider, backfillLifecycle.fail, backfillLifecycle.finish, backfillLifecycle.markStale, backfillLifecycle.start, backfillLifecycle.succeed, configuredBackfillProviders, form, preview, refreshRemediationHistory, scheduleForLater, scheduledStart, services, submission]);
 
   const resetPlaidInstitutionSearch = useCallback(() => {
     plaidInstitutionSearchRevisionRef.current += 1;
@@ -1929,6 +2017,13 @@ export function useDataViewModel(
     closeBackfillDialog,
     form,
     updateBackfillForm,
+    selectBackfillAlternative,
+    submission,
+    scheduleForLater,
+    setScheduleForLater,
+    scheduledStart,
+    setScheduledStart,
+    queuedBackfills,
     preview,
     previewResultCard,
     result,
@@ -3474,6 +3569,7 @@ export function buildBackfillTriggerState({
   preview,
   result,
   configuredProviders = [],
+  approvedProvider,
   requestStatus
 }: {
   form: BackfillFormState;
@@ -3483,9 +3579,10 @@ export function buildBackfillTriggerState({
   preview: BackfillPreviewResult | null;
   result: BackfillTriggerResult | null;
   configuredProviders?: DataProviderRecord[];
+  approvedProvider?: BackfillProviderOptionState;
   requestStatus?: RequestLifecycleStatus;
 }): BackfillTriggerState {
-  const validationError = validateBackfillForm(form, configuredProviders);
+  const validationError = validateBackfillForm(form, configuredProviders, approvedProvider);
   const feedbackText = error?.summary ?? null;
   const feedbackDetails = error?.details ?? [];
   const feedbackTone = error
@@ -3517,7 +3614,7 @@ export function buildBackfillTriggerState({
           : "Run previewed backfill request",
     symbolsHelpText: "Separate symbols with spaces or commas. At least one symbol is required.",
     statusAnnouncement: buildBackfillStatusAnnouncement({ phase, error, preview, result }),
-    dialogState: buildBackfillDialogState({ form, busy, phase, validationError, preview, error, result, configuredProviders }),
+    dialogState: buildBackfillDialogState({ form, busy, phase, validationError, preview, error, result, configuredProviders, approvedProvider }),
     requestStatus: requestStatus ?? idleBackfillRequestStatus
   };
 }
@@ -3530,7 +3627,8 @@ export function buildBackfillDialogState({
   preview,
   error = null,
   result = null,
-  configuredProviders = []
+  configuredProviders = [],
+  approvedProvider
 }: {
   form: BackfillFormState;
   busy: boolean;
@@ -3540,10 +3638,11 @@ export function buildBackfillDialogState({
   error?: ApiErrorDisplay | null;
   result?: BackfillTriggerResult | null;
   configuredProviders?: DataProviderRecord[];
+  approvedProvider?: BackfillProviderOptionState;
 }): BackfillDialogState {
   const previewDisabledReason = resolveBackfillPreviewDisabledReason({ busy, phase, validationError });
   const runDisabledReason = resolveBackfillRunDisabledReason({ busy, phase, validationError, preview });
-  const providerOptions = buildBackfillProviderOptions(form.provider, configuredProviders);
+  const providerOptions = buildBackfillProviderOptions(form.provider, configuredProviders, approvedProvider);
   const fieldDisabledReason = busy
     ? "Backfill request is running; wait for the current request to finish before editing."
     : providerOptions.length === 0
@@ -3556,7 +3655,7 @@ export function buildBackfillDialogState({
     formLabel: "Backfill request form",
     closeButtonLabel: "Close backfill dialog",
     closeButtonDisabledReason: busy ? "Backfill request is running; wait for the current request to finish before closing." : null,
-    summaryItems: buildBackfillDialogSummaryItems(form, configuredProviders),
+    summaryItems: buildBackfillDialogSummaryItems(form, configuredProviders, approvedProvider),
     providerField: {
       id: "backfill-provider",
       label: "Provider",
@@ -3566,7 +3665,7 @@ export function buildBackfillDialogState({
       disabledReason: fieldDisabledReason
     },
     providerOptions,
-    selectedProviderDetail: buildBackfillProviderDetail(form.provider, configuredProviders),
+    selectedProviderDetail: buildBackfillProviderDetail(form.provider, configuredProviders, approvedProvider),
     symbolsField: {
       id: "backfill-symbols",
       label: "Symbols",
@@ -3624,14 +3723,15 @@ export function buildBackfillDialogState({
 
 export function buildBackfillDialogSummaryItems(
   form: BackfillFormState,
-  configuredProviders: DataProviderRecord[] = []
+  configuredProviders: DataProviderRecord[] = [],
+  approvedProvider?: BackfillProviderOptionState
 ): BackfillDialogSummaryItemState[] {
-  const providerOptions = buildBackfillProviderOptions(form.provider, configuredProviders);
+  const providerOptions = buildBackfillProviderOptions(form.provider, configuredProviders, approvedProvider);
   const provider = providerOptions.length > 0
-    ? resolveBackfillProviderLabel(form.provider, configuredProviders)
+    ? resolveBackfillProviderLabel(form.provider, configuredProviders, approvedProvider)
     : "None configured";
   const symbols = parseSymbols(form.symbols);
-  const range = formatBackfillRange(form.from.trim() || null, form.to.trim() || null);
+  const range = form.from || form.to ? formatBackfillRange(form.from.trim() || null, form.to.trim() || null) : "Default date range";
 
   return [
     { id: "provider", label: "Provider", value: provider, tone: providerOptions.length > 0 ? "default" : "warning" },
@@ -3647,7 +3747,8 @@ export function buildBackfillDialogSummaryItems(
 
 export function buildBackfillProviderOptions(
   selectedProvider: string,
-  configuredProviders: DataProviderRecord[] = []
+  configuredProviders: DataProviderRecord[] = [],
+  approvedProvider?: BackfillProviderOptionState
 ): BackfillProviderOptionState[] {
   const options = new Map<string, BackfillProviderOptionState>();
 
@@ -3668,20 +3769,18 @@ export function buildBackfillProviderOptions(
     });
   }
 
-  const selected = normalizeBackfillProviderValue(selectedProvider);
-  const result = Array.from(options.values());
-  if (!selected || options.has(selected)) {
-    return result;
+  if (approvedProvider?.value === normalizeBackfillProviderValue(selectedProvider)) {
+    options.set(approvedProvider.value, approvedProvider);
   }
-
-  return result;
+  return Array.from(options.values());
 }
 
 export function buildBackfillProviderDetail(
   provider: string,
-  configuredProviders: DataProviderRecord[] = []
+  configuredProviders: DataProviderRecord[] = [],
+  approvedProvider?: BackfillProviderOptionState
 ): string {
-  const options = buildBackfillProviderOptions(provider, configuredProviders);
+  const options = buildBackfillProviderOptions(provider, configuredProviders, approvedProvider);
   if (options.length === 0) {
     return NO_CONFIGURED_BACKFILL_PROVIDER_MESSAGE;
   }
@@ -3693,10 +3792,11 @@ export function buildBackfillProviderDetail(
 
 function resolveBackfillProviderLabel(
   provider: string,
-  configuredProviders: DataProviderRecord[] = []
+  configuredProviders: DataProviderRecord[] = [],
+  approvedProvider?: BackfillProviderOptionState
 ): string {
   const trimmed = provider.trim();
-  const options = buildBackfillProviderOptions(provider, configuredProviders);
+  const options = buildBackfillProviderOptions(provider, configuredProviders, approvedProvider);
   const option = options.find((item) => item.value === normalizeBackfillProviderValue(trimmed));
   return option?.label ?? (trimmed.length > 0 ? trimmed : "Default provider");
 }
@@ -3847,9 +3947,7 @@ export function buildBackfillResultCardState(
     ? formatCount((result as BackfillPreviewResult).symbols.reduce((total, entry) => total + entry.estimatedBars, 0))
     : formatCount((result as BackfillTriggerResult).barsWritten);
   const rangeText = formatBackfillRange(result.from, result.to);
-  const timingText = isPreview
-    ? `${formatCount((result as BackfillPreviewResult).estimatedDurationSeconds)} sec est.`
-    : formatBackfillTiming((result as BackfillTriggerResult).startedUtc, (result as BackfillTriggerResult).completedUtc);
+  const timingText = isPreview ? null : formatBackfillTiming((result as BackfillTriggerResult).startedUtc, (result as BackfillTriggerResult).completedUtc);
   const tone = isPreview ? "warning" : resolveBackfillResultTone(result as BackfillTriggerResult, kind);
   const statusLabel = isPreview ? "Preview only" : resolveBackfillResultStatusLabel(result as BackfillTriggerResult, kind);
   const title = kind === "preview"
@@ -3862,7 +3960,7 @@ export function buildBackfillResultCardState(
     { id: "symbols", label: "Symbols", value: symbolsText },
     { id: "range", label: "Range", value: rangeText },
     { id: "bars", label: "Bars", value: barsText },
-    { id: "timing", label: "Timing", value: timingText }
+    ...(timingText === null ? [] : [{ id: "timing", label: "Timing", value: timingText }])
   ];
 
   return {
@@ -3877,7 +3975,7 @@ export function buildBackfillResultCardState(
       `Symbols ${symbolsText}`,
       `Bars ${barsText}`,
       `Range ${rangeText}`,
-      `Timing ${timingText}`,
+      timingText ? `Timing ${timingText}` : null,
       !isPreview && (result as BackfillTriggerResult).error ? `Error ${(result as BackfillTriggerResult).error}` : null
     ].filter(Boolean).join(". ")
   };
@@ -4043,9 +4141,10 @@ export function buildBackfillRequest(form: BackfillFormState): BackfillTriggerRe
 
 export function validateBackfillForm(
   form: BackfillFormState,
-  configuredProviders: DataProviderRecord[] = []
+  configuredProviders: DataProviderRecord[] = [],
+  approvedProvider?: BackfillProviderOptionState
 ): string | null {
-  const providerOptions = buildBackfillProviderOptions(form.provider, configuredProviders);
+  const providerOptions = buildBackfillProviderOptions(form.provider, configuredProviders, approvedProvider);
   if (providerOptions.length === 0) {
     return NO_CONFIGURED_BACKFILL_PROVIDER_MESSAGE;
   }

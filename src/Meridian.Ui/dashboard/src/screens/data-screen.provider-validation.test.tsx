@@ -43,7 +43,9 @@ describe("ProviderValidationPanel", () => {
     expect(saveProfile).toHaveBeenCalledTimes(1);
     await user.type(screen.getByRole("textbox", { name: /change reason/i }), "Delayed close");
     await user.click(screen.getByRole("button", { name: "Review relaxation" }));
-    expect(screen.getByRole("dialog", { name: "Confirm relaxation" })).toHaveTextContent(/historical backfills and gap repair that use Polygon.io/);
+    const confirmation = screen.getByRole("dialog", { name: "Confirm relaxation" });
+    expect(confirmation).toHaveTextContent(/historical backfills and gap repair that use Polygon.io/);
+    expect(confirmation).toHaveTextContent(/including jobs waiting in the queue/);
     expect(saveProfile).toHaveBeenCalledTimes(1);
     await user.click(screen.getByRole("button", { name: "Confirm relaxation" }));
     expect(saveProfile).toHaveBeenLastCalledWith("polygon", expect.objectContaining({

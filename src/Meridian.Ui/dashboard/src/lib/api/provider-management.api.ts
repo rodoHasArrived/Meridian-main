@@ -4,7 +4,7 @@ import { providerConnectionScopeEndpoint, type ProviderCredentialRequestOptions 
 import type { BackfillPreviewResult, BackfillExecutionHistoryResponse, BackfillProgressResponse, BackfillTriggerRequest, BackfillTriggerResult, AlpacaBrokerageConnectionRequest, BrokerageConnectionStatus, BrokerageHouseholdPortfolio, AssetOperationsDetail, MultiAssetCoverageSummary, NetSymbolPosition, ProviderConnectionRow, ProviderCredentialMutationResult, ProviderCredentialUpsertRequest, ProviderCredentialVerificationResult, ProviderReadinessSummary, ProviderRoutePreviewRequest, ProviderRoutePreviewResponse, ProviderRoutingBinding, ProviderRoutingConnection, ProviderRoutingTrustSnapshot, ManualCsvProviderIntegrationDryRunRequest, ProviderIntegrationActivationReadiness, ProviderIntegrationActivationRequest, ProviderIntegrationActivationResult, ProviderIntegrationConnectionMonitor, ProviderIntegrationDryRunResult, ProviderIntegrationManifest, ProviderIntegrationOpenApiImportRequest, ProviderIntegrationOpenApiImportResult, ProviderIntegrationPromotionReadinessPreview, ProviderIntegrationQuarantineReplayRequest, ProviderIntegrationQuarantineReplayResult, ProviderIntegrationQuarantineResolutionRequest, ProviderIntegrationQuarantineResolutionResult, ProviderIntegrationQuarantineReview, ProviderIntegrationReconciliationHandoffHistory, ProviderIntegrationReconciliationHandoffRequest, ProviderIntegrationReconciliationHandoffResult, ProviderIntegrationRestDryRunRequest, ProviderIntegrationRunDueSyncRequest, ProviderIntegrationRunDueSyncResult, ProviderIntegrationSchemaDriftCheckRequest, ProviderIntegrationSchemaDriftCheckResult, ProviderIntegrationSetupSaveRequest, ProviderIntegrationSetupSaveResult, ProviderIntegrationStagingIdentityResolutionPreview, ProviderIntegrationStagingReview, ProviderIntegrationSyncPlan, ProviderIntegrationSyncRunHistory, ProviderIntegrationTemplateCatalogEntry, PlaidLinkTokenRequest, PlaidLinkTokenResponse, PlaidPublicTokenExchangeRequest, PlaidPublicTokenExchangeResult, PlaidInstitutionSearchResult } from "@/types";
 import { BACKFILL_API_ENDPOINTS, backfillCloneEndpoint, PORTFOLIO_API_ENDPOINTS, PLAID_API_ENDPOINTS, PROVIDER_API_ENDPOINTS, PROVIDER_INTEGRATION_API_ENDPOINTS, PROVIDER_ROUTING_API_ENDPOINTS, QUALITY_API_ENDPOINTS, SECURITY_MASTER_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS, securityMasterCoverageDraftEndpoint, brokerageConnectionConnectEndpoint, brokerageConnectionEndpoint, brokerageConnectionStatusEndpoint, portfolioHouseholdEndpoint, portfolioSymbolExposureEndpoint, providerCredentialEndpoint, providerVerifyEndpoint, workstationProviderIntegrationConnectionMonitorEndpoint, workstationProviderIntegrationConnectionRunDueSyncEndpoint, workstationProviderIntegrationConnectionSyncPlanEndpoint, workstationProviderIntegrationConnectionSyncRunsEndpoint, workstationProviderIntegrationIdentityResolutionEndpoint, workstationProviderIntegrationPromotionReadinessEndpoint, workstationProviderIntegrationQuarantineReviewEndpoint, workstationProviderIntegrationReadinessEndpoint, workstationProviderIntegrationReconciliationHandoffHistoryEndpoint, workstationProviderIntegrationStagingReviewEndpoint, workstationProviderIntegrationTemplateEndpoint, providerRemoveEndpoint, providerTestEndpoint, qualityAnomalyAcknowledgeEndpoint, securityMasterCorporateActionSourceProposalAcceptEndpoint, workstationAssetOperationsEndpoint } from "@/lib/workstation-endpoints";
 import { deleteJson, getJson, postJson, putJson, type ApiRequestOptions } from "@/lib/api/http-client";
-import type { ProviderReadinessEvidence, ProviderReadinessRow, ProviderReadinessStatus } from "@/types";
+import type { BackfillSubmissionReceipt, BackfillSubmissionRequest, ProviderReadinessEvidence, ProviderReadinessRow, ProviderReadinessStatus } from "@/types";
 
 // --- Backfill mutations ---
 
@@ -31,11 +31,15 @@ export function runBackfillClone(receiptId: string, confirmationCode: string) {
 
 export function getBackfillExecutionHistory(limit = 100, options: ApiRequestOptions = {}) {
   const query = new URLSearchParams({ limit: String(Math.max(1, Math.min(limit, 1000))) });
-  return getJson<BackfillExecutionHistoryResponse>(`${BACKFILL_API_ENDPOINTS.executions}?${query}`, options);
+  return getJson<BackfillExecutionHistoryResponse>(`${BACKFILL_API_ENDPOINTS.executions}?${query}`, { ...options, allowDevelopmentFallback: false });
 }
 
 export function triggerBackfill(request: BackfillTriggerRequest) {
   return postJson<BackfillTriggerResult>(BACKFILL_API_ENDPOINTS.run, request);
+}
+
+export function submitBackfill(request: BackfillSubmissionRequest) {
+  return postJson<BackfillSubmissionReceipt>(BACKFILL_API_ENDPOINTS.run, request);
 }
 
 export function previewBackfill(request: BackfillTriggerRequest) {

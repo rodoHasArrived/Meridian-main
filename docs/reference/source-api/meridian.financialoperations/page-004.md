@@ -6,6 +6,34 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerTextReportRenderer
+
+Qualified name: <code>Meridian.FinancialOperations.LedgerTextJournal.LedgerTextReportRenderer</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextReportRenderer.cs:9](../../../../src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextReportRenderer.cs#L9).
+
+Renders a structured ledger text journal as the requested report.
+
+```csharp
+public static class LedgerTextReportRenderer
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string Render(LedgerTextJournalDocument document, LedgerTextReportOptions options);</code> | [src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextReportRenderer.cs:11](../../../../src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextReportRenderer.cs#L11) |  |
+
+## LedgerTextTransaction
+
+Qualified name: <code>Meridian.FinancialOperations.LedgerTextJournal.LedgerTextTransaction</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextTransaction.cs:5](../../../../src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextTransaction.cs#L5).
+
+```csharp
+public sealed record LedgerTextTransaction(DateTimeOffset Date, string Payee, IReadOnlyList<LedgerTextPosting> Postings);
+```
+
 ## DistributionRecipient
 
 Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.DistributionRecipient</code>. Kind: `record`.
@@ -961,42 +989,3 @@ Declared public members:
 | <code>public OperationsApprovalPolicyMatrixService(StorageOptions storageOptions);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsApprovalPolicyMatrixService.cs:47](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsApprovalPolicyMatrixService.cs#L47) |  |
 | <code>public OperationsApprovalPolicyMatrixDto GetMatrix() =&gt; …;</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsApprovalPolicyMatrixService.cs:53](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsApprovalPolicyMatrixService.cs#L53) |  |
 | <code>public async Task&lt;OperationsApprovalPolicyRuleUpsertResultDto&gt; UpsertRuleAsync(OperationsApprovalPolicyRuleUpsertRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsApprovalPolicyMatrixService.cs:60](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsApprovalPolicyMatrixService.cs#L60) |  |
-
-## OperationsCloseCalendarService
-
-Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.OperationsCloseCalendarService</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseCalendarService.cs:29](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseCalendarService.cs#L29).
-
-Projects workflow deadlines into a close calendar and applies calendar item updates.
-
-```csharp
-public sealed class OperationsCloseCalendarService : IOperationsCloseCalendarService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public OperationsCloseCalendarService(IOperationsContinuityWorkflowService workflowService);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseCalendarService.cs:43](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseCalendarService.cs#L43) |  |
-| <code>public OperationsCloseCalendarService(IOperationsContinuityWorkflowService workflowService, StorageOptions storageOptions) : this(workflowService);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseCalendarService.cs:48](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseCalendarService.cs#L48) |  |
-| <code>public async Task&lt;OperationsCloseCalendarDto&gt; GetCalendarAsync(Guid? fundAccountId = null, string? periodId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseCalendarService.cs:57](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseCalendarService.cs#L57) |  |
-| <code>public async Task&lt;OperationsCloseCalendarItemUpsertResultDto&gt; UpsertItemAsync(OperationsCloseCalendarItemUpsertRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseCalendarService.cs:90](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseCalendarService.cs#L90) |  |
-
-## OperationsCloseChecklistHistory
-
-Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.OperationsCloseChecklistHistory</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseChecklistHistory.cs:6](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseChecklistHistory.cs#L6).
-
-Projects only retained snapshots. Unknown historical gate states remain explicit gaps.
-
-```csharp
-public static class OperationsCloseChecklistHistory
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static OperationsCloseChecklistHistoryDto Build(Guid workflowId, IReadOnlyList&lt;OperationsTimelineEntryDto&gt; timeline, DateTimeOffset asOf);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseChecklistHistory.cs:8](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseChecklistHistory.cs#L8) |  |

@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataSourceConfig
+
+Qualified name: <code>Meridian.Core.Config.DataSourceConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/DataSourceConfig.cs:10](../../../../src/Meridian.Core/Config/DataSourceConfig.cs#L10).
+
+Configuration for an individual data source (real-time or historical). Allows users to configure multiple data sources with different providers and settings.
+
+```csharp
+public sealed record DataSourceConfig(string Id, string Name, DataSourceKind Provider = DataSourceKind.IB, bool Enabled = true, DataSourceType Type = DataSourceType.RealTime, int Priority = 100, AlpacaOptions? Alpaca = null, PolygonOptions? Polygon = null, IBOptions? IB = null, string[]? Symbols = null, string? Description = null, string[]? Tags = null);
+```
+
 ## DataSourceKind
 
 Qualified name: <code>Meridian.Core.Config.DataSourceKind</code>. Kind: `enum`.
@@ -103,7 +115,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Core.Config.DefaultScheduleConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:122](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L122).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:130](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L130).
 
 Configuration for a default schedule to create on startup.
 
@@ -272,7 +284,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Core.Config.FinnhubConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:285](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L285).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:293](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L293).
 
 Finnhub provider configuration. Generous free tier with company fundamentals, earnings, and news. Free tier: 60 API calls/minute.
 
@@ -284,7 +296,7 @@ public sealed record FinnhubConfig(bool Enabled = true, string? ApiKey = null, i
 
 Qualified name: <code>Meridian.Core.Config.FredConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:301](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L301).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:309](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L309).
 
 FRED (Federal Reserve Economic Data) provider configuration. Maps economic time-series observations into synthetic daily bars for Meridian backfill workflows.
 
@@ -445,7 +457,7 @@ public sealed record IndexOptionsConfig(bool Enabled = false, string[]? Indices 
 
 Qualified name: <code>Meridian.Core.Config.NasdaqDataLinkConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:170](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L170).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:178](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L178).
 
 Nasdaq Data Link (Quandl) provider configuration.
 
@@ -457,7 +469,7 @@ public sealed record NasdaqDataLinkConfig(bool Enabled = true, string? ApiKey = 
 
 Qualified name: <code>Meridian.Core.Config.OpenFigiConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:195](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L195).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:203](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L203).
 
 OpenFIGI symbol resolver configuration.
 
@@ -481,7 +493,7 @@ public sealed record PipelineRuntimeConfig(int? FinalFlushTimeoutSeconds = null,
 
 Qualified name: <code>Meridian.Core.Config.PolygonConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:250](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L250).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:258](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L258).
 
 Polygon.io provider configuration. High-quality OHLCV aggregates with reference data. Free tier: 5 API calls/minute, 2 years history.
 
@@ -697,7 +709,7 @@ public sealed record ProviderValidationProfileAudit(Guid Id, string Provider, Da
 
 Qualified name: <code>Meridian.Core.Config.RobinhoodConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:316](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L316).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:324](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L324).
 
 Robinhood historical data provider configuration. Uses the unofficial Robinhood API; requires a personal access token. No official public API exists — set ROBINHOOD_ACCESS_TOKEN via environment variable.
 
@@ -709,7 +721,7 @@ public sealed record RobinhoodConfig(bool Enabled = false, int Priority = 35, in
 
 Qualified name: <code>Meridian.Core.Config.ScheduledBackfillConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:102](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L102).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:110](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L110).
 
 Configuration for scheduled backfill operations.
 
@@ -734,22 +746,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;ConfigValidationResult&gt; Validate(AppConfig config);</code> | [src/Meridian.Core/Config/IConfigValidator.cs:142](../../../../src/Meridian.Core/Config/IConfigValidator.cs#L142) |  |
-
-## SensitiveKeyRegistry
-
-Qualified name: <code>Meridian.Core.Config.SensitiveKeyRegistry</code>. Kind: `class`.
-
-Source: [src/Meridian.Core/Config/SensitiveKeyRegistry.cs:10](../../../../src/Meridian.Core/Config/SensitiveKeyRegistry.cs#L10).
-
-Single registry of sensitive key/property-name fragments shared by every masking and redaction surface (SensitiveValueMasker, Meridian.Core.Diagnostics.RuntimeDiagnosticRedactor). The surfaces previously carried overlapping-but-different lists, so a value could be masked in one output and leak in another. Add new fragments here, never to a per-surface list.
-
-```csharp
-public static class SensitiveKeyRegistry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly IReadOnlyList&lt;string&gt; Fragments = [&quot;password&quot;, &quot;pwd&quot;, &quot;secret&quot;, &quot;key&quot;, &quot;token&quot;, &quot;credential&quot;, &quot;connectionstring&quot;, &quot;connection_string&quot;, &quot;auth&quot;, &quot;authorization&quot;, &quot;session&quot;, &quot;refresh&quot;, &quot;bearer&quot;, &quot;certificate&quot;, &quot;otlpheaders&quot;];</code> | [src/Meridian.Core/Config/SensitiveKeyRegistry.cs:17](../../../../src/Meridian.Core/Config/SensitiveKeyRegistry.cs#L17) | Case-insensitive fragments; a key containing any fragment is considered sensitive. The union of the historical masker and redactor taxonomies — removing an entry narrows redaction somewhere, so entries may only be added. |
-| <code>public static bool IsSensitive(string? key);</code> | [src/Meridian.Core/Config/SensitiveKeyRegistry.cs:28](../../../../src/Meridian.Core/Config/SensitiveKeyRegistry.cs#L28) | Returns true when the key/property/env-var name contains any sensitive fragment. |

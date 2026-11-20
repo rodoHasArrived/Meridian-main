@@ -166,6 +166,7 @@ public static class UiEndpoints
         app.MapProviderRoutingEndpoints(jsonOptions);
         app.MapPlaidEndpoints(jsonOptions);
         app.MapAccountingSystemEndpoints(jsonOptions);
+        app.MapExternalGlPostingEndpoints(jsonOptions);
         app.MapOnboardingEndpoints(jsonOptions);
         app.MapPortfolioImportEndpoints();
 
