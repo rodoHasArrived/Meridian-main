@@ -152,8 +152,9 @@ a missing or default source cannot confirm a `NotRequired` result.
 `CredentialService` is a no-op test and fallback base that never yields a token. Provider ids come
 from the host's `OAuthTokenResourcePrefix` (WPF: `Meridian.OAuth.<provider>`), and `.refresh`
 companion entries are skipped. The WPF host starts the service after desktop activation and disposes
-it on exit. `TimeSeriesAlignmentService` reports an HTTP 501 as `IsServiceUnavailable` so callers can
-present alignment as unavailable rather than as a failed run.
+it on exit. `TimeSeriesAlignmentService` sends the same options for preview and execution and writes
+the completed rows atomically on the workstation. Exports retain the source IDs, adjustment basis
+and gap status. The service recognizes HTTP 501 from older hosts.
 Provider IDs use the shared ProviderSdk identity map for request paths, mutation acknowledgements,
 status joins and catalog deduplication. Aliases resolve to one canonical status row and retain the
 service field schema; ambiguous duplicate service rows remain unavailable. Status projections retain

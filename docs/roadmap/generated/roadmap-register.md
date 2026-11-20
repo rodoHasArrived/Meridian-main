@@ -62,22 +62,23 @@ W1-DATA-001: done; health green; evidence complete. Provider trust evidence is b
 | Field | Value |
 | --- | --- |
 | Wave | W1 |
-| Status | planned |
-| Health | yellow |
+| Status | in_progress |
+| Health | on_track |
 | Priority | low |
 | Owner lane | Data Confidence and Validation |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-11-19 |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-11-20 |
 
 ### Current Summary
 
-W1-DATA-ALIGN-001: planned; health yellow; evidence planned_evidence. No alignment execution or preview service is wired into the host. Both routes answer 501 and create nothing; the WPF Time Series Alignment page disables its run action and says alignment is unavailable once the host reports the 501. The browser workstation has no alignment screen.
+W1-DATA-ALIGN-001: in_progress; health on_track; evidence in_progress. Shared alignment routes compute retained archive rows and provider differences. WPF previews and exports the results. Browser adoption remains sequenced under W8-WPF-PARITY-001.
 
 ### Status References
 
 - Decisions: none recorded
 - PR references (not inferred acceptance): none recorded
 - Evidence: [src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs](../../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs)
+- Evidence: [tests/Meridian.Tests/Ui/TimeSeriesAlignmentEndpointsTests.cs](../../../tests/Meridian.Tests/Ui/TimeSeriesAlignmentEndpointsTests.cs)
 - Evidence: [src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs](../../../src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs)
 - Evidence: [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs](../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs)
 - Evidence: [tests/Meridian.Wpf.Tests/ViewModels/TimeSeriesAlignmentViewModelTests.cs](../../../tests/Meridian.Wpf.Tests/ViewModels/TimeSeriesAlignmentViewModelTests.cs)
@@ -92,6 +93,8 @@ W1-DATA-ALIGN-001: planned; health yellow; evidence planned_evidence. No alignme
 
 ### Source Modules
 
+- `SRC-CONTRACTS`
+- `SRC-STORAGE`
 - `SRC-UI-SHARED`
 - `SRC-UI-SERVICES`
 - `SRC-WPF`

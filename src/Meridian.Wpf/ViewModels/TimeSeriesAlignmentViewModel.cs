@@ -2,6 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
@@ -16,14 +17,23 @@ namespace Meridian.Wpf.ViewModels;
 public sealed class TimeSeriesAlignmentViewModel : BindableBase
 {
     private readonly Func<AlignmentOptions, CancellationToken, Task<AlignmentResult>> _alignDataAsync;
+    private readonly Func<AlignmentOptions, CancellationToken, Task<AlignmentPreview>> _previewAlignmentAsync;
     private readonly Func<AlignmentOptions, AlignmentValidationResult> _validateOptions;
     private string _alignmentName = string.Empty;
-    private string _selectedFrequencyKey = "5m";
+    private string _selectedFrequencyKey = "1d";
     private string _selectedPresetKey = "cross-sectional";
     private DateTime? _fromDate;
     private DateTime? _toDate;
     private string _symbolInput = string.Empty;
-    private string _selectedGapStrategyKey = "ffill";
+    private string _selectedGapStrategyKey = "null";
+    private string _providerInput = string.Empty;
+    private string _selectedInputKindKey = "Auto";
+    private string _selectedAdjustmentKey = "AsStored";
+    private bool _marketHoursOnly = true;
+    private bool _hasPreview;
+    private string _previewDetail = string.Empty;
+    private string? _previewOptions;
+    private string? _previewContentHash;
     private string _selectedTimezoneKey = "UTC";
     private bool _includeClose = true;
     private bool _includeOpen;
@@ -33,7 +43,7 @@ public sealed class TimeSeriesAlignmentViewModel : BindableBase
     private string _selectedExportFormatKey = "Csv";
     private bool _isRunning;
     private bool _isAlignmentServiceUnavailable;
-    private string _statusText = "Add at least two symbols and a date range to run alignment.";
+    private string _statusText = "Add a symbol and a date range to run alignment.";
     private bool _hasResults;
     private string _resultRowsText = "--";
     private string _resultSymbolsText = "--";
@@ -43,21 +53,24 @@ public sealed class TimeSeriesAlignmentViewModel : BindableBase
 
     internal const string AlignmentUnavailableTitle = "Alignment not available on this host";
     internal const string AlignmentUnavailableDetail =
-        "The connected host has no time-series alignment service. No job was created and no output was written.";
+        "The connected host does not support time-series alignment.";
 
     public TimeSeriesAlignmentViewModel()
         : this(
             TimeSeriesAlignmentService.Instance.AlignDataAsync,
-            TimeSeriesAlignmentService.Instance.ValidateOptions)
+            TimeSeriesAlignmentService.Instance.ValidateOptions,
+            TimeSeriesAlignmentService.Instance.PreviewAlignmentAsync)
     {
     }
 
     internal TimeSeriesAlignmentViewModel(
         Func<AlignmentOptions, CancellationToken, Task<AlignmentResult>> alignDataAsync,
-        Func<AlignmentOptions, AlignmentValidationResult> validateOptions)
+        Func<AlignmentOptions, AlignmentValidationResult> validateOptions,
+        Func<AlignmentOptions, CancellationToken, Task<AlignmentPreview>>? previewAlignmentAsync = null)
     {
         _alignDataAsync = alignDataAsync ?? throw new ArgumentNullException(nameof(alignDataAsync));
         _validateOptions = validateOptions ?? throw new ArgumentNullException(nameof(validateOptions));
+        _previewAlignmentAsync = previewAlignmentAsync ?? TimeSeriesAlignmentService.Instance.PreviewAlignmentAsync;
 
         FrequencyOptions = new ObservableCollection<AlignmentOptionChoice>
         {
@@ -81,6 +94,7 @@ public sealed class TimeSeriesAlignmentViewModel : BindableBase
             new("Forward Fill", "ffill"),
             new("Backward Fill", "bfill"),
             new("Interpolate", "interpolate"),
+            new("Leave Blank", "null"),
             new("Drop Rows", "drop"),
             new("Zero Fill", "zero")
         };
@@ -91,6 +105,21 @@ public sealed class TimeSeriesAlignmentViewModel : BindableBase
             new("US/Pacific", "US/Pacific"),
             new("Europe/London", "Europe/London")
         };
+        InputKindOptions =
+        [
+            new("Automatic by frequency", "Auto"),
+            new("Daily bars", "DailyBars"),
+            new("Intraday aggregate bars", "AggregateBars"),
+            new("Trade prints", "Trades"),
+            new("Live trade captures", "LiveTrades"),
+            new("Historical trade archive", "HistoricalTrades")
+        ];
+        AdjustmentOptions =
+        [
+            new("As stored, one basis per series", "AsStored"),
+            new("Raw prices only", "Raw"),
+            new("Provider-adjusted prices only", "Adjusted")
+        ];
         ExportFormatOptions = new ObservableCollection<AlignmentOptionChoice>
         {
             new("CSV", "Csv"),
@@ -101,6 +130,8 @@ public sealed class TimeSeriesAlignmentViewModel : BindableBase
         AddSymbolsCommand = new RelayCommand(AddSymbols, CanAddSymbols);
         RemoveSymbolCommand = new RelayCommand<string>(RemoveSymbol);
         RunAlignmentCommand = new AsyncRelayCommand(RunAlignmentAsync, () => CanRunAlignment);
+        PreviewAlignmentCommand = new AsyncRelayCommand(PreviewAlignmentAsync, () => CanRunAlignment);
+        CancelAlignmentCommand = new RelayCommand(CancelAlignment, () => IsRunning);
         SavePresetCommand = new RelayCommand(SavePreset, CanSavePreset);
 
         SelectedSymbols.CollectionChanged += (_, _) => RefreshPresentationState();
@@ -113,11 +144,15 @@ public sealed class TimeSeriesAlignmentViewModel : BindableBase
     public ObservableCollection<AlignmentOptionChoice> GapStrategyOptions { get; }
     public ObservableCollection<AlignmentOptionChoice> TimezoneOptions { get; }
     public ObservableCollection<AlignmentOptionChoice> ExportFormatOptions { get; }
+    public IReadOnlyList<AlignmentOptionChoice> InputKindOptions { get; }
+    public IReadOnlyList<AlignmentOptionChoice> AdjustmentOptions { get; }
     public ObservableCollection<string> SelectedSymbols { get; } = new();
     public ObservableCollection<AlignmentHistoryEntry> RecentAlignments { get; } = new();
     public IRelayCommand AddSymbolsCommand { get; }
     public IRelayCommand<string> RemoveSymbolCommand { get; }
     public IAsyncRelayCommand RunAlignmentCommand { get; }
+    public IAsyncRelayCommand PreviewAlignmentCommand { get; }
+    public IRelayCommand CancelAlignmentCommand { get; }
     public IRelayCommand SavePresetCommand { get; }
 
     public string AlignmentName
@@ -216,6 +251,60 @@ public sealed class TimeSeriesAlignmentViewModel : BindableBase
             }
         }
     }
+
+    public string ProviderInput
+    {
+        get => _providerInput;
+        set
+        {
+            if (SetProperty(ref _providerInput, value))
+                RefreshPresentationState();
+        }
+    }
+
+    public string SelectedInputKindKey
+    {
+        get => _selectedInputKindKey;
+        set
+        {
+            if (SetProperty(ref _selectedInputKindKey, value))
+                RefreshPresentationState();
+        }
+    }
+
+    public string SelectedAdjustmentKey
+    {
+        get => _selectedAdjustmentKey;
+        set
+        {
+            if (SetProperty(ref _selectedAdjustmentKey, value))
+                RefreshPresentationState();
+        }
+    }
+
+    public bool MarketHoursOnly
+    {
+        get => _marketHoursOnly;
+        set
+        {
+            if (SetProperty(ref _marketHoursOnly, value))
+                RefreshPresentationState();
+        }
+    }
+
+    public bool HasPreview
+    {
+        get => _hasPreview;
+        private set => SetProperty(ref _hasPreview, value);
+    }
+
+    public string PreviewDetail
+    {
+        get => _previewDetail;
+        private set => SetProperty(ref _previewDetail, value);
+    }
+
+    public bool CanEditAlignment => !IsRunning;
 
     public bool IncludeClose
     {
@@ -403,7 +492,7 @@ public sealed class TimeSeriesAlignmentViewModel : BindableBase
         }
     }
 
-    private async Task RunAlignmentAsync()
+    private async Task RunAlignmentAsync(CancellationToken ct)
     {
         RefreshPresentationState();
         if (!CanRunAlignment)
@@ -420,7 +509,8 @@ public sealed class TimeSeriesAlignmentViewModel : BindableBase
         {
             var alignmentName = ResolveAlignmentName();
             var options = BuildOptions(alignmentName);
-            var result = await _alignDataAsync(options, CancellationToken.None).ConfigureAwait(true);
+            options.ExpectedContentHash = HasPreview ? _previewContentHash : null;
+            var result = await _alignDataAsync(options, ct).ConfigureAwait(true);
 
             if (!result.Success)
             {
@@ -436,7 +526,7 @@ public sealed class TimeSeriesAlignmentViewModel : BindableBase
             }
 
             ResultRowsText = $"{result.AlignedRecords:N0}";
-            ResultSymbolsText = $"{SelectedSymbols.Count:N0}";
+            ResultSymbolsText = $"{options.Symbols?.Count:N0}";
             ResultGapsText = $"{result.GapsFilled:N0}";
             ResultFormatText = FormatChoice(ExportFormatOptions, SelectedExportFormatKey);
             ResultOutputPathText = $"Output: {result.OutputPath ?? options.OutputPath ?? "N/A"}";
@@ -446,9 +536,11 @@ public sealed class TimeSeriesAlignmentViewModel : BindableBase
             RecentAlignments.Insert(0, new AlignmentHistoryEntry
             {
                 Name = alignmentName,
-                DetailsText = $"{SelectedSymbols.Count} symbols, {result.AlignedRecords:N0} rows",
+                DetailsText = $"{options.Symbols?.Count} symbols, {result.AlignedRecords:N0} rows",
                 DateText = DateTime.Now.ToString("MMM dd, yyyy HH:mm")
             });
+            if (RecentAlignments.Count > 20)
+                RecentAlignments.RemoveAt(20);
         }
         catch (OperationCanceledException)
         {
@@ -464,7 +556,78 @@ public sealed class TimeSeriesAlignmentViewModel : BindableBase
         }
     }
 
-    private bool CanSavePreset() => !string.IsNullOrWhiteSpace(AlignmentName);
+    private async Task PreviewAlignmentAsync(CancellationToken ct)
+    {
+        if (!CanRunAlignment)
+            return;
+
+        IsRunning = true;
+        HasPreview = false;
+        StatusText = "Computing alignment preview…";
+        try
+        {
+            var options = BuildOptions(ResolveAlignmentName());
+            var preview = await _previewAlignmentAsync(options, ct).ConfigureAwait(true);
+            if (!preview.Success || preview.Summary is not { } summary)
+            {
+                if (preview.IsServiceUnavailable)
+                    IsAlignmentServiceUnavailable = true;
+                StatusText = preview.IsServiceUnavailable ? AlignmentUnavailableDetail :
+                    $"Preview failed. {preview.Error ?? "The host returned no alignment evidence."}";
+                return;
+            }
+
+            var evidence = new List<string>
+            {
+                $"{summary.OutputRecords:N0} output rows, {summary.GapsDetected:N0} gaps, {summary.GapsFilled:N0} filled.",
+                $"{(summary.Calendar == "US_EQUITIES_REGULAR" ? "US equity sessions" : "Continuous calendar")} · {summary.Timezone} · {summary.InputKind}",
+                summary.MissingValueRule
+            };
+            evidence.AddRange(summary.Series.Take(12).Select(series =>
+                $"{series.Symbol} / {series.Provider} · {series.AdjustmentBasis} · {series.ObservedIntervals:N0} observed, {series.Gaps:N0} missing, {series.DuplicateRecords:N0} duplicates"));
+            if (summary.Series.Length > 12)
+                evidence.Add($"{summary.Series.Length - 12:N0} more series.");
+            evidence.AddRange(summary.Differences.Take(12).Select(pair =>
+                $"{pair.Symbol} / {pair.LeftProvider} vs {pair.RightProvider} · " +
+                (pair.ObservedOverlap == 0 ? pair.ComparisonNote :
+                    $"{pair.EqualCloses:N0}/{pair.ObservedOverlap:N0} equal closes · max difference {pair.MaxAbsoluteCloseDifference:G}. {pair.ComparisonNote}".TrimEnd())));
+            if (summary.Differences.Length > 12)
+                evidence.Add($"{summary.Differences.Length - 12:N0} more comparisons.");
+
+            _previewOptions = PreviewKey(options);
+            _previewContentHash = summary.ContentHash;
+            PreviewDetail = string.Join(Environment.NewLine, evidence);
+            HasPreview = true;
+            StatusText = "Preview ready.";
+        }
+        catch (OperationCanceledException)
+        {
+            StatusText = "Preview cancelled.";
+        }
+        catch (Exception ex)
+        {
+            StatusText = $"Preview failed. {ex.Message}";
+        }
+        finally
+        {
+            IsRunning = false;
+        }
+    }
+
+    private void CancelAlignment()
+    {
+        RunAlignmentCommand.Cancel();
+        PreviewAlignmentCommand.Cancel();
+    }
+
+    private static string PreviewKey(AlignmentOptions options) => JsonSerializer.Serialize(new
+    {
+        options.Symbols, options.Providers, options.FromDate, options.ToDate, options.Interval,
+        options.GapStrategy, options.MaxGapIntervals, options.Timezone, options.MarketHoursOnly,
+        options.InputKind, options.AdjustmentPolicy, options.Fields
+    });
+
+    private bool CanSavePreset() => !IsRunning && !string.IsNullOrWhiteSpace(AlignmentName);
 
     private void SavePreset()
     {
@@ -490,8 +653,8 @@ public sealed class TimeSeriesAlignmentViewModel : BindableBase
         switch (preset)
         {
             case "cross-sectional":
-                SelectedFrequencyKey = "5m";
-                SelectedGapStrategyKey = "ffill";
+                SelectedFrequencyKey = "1d";
+                SelectedGapStrategyKey = "null";
                 IncludeClose = true;
                 IncludeOpen = false;
                 IncludeHigh = false;
@@ -537,6 +700,12 @@ public sealed class TimeSeriesAlignmentViewModel : BindableBase
         return new AlignmentOptions
         {
             Symbols = SelectedSymbols.ToList(),
+            Providers = ProviderInput.Split([',', ';', ' '], StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+                .Distinct(StringComparer.OrdinalIgnoreCase).ToList(),
+            InputKind = SelectedInputKindKey,
+            AdjustmentPolicy = SelectedAdjustmentKey,
+            MarketHoursOnly = MarketHoursOnly,
+            Fields = SelectedFields().ToArray(),
             Interval = ParseInterval(SelectedFrequencyKey),
             GapStrategy = ParseGapStrategy(SelectedGapStrategyKey),
             Timezone = string.IsNullOrWhiteSpace(SelectedTimezoneKey) ? "UTC" : SelectedTimezoneKey,
@@ -547,7 +716,7 @@ public sealed class TimeSeriesAlignmentViewModel : BindableBase
                 Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                 "Meridian",
                 "Alignments",
-                $"{alignmentName}.{SelectedExportFormatKey.ToLowerInvariant()}")
+                $"{alignmentName}.{(format == ExportFormat.JsonLines ? "jsonl" : format.ToString().ToLowerInvariant())}")
         };
     }
 
@@ -561,9 +730,9 @@ public sealed class TimeSeriesAlignmentViewModel : BindableBase
     private List<string> BuildValidationMessages()
     {
         var messages = new List<string>();
-        if (SelectedSymbols.Count < 2)
+        if (SelectedSymbols.Count == 0)
         {
-            messages.Add("Add at least two symbols.");
+            messages.Add("Add at least one symbol.");
         }
 
         if (!FromDate.HasValue || !ToDate.HasValue)
@@ -580,6 +749,10 @@ public sealed class TimeSeriesAlignmentViewModel : BindableBase
             messages.Add("Select at least one data field.");
         }
 
+        var name = AlignmentName.Trim();
+        if (name.Length > 100 || name is "." or ".." || name.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+            messages.Add("Use a valid alignment file name of up to 100 characters.");
+
         if (messages.Count == 0)
         {
             var validation = _validateOptions(BuildOptions(ResolveAlignmentName()));
@@ -591,7 +764,13 @@ public sealed class TimeSeriesAlignmentViewModel : BindableBase
 
     private void RefreshPresentationState()
     {
+        if (HasPreview && !string.Equals(_previewOptions, PreviewKey(BuildOptions(ResolveAlignmentName())), StringComparison.Ordinal))
+        {
+            HasPreview = false;
+            StatusText = "Alignment options changed. Preview the new options to compare providers.";
+        }
         RaisePropertyChanged(nameof(CanRunAlignment));
+        RaisePropertyChanged(nameof(CanEditAlignment));
         RaisePropertyChanged(nameof(AlignmentReadinessTitle));
         RaisePropertyChanged(nameof(AlignmentReadinessDetail));
         RaisePropertyChanged(nameof(SelectedSymbolsCountText));
@@ -599,6 +778,8 @@ public sealed class TimeSeriesAlignmentViewModel : BindableBase
         RaisePropertyChanged(nameof(DateScopeText));
         RaisePropertyChanged(nameof(IsRecentAlignmentsEmpty));
         RunAlignmentCommand.NotifyCanExecuteChanged();
+        PreviewAlignmentCommand.NotifyCanExecuteChanged();
+        CancelAlignmentCommand.NotifyCanExecuteChanged();
         SavePresetCommand.NotifyCanExecuteChanged();
     }
 
@@ -618,6 +799,7 @@ public sealed class TimeSeriesAlignmentViewModel : BindableBase
         "ffill" => GapStrategy.ForwardFill,
         "bfill" => GapStrategy.BackwardFill,
         "interpolate" => GapStrategy.LinearInterpolate,
+        "null" => GapStrategy.Null,
         "drop" => GapStrategy.Skip,
         "zero" => GapStrategy.Zero,
         _ => GapStrategy.ForwardFill
@@ -640,33 +822,37 @@ public sealed class TimeSeriesAlignmentViewModel : BindableBase
 
     private string BuildSelectedFieldsText()
     {
-        var fields = new List<string>();
+        var fields = SelectedFields().ToArray();
+        return fields.Length == 0 ? "No fields selected" : string.Join(", ", fields);
+    }
+
+    private IEnumerable<string> SelectedFields()
+    {
         if (IncludeClose)
         {
-            fields.Add("Close");
+            yield return "Close";
         }
 
         if (IncludeOpen)
         {
-            fields.Add("Open");
+            yield return "Open";
         }
 
         if (IncludeHigh)
         {
-            fields.Add("High");
+            yield return "High";
         }
 
         if (IncludeLow)
         {
-            fields.Add("Low");
+            yield return "Low";
         }
 
         if (IncludeVolume)
         {
-            fields.Add("Volume");
+            yield return "Volume";
         }
 
-        return fields.Count == 0 ? "No fields selected" : string.Join(", ", fields);
     }
 }
 

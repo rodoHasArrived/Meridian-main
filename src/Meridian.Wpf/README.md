@@ -424,6 +424,13 @@ scope fails before any provider rows are read.
 
 ## Important workflows
 
+Time Series Alignment compares selected providers or discovers providers in the stored archive.
+Operators choose symbols, dates, frequency, archived record type, calendar, price basis, gaps and
+fields. Preview shows coverage and observed close differences. Run uses that preview's content
+hash when one is present and exports CSV, JSON Lines or Parquet locally under
+`Documents/Meridian/Alignments`. A changed result requires a fresh preview.
+
+
 Desktop diagnostic logging uses named placeholders and string tuple properties through the
 shared `LoggingServiceBase` formatter. `LogWritten.Message` remains rendered for the Activity Log,
 while structured properties and exception objects remain available to subscribers. The focused
