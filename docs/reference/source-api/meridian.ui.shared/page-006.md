@@ -802,6 +802,12 @@ Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReconciliationReg
 public static partial class WorkstationEndpoints
 ```
 
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.RecordSearch.cs:26](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.RecordSearch.cs#L26).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
 Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReportingAuthority.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReportingAuthority.cs#L13).
 
 ```csharp

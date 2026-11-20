@@ -15,7 +15,10 @@ public sealed record SecuritySearchRequest(
     string? CustomProfileId = null,
     int? ProfileVersion = null,
     string? ProfileFieldKey = null,
-    string? ProfileFieldValue = null);
+    string? ProfileFieldValue = null)
+{
+    public bool PrefixOnly { get; init; }
+}
 
 public sealed record SecurityHistoryRequest(
     Guid SecurityId,

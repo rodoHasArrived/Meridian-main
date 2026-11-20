@@ -342,6 +342,11 @@ public sealed partial class PostgresLedgerJournalStore :
             command.Parameters.AddWithValue("journal_entry_id", query.JournalEntryId.Value);
         }
 
+        if (!string.IsNullOrEmpty(query.JournalEntryIdPrefix))
+        {
+            command.Parameters.AddWithValue("journal_entry_id_prefix", query.JournalEntryIdPrefix.ToLowerInvariant());
+        }
+
         if (query.SourceEventId.HasValue)
         {
             command.Parameters.AddWithValue("source_event_id", query.SourceEventId.Value);

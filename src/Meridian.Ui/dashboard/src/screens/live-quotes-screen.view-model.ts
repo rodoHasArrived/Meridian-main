@@ -5,6 +5,7 @@ import { useQuotesStream } from "@/hooks/use-quotes-stream";
 import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import type { ApiRequestOptions } from "@/lib/api";
 import { useQuickTradeTicket, type QuickTradeTicketViewModel } from "./live-quotes-screen.quick-trade";
+import { liveQuoteTradeId, liveTradeChartEvidence } from "./live-quotes-screen.trade-evidence";
 import type {
   OrderBookLevelDto,
   OrderBookResponse,
@@ -1753,10 +1754,6 @@ function buildDepthLevelDetail(
   };
 }
 
-function liveQuoteTradeId(trade: TradeDataResponse): string {
-  return `${trade.sequenceNumber}-${trade.timestamp}`;
-}
-
 function buildTradeRow(trade: TradeDataResponse, detailPanelId: string): LiveQuotesTradeRowViewModel {
   const aggressor = trade.aggressor?.toLowerCase();
   const id = liveQuoteTradeId(trade);
@@ -1933,18 +1930,6 @@ export function buildPriceSparklineViewModel(
       })
     ],
     latestIndex: observations.length - 1
-  };
-}
-
-function liveTradeChartEvidence(trade: TradeDataResponse, price: number, selectTrade?: (id: string) => void, panelId?: string): ChartEvidence {
-  const tradeId = liveQuoteTradeId(trade);
-  return {
-    id: `${trade.symbol}:${tradeId}`,
-    label: `${trade.symbol} print ${trade.sequenceNumber}`,
-    asOf: trade.timestamp,
-    values: [{ series: `${trade.symbol} trade price`, value: price, unit: "Price per unit (currency unreported)", basis: "Price of the individual print received by the live pipeline." }],
-    proof: selectTrade && panelId ? { href: `#${panelId}`, label: `Open trade print ${trade.sequenceNumber}`, onOpen: () => selectTrade(tradeId) } : null,
-    sourceDetail: `Venue ${trade.venue ?? "unreported"} · stream ${trade.streamId ?? "unreported"}`
   };
 }
 
