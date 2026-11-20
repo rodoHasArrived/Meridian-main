@@ -564,6 +564,12 @@ Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.AuditTableExport.
 public static partial class WorkstationEndpoints
 ```
 
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.BookReceipts.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.BookReceipts.cs#L15).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
 Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ChartEvidence.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ChartEvidence.cs#L16).
 
 ```csharp
@@ -942,6 +948,16 @@ Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationRiskEndpoints.cs:8](../../.
 public static partial class WorkstationEndpoints
 ```
 
+## BookReceiptRunRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.WorkstationEndpoints.BookReceiptRunRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.BookReceipts.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.BookReceipts.cs#L17).
+
+```csharp
+public sealed record BookReceiptRunRequest(Guid LedgerBookId, DateOnly AsOfDate);
+```
+
 ## WorkstationFundScopeTenantAccessor
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.WorkstationFundScopeTenantAccessor</code>. Kind: `class`.
@@ -1197,14 +1213,4 @@ Source: [src/Meridian.Ui.Shared/Evidence/EvidenceAttestationSubjectResolver.cs:1
 
 ```csharp
 public sealed record EvidenceAttestationSubjectSnapshot(string SubjectKind, string SubjectId, string Revision, string Hash, string SourceArtifactId, string SourceHash, string? SourceActor, string SourceProvenance, bool Eligible, IReadOnlyList<string> Checks, string? SourceSubjectKind = null, string? SourceSubjectId = null, string? SubjectSnapshotJson = null);
-```
-
-## EvidenceContribution
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.EvidenceContribution</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/EvidenceContribution.cs:9](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContribution.cs#L9).
-
-```csharp
-public sealed record EvidenceContribution(IReadOnlyList<EvidenceNodeDto> Nodes, IReadOnlyList<EvidenceEdgeDto> Edges, IReadOnlyList<WorkflowActionDto> Actions, IReadOnlyList<string> RequiredEvidenceIds, IReadOnlyList<string> Warnings);
 ```

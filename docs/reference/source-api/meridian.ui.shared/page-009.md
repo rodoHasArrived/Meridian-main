@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AutomatedJournalPositionSnapshotScope
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalPositionSnapshotScope</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs:9](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs#L9).
+
+Named durable position source used by a recurring dividend schedule.
+
+```csharp
+public sealed record AutomatedJournalPositionSnapshotScope(string RunId, string AccountId);
+```
+
 ## AutomatedJournalPreparedDraftIntakeRequest
 
 Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalPreparedDraftIntakeRequest</code>. Kind: `record`.
@@ -448,6 +460,115 @@ Declared public members:
 | <code>public async Task&lt;IReadOnlyList&lt;BondConnectionCapabilityDto&gt;&gt; GetAsync(string tenantId, string? accountId = null, Guid? securityId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BondWorkflowConnectionReadinessService.cs:21](../../../../src/Meridian.Ui.Shared/Services/BondWorkflowConnectionReadinessService.cs#L21) |  |
 | <code>public static IReadOnlyList&lt;BondConnectionCapabilityDto&gt; BuildRows(ProviderConnectionDto connection, ProviderConnectionRowDto? credential, IReadOnlyList&lt;DataVendorEntitlementDto&gt; entitlements, DateTimeOffset now, string? accountId = null, Guid? securityId = null);</code> | [src/Meridian.Ui.Shared/Services/BondWorkflowConnectionReadinessService.cs:45](../../../../src/Meridian.Ui.Shared/Services/BondWorkflowConnectionReadinessService.cs#L45) | Pure projection used by endpoint and contract tests; credentials contain status only. |
 
+## BookReceiptEvidenceSource
+
+Qualified name: <code>Meridian.Ui.Shared.Services.BookReceiptEvidenceSource</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/BookReceiptEvidenceSource.cs:32](../../../../src/Meridian.Ui.Shared/Services/BookReceiptEvidenceSource.cs#L32).
+
+Adapts canonical statement intake, Security Master and retained reconciliation matches. Receipt cash is never inferred from a journal, and a matching failure never becomes an authoritative zero. Unsupported provider/account authority remains incomplete, including neutral books for which the existing statement-account service has no accepted account population.
+
+```csharp
+public sealed partial class BookReceiptEvidenceSource(IReconciliationApiService? reconciliation = null, ICanonicalStatementStore? statements = null, IStatementRunMatchArtifactStore? matches = null, ILedgerJournalStore? journals = null, ISecurityReferenceLookup? securities = null, IFundProfileTenancyRegistry? tenancy = null, IAccountQueryService? accounts = null, IStatementRunRecoveryRepository? recovery = null) : IBookReceiptEvidenceSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;BookReceiptSourceSnapshotDto&gt; LoadAsync(BookReceiptQueryDto query, IReadOnlyList&lt;BookReceiptExpectationDto&gt; expectations, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BookReceiptEvidenceSource.cs:42](../../../../src/Meridian.Ui.Shared/Services/BookReceiptEvidenceSource.cs#L42) |  |
+
+Source: [src/Meridian.Ui.Shared/Services/BookReceiptEvidenceSource.Postings.cs:11](../../../../src/Meridian.Ui.Shared/Services/BookReceiptEvidenceSource.Postings.cs#L11).
+
+```csharp
+public sealed partial class BookReceiptEvidenceSource
+```
+
+## BookReceiptQueueService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.BookReceiptQueueService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/BookReceiptQueueService.Allocations.cs:9](../../../../src/Meridian.Ui.Shared/Services/BookReceiptQueueService.Allocations.cs#L9).
+
+```csharp
+public sealed partial class BookReceiptQueueService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/BookReceiptQueueService.cs:15](../../../../src/Meridian.Ui.Shared/Services/BookReceiptQueueService.cs#L15).
+
+Retains exact-book receipt observations over authoritative source evidence. This service neither receives money nor posts journals; both remain separately inspectable source facts.
+
+```csharp
+public sealed partial class BookReceiptQueueService(IBookReceiptSource source, IBookReceiptRunStore store, IReconciliationBreakQueueRepository? exceptions = null) : IBookReceiptQueueService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string EngineVersion = &quot;book-receipts-v1&quot;;</code> | [src/Meridian.Ui.Shared/Services/BookReceiptQueueService.cs:20](../../../../src/Meridian.Ui.Shared/Services/BookReceiptQueueService.cs#L20) |  |
+| <code>public Task&lt;IReadOnlyList&lt;BookReceiptRunDto&gt;&gt; GetRunsAsync(BookReceiptScopeDto scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BookReceiptQueueService.cs:23](../../../../src/Meridian.Ui.Shared/Services/BookReceiptQueueService.cs#L23) |  |
+| <code>public async Task&lt;BookReceiptRunDto?&gt; GetRunAsync(BookReceiptScopeDto scope, string runId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BookReceiptQueueService.cs:26](../../../../src/Meridian.Ui.Shared/Services/BookReceiptQueueService.cs#L26) |  |
+| <code>public async Task&lt;BookReceiptRunDto&gt; RunAsync(BookReceiptQueryDto query, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BookReceiptQueueService.cs:29](../../../../src/Meridian.Ui.Shared/Services/BookReceiptQueueService.cs#L29) |  |
+
+Source: [src/Meridian.Ui.Shared/Services/BookReceiptQueueService.History.cs:8](../../../../src/Meridian.Ui.Shared/Services/BookReceiptQueueService.History.cs#L8).
+
+```csharp
+public sealed partial class BookReceiptQueueService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/BookReceiptQueueService.ProjectionIdentities.cs:16](../../../../src/Meridian.Ui.Shared/Services/BookReceiptQueueService.ProjectionIdentities.cs#L16).
+
+```csharp
+public sealed partial class BookReceiptQueueService
+```
+
+## BookReceiptServiceCollectionExtensions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.BookReceiptServiceCollectionExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/BookReceiptServiceCollectionExtensions.cs:7](../../../../src/Meridian.Ui.Shared/Services/BookReceiptServiceCollectionExtensions.cs#L7).
+
+```csharp
+public static class BookReceiptServiceCollectionExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IServiceCollection AddBookReceiptQueueServices(this IServiceCollection services, Func&lt;IServiceProvider, string&gt; dataDirectory);</code> | [src/Meridian.Ui.Shared/Services/BookReceiptServiceCollectionExtensions.cs:9](../../../../src/Meridian.Ui.Shared/Services/BookReceiptServiceCollectionExtensions.cs#L9) |  |
+
+## BookReceiptSource
+
+Qualified name: <code>Meridian.Ui.Shared.Services.BookReceiptSource</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/BookReceiptSource.cs:13](../../../../src/Meridian.Ui.Shared/Services/BookReceiptSource.cs#L13).
+
+Reads approved retained holdings and accepted schedules. The instrument query service&#x27;s illustrative Security Master projection is never an expectation source for this queue.
+
+```csharp
+public sealed partial class BookReceiptSource(IInstrumentPositionProjectionStore positions, IAssetOperationsProjectionStore projections, IBookReceiptEvidenceSource? evidenceSource = null, ILedgerJournalStore? journals = null, IFundProfileTenancyRegistry? ownership = null) : IBookReceiptSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;BookReceiptSourceSnapshotDto&gt; LoadAsync(BookReceiptQueryDto query, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BookReceiptSource.cs:20](../../../../src/Meridian.Ui.Shared/Services/BookReceiptSource.cs#L20) |  |
+
+Source: [src/Meridian.Ui.Shared/Services/BookReceiptSource.Rules.cs:8](../../../../src/Meridian.Ui.Shared/Services/BookReceiptSource.Rules.cs#L8).
+
+```csharp
+public sealed partial class BookReceiptSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string ObligationKey(Guid positionId, string flowType, DateOnly dueDate, DateOnly? accrualStartDate = null, DateOnly? accrualEndDate = null, string? sourceObligationId = null, bool isFinalPrincipal = false);</code> | [src/Meridian.Ui.Shared/Services/BookReceiptSource.Rules.cs:11](../../../../src/Meridian.Ui.Shared/Services/BookReceiptSource.Rules.cs#L11) | Stable schedule identity independent of expectation revision and amended payment date. |
+
 ## BrokerageConnectionOptions
 
 Qualified name: <code>Meridian.Ui.Shared.Services.BrokerageConnectionOptions</code>. Kind: `record`.
@@ -856,97 +977,3 @@ Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:31](../../
 ```csharp
 public sealed record CollateralCall(string Counterparty, decimal Amount, string Reason, DateTimeOffset CreatedAt);
 ```
-
-## CollateralExposureService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CollateralExposureService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:64](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L64).
-
-Builds collateral exposure snapshots and evaluates counterparty thresholds using configured haircuts.
-
-```csharp
-public sealed class CollateralExposureService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CollateralExposureService();</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:69](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L69) |  |
-| <code>public void UpsertThresholdPolicy(CounterpartyThresholdPolicy policy) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:75](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L75) |  |
-| <code>public void UpsertHaircutRule(HaircutRule rule) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:96](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L96) |  |
-| <code>public IReadOnlyList&lt;ExposureSnapshot&gt; BuildSnapshots(IReadOnlyList&lt;CollateralInputRow&gt; rows);</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:99](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L99) |  |
-| <code>public IReadOnlyList&lt;ThresholdBreach&gt; EvaluateBreaches(IReadOnlyList&lt;ExposureSnapshot&gt; snapshots);</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:169](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L169) |  |
-
-## CollateralIngestionBuffer
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CollateralIngestionBuffer</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:296](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L296).
-
-Buffers bounded collateral input batches separately for each tenant and company scope.
-
-```csharp
-public sealed class CollateralIngestionBuffer
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const int MaxBufferedRows = 20_000;</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:303](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L303) | How many rows one tenant&#x27;s buffer retains. Public because the ingest route quotes it when it refuses an observation for exceeding it, and a message naming a different number than the rule enforces would send the producer looking for the wrong thing. |
-| <code>public int BufferedCount(CollateralTenantScope scope);</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:311](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L311) | Rows currently held for one tenant scope. Scoped rather than global because a count spanning tenants would be a number no operator can act on. |
-| <code>public CollateralIngestOutcome IngestBatch(CollateralTenantScope scope, IReadOnlyList&lt;CollateralInputRow&gt; rows);</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:338](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L338) | Applies one delivery: rows restating a buffered exposure replace it, the rest are added. The row cap remains as a backstop against a producer that invents unbounded identities; steady state is the number of distinct exposures, not the number of messages. Ingestion does not refuse for being at capacity — refusing past capacity would freeze exposure at whatever a deployment saw first, and with non-consuming reads nothing would ever drain it. Eviction of older observations is what makes room. It does refuse one thing, because eviction cannot absorb it: a single observation larger than the whole window. Observations are evicted whole, so one that cannot fit makes itself the eviction candidate and takes every row it owns with it — a counterparty disappearing from the exposure read while every request that built it was acknowledged. The delivery that would cross that line is refused instead, leaving what is already held untouched, so the producer learns at the point the observation outgrew the window rather than discovering the counterparty missing later. |
-| <code>public IReadOnlyList&lt;CollateralInputRow&gt; SnapshotCurrent(CollateralTenantScope scope);</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:616](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L616) | The whole current picture, without consuming it. Every retained row is a live exposure, and CollateralExposureService.BuildSnapshots treats what it is handed as the complete set, so there is no honest read limit: any subset silently drops counterparties out of net exposure, coverage, and breach evaluation with nothing to signal it. The window cap is what bounds this — retention and reporting are the same number by construction rather than two limits that can drift apart. Reading must also leave the buffer intact. Draining on read made each snapshot cover only the rows arriving since the previous reader, so two operators looking at the same moment saw different exposure and the second frequently saw none. |
-
-## CollateralIngestOutcome
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CollateralIngestOutcome</code>. Kind: `enum`.
-
-Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:279](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L279).
-
-What the buffer did with one delivery.
-
-```csharp
-public enum CollateralIngestOutcome
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Retained</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:282](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L282) | Every row the delivery carried is retained, and older observations were evicted to fit. |
-| <code>ObservationExceedsWindow</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:290](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L290) | The delivery would have left one observation — a single identity at a single AsOf — holding more rows than the whole retention window. Nothing from the delivery was retained and what was already held is unchanged, because such an observation is evicted whole and would take every row it owns with it. |
-
-## CollateralInputRow
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CollateralInputRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:49](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L49).
-
-One position within a collateral observation. ChunkId is optional and exists to settle a question the other fields cannot: an observation with more rows than the ingest route accepts in a single request arrives in pieces, and a second request at the same AsOf is then either another piece or a retry of one already sent. Naming the piece makes that decidable -- a chunk redelivered under the same name replaces itself, a chunk under a new name is added -- so two genuinely identical positions in different chunks both survive. Producers that do not split observations can leave it null and get the best-effort matching described on CollateralIngestionBuffer.
-
-```csharp
-public sealed record CollateralInputRow(DateTimeOffset AsOf, string Counterparty, string ProductType, decimal PositionNotional, decimal MarkToMarket, decimal CollateralBalance, string CollateralType, decimal InitialMargin, decimal VariationMargin, string? ChunkId = null);
-```
-
-## CollateralTenantScope
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CollateralTenantScope</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:255](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L255).
-
-Holds the current collateral picture: one row per distinct exposure, replaced when a producer reports that exposure again. Why current state and not a log. CollateralExposureService.BuildSnapshots sums mark-to-market, collateral balance, and margin across every row it is handed. That is correct for a set of simultaneous positions and wrong for a history of observations: a producer posting periodic refreshes for the same exposure would have its numbers added together, so two identical refreshes reported twice the exposure and the figure kept climbing until eviction happened to change it. Reads used to drain the buffer, which hid this; once reads stopped consuming, the retained history became the reported total. Exposure identity is counterparty, product type, and collateral type — the same three fields BuildSnapshots groups and resolves haircuts by. A delivery replaces every buffered row whose identity it restates and keeps the rest, so a producer may refresh one counterparty without erasing the others. Simultaneous positions are never collapsed. Rows sharing an identity and an AsOf are two positions observed at one moment and are summed. Rows sharing an identity at different times are a restatement and a straggler, and only the newest observation survives — whether the straggler arrives in a later delivery or in the same one. That is why the API takes a batch: calling it once per row would make a delivery overwrite itself and silently under-report. An observation may arrive in pieces. The ingest route caps a single request, so an observation with more rows than that cap has to be split across requests. A later delivery at the same AsOf therefore continues the observation already held rather than replacing it, and a producer that names the piece it is sending (CollateralInputRow.ChunkId) has that chunk replaced exactly, so two identical positions in different chunks both survive. Without a chunk id the incoming rows are matched by count against what is held, which keeps a redelivered chunk from double-counting at the cost of reading an identical position in a later chunk as one. Only a strictly newer AsOf replaces the observation. State is partitioned by tenant scope. The buffer is a process-wide singleton, so without a scope key one tenant&#x27;s ingest would appear in another&#x27;s exposure and a same-identity restatement from either would overwrite the other&#x27;s current reading. The scope is resolved server-side from the request, never from the payload. A deployment with no tenancy resolves one empty scope and behaves exactly as before.
-
-```csharp
-public readonly record struct CollateralTenantScope(string TenantId, string CompanyId)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly CollateralTenantScope Unscoped = new (string.Empty, string.Empty);</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:257](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L257) |  |
-| <code>public static CollateralTenantScope For(string? tenantId, string? companyId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:259](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L259) |  |
-| <code>public static CollateralTenantScope ForRequest(HttpContext context);</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:267](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L267) | Resolves the scope from the request, mirroring WorkstationWorkflowReadScope.ForRequest. The tenant comes from what the server resolved for the caller, never from the ingest payload -- a payload-supplied tenant would let a producer write into another tenant&#x27;s exposure. |

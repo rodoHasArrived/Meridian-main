@@ -6,6 +6,122 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingMigrationReadinessState
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingMigrationReadinessState</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:33](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L33).
+
+Process-local receipt that the hosted migration prerequisite completed successfully. Merely registering a migration runner is not evidence that migrations ran.
+
+```csharp
+public sealed class ReportingMigrationReadinessState
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsReady =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:37](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L37) |  |
+
+## ReportingProviderReceiptAuthentication
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingProviderReceiptAuthentication</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs:7](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs#L7).
+
+```csharp
+public sealed record ReportingProviderReceiptAuthentication(string Timestamp, string Signature);
+```
+
+## ReportingProviderReceiptAuthenticationRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingProviderReceiptAuthenticationRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs:11](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs#L11).
+
+```csharp
+public sealed record ReportingProviderReceiptAuthenticationRequest(string TransportId, string JobId, SecureReportingDeliveryReceiptCommand Receipt, ReportingProviderReceiptAuthentication Authentication);
+```
+
+## ReportingRecipientDestinationBinding
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRecipientDestinationBinding</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:133](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L133).
+
+```csharp
+public sealed record ReportingRecipientDestinationBinding(string TenantId, string? CompanyId, string PrincipalId, string TransportId, string Destination, ReportingAccessPrincipalKind PrincipalKind = ReportingAccessPrincipalKind.User);
+```
+
+## ReportingRecipientDestinationRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRecipientDestinationRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:126](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L126).
+
+Complete server-side identity used to resolve an external notification destination. The public delivery command may assert the resolved value, but it is never authoritative.
+
+```csharp
+public sealed record ReportingRecipientDestinationRequest(string TenantId, string? CompanyId, string PrincipalId, string TransportId, ReportingAccessPrincipalKind PrincipalKind = ReportingAccessPrincipalKind.User);
+```
+
+## ReportingReconciliationEvidenceInvalidException
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingReconciliationEvidenceInvalidException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:47](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L47).
+
+Indicates invalid reporting reconciliation evidence and retains its evidence references.
+
+```csharp
+public sealed class ReportingReconciliationEvidenceInvalidException : ReportingReconciliationReadinessException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportingReconciliationEvidenceInvalidException(string message, int blockingCount = 1, IReadOnlyList&lt;string&gt;? evidenceReferences = null) : base(message);</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:50](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L50) |  |
+| <code>public int BlockingCount { get; }</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:59](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L59) |  |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceReferences { get; }</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:61](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L61) |  |
+
+## ReportingReconciliationEvidenceMigrationRequiredException
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingReconciliationEvidenceMigrationRequiredException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs:639](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs#L639).
+
+Raised only when a legacy reconciliation snapshot passed its v1 integrity checks but cannot satisfy the current per-break evidence requirements without an operator-led recovery.
+
+```csharp
+public sealed class ReportingReconciliationEvidenceMigrationRequiredException : ReportingReconciliationEvidenceRecoveryRequiredException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportingReconciliationEvidenceMigrationRequiredException(string message) : base(message);</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs:642](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs#L642) |  |
+
+## ReportingReconciliationEvidenceMissingException
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingReconciliationEvidenceMissingException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:36](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L36).
+
+Indicates that required retained reconciliation evidence is missing.
+
+```csharp
+public sealed class ReportingReconciliationEvidenceMissingException : ReportingReconciliationReadinessException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportingReconciliationEvidenceMissingException(string message) : base(message);</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:39](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L39) |  |
+
 ## ReportingReconciliationEvidenceRetentionService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingReconciliationEvidenceRetentionService</code>. Kind: `class`.
@@ -831,136 +947,3 @@ Declared public members:
 | <code>public IReadOnlyList&lt;ReportPackWorkflowRecordDto&gt; ListRecords(int limit = 25) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:565](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L565) |  |
 | <code>public IReadOnlyList&lt;ReportPackWorkflowRecordDto&gt; ListRecordsForFundProfile(string fundProfileId);</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:579](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L579) | Every retained report-pack record scoped to a fund profile, newest period first. Unlike ListRecords this is intentionally uncapped: callers that locate restatement candidates for a closed-period reference-data edit must see the full set of the fund&#x27;s published packs, since a silently dropped pack would be a missed restatement. |
 | <code>public IReadOnlyList&lt;ReportPackWorkflowRecordDto&gt; ListRecordsForSecurityInFund(Guid securityId, string fundProfileId);</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:593](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L593) | The report packs in a fund profile whose retained report-line provenance references securityId. When a security→report-line index is wired this is an O(matches) lookup; otherwise it falls back to the full fund scan filtered by the shared matcher, preserving behaviour. Callers apply their own state gating (e.g. only Published/Restated packs). |
-
-## ReportTemplateGovernanceStoreOptions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportTemplateGovernanceStoreOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:93](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L93).
-
-```csharp
-public sealed record ReportTemplateGovernanceStoreOptions(string SnapshotPath);
-```
-
-## ReportTemplateRegistryService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportTemplateRegistryService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:18](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L18).
-
-Compatibility adapter for the Reporting-owned template registry used by workstation callers.
-
-```csharp
-public sealed class ReportTemplateRegistryService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportTemplateRegistryService(IReportTemplateGovernanceStore? store = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:22](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L22) |  |
-| <code>public ReportTemplateDefinitionDto Register(ReportTemplateDefinitionDto definition) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:28](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L28) |  |
-| <code>public ReportTemplateDefinitionDto? Get(VersionedReportTemplateIdDto id) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:31](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L31) |  |
-| <code>public ReportTemplateDefinitionDto? Get(VersionedReportTemplateIdDto id, ReportAccessQueryContext? accessContext) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:34](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L34) |  |
-| <code>public IReadOnlyList&lt;ReportTemplateGovernanceRecordDto&gt; List(bool includeSuperseded = false) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:39](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L39) |  |
-| <code>public IReadOnlyList&lt;ReportTemplateGovernanceRecordDto&gt; List(ReportAccessQueryContext? accessContext, bool includeSuperseded = false) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:42](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L42) |  |
-| <code>public ReportTemplateGovernanceRecordDto CreateDraft(ReportTemplateDraftRequestDto request, string actor, string? companyId = null, IReadOnlyList&lt;string&gt;? reportGroupPrincipalIds = null, string? tenantId = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:47](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L47) |  |
-| <code>public ReportTemplateGovernanceRecordDto Submit(VersionedReportTemplateIdDto id, string actor, string? note = null, ReportAccessQueryContext? accessContext = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:55](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L55) |  |
-| <code>public ReportTemplateGovernanceRecordDto Approve(VersionedReportTemplateIdDto id, ReportTemplateDecisionRequestDto request, string actor, ReportAccessQueryContext? accessContext = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:62](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L62) |  |
-| <code>public ReportTemplateGovernanceRecordDto Reject(VersionedReportTemplateIdDto id, ReportTemplateDecisionRequestDto request, string actor, ReportAccessQueryContext? accessContext = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:69](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L69) |  |
-| <code>public RenderReportTemplateResponseDto Render(RenderReportTemplateRequestDto request, ReportAccessQueryContext? accessContext = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:76](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L76) |  |
-| <code>public bool CanAccess(VersionedReportTemplateIdDto id, ReportAccessQueryContext? context) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:81](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L81) |  |
-
-## ReportWriterDatasetSourceService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportWriterDatasetSourceService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs:8](../../../../src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs#L8).
-
-Builds report-writer dataset rows and field catalogs from supported reporting sources.
-
-```csharp
-public sealed class ReportWriterDatasetSourceService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportWriterDatasetSourceService(ReportPackWorkflowService? workflowService = null);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs:70](../../../../src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs#L70) |  |
-| <code>public IReadOnlyList&lt;IReadOnlyDictionary&lt;string, string&gt;&gt; BuildDatasetRows(ReportAccessQueryContext? accessContext = null, int recordLimit = DefaultRecordLimit);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs:75](../../../../src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs#L75) |  |
-| <code>public IReadOnlyList&lt;IReadOnlyDictionary&lt;string, string&gt;&gt; BuildDatasetRowsForSource(string? sourceId, ReportAccessQueryContext? accessContext = null, int recordLimit = DefaultRecordLimit);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs:89](../../../../src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs#L89) |  |
-| <code>public static string? GetKnownDatasetSourceLabel(string? sourceId);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs:134](../../../../src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs#L134) |  |
-| <code>public IReadOnlyList&lt;WorkstationReportWriterFieldPayload&gt; BuildFieldCatalog(ReportAccessQueryContext? accessContext = null, int recordLimit = DefaultRecordLimit) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs:170](../../../../src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs#L170) |  |
-| <code>public static IReadOnlyList&lt;WorkstationReportWriterDatasetSourcePayload&gt; BuildDatasetSources(IReadOnlyList&lt;PortfolioReportingCutDto&gt; portfolioCuts, IReadOnlyList&lt;PortfolioReportingAnalyticsRowDto&gt; analyticsRows, IReadOnlyList&lt;CrossFundReportingConsolidationDto&gt; crossFundRows);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs:175](../../../../src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs#L175) |  |
-| <code>public static IReadOnlyList&lt;WorkstationReportWriterFieldPayload&gt; BuildFieldCatalog(IReadOnlyList&lt;IReadOnlyDictionary&lt;string, string&gt;&gt; rows);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs:398](../../../../src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs#L398) |  |
-| <code>public static IReadOnlyList&lt;IReadOnlyDictionary&lt;string, string&gt;&gt; BuildDatasetRows(WorkstationReportingPayload reporting);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs:413](../../../../src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs#L413) |  |
-| <code>public static IReadOnlyList&lt;IReadOnlyDictionary&lt;string, string&gt;&gt; BuildDatasetRows(IReadOnlyList&lt;PortfolioReportingCutDto&gt; portfolioCuts, IReadOnlyList&lt;PortfolioReportingAnalyticsRowDto&gt; analyticsRows, IReadOnlyList&lt;CrossFundReportingConsolidationDto&gt; crossFundRows);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs:423](../../../../src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs#L423) |  |
-
-## ReportWriterGridArtifactContent
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportWriterGridArtifactContent</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:10](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L10).
-
-```csharp
-public sealed record ReportWriterGridArtifactContent(string FileName, string ContentType, byte[] Content);
-```
-
-## ReportWriterGridArtifactService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportWriterGridArtifactService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:18](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L18).
-
-Renders report-writer grids and produces their downloadable artifact content.
-
-```csharp
-public sealed class ReportWriterGridArtifactService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportWriterGridArtifactService(IReportingOrchestrationService orchestrationService, GovernedReportingTemplateCatalog? governedTemplateCatalog = null);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:28](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L28) |  |
-| <code>public ReportWriterGridRenderDto GetGrid(string runId, string gridId, ReportAccessQueryContext? accessContext = null);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:36](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L36) |  |
-| <code>public ReportWriterGridArtifactContent GetArtifact(string runId, string gridId, string? format, JsonSerializerOptions jsonOptions, ReportAccessQueryContext? accessContext = null);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:50](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L50) |  |
-
-## RiskRuleConfigDto
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RiskRuleConfigDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:78](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L78).
-
-```csharp
-public sealed record RiskRuleConfigDto(string RuleName, decimal? DefaultMaxPositionSize, IReadOnlyDictionary<string, decimal>? SymbolPositionLimits, decimal? MaxDrawdownPercent, int? MaxOrdersPerMinute, decimal? MaxGrossExposure = null, decimal? MaxSymbolConcentrationPercent = null, decimal? MaxOrderNotional = null, decimal? EscalateOrderNotional = null, decimal? MaxOrderQuantity = null, decimal? MaxPriceDeviationPercent = null, decimal? PriceCollarPercent = null);
-```
-
-## RiskRuleConfigUpdateRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RiskRuleConfigUpdateRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:92](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L92).
-
-```csharp
-public sealed record RiskRuleConfigUpdateRequest(decimal? DefaultMaxPositionSize = null, IReadOnlyDictionary<string, decimal?>? SymbolPositionLimits = null, decimal? MaxDrawdownPercent = null, int? MaxOrdersPerMinute = null, string? Reason = null, decimal? MaxGrossExposure = null, decimal? MaxSymbolConcentrationPercent = null, decimal? MaxOrderNotional = null, decimal? EscalateOrderNotional = null, decimal? MaxOrderQuantity = null, decimal? MaxPriceDeviationPercent = null, decimal? PriceCollarPercent = null);
-```
-
-## RiskRuleFirstRunDefaults
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RiskRuleFirstRunDefaults</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:38](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L38).
-
-Armed ceilings for the portfolio-aware rails on a host that has never persisted an operator snapshot. Without these, a fresh install starts with every portfolio-aware rule unconfigured — six of eight rules approve without measuring, so any quantity at any price routes. These are conservative starting guardrails for the composition root to opt into, not tuning advice: operators raise, lower, or clear them through the risk config endpoints, and the resulting snapshot (including an explicit clear) always wins over these on the next start.
-
-```csharp
-public sealed record RiskRuleFirstRunDefaults(decimal MaxGrossExposure, decimal MaxSymbolConcentrationPercent, decimal MaxOrderNotional, decimal EscalateOrderNotional, decimal MaxOrderQuantity, decimal MaxPriceDeviationPercent, decimal PriceCollarPercent)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static RiskRuleFirstRunDefaults Conservative { get; } = new (MaxGrossExposure : 1_000_000m, MaxSymbolConcentrationPercent : 25m, MaxOrderNotional : 100_000m, EscalateOrderNotional : 25_000m, MaxOrderQuantity : 10_000m, MaxPriceDeviationPercent : 10m, PriceCollarPercent : 5m);</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:54](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L54) | The workstation&#x27;s first-run posture: sized against the default $100k paper book so the rails constrain without strangling a fresh install — a $100k per-order reject ceiling with governed escalation from $25k, a 10,000-unit fat-finger quantity ceiling, a 10% aggressive price band with the 5% collar parked inside it (a collar at or above the band could never fire), 25% single-symbol concentration, and a $1m gross-exposure ceiling. |

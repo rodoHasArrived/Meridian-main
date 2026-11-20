@@ -1022,6 +1022,18 @@ Declared public members:
 | <code>public BankInternalCashReconciliationSourceAdapter(IBankTransactionSource? bankTransactionSource = null);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:132](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L132) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;ReconciliationCashMovementInput&gt;&gt; GetCashMovementsAsync(ReconciliationRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:137](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L137) |  |
 
+## BookReceiptReversalCommand
+
+Qualified name: <code>Meridian.Strategies.Services.BookReceiptReversalCommand</code>. Kind: `record`.
+
+Source: [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.ReceiptReversals.cs:8](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.ReceiptReversals.cs#L8).
+
+Internal source observation, never a browser-supplied privileged casework command.
+
+```csharp
+public sealed record BookReceiptReversalCommand(string BreakId, Guid LedgerBookId, string CommandId, long ExpectedVersion, IReadOnlyList<string> ReversalIds, IReadOnlyList<string> EvidenceLinks, DateOnly AsOfDate);
+```
+
 ## CashFlowProjectionService
 
 Qualified name: <code>Meridian.Strategies.Services.CashFlowProjectionService</code>. Kind: `class`.
@@ -1052,22 +1064,3 @@ Cross-strategy gross/net exposure summary.
 ```csharp
 public sealed record CrossStrategyExposureReport(decimal GrossExposure, decimal NetExposure, IReadOnlyList<string> Top5Concentrations, DateTimeOffset AsOf);
 ```
-
-## ExternalStatementReconciliationSourceAdapter
-
-Qualified name: <code>Meridian.Strategies.Services.ExternalStatementReconciliationSourceAdapter</code>. Kind: `class`.
-
-Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:165](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L165).
-
-Delegates reconciliation statement retrieval to the configured external statement source.
-
-```csharp
-public sealed class ExternalStatementReconciliationSourceAdapter : IExternalStatementReconciliationSourceAdapter
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ExternalStatementReconciliationSourceAdapter(IExternalStatementSource externalStatementSource);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:169](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L169) |  |
-| <code>public Task&lt;IReadOnlyList&lt;ReconciliationExternalStatementInput&gt;&gt; GetStatementRowsAsync(ReconciliationRunRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:174](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L174) |  |

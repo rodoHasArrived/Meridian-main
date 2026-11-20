@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WeekdayReconciliationSlaCalendarResolver
+
+Qualified name: <code>Meridian.Strategies.Services.WeekdayReconciliationSlaCalendarResolver</code>. Kind: `class`.
+
+Source: [src/Meridian.Strategies/Services/IReconciliationSlaCalendarResolver.cs:15](../../../../src/Meridian.Strategies/Services/IReconciliationSlaCalendarResolver.cs#L15).
+
+```csharp
+public sealed class WeekdayReconciliationSlaCalendarResolver : IReconciliationSlaCalendarResolver, IReconciliationSlaCalendar
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static WeekdayReconciliationSlaCalendarResolver Instance { get; } = new ();</code> | [src/Meridian.Strategies/Services/IReconciliationSlaCalendarResolver.cs:17](../../../../src/Meridian.Strategies/Services/IReconciliationSlaCalendarResolver.cs#L17) |  |
+| <code>public IReconciliationSlaCalendar Resolve(ReconciliationSlaPolicy policy);</code> | [src/Meridian.Strategies/Services/IReconciliationSlaCalendarResolver.cs:18](../../../../src/Meridian.Strategies/Services/IReconciliationSlaCalendarResolver.cs#L18) |  |
+| <code>public bool IsBusinessDay(DateOnly date) =&gt; …;</code> | [src/Meridian.Strategies/Services/IReconciliationSlaCalendarResolver.cs:24](../../../../src/Meridian.Strategies/Services/IReconciliationSlaCalendarResolver.cs#L24) |  |
+
 ## JsonlPromotionRecordStore
 
 Qualified name: <code>Meridian.Strategies.Storage.JsonlPromotionRecordStore</code>. Kind: `class`.

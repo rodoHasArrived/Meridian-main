@@ -6,6 +6,146 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OptionAssessmentImportService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OptionAssessmentImportService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs:10](../../../../src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs#L10).
+
+Retains imported broker claims and their exact source bytes. No broker or OMS is called.
+
+```csharp
+public sealed class OptionAssessmentImportService(string dataRoot, IEvidenceArtifactStore evidence, TimeProvider clock)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int MaxSourceBytes = 8 * 1024 * 1024;</code> | [src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs:12](../../../../src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs#L12) |  |
+| <code>public OptionAssessmentImportPreview Preview(OptionAssessmentImportRequest request);</code> | [src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs:16](../../../../src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs#L16) |  |
+| <code>public async Task&lt;RetainedOptionAssessment&gt; AcceptAsync(string tenant, string company, string actor, Guid accountId, AcceptOptionAssessmentImportRequest command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs:40](../../../../src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs#L40) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;RetainedOptionAssessment&gt;&gt; ListAsync(string tenant, string company, Guid account, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs:100](../../../../src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs#L100) |  |
+
+## OptionScreeningService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OptionScreeningService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/OptionScreeningService.cs:9](../../../../src/Meridian.Ui.Shared/Services/OptionScreeningService.cs#L9).
+
+Bounded, current-snapshot option exploration. Does not evaluate account or execution permission.
+
+```csharp
+public sealed class OptionScreeningService(OptionsChainService chains, TimeProvider timeProvider)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int MaximumExpirations = 12;</code> | [src/Meridian.Ui.Shared/Services/OptionScreeningService.cs:11](../../../../src/Meridian.Ui.Shared/Services/OptionScreeningService.cs#L11) |  |
+| <code>public async Task&lt;OptionScreenResult&gt; ScreenAsync(OptionScreenRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OptionScreeningService.cs:13](../../../../src/Meridian.Ui.Shared/Services/OptionScreeningService.cs#L13) |  |
+
+## OwnedProviderConnection
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OwnedProviderConnection</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:683](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L683).
+
+Identity of a retained connection one tenant owns; carries no credential material.
+
+```csharp
+public sealed record OwnedProviderConnection(string ConnectionId, string CredentialEnvironment);
+```
+
+## PaperFinancingAccountingSourceReader
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PaperFinancingAccountingSourceReader</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:354](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L354).
+
+Reads independent financing assessments for the same exhaustive retained session population.
+
+```csharp
+public sealed class PaperFinancingAccountingSourceReader(IPaperSessionStore store, PaperSessionAccountingBinding binding, PaperFinancingPostingService financing) : ILedgerAccountingSourceReader
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public LedgerAccountingSourceKind SourceKind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:358](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L358) |  |
+| <code>public async Task&lt;LedgerAccountingSourcePopulation&gt; ReadAsync(LedgerAccountingCompletenessQuery query, LedgerAccountingPeriod period, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:360](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L360) |  |
+
+## PaperFuturesSettlementOptions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PaperFuturesSettlementOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:15](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L15).
+
+Options for the paper futures end-of-day variation-margin settlement job.
+
+```csharp
+public sealed class PaperFuturesSettlementOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string SectionKey = &quot;PaperTrading:FuturesSettlement&quot;;</code> | [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:18](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L18) | Configuration section bound to these options. |
+| <code>public bool Enabled { get; set; }</code> | [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:21](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L21) | Whether the job runs. Off by default, so hosts opt in. |
+| <code>public TimeSpan PollInterval { get; set; } = TimeSpan.FromMinutes(15);</code> | [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:24](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L24) | How often the job looks for closed, unsettled trading days. |
+| <code>public int MaxCatchUpTradingDays { get; set; } = 5;</code> | [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:31](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L31) | The most recent closed trading days one pass settles per position, oldest first. A longer outage settles from its last days only; the total cash is the same, because each settlement moves the change since the previous one. |
+
+## PaperFuturesSettlementService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PaperFuturesSettlementService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:44](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L44).
+
+Settles the daily variation margin of every open paper futures position once per trading day, after the regular close. Each pass walks the active paper sessions; for every variation-margin position it settles each closed trading day after its last settlement (and after the position opened), oldest first, at that day&#x27;s mark from IMarkPriceSource. The close stands in for the exchange settlement price, which is not modelled yet. A day with no price is skipped with a warning and never settled on a stale price. Settlements go through PaperSessionPersistenceService.RecordSettlementAsync, which persists before applying and ignores a day already settled, so overlapping or repeated passes are safe.
+
+```csharp
+public sealed class PaperFuturesSettlementService(IServiceProvider serviceProvider, IOptions<PaperFuturesSettlementOptions> options, ILogger<PaperFuturesSettlementService> logger, TimeProvider? timeProvider = null) : BackgroundService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;int&gt; RunOnceAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:98](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L98) | Runs one settlement pass at the current time and returns how many settlements it applied. Does nothing when the job is disabled or paper sessions or a mark price source are not registered. |
+
+## PaperFuturesSettlementServiceCollectionExtensions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PaperFuturesSettlementServiceCollectionExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:199](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L199).
+
+Registers the paper futures end-of-day settlement job.
+
+```csharp
+public static class PaperFuturesSettlementServiceCollectionExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IServiceCollection AddPaperFuturesSettlement(this IServiceCollection services, IConfiguration configuration);</code> | [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:206](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L206) | Binds PaperFuturesSettlementOptions from PaperFuturesSettlementOptions.SectionKey and registers the job as a singleton and hosted service. It stays idle unless enabled and a mark price source is registered. |
+
+## PaperSessionAccountingBinding
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PaperSessionAccountingBinding</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:259](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L259).
+
+A server-resolved source-to-book binding, never a caller&#x27;s assertion of account ownership.
+
+```csharp
+public sealed record PaperSessionAccountingBinding(string SessionId, Guid AggregateId, Guid LedgerBookId, Guid PeriodId, string FinancialAccountId);
+```
+
 ## PaperSessionAccountingSourceReader
 
 Qualified name: <code>Meridian.Ui.Shared.Services.PaperSessionAccountingSourceReader</code>. Kind: `class`.
@@ -781,100 +921,3 @@ Declared public members:
 | <code>public async Task&lt;ProviderModuleSetupResult&gt; SetEnabledAsync(string moduleId, bool enabled, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs:190](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs#L190) |  |
 | <code>public async Task&lt;ProviderModuleSetupResult&gt; RemoveModuleAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs:225](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs#L225) |  |
 | <code>public async Task&lt;ProviderModuleTestResult&gt; TestModuleAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs:265](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupService.cs#L265) |  |
-
-## ProviderModuleStatusDto
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderModuleStatusDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:7](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L7).
-
-Status of a configured provider module — returned by the module setup API. Credential values are NEVER included; only key names + hasValue flag.
-
-```csharp
-public sealed record ProviderModuleStatusDto(string ModuleId, string DisplayName, bool Enabled, int Priority, bool IsConfigured, bool IsRunning, IReadOnlyList<CredentialKeyStatusDto> CredentialStatus, IReadOnlyList<string> CapabilityNames, string? LastTestResult = null, DateTimeOffset? LastTestedAt = null);
-```
-
-## ProviderModuleTestResult
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderModuleTestResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:55](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L55).
-
-Result from the test-module endpoint.
-
-```csharp
-public sealed record ProviderModuleTestResult(bool Success, bool CredentialConfigValid, bool ConnectionVerified, string? FailureReason = null, double? LatencyMs = null, string? ProbeDetail = null);
-```
-
-## ProviderNewsReadModel
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderNewsReadModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:22](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L22).
-
-```csharp
-public sealed record ProviderNewsReadModel(ProviderProjectionProvenance Provenance, ProviderProjectionAvailability Availability, ProviderNewsItem Item);
-```
-
-## ProviderPnlReadModel
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderPnlReadModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:24](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L24).
-
-```csharp
-public sealed record ProviderPnlReadModel(ProviderProjectionProvenance Provenance, ProviderProjectionAvailability Availability, ProviderAccountPnl Item);
-```
-
-## ProviderProjectionAvailability
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderProjectionAvailability</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:16](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L16).
-
-Connection and entitlement evidence retained alongside every projection row.
-
-```csharp
-public sealed record ProviderProjectionAvailability(bool IsAvailable, string ConnectionState, string? Entitlement, string? Detail);
-```
-
-## ProviderProjectionProvenance
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderProjectionProvenance</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:7](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L7).
-
-Stable source identity for an operator-visible provider datum.
-
-```csharp
-public sealed record ProviderProjectionProvenance(string Key, string ProviderFamily, int RequestId, string Capability, DateTimeOffset ObservedAt, ProviderDataProvenance? Source);
-```
-
-## ProviderReadinessService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderReadinessService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderReadinessService.cs:16](../../../../src/Meridian.Ui.Shared/Services/ProviderReadinessService.cs#L16).
-
-Aggregates provider configuration, connection, and account evidence into readiness summaries.
-
-```csharp
-public sealed class ProviderReadinessService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderReadinessService(IServiceProvider services, ConfigStore configStore);</code> | [src/Meridian.Ui.Shared/Services/ProviderReadinessService.cs:22](../../../../src/Meridian.Ui.Shared/Services/ProviderReadinessService.cs#L22) |  |
-| <code>public async Task&lt;ProviderReadinessSummaryDto&gt; GetReadinessAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderReadinessService.cs:28](../../../../src/Meridian.Ui.Shared/Services/ProviderReadinessService.cs#L28) |  |
-
-## ProviderScannerReadModel
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderScannerReadModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:23](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L23).
-
-```csharp
-public sealed record ProviderScannerReadModel(ProviderProjectionProvenance Provenance, ProviderProjectionAvailability Availability, ProviderScannerResult Item);
-```

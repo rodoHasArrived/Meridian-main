@@ -6,6 +6,139 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportTemplateGovernanceStoreOptions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportTemplateGovernanceStoreOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:93](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L93).
+
+```csharp
+public sealed record ReportTemplateGovernanceStoreOptions(string SnapshotPath);
+```
+
+## ReportTemplateRegistryService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportTemplateRegistryService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:18](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L18).
+
+Compatibility adapter for the Reporting-owned template registry used by workstation callers.
+
+```csharp
+public sealed class ReportTemplateRegistryService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportTemplateRegistryService(IReportTemplateGovernanceStore? store = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:22](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L22) |  |
+| <code>public ReportTemplateDefinitionDto Register(ReportTemplateDefinitionDto definition) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:28](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L28) |  |
+| <code>public ReportTemplateDefinitionDto? Get(VersionedReportTemplateIdDto id) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:31](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L31) |  |
+| <code>public ReportTemplateDefinitionDto? Get(VersionedReportTemplateIdDto id, ReportAccessQueryContext? accessContext) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:34](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L34) |  |
+| <code>public IReadOnlyList&lt;ReportTemplateGovernanceRecordDto&gt; List(bool includeSuperseded = false) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:39](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L39) |  |
+| <code>public IReadOnlyList&lt;ReportTemplateGovernanceRecordDto&gt; List(ReportAccessQueryContext? accessContext, bool includeSuperseded = false) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:42](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L42) |  |
+| <code>public ReportTemplateGovernanceRecordDto CreateDraft(ReportTemplateDraftRequestDto request, string actor, string? companyId = null, IReadOnlyList&lt;string&gt;? reportGroupPrincipalIds = null, string? tenantId = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:47](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L47) |  |
+| <code>public ReportTemplateGovernanceRecordDto Submit(VersionedReportTemplateIdDto id, string actor, string? note = null, ReportAccessQueryContext? accessContext = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:55](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L55) |  |
+| <code>public ReportTemplateGovernanceRecordDto Approve(VersionedReportTemplateIdDto id, ReportTemplateDecisionRequestDto request, string actor, ReportAccessQueryContext? accessContext = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:62](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L62) |  |
+| <code>public ReportTemplateGovernanceRecordDto Reject(VersionedReportTemplateIdDto id, ReportTemplateDecisionRequestDto request, string actor, ReportAccessQueryContext? accessContext = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:69](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L69) |  |
+| <code>public RenderReportTemplateResponseDto Render(RenderReportTemplateRequestDto request, ReportAccessQueryContext? accessContext = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:76](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L76) |  |
+| <code>public bool CanAccess(VersionedReportTemplateIdDto id, ReportAccessQueryContext? context) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:81](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L81) |  |
+
+## ReportWriterDatasetSourceService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportWriterDatasetSourceService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs:8](../../../../src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs#L8).
+
+Builds report-writer dataset rows and field catalogs from supported reporting sources.
+
+```csharp
+public sealed class ReportWriterDatasetSourceService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportWriterDatasetSourceService(ReportPackWorkflowService? workflowService = null);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs:70](../../../../src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs#L70) |  |
+| <code>public IReadOnlyList&lt;IReadOnlyDictionary&lt;string, string&gt;&gt; BuildDatasetRows(ReportAccessQueryContext? accessContext = null, int recordLimit = DefaultRecordLimit);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs:75](../../../../src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs#L75) |  |
+| <code>public IReadOnlyList&lt;IReadOnlyDictionary&lt;string, string&gt;&gt; BuildDatasetRowsForSource(string? sourceId, ReportAccessQueryContext? accessContext = null, int recordLimit = DefaultRecordLimit);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs:89](../../../../src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs#L89) |  |
+| <code>public static string? GetKnownDatasetSourceLabel(string? sourceId);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs:134](../../../../src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs#L134) |  |
+| <code>public IReadOnlyList&lt;WorkstationReportWriterFieldPayload&gt; BuildFieldCatalog(ReportAccessQueryContext? accessContext = null, int recordLimit = DefaultRecordLimit) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs:170](../../../../src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs#L170) |  |
+| <code>public static IReadOnlyList&lt;WorkstationReportWriterDatasetSourcePayload&gt; BuildDatasetSources(IReadOnlyList&lt;PortfolioReportingCutDto&gt; portfolioCuts, IReadOnlyList&lt;PortfolioReportingAnalyticsRowDto&gt; analyticsRows, IReadOnlyList&lt;CrossFundReportingConsolidationDto&gt; crossFundRows);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs:175](../../../../src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs#L175) |  |
+| <code>public static IReadOnlyList&lt;WorkstationReportWriterFieldPayload&gt; BuildFieldCatalog(IReadOnlyList&lt;IReadOnlyDictionary&lt;string, string&gt;&gt; rows);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs:398](../../../../src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs#L398) |  |
+| <code>public static IReadOnlyList&lt;IReadOnlyDictionary&lt;string, string&gt;&gt; BuildDatasetRows(WorkstationReportingPayload reporting);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs:413](../../../../src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs#L413) |  |
+| <code>public static IReadOnlyList&lt;IReadOnlyDictionary&lt;string, string&gt;&gt; BuildDatasetRows(IReadOnlyList&lt;PortfolioReportingCutDto&gt; portfolioCuts, IReadOnlyList&lt;PortfolioReportingAnalyticsRowDto&gt; analyticsRows, IReadOnlyList&lt;CrossFundReportingConsolidationDto&gt; crossFundRows);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs:423](../../../../src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs#L423) |  |
+
+## ReportWriterGridArtifactContent
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportWriterGridArtifactContent</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:10](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L10).
+
+```csharp
+public sealed record ReportWriterGridArtifactContent(string FileName, string ContentType, byte[] Content);
+```
+
+## ReportWriterGridArtifactService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportWriterGridArtifactService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:18](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L18).
+
+Renders report-writer grids and produces their downloadable artifact content.
+
+```csharp
+public sealed class ReportWriterGridArtifactService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportWriterGridArtifactService(IReportingOrchestrationService orchestrationService, GovernedReportingTemplateCatalog? governedTemplateCatalog = null);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:28](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L28) |  |
+| <code>public ReportWriterGridRenderDto GetGrid(string runId, string gridId, ReportAccessQueryContext? accessContext = null);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:36](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L36) |  |
+| <code>public ReportWriterGridArtifactContent GetArtifact(string runId, string gridId, string? format, JsonSerializerOptions jsonOptions, ReportAccessQueryContext? accessContext = null);</code> | [src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs:50](../../../../src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs#L50) |  |
+
+## RiskRuleConfigDto
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RiskRuleConfigDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:78](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L78).
+
+```csharp
+public sealed record RiskRuleConfigDto(string RuleName, decimal? DefaultMaxPositionSize, IReadOnlyDictionary<string, decimal>? SymbolPositionLimits, decimal? MaxDrawdownPercent, int? MaxOrdersPerMinute, decimal? MaxGrossExposure = null, decimal? MaxSymbolConcentrationPercent = null, decimal? MaxOrderNotional = null, decimal? EscalateOrderNotional = null, decimal? MaxOrderQuantity = null, decimal? MaxPriceDeviationPercent = null, decimal? PriceCollarPercent = null);
+```
+
+## RiskRuleConfigUpdateRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RiskRuleConfigUpdateRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:92](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L92).
+
+```csharp
+public sealed record RiskRuleConfigUpdateRequest(decimal? DefaultMaxPositionSize = null, IReadOnlyDictionary<string, decimal?>? SymbolPositionLimits = null, decimal? MaxDrawdownPercent = null, int? MaxOrdersPerMinute = null, string? Reason = null, decimal? MaxGrossExposure = null, decimal? MaxSymbolConcentrationPercent = null, decimal? MaxOrderNotional = null, decimal? EscalateOrderNotional = null, decimal? MaxOrderQuantity = null, decimal? MaxPriceDeviationPercent = null, decimal? PriceCollarPercent = null);
+```
+
+## RiskRuleFirstRunDefaults
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RiskRuleFirstRunDefaults</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:38](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L38).
+
+Armed ceilings for the portfolio-aware rails on a host that has never persisted an operator snapshot. Without these, a fresh install starts with every portfolio-aware rule unconfigured — six of eight rules approve without measuring, so any quantity at any price routes. These are conservative starting guardrails for the composition root to opt into, not tuning advice: operators raise, lower, or clear them through the risk config endpoints, and the resulting snapshot (including an explicit clear) always wins over these on the next start.
+
+```csharp
+public sealed record RiskRuleFirstRunDefaults(decimal MaxGrossExposure, decimal MaxSymbolConcentrationPercent, decimal MaxOrderNotional, decimal EscalateOrderNotional, decimal MaxOrderQuantity, decimal MaxPriceDeviationPercent, decimal PriceCollarPercent)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static RiskRuleFirstRunDefaults Conservative { get; } = new (MaxGrossExposure : 1_000_000m, MaxSymbolConcentrationPercent : 25m, MaxOrderNotional : 100_000m, EscalateOrderNotional : 25_000m, MaxOrderQuantity : 10_000m, MaxPriceDeviationPercent : 10m, PriceCollarPercent : 5m);</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:54](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L54) | The workstation&#x27;s first-run posture: sized against the default $100k paper book so the rails constrain without strangling a fresh install — a $100k per-order reject ceiling with governed escalation from $25k, a 10,000-unit fat-finger quantity ceiling, a 10% aggressive price band with the 5% collar parked inside it (a collar at or above the band could never fire), 25% single-symbol concentration, and a $1m gross-exposure ceiling. |
+
 ## RiskRuleRuntimeOptions
 
 Qualified name: <code>Meridian.Ui.Shared.Services.RiskRuleRuntimeOptions</code>. Kind: `record`.
@@ -747,113 +880,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public bool AllowClosedPeriodForRetainedWorkflow { get; init; }</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs:29](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs#L29) | Allows an already-retained workflow to revalidate its immutable account, tenant, company, book, and period binding after close. New intake and any pre-publication resume must leave this false. |
-
-## StorageAssuranceService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.StorageAssuranceService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/StorageAssuranceService.cs:17](../../../../src/Meridian.Ui.Shared/Services/StorageAssuranceService.cs#L17).
-
-Builds storage assurance snapshots and coordinates previewed, idempotent maintenance actions.
-
-```csharp
-public sealed class StorageAssuranceService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StorageAssuranceService(StorageOptions options, IEvidenceArtifactStore evidence, IDataQualityService? quality = null, ITierMigrationService? tiers = null);</code> | [src/Meridian.Ui.Shared/Services/StorageAssuranceService.cs:27](../../../../src/Meridian.Ui.Shared/Services/StorageAssuranceService.cs#L27) |  |
-| <code>public async Task&lt;StorageAssuranceSnapshotDto&gt; GetSnapshotAsync(StorageAssurancePermissionsDto permissions, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/StorageAssuranceService.cs:39](../../../../src/Meridian.Ui.Shared/Services/StorageAssuranceService.cs#L39) |  |
-| <code>public async Task&lt;StorageMaintenancePreviewDto&gt; PreviewAsync(StorageMaintenancePreviewRequestDto request, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/StorageAssuranceService.cs:84](../../../../src/Meridian.Ui.Shared/Services/StorageAssuranceService.cs#L84) |  |
-| <code>public async Task&lt;StorageMaintenanceResultDto&gt; ExecuteAsync(StorageMaintenanceCommandRequestDto request, string actor, string tenantId, string companyId, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/StorageAssuranceService.cs:125](../../../../src/Meridian.Ui.Shared/Services/StorageAssuranceService.cs#L125) |  |
-| <code>public StorageMaintenanceActionDto? GetExecuteAction(string previewId, string idempotencyKey);</code> | [src/Meridian.Ui.Shared/Services/StorageAssuranceService.cs:180](../../../../src/Meridian.Ui.Shared/Services/StorageAssuranceService.cs#L180) |  |
-
-## StpTransitionResult
-
-Qualified name: <code>Meridian.Ui.Shared.Services.StpTransitionResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:77](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L77).
-
-```csharp
-public sealed record StpTransitionResult(string EntityId, string State, string? ExceptionReason, bool RoutedToBreakQueue);
-```
-
-## StrategyRunParityReport
-
-Qualified name: <code>Meridian.Ui.Shared.Services.StrategyRunParityReport</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/StrategyRunParityService.cs:9](../../../../src/Meridian.Ui.Shared/Services/StrategyRunParityService.cs#L9).
-
-```csharp
-public sealed record StrategyRunParityReport(string RunId, string? BaselineRunId, string Status, string InputMode, decimal? BaselineNetPnl, decimal? ObservedNetPnl, int? BaselineFills, int? ObservedFills, IReadOnlyList<OrderCheck> Checks, string JournalRoute);
-```
-
-## StrategyRunParityService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.StrategyRunParityService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/StrategyRunParityService.cs:14](../../../../src/Meridian.Ui.Shared/Services/StrategyRunParityService.cs#L14).
-
-Compares retained operands/results; agreement never grants promotion or live authority.
-
-```csharp
-public sealed class StrategyRunParityService(IStrategyRepository repository)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;StrategyRunParityReport?&gt; GetAsync(Guid account, string runId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StrategyRunParityService.cs:16](../../../../src/Meridian.Ui.Shared/Services/StrategyRunParityService.cs#L16) |  |
-
-## StrategyRunReviewPacketService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.StrategyRunReviewPacketService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs:13](../../../../src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs#L13).
-
-Builds a single review packet for Strategy, Trading, and Accounting to inspect the same run, portfolio, ledger, reconciliation, brokerage, and coverage evidence.
-
-```csharp
-public sealed class StrategyRunReviewPacketService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StrategyRunReviewPacketService(StrategyRunReadService runReadService, StrategyRunContinuityService continuityService, IServiceProvider services, ILogger&lt;StrategyRunReviewPacketService&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs:20](../../../../src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs#L20) |  |
-| <code>public Task&lt;StrategyRunReviewPacketDto?&gt; GetAsync(string runId, Guid? fundAccountId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs:32](../../../../src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs#L32) |  |
-| <code>public Task&lt;StrategyRunReviewPacketDto?&gt; GetAsync(string runId, StrategyRunReadScope scope, Guid? fundAccountId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs:38](../../../../src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs#L38) |  |
-
-## SyncAccountSnapshot
-
-Qualified name: <code>Meridian.Ui.Shared.Services.SyncAccountSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:12](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L12).
-
-```csharp
-public sealed record SyncAccountSnapshot(string AccountId, string Counterparty, string Currency, decimal ClosingBalance, decimal NetDelta, DateOnly BusinessDate, bool IsComplete);
-```
-
-## SyncValidationIssue
-
-Qualified name: <code>Meridian.Ui.Shared.Services.SyncValidationIssue</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:21](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L21).
-
-```csharp
-public sealed record SyncValidationIssue(string Code, string Message, string Severity);
-```
-
-## SyncValidationResult
-
-Qualified name: <code>Meridian.Ui.Shared.Services.SyncValidationResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:23](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L23).
-
-```csharp
-public sealed record SyncValidationResult(bool Passed, IReadOnlyList<SyncValidationIssue> Issues);
-```

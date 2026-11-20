@@ -6,6 +6,100 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CollateralExposureService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.CollateralExposureService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:64](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L64).
+
+Builds collateral exposure snapshots and evaluates counterparty thresholds using configured haircuts.
+
+```csharp
+public sealed class CollateralExposureService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CollateralExposureService();</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:69](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L69) |  |
+| <code>public void UpsertThresholdPolicy(CounterpartyThresholdPolicy policy) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:75](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L75) |  |
+| <code>public void UpsertHaircutRule(HaircutRule rule) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:96](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L96) |  |
+| <code>public IReadOnlyList&lt;ExposureSnapshot&gt; BuildSnapshots(IReadOnlyList&lt;CollateralInputRow&gt; rows);</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:99](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L99) |  |
+| <code>public IReadOnlyList&lt;ThresholdBreach&gt; EvaluateBreaches(IReadOnlyList&lt;ExposureSnapshot&gt; snapshots);</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:169](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L169) |  |
+
+## CollateralIngestionBuffer
+
+Qualified name: <code>Meridian.Ui.Shared.Services.CollateralIngestionBuffer</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:296](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L296).
+
+Buffers bounded collateral input batches separately for each tenant and company scope.
+
+```csharp
+public sealed class CollateralIngestionBuffer
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int MaxBufferedRows = 20_000;</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:303](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L303) | How many rows one tenant&#x27;s buffer retains. Public because the ingest route quotes it when it refuses an observation for exceeding it, and a message naming a different number than the rule enforces would send the producer looking for the wrong thing. |
+| <code>public int BufferedCount(CollateralTenantScope scope);</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:311](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L311) | Rows currently held for one tenant scope. Scoped rather than global because a count spanning tenants would be a number no operator can act on. |
+| <code>public CollateralIngestOutcome IngestBatch(CollateralTenantScope scope, IReadOnlyList&lt;CollateralInputRow&gt; rows);</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:338](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L338) | Applies one delivery: rows restating a buffered exposure replace it, the rest are added. The row cap remains as a backstop against a producer that invents unbounded identities; steady state is the number of distinct exposures, not the number of messages. Ingestion does not refuse for being at capacity — refusing past capacity would freeze exposure at whatever a deployment saw first, and with non-consuming reads nothing would ever drain it. Eviction of older observations is what makes room. It does refuse one thing, because eviction cannot absorb it: a single observation larger than the whole window. Observations are evicted whole, so one that cannot fit makes itself the eviction candidate and takes every row it owns with it — a counterparty disappearing from the exposure read while every request that built it was acknowledged. The delivery that would cross that line is refused instead, leaving what is already held untouched, so the producer learns at the point the observation outgrew the window rather than discovering the counterparty missing later. |
+| <code>public IReadOnlyList&lt;CollateralInputRow&gt; SnapshotCurrent(CollateralTenantScope scope);</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:616](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L616) | The whole current picture, without consuming it. Every retained row is a live exposure, and CollateralExposureService.BuildSnapshots treats what it is handed as the complete set, so there is no honest read limit: any subset silently drops counterparties out of net exposure, coverage, and breach evaluation with nothing to signal it. The window cap is what bounds this — retention and reporting are the same number by construction rather than two limits that can drift apart. Reading must also leave the buffer intact. Draining on read made each snapshot cover only the rows arriving since the previous reader, so two operators looking at the same moment saw different exposure and the second frequently saw none. |
+
+## CollateralIngestOutcome
+
+Qualified name: <code>Meridian.Ui.Shared.Services.CollateralIngestOutcome</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:279](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L279).
+
+What the buffer did with one delivery.
+
+```csharp
+public enum CollateralIngestOutcome
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Retained</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:282](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L282) | Every row the delivery carried is retained, and older observations were evicted to fit. |
+| <code>ObservationExceedsWindow</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:290](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L290) | The delivery would have left one observation — a single identity at a single AsOf — holding more rows than the whole retention window. Nothing from the delivery was retained and what was already held is unchanged, because such an observation is evicted whole and would take every row it owns with it. |
+
+## CollateralInputRow
+
+Qualified name: <code>Meridian.Ui.Shared.Services.CollateralInputRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:49](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L49).
+
+One position within a collateral observation. ChunkId is optional and exists to settle a question the other fields cannot: an observation with more rows than the ingest route accepts in a single request arrives in pieces, and a second request at the same AsOf is then either another piece or a retry of one already sent. Naming the piece makes that decidable -- a chunk redelivered under the same name replaces itself, a chunk under a new name is added -- so two genuinely identical positions in different chunks both survive. Producers that do not split observations can leave it null and get the best-effort matching described on CollateralIngestionBuffer.
+
+```csharp
+public sealed record CollateralInputRow(DateTimeOffset AsOf, string Counterparty, string ProductType, decimal PositionNotional, decimal MarkToMarket, decimal CollateralBalance, string CollateralType, decimal InitialMargin, decimal VariationMargin, string? ChunkId = null);
+```
+
+## CollateralTenantScope
+
+Qualified name: <code>Meridian.Ui.Shared.Services.CollateralTenantScope</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:255](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L255).
+
+Holds the current collateral picture: one row per distinct exposure, replaced when a producer reports that exposure again. Why current state and not a log. CollateralExposureService.BuildSnapshots sums mark-to-market, collateral balance, and margin across every row it is handed. That is correct for a set of simultaneous positions and wrong for a history of observations: a producer posting periodic refreshes for the same exposure would have its numbers added together, so two identical refreshes reported twice the exposure and the figure kept climbing until eviction happened to change it. Reads used to drain the buffer, which hid this; once reads stopped consuming, the retained history became the reported total. Exposure identity is counterparty, product type, and collateral type — the same three fields BuildSnapshots groups and resolves haircuts by. A delivery replaces every buffered row whose identity it restates and keeps the rest, so a producer may refresh one counterparty without erasing the others. Simultaneous positions are never collapsed. Rows sharing an identity and an AsOf are two positions observed at one moment and are summed. Rows sharing an identity at different times are a restatement and a straggler, and only the newest observation survives — whether the straggler arrives in a later delivery or in the same one. That is why the API takes a batch: calling it once per row would make a delivery overwrite itself and silently under-report. An observation may arrive in pieces. The ingest route caps a single request, so an observation with more rows than that cap has to be split across requests. A later delivery at the same AsOf therefore continues the observation already held rather than replacing it, and a producer that names the piece it is sending (CollateralInputRow.ChunkId) has that chunk replaced exactly, so two identical positions in different chunks both survive. Without a chunk id the incoming rows are matched by count against what is held, which keeps a redelivered chunk from double-counting at the cost of reading an identical position in a later chunk as one. Only a strictly newer AsOf replaces the observation. State is partitioned by tenant scope. The buffer is a process-wide singleton, so without a scope key one tenant&#x27;s ingest would appear in another&#x27;s exposure and a same-identity restatement from either would overwrite the other&#x27;s current reading. The scope is resolved server-side from the request, never from the payload. A deployment with no tenancy resolves one empty scope and behaves exactly as before.
+
+```csharp
+public readonly record struct CollateralTenantScope(string TenantId, string CompanyId)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly CollateralTenantScope Unscoped = new (string.Empty, string.Empty);</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:257](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L257) |  |
+| <code>public static CollateralTenantScope For(string? tenantId, string? companyId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:259](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L259) |  |
+| <code>public static CollateralTenantScope ForRequest(HttpContext context);</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:267](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L267) | Resolves the scope from the request, mirroring WorkstationWorkflowReadScope.ForRequest. The tenant comes from what the server resolved for the caller, never from the ingest payload -- a payload-supplied tenant would let a producer write into another tenant&#x27;s exposure. |
+
 ## ConfigStore
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ConfigStore</code>. Kind: `class`.
@@ -844,99 +938,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public Dk1PromotionTrustEvidenceProvider(Dk1TrustGateReadinessService readiness, Dk1TrustGateReadinessOptions options);</code> | [src/Meridian.Ui.Shared/Services/Dk1PromotionTrustEvidenceProvider.cs:13](../../../../src/Meridian.Ui.Shared/Services/Dk1PromotionTrustEvidenceProvider.cs#L13) |  |
 | <code>public async Task&lt;PromotionTrustEvidence?&gt; GetEvidenceAsync(StrategyRunEntry run, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/Dk1PromotionTrustEvidenceProvider.cs:21](../../../../src/Meridian.Ui.Shared/Services/Dk1PromotionTrustEvidenceProvider.cs#L21) |  |
-
-## Dk1TrustGateReadinessOptions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.Dk1TrustGateReadinessOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/Dk1TrustGateReadinessService.cs:7](../../../../src/Meridian.Ui.Shared/Services/Dk1TrustGateReadinessService.cs#L7).
-
-```csharp
-public sealed record Dk1TrustGateReadinessOptions(string AutomationRoot, TimeSpan? PromotionEvidenceMaximumAge = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static Dk1TrustGateReadinessOptions Default { get; } = new (Path.Combine(&quot;artifacts&quot;, &quot;provider-validation&quot;, &quot;_automation&quot;));</code> | [src/Meridian.Ui.Shared/Services/Dk1TrustGateReadinessService.cs:11](../../../../src/Meridian.Ui.Shared/Services/Dk1TrustGateReadinessService.cs#L11) |  |
-
-## Dk1TrustGateReadinessService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.Dk1TrustGateReadinessService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/Dk1TrustGateReadinessService.cs:18](../../../../src/Meridian.Ui.Shared/Services/Dk1TrustGateReadinessService.cs#L18).
-
-Projects the generated DK1 parity packet into the shared cockpit readiness model.
-
-```csharp
-public sealed class Dk1TrustGateReadinessService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Dk1TrustGateReadinessService(Dk1TrustGateReadinessOptions options, ILogger&lt;Dk1TrustGateReadinessService&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/Dk1TrustGateReadinessService.cs:44](../../../../src/Meridian.Ui.Shared/Services/Dk1TrustGateReadinessService.cs#L44) |  |
-| <code>public async Task&lt;TradingTrustGateReadinessDto&gt; GetCurrentAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/Dk1TrustGateReadinessService.cs:52](../../../../src/Meridian.Ui.Shared/Services/Dk1TrustGateReadinessService.cs#L52) |  |
-| <code>public static TradingTrustGateReadinessDto CreateUnavailable(string detail) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/Dk1TrustGateReadinessService.cs:128](../../../../src/Meridian.Ui.Shared/Services/Dk1TrustGateReadinessService.cs#L128) |  |
-
-## DocumentsReportingPrimaryDocumentRenderer
-
-Qualified name: <code>Meridian.Ui.Shared.Services.DocumentsReportingPrimaryDocumentRenderer</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:140](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L140).
-
-Reporting adapter over the existing Documents authority. Generic report outputs retain the presentation-neutral ClientGradeReportRenderer path, while a checkpoint-bound ledger primary document is passed intact to LedgerClientReportExportService. The latter resolves FinancialReportDocumentRenderer from composition and renders one canonical PDF/XLSX pair without rebuilding partners-capital figures or creating another renderer.
-
-```csharp
-public sealed class DocumentsReportingPrimaryDocumentRenderer : IReportingPrimaryDocumentRendererWithLedgerReportPack
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public byte[] RenderPdf(ReportingOutputManifest manifest) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:146](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L146) |  |
-| <code>public byte[] RenderWorkbook(ReportingOutputManifest manifest) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:149](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L149) |  |
-| <code>public DocumentsReportingPrimaryDocumentRenderer() : this(new LedgerClientReportExportService(new FinancialReportDocumentRenderer()));</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:156](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L156) | Convenience construction for dependency-light callers and focused tests. Production composition supplies the shared export service explicitly. |
-| <code>public DocumentsReportingPrimaryDocumentRenderer(LedgerClientReportExportService clientReportExportService);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:161](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L161) |  |
-| <code>public LedgerClientReportDocumentPackage RenderClientPackage(ReportingOutputManifest manifest, LedgerFinancialReportPack certifiedLedgerReportPack);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:168](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L168) |  |
-
-## DrawdownGuardrailRule
-
-Qualified name: <code>Meridian.Ui.Shared.Services.DrawdownGuardrailRule</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/DrawdownGuardrailRule.cs:13](../../../../src/Meridian.Ui.Shared/Services/DrawdownGuardrailRule.cs#L13).
-
-Meridian.Risk rule adapter for the operator-tuned drawdown circuit breaker. Evaluates the live portfolio drawdown against the threshold managed (and dashboard-reported) by RiskRuleRuntimeService, so the enforced CompositeRiskValidator and the risk dashboard can never disagree about the guardrail.
-
-```csharp
-public sealed class DrawdownGuardrailRule : IRiskRule
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DrawdownGuardrailRule(RiskRuleRuntimeService runtime);</code> | [src/Meridian.Ui.Shared/Services/DrawdownGuardrailRule.cs:17](../../../../src/Meridian.Ui.Shared/Services/DrawdownGuardrailRule.cs#L17) |  |
-| <code>public string RuleName =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DrawdownGuardrailRule.cs:23](../../../../src/Meridian.Ui.Shared/Services/DrawdownGuardrailRule.cs#L23) |  |
-| <code>public RiskRuleSeverity Severity =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DrawdownGuardrailRule.cs:26](../../../../src/Meridian.Ui.Shared/Services/DrawdownGuardrailRule.cs#L26) |  |
-| <code>public RiskValidationResult? TryEvaluate(OrderRequest request) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DrawdownGuardrailRule.cs:29](../../../../src/Meridian.Ui.Shared/Services/DrawdownGuardrailRule.cs#L29) |  |
-| <code>public Task&lt;RiskValidationResult&gt; EvaluateAsync(OrderRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DrawdownGuardrailRule.cs:32](../../../../src/Meridian.Ui.Shared/Services/DrawdownGuardrailRule.cs#L32) |  |
-
-## EntityTimelineService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.EntityTimelineService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/EntityTimelineService.cs:10](../../../../src/Meridian.Ui.Shared/Services/EntityTimelineService.cs#L10).
-
-```csharp
-public sealed class EntityTimelineService(IFundStructureService structures, IEntityLifecycleStore lifecycle, IntercompanyAccountingArrangementService arrangements, ILedgerJournalStore journals, IIntercompanyAgreementService agreements, IEntityTimelineAccessAuthority access)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;EntityTimelineDto&gt; GetAsync(string tenant, Guid organizationId, Guid entityId, DateTimeOffset asOf, CancellationToken ct = default, string actor = &quot;entity-timeline&quot;);</code> | [src/Meridian.Ui.Shared/Services/EntityTimelineService.cs:13](../../../../src/Meridian.Ui.Shared/Services/EntityTimelineService.cs#L13) |  |

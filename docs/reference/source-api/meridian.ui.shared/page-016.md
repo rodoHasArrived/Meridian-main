@@ -6,6 +6,103 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderModuleStatusDto
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ProviderModuleStatusDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:7](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L7).
+
+Status of a configured provider module — returned by the module setup API. Credential values are NEVER included; only key names + hasValue flag.
+
+```csharp
+public sealed record ProviderModuleStatusDto(string ModuleId, string DisplayName, bool Enabled, int Priority, bool IsConfigured, bool IsRunning, IReadOnlyList<CredentialKeyStatusDto> CredentialStatus, IReadOnlyList<string> CapabilityNames, string? LastTestResult = null, DateTimeOffset? LastTestedAt = null);
+```
+
+## ProviderModuleTestResult
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ProviderModuleTestResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:55](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L55).
+
+Result from the test-module endpoint.
+
+```csharp
+public sealed record ProviderModuleTestResult(bool Success, bool CredentialConfigValid, bool ConnectionVerified, string? FailureReason = null, double? LatencyMs = null, string? ProbeDetail = null);
+```
+
+## ProviderNewsReadModel
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ProviderNewsReadModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:22](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L22).
+
+```csharp
+public sealed record ProviderNewsReadModel(ProviderProjectionProvenance Provenance, ProviderProjectionAvailability Availability, ProviderNewsItem Item);
+```
+
+## ProviderPnlReadModel
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ProviderPnlReadModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:24](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L24).
+
+```csharp
+public sealed record ProviderPnlReadModel(ProviderProjectionProvenance Provenance, ProviderProjectionAvailability Availability, ProviderAccountPnl Item);
+```
+
+## ProviderProjectionAvailability
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ProviderProjectionAvailability</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:16](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L16).
+
+Connection and entitlement evidence retained alongside every projection row.
+
+```csharp
+public sealed record ProviderProjectionAvailability(bool IsAvailable, string ConnectionState, string? Entitlement, string? Detail);
+```
+
+## ProviderProjectionProvenance
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ProviderProjectionProvenance</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:7](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L7).
+
+Stable source identity for an operator-visible provider datum.
+
+```csharp
+public sealed record ProviderProjectionProvenance(string Key, string ProviderFamily, int RequestId, string Capability, DateTimeOffset ObservedAt, ProviderDataProvenance? Source);
+```
+
+## ProviderReadinessService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ProviderReadinessService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ProviderReadinessService.cs:16](../../../../src/Meridian.Ui.Shared/Services/ProviderReadinessService.cs#L16).
+
+Aggregates provider configuration, connection, and account evidence into readiness summaries.
+
+```csharp
+public sealed class ProviderReadinessService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderReadinessService(IServiceProvider services, ConfigStore configStore);</code> | [src/Meridian.Ui.Shared/Services/ProviderReadinessService.cs:22](../../../../src/Meridian.Ui.Shared/Services/ProviderReadinessService.cs#L22) |  |
+| <code>public async Task&lt;ProviderReadinessSummaryDto&gt; GetReadinessAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderReadinessService.cs:28](../../../../src/Meridian.Ui.Shared/Services/ProviderReadinessService.cs#L28) |  |
+
+## ProviderScannerReadModel
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ProviderScannerReadModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:23](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L23).
+
+```csharp
+public sealed record ProviderScannerReadModel(ProviderProjectionProvenance Provenance, ProviderProjectionAvailability Availability, ProviderScannerResult Item);
+```
+
 ## ReconciliationApiService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReconciliationApiService</code>. Kind: `class`.
@@ -718,119 +815,3 @@ Declared public members:
 | <code>public string StatePath { get; }</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:59](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L59) |  |
 | <code>public string RecordKind { get; }</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:61](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L61) |  |
 | <code>public int RecordCount { get; }</code> | [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:63](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L63) |  |
-
-## ReportingMigrationReadinessState
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingMigrationReadinessState</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:33](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L33).
-
-Process-local receipt that the hosted migration prerequisite completed successfully. Merely registering a migration runner is not evidence that migrations ran.
-
-```csharp
-public sealed class ReportingMigrationReadinessState
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsReady =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs:37](../../../../src/Meridian.Ui.Shared/Services/ReportingDeploymentReadinessService.cs#L37) |  |
-
-## ReportingProviderReceiptAuthentication
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingProviderReceiptAuthentication</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs:7](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs#L7).
-
-```csharp
-public sealed record ReportingProviderReceiptAuthentication(string Timestamp, string Signature);
-```
-
-## ReportingProviderReceiptAuthenticationRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingProviderReceiptAuthenticationRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs:11](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs#L11).
-
-```csharp
-public sealed record ReportingProviderReceiptAuthenticationRequest(string TransportId, string JobId, SecureReportingDeliveryReceiptCommand Receipt, ReportingProviderReceiptAuthentication Authentication);
-```
-
-## ReportingRecipientDestinationBinding
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRecipientDestinationBinding</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:133](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L133).
-
-```csharp
-public sealed record ReportingRecipientDestinationBinding(string TenantId, string? CompanyId, string PrincipalId, string TransportId, string Destination, ReportingAccessPrincipalKind PrincipalKind = ReportingAccessPrincipalKind.User);
-```
-
-## ReportingRecipientDestinationRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRecipientDestinationRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:126](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L126).
-
-Complete server-side identity used to resolve an external notification destination. The public delivery command may assert the resolved value, but it is never authoritative.
-
-```csharp
-public sealed record ReportingRecipientDestinationRequest(string TenantId, string? CompanyId, string PrincipalId, string TransportId, ReportingAccessPrincipalKind PrincipalKind = ReportingAccessPrincipalKind.User);
-```
-
-## ReportingReconciliationEvidenceInvalidException
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingReconciliationEvidenceInvalidException</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:47](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L47).
-
-Indicates invalid reporting reconciliation evidence and retains its evidence references.
-
-```csharp
-public sealed class ReportingReconciliationEvidenceInvalidException : ReportingReconciliationReadinessException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingReconciliationEvidenceInvalidException(string message, int blockingCount = 1, IReadOnlyList&lt;string&gt;? evidenceReferences = null) : base(message);</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:50](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L50) |  |
-| <code>public int BlockingCount { get; }</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:59](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L59) |  |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceReferences { get; }</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:61](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L61) |  |
-
-## ReportingReconciliationEvidenceMigrationRequiredException
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingReconciliationEvidenceMigrationRequiredException</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs:639](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs#L639).
-
-Raised only when a legacy reconciliation snapshot passed its v1 integrity checks but cannot satisfy the current per-break evidence requirements without an operator-led recovery.
-
-```csharp
-public sealed class ReportingReconciliationEvidenceMigrationRequiredException : ReportingReconciliationEvidenceRecoveryRequiredException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingReconciliationEvidenceMigrationRequiredException(string message) : base(message);</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs:642](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceStore.cs#L642) |  |
-
-## ReportingReconciliationEvidenceMissingException
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingReconciliationEvidenceMissingException</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:36](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L36).
-
-Indicates that required retained reconciliation evidence is missing.
-
-```csharp
-public sealed class ReportingReconciliationEvidenceMissingException : ReportingReconciliationReadinessException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingReconciliationEvidenceMissingException(string message) : base(message);</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:39](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L39) |  |
